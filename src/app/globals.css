@@ -1,0 +1,223 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  /* ─── Zupe Brand Palette ─── */
+  --zp-accent: #6C5CE7;
+  --zp-accent-light: #A29BFE;
+  --zp-accent-dark: #4834D4;
+  --zp-coral: #FF6B6B;
+  --zp-coral-light: #FF8E8E;
+  --zp-mint: #00D2D3;
+  --zp-mint-dark: #01A3A4;
+  --zp-charcoal: #2D3436;
+  --zp-charcoal-deep: #1A1A2E;
+  --zp-slate: #636E72;
+  --zp-cloud: #F8F9FA;
+  --zp-snow: #FFFFFF;
+  --zp-sand: #F1F0EB;
+  --zp-warm: #FFEAA7;
+  
+  /* ─── Typography ─── */
+  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Space Grotesk', monospace;
+  
+  /* ─── Motion ─── */
+  --zp-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --zp-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ─── Base Styles ─── */
+html {
+  background-color: var(--zp-cloud);
+  color: var(--zp-charcoal);
+  font-family: var(--font-sans);
+  scroll-behavior: smooth;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+  scroll-behavior: auto !important;
+}
+
+body {
+  background-color: var(--zp-cloud);
+  color: var(--zp-charcoal);
+  overflow-x: clip;
+}
+
+p, li, span:not([class*="tracking"]), label, td, th, blockquote {
+  letter-spacing: 0.01em;
+}
+
+::selection {
+  background-color: var(--zp-accent);
+  color: var(--zp-snow);
+}
+
+/* ─── Custom Scrollbars ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--zp-cloud);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--zp-accent-light);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--zp-accent);
+}
+
+/* ─── Hide Scrollbar for Carousels ─── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ─── Glassmorphism ─── */
+.glass-nav {
+  background: rgba(248, 249, 250, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(108, 92, 231, 0.08);
+}
+
+.glass-nav-dark {
+  background: rgba(26, 26, 46, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(108, 92, 231, 0.12);
+}
+
+.glass-card-dark {
+  background: rgba(26, 26, 46, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(162, 155, 254, 0.2);
+}
+
+/* ─── Glow Effects ─── */
+.accent-glow {
+  box-shadow: 0 0 30px rgba(108, 92, 231, 0.35);
+}
+
+.coral-glow {
+  box-shadow: 0 0 25px rgba(255, 107, 107, 0.3);
+}
+
+.mint-glow {
+  box-shadow: 0 0 25px rgba(0, 210, 211, 0.25);
+}
+
+/* ─── Marquee Animation ─── */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ─── Shimmer Animation ─── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer-text {
+  background: linear-gradient(90deg, var(--zp-charcoal) 0%, var(--zp-accent) 50%, var(--zp-charcoal) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 6s infinite ease-in-out;
+}
+
+/* ─── Gradient Text ─── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--zp-accent) 0%, var(--zp-coral) 50%, var(--zp-mint) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── Floating Animation ─── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+/* ─── Pulse Dot ─── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.5); }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ─── Font Utilities ─── */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Card Hover Effect ─── */
+.card-hover {
+  transition: transform 0.4s var(--zp-ease), box-shadow 0.4s var(--zp-ease);
+}
+.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 60px rgba(108, 92, 231, 0.15);
+}
+
+/* ─── Button Press Effect ─── */
+.btn-press {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* ─── Gradient Mesh Background ─── */
+.mesh-gradient {
+  background: 
+    radial-gradient(at 20% 80%, rgba(108, 92, 231, 0.08) 0%, transparent 50%),
+    radial-gradient(at 80% 20%, rgba(255, 107, 107, 0.06) 0%, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(0, 210, 211, 0.04) 0%, transparent 50%),
+    var(--zp-cloud);
+}

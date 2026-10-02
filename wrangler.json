@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "zupe-store",
+  "account_id": "4eed09d0032a07881825f4e926cb997f",
+  "compatibility_date": "2026-08-31",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "main": ".open-next/worker.js",
+  "workers_dev": true,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "zupe-store-db",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+    }
+  ],
+  "vars": {
+    "SMTP_HOST": "smtp.gmail.com",
+    "SMTP_PORT": "587",
+    "SMTP_USER": "",
+    "CLOUDFLARE_ACCOUNT_ID": "4eed09d0032a07881825f4e926cb997f",
+    "ADMIN_EMAIL": "admin@zupestore.com",
+    "ADMIN_PASSWORD": "ZupeAdmin@2026"
+  }
+}
