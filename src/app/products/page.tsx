@@ -112,7 +112,7 @@ function ProductsContent() {
 
       {/* Header Banner */}
       <div className="pt-28 pb-12 bg-gradient-to-b from-[#6C5CE7]/10 via-[#F8F9FA]/60 to-[#F8F9FA] border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-2 text-xs text-[#636E72] mb-3">
             <Link href="/" className="hover:text-[#6C5CE7] transition-colors">
               Home
@@ -156,7 +156,7 @@ function ProductsContent() {
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
         {/* Category Pills & Controls Bar */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
           {/* Category Tabs */}

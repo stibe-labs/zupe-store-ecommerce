@@ -5,8 +5,8 @@ import { Truck, Banknote, RotateCcw, Headphones } from "lucide-react";
 
 export function TopBar() {
   return (
-    <div className="bg-[#000000] text-gray-300 text-[11px] sm:text-xs py-2 px-4 border-b border-white/5">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <div className="bg-[#000000] text-gray-300 text-[11px] sm:text-xs py-2 px-2 border-b border-white/5">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 flex items-center justify-between">
         {/* Left Features */}
         <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto scrollbar-none py-0.5">
           <div className="flex items-center gap-1.5 whitespace-nowrap">

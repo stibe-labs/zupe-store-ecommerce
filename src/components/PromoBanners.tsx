@@ -7,7 +7,7 @@ import { ArrowRight } from "lucide-react";
 
 export function PromoBanners() {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <section className="max-w-[1600px] mx-auto px-4 sm:px-6 py-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Banner 1: Upgrade Your Everyday Essentials */}
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#F9EFE7] via-[#F4E6DC] to-[#EEDCCF] p-6 sm:p-8 flex items-center justify-between min-h-[240px] shadow-sm">

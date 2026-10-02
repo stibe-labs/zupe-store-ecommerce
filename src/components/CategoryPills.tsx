@@ -100,7 +100,7 @@ const CATEGORIES: CategoryItem[] = [
 
 export function CategoryPills() {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <section className="max-w-[1600px] mx-auto px-4 sm:px-6 py-4">
       <div className="flex items-center justify-between gap-3 sm:gap-4 overflow-x-auto scrollbar-none py-2 px-1">
         {CATEGORIES.map((cat) => (
           <Link

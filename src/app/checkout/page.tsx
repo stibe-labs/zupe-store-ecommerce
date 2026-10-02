@@ -182,7 +182,7 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-[#F8F9FA] text-[#2D3436]">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-28 pb-16">
         <div className="mb-8">
           <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
             <Link href="/cart" className="hover:text-[#6C5CE7]">Bag</Link>

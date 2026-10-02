@@ -14,7 +14,7 @@ export function NewArrivalsSection() {
   const newArrivals = DEFAULT_PRODUCTS.slice(5, 10);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <section className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6">
       {/* Header */}
       <div className="flex items-end justify-between mb-6">
         <div>

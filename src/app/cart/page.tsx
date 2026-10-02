@@ -90,7 +90,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-[#F8F9FA] text-[#2D3436]">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-28 pb-16">
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
           <div>
             <h1 className="text-3xl sm:text-4xl font-display font-bold text-[#2D3436]">

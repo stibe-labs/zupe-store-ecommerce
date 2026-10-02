@@ -36,7 +36,7 @@ export function HeroSection() {
   const slide = slides[currentSlide];
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 sm:pt-6 sm:pb-4">
+    <section className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-3 pb-2 sm:pt-4 sm:pb-3">
       <div className="relative rounded-3xl overflow-hidden bg-[#18130E] text-white shadow-xl min-h-[440px] sm:min-h-[480px] lg:min-h-[500px] flex items-center">
         {/* Background Visual with Ambient Glow */}
         <div className="absolute inset-0 z-0">

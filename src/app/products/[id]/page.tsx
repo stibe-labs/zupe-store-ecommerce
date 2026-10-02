@@ -124,7 +124,7 @@ export default function ProductDetailPage() {
 
       {/* Breadcrumb Header */}
       <div className="pt-24 pb-4 border-b border-gray-100 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-2 text-xs text-[#636E72]">
             <Link href="/" className="hover:text-[#6C5CE7] transition-colors">Home</Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
@@ -140,7 +140,7 @@ export default function ProductDetailPage() {
       </div>
 
       {/* Main Product Showcase */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
           {/* Left Column: Image Gallery */}
           <div className="space-y-4">

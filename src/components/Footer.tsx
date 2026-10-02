@@ -36,7 +36,7 @@ export function Footer() {
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#6C5CE7]/40 to-transparent" />
       <div className="absolute top-20 right-20 w-64 h-64 bg-[#6C5CE7]/5 rounded-full blur-3xl" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-14 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="col-span-2">
