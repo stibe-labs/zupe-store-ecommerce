@@ -125,7 +125,7 @@ export function HeroSection() {
                 className="rounded-3xl overflow-hidden shadow-xl shadow-[#FF6B6B]/10 aspect-square relative group"
               >
                 <img
-                  src="https://images.unsplash.com/photo-1602607616907-e8faad94e2e1?q=80&w=600&auto=format&fit=crop"
+                  src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=600&auto=format&fit=crop"
                   alt="Lifestyle products"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
