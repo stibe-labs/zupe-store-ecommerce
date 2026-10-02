@@ -11,7 +11,7 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 export function NewArrivalsSection() {
   const router = useRouter();
-  const { addItem } = useCart();
+  const { addToCart, addItem } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   // The last 5 products are the New Arrivals
@@ -110,7 +110,11 @@ export function NewArrivalsSection() {
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  addItem(product, 1);
+                  e.stopPropagation();
+                  const addFn = addToCart || addItem;
+                  if (typeof addFn === "function") {
+                    addFn(product, 1);
+                  }
                   router.push("/cart");
                 }}
                 className="w-full py-2 px-3 rounded-lg bg-[#FF5722] hover:bg-[#E64A19] text-white text-xs sm:text-sm font-semibold transition-colors shadow-sm active:scale-95 duration-150"

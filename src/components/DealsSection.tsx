@@ -10,7 +10,7 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 export function DealsSection() {
   const router = useRouter();
-  const { addItem } = useCart();
+  const { addToCart, addItem } = useCart();
 
   // The first 5 products correspond to Today's Best Deals
   const dealProducts = DEFAULT_PRODUCTS.slice(0, 5);
@@ -20,7 +20,10 @@ export function DealsSection() {
   const handleAddToCart = (e: React.MouseEvent, product: typeof dealProducts[0]) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem(product, 1);
+    const addFn = addToCart || addItem;
+    if (typeof addFn === "function") {
+      addFn(product, 1);
+    }
     router.push("/cart");
   };
 

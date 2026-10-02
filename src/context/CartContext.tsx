@@ -35,6 +35,7 @@ interface CartContextType {
     volume?: string;
     color?: string;
   }, quantity?: number) => boolean;
+  addItem: (product: any, quantity?: number) => boolean;
   updateQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
@@ -222,6 +223,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         closeCart,
         toggleCart,
         addToCart,
+        addItem: addToCart,
         updateQuantity,
         removeFromCart,
         clearCart,
