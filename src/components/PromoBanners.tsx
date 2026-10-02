@@ -37,7 +37,7 @@ export function PromoBanners() {
                 src="/products/thermal-printer.jpg"
                 alt="Thermal Printer"
                 fill
-                className="object-cover"
+                className="object-cover object-bottom"
               />
             </div>
             <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shadow-md border-2 border-white">
@@ -45,7 +45,7 @@ export function PromoBanners() {
                 src="/products/popcorn-maker.jpg"
                 alt="Popcorn Maker"
                 fill
-                className="object-cover"
+                className="object-cover object-bottom"
               />
             </div>
           </div>
@@ -78,7 +78,7 @@ export function PromoBanners() {
               src="/products/helicopter-perfume.jpg"
               alt="Car Helicopter Perfume"
               fill
-              className="object-cover"
+              className="object-cover object-bottom"
             />
           </div>
         </div>

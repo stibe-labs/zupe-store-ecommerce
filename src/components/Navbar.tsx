@@ -168,19 +168,21 @@ export function Navbar() {
             </Link>
 
             {/* Cart */}
-            <button
-              onClick={openCart}
+            <Link
+              href="/cart"
               className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors relative py-1"
               aria-label="View Cart"
             >
               <div className="relative">
                 <ShoppingBag className="w-5 h-5 text-gray-700" />
-                <span className="absolute -top-2 -right-2.5 w-4.5 h-4.5 rounded-full bg-[#FA521C] text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">
-                  {totalItems || 2}
-                </span>
+                {totalItems > 0 ? (
+                  <span className="absolute -top-2 -right-2.5 w-4.5 h-4.5 rounded-full bg-[#FA521C] text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">
+                    {totalItems}
+                  </span>
+                ) : null}
               </div>
               <span className="hidden md:inline font-bold">Cart</span>
-            </button>
+            </Link>
 
             {/* Mobile hamburger */}
             <button

@@ -103,9 +103,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
-    setAddedNotice(true);
-    setTimeout(() => setAddedNotice(false), 2000);
-    openCart();
+    router.push("/cart");
   };
 
   const handleBuyNow = () => {
@@ -310,10 +308,10 @@ export default function ProductDetailPage() {
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <button
                     onClick={handleAddToCart}
-                    className="flex-1 py-3.5 px-6 rounded-2xl bg-[#6C5CE7] hover:bg-[#5848d2] text-white font-semibold text-sm shadow-lg shadow-[#6C5CE7]/30 transition-all flex items-center justify-center gap-2 transform active:scale-95"
+                    className="flex-1 py-3.5 px-6 rounded-2xl bg-[#FA521C] hover:bg-[#E0400B] text-white font-semibold text-sm shadow-lg shadow-[#FA521C]/30 transition-all flex items-center justify-center gap-2 transform active:scale-95"
                   >
                     <ShoppingBag className="w-4 h-4" />
-                    <span>{addedNotice ? "Added to Cart!" : "Add to Cart"}</span>
+                    <span>Add to Cart</span>
                   </button>
 
                   <button

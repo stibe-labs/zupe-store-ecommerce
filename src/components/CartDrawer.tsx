@@ -181,18 +181,26 @@ export function CartDrawer() {
                     ₹{subtotal.toLocaleString()}
                   </span>
                 </div>
-                <p className="text-xs text-[#B2BEC3]">Taxes and shipping calculated at checkout</p>
-                <Link
-                  href="/checkout"
-                  onClick={closeCart}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#6C5CE7] text-white font-semibold rounded-xl hover:bg-[#4834D4] transition-colors btn-press"
-                >
-                  Proceed to Checkout
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                <div className="flex flex-col gap-2">
+                  <Link
+                    href="/cart"
+                    onClick={closeCart}
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-gray-100 text-gray-800 font-semibold rounded-xl hover:bg-gray-200 transition-colors text-sm"
+                  >
+                    View Shopping Bag
+                  </Link>
+                  <Link
+                    href="/checkout"
+                    onClick={closeCart}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#FA521C] text-white font-semibold rounded-xl hover:bg-[#E0400B] transition-colors shadow-lg shadow-[#FA521C]/25 text-sm"
+                  >
+                    Proceed to Checkout
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
                 <button
                   onClick={closeCart}
-                  className="w-full text-center text-sm text-[#636E72] hover:text-[#6C5CE7] transition-colors py-2"
+                  className="w-full text-center text-xs text-[#636E72] hover:text-[#FA521C] transition-colors py-2"
                 >
                   Continue Shopping
                 </button>

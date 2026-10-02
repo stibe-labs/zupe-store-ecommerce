@@ -3,11 +3,15 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Star, Heart, ArrowRight } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 export function NewArrivalsSection() {
+  const router = useRouter();
+  const { addItem } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   // The last 5 products are the New Arrivals
@@ -46,14 +50,14 @@ export function NewArrivalsSection() {
             >
               <div>
                 {/* Product Image Container */}
-                <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 mb-3">
+                <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-50 mb-3">
                   <Link href={`/products/${product.slug}`} className="block w-full h-full">
                     <Image
                       src={product.poster_image}
                       alt={product.name}
                       fill
                       sizes="(max-width: 768px) 50vw, 20vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="object-cover object-bottom group-hover:scale-105 transition-transform duration-500"
                     />
                   </Link>
 
@@ -90,7 +94,7 @@ export function NewArrivalsSection() {
                 </div>
 
                 {/* Rating */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 mb-3">
                   <div className="flex items-center text-amber-400">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="w-3.5 h-3.5 fill-current" />
@@ -101,6 +105,18 @@ export function NewArrivalsSection() {
                   </span>
                 </div>
               </div>
+
+              {/* Add to Cart button */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  addItem(product, 1);
+                  router.push("/cart");
+                }}
+                className="w-full py-2 px-3 rounded-lg bg-[#FF5722] hover:bg-[#E64A19] text-white text-xs sm:text-sm font-semibold transition-colors shadow-sm active:scale-95 duration-150"
+              >
+                Add to Cart
+              </button>
             </div>
           );
         })}

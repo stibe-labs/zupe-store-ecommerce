@@ -3,12 +3,14 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Star, ArrowRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 export function DealsSection() {
-  const { addItem, openCart } = useCart();
+  const router = useRouter();
+  const { addItem } = useCart();
 
   // The first 5 products correspond to Today's Best Deals
   const dealProducts = DEFAULT_PRODUCTS.slice(0, 5);
@@ -17,8 +19,9 @@ export function DealsSection() {
 
   const handleAddToCart = (e: React.MouseEvent, product: typeof dealProducts[0]) => {
     e.preventDefault();
+    e.stopPropagation();
     addItem(product, 1);
-    openCart();
+    router.push("/cart");
   };
 
   return (
@@ -54,14 +57,14 @@ export function DealsSection() {
               {/* Product Image Container */}
               <Link
                 href={`/products/${product.slug}`}
-                className="relative block aspect-square rounded-xl overflow-hidden bg-gray-50 mb-3"
+                className="relative block w-full aspect-square rounded-xl overflow-hidden bg-gray-50 mb-3"
               >
                 <Image
                   src={product.poster_image}
                   alt={product.name}
                   fill
                   sizes="(max-width: 768px) 50vw, 20vw"
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="object-cover object-bottom group-hover:scale-105 transition-transform duration-500"
                 />
 
                 {/* Red Discount Pill Badge */}
