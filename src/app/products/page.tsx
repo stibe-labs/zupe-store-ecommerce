@@ -23,7 +23,7 @@ import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("category") || "All";
 
@@ -403,5 +403,22 @@ export default function ProductsPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-10 h-10 border-4 border-[#6C5CE7] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-sm font-semibold text-gray-500">Loading catalog...</p>
+          </div>
+        </div>
+      }
+    >
+      <ProductsContent />
+    </React.Suspense>
   );
 }
