@@ -16,7 +16,7 @@
     {
       "binding": "DB",
       "database_name": "zupe-store-db",
-      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+      "database_id": "1ebc3c22-07be-4f35-b437-5292d137d246"
     }
   ],
   "vars": {
@@ -24,6 +24,7 @@
     "SMTP_PORT": "587",
     "SMTP_USER": "",
     "CLOUDFLARE_ACCOUNT_ID": "4eed09d0032a07881825f4e926cb997f",
+    "CLOUDFLARE_D1_DATABASE_ID": "1ebc3c22-07be-4f35-b437-5292d137d246",
     "ADMIN_EMAIL": "admin@zupestore.com",
     "ADMIN_PASSWORD": "ZupeAdmin@2026"
   }
