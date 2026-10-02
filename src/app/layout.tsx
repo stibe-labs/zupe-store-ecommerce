@@ -5,6 +5,7 @@ import { WishlistProvider } from "@/context/WishlistContext";
 import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 import { CartDrawer } from "@/components/CartDrawer";
 import { AuthModal } from "@/components/AuthModal";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
   description:
     "Discover beautifully curated decor, modern accessories, and everyday essentials designed to elevate your space and simplify your life.",
   icons: {
-    icon: [{ url: "/favicon.ico" }],
+    icon: [{ url: "/zupe-logo.png" }],
+    apple: [{ url: "/zupe-logo.png" }],
   },
 };
 
@@ -27,6 +29,7 @@ export default function RootLayout({
         className="antialiased font-sans bg-[#F8F9FA] text-[#2D3436]"
         suppressHydrationWarning
       >
+        <LoadingScreen />
         <AuthProvider>
           <WishlistProvider>
             <CartProvider>

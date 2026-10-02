@@ -157,8 +157,14 @@ export default function AdminDashboardPage() {
             </Link>
             <div className="h-4 w-px bg-white/10" />
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#6C5CE7] flex items-center justify-center font-bold">
-                Z
+              <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-white flex items-center justify-center p-0.5">
+                <Image
+                  src="/zupe-logo.png"
+                  alt="Zupe Store"
+                  width={28}
+                  height={28}
+                  className="object-contain"
+                />
               </div>
               <span className="font-display font-bold text-lg">Zupe Admin</span>
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Instagram, Twitter, Mail, MapPin, Phone, ArrowUpRight } from "lucide-react";
 
@@ -39,12 +40,18 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6C5CE7] to-[#A29BFE] flex items-center justify-center">
-                <span className="text-white font-display font-bold text-xl">Z</span>
+            <Link href="/" className="flex items-center gap-3 mb-4">
+              <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-white p-0.5 shadow-md flex items-center justify-center">
+                <Image
+                  src="/zupe-logo.png"
+                  alt="Zupe Store"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
               </div>
-              <span className="font-display font-bold text-2xl">
-                Zupe<span className="text-[#6C5CE7]">.</span>
+              <span className="font-display font-black text-2xl tracking-tight text-white">
+                Zupe<span className="text-[#6C5CE7]">Store</span>
               </span>
             </Link>
             <p className="text-sm text-gray-400 max-w-xs leading-relaxed mb-6">

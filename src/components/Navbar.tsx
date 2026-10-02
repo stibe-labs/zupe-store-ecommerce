@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ShoppingBag, Heart, User, Menu, X, ChevronDown } from "lucide-react";
@@ -52,12 +53,19 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-18">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6C5CE7] to-[#A29BFE] flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:shadow-[#6C5CE7]/30 transition-all duration-300">
-                <span className="text-white font-display font-bold text-lg leading-none">Z</span>
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-white shadow-sm border border-gray-100 flex items-center justify-center p-0.5 group-hover:scale-105 transition-transform duration-300">
+                <Image
+                  src="/zupe-logo.png"
+                  alt="Zupe Store"
+                  width={36}
+                  height={36}
+                  className="object-contain"
+                  priority
+                />
               </div>
-              <span className="font-display font-bold text-xl tracking-tight text-[#2D3436]">
-                Zupe<span className="text-[#6C5CE7]">.</span>
+              <span className="font-display font-black text-xl tracking-tight text-[#2D3436]">
+                Zupe<span className="text-[#6C5CE7]">Store</span>
               </span>
             </Link>
 

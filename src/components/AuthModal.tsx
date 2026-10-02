@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Lock, User, ArrowRight, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -117,8 +118,14 @@ export function AuthModal() {
 
         {/* Brand Header */}
         <div className="text-center mb-6">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-br from-[#6C5CE7] to-[#A29BFE] flex items-center justify-center shadow-lg shadow-[#6C5CE7]/30 mb-3">
-            <span className="text-white font-display font-bold text-2xl">Z</span>
+          <div className="relative w-16 h-16 mx-auto rounded-2xl overflow-hidden bg-white shadow-md border border-gray-100 flex items-center justify-center p-1 mb-3">
+            <Image
+              src="/zupe-logo.png"
+              alt="Zupe Store"
+              width={56}
+              height={56}
+              className="object-contain"
+            />
           </div>
           <h3 className="text-2xl font-bold font-display text-gray-900">
             {mode === "login" ? "Welcome Back" : "Join Zupe Store"}
