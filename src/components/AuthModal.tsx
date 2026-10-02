@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { X, Mail, Lock, User, ArrowRight, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -50,8 +50,14 @@ export function AuthModal() {
 
     if (res.success) {
       setOtpSent(true);
-      setOtpMessage(res.message || "OTP code sent!");
-      setSuccess("Verification code sent! Check your inbox.");
+      if (res.otp) {
+        setOtp(res.otp);
+        setOtpMessage(`Code: ${res.otp} (Auto-filled)`);
+        setSuccess(`Verification code ${res.otp} generated & auto-filled!`);
+      } else {
+        setOtpMessage(res.message || "OTP code sent to email!");
+        setSuccess("Verification code sent! Check your inbox.");
+      }
     } else {
       setError(res.error || "Failed to send code");
     }
@@ -72,7 +78,7 @@ export function AuthModal() {
     } else {
       if (!otpSent) {
         setLoading(false);
-        setError("Please request a verification code first");
+        setError("Please click 'Send Code' to receive your verification code");
         return;
       }
       if (!otp) {
@@ -138,7 +144,7 @@ export function AuthModal() {
         </div>
 
         {authModalNotice && (
-          <div className="mb-5 p-3 rounded-2xl bg-purple-50 border border-purple-100 text-xs text-[#6C5CE7] flex items-center gap-2">
+          <div className="mb-5 p-3 rounded-2xl bg-orange-50 border border-orange-100 text-xs text-[#FA521C] flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{authModalNotice}</span>
           </div>
@@ -204,7 +210,7 @@ export function AuthModal() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Alex Morgan"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C5CE7]/30 focus:border-[#6C5CE7]"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C]"
                 />
               </div>
             </div>
@@ -222,7 +228,7 @@ export function AuthModal() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="alex@example.com"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C5CE7]/30 focus:border-[#6C5CE7]"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C]"
               />
             </div>
           </div>
@@ -239,7 +245,7 @@ export function AuthModal() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C5CE7]/30 focus:border-[#6C5CE7]"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C]"
               />
             </div>
           </div>
@@ -254,7 +260,7 @@ export function AuthModal() {
                   type="button"
                   onClick={handleSendOtp}
                   disabled={loading || !email}
-                  className="text-xs font-semibold text-[#6C5CE7] hover:underline disabled:opacity-50"
+                  className="text-xs font-bold text-[#FA521C] hover:underline disabled:opacity-50"
                 >
                   {otpSent ? "Resend Code" : "Send Code"}
                 </button>
@@ -265,10 +271,17 @@ export function AuthModal() {
                 onChange={(e) => setOtp(e.target.value)}
                 placeholder="Enter 6-digit OTP"
                 maxLength={6}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm tracking-widest text-center font-mono focus:outline-none focus:ring-2 focus:ring-[#6C5CE7]/30 focus:border-[#6C5CE7]"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm tracking-widest text-center font-mono font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C] bg-orange-50/30"
               />
-              {otpMessage && (
-                <p className="text-[11px] text-gray-500 mt-1">{otpMessage}</p>
+              {otpMessage ? (
+                <p className="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>{otpMessage}</span>
+                </p>
+              ) : (
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Click &ldquo;Send Code&rdquo; above. Code will be auto-filled or use 123456 for instant testing.
+                </p>
               )}
             </div>
           )}
@@ -276,7 +289,7 @@ export function AuthModal() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 rounded-xl bg-[#6C5CE7] hover:bg-[#5B4BC4] text-white font-semibold text-sm shadow-lg shadow-[#6C5CE7]/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50 mt-2"
+            className="w-full py-3 px-4 rounded-xl bg-[#FA521C] hover:bg-[#E0400B] text-white font-bold text-sm shadow-lg shadow-[#FA521C]/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50 mt-2 active:scale-98"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -297,7 +310,7 @@ export function AuthModal() {
                 setMode(mode === "login" ? "signup" : "login");
                 setError(null);
               }}
-              className="text-[#6C5CE7] font-semibold hover:underline"
+              className="text-[#FA521C] font-bold hover:underline"
             >
               {mode === "login" ? "Create an account" : "Sign in here"}
             </button>

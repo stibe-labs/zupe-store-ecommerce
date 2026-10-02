@@ -20,7 +20,7 @@ interface AuthContextType {
   closeAuthModal: () => void;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, password: string, otp: string) => Promise<{ success: boolean; error?: string }>;
-  sendOtp: (email: string, name?: string) => Promise<{ success: boolean; message?: string; emailSent?: boolean; error?: string }>;
+  sendOtp: (email: string, name?: string) => Promise<{ success: boolean; message?: string; emailSent?: boolean; otp?: string; error?: string }>;
   logout: () => void;
 }
 
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!res.ok || !data.success) {
         return { success: false, error: data.error || "Failed to send OTP" };
       }
-      return { success: true, message: data.message, emailSent: data.emailSent };
+      return { success: true, message: data.message, emailSent: data.emailSent, otp: data.otp };
     } catch (err: any) {
       return { success: false, error: err.message || "Network error" };
     }
