@@ -2,20 +2,21 @@
 @import "tailwindcss";
 
 :root {
-  /* ─── Zupe Brand Palette ─── */
-  --zp-accent: #6C5CE7;
-  --zp-accent-light: #A29BFE;
-  --zp-accent-dark: #4834D4;
-  --zp-coral: #FF6B6B;
-  --zp-coral-light: #FF8E8E;
-  --zp-mint: #00D2D3;
-  --zp-mint-dark: #01A3A4;
-  --zp-charcoal: #2D3436;
-  --zp-charcoal-deep: #1A1A2E;
-  --zp-slate: #636E72;
+  /* ─── Zupe Brand Palette (Reference Match) ─── */
+  --zp-accent: #FA521C;
+  --zp-accent-light: #FF7A45;
+  --zp-accent-dark: #D4380D;
+  --zp-orange: #FA521C;
+  --zp-coral: #FF4D4F;
+  --zp-coral-light: #FF7875;
+  --zp-mint: #52C41A;
+  --zp-mint-dark: #389E0D;
+  --zp-charcoal: #141414;
+  --zp-charcoal-deep: #0A0A0A;
+  --zp-slate: #595959;
   --zp-cloud: #F8F9FA;
   --zp-snow: #FFFFFF;
-  --zp-sand: #F1F0EB;
+  --zp-sand: #F5F5F5;
   --zp-warm: #FFEAA7;
   
   /* ─── Typography ─── */

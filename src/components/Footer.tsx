@@ -51,7 +51,7 @@ export function Footer() {
                 />
               </div>
               <span className="font-display font-black text-2xl tracking-tight text-white">
-                Zupe<span className="text-[#6C5CE7]">Store</span>
+                Zupe<span className="text-[#FA521C]">store</span>
               </span>
             </Link>
             <p className="text-sm text-gray-400 max-w-xs leading-relaxed mb-6">
@@ -66,7 +66,7 @@ export function Footer() {
                 <a
                   key={i}
                   href={social.href}
-                  className="w-10 h-10 rounded-xl bg-white/5 hover:bg-[#6C5CE7]/20 border border-white/10 flex items-center justify-center transition-all duration-300 hover:border-[#6C5CE7]/30"
+                  className="w-10 h-10 rounded-xl bg-white/5 hover:bg-[#FA521C]/20 border border-white/10 flex items-center justify-center transition-all duration-300 hover:border-[#FA521C]/30"
                 >
                   <social.icon className="w-4 h-4 text-gray-400" />
                 </a>
@@ -85,7 +85,7 @@ export function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-gray-400 hover:text-[#A29BFE] transition-colors duration-200 flex items-center gap-1 group"
+                      className="text-sm text-gray-400 hover:text-[#FA521C] transition-colors duration-200 flex items-center gap-1 group"
                     >
                       {link.label}
                       <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />

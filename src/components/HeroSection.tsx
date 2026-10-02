@@ -1,179 +1,144 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Star, Truck, ShieldCheck, RotateCcw } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Truck, Banknote, RotateCcw, Heart } from "lucide-react";
 
 export function HeroSection() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const slides = [
+    {
+      id: "ripple-lamp",
+      badge: "SMART SOLUTIONS FOR A BETTER LIFE",
+      titleLine1: "Innovative Products",
+      titleLine2: "Modern Living.",
+      description: "Discover unique and useful products that make your life easier, smarter and more fun.",
+      ctaText: "Shop Now",
+      ctaLink: "/products/dynamic-water-ripple-night-light",
+      image: "/products/hero-banner.jpg",
+      taglineRight: "Small Products Big Happiness ♡",
+    },
+    {
+      id: "car-accessories",
+      badge: "PREMIUM LIFESTYLE ESSENTIALS",
+      titleLine1: "Car Accessories",
+      titleLine2: "Style & Comfort.",
+      description: "Upgrade your driving experience with solar powered diffusing fragrances and smart organizers.",
+      ctaText: "Explore Now",
+      ctaLink: "/products/helicopter-car-perfume",
+      image: "/products/helicopter-perfume.jpg",
+      taglineRight: "Drive In Luxury ♡",
+    },
+  ];
+
+  const slide = slides[currentSlide];
+
   return (
-    <section className="relative min-h-[100vh] flex items-center overflow-hidden mesh-gradient">
-      {/* Decorative blobs */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-[#6C5CE7]/10 rounded-full blur-3xl animate-float" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#FF6B6B]/8 rounded-full blur-3xl animate-float" style={{ animationDelay: "2s" }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#00D2D3]/5 rounded-full blur-3xl" />
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 sm:pt-6 sm:pb-4">
+      <div className="relative rounded-3xl overflow-hidden bg-[#18130E] text-white shadow-xl min-h-[440px] sm:min-h-[480px] lg:min-h-[500px] flex items-center">
+        {/* Background Visual with Ambient Glow */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src={slide.image}
+            alt={slide.titleLine1}
+            fill
+            priority
+            className="object-cover object-right sm:object-center opacity-85 transition-opacity duration-700"
+          />
+          {/* Subtle gradient vignette to keep text readable on the left */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#140F0A] via-[#140F0A]/85 sm:via-[#140F0A]/70 to-transparent w-full sm:w-2/3 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-10" />
+        </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left: Content */}
-          <div className="space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#6C5CE7]/8 rounded-full border border-[#6C5CE7]/15 mb-6">
-                <Sparkles className="w-4 h-4 text-[#6C5CE7]" />
-                <span className="text-xs font-mono font-semibold text-[#6C5CE7] tracking-wide uppercase">
-                  New Collection 2026
-                </span>
-              </div>
-            </motion.div>
+        {/* Hero Content */}
+        <div className="relative z-20 w-full px-6 sm:px-12 lg:px-16 py-10 flex flex-col justify-between h-full">
+          <div className="max-w-xl">
+            {/* Eyebrow */}
+            <p className="text-[11px] sm:text-xs font-bold tracking-[0.2em] text-[#C4B5A5] uppercase mb-3">
+              {slide.badge}
+            </p>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.1 }}
-              className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold leading-[1.05] text-[#2D3436]"
-            >
-              Curated for{" "}
-              <span className="gradient-text">Modern</span>
-              <br />
-              Living
-            </motion.h1>
+            {/* Main Headline */}
+            <h1 className="text-3xl sm:text-5xl lg:text-[56px] font-display font-extrabold text-white leading-[1.12] tracking-tight mb-4">
+              {slide.titleLine1} <br />
+              <span className="text-white">for </span>
+              <span className="text-[#FF5722]">{slide.titleLine2}</span>
+            </h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg text-[#636E72] max-w-lg leading-relaxed"
-            >
-              Discover thoughtfully designed decor, accessories, and everyday 
-              essentials that transform your space into something extraordinary.
-            </motion.p>
+            {/* Description */}
+            <p className="text-sm sm:text-base text-gray-300 font-normal leading-relaxed max-w-md mb-7">
+              {slide.description}
+            </p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-wrap items-center gap-4"
-            >
+            {/* Action Button */}
+            <div className="mb-8">
               <Link
-                href="/products"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-[#6C5CE7] text-white font-semibold rounded-2xl hover:bg-[#4834D4] hover:shadow-xl hover:shadow-[#6C5CE7]/25 transition-all duration-300 btn-press"
+                href={slide.ctaLink}
+                className="inline-flex items-center gap-2.5 px-7 py-3 rounded-full bg-white text-[#111111] font-bold text-sm hover:bg-gray-100 transition-all shadow-lg shadow-black/25 group"
               >
-                Shop Collection
-                <ArrowRight className="w-5 h-5" />
+                <span>{slide.ctaText}</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link
-                href="/products?category=Decor"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#2D3436] font-semibold rounded-2xl border border-gray-200 hover:border-[#6C5CE7]/30 hover:shadow-lg transition-all duration-300"
-              >
-                Explore Decor
-              </Link>
-            </motion.div>
-
-            {/* Trust Badges */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="flex flex-wrap items-center gap-6 pt-4"
-            >
-              {[
-                { icon: Truck, label: "Free Shipping 1499+" },
-                { icon: ShieldCheck, label: "Secure Payments" },
-                { icon: RotateCcw, label: "Easy Returns" },
-              ].map((badge) => (
-                <div key={badge.label} className="flex items-center gap-2 text-xs text-[#636E72]">
-                  <badge.icon className="w-4 h-4 text-[#6C5CE7]" />
-                  <span className="font-medium">{badge.label}</span>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* Right: Visual Grid */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="relative hidden lg:block"
-          >
-            <div className="grid grid-cols-2 gap-4">
-              {/* Top Left - Large */}
-              <motion.div
-                whileHover={{ y: -8 }}
-                transition={{ duration: 0.4 }}
-                className="col-span-1 row-span-2 rounded-3xl overflow-hidden shadow-2xl shadow-[#6C5CE7]/10 relative group"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=800&auto=format&fit=crop"
-                  alt="Modern decor"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                <div className="absolute bottom-4 left-4">
-                  <span className="text-white text-sm font-semibold">Home Decor</span>
-                </div>
-              </motion.div>
-
-              {/* Top Right */}
-              <motion.div
-                whileHover={{ y: -8 }}
-                transition={{ duration: 0.4 }}
-                className="rounded-3xl overflow-hidden shadow-xl shadow-[#FF6B6B]/10 aspect-square relative group"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=600&auto=format&fit=crop"
-                  alt="Lifestyle products"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                <div className="absolute bottom-4 left-4">
-                  <span className="text-white text-sm font-semibold">Lifestyle</span>
-                </div>
-              </motion.div>
-
-              {/* Bottom Right */}
-              <motion.div
-                whileHover={{ y: -8 }}
-                transition={{ duration: 0.4 }}
-                className="rounded-3xl overflow-hidden shadow-xl shadow-[#00D2D3]/10 aspect-square relative group"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=600&auto=format&fit=crop"
-                  alt="Modern accessories"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                <div className="absolute bottom-4 left-4">
-                  <span className="text-white text-sm font-semibold">Accessories</span>
-                </div>
-              </motion.div>
             </div>
 
-            {/* Floating Stats Card */}
-            <motion.div
-              animate={{ y: [0, -8, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -bottom-6 -left-6 glass-card rounded-2xl p-4 shadow-xl"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6C5CE7] to-[#A29BFE] border-2 border-white flex items-center justify-center">
-                      <Star className="w-3 h-3 text-white" />
-                    </div>
-                  ))}
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-[#2D3436]">12,000+</p>
-                  <p className="text-xs text-[#636E72]">Happy Customers</p>
-                </div>
+            {/* Trust Badges Row */}
+            <div className="flex flex-wrap items-center gap-5 sm:gap-7 text-xs font-medium text-gray-200">
+              <div className="flex items-center gap-2">
+                <Truck className="w-4 h-4 text-white" />
+                <span>Free Shipping</span>
               </div>
-            </motion.div>
-          </motion.div>
+              <div className="flex items-center gap-2">
+                <Banknote className="w-4 h-4 text-white" />
+                <span>COD Available</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <RotateCcw className="w-4 h-4 text-white" />
+                <span>Easy Returns</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Cursive floating badge */}
+          <div className="hidden lg:block absolute right-14 top-14 text-right z-20">
+            <p className="font-serif italic text-amber-100/90 text-xl tracking-wide drop-shadow-md leading-tight">
+              Small <br />
+              Products <br />
+              Big Happiness <Heart className="w-4 h-4 fill-rose-300 text-rose-300 inline ml-1" />
+            </p>
+          </div>
+        </div>
+
+        {/* Carousel Prev/Next Buttons */}
+        <button
+          onClick={() => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1))}
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all z-20 backdrop-blur-sm"
+          aria-label="Previous slide"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+
+        <button
+          onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
+          className="absolute right-3.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all z-20 backdrop-blur-sm"
+          aria-label="Next slide"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+
+        {/* Carousel Pagination Dots */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentSlide(idx)}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                currentSlide === idx ? "w-6 bg-white" : "w-2 bg-white/40"
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
         </div>
       </div>
     </section>
