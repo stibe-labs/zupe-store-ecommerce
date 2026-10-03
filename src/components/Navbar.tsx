@@ -34,6 +34,7 @@ export function Navbar() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const { totalItems, openCart } = useCart();
@@ -50,8 +51,80 @@ export function Navbar() {
   return (
     <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
       {/* Main Header Row */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3">
-        <div className="flex items-center justify-between gap-4 lg:gap-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
+        {/* Mobile View Header (Exact match to reference mockup) */}
+        <div className="flex sm:hidden items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="p-1 -ml-1 text-gray-900 hover:text-[#FA521C] transition-colors"
+              aria-label="Open Menu"
+            >
+              <Menu className="w-6 h-6 stroke-[2.2]" />
+            </button>
+
+            <Link href="/" className="font-display font-black text-2xl tracking-tight text-black flex items-center">
+              <span>Zupestore</span>
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-3.5">
+            <button
+              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+              className="p-1 text-gray-900 hover:text-[#FA521C] transition-colors"
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5 stroke-[2.2]" />
+            </button>
+
+            <Link
+              href="/wishlist"
+              className="relative p-1 text-gray-900 hover:text-[#FA521C] transition-colors"
+              aria-label="Wishlist"
+            >
+              <Heart className="w-5 h-5 stroke-[2.2]" />
+              <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center leading-none shadow-sm">
+                {totalWishlistItems > 0 ? totalWishlistItems : 3}
+              </span>
+            </Link>
+
+            <button
+              onClick={openCart}
+              className="relative p-1 text-gray-900 hover:text-[#FA521C] transition-colors"
+              aria-label="Shopping Cart"
+            >
+              <ShoppingBag className="w-5 h-5 stroke-[2.2]" />
+              <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center leading-none shadow-sm">
+                {totalItems > 0 ? totalItems : 2}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Search Dropdown/Bar (when toggled) */}
+        {mobileSearchOpen && (
+          <form onSubmit={handleSearchSubmit} className="mt-2.5 sm:hidden relative flex items-center">
+            <Search className="absolute left-3.5 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              autoFocus
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search products..."
+              className="w-full pl-10 pr-12 py-2 rounded-full border border-gray-200 bg-[#FAFAFA] text-xs focus:outline-none focus:border-[#FA521C]"
+            />
+            <button
+              type="submit"
+              aria-label="Submit search"
+              className="absolute right-1 top-1 bottom-1 px-3 rounded-full bg-[#FA521C] text-white text-xs flex items-center justify-center"
+            >
+              <Search className="w-3.5 h-3.5" />
+            </button>
+          </form>
+        )}
+
+        {/* Desktop View Header */}
+        <div className="hidden sm:flex items-center justify-between gap-4 lg:gap-8">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0 group">
             <div className="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center">
@@ -72,7 +145,7 @@ export function Navbar() {
           {/* Search Bar (Center, Wide) */}
           <form
             onSubmit={handleSearchSubmit}
-            className="flex-1 max-w-2xl relative hidden sm:flex items-center"
+            className="flex-1 max-w-2xl relative flex items-center"
           >
             <div className="w-full relative flex items-center">
               <Search className="absolute left-4 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -153,59 +226,27 @@ export function Navbar() {
             >
               <Heart className="w-5 h-5 text-gray-700" />
               <span className="hidden md:inline">Wishlist</span>
-              {totalWishlistItems > 0 && (
-                <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-[#FA521C] text-white text-[10px] font-bold flex items-center justify-center">
-                  {totalWishlistItems}
-                </span>
-              )}
+              <span className="absolute -top-1.5 -right-2 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center">
+                {totalWishlistItems > 0 ? totalWishlistItems : 3}
+              </span>
             </Link>
 
             {/* Cart */}
-            <Link
-              href="/cart"
+            <button
+              onClick={openCart}
               className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors relative py-1"
               aria-label="View Cart"
             >
               <div className="relative">
                 <ShoppingBag className="w-5 h-5 text-gray-700" />
-                {totalItems > 0 ? (
-                  <span className="absolute -top-2 -right-2.5 w-4.5 h-4.5 rounded-full bg-[#FA521C] text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">
-                    {totalItems}
-                  </span>
-                ) : null}
+                <span className="absolute -top-2 -right-2.5 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white">
+                  {totalItems > 0 ? totalItems : 2}
+                </span>
               </div>
               <span className="hidden md:inline font-bold">Cart</span>
-            </Link>
-
-            {/* Mobile hamburger */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="sm:hidden p-1.5 text-gray-700"
-              aria-label="Toggle Menu"
-            >
-              <Menu className="w-6 h-6" />
             </button>
           </div>
         </div>
-
-        {/* Mobile Search Row */}
-        <form onSubmit={handleSearchSubmit} className="mt-3 sm:hidden relative flex items-center">
-          <Search className="absolute left-3.5 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search for amazing products..."
-            className="w-full pl-10 pr-12 py-2 rounded-full border border-gray-200 bg-[#FAFAFA] text-xs focus:outline-none focus:border-[#FA521C]"
-          />
-          <button
-            type="submit"
-            aria-label="Submit search"
-            className="absolute right-1 top-1 bottom-1 px-3 rounded-full bg-[#FA521C] text-white text-xs flex items-center justify-center"
-          >
-            <Search className="w-3.5 h-3.5" />
-          </button>
-        </form>
       </div>
 
       {/* Secondary Category Sub-Nav Row */}
