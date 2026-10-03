@@ -8,34 +8,27 @@ export async function middleware(req: NextRequest) {
 
   // -- 1. Protect Admin Portal Pages (/admin, /admin/*) --
   if (pathname.startsWith("/admin")) {
-    // Always allow the Admin Login page
+    // If visitor visits /admin/login directly, redirect to storefront (no separate login page needed)
     if (pathname === "/admin/login") {
-      // If admin is already authenticated, redirect to /admin
-      const adminCookie = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
-      if (adminCookie) {
-        const session = await verifyAdminSessionToken(adminCookie);
-        if (session.valid) {
-          url.pathname = "/admin";
-          return NextResponse.redirect(url);
-        }
-      }
-      return NextResponse.next();
+      url.pathname = "/";
+      url.searchParams.set("auth", "admin");
+      return NextResponse.redirect(url);
     }
 
     // Check for valid Admin Session Token
     const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
     if (!adminToken) {
-      // Redirect unauthorized public visitor to secure Admin Login
-      url.pathname = "/admin/login";
-      url.searchParams.set("from", pathname);
+      // No separate login page: redirect unauthorized visitors to storefront with auth modal trigger
+      url.pathname = "/";
+      url.searchParams.set("auth", "admin");
       return NextResponse.redirect(url);
     }
 
     const session = await verifyAdminSessionToken(adminToken);
     if (!session.valid) {
-      // Token expired or invalid signature
-      url.pathname = "/admin/login";
-      url.searchParams.set("from", pathname);
+      // Token expired or invalid signature: redirect to storefront with modal trigger
+      url.pathname = "/";
+      url.searchParams.set("auth", "admin");
       const res = NextResponse.redirect(url);
       res.cookies.delete(ADMIN_COOKIE_NAME);
       return res;

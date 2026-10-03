@@ -29,6 +29,28 @@ export function findUserByEmail(email: string): UserRecord | null {
   return inMemoryUsers.get(normalized) || null;
 }
 
+export async function findUserByEmailAsync(email: string): Promise<UserRecord | null> {
+  const normalized = email.toLowerCase().trim();
+  const cached = inMemoryUsers.get(normalized);
+  if (cached) return cached;
+
+  try {
+    const rows = await executeD1Query<UserRecord>(
+      `SELECT * FROM users WHERE LOWER(email) = ? LIMIT 1`,
+      [normalized]
+    );
+    if (rows && rows.length > 0) {
+      const user = rows[0];
+      inMemoryUsers.set(normalized, user);
+      return user;
+    }
+  } catch (err) {
+    console.warn("D1 user lookup error:", err);
+  }
+
+  return null;
+}
+
 export function saveUser(user: UserRecord): void {
   const normalized = user.email.toLowerCase().trim();
   inMemoryUsers.set(normalized, user);

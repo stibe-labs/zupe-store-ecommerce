@@ -153,7 +153,7 @@ export default function AdminHeader({
               <button
                 onClick={async () => {
                   await fetch("/api/admin/auth/logout", { method: "POST" });
-                  window.location.href = "/admin/login";
+                  window.location.href = "/";
                 }}
                 className="w-full text-left px-4 py-2 text-rose-600 hover:bg-rose-50 font-semibold border-t border-slate-100"
               >

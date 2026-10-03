@@ -51,6 +51,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     syncUserSession();
 
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("auth") === "admin") {
+        setAuthModalMode("login");
+        setAuthModalNotice("SuperAdmin sign in required to access Admin Dashboard");
+        setIsAuthModalOpen(true);
+      }
+    }
+
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "zp_user_session") syncUserSession();
     };
@@ -77,6 +86,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const closeAuthModal = () => {
     setIsAuthModalOpen(false);
     setAuthModalNotice(null);
+    if (typeof window !== "undefined" && window.location.search.includes("auth=admin")) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("auth");
+      window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+    }
   };
 
   const sendOtp = async (email: string, name?: string) => {
@@ -110,6 +124,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(data.user);
       localStorage.setItem("zp_user_session", JSON.stringify(data.user));
       closeAuthModal();
+
+      // If superadmin, redirect directly to /admin dashboard
+      if (data.redirect || data.user?.role === "admin") {
+        window.location.href = data.redirect || "/admin";
+        return { success: true };
+      }
+
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message || "Network error" };

@@ -167,7 +167,7 @@ export default function AdminSidebar({
             <button
               onClick={async () => {
                 await fetch("/api/admin/auth/logout", { method: "POST" });
-                window.location.href = "/admin/login";
+                window.location.href = "/";
               }}
               title="Lock Admin Session"
               className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors text-xs"
