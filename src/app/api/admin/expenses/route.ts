@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getExpenses, addExpense, ExpenseRecord } from "@/lib/erpStore";
+import { getExpenses, addExpense, deleteExpense, ExpenseRecord } from "@/lib/erpStore";
 
 export async function GET(req: NextRequest) {
   try {
@@ -46,6 +46,25 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true, expense: newExpense });
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "Expense ID is required" },
+        { status: 400 }
+      );
+    }
+
+    await deleteExpense(id);
+    return NextResponse.json({ success: true, message: "Expense deleted successfully" });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

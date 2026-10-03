@@ -38,6 +38,109 @@ function AdminOrdersContent() {
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<ERPOrder | null>(null);
 
+  // Edit order modal form state
+  const [editDeliveryStatus, setEditDeliveryStatus] = useState<string>("Processing");
+  const [editCourier, setEditCourier] = useState<string>("Delhivery");
+  const [editAWB, setEditAWB] = useState<string>("");
+  const [editPaymentStatus, setEditPaymentStatus] = useState<string>("Completed");
+  const [editRemittance, setEditRemittance] = useState<string>("Pending");
+  const [isSavingOrder, setIsSavingOrder] = useState<boolean>(false);
+  const [isCreditingSupplier, setIsCreditingSupplier] = useState<boolean>(false);
+  const [orderModalMsg, setOrderModalMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    if (selectedOrder) {
+      setEditDeliveryStatus(selectedOrder.delivery_status || "Processing");
+      setEditCourier(selectedOrder.courier_partner || "Delhivery");
+      setEditAWB(selectedOrder.shiprocket_awb || "");
+      setEditPaymentStatus(selectedOrder.payment_status || "Pending");
+      setEditRemittance(selectedOrder.remittance_status || "Pending");
+      setOrderModalMsg(null);
+    }
+  }, [selectedOrder]);
+
+  const handleSaveOrderUpdates = async () => {
+    if (!selectedOrder) return;
+    setIsSavingOrder(true);
+    setOrderModalMsg(null);
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id: selectedOrder.id,
+          delivery_status: editDeliveryStatus,
+          courier_partner: editCourier,
+          shiprocket_awb: editAWB,
+          payment_status: editPaymentStatus,
+          remittance_status: editRemittance,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.order) {
+        setSelectedOrder(data.order);
+        setOrders((prev) =>
+          prev.map((o) => (o.id === data.order.id ? data.order : o))
+        );
+        setOrderModalMsg({ text: "Order updated successfully!", type: "success" });
+      } else {
+        setOrderModalMsg({ text: data.error || "Update failed", type: "error" });
+      }
+    } catch (err: any) {
+      setOrderModalMsg({ text: err.message || "Failed to update order", type: "error" });
+    } finally {
+      setIsSavingOrder(false);
+    }
+  };
+
+  const handleCreditToSupplier = async () => {
+    if (!selectedOrder) return;
+    setIsCreditingSupplier(true);
+    setOrderModalMsg(null);
+    try {
+      const creditRes = await fetch("/api/admin/rto-ledger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          supplier_id: selectedOrder.supplier_id || "sup-a",
+          order_id: selectedOrder.shopify_order_id,
+          product_name: selectedOrder.items?.[0]?.product_name || "Returned Product",
+          amount: selectedOrder.product_cost || 400,
+          status: "Credited",
+          notes: `RTO item returned & restocked. Credited ₹${selectedOrder.product_cost} to supplier ledger.`,
+        }),
+      });
+      const creditData = await creditRes.json();
+      if (creditData.success) {
+        const patchRes = await fetch("/api/admin/orders", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            order_id: selectedOrder.id,
+            rto_status: "Supplier Credited",
+          }),
+        });
+        const patchData = await patchRes.json();
+        if (patchData.success && patchData.order) {
+          setSelectedOrder(patchData.order);
+          setOrders((prev) =>
+            prev.map((o) => (o.id === patchData.order.id ? patchData.order : o))
+          );
+        }
+        setOrderModalMsg({
+          text: `Successfully credited ₹${selectedOrder.product_cost} to supplier balance!`,
+          type: "success",
+        });
+      } else {
+        setOrderModalMsg({ text: creditData.error || "Credit failed", type: "error" });
+      }
+    } catch (err: any) {
+      setOrderModalMsg({ text: err.message || "Failed to credit supplier", type: "error" });
+    } finally {
+      setIsCreditingSupplier(false);
+    }
+  };
+
   useEffect(() => {
     const q = searchParams.get("search");
     if (q !== null && q !== undefined) {
@@ -334,85 +437,229 @@ function AdminOrdersContent() {
 
       {/* Order Detail Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-base">
-                Order 360° Breakdown: {selectedOrder.shopify_order_id}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-slate-900 text-base">
+                  Order 360° Management: {selectedOrder.shopify_order_id}
+                </h3>
+                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 font-mono">
+                  {selectedOrder.id}
+                </span>
+              </div>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="mt-4 space-y-3 text-xs sm:text-sm">
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Customer Name:</span>
-                <span className="font-bold text-slate-900">{selectedOrder.customer_name}</span>
+            {orderModalMsg && (
+              <div
+                className={`mt-4 p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                  orderModalMsg.type === "success"
+                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                    : "bg-rose-50 text-rose-800 border border-rose-200"
+                }`}
+              >
+                {orderModalMsg.type === "success" ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                )}
+                <span>{orderModalMsg.text}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Phone:</span>
-                <span className="font-bold text-blue-600">{selectedOrder.customer_phone}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Shipping Address:</span>
-                <span className="font-medium text-slate-700 text-right max-w-xs">{selectedOrder.shipping_address}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Selling Price:</span>
-                <span className="font-bold text-slate-900">₹{selectedOrder.total_amount}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Product Supplier Cost (COGS):</span>
-                <span className="font-semibold text-slate-700">₹{selectedOrder.product_cost}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Forward Shipping (Shiprocket):</span>
-                <span className="font-semibold text-slate-700">₹{selectedOrder.shipping_cost}</span>
-              </div>
-              {selectedOrder.rto_shipping_charge > 0 && (
-                <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Reverse RTO Freight:</span>
-                  <span className="font-semibold text-rose-600">₹{selectedOrder.rto_shipping_charge}</span>
+            )}
+
+            <div className="mt-4 space-y-4 text-xs sm:text-sm">
+              {/* Customer details card */}
+              <div className="bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-slate-500 font-medium">Customer:</span>
+                  <span className="font-bold text-slate-900">{selectedOrder.customer_name}</span>
                 </div>
-              )}
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Attributed Ad Spend (Meta):</span>
-                <span className="font-semibold text-purple-600">₹{selectedOrder.ad_spend_attributed}</span>
+                <div className="flex justify-between">
+                  <span className="text-slate-500 font-medium">Phone:</span>
+                  <a href={`tel:${selectedOrder.customer_phone}`} className="font-bold text-blue-600 hover:underline">
+                    {selectedOrder.customer_phone}
+                  </a>
+                </div>
+                {selectedOrder.guest_email && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-medium">Email:</span>
+                    <span className="text-slate-700">{selectedOrder.guest_email}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-slate-500 font-medium">Address:</span>
+                  <span className="text-slate-700 text-right max-w-xs">{selectedOrder.shipping_address}</span>
+                </div>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Net Profit:</span>
-                <span className={`font-black text-base ${selectedOrder.net_profit >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-                  ₹{selectedOrder.net_profit}
-                </span>
+
+              {/* Editable Operational Controls */}
+              <div className="p-4 rounded-xl border border-blue-100 bg-blue-50/30 space-y-3">
+                <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider text-blue-900">
+                  Update Logistics & Delivery Status
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                      Delivery Status
+                    </label>
+                    <select
+                      value={editDeliveryStatus}
+                      onChange={(e) => setEditDeliveryStatus(e.target.value)}
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    >
+                      <option value="Processing">Processing</option>
+                      <option value="In Transit">In Transit</option>
+                      <option value="Out for Delivery">Out for Delivery</option>
+                      <option value="Delivered">Delivered</option>
+                      <option value="NDR">NDR (Non-Delivery)</option>
+                      <option value="RTO Delivered">RTO Delivered</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                      Courier Partner
+                    </label>
+                    <select
+                      value={editCourier}
+                      onChange={(e) => setEditCourier(e.target.value)}
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    >
+                      <option value="Delhivery">Delhivery</option>
+                      <option value="Bluedart">Bluedart</option>
+                      <option value="Xpressbees">Xpressbees</option>
+                      <option value="Shadowfax">Shadowfax</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                      AWB Tracking Number
+                    </label>
+                    <input
+                      type="text"
+                      value={editAWB}
+                      onChange={(e) => setEditAWB(e.target.value)}
+                      placeholder="e.g. SR-AWB-9871101"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                      COD Remittance Status
+                    </label>
+                    <select
+                      value={editRemittance}
+                      onChange={(e) => setEditRemittance(e.target.value)}
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Remitted">Remitted</option>
+                      <option value="Settled">Settled</option>
+                      <option value="N/A">N/A (Prepaid)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* RTO Supplier Credit Button */}
+                {(editDeliveryStatus === "RTO Delivered" || selectedOrder.status === "Returned") && (
+                  <div className="pt-2 border-t border-blue-100 flex items-center justify-between">
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-600 block">Supplier Credit Memo</span>
+                      <span className="text-xs text-slate-500">
+                        {selectedOrder.rto_status === "Supplier Credited"
+                          ? "✓ Supplier ledger has been credited"
+                          : `Claim ₹${selectedOrder.product_cost} back from supplier`}
+                      </span>
+                    </div>
+
+                    {selectedOrder.rto_status === "Supplier Credited" ? (
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        ✓ Supplier Credited (₹{selectedOrder.product_cost})
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleCreditToSupplier}
+                        disabled={isCreditingSupplier}
+                        className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>{isCreditingSupplier ? "Crediting..." : `Credit ₹${selectedOrder.product_cost} to Supplier`}</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Courier & AWB:</span>
-                <span className="font-mono text-blue-600">{selectedOrder.courier_partner} ({selectedOrder.shiprocket_awb})</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">NDR Status:</span>
-                <span className="font-semibold text-slate-700">{selectedOrder.ndr_status}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">RTO Status:</span>
-                <span className="font-semibold text-slate-700">{selectedOrder.rto_status}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">COD Remittance:</span>
-                <span className="font-bold text-amber-600">{selectedOrder.remittance_status}</span>
+
+              {/* Financial Profitability Breakdown */}
+              <div className="space-y-1.5 pt-1 text-xs">
+                <div className="flex justify-between py-1 border-b border-slate-100">
+                  <span className="text-slate-500">Selling Price (Revenue):</span>
+                  <span className="font-bold text-slate-900">₹{selectedOrder.total_amount}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-100">
+                  <span className="text-slate-500">Product Supplier Cost (COGS):</span>
+                  <span className="font-semibold text-slate-700">₹{selectedOrder.product_cost}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-100">
+                  <span className="text-slate-500">Forward Shipping (Shiprocket):</span>
+                  <span className="font-semibold text-slate-700">₹{selectedOrder.shipping_cost}</span>
+                </div>
+                {selectedOrder.rto_shipping_charge > 0 && (
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-500">Reverse RTO Freight:</span>
+                    <span className="font-semibold text-rose-600">₹{selectedOrder.rto_shipping_charge}</span>
+                  </div>
+                )}
+                <div className="flex justify-between py-1 border-b border-slate-100">
+                  <span className="text-slate-500">Attributed Ad Spend (Meta):</span>
+                  <span className="font-semibold text-purple-600">₹{selectedOrder.ad_spend_attributed}</span>
+                </div>
+                <div className="flex justify-between py-1.5 border-t border-slate-200">
+                  <span className="font-bold text-slate-900">Net Profit:</span>
+                  <span className={`font-black text-base ${selectedOrder.net_profit >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                    ₹{selectedOrder.net_profit}
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="mt-5 flex justify-end">
+            <div className="mt-6 flex items-center justify-between pt-3 border-t border-slate-100">
               <button
+                type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition-all"
               >
                 Close
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSaveOrderUpdates}
+                disabled={isSavingOrder}
+                className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isSavingOrder ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Saving Changes...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Save Order Changes</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

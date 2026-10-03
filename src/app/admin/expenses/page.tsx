@@ -14,6 +14,10 @@ import {
   FileText,
   X,
   TrendingDown,
+  Trash2,
+  Search,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 import { ExpenseRecord } from "@/lib/erpStore";
 
@@ -21,6 +25,7 @@ export default function AdminExpensesPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [totalExpense, setTotalExpense] = useState(0);
   const [categoryTotals, setCategoryTotals] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -34,9 +39,16 @@ export default function AdminExpensesPage() {
   const [vendor, setVendor] = useState("");
   const [referenceNo, setReferenceNo] = useState("");
   const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const fetchExpenses = async () => {
-    setIsRefreshing(true);
+  // Delete Expense Confirmation Modal
+  const [expenseToDelete, setExpenseToDelete] = useState<ExpenseRecord | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const fetchExpenses = async (isManual = false) => {
+    if (isManual) setIsRefreshing(true);
+    else setLoading(true);
+
     try {
       const url = new URL("/api/admin/expenses", window.location.origin);
       if (categoryFilter !== "all") url.searchParams.set("category", categoryFilter);
@@ -64,6 +76,7 @@ export default function AdminExpensesPage() {
     e.preventDefault();
     if (!amount || !date) return;
 
+    setSubmitting(true);
     try {
       const res = await fetch("/api/admin/expenses", {
         method: "POST",
@@ -72,9 +85,9 @@ export default function AdminExpensesPage() {
           category,
           amount: Number(amount),
           date,
-          vendor,
-          reference_no: referenceNo,
-          notes,
+          vendor: vendor.trim(),
+          reference_no: referenceNo.trim(),
+          notes: notes.trim(),
         }),
       });
       const data = await res.json();
@@ -88,12 +101,34 @@ export default function AdminExpensesPage() {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteExpense = async () => {
+    if (!expenseToDelete) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/expenses?id=${encodeURIComponent(expenseToDelete.id)}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        setExpenseToDelete(null);
+        fetchExpenses();
+      }
+    } catch (err) {
+      console.error("Failed to delete expense:", err);
+    } finally {
+      setDeleting(false);
     }
   };
 
   const handleExportCSV = () => {
     const headers = ["Date", "Category", "Amount (INR)", "Vendor", "Reference / Invoice #", "Notes"];
-    const rows = expenses.map((e) => [
+    const rows = filteredExpenses.map((e) => [
       `"${e.date}"`,
       `"${e.category}"`,
       e.amount,
@@ -115,6 +150,17 @@ export default function AdminExpensesPage() {
     document.body.removeChild(link);
   };
 
+  const filteredExpenses = expenses.filter((e) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      (e.vendor && e.vendor.toLowerCase().includes(q)) ||
+      (e.reference_no && e.reference_no.toLowerCase().includes(q)) ||
+      (e.notes && e.notes.toLowerCase().includes(q)) ||
+      e.category.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="min-h-screen bg-[#F4F6FA] text-slate-800 font-sans">
       <AdminSidebar
@@ -125,22 +171,36 @@ export default function AdminExpensesPage() {
       <div className="lg:pl-64 flex flex-col min-h-screen">
         <AdminHeader
           onOpenMobile={() => setMobileSidebarOpen(true)}
-          onRefresh={fetchExpenses}
+          onRefresh={() => fetchExpenses(true)}
           isRefreshing={isRefreshing}
         />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                Operating Expenses & Ad Spend
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                  Operating Expenses & Ad Spend
+                </h1>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                  Total: ₹{totalExpense.toLocaleString("en-IN")}
+                </span>
+              </div>
               <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Manually record Meta Ads, courier fees, subscriptions, and overhead costs with detailed notes.
+                Record and audit Meta Ads, courier fees, subscriptions, and overhead costs with live P&L impact.
               </p>
             </div>
 
             <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => fetchExpenses(true)}
+                disabled={isRefreshing || loading}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm disabled:opacity-60"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-blue-600" : ""}`} />
+                <span>Sync</span>
+              </button>
+
               <button
                 onClick={handleExportCSV}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm"
@@ -174,7 +234,7 @@ export default function AdminExpensesPage() {
                 onClick={() => setCategoryFilter(categoryFilter === item.cat ? "all" : item.cat)}
                 className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                   categoryFilter === item.cat
-                    ? "border-blue-600 bg-white ring-2 ring-blue-500/20"
+                    ? "border-blue-600 bg-white ring-2 ring-blue-500/20 shadow-md"
                     : "border-slate-200/90 bg-white hover:border-slate-300 shadow-sm"
                 }`}
               >
@@ -185,10 +245,30 @@ export default function AdminExpensesPage() {
                   ₹{(categoryTotals[item.cat] || 0).toLocaleString("en-IN")}
                 </p>
                 <span className="text-[10px] text-slate-400 mt-1 block">
-                  {categoryFilter === item.cat ? "Filtering" : "Click to filter"}
+                  {categoryFilter === item.cat ? "Active Filter (click to reset)" : "Click to filter"}
                 </span>
               </div>
             ))}
+          </div>
+
+          {/* Search Filter Bar */}
+          <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3">
+            <Search className="w-4 h-4 text-slate-400 ml-1.5" />
+            <input
+              type="text"
+              placeholder="Search expenses by vendor, invoice reference, notes, or category..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-slate-400 text-slate-800"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="text-xs font-semibold text-slate-400 hover:text-slate-600 px-2 py-1"
+              >
+                Clear
+              </button>
+            )}
           </div>
 
           {/* Expenses Table */}
@@ -203,19 +283,27 @@ export default function AdminExpensesPage() {
                     <th className="py-3.5 px-4">Vendor / Payee</th>
                     <th className="py-3.5 px-4">Invoice / Ref #</th>
                     <th className="py-3.5 px-4">Notes</th>
-                    <th className="py-3.5 px-4 text-right">Logged By</th>
+                    <th className="py-3.5 px-4">Logged By</th>
+                    <th className="py-3.5 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
-                  {expenses.length === 0 ? (
+                  {loading ? (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-slate-400">
-                        No expenses logged for this category.
+                      <td colSpan={8} className="py-12 text-center">
+                        <RefreshCw className="w-6 h-6 text-blue-600 animate-spin mx-auto mb-2" />
+                        <span className="text-slate-500 font-medium">Loading expense records...</span>
+                      </td>
+                    </tr>
+                  ) : filteredExpenses.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-8 text-center text-slate-400">
+                        No expenses match the selected filter.
                       </td>
                     </tr>
                   ) : (
-                    expenses.map((exp) => (
-                      <tr key={exp.id} className="hover:bg-slate-50/70">
+                    filteredExpenses.map((exp) => (
+                      <tr key={exp.id} className="hover:bg-slate-50/70 transition-colors">
                         <td className="py-3.5 px-4 sm:px-6 whitespace-nowrap text-slate-600 font-mono">
                           {exp.date}
                         </td>
@@ -236,8 +324,17 @@ export default function AdminExpensesPage() {
                         <td className="py-3.5 px-4 text-slate-600 max-w-xs truncate">
                           {exp.notes || "-"}
                         </td>
-                        <td className="py-3.5 px-4 text-right whitespace-nowrap text-slate-400">
+                        <td className="py-3.5 px-4 whitespace-nowrap text-slate-400">
                           {exp.created_by || "Admin"}
+                        </td>
+                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                          <button
+                            onClick={() => setExpenseToDelete(exp)}
+                            title="Delete this expense"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -268,7 +365,7 @@ export default function AdminExpensesPage() {
             <form onSubmit={handleAddExpense} className="mt-4 space-y-4 text-xs sm:text-sm">
               <div>
                 <label className="block font-semibold text-slate-700 mb-1">
-                  Category
+                  Category *
                 </label>
                 <select
                   value={category}
@@ -287,7 +384,7 @@ export default function AdminExpensesPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">
-                    Amount (₹)
+                    Amount (₹) *
                   </label>
                   <input
                     type="number"
@@ -301,7 +398,7 @@ export default function AdminExpensesPage() {
 
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">
-                    Expense Date
+                    Expense Date *
                   </label>
                   <input
                     type="date"
@@ -364,12 +461,55 @@ export default function AdminExpensesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold shadow-sm"
+                  disabled={submitting}
+                  className="px-5 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold shadow-sm disabled:opacity-60"
                 >
-                  Save Expense
+                  {submitting ? "Saving..." : "Save Expense"}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Expense Confirmation Modal */}
+      {expenseToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div className="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+              <Trash2 className="w-5 h-5" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <h3 className="font-bold text-slate-900 text-base">
+                Delete Expense Record?
+              </h3>
+              <p className="text-xs text-slate-500">
+                Are you sure you want to delete this expense of{" "}
+                <span className="font-bold text-slate-800">
+                  ₹{expenseToDelete.amount.toLocaleString("en-IN")}
+                </span>{" "}
+                ({expenseToDelete.category})? This will update P&L reports immediately.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setExpenseToDelete(null)}
+                className="flex-1 py-2 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 font-semibold text-xs sm:text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteExpense}
+                disabled={deleting}
+                className="flex-1 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-semibold text-xs sm:text-sm shadow-sm disabled:opacity-60"
+              >
+                {deleting ? "Deleting..." : "Confirm Delete"}
+              </button>
+            </div>
           </div>
         </div>
       )}

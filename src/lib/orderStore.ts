@@ -1,4 +1,5 @@
 import { executeD1Query } from "@/lib/d1";
+import { createERPOrder, updateERPOrder, getERPOrders } from "@/lib/erpStore";
 
 export interface OrderItem {
   product_id: string;
@@ -57,6 +58,33 @@ let inMemoryOrders: OrderRecord[] = [
 export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
   inMemoryOrders = [order, ...inMemoryOrders];
 
+  // 1. Synchronize to ERP Engine immediately so it appears on Admin Dashboard & Orders
+  try {
+    await createERPOrder({
+      id: order.id,
+      customer_name: order.customer_name,
+      guest_email: order.customer_email,
+      customer_phone: order.customer_phone || "+91 98000 00000",
+      total_amount: order.total_amount,
+      shipping_address: `${order.shipping_address}, ${order.city} ${order.postal_code}`,
+      payment_method: order.payment_method === "Credit Card" ? "Prepaid" : order.payment_method,
+      payment_status: order.payment_status === "paid" ? "Completed" : "Pending",
+      status: "Processing",
+      delivery_status: "Processing",
+      items: order.items.map((it) => ({
+        product_name: it.name,
+        quantity: it.quantity,
+        unit_price: it.price,
+        product_id: it.product_id,
+        image: it.image,
+      })),
+      created_at: order.created_at,
+    });
+  } catch (err) {
+    console.warn("Failed to sync storefront order to ERP:", err);
+  }
+
+  // 2. Persist to D1 if available
   try {
     await executeD1Query(
       `INSERT INTO orders (id, user_id, total_amount, discount_amount, payment_method, payment_status, order_status, shipping_address, customer_email, customer_phone, created_at)
@@ -88,11 +116,30 @@ export function getOrders(userEmail?: string): OrderRecord[] {
   return inMemoryOrders.filter((o) => o.customer_email.toLowerCase() === normalized);
 }
 
-export function updateOrderStatus(orderId: string, status: OrderRecord["order_status"]): boolean {
+export async function updateOrderStatus(orderId: string, status: OrderRecord["order_status"]): Promise<boolean> {
   const ord = inMemoryOrders.find((o) => o.id === orderId);
   if (ord) {
     ord.order_status = status;
-    return true;
   }
-  return false;
+
+  // Also sync status update to ERP
+  try {
+    const erpDeliveryStatus =
+      status === "delivered"
+        ? "Delivered"
+        : status === "shipped"
+        ? "In Transit"
+        : status === "cancelled"
+        ? "Cancelled"
+        : "Processing";
+
+    await updateERPOrder(orderId, {
+      delivery_status: erpDeliveryStatus as any,
+      status: status === "delivered" ? "Delivered" : status === "cancelled" ? "Cancelled" : "Processing",
+    });
+  } catch (err) {
+    console.warn("Error updating ERP order status:", err);
+  }
+
+  return !!ord;
 }

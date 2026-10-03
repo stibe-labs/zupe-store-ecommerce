@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Phone,
   X,
+  RefreshCw,
 } from "lucide-react";
 import { ERPOrder } from "@/lib/erpStore";
 
@@ -22,20 +23,76 @@ export default function AdminShipmentsPage() {
   const [search, setSearch] = useState("");
   const [courierFilter, setCourierFilter] = useState("all");
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch("/api/admin/orders");
-        const data = await res.json();
-        if (data.success && Array.isArray(data.orders)) {
-          setOrders(data.orders);
-        }
-      } catch (e) {
-        console.warn(e);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedShipment, setSelectedShipment] = useState<ERPOrder | null>(null);
+  const [editDeliveryStatus, setEditDeliveryStatus] = useState("In Transit");
+  const [editCourier, setEditCourier] = useState("Delhivery");
+  const [editAWB, setEditAWB] = useState("");
+  const [editNDR, setEditNDR] = useState("None");
+  const [isSaving, setIsSaving] = useState(false);
+  const [modalMsg, setModalMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  const fetchOrders = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch("/api/admin/orders");
+      const data = await res.json();
+      if (data.success && Array.isArray(data.orders)) {
+        setOrders(data.orders);
       }
+    } catch (e) {
+      console.warn(e);
+    } finally {
+      setIsRefreshing(false);
     }
-    load();
+  };
+
+  useEffect(() => {
+    fetchOrders();
   }, []);
+
+  useEffect(() => {
+    if (selectedShipment) {
+      setEditDeliveryStatus(selectedShipment.delivery_status || "In Transit");
+      setEditCourier(selectedShipment.courier_partner || "Delhivery");
+      setEditAWB(selectedShipment.shiprocket_awb || "");
+      setEditNDR(selectedShipment.ndr_status || "None");
+      setModalMsg(null);
+    }
+  }, [selectedShipment]);
+
+  const handleSaveShipment = async () => {
+    if (!selectedShipment) return;
+    setIsSaving(true);
+    setModalMsg(null);
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id: selectedShipment.id,
+          delivery_status: editDeliveryStatus,
+          courier_partner: editCourier,
+          shiprocket_awb: editAWB,
+          ndr_status: editNDR,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.order) {
+        setSelectedShipment(data.order);
+        setOrders((prev) =>
+          prev.map((o) => (o.id === data.order.id ? data.order : o))
+        );
+        setModalMsg({ text: "Shipment status updated!", type: "success" });
+      } else {
+        setModalMsg({ text: data.error || "Update failed", type: "error" });
+      }
+    } catch (err: any) {
+      setModalMsg({ text: err.message || "Network error", type: "error" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const filtered = orders.filter((o) => {
     if (courierFilter !== "all" && o.courier_partner !== courierFilter) return false;
@@ -58,7 +115,11 @@ export default function AdminShipmentsPage() {
       />
 
       <div className="lg:pl-64 flex flex-col min-h-screen">
-        <AdminHeader onOpenMobile={() => setMobileSidebarOpen(true)} />
+        <AdminHeader
+          onOpenMobile={() => setMobileSidebarOpen(true)}
+          onRefresh={fetchOrders}
+          isRefreshing={isRefreshing}
+        />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -123,7 +184,8 @@ export default function AdminShipmentsPage() {
                     <th className="py-3.5 px-4">Destination</th>
                     <th className="py-3.5 px-4">Delivery Status</th>
                     <th className="py-3.5 px-4">NDR Reason</th>
-                    <th className="py-3.5 px-4 text-right">Freight Fee</th>
+                    <th className="py-3.5 px-4">Freight Fee</th>
+                    <th className="py-3.5 px-4 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
@@ -171,6 +233,11 @@ export default function AdminShipmentsPage() {
                             <Clock className="w-3.5 h-3.5" /> Out for Delivery
                           </span>
                         )}
+                        {item.delivery_status === "Processing" && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">
+                            <Clock className="w-3.5 h-3.5" /> Processing
+                          </span>
+                        )}
                       </td>
                       <td className="py-3.5 px-4 text-slate-600 text-xs">
                         {item.ndr_status !== "None" ? (
@@ -179,8 +246,17 @@ export default function AdminShipmentsPage() {
                           "-"
                         )}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-bold text-slate-900 whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
                         ₹{item.shipping_cost}
+                      </td>
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedShipment(item)}
+                          className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-all"
+                        >
+                          Update
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -190,6 +266,139 @@ export default function AdminShipmentsPage() {
           </div>
         </main>
       </div>
+
+      {/* Shipment Update Modal */}
+      {selectedShipment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">
+                  Update Shipment: {selectedShipment.shopify_order_id}
+                </h3>
+                <p className="text-xs text-slate-500 font-mono mt-0.5">
+                  AWB: {selectedShipment.shiprocket_awb || "Pending"}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedShipment(null)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {modalMsg && (
+              <div
+                className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                  modalMsg.type === "success"
+                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                    : "bg-rose-50 text-rose-800 border border-rose-200"
+                }`}
+              >
+                {modalMsg.type === "success" ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4 text-rose-600" />
+                )}
+                <span>{modalMsg.text}</span>
+              </div>
+            )}
+
+            <div className="space-y-3 text-xs sm:text-sm">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                  Delivery Status
+                </label>
+                <select
+                  value={editDeliveryStatus}
+                  onChange={(e) => setEditDeliveryStatus(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  <option value="Processing">Processing</option>
+                  <option value="In Transit">In Transit</option>
+                  <option value="Out for Delivery">Out for Delivery</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="NDR">NDR (Non-Delivery)</option>
+                  <option value="RTO Delivered">RTO Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                  Courier Partner
+                </label>
+                <select
+                  value={editCourier}
+                  onChange={(e) => setEditCourier(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  <option value="Delhivery">Delhivery</option>
+                  <option value="Bluedart">Bluedart</option>
+                  <option value="Xpressbees">Xpressbees</option>
+                  <option value="Shadowfax">Shadowfax</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                  AWB Tracking Number
+                </label>
+                <input
+                  type="text"
+                  value={editAWB}
+                  onChange={(e) => setEditAWB(e.target.value)}
+                  placeholder="e.g. SR-AWB-9871101"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                  NDR / Exception Note
+                </label>
+                <input
+                  type="text"
+                  value={editNDR}
+                  onChange={(e) => setEditNDR(e.target.value)}
+                  placeholder="e.g. Customer Unavailable / None"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setSelectedShipment(null)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition-all"
+              >
+                Close
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSaveShipment}
+                disabled={isSaving}
+                className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isSaving ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Save Shipment</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

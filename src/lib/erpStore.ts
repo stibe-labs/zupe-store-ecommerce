@@ -358,6 +358,89 @@ export async function getSupplierById(id: string): Promise<Supplier | null> {
   return inMemorySuppliers.find((s) => s.id === id) || null;
 }
 
+export async function addSupplier(payload: {
+  name: string;
+  code: string;
+  contact_person?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  initial_rto_balance?: number;
+}): Promise<Supplier> {
+  const newSupplier: Supplier = {
+    id: `sup-${Date.now()}`,
+    name: payload.name,
+    code: payload.code.toUpperCase(),
+    contact_person: payload.contact_person || "",
+    email: payload.email || "",
+    phone: payload.phone || "",
+    address: payload.address || "",
+    available_rto_balance: Number(payload.initial_rto_balance) || 0,
+    total_credits_added: Number(payload.initial_rto_balance) || 0,
+    total_credits_used: 0,
+    pending_credits: 0,
+    created_at: new Date().toISOString(),
+  };
+
+  inMemorySuppliers.unshift(newSupplier);
+
+  try {
+    await executeD1Query(
+      `INSERT INTO suppliers (id, name, code, contact_person, email, phone, address, available_rto_balance, total_credits_added, total_credits_used, pending_credits)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        newSupplier.id,
+        newSupplier.name,
+        newSupplier.code,
+        newSupplier.contact_person,
+        newSupplier.email,
+        newSupplier.phone,
+        newSupplier.address,
+        newSupplier.available_rto_balance,
+        newSupplier.total_credits_added,
+        newSupplier.total_credits_used,
+        newSupplier.pending_credits,
+      ]
+    );
+  } catch (err) {
+    console.warn("D1 addSupplier error:", err);
+  }
+
+  return newSupplier;
+}
+
+export async function updateSupplier(
+  id: string,
+  payload: Partial<Supplier>
+): Promise<Supplier | null> {
+  const supMem = inMemorySuppliers.find((s) => s.id === id);
+  if (supMem) {
+    Object.assign(supMem, payload);
+  }
+
+  try {
+    const fields: string[] = [];
+    const values: any[] = [];
+    for (const [k, v] of Object.entries(payload)) {
+      if (v !== undefined && k !== "id") {
+        fields.push(`${k} = ?`);
+        values.push(v);
+      }
+    }
+    if (fields.length > 0) {
+      values.push(id);
+      await executeD1Query(
+        `UPDATE suppliers SET ${fields.join(", ")} WHERE id = ?`,
+        values
+      );
+    }
+  } catch (err) {
+    console.warn("D1 updateSupplier error:", err);
+  }
+
+  return supMem || getSupplierById(id);
+}
+
 // ==========================================
 // 2. RTO REFUND BALANCE & LEDGER SERVICES
 // ==========================================
@@ -650,6 +733,20 @@ export async function addExpense(payload: {
   return newExp;
 }
 
+export async function deleteExpense(id: string): Promise<boolean> {
+  const idx = inMemoryExpenses.findIndex((e) => e.id === id);
+  if (idx !== -1) {
+    inMemoryExpenses.splice(idx, 1);
+  }
+
+  try {
+    await executeD1Query("DELETE FROM expenses WHERE id = ?", [id]);
+  } catch (err) {
+    console.warn("D1 deleteExpense error:", err);
+  }
+  return true;
+}
+
 // ==========================================
 // 4. REMITTANCES & COD SETTLEMENT SERVICES
 // ==========================================
@@ -768,13 +865,247 @@ export async function getERPOrders(filters?: {
   return res;
 }
 
+export async function getOrderById(orderId: string): Promise<ERPOrder | null> {
+  const normId = orderId.trim();
+  const found = inMemoryERPOrders.find(
+    (o) => o.id === normId || o.shopify_order_id.toLowerCase() === normId.toLowerCase()
+  );
+  if (found) return found;
+
+  try {
+    const rows = await executeD1Query<ERPOrder>(
+      "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
+      [normId, normId]
+    );
+    if (rows && rows.length > 0) return rows[0];
+  } catch (err) {
+    console.warn("D1 getOrderById error:", err);
+  }
+  return null;
+}
+
+export async function createERPOrder(orderData: Partial<ERPOrder> & {
+  customer_name: string;
+  total_amount: number;
+}): Promise<ERPOrder> {
+  const count = inMemoryERPOrders.length;
+  const total = Number(orderData.total_amount) || 0;
+  const prodCost = orderData.product_cost !== undefined
+    ? Number(orderData.product_cost)
+    : Math.round(total * 0.42);
+  const shipCost = orderData.shipping_cost !== undefined
+    ? Number(orderData.shipping_cost)
+    : 75;
+  const rtoCharge = Number(orderData.rto_shipping_charge || 0);
+  const adSpend = orderData.ad_spend_attributed !== undefined
+    ? Number(orderData.ad_spend_attributed)
+    : Math.round(total * 0.15);
+  const netProfit = total - prodCost - shipCost - rtoCharge - adSpend;
+  const paymentMethod = orderData.payment_method || "COD";
+
+  const newOrder: ERPOrder = {
+    id: orderData.id || `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    shopify_order_id: orderData.shopify_order_id || `#${1059 + count}`,
+    customer_name: orderData.customer_name,
+    customer_phone: orderData.customer_phone || "+91 98000 00000",
+    guest_email: orderData.guest_email || "",
+    total_amount: total,
+    product_cost: prodCost,
+    shipping_cost: shipCost,
+    rto_shipping_charge: rtoCharge,
+    ad_spend_attributed: adSpend,
+    net_profit: netProfit,
+    status: orderData.status || "Processing",
+    payment_method: paymentMethod,
+    payment_status: orderData.payment_status || (paymentMethod === "COD" ? "Pending" : "Completed"),
+    shipping_address: orderData.shipping_address || "India",
+    shiprocket_awb: orderData.shiprocket_awb || `SR-AWB-${9871109 + count}`,
+    courier_partner: orderData.courier_partner || "Delhivery",
+    delivery_status: (orderData.delivery_status as any) || "Processing",
+    ndr_status: orderData.ndr_status || "None",
+    rto_status: orderData.rto_status || "None",
+    remittance_status: (orderData.remittance_status as any) || (paymentMethod === "COD" ? "Pending" : "Settled"),
+    supplier_id: orderData.supplier_id || "sup-a",
+    created_at: orderData.created_at || new Date().toISOString().replace("T", " ").substring(0, 19),
+    items: orderData.items || [],
+  };
+
+  inMemoryERPOrders.unshift(newOrder);
+
+  try {
+    await executeD1Query(
+      `INSERT OR REPLACE INTO orders (
+        id, shopify_order_id, guest_email, customer_name, customer_phone,
+        total_amount, subtotal, shipping_cost, status, payment_method,
+        payment_status, shipping_address, tracking_number, shiprocket_awb,
+        courier_partner, delivery_status, ndr_status, rto_status, remittance_status,
+        supplier_id, product_cost, rto_shipping_charge, ad_spend_attributed, net_profit, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        newOrder.id,
+        newOrder.shopify_order_id,
+        newOrder.guest_email || null,
+        newOrder.customer_name,
+        newOrder.customer_phone || null,
+        newOrder.total_amount,
+        newOrder.total_amount,
+        newOrder.shipping_cost,
+        newOrder.status,
+        newOrder.payment_method,
+        newOrder.payment_status,
+        newOrder.shipping_address,
+        newOrder.shiprocket_awb,
+        newOrder.shiprocket_awb,
+        newOrder.courier_partner,
+        newOrder.delivery_status,
+        newOrder.ndr_status,
+        newOrder.rto_status,
+        newOrder.remittance_status,
+        newOrder.supplier_id || null,
+        newOrder.product_cost,
+        newOrder.rto_shipping_charge,
+        newOrder.ad_spend_attributed,
+        newOrder.net_profit,
+        newOrder.created_at,
+      ]
+    );
+  } catch (err) {
+    console.warn("D1 createERPOrder warning:", err);
+  }
+
+  return newOrder;
+}
+
+export async function updateERPOrder(
+  orderId: string,
+  updates: Partial<ERPOrder>
+): Promise<ERPOrder | null> {
+  const normId = orderId.trim();
+  const index = inMemoryERPOrders.findIndex(
+    (o) => o.id === normId || o.shopify_order_id.toLowerCase() === normId.toLowerCase()
+  );
+
+  let targetOrder: ERPOrder | null = null;
+  if (index >= 0) {
+    const existing = inMemoryERPOrders[index];
+    const merged: ERPOrder = {
+      ...existing,
+      ...updates,
+      // If delivery_status set to Delivered, keep status in sync
+      status: updates.status || (updates.delivery_status === "Delivered" ? "Delivered" : updates.delivery_status === "RTO Delivered" ? "Returned" : existing.status),
+    };
+
+    // Recalculate profit if costs changed
+    const total = Number(merged.total_amount) || 0;
+    const prodCost = Number(merged.product_cost) || 0;
+    const shipCost = Number(merged.shipping_cost) || 0;
+    const rtoCharge = Number(merged.rto_shipping_charge) || 0;
+    const adSpend = Number(merged.ad_spend_attributed) || 0;
+    merged.net_profit = total - prodCost - shipCost - rtoCharge - adSpend;
+
+    inMemoryERPOrders[index] = merged;
+    targetOrder = merged;
+  }
+
+  try {
+    const fieldsToUpdate: string[] = [];
+    const values: any[] = [];
+
+    if (updates.delivery_status !== undefined) {
+      fieldsToUpdate.push("delivery_status = ?");
+      values.push(updates.delivery_status);
+    }
+    if (updates.status !== undefined) {
+      fieldsToUpdate.push("status = ?");
+      values.push(updates.status);
+    }
+    if (updates.courier_partner !== undefined) {
+      fieldsToUpdate.push("courier_partner = ?");
+      values.push(updates.courier_partner);
+    }
+    if (updates.shiprocket_awb !== undefined) {
+      fieldsToUpdate.push("shiprocket_awb = ?");
+      values.push(updates.shiprocket_awb);
+      fieldsToUpdate.push("tracking_number = ?");
+      values.push(updates.shiprocket_awb);
+    }
+    if (updates.payment_status !== undefined) {
+      fieldsToUpdate.push("payment_status = ?");
+      values.push(updates.payment_status);
+    }
+    if (updates.remittance_status !== undefined) {
+      fieldsToUpdate.push("remittance_status = ?");
+      values.push(updates.remittance_status);
+    }
+    if (updates.ndr_status !== undefined) {
+      fieldsToUpdate.push("ndr_status = ?");
+      values.push(updates.ndr_status);
+    }
+    if (updates.rto_status !== undefined) {
+      fieldsToUpdate.push("rto_status = ?");
+      values.push(updates.rto_status);
+    }
+    if (updates.supplier_id !== undefined) {
+      fieldsToUpdate.push("supplier_id = ?");
+      values.push(updates.supplier_id);
+    }
+
+    if (fieldsToUpdate.length > 0) {
+      values.push(normId, normId);
+      await executeD1Query(
+        `UPDATE orders SET ${fieldsToUpdate.join(", ")} WHERE id = ? OR shopify_order_id = ?`,
+        values
+      );
+    }
+  } catch (err) {
+    console.warn("D1 updateERPOrder error:", err);
+  }
+
+  return targetOrder;
+}
+
 // ==========================================
 // 6. EXECUTIVE DASHBOARD KPI ENGINE
 // ==========================================
-export async function getDashboardKPIs() {
-  const orders = await getERPOrders();
-  const expenses = await getExpenses();
+export async function getDashboardKPIs(timeframe?: string) {
+  let orders = await getERPOrders();
+  let expenses = await getExpenses();
   const suppliers = await getSuppliers();
+
+  if (timeframe && timeframe !== "all") {
+    const now = Date.now();
+    const oneDay = 24 * 60 * 60 * 1000;
+
+    let cutoffTime = 0;
+    if (timeframe === "today") {
+      cutoffTime = now - oneDay;
+    } else if (timeframe === "weekly") {
+      cutoffTime = now - 7 * oneDay;
+    } else if (timeframe === "monthly") {
+      cutoffTime = now - 30 * oneDay;
+    } else if (timeframe === "yearly") {
+      cutoffTime = now - 365 * oneDay;
+    }
+
+    if (cutoffTime > 0) {
+      const isAfterCutoff = (dateStr?: string) => {
+        if (!dateStr) return true;
+        const t = new Date(dateStr.replace(" ", "T")).getTime();
+        return isNaN(t) || t >= cutoffTime;
+      };
+
+      const filteredOrders = orders.filter((o) => isAfterCutoff(o.created_at));
+      // Only apply timeframe if there are matches, otherwise fall back to all to prevent blank stats
+      if (filteredOrders.length > 0) {
+        orders = filteredOrders;
+      }
+
+      const filteredExpenses = expenses.filter((e) => isAfterCutoff(e.date));
+      if (filteredExpenses.length > 0) {
+        expenses = filteredExpenses;
+      }
+    }
+  }
 
   const totalOrders = orders.length;
   const confirmedOrders = orders.filter((o) => o.status !== "Cancelled" && o.status !== "Returned").length;
@@ -824,3 +1155,141 @@ export async function getDashboardKPIs() {
     totalRTOBalance,
   };
 }
+
+// ==========================================
+// 6. INTEGRATIONS & ERP SETTINGS CONFIG
+// ==========================================
+export interface ERPIntegrationsSettings {
+  storeProfile: {
+    storeName: string;
+    supportEmail: string;
+    supportPhone: string;
+    currency: string;
+    freeShippingThreshold: number;
+    standardShippingFee: number;
+  };
+  shopify: {
+    domain: string;
+    token: string;
+    webhookSecret: string;
+    isActive: boolean;
+    lastSyncedAt?: string;
+  };
+  shiprocket: {
+    email: string;
+    token: string;
+    autoSync: boolean;
+    preferredCourier: string;
+    isActive: boolean;
+    lastSyncedAt?: string;
+  };
+  meta: {
+    accountId: string;
+    token: string;
+    pixelId?: string;
+    isActive: boolean;
+    lastSyncedAt?: string;
+  };
+}
+
+let inMemorySettings: ERPIntegrationsSettings = {
+  storeProfile: {
+    storeName: "Zupe Store India",
+    supportEmail: "support@zupestore.in",
+    supportPhone: "+91 98765 43210",
+    currency: "INR (₹)",
+    freeShippingThreshold: 499,
+    standardShippingFee: 49,
+  },
+  shopify: {
+    domain: "zupe-store.myshopify.com",
+    token: "shpat_live_98a76d54f32e10cba",
+    webhookSecret: "whsec_9871122334455",
+    isActive: true,
+    lastSyncedAt: new Date().toISOString(),
+  },
+  shiprocket: {
+    email: "logistics@zupestore.com",
+    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    autoSync: true,
+    preferredCourier: "Delhivery Priority",
+    isActive: true,
+    lastSyncedAt: new Date().toISOString(),
+  },
+  meta: {
+    accountId: "act_109283746552",
+    token: "EAAK10928374...",
+    pixelId: "982736451029384",
+    isActive: true,
+    lastSyncedAt: new Date().toISOString(),
+  },
+};
+
+export async function getSettings(): Promise<ERPIntegrationsSettings> {
+  try {
+    const rows = await executeD1Query<{ provider: string; config_data: string; is_active: number; last_synced_at?: string }>(
+      "SELECT * FROM integrations_config"
+    );
+    if (rows && rows.length > 0) {
+      for (const row of rows) {
+        try {
+          const parsed = JSON.parse(row.config_data);
+          if (row.provider === "shopify") {
+            inMemorySettings.shopify = { ...inMemorySettings.shopify, ...parsed, isActive: Boolean(row.is_active) };
+          } else if (row.provider === "shiprocket") {
+            inMemorySettings.shiprocket = { ...inMemorySettings.shiprocket, ...parsed, isActive: Boolean(row.is_active) };
+          } else if (row.provider === "meta") {
+            inMemorySettings.meta = { ...inMemorySettings.meta, ...parsed, isActive: Boolean(row.is_active) };
+          } else if (row.provider === "storeProfile") {
+            inMemorySettings.storeProfile = { ...inMemorySettings.storeProfile, ...parsed };
+          }
+        } catch (e) {
+          // ignore parsing error
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("D1 getSettings fallback:", err);
+  }
+  return inMemorySettings;
+}
+
+export async function saveSettings(updates: Partial<ERPIntegrationsSettings>): Promise<ERPIntegrationsSettings> {
+  if (updates.storeProfile) {
+    inMemorySettings.storeProfile = { ...inMemorySettings.storeProfile, ...updates.storeProfile };
+  }
+  if (updates.shopify) {
+    inMemorySettings.shopify = { ...inMemorySettings.shopify, ...updates.shopify };
+  }
+  if (updates.shiprocket) {
+    inMemorySettings.shiprocket = { ...inMemorySettings.shiprocket, ...updates.shiprocket };
+  }
+  if (updates.meta) {
+    inMemorySettings.meta = { ...inMemorySettings.meta, ...updates.meta };
+  }
+
+  // Persist to D1
+  try {
+    const providers: (keyof ERPIntegrationsSettings)[] = ["storeProfile", "shopify", "shiprocket", "meta"];
+    for (const p of providers) {
+      if (updates[p]) {
+        const configData = JSON.stringify(inMemorySettings[p]);
+        const isActive = (inMemorySettings[p] as any).isActive !== false ? 1 : 0;
+        await executeD1Query(
+          `INSERT INTO integrations_config (provider, config_data, is_active, last_synced_at, updated_at)
+           VALUES (?, ?, ?, datetime('now'), datetime('now'))
+           ON CONFLICT(provider) DO UPDATE SET 
+             config_data = excluded.config_data,
+             is_active = excluded.is_active,
+             updated_at = excluded.updated_at`,
+          [p, configData, isActive]
+        );
+      }
+    }
+  } catch (err) {
+    console.warn("D1 saveSettings error:", err);
+  }
+
+  return inMemorySettings;
+}
+

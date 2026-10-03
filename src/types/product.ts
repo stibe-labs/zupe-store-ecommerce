@@ -9,6 +9,7 @@ export interface Product {
   price: number;
   mrp: number;
   offer_price: number;
+  cost_price?: number;
   stock_count: number;
   volume?: string;
   poster_image: string;

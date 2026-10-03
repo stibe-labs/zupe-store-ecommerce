@@ -59,7 +59,7 @@ export default function AdminDashboardPage() {
     setIsRefreshing(true);
     try {
       const [statsRes, ordersRes] = await Promise.all([
-        fetch("/api/admin/dashboard/stats"),
+        fetch(`/api/admin/dashboard/stats?timeframe=${timeframe}`),
         fetch("/api/admin/orders"),
       ]);
       const statsData = await statsRes.json();
