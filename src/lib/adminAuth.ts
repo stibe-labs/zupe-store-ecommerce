@@ -7,7 +7,6 @@ export const ADMIN_COOKIE_NAME = "zupe_admin_token";
 // Configured credentials
 const DEFAULT_ADMIN_EMAIL = "admin@zupestore.com";
 const DEFAULT_ADMIN_PASSWORD = "ZupeAdmin@2026";
-const OWNER_EMAIL = "muhammedijasp0@gmail.com";
 
 export async function verifyAdminCredentials(
   email?: string,
@@ -19,11 +18,10 @@ export async function verifyAdminCredentials(
   const configuredEmail = (process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL).toLowerCase().trim();
   const configuredPassword = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
 
-  // Check against configured admin or owner email
+  // Strict check: Only the dedicated admin email is permitted
   const isEmailMatch =
     normEmail === configuredEmail ||
-    normEmail === DEFAULT_ADMIN_EMAIL.toLowerCase() ||
-    normEmail === OWNER_EMAIL.toLowerCase();
+    normEmail === DEFAULT_ADMIN_EMAIL.toLowerCase();
 
   const isPasswordMatch = password === configuredPassword;
 
@@ -31,7 +29,7 @@ export async function verifyAdminCredentials(
     return {
       valid: true,
       email: normEmail,
-      name: normEmail === OWNER_EMAIL ? "Ijas (Admin)" : "Zupe Admin",
+      name: "Zupe Admin",
     };
   }
 
