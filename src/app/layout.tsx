@@ -13,8 +13,12 @@ export const metadata: Metadata = {
   description:
     "Discover beautifully curated decor, modern accessories, and everyday essentials designed to elevate your space and simplify your life.",
   icons: {
-    icon: [{ url: "/zupe-logo.png" }],
-    apple: [{ url: "/zupe-logo.png" }],
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/zupe-store-with-bg-logo.jpeg", type: "image/jpeg" },
+    ],
+    shortcut: ["/zupe-store-with-bg-logo.jpeg"],
+    apple: [{ url: "/zupe-store-with-bg-logo.jpeg" }],
   },
 };
 

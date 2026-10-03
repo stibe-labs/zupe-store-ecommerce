@@ -63,8 +63,20 @@ export function Navbar() {
               <Menu className="w-6 h-6 stroke-[2.2]" />
             </button>
 
-            <Link href="/" className="font-display font-black text-2xl tracking-tight text-black flex items-center">
-              <span>Zupestore</span>
+            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+              <div className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center">
+                <Image
+                  src="/zupe-logo.png"
+                  alt="Zupe Store"
+                  width={36}
+                  height={36}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <span className="font-display font-black text-2xl tracking-tight text-black flex items-center">
+                Zupe<span className="text-[#FA521C]">store</span>
+              </span>
             </Link>
           </div>
 
@@ -126,18 +138,18 @@ export function Navbar() {
         {/* Desktop View Header */}
         <div className="hidden sm:flex items-center justify-between gap-4 lg:gap-8">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0 group">
-            <div className="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center">
+          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
+            <div className="relative w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center">
               <Image
                 src="/zupe-logo.png"
                 alt="Zupe Store"
-                width={40}
-                height={40}
-                className="object-contain"
+                width={48}
+                height={48}
+                className="object-contain transition-transform group-hover:scale-105"
                 priority
               />
             </div>
-            <span className="font-display font-black text-2xl tracking-tight text-[#111111]">
+            <span className="font-display font-black text-2xl sm:text-[27px] tracking-tight text-[#111111]">
               Zupe<span className="text-[#FA521C]">store</span>
             </span>
           </Link>
@@ -295,9 +307,20 @@ export function Navbar() {
           <div className="relative w-4/5 max-w-xs bg-white h-full z-10 p-5 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
-                <span className="font-display font-black text-xl text-gray-900">
-                  Zupe<span className="text-[#FA521C]">store</span>
-                </span>
+                <div className="flex items-center gap-2">
+                  <div className="relative w-8 h-8 flex items-center justify-center">
+                    <Image
+                      src="/zupe-logo.png"
+                      alt="Zupe Store"
+                      width={32}
+                      height={32}
+                      className="object-contain"
+                    />
+                  </div>
+                  <span className="font-display font-black text-xl text-gray-900">
+                    Zupe<span className="text-[#FA521C]">store</span>
+                  </span>
+                </div>
                 <button onClick={() => setMobileMenuOpen(false)}>
                   <X className="w-5 h-5 text-gray-500" />
                 </button>
