@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Calendar,
@@ -10,6 +11,7 @@ import {
   Menu,
   ExternalLink,
   RefreshCw,
+  X,
 } from "lucide-react";
 
 interface AdminHeaderProps {
@@ -23,9 +25,17 @@ export default function AdminHeader({
   onRefresh,
   isRefreshing = false,
 }: AdminHeaderProps) {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedRange, setSelectedRange] = useState("01 Oct 2026 - 31 Oct 2026");
   const [showRangeDropdown, setShowRangeDropdown] = useState(false);
   const [showAdminUserDropdown, setShowAdminUserDropdown] = useState(false);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    router.push(`/admin/orders?search=${encodeURIComponent(searchQuery.trim())}`);
+  };
 
   const dateOptions = [
     "Today",
@@ -49,14 +59,26 @@ export default function AdminHeader({
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="relative w-full max-w-md hidden sm:block">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <form onSubmit={handleSearch} className="relative w-full max-w-md hidden sm:block">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search orders, products, suppliers..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search orders, customers, AWB..."
+            className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
           />
-        </div>
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full hover:bg-slate-200/60"
+              aria-label="Clear admin search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </form>
       </div>
 
       {/* Right Controls: Date Picker, Notifications, User Profile */}

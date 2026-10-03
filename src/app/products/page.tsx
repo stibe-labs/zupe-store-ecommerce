@@ -15,6 +15,7 @@ import {
   Check,
   ChevronRight,
   Sparkles,
+  X,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -26,10 +27,11 @@ import { useWishlist } from "@/context/WishlistContext";
 function ProductsContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("category") || "All";
+  const initialSearch = searchParams.get("search") || searchParams.get("q") || "";
 
   const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "rating">("featured");
   const [maxPrice, setMaxPrice] = useState<number>(6000);
   const [onlyInStock, setOnlyInStock] = useState(false);
@@ -59,24 +61,32 @@ function ProductsContent() {
     if (cat) {
       setSelectedCategory(cat);
     }
+    const q = searchParams.get("search") || searchParams.get("q");
+    if (q !== null && q !== undefined) {
+      setSearchQuery(q);
+      // If user came via search param with no explicit category, search across all categories
+      if (!cat) {
+        setSelectedCategory("All");
+      }
+    }
   }, [searchParams]);
 
   // Filtered and sorted products
   const filteredProducts = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    const queryTokens = query ? query.split(/\s+/).filter(Boolean) : [];
+
     return products
       .filter((product) => {
         // Category filter
         if (selectedCategory !== "All" && product.category.toLowerCase() !== selectedCategory.toLowerCase()) {
           return false;
         }
-        // Search query
-        if (searchQuery.trim()) {
-          const q = searchQuery.toLowerCase();
-          const matchName = product.name.toLowerCase().includes(q);
-          const matchDesc = product.description.toLowerCase().includes(q);
-          const matchTag = product.tagline.toLowerCase().includes(q);
-          const matchCat = product.category.toLowerCase().includes(q);
-          if (!matchName && !matchDesc && !matchTag && !matchCat) return false;
+        // Multi-keyword token search matching across name, tagline, description, category, and badge
+        if (queryTokens.length > 0) {
+          const searchable = `${product.name} ${product.tagline} ${product.description} ${product.category} ${product.badge || ""}`.toLowerCase();
+          const matchesAllTokens = queryTokens.every((token) => searchable.includes(token));
+          if (!matchesAllTokens) return false;
         }
         // Price filter
         if (product.price > maxPrice) return false;
@@ -142,14 +152,24 @@ function ProductsContent() {
 
             {/* Search Input in Header */}
             <div className="relative w-full md:w-80">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30 focus:border-[#FA521C] shadow-sm"
+                className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-white border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30 focus:border-[#FA521C] shadow-sm transition-all"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-0.5 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -261,6 +281,36 @@ function ProductsContent() {
 
           {/* Product Grid */}
           <main className="lg:col-span-3">
+            {searchQuery.trim() && (
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-orange-50/70 border border-[#FA521C]/25 text-sm">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Search className="w-4 h-4 text-[#FA521C]" />
+                  <span className="text-[#636E72]">Search results for:</span>
+                  <span className="font-bold text-[#FA521C]">&quot;{searchQuery}&quot;</span>
+                  <span className="px-2 py-0.5 rounded-full bg-[#FA521C]/10 text-[#FA521C] text-xs font-semibold">
+                    {filteredProducts.length} {filteredProducts.length === 1 ? "item" : "items"} found
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  {selectedCategory !== "All" && (
+                    <button
+                      onClick={() => setSelectedCategory("All")}
+                      className="text-xs font-semibold text-gray-600 hover:text-gray-900 underline"
+                    >
+                      Search in all categories
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#FA521C] hover:text-[#d43f10] bg-white px-3 py-1.5 rounded-xl border border-[#FA521C]/30 shadow-sm transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Clear search</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
             {filteredProducts.length === 0 ? (
               <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm">
                 <div className="w-16 h-16 mx-auto rounded-full bg-gray-100 flex items-center justify-center mb-4">
