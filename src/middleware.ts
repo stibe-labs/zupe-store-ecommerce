@@ -8,31 +8,24 @@ export async function middleware(req: NextRequest) {
 
   // -- 1. Protect Admin Portal Pages (/admin, /admin/*) --
   if (pathname.startsWith("/admin")) {
-    // If visitor visits /admin/login directly, allow access to dedicated login screen
     if (pathname === "/admin/login") {
-      const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
-      if (adminToken) {
-        const session = await verifyAdminSessionToken(adminToken);
-        if (session.valid) {
-          url.pathname = "/admin";
-          return NextResponse.redirect(url);
-        }
-      }
-      return NextResponse.next();
+      url.pathname = "/";
+      url.searchParams.set("auth", "admin");
+      return NextResponse.redirect(url);
     }
 
     // Check for valid Admin Session Token
     const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
     if (!adminToken) {
-      // Redirect unauthorized visitors to dedicated admin login page
-      url.pathname = "/admin/login";
+      url.pathname = "/";
+      url.searchParams.set("auth", "admin");
       return NextResponse.redirect(url);
     }
 
     const session = await verifyAdminSessionToken(adminToken);
     if (!session.valid) {
-      // Token expired or invalid signature: redirect to dedicated admin login page
-      url.pathname = "/admin/login";
+      url.pathname = "/";
+      url.searchParams.set("auth", "admin");
       const res = NextResponse.redirect(url);
       res.cookies.delete(ADMIN_COOKIE_NAME);
       return res;

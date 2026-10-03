@@ -29,6 +29,11 @@ export function AuthModal() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  const emailInputRef = React.useRef<HTMLInputElement>(null);
+  const passwordInputRef = React.useRef<HTMLInputElement>(null);
+  const [emailReadOnly, setEmailReadOnly] = useState(true);
+  const [passwordReadOnly, setPasswordReadOnly] = useState(true);
+
   React.useEffect(() => {
     setMode(authModalMode);
     setEmail("");
@@ -38,6 +43,18 @@ export function AuthModal() {
     setOtpSent(false);
     setError(null);
     setSuccess(null);
+    setEmailReadOnly(true);
+    setPasswordReadOnly(true);
+
+    if (emailInputRef.current) emailInputRef.current.value = "";
+    if (passwordInputRef.current) passwordInputRef.current.value = "";
+
+    const timer = setTimeout(() => {
+      if (emailInputRef.current) emailInputRef.current.value = "";
+      if (passwordInputRef.current) passwordInputRef.current.value = "";
+    }, 60);
+
+    return () => clearTimeout(timer);
   }, [authModalMode, isAuthModalOpen]);
 
   if (!isAuthModalOpen) return null;
@@ -202,6 +219,24 @@ export function AuthModal() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+          {/* Decoy inputs to trap browser password manager autofill */}
+          <div
+            style={{
+              position: "absolute",
+              top: "-9999px",
+              left: "-9999px",
+              opacity: 0,
+              pointerEvents: "none",
+              height: 0,
+              width: 0,
+              overflow: "hidden",
+            }}
+            aria-hidden="true"
+          >
+            <input type="text" name="fake_username_remember" tabIndex={-1} autoComplete="username" />
+            <input type="password" name="fake_password_remember" tabIndex={-1} autoComplete="current-password" />
+          </div>
+
           {mode === "signup" && (
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
@@ -218,7 +253,7 @@ export function AuthModal() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. John Doe"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C]"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C] bg-white"
                 />
               </div>
             </div>
@@ -231,16 +266,20 @@ export function AuthModal() {
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
+                ref={emailInputRef}
                 type="email"
                 required
-                name="customer_store_email"
-                id="customer-store-email"
+                name="user_email_field"
+                id="user-email-field"
+                readOnly={emailReadOnly}
+                onFocus={() => setEmailReadOnly(false)}
+                onClick={() => setEmailReadOnly(false)}
                 autoComplete="off"
                 data-lpignore="true"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C]"
+                placeholder="alex@example.com"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C] bg-white"
               />
             </div>
           </div>
@@ -252,16 +291,20 @@ export function AuthModal() {
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
+                ref={passwordInputRef}
                 type="password"
                 required
-                name="customer_store_password"
-                id="customer-store-password"
+                name="user_secret_code"
+                id="user-secret-code"
+                readOnly={passwordReadOnly}
+                onFocus={() => setPasswordReadOnly(false)}
+                onClick={() => setPasswordReadOnly(false)}
                 autoComplete="new-password"
                 data-lpignore="true"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C]"
+                placeholder="••••••••"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C] bg-white"
               />
             </div>
           </div>
