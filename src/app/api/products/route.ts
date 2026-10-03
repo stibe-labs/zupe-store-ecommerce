@@ -126,10 +126,40 @@ export async function POST(req: NextRequest) {
       in_stock,
     } = body;
 
-    // Find existing product in cache or by ID
-    const existingProd = id
-      ? serverProductsCache.find((p) => p.id === id) || DEFAULT_PRODUCTS.find((p) => p.id === id)
-      : null;
+    // Find existing product in D1 first, then cache or defaults
+    let existingProd: any = null;
+    if (id) {
+      try {
+        const d1Rows = await executeD1Query<Product>("SELECT * FROM products WHERE id = ? LIMIT 1;", [id]);
+        if (d1Rows && d1Rows.length > 0) {
+          const row: any = d1Rows[0];
+          existingProd = {
+            ...row,
+            images:
+              typeof row.images === "string"
+                ? (() => {
+                    try {
+                      return JSON.parse(row.images);
+                    } catch {
+                      return [];
+                    }
+                  })()
+                : row.images || [],
+            in_stock: Number(row.in_stock),
+            stock_count: Number(row.stock_count),
+            price: Number(row.price),
+            offer_price: Number(row.offer_price ?? row.price),
+            mrp: Number(row.mrp ?? row.price),
+            cost_price: Number(row.cost_price ?? Math.round(Number(row.price) * 0.42)),
+          };
+        }
+      } catch (e) {
+        // fallback
+      }
+      if (!existingProd) {
+        existingProd = serverProductsCache.find((p) => p.id === id) || DEFAULT_PRODUCTS.find((p) => p.id === id) || null;
+      }
+    }
 
     const effectivePrice =
       price !== undefined
@@ -179,7 +209,16 @@ export async function POST(req: NextRequest) {
         poster_image ||
         existingProd?.poster_image ||
         "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop",
-      images: Array.isArray(images) && images.length > 0 ? images : existingProd?.images || [],
+      images:
+        images !== undefined
+          ? Array.isArray(images)
+            ? images
+            : [images]
+          : existingProd?.images && existingProd.images.length > 0
+          ? existingProd.images
+          : existingProd?.poster_image
+          ? [existingProd.poster_image]
+          : [],
       color: color !== undefined ? color : existingProd?.color || "",
       material: material !== undefined ? material : existingProd?.material || "",
       badge: badge !== undefined ? badge : existingProd?.badge || "",
