@@ -1,20 +1,86 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/adminAuth";
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const host = req.headers.get("host") || "";
   const url = req.nextUrl.clone();
+  const { pathname } = url;
 
-  // -- Admin subdomain routing --
+  // -- 1. Protect Admin Portal Pages (/admin, /admin/*) --
+  if (pathname.startsWith("/admin")) {
+    // Always allow the Admin Login page
+    if (pathname === "/admin/login") {
+      // If admin is already authenticated, redirect to /admin
+      const adminCookie = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+      if (adminCookie) {
+        const session = await verifyAdminSessionToken(adminCookie);
+        if (session.valid) {
+          url.pathname = "/admin";
+          return NextResponse.redirect(url);
+        }
+      }
+      return NextResponse.next();
+    }
+
+    // Check for valid Admin Session Token
+    const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+    if (!adminToken) {
+      // Redirect unauthorized public visitor to secure Admin Login
+      url.pathname = "/admin/login";
+      url.searchParams.set("from", pathname);
+      return NextResponse.redirect(url);
+    }
+
+    const session = await verifyAdminSessionToken(adminToken);
+    if (!session.valid) {
+      // Token expired or invalid signature
+      url.pathname = "/admin/login";
+      url.searchParams.set("from", pathname);
+      const res = NextResponse.redirect(url);
+      res.cookies.delete(ADMIN_COOKIE_NAME);
+      return res;
+    }
+
+    return NextResponse.next();
+  }
+
+  // -- 2. Protect Admin Internal APIs (/api/admin/*) --
+  if (pathname.startsWith("/api/admin")) {
+    // Exempt admin auth and external webhook sync routes
+    const isExempt =
+      pathname.startsWith("/api/admin/auth") ||
+      pathname.startsWith("/api/admin/sync");
+
+    if (!isExempt) {
+      const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+      if (!adminToken) {
+        return NextResponse.json(
+          { success: false, error: "Unauthorized: Admin authentication required" },
+          { status: 401 }
+        );
+      }
+
+      const session = await verifyAdminSessionToken(adminToken);
+      if (!session.valid) {
+        return NextResponse.json(
+          { success: false, error: "Invalid or expired admin session token" },
+          { status: 401 }
+        );
+      }
+    }
+
+    return NextResponse.next();
+  }
+
+  // -- 3. Admin Subdomain Routing (e.g. admin.zupestore.com) --
   const isAdminSubdomain =
-    host.startsWith("admin.") ||
-    host.startsWith("admin.localhost");
+    host.startsWith("admin.") || host.startsWith("admin.localhost");
 
   if (isAdminSubdomain) {
-    if (url.pathname === "/" || url.pathname === "") {
+    if (pathname === "/" || pathname === "") {
       url.pathname = "/admin";
       return NextResponse.rewrite(url);
     }
-    return NextResponse.next();
   }
 
   return NextResponse.next();

@@ -153,14 +153,27 @@ export default function AdminSidebar({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 px-1">
-            <div className="w-6 h-6 rounded bg-slate-800 flex items-center justify-center text-slate-300 text-xs">
-              🛍️
+          <div className="flex items-center justify-between px-1 pt-1">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded bg-slate-800 flex items-center justify-center text-slate-300 text-xs">
+                🛍️
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-200">Zupestore</p>
+                <p className="text-[10px] text-slate-500">Grow. Sell. Everywhere.</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-200">Zupestore</p>
-              <p className="text-[10px] text-slate-500">Grow. Sell. Everywhere.</p>
-            </div>
+
+            <button
+              onClick={async () => {
+                await fetch("/api/admin/auth/logout", { method: "POST" });
+                window.location.href = "/admin/login";
+              }}
+              title="Lock Admin Session"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors text-xs"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
       </aside>

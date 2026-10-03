@@ -133,13 +133,6 @@ export function Navbar() {
                   >
                     Wishlist
                   </Link>
-                  <Link
-                    href="/admin"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50"
-                  >
-                    Admin Portal
-                  </Link>
                   <button
                     onClick={() => {
                       logout();

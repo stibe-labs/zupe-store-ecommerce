@@ -25,6 +25,7 @@ export default function AdminHeader({
 }: AdminHeaderProps) {
   const [selectedRange, setSelectedRange] = useState("01 Oct 2026 - 31 Oct 2026");
   const [showRangeDropdown, setShowRangeDropdown] = useState(false);
+  const [showAdminUserDropdown, setShowAdminUserDropdown] = useState(false);
 
   const dateOptions = [
     "Today",
@@ -121,15 +122,45 @@ export default function AdminHeader({
           </button>
         </div>
 
-        {/* User Avatar */}
-        <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-          <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-xs shadow-sm">
-            A
-          </div>
-          <span className="text-xs sm:text-sm font-semibold text-slate-800 hidden md:inline">
-            Admin
-          </span>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden md:inline" />
+        {/* User Avatar & Dropdown */}
+        <div className="relative pl-2 border-l border-slate-200">
+          <button
+            onClick={() => setShowAdminUserDropdown(!showAdminUserDropdown)}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-xs shadow-sm">
+              A
+            </div>
+            <span className="text-xs sm:text-sm font-semibold text-slate-800 hidden md:inline">
+              Admin
+            </span>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden md:inline" />
+          </button>
+
+          {showAdminUserDropdown && (
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
+              <div className="px-4 py-2 border-b border-slate-100">
+                <p className="font-bold text-slate-900">Zupe Admin</p>
+                <p className="text-[11px] text-slate-400">admin@zupestore.com</p>
+              </div>
+              <Link
+                href="/admin/settings"
+                onClick={() => setShowAdminUserDropdown(false)}
+                className="block px-4 py-2 text-slate-700 hover:bg-slate-50 font-medium"
+              >
+                Settings
+              </Link>
+              <button
+                onClick={async () => {
+                  await fetch("/api/admin/auth/logout", { method: "POST" });
+                  window.location.href = "/admin/login";
+                }}
+                className="w-full text-left px-4 py-2 text-rose-600 hover:bg-rose-50 font-semibold border-t border-slate-100"
+              >
+                Lock & Sign Out
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
