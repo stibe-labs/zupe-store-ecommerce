@@ -5,8 +5,59 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 let serverProductsCache: Product[] = [...DEFAULT_PRODUCTS];
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    const slug = searchParams.get("slug");
+
+    // Single product query by ID or Slug
+    if (id || slug) {
+      const query = id
+        ? "SELECT * FROM products WHERE id = ? LIMIT 1;"
+        : "SELECT * FROM products WHERE slug = ? LIMIT 1;";
+      const param = id || slug;
+
+      const d1Results = await executeD1Query<Product>(query, [param]);
+      if (d1Results && d1Results.length > 0) {
+        const p: any = d1Results[0];
+        const formatted: Product = {
+          ...p,
+          images:
+            typeof p.images === "string"
+              ? (() => {
+                  try {
+                    return JSON.parse(p.images);
+                  } catch {
+                    return [];
+                  }
+                })()
+              : p.images || [],
+          in_stock: Number(p.in_stock),
+          stock_count: Number(p.stock_count),
+          price: Number(p.price),
+          offer_price: Number(p.offer_price ?? p.price),
+          mrp: Number(p.mrp ?? p.price),
+        };
+        return NextResponse.json(
+          { success: true, product: formatted, source: "d1" },
+          { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } }
+        );
+      }
+
+      // In-memory fallback
+      const found = serverProductsCache.find((p) => p.id === param || p.slug === param);
+      if (found) {
+        return NextResponse.json(
+          { success: true, product: found, source: "cache" },
+          { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } }
+        );
+      }
+
+      return NextResponse.json({ success: false, error: "Product not found" }, { status: 404 });
+    }
+
+    // Full catalog query
     const d1Results = await executeD1Query<Product>("SELECT * FROM products ORDER BY created_at DESC;");
     if (d1Results && Array.isArray(d1Results) && d1Results.length > 0) {
       const formatted = d1Results.map((p: any) => ({
@@ -21,79 +72,189 @@ export async function GET() {
                 }
               })()
             : p.images || [],
+        in_stock: Number(p.in_stock),
+        stock_count: Number(p.stock_count),
+        price: Number(p.price),
+        offer_price: Number(p.offer_price ?? p.price),
+        mrp: Number(p.mrp ?? p.price),
       }));
-      return NextResponse.json({ success: true, source: "cloudflare-d1", products: formatted });
+
+      // Sync memory cache
+      serverProductsCache = formatted;
+
+      return NextResponse.json(
+        { success: true, source: "cloudflare-d1", products: formatted },
+        { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } }
+      );
     }
   } catch (err) {
     console.warn("D1 products query error, serving catalog fallback:", err);
   }
-  return NextResponse.json({
-    success: true,
-    source: "zupe-catalog",
-    products: serverProductsCache.length > 0 ? serverProductsCache : DEFAULT_PRODUCTS,
-  });
+
+  return NextResponse.json(
+    {
+      success: true,
+      source: "zupe-catalog",
+      products: serverProductsCache.length > 0 ? serverProductsCache : DEFAULT_PRODUCTS,
+    },
+    { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } }
+  );
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
-      id, slug, name, subtitle, category, tagline, description,
-      price, mrp, offer_price, cost_price, stock_count, volume,
-      poster_image, images, color, material, badge, in_stock,
+      id,
+      slug,
+      name,
+      subtitle,
+      category,
+      tagline,
+      description,
+      price,
+      mrp,
+      offer_price,
+      cost_price,
+      stock_count,
+      volume,
+      poster_image,
+      images,
+      color,
+      material,
+      badge,
+      in_stock,
     } = body;
 
-    const existingProd = id ? serverProductsCache.find((p) => p.id === id) : null;
-    const effectivePrice = Number(offer_price) || Number(price) || Number(mrp) || (existingProd ? existingProd.price : 0);
-    const effectiveCost = cost_price !== undefined
-      ? Number(cost_price)
-      : existingProd?.cost_price !== undefined
-      ? Number(existingProd.cost_price)
-      : Math.round(effectivePrice * 0.42);
+    // Find existing product in cache or by ID
+    const existingProd = id
+      ? serverProductsCache.find((p) => p.id === id) || DEFAULT_PRODUCTS.find((p) => p.id === id)
+      : null;
+
+    const effectivePrice =
+      price !== undefined
+        ? Number(price)
+        : offer_price !== undefined
+        ? Number(offer_price)
+        : existingProd
+        ? existingProd.price
+        : 599;
+
+    const effectiveCost =
+      cost_price !== undefined
+        ? Number(cost_price)
+        : existingProd?.cost_price !== undefined
+        ? Number(existingProd.cost_price)
+        : Math.round(effectivePrice * 0.42);
+
+    const effectiveInStock =
+      in_stock !== undefined
+        ? Number(in_stock)
+        : stock_count !== undefined
+        ? Number(stock_count) > 0
+          ? 1
+          : 0
+        : existingProd?.in_stock ?? 1;
 
     const newProd: Product = {
       ...(existingProd || {}),
       id: id || existingProd?.id || `prod-${Date.now()}`,
-      slug: slug || existingProd?.slug || (name ? name.toLowerCase().replace(/[^a-z0-9]+/g, "-") : `prod-${Date.now()}`),
+      slug:
+        slug ||
+        existingProd?.slug ||
+        (name ? name.toLowerCase().replace(/[^a-z0-9]+/g, "-") : `prod-${Date.now()}`),
       name: name !== undefined ? name : existingProd?.name || "Product",
       subtitle: subtitle !== undefined ? subtitle : existingProd?.subtitle || "",
-      category: category !== undefined ? category : existingProd?.category || "Decor",
+      category: category !== undefined ? category : existingProd?.category || "Gadgets",
       tagline: tagline !== undefined ? tagline : existingProd?.tagline || "",
       description: description !== undefined ? description : existingProd?.description || "",
       price: effectivePrice,
       mrp: mrp !== undefined ? Number(mrp) : existingProd?.mrp || effectivePrice,
       offer_price: offer_price !== undefined ? Number(offer_price) : effectivePrice,
       cost_price: effectiveCost,
-      stock_count: stock_count !== undefined ? Number(stock_count) : existingProd?.stock_count || 0,
+      stock_count:
+        stock_count !== undefined ? Number(stock_count) : existingProd?.stock_count ?? 50,
       volume: volume !== undefined ? volume : existingProd?.volume || "",
-      poster_image: poster_image || existingProd?.poster_image || "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop",
+      poster_image:
+        poster_image ||
+        existingProd?.poster_image ||
+        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop",
       images: Array.isArray(images) && images.length > 0 ? images : existingProd?.images || [],
       color: color !== undefined ? color : existingProd?.color || "",
       material: material !== undefined ? material : existingProd?.material || "",
       badge: badge !== undefined ? badge : existingProd?.badge || "",
-      in_stock: in_stock !== undefined ? Number(in_stock) : (stock_count !== undefined ? (Number(stock_count) > 0 ? 1 : 0) : (existingProd?.in_stock || 1)),
-      rating: existingProd?.rating || 4.9,
+      in_stock: effectiveInStock,
+      rating: existingProd?.rating || 4.8,
       review_count: existingProd?.review_count || 120,
       created_at: existingProd?.created_at || new Date().toISOString(),
     };
 
+    // Update or Insert in Cloudflare D1
     try {
-      await executeD1Query(
-        `INSERT OR REPLACE INTO products (id, slug, name, subtitle, category, tagline, description, price, mrp, offer_price, stock_count, volume, poster_image, images, color, material, badge, in_stock)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          newProd.id, newProd.slug, newProd.name, newProd.subtitle ?? null,
-          newProd.category, newProd.tagline, newProd.description,
-          newProd.price, newProd.mrp, newProd.offer_price, newProd.stock_count,
-          newProd.volume, newProd.poster_image, JSON.stringify(newProd.images || []),
-          newProd.color ?? null, newProd.material ?? null, newProd.badge ?? null,
-          newProd.in_stock,
-        ]
+      const existingRows = await executeD1Query(
+        "SELECT id FROM products WHERE id = ? LIMIT 1;",
+        [newProd.id]
       );
+
+      if (existingRows && existingRows.length > 0) {
+        await executeD1Query(
+          `UPDATE products 
+           SET slug = ?, name = ?, subtitle = ?, category = ?, tagline = ?, description = ?,
+               price = ?, mrp = ?, offer_price = ?, stock_count = ?, volume = ?, poster_image = ?,
+               images = ?, color = ?, material = ?, badge = ?, in_stock = ?
+           WHERE id = ?;`,
+          [
+            newProd.slug,
+            newProd.name,
+            newProd.subtitle ?? null,
+            newProd.category,
+            newProd.tagline,
+            newProd.description,
+            newProd.price,
+            newProd.mrp,
+            newProd.offer_price,
+            newProd.stock_count,
+            newProd.volume,
+            newProd.poster_image,
+            JSON.stringify(newProd.images || []),
+            newProd.color ?? null,
+            newProd.material ?? null,
+            newProd.badge ?? null,
+            newProd.in_stock,
+            newProd.id,
+          ]
+        );
+      } else {
+        await executeD1Query(
+          `INSERT INTO products (id, slug, name, subtitle, category, tagline, description, price, mrp, offer_price, stock_count, volume, poster_image, images, color, material, badge, in_stock)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+          [
+            newProd.id,
+            newProd.slug,
+            newProd.name,
+            newProd.subtitle ?? null,
+            newProd.category,
+            newProd.tagline,
+            newProd.description,
+            newProd.price,
+            newProd.mrp,
+            newProd.offer_price,
+            newProd.stock_count,
+            newProd.volume,
+            newProd.poster_image,
+            JSON.stringify(newProd.images || []),
+            newProd.color ?? null,
+            newProd.material ?? null,
+            newProd.badge ?? null,
+            newProd.in_stock,
+          ]
+        );
+      }
     } catch (d1Err) {
-      console.warn("Could not insert to D1:", d1Err);
+      console.warn("Could not save to D1:", d1Err);
     }
 
+    // Update in-memory cache
     const existingIndex = serverProductsCache.findIndex((p) => p.id === newProd.id);
     if (existingIndex >= 0) {
       serverProductsCache[existingIndex] = newProd;

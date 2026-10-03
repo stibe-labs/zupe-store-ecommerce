@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -24,6 +24,7 @@ import {
   Settings,
   Package,
   ShoppingBag,
+  AlertCircle,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -41,11 +42,11 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
-  const [selectedColor, setSelectedColor] = useState<string>("Amber Gold");
+  const [selectedColor, setSelectedColor] = useState<string>("Standard");
   const [quantity, setQuantity] = useState<number>(1);
   const [showStickyBar, setShowStickyBar] = useState<boolean>(false);
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
-    details: false,
+    details: true,
     specs: false,
     box: false,
     shipping: false,
@@ -58,37 +59,83 @@ export default function ProductDetailPage() {
   const { addToCart, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
-  // Load product by slug or ID
-  useEffect(() => {
-    const found = DEFAULT_PRODUCTS.find(
-      (p) => p.slug === idOrSlug || p.id === idOrSlug
-    );
-    if (found) {
-      setProduct(found);
-      const defaultImg = found.images?.[0] || found.poster_image;
-      setSelectedImage(defaultImg);
-      setActiveImageIndex(0);
-      if (found.colors && found.colors.length > 0) {
-        setSelectedColor(found.colors[0].name);
-      }
+  const applyProduct = (found: Product) => {
+    setProduct(found);
+    const defaultImg =
+      found.images && Array.isArray(found.images) && found.images.length > 0
+        ? found.images[0]
+        : found.poster_image || "/products/steam-iron.jpg";
+    setSelectedImage(defaultImg);
+    setActiveImageIndex(0);
+    if (found.color) {
+      setSelectedColor(found.color);
+    } else if (found.colors && found.colors.length > 0) {
+      setSelectedColor(found.colors[0].name);
     } else {
-      fetch("/api/products")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.products) {
-            const apiFound = data.products.find(
-              (p: Product) => p.slug === idOrSlug || p.id === idOrSlug
-            );
-            if (apiFound) {
-              setProduct(apiFound);
-              const defaultImg = apiFound.images?.[0] || apiFound.poster_image;
-              setSelectedImage(defaultImg);
-              setActiveImageIndex(0);
-            }
-          }
-        })
-        .catch(console.warn);
+      setSelectedColor("Standard");
     }
+  };
+
+  // Load product by slug or ID with priority on fresh live API data
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProduct() {
+      // 1. Fetch fresh live product by ID from API
+      try {
+        const res = await fetch(`/api/products?id=${encodeURIComponent(idOrSlug)}&_t=${Date.now()}`);
+        const data = await res.json();
+        if (isMounted && data.success && data.product) {
+          applyProduct(data.product);
+          return;
+        }
+      } catch (e) {
+        // continue
+      }
+
+      // 2. Fetch fresh live product by Slug from API
+      try {
+        const res = await fetch(`/api/products?slug=${encodeURIComponent(idOrSlug)}&_t=${Date.now()}`);
+        const data = await res.json();
+        if (isMounted && data.success && data.product) {
+          applyProduct(data.product);
+          return;
+        }
+      } catch (e) {
+        // continue
+      }
+
+      // 3. Fallback to full catalog API
+      try {
+        const res = await fetch(`/api/products?_t=${Date.now()}`);
+        const data = await res.json();
+        if (isMounted && data.products) {
+          const apiFound = data.products.find(
+            (p: Product) => p.slug === idOrSlug || p.id === idOrSlug
+          );
+          if (apiFound) {
+            applyProduct(apiFound);
+            return;
+          }
+        }
+      } catch (e) {
+        // continue
+      }
+
+      // 4. Fallback to DEFAULT_PRODUCTS
+      const staticFound = DEFAULT_PRODUCTS.find(
+        (p) => p.slug === idOrSlug || p.id === idOrSlug
+      );
+      if (isMounted && staticFound) {
+        applyProduct(staticFound);
+      }
+    }
+
+    loadProduct();
+
+    return () => {
+      isMounted = false;
+    };
   }, [idOrSlug]);
 
   // Handle scroll to only show sticky bottom bar once scrolled past top action buttons
@@ -113,6 +160,100 @@ export default function ProductDetailPage() {
     }, 2800);
   };
 
+  const isOutOfStock = useMemo(() => {
+    if (!product) return false;
+    return product.in_stock === 0 || (product.stock_count !== undefined && product.stock_count <= 0);
+  }, [product]);
+
+  const isRippleLamp = useMemo(() => {
+    if (!product) return false;
+    return product.id === "ripple-lamp" || product.slug?.includes("ripple");
+  }, [product]);
+
+  // Gallery images derived from product.images or poster_image
+  const gallery = useMemo(() => {
+    if (!product) return [];
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      return product.images;
+    }
+    return [product.poster_image || "/products/steam-iron.jpg"];
+  }, [product]);
+
+  // 16-color RGB Swatches for Ripple Lamp only
+  const rippleColorSwatches = [
+    { name: "Amber Gold", image: "/products/ripple/ripple-amber.jpg", hex: "#F59E0B" },
+    { name: "Ocean Blue", image: "/products/ripple/ripple-blue.jpg", hex: "#3B82F6" },
+    { name: "Rose Pink", image: "/products/ripple/ripple-pink.jpg", hex: "#EC4899" },
+    { name: "Electric Purple", image: "/products/ripple/ripple-purple.jpg", hex: "#A855F7" },
+    { name: "Emerald Green", image: "/products/ripple/ripple-green.jpg", hex: "#10B981" },
+  ];
+
+  // Product-specific feature bullet points
+  const productHighlights = useMemo(() => {
+    if (!product) return [];
+    if (isRippleLamp) {
+      return [
+        { icon: "✨", text: "Creates a calming ocean water ripple effect on walls & ceilings" },
+        { icon: "🏠", text: "Perfect ambient lighting for bedroom, study, or living room" },
+        { icon: "🎨", text: "16 RGB colors + wireless remote control + touch switch" },
+        { icon: "🪷", text: "Enhances mood, relaxation, and deep sleep" },
+        { icon: "🎁", text: "Ideal luxury gift in premium packaging" },
+      ];
+    }
+    if (product.id === "mini-portable-steam-iron" || product.slug?.includes("iron")) {
+      return [
+        { icon: "⚡", text: "Rapid 30-second quick heat-up technology" },
+        { icon: "👔", text: "Dual wet & dry ironing modes for all delicate and heavy fabrics" },
+        { icon: "✈️", text: "Compact 180° foldable handle designed for travel & suitcase storage" },
+        { icon: "🛡️", text: "Ceramic titanium non-stick soleplate protects garments from burns" },
+        { icon: "💧", text: "Integrated 50ml leak-proof micro water reservoir with steam boost" },
+      ];
+    }
+    if (product.id === "menstrual-heating-pad" || product.slug?.includes("heating-pad")) {
+      return [
+        { icon: "🔥", text: "3 Intelligent heat settings (45°C - 65°C) warming in 3 seconds" },
+        { icon: "💆‍♀️", text: "4 Multi-frequency soothing acoustic vibration massage modes" },
+        { icon: "🌸", text: "Ultra-soft skin-friendly plush velvet contact backing" },
+        { icon: "🔋", text: "High-capacity wireless rechargeable battery for portable relief" },
+        { icon: "🎀", text: "Elastic adjustable waistband fits comfortably on waist and abdomen" },
+      ];
+    }
+    if (product.id === "mesh-nebulizer" || product.slug?.includes("nebulizer")) {
+      return [
+        { icon: "💨", text: "Ultra-fine <5µm atomized mist for rapid bronchial absorption" },
+        { icon: "🤫", text: "Whisper-quiet <25dB silent operation for sleeping babies" },
+        { icon: "🔋", text: "Dual power: USB cable or AA batteries for emergency portability" },
+        { icon: "👶", text: "Includes child mask, adult mask, and inhalation mouthpiece" },
+        { icon: "🎒", text: "Palm-sized ergonomic body weighs only 90 grams" },
+      ];
+    }
+    if (product.id === "mini-washing-machine" || product.slug?.includes("washing-machine")) {
+      return [
+        { icon: "🌀", text: "Powerful forward and reverse ultrasonic wave motor" },
+        { icon: "🧺", text: "Generous 8L capacity for delicates, socks, baby clothes, and towels" },
+        { icon: "📦", text: "Collapsible accordion design compresses down to 4 inches" },
+        { icon: "💧", text: "Includes dedicated detachable spin-dry drain basket" },
+        { icon: "⏱️", text: "3 Smart wash timer settings (3min, 5min, 10min) with 1 touch" },
+      ];
+    }
+    if (product.id === "mini-printer" || product.slug?.includes("printer")) {
+      return [
+        { icon: "🖨️", text: "Zero ink or toner required — prints cleanly via thermal technology" },
+        { icon: "📱", text: "Instant Bluetooth connectivity with iOS & Android companion app" },
+        { icon: "📝", text: "Print study flashcards, shopping lists, labels, and retro photos" },
+        { icon: "🔋", text: "Built-in 1000mAh rechargeable battery prints up to 10 paper rolls" },
+        { icon: "🎒", text: "Pocket-sized body slips easily into backpacks and handbags" },
+      ];
+    }
+    return [
+      { icon: "✨", text: product.tagline || product.subtitle || "Premium quality build and materials" },
+      { icon: "📦", text: product.volume || "Verified authentic Zupe Store original product" },
+      { icon: "🚚", text: "Fast doorstep courier dispatch with Cash on Delivery available" },
+      { icon: "🔄", text: "7-day replacement guarantee & hassle-free returns" },
+      { icon: "⭐", text: `${product.rating ? product.rating.toFixed(1) : "4.8"} out of 5 stars customer satisfaction` },
+    ];
+  }, [product, isRippleLamp]);
+
   if (!product) {
     return (
       <div className="min-h-screen bg-[#FAFAFA] flex flex-col justify-between">
@@ -136,24 +277,15 @@ export default function ProductDetailPage() {
   }
 
   const wishlisted = isInWishlist(product.id);
-  const discountPercent = 40; // Exact 40% matching mockup
-
-  // 8 High-resolution images for gallery matching mockup
-  const gallery = [
-    "/products/ripple/ripple-amber.jpg",
-    "/products/ripple/ripple-white.jpg",
-    "/products/ripple/ripple-blue.jpg",
-    "/products/ripple/ripple-pink.jpg",
-    "/products/ripple/ripple-purple.jpg",
-    "/products/ripple/ripple-green.jpg",
-    "/products/ripple-lamp.jpg",
-    "/products/ripple/ripple-amber.jpg",
-  ];
+  const discountPercent =
+    product.mrp && product.mrp > product.price
+      ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
+      : 35;
 
   const handleSelectImage = (img: string, idx: number) => {
     setSelectedImage(img);
     setActiveImageIndex(idx);
-    if (idx === 5) {
+    if (idx === 5 && isRippleLamp) {
       setVideoModalOpen(true);
     }
   };
@@ -175,17 +307,29 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = () => {
+    if (isOutOfStock) {
+      showToast("Sorry, this item is currently out of stock!");
+      return;
+    }
     addToCart(product, quantity);
     showToast(`Added ${quantity} item(s) to Cart! 🛒`);
     openCart();
   };
 
   const handleCashOnDelivery = () => {
+    if (isOutOfStock) {
+      showToast("Sorry, this item is currently out of stock!");
+      return;
+    }
     addToCart(product, quantity);
     router.push("/checkout?method=cod");
   };
 
   const handleBuyWithUpi = () => {
+    if (isOutOfStock) {
+      showToast("Sorry, this item is currently out of stock!");
+      return;
+    }
     addToCart(product, quantity);
     router.push("/checkout?method=upi");
   };
@@ -215,24 +359,6 @@ export default function ProductDetailPage() {
     showToast(wishlisted ? "Removed from Wishlist" : "Saved to Wishlist! ❤️");
   };
 
-  // Color swatches matching mockup
-  const colorSwatches = [
-    { name: "Amber Gold", image: "/products/ripple/ripple-amber.jpg", hex: "#F59E0B" },
-    { name: "Ocean Blue", image: "/products/ripple/ripple-blue.jpg", hex: "#3B82F6" },
-    { name: "Rose Pink", image: "/products/ripple/ripple-pink.jpg", hex: "#EC4899" },
-    { name: "Electric Purple", image: "/products/ripple/ripple-purple.jpg", hex: "#A855F7" },
-    { name: "Emerald Green", image: "/products/ripple/ripple-green.jpg", hex: "#10B981" },
-  ];
-
-  // Customer photo gallery strip
-  const customerPhotos = [
-    { image: "/products/ripple/ripple-amber.jpg", isVideo: false },
-    { image: "/products/ripple/ripple-white.jpg", isVideo: false },
-    { image: "/products/ripple/ripple-blue.jpg", isVideo: false },
-    { image: "/products/ripple/ripple-purple.jpg", isVideo: true },
-    { image: "/products/ripple-lamp.jpg", isVideo: false },
-  ];
-
   return (
     <div className="min-h-screen bg-white text-[#1E1E1E] antialiased pb-28 lg:pb-16 selection:bg-[#FA521C]/20 selection:text-[#FA521C]">
       {/* Top App Header */}
@@ -256,16 +382,17 @@ export default function ProductDetailPage() {
                 className="object-cover transition-opacity duration-300"
               />
 
-              {/* Top-Left Badge: -40% */}
-              <div className="absolute top-3.5 left-3.5 z-10">
-                <span className="inline-block px-3 py-1 rounded-full bg-[#FF3B30] text-white text-[12px] font-extrabold tracking-tight shadow-md">
-                  -{discountPercent}%
-                </span>
-              </div>
+              {/* Top-Left Badge: Discount */}
+              {discountPercent > 0 && (
+                <div className="absolute top-3.5 left-3.5 z-10">
+                  <span className="inline-block px-3 py-1 rounded-full bg-[#FF3B30] text-white text-[12px] font-extrabold tracking-tight shadow-md">
+                    -{discountPercent}%
+                  </span>
+                </div>
+              )}
 
               {/* Top-Right Floating Action Buttons: Wishlist & Share */}
               <div className="absolute top-3.5 right-3.5 z-10 flex flex-col gap-2.5">
-                {/* Wishlist Button */}
                 <button
                   onClick={handleWishlistClick}
                   className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-md flex items-center justify-center text-gray-700 hover:text-[#FF3B30] hover:scale-105 active:scale-95 transition-all"
@@ -278,7 +405,6 @@ export default function ProductDetailPage() {
                   />
                 </button>
 
-                {/* Share Button */}
                 <button
                   onClick={handleShare}
                   className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-md flex items-center justify-center text-gray-800 hover:text-black hover:scale-105 active:scale-95 transition-all"
@@ -288,7 +414,7 @@ export default function ProductDetailPage() {
                 </button>
               </div>
 
-              {/* Bottom-Right Counter Badge: 1/8 */}
+              {/* Bottom-Right Counter Badge */}
               <div className="absolute bottom-3.5 right-3.5 z-10">
                 <span className="px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white text-[11px] font-semibold tracking-wide">
                   {activeImageIndex + 1}/{gallery.length}
@@ -297,40 +423,41 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Thumbnail Gallery Carousel */}
-            <div className="mt-3 flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none select-none">
-              {gallery.map((img, idx) => {
-                const isActive = activeImageIndex === idx;
-                const isVideo = idx === 5; // 6th thumbnail has circular play icon overlay
+            {gallery.length > 1 && (
+              <div className="mt-3 flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none select-none">
+                {gallery.map((img, idx) => {
+                  const isActive = activeImageIndex === idx;
+                  const isVideo = idx === 5 && isRippleLamp;
 
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => handleSelectImage(img, idx)}
-                    className={`relative w-[60px] h-[60px] sm:w-[68px] sm:h-[68px] rounded-[16px] overflow-hidden flex-shrink-0 transition-all ${
-                      isActive
-                        ? "border-2 border-black ring-1 ring-black/10 scale-100"
-                        : "border border-gray-200 opacity-80 hover:opacity-100"
-                    }`}
-                  >
-                    <Image
-                      src={img}
-                      alt={`Thumbnail ${idx + 1}`}
-                      fill
-                      className="object-cover"
-                    />
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleSelectImage(img, idx)}
+                      className={`relative w-[60px] h-[60px] sm:w-[68px] sm:h-[68px] rounded-[16px] overflow-hidden flex-shrink-0 transition-all ${
+                        isActive
+                          ? "border-2 border-black ring-1 ring-black/10 scale-100"
+                          : "border border-gray-200 opacity-80 hover:opacity-100"
+                      }`}
+                    >
+                      <Image
+                        src={img}
+                        alt={`Thumbnail ${idx + 1}`}
+                        fill
+                        className="object-cover"
+                      />
 
-                    {/* Circular Video Play Icon Overlay for 6th thumbnail */}
-                    {isVideo && (
-                      <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
-                        <div className="w-5 h-5 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow">
-                          <Play className="w-2.5 h-2.5 fill-emerald-600 text-emerald-600 ml-0.5" />
+                      {isVideo && (
+                        <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow">
+                            <Play className="w-2.5 h-2.5 fill-emerald-600 text-emerald-600 ml-0.5" />
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* ========================================================
@@ -354,7 +481,7 @@ export default function ProductDetailPage() {
                 ({product.rating ? product.rating.toFixed(1) : "4.8"})
               </span>
               <span className="text-gray-300">|</span>
-              <span>{product.sold_count || "1,250+ sold"}</span>
+              <span>{product.sold_count || "1,250+ verified orders"}</span>
             </div>
 
             {/* Price & Discount Row */}
@@ -367,28 +494,40 @@ export default function ProductDetailPage() {
                   ₹{product.mrp.toLocaleString("en-IN")}
                 </span>
               )}
-              <span className="px-2 py-0.5 rounded-md bg-[#FFE8EC] text-[#FF334B] text-[12px] font-extrabold tracking-tight">
-                {discountPercent}% OFF
-              </span>
+              {discountPercent > 0 && (
+                <span className="px-2 py-0.5 rounded-md bg-[#FFE8EC] text-[#FF334B] text-[12px] font-extrabold tracking-tight">
+                  {discountPercent}% OFF
+                </span>
+              )}
             </div>
-            <p className="text-[12px] text-gray-400 -mt-0.5">Inclusive of all taxes</p>
+            <p className="text-[12px] text-gray-400 -mt-0.5">Inclusive of all taxes & free shipping</p>
 
             {/* Inline Action Buttons (Row 1: Dual Outlined Buttons) */}
             <div className="grid grid-cols-2 gap-3 mt-4">
               <button
                 onClick={handleAddToCart}
-                className="py-3 px-3 rounded-xl border border-[#FA521C] text-[#FA521C] bg-white hover:bg-[#FFF4F0] active:scale-[0.98] font-bold text-[13px] sm:text-[14px] flex items-center justify-center gap-2 transition-all shadow-xs"
+                disabled={isOutOfStock}
+                className={`py-3 px-3 rounded-xl border font-bold text-[13px] sm:text-[14px] flex items-center justify-center gap-2 transition-all shadow-xs ${
+                  isOutOfStock
+                    ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                    : "border-[#FA521C] text-[#FA521C] bg-white hover:bg-[#FFF4F0] active:scale-[0.98]"
+                }`}
               >
-                <ShoppingCart className="w-4 h-4 text-[#FA521C] stroke-[2.2]" />
-                <span>Add to Cart</span>
+                <ShoppingCart className="w-4 h-4 stroke-[2.2]" />
+                <span>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
               </button>
 
               <button
                 onClick={handleCashOnDelivery}
-                className="py-3 px-3 rounded-xl border border-[#FA521C] text-[#FA521C] bg-white hover:bg-[#FFF4F0] active:scale-[0.98] font-bold text-[13px] sm:text-[14px] flex items-center justify-center gap-2 transition-all shadow-xs"
+                disabled={isOutOfStock}
+                className={`py-3 px-3 rounded-xl border font-bold text-[13px] sm:text-[14px] flex items-center justify-center gap-2 transition-all shadow-xs ${
+                  isOutOfStock
+                    ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                    : "border-[#FA521C] text-[#FA521C] bg-white hover:bg-[#FFF4F0] active:scale-[0.98]"
+                }`}
               >
-                <Truck className="w-4 h-4 text-[#FA521C] stroke-[2.2]" />
-                <span>Cash on Delivery</span>
+                <Truck className="w-4 h-4 stroke-[2.2]" />
+                <span>{isOutOfStock ? "Unavailable" : "Cash on Delivery"}</span>
               </button>
             </div>
 
@@ -396,16 +535,26 @@ export default function ProductDetailPage() {
             <div className="mt-2.5">
               <button
                 onClick={handleBuyWithUpi}
-                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] hover:brightness-105 active:scale-[0.99] text-white font-extrabold text-[14px] sm:text-[15px] shadow-md shadow-[#FA521C]/25 flex items-center justify-center gap-2.5 transition-all"
+                disabled={isOutOfStock}
+                className={`w-full py-3.5 px-4 rounded-xl font-extrabold text-[14px] sm:text-[15px] flex items-center justify-center gap-2.5 transition-all ${
+                  isOutOfStock
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-70"
+                    : "bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] hover:brightness-105 active:scale-[0.99] text-white shadow-md shadow-[#FA521C]/25"
+                }`}
               >
-                <span className="tracking-wide">BUY NOW WITH</span>
-                <UpiLogo className="h-4.5" />
+                {isOutOfStock ? (
+                  <span>CURRENTLY OUT OF STOCK</span>
+                ) : (
+                  <>
+                    <span className="tracking-wide">BUY NOW WITH</span>
+                    <UpiLogo className="h-4.5" />
+                  </>
+                )}
               </button>
             </div>
 
             {/* 4 Trust Badges Horizontal Grid */}
             <div className="mt-4 p-3 rounded-2xl bg-white border border-gray-100 shadow-xs grid grid-cols-4 gap-1 text-center select-none">
-              {/* Badge 1: Free Shipping */}
               <div className="flex flex-col items-center justify-center px-1">
                 <Truck className="w-5 h-5 text-gray-800 stroke-[1.8] mb-1" />
                 <span className="text-[11px] sm:text-[12px] font-bold text-gray-900 leading-tight">
@@ -416,7 +565,6 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              {/* Badge 2: Cash on Delivery */}
               <div className="flex flex-col items-center justify-center px-1">
                 <ShieldCheck className="w-5 h-5 text-gray-800 stroke-[1.8] mb-1" />
                 <span className="text-[11px] sm:text-[12px] font-bold text-gray-900 leading-tight">
@@ -427,7 +575,6 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              {/* Badge 3: Easy Returns */}
               <div className="flex flex-col items-center justify-center px-1">
                 <RotateCcw className="w-5 h-5 text-gray-800 stroke-[1.8] mb-1" />
                 <span className="text-[11px] sm:text-[12px] font-bold text-gray-900 leading-tight">
@@ -438,7 +585,6 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              {/* Badge 4: 24/7 Support */}
               <div className="flex flex-col items-center justify-center px-1">
                 <Headphones className="w-5 h-5 text-gray-800 stroke-[1.8] mb-1" />
                 <span className="text-[11px] sm:text-[12px] font-bold text-gray-900 leading-tight">
@@ -450,38 +596,46 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* Color / Light Mode Selector */}
-            <div className="mt-5">
-              <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-900 mb-2">
-                Color / Light Mode
-              </h3>
-              <div className="flex items-center gap-2.5">
-                {colorSwatches.map((c, i) => {
-                  const isSelected = selectedColor === c.name;
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => handleSelectColorSwatch(c.name, c.image)}
-                      className={`relative w-12 h-12 rounded-[14px] overflow-hidden flex-shrink-0 transition-all ${
-                        isSelected
-                          ? "ring-2 ring-[#FA521C] ring-offset-2 scale-105"
-                          : "border border-gray-200 opacity-85 hover:opacity-100"
-                      }`}
-                      title={c.name}
-                    >
-                      <Image
-                        src={c.image}
-                        alt={c.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </button>
-                  );
-                })}
+            {/* Color / Variant Selector */}
+            {isRippleLamp ? (
+              <div className="mt-5">
+                <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-900 mb-2">
+                  Color / Light Mode: <span className="font-semibold text-[#FA521C]">{selectedColor}</span>
+                </h3>
+                <div className="flex items-center gap-2.5">
+                  {rippleColorSwatches.map((c, i) => {
+                    const isSelected = selectedColor === c.name;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => handleSelectColorSwatch(c.name, c.image)}
+                        className={`relative w-12 h-12 rounded-[14px] overflow-hidden flex-shrink-0 transition-all ${
+                          isSelected
+                            ? "ring-2 ring-[#FA521C] ring-offset-2 scale-105"
+                            : "border border-gray-200 opacity-85 hover:opacity-100"
+                        }`}
+                        title={c.name}
+                      >
+                        <Image
+                          src={c.image}
+                          alt={c.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            ) : product.color ? (
+              <div className="mt-5">
+                <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-900 mb-1">
+                  Color Option: <span className="font-semibold text-[#FA521C]">{product.color}</span>
+                </h3>
+              </div>
+            ) : null}
 
-            {/* Quantity Selector & In Stock Indicator */}
+            {/* Quantity Selector & Real-Time Stock Status */}
             <div className="mt-4">
               <h3 className="text-[13px] font-bold text-gray-900 mb-2">
                 Quantity
@@ -490,7 +644,8 @@ export default function ProductDetailPage() {
                 <div className="flex items-center border border-gray-200 rounded-xl bg-white shadow-xs p-1">
                   <button
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 active:scale-95 transition-colors"
+                    disabled={isOutOfStock}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 active:scale-95 transition-colors disabled:opacity-40"
                     aria-label="Decrease quantity"
                   >
                     <Minus className="w-3.5 h-3.5" />
@@ -500,16 +655,26 @@ export default function ProductDetailPage() {
                   </span>
                   <button
                     onClick={() => setQuantity((q) => Math.min(product.stock_count || 99, q + 1))}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 active:scale-95 transition-colors"
+                    disabled={isOutOfStock}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 active:scale-95 transition-colors disabled:opacity-40"
                     aria-label="Increase quantity"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
-                  <span>In Stock</span>
+                <div className="flex items-center gap-1.5 text-xs font-bold">
+                  {!isOutOfStock ? (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                      <span className="text-emerald-600">In Stock ({product.stock_count} units available)</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />
+                      <span className="text-rose-600 font-extrabold uppercase tracking-wide">Currently Out of Stock</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -521,31 +686,17 @@ export default function ProductDetailPage() {
                 <span>❤️</span>
               </h3>
               <ul className="space-y-2 text-[13px] text-gray-700 leading-relaxed font-normal">
-                <li className="flex items-start gap-2.5">
-                  <span className="text-base select-none">✨</span>
-                  <span>Creates a calming water ripple effect</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-base select-none">🏠</span>
-                  <span>Perfect for bedroom, study or living room</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-base select-none">🎨</span>
-                  <span>Multiple color options</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-base select-none">🪷</span>
-                  <span>Enhances mood and relaxation</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-base select-none">🎁</span>
-                  <span>Great for gifting</span>
-                </li>
+                {productHighlights.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5">
+                    <span className="text-base select-none">{item.icon}</span>
+                    <span>{item.text}</span>
+                  </li>
+                ))}
               </ul>
             </div>
 
             {/* ========================================================
-                COLLAPSIBLE ACCORDIONS (SCREEN 2 DESIGN)
+                COLLAPSIBLE ACCORDIONS (DYNAMIC SPECIFICATIONS)
                ======================================================== */}
             <div className="mt-6 space-y-2.5 border-t border-gray-100 pt-5">
               {/* 1. Product Details */}
@@ -557,7 +708,7 @@ export default function ProductDetailPage() {
                   <div className="flex items-center gap-3">
                     <SquarePen className="w-5 h-5 text-gray-700 stroke-[1.8]" />
                     <span className="font-bold text-[14px] sm:text-[15px] text-gray-900">
-                      Product Details
+                      Product Details & Overview
                     </span>
                   </div>
                   <ChevronDown
@@ -574,12 +725,12 @@ export default function ProductDetailPage() {
                       exit={{ height: 0, opacity: 0 }}
                       className="px-4 pb-4 pt-1 text-[13px] text-gray-600 leading-relaxed space-y-2 border-t border-gray-50"
                     >
-                      <p>
-                        The Dynamic Water Ripple Crystal Lamp features high-transparency optical acrylic with an internal rotating ripple cylinder, casting organic, undulating ocean-wave refractions across your ceiling and walls.
-                      </p>
-                      <p>
-                        Equipped with 16 RGB spectrum colors, 4 automated transition modes (Smooth, Fade, Flash, Strobe), and continuous dimming brightness adjustment. Controlled wirelessly via the included 16-key remote control or gentle touch sensor on the natural beechwood base.
-                      </p>
+                      <p>{product.description}</p>
+                      {product.tagline && (
+                        <p className="font-semibold text-gray-800 italic">
+                          "{product.tagline}"
+                        </p>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -594,7 +745,7 @@ export default function ProductDetailPage() {
                   <div className="flex items-center gap-3">
                     <Settings className="w-5 h-5 text-gray-700 stroke-[1.8]" />
                     <span className="font-bold text-[14px] sm:text-[15px] text-gray-900">
-                      Specifications
+                      Specifications & Details
                     </span>
                   </div>
                   <ChevronDown
@@ -613,28 +764,32 @@ export default function ProductDetailPage() {
                     >
                       <div className="divide-y divide-gray-100">
                         <div className="py-2 flex justify-between">
-                          <span className="font-medium text-gray-500">Dimensions</span>
-                          <span className="font-semibold text-gray-900">12 cm × 12 cm × 13 cm</span>
+                          <span className="font-medium text-gray-500">Category</span>
+                          <span className="font-semibold text-gray-900">{product.category}</span>
                         </div>
+                        {product.material && (
+                          <div className="py-2 flex justify-between">
+                            <span className="font-medium text-gray-500">Material</span>
+                            <span className="font-semibold text-gray-900">{product.material}</span>
+                          </div>
+                        )}
+                        {product.color && (
+                          <div className="py-2 flex justify-between">
+                            <span className="font-medium text-gray-500">Color</span>
+                            <span className="font-semibold text-gray-900">{product.color}</span>
+                          </div>
+                        )}
+                        {product.volume && (
+                          <div className="py-2 flex justify-between">
+                            <span className="font-medium text-gray-500">Size / Variant</span>
+                            <span className="font-semibold text-gray-900">{product.volume}</span>
+                          </div>
+                        )}
                         <div className="py-2 flex justify-between">
-                          <span className="font-medium text-gray-500">Weight</span>
-                          <span className="font-semibold text-gray-900">380 grams</span>
-                        </div>
-                        <div className="py-2 flex justify-between">
-                          <span className="font-medium text-gray-500">Power Supply</span>
-                          <span className="font-semibold text-gray-900">USB 5V (Plug & Play)</span>
-                        </div>
-                        <div className="py-2 flex justify-between">
-                          <span className="font-medium text-gray-500">Material</span>
-                          <span className="font-semibold text-gray-900">Acrylic Crystal + Solid Beechwood</span>
-                        </div>
-                        <div className="py-2 flex justify-between">
-                          <span className="font-medium text-gray-500">Light Modes</span>
-                          <span className="font-semibold text-gray-900">16 RGB Colors + 4 Transitions</span>
-                        </div>
-                        <div className="py-2 flex justify-between">
-                          <span className="font-medium text-gray-500">Control</span>
-                          <span className="font-semibold text-gray-900">Wireless Remote + Touch Switch</span>
+                          <span className="font-medium text-gray-500">Stock Availability</span>
+                          <span className={`font-semibold ${!isOutOfStock ? "text-emerald-600" : "text-rose-600"}`}>
+                            {!isOutOfStock ? `In Stock (${product.stock_count} units)` : "Out of Stock"}
+                          </span>
                         </div>
                       </div>
                     </motion.div>
@@ -671,19 +826,15 @@ export default function ProductDetailPage() {
                       <ul className="space-y-2">
                         <li className="flex items-center gap-2">
                           <Check className="w-4 h-4 text-[#FA521C]" />
-                          <span>1 × Dynamic Water Ripple Crystal Lamp</span>
+                          <span>1 × {product.name}</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <Check className="w-4 h-4 text-[#FA521C]" />
-                          <span>1 × 16-Key Wireless Remote Control (Battery included)</span>
+                          <span>1 × Official User Manual & Operating Guide</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <Check className="w-4 h-4 text-[#FA521C]" />
-                          <span>1 × 1.2m Braided USB Power Cable (Pre-installed)</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-[#FA521C]" />
-                          <span>1 × User Manual & 1-Year Zupe Warranty Card</span>
+                          <span>1 × Zupe Store Quality Verification & Warranty Seal</span>
                         </li>
                       </ul>
                     </motion.div>
@@ -700,7 +851,7 @@ export default function ProductDetailPage() {
                   <div className="flex items-center gap-3">
                     <Truck className="w-5 h-5 text-gray-700 stroke-[1.8]" />
                     <span className="font-bold text-[14px] sm:text-[15px] text-gray-900">
-                      Shipping & Delivery
+                      Fast Shipping & Tracking
                     </span>
                   </div>
                   <ChevronDown
@@ -715,23 +866,23 @@ export default function ProductDetailPage() {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      className="px-4 pb-4 pt-1 text-[13px] text-gray-600 leading-relaxed space-y-2 border-t border-gray-50"
+                      className="px-4 pb-4 pt-1 text-[13px] text-gray-600 leading-relaxed space-y-1.5 border-t border-gray-50"
                     >
                       <p>
-                        ⚡ <strong>Fast 24H Dispatch:</strong> Orders placed before 4:00 PM are packed and handed to courier partners the same day.
+                        ⚡ <strong>Same-Day Dispatch:</strong> Orders placed before 3:00 PM IST are processed and shipped the same business day.
                       </p>
                       <p>
-                        🚚 <strong>Free All-India Delivery:</strong> Enjoy complimentary standard doorstep delivery arriving within 3–5 business days.
+                        🚚 <strong>Delivery Timeline:</strong> Metro cities receive packages within 2–4 business days. Non-metro locations take 4–6 business days via Bluedart and Delhivery Express.
                       </p>
                       <p>
-                        📍 <strong>Live Tracking:</strong> Instant WhatsApp and SMS notifications with real-time tracking links as your order travels.
+                        📦 <strong>Real-time Tracking:</strong> AWB live tracking link is sent via WhatsApp and SMS immediately upon courier handoff.
                       </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
 
-              {/* 5. Returns & Refunds */}
+              {/* 5. Return & Replacement Policy */}
               <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden shadow-xs">
                 <button
                   onClick={() => toggleAccordion("returns")}
@@ -740,7 +891,7 @@ export default function ProductDetailPage() {
                   <div className="flex items-center gap-3">
                     <RotateCcw className="w-5 h-5 text-gray-700 stroke-[1.8]" />
                     <span className="font-bold text-[14px] sm:text-[15px] text-gray-900">
-                      Returns & Refunds
+                      7-Day Replacement Guarantee
                     </span>
                   </div>
                   <ChevronDown
@@ -755,234 +906,25 @@ export default function ProductDetailPage() {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      className="px-4 pb-4 pt-1 text-[13px] text-gray-600 leading-relaxed space-y-2 border-t border-gray-50"
+                      className="px-4 pb-4 pt-1 text-[13px] text-gray-600 leading-relaxed space-y-1.5 border-t border-gray-50"
                     >
                       <p>
-                        🛡️ <strong>7-Day Free Replacement:</strong> If the product arrives damaged or defective, we provide an immediate no-questions-asked replacement.
+                        🛡️ <strong>Zero-Hassle Replacement:</strong> If your product arrives damaged or defective, we provide an immediate 1-click replacement within 7 days of delivery.
                       </p>
                       <p>
-                        💳 <strong>Instant Refunds:</strong> Once return pickup is verified by our courier partner, refunds are automatically credited back to your UPI or original payment method within 24 hours.
+                        📞 <strong>Direct Support:</strong> Contact our WhatsApp support at +91 98765 43210 or email support@zupestore.in for instant assistance.
                       </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             </div>
-
-            {/* ========================================================
-                CUSTOMER REVIEWS (SCREEN 2 EXACT LAYOUT)
-               ======================================================== */}
-            <div className="mt-8 border-t border-gray-100 pt-6">
-              {/* Header: Customer Reviews (4.8) on left, See All -> on right */}
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-[17px] sm:text-[19px] font-bold text-gray-900">
-                  Customer Reviews ({product.rating ? product.rating.toFixed(1) : "4.8"})
-                </h2>
-                <button
-                  onClick={() => showToast("Showing all 1,250 verified reviews")}
-                  className="text-[13px] font-bold text-[#FA521C] hover:text-[#E0400B] flex items-center gap-1 transition-colors"
-                >
-                  <span>See All</span>
-                  <span className="text-base font-bold">➔</span>
-                </button>
-              </div>
-
-              {/* Rating Breakdown Card: Left column big score, right column bars */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#FAFAFA] border border-gray-100 flex items-center justify-between gap-4">
-                {/* Left side: Big 4.8, stars, count */}
-                <div className="flex flex-col items-start min-w-[130px]">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-[32px] sm:text-[36px] font-extrabold text-gray-900 leading-none">
-                      {product.rating ? product.rating.toFixed(1) : "4.8"}
-                    </span>
-                    <span className="text-xs text-gray-500 font-medium">out of 5</span>
-                  </div>
-                  <div className="flex items-center gap-0.5 text-[#F59E0B] mt-1.5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-current" />
-                    ))}
-                  </div>
-                  <span className="text-[11px] text-gray-400 mt-1">
-                    Based on 1,250+ reviews
-                  </span>
-                </div>
-
-                {/* Right side: Star percentage bars */}
-                <div className="flex-1 space-y-1 max-w-[200px]">
-                  {[
-                    { star: 5, pct: 82 },
-                    { star: 4, pct: 12 },
-                    { star: 3, pct: 4 },
-                    { star: 2, pct: 1 },
-                    { star: 1, pct: 1 },
-                  ].map((row) => (
-                    <div key={row.star} className="flex items-center gap-2 text-[11px] text-gray-600">
-                      <span className="w-4 flex items-center gap-0.5 font-bold text-gray-700">
-                        {row.star} <span className="text-[9px] text-[#F59E0B]">★</span>
-                      </span>
-                      <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
-                        <div
-                          className="h-full bg-[#F59E0B] rounded-full"
-                          style={{ width: `${row.pct}%` }}
-                        />
-                      </div>
-                      <span className="w-7 text-right text-gray-400 font-medium">{row.pct}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Customer Photo Uploads Horizontal Strip */}
-              <div className="mt-4 flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none select-none">
-                {customerPhotos.map((item, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => {
-                      if (item.isVideo) {
-                        setVideoModalOpen(true);
-                      } else {
-                        setLightboxImage(item.image);
-                      }
-                    }}
-                    className="relative w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] rounded-[16px] overflow-hidden flex-shrink-0 cursor-pointer border border-gray-100 shadow-xs hover:opacity-95 transition-opacity"
-                  >
-                    <Image
-                      src={item.image}
-                      alt={`Customer photo ${idx + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                    {item.isVideo && (
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                        <div className="w-6 h-6 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow">
-                          <Play className="w-3 h-3 fill-[#FA521C] text-[#FA521C] ml-0.5" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Customer Reviews List */}
-              <div className="mt-5 space-y-5">
-                {/* Review 1: Arjun M. */}
-                <div className="border-b border-gray-100 pb-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                        <Image
-                          src="/avatars/arjun.jpg"
-                          alt="Arjun M."
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div>
-                        <h4 className="text-[13px] sm:text-[14px] font-bold text-gray-900 leading-tight">
-                          Arjun M.
-                        </h4>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <div className="flex items-center text-[#F59E0B]">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className="w-3 h-3 fill-current" />
-                            ))}
-                          </div>
-                          <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-0.5">
-                            <Check className="w-3 h-3 stroke-[3]" /> Verified Purchase
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-[11px] text-gray-400 font-medium whitespace-nowrap">
-                      12 Sep 2026
-                    </span>
-                  </div>
-
-                  <p className="mt-2 text-[13px] text-gray-700 leading-relaxed">
-                    Product quality is amazing! The water ripple effect looks so beautiful at night. Perfect for my room.
-                  </p>
-
-                  {/* 3 Review Photo Thumbnails */}
-                  <div className="mt-2.5 flex items-center gap-2">
-                    {[
-                      "/products/ripple/ripple-amber.jpg",
-                      "/products/ripple/ripple-white.jpg",
-                      "/products/ripple-lamp.jpg",
-                    ].map((t, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => setLightboxImage(t)}
-                        className="relative w-14 h-14 rounded-xl overflow-hidden cursor-pointer border border-gray-100 shadow-xs"
-                      >
-                        <Image src={t} alt="Review thumb" fill className="object-cover" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Review 2: Sneha K. */}
-                <div className="border-b border-gray-100 pb-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                        <Image
-                          src="/avatars/sneha.jpg"
-                          alt="Sneha K."
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div>
-                        <h4 className="text-[13px] sm:text-[14px] font-bold text-gray-900 leading-tight">
-                          Sneha K.
-                        </h4>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <div className="flex items-center text-[#F59E0B]">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className="w-3 h-3 fill-current" />
-                            ))}
-                          </div>
-                          <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-0.5">
-                            <Check className="w-3 h-3 stroke-[3]" /> Verified Purchase
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-[11px] text-gray-400 font-medium whitespace-nowrap">
-                      08 Sep 2026
-                    </span>
-                  </div>
-
-                  <p className="mt-2 text-[13px] text-gray-700 leading-relaxed">
-                    Absolutely love it! Gives a very premium feel and the lighting is very soothing.
-                  </p>
-
-                  {/* 3 Review Photo Thumbnails */}
-                  <div className="mt-2.5 flex items-center gap-2">
-                    {[
-                      "/products/ripple/ripple-amber.jpg",
-                      "/products/ripple/ripple-white.jpg",
-                      "/products/ripple/ripple-blue.jpg",
-                    ].map((t, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => setLightboxImage(t)}
-                        className="relative w-14 h-14 rounded-xl overflow-hidden cursor-pointer border border-gray-100 shadow-xs"
-                      >
-                        <Image src={t} alt="Review thumb" fill className="object-cover" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
       </main>
 
       {/* ========================================================
-          STICKY BOTTOM BAR (SCREEN 2 - SLIDES IN ON SCROLL DOWN)
+          STICKY BOTTOM BAR (SLIDES IN ON SCROLL DOWN)
          ======================================================== */}
       <aside
         aria-label="Sticky Purchase Actions"
@@ -995,28 +937,49 @@ export default function ProductDetailPage() {
           <div className="grid grid-cols-2 gap-2.5">
             <button
               onClick={handleAddToCart}
-              className="py-2.5 px-3 rounded-xl border border-[#FA521C] text-[#FA521C] bg-white active:scale-95 font-bold text-[13px] flex items-center justify-center gap-2 transition-all shadow-xs"
+              disabled={isOutOfStock}
+              className={`py-2.5 px-3 rounded-xl border font-bold text-[13px] flex items-center justify-center gap-2 transition-all shadow-xs ${
+                isOutOfStock
+                  ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                  : "border-[#FA521C] text-[#FA521C] bg-white active:scale-95"
+              }`}
             >
-              <ShoppingCart className="w-4 h-4 text-[#FA521C] stroke-[2.2]" />
-              <span>Add to Cart</span>
+              <ShoppingCart className="w-4 h-4 stroke-[2.2]" />
+              <span>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
             </button>
 
             <button
               onClick={handleCashOnDelivery}
-              className="py-2.5 px-3 rounded-xl border border-[#FA521C] text-[#FA521C] bg-white active:scale-95 font-bold text-[13px] flex items-center justify-center gap-2 transition-all shadow-xs"
+              disabled={isOutOfStock}
+              className={`py-2.5 px-3 rounded-xl border font-bold text-[13px] flex items-center justify-center gap-2 transition-all shadow-xs ${
+                isOutOfStock
+                  ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                  : "border-[#FA521C] text-[#FA521C] bg-white active:scale-95"
+              }`}
             >
-              <Truck className="w-4 h-4 text-[#FA521C] stroke-[2.2]" />
-              <span>Cash on Delivery</span>
+              <Truck className="w-4 h-4 stroke-[2.2]" />
+              <span>{isOutOfStock ? "Unavailable" : "Cash on Delivery"}</span>
             </button>
           </div>
 
           {/* Bottom Row: Full Width BUY NOW WITH UPI */}
           <button
             onClick={handleBuyWithUpi}
-            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] active:scale-95 text-white font-extrabold text-[14px] shadow-md shadow-[#FA521C]/25 flex items-center justify-center gap-2.5 transition-all"
+            disabled={isOutOfStock}
+            className={`w-full py-3 px-4 rounded-xl font-extrabold text-[14px] flex items-center justify-center gap-2.5 transition-all ${
+              isOutOfStock
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-70"
+                : "bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] active:scale-95 text-white shadow-md shadow-[#FA521C]/25"
+            }`}
           >
-            <span className="tracking-wide">BUY NOW WITH</span>
-            <UpiLogo className="h-4.5" />
+            {isOutOfStock ? (
+              <span>CURRENTLY OUT OF STOCK</span>
+            ) : (
+              <>
+                <span className="tracking-wide">BUY NOW WITH</span>
+                <UpiLogo className="h-4.5" />
+              </>
+            )}
           </button>
         </div>
       </aside>
@@ -1026,110 +989,14 @@ export default function ProductDetailPage() {
         <Footer />
       </div>
 
-      {/* ========================================================
-          VIDEO DEMO MODAL
-         ======================================================== */}
-      <AnimatePresence>
-        {videoModalOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={() => setVideoModalOpen(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-md bg-gray-900 rounded-3xl overflow-hidden shadow-2xl border border-gray-800"
-            >
-              <div className="p-4 flex items-center justify-between border-b border-gray-800">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
-                  <span className="font-bold text-sm text-white">Dynamic Ripple In Action</span>
-                </div>
-                <button
-                  onClick={() => setVideoModalOpen(false)}
-                  className="p-1 rounded-full text-gray-400 hover:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Simulated Ambient Video Reel Container */}
-              <div className="relative aspect-square w-full bg-black overflow-hidden flex items-center justify-center">
-                <Image
-                  src="/products/ripple/ripple-purple.jpg"
-                  alt="Video Demonstration"
-                  fill
-                  className="object-cover animate-pulse duration-1000 scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <p className="text-xs font-semibold text-emerald-400">● 16 Color Dynamic Rotation</p>
-                  <p className="text-sm font-bold">Watch the hypnotic ocean ripple caustic lighting effect</p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-gray-950 flex items-center justify-between">
-                <span className="text-xs text-gray-400">Included with Remote Control</span>
-                <button
-                  onClick={() => {
-                    setVideoModalOpen(false);
-                    handleBuyWithUpi();
-                  }}
-                  className="px-4 py-2 rounded-xl bg-[#FA521C] text-white text-xs font-bold shadow"
-                >
-                  Order Now (₹650)
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ========================================================
-          IMAGE LIGHTBOX MODAL
-         ======================================================== */}
-      <AnimatePresence>
-        {lightboxImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
-            onClick={() => setLightboxImage(null)}
-          >
-            <div className="relative max-w-xl w-full aspect-square rounded-2xl overflow-hidden">
-              <button
-                onClick={() => setLightboxImage(null)}
-                className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center shadow"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <Image
-                src={lightboxImage}
-                alt="Enlarged view"
-                fill
-                className="object-contain"
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ========================================================
-          TOAST FEEDBACK
-         ======================================================== */}
+      {/* Toast Notification */}
       <AnimatePresence>
         {toastMessage && (
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 30 }}
-            className="fixed bottom-24 lg:bottom-8 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full bg-gray-900/95 backdrop-blur-md text-white font-medium text-xs sm:text-sm shadow-xl flex items-center gap-2 border border-white/10"
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-24 lg:bottom-8 left-1/2 -translate-x-1/2 z-50 bg-[#1E1E1E] text-white px-5 py-3 rounded-2xl shadow-xl text-sm font-semibold flex items-center gap-2 border border-white/10 select-none"
           >
             <span>{toastMessage}</span>
           </motion.div>

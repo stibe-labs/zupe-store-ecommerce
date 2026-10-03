@@ -6,17 +6,43 @@ export interface D1QueryResult<T = any> {
   meta?: any;
 }
 
+async function getD1Database(): Promise<any | null> {
+  // 1. Try @opennextjs/cloudflare getCloudflareContext
+  try {
+    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
+    const ctx = await getCloudflareContext({ async: true });
+    const env = ctx?.env as any;
+    if (env?.DB && typeof env.DB.prepare === "function") {
+      return env.DB;
+    }
+  } catch (err) {
+    // Not running inside OpenNext async context or package not found
+  }
+
+  // 2. Direct bindings in globalThis or process.env
+  if ((globalThis as any).DB && typeof (globalThis as any).DB.prepare === "function") {
+    return (globalThis as any).DB;
+  }
+  if ((globalThis as any).__cf_env__?.DB && typeof (globalThis as any).__cf_env__.DB.prepare === "function") {
+    return (globalThis as any).__cf_env__.DB;
+  }
+  if ((process.env as any).DB && typeof (process.env as any).DB.prepare === "function") {
+    return (process.env as any).DB;
+  }
+
+  return null;
+}
+
 export async function executeD1Query<T = any>(
   query: string,
   params: any[] = []
 ): Promise<T[] | null> {
   // 1. Check for Cloudflare Worker environment binding (env.DB)
-  const globalEnv = (globalThis as any).process?.env || {};
-  const cfBinding = (globalThis as any).DB;
+  const db = await getD1Database();
 
-  if (cfBinding && typeof cfBinding.prepare === "function") {
+  if (db && typeof db.prepare === "function") {
     try {
-      const stmt = cfBinding.prepare(query);
+      const stmt = db.prepare(query);
       const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
       const res = await boundStmt.all();
       return (res.results as T[]) || [];
@@ -28,7 +54,8 @@ export async function executeD1Query<T = any>(
   // 2. Check for Cloudflare REST API execution if account ID and token are present
   const accountId =
     process.env.CLOUDFLARE_ACCOUNT_ID || "4eed09d0032a07881825f4e926cb997f";
-  const databaseId = process.env.CLOUDFLARE_D1_DATABASE_ID;
+  const databaseId =
+    process.env.CLOUDFLARE_D1_DATABASE_ID || "1ebc3c22-07be-4f35-b437-5292d137d246";
   const apiToken = process.env.CLOUDFLARE_API_TOKEN;
 
   if (databaseId && apiToken && accountId) {

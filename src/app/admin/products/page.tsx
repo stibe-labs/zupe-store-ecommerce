@@ -53,7 +53,7 @@ export default function AdminProductsPage() {
   const fetchProducts = async () => {
     setIsRefreshing(true);
     try {
-      const res = await fetch("/api/products");
+      const res = await fetch("/api/products?_t=" + Date.now());
       const data = await res.json();
       if (data.success && Array.isArray(data.products)) {
         setProducts(data.products);
@@ -63,6 +63,34 @@ export default function AdminProductsPage() {
     } finally {
       setLoading(false);
       setIsRefreshing(false);
+    }
+  };
+
+  const toggleStockStatus = async (prod: Product) => {
+    const newInStock = prod.in_stock === 1 ? 0 : 1;
+    // Optimistic UI update
+    setProducts((prev) =>
+      prev.map((p) => (p.id === prod.id ? { ...p, in_stock: newInStock } : p))
+    );
+    try {
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: prod.id,
+          in_stock: newInStock,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.product) {
+        setProducts((prev) =>
+          prev.map((p) => (p.id === data.product.id ? data.product : p))
+        );
+      } else {
+        fetchProducts();
+      }
+    } catch (err) {
+      fetchProducts();
     }
   };
 
@@ -412,15 +440,24 @@ export default function AdminProductsPage() {
                             </span>
                           </td>
                           <td className="py-3.5 px-4 whitespace-nowrap">
-                            {prod.in_stock === 1 && prod.stock_count > 0 ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">
-                                In Stock
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">
-                                Out of Stock
-                              </span>
-                            )}
+                            <button
+                              type="button"
+                              onClick={() => toggleStockStatus(prod)}
+                              title="Click to toggle In Stock / Out of Stock"
+                              className="group transition-transform active:scale-95 cursor-pointer"
+                            >
+                              {prod.in_stock === 1 && prod.stock_count > 0 ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 group-hover:bg-emerald-200 transition-colors shadow-xs">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                  In Stock
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700 group-hover:bg-rose-200 transition-colors shadow-xs">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                  Out of Stock
+                                </span>
+                              )}
+                            </button>
                           </td>
                           <td className="py-3.5 px-4 text-right whitespace-nowrap">
                             <div className="flex items-center justify-end gap-1.5">
