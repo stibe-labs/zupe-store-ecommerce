@@ -47,11 +47,11 @@ export function CartDrawer() {
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <ShoppingBag className="w-5 h-5 text-[#6C5CE7]" />
+                <ShoppingBag className="w-5 h-5 text-[#FA521C]" />
                 <h2 className="font-display font-bold text-lg text-[#2D3436]">
                   Your Cart
                 </h2>
-                <span className="text-xs font-mono bg-[#6C5CE7]/10 text-[#6C5CE7] px-2 py-0.5 rounded-full">
+                <span className="text-xs font-mono bg-[#FA521C]/10 text-[#FA521C] px-2 py-0.5 rounded-full">
                   {totalItems} {totalItems === 1 ? "item" : "items"}
                 </span>
               </div>
@@ -65,9 +65,9 @@ export function CartDrawer() {
 
             {/* Free Shipping Progress */}
             {cart.length > 0 && (
-              <div className="px-5 py-3 bg-gradient-to-r from-[#6C5CE7]/5 to-[#A29BFE]/5 border-b border-gray-100">
+              <div className="px-5 py-3 bg-gradient-to-r from-[#FA521C]/5 to-[#FF7A45]/5 border-b border-gray-100">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <Truck className="w-4 h-4 text-[#6C5CE7]" />
+                  <Truck className="w-4 h-4 text-[#FA521C]" />
                   <span className="text-xs font-medium text-[#636E72]">
                     {freeShippingRemaining > 0
                       ? `Add ₹${freeShippingRemaining.toLocaleString()} more for free shipping`
@@ -76,7 +76,7 @@ export function CartDrawer() {
                 </div>
                 <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-[#6C5CE7] to-[#A29BFE] rounded-full"
+                    className="h-full bg-gradient-to-r from-[#FA521C] to-[#FF7A45] rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${shippingProgress}%` }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
@@ -89,14 +89,14 @@ export function CartDrawer() {
             <div className="flex-1 overflow-y-auto p-5">
               {cart.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <div className="w-20 h-20 rounded-full bg-[#6C5CE7]/8 flex items-center justify-center mb-4">
-                    <ShoppingBag className="w-8 h-8 text-[#A29BFE]" />
+                  <div className="w-20 h-20 rounded-full bg-[#FA521C]/10 flex items-center justify-center mb-4">
+                    <ShoppingBag className="w-8 h-8 text-[#FA521C]" />
                   </div>
                   <p className="text-base font-semibold text-[#2D3436] mb-1">Your cart is empty</p>
                   <p className="text-sm text-[#636E72] mb-6">Discover something you'll love</p>
                   <button
                     onClick={closeCart}
-                    className="px-6 py-2.5 bg-[#6C5CE7] text-white font-semibold text-sm rounded-xl hover:bg-[#4834D4] transition-colors"
+                    className="px-6 py-2.5 bg-[#FA521C] text-white font-semibold text-sm rounded-xl hover:bg-[#E0400B] transition-colors shadow-sm shadow-[#FA521C]/20"
                   >
                     Start Shopping
                   </button>
@@ -125,7 +125,7 @@ export function CartDrawer() {
                         <p className="text-sm font-semibold text-[#2D3436] truncate">{item.name}</p>
                         <p className="text-xs text-[#636E72] mt-0.5">{item.category}</p>
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-sm font-bold text-[#6C5CE7]">
+                          <span className="text-sm font-bold text-[#FA521C]">
                             ₹{item.price.toLocaleString()}
                           </span>
                           {item.mrp && item.mrp > item.price && (

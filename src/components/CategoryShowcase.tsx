@@ -11,7 +11,7 @@ const CATEGORIES = [
     description: "Elevate every corner",
     image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=600&auto=format&fit=crop",
     href: "/products?category=Decor",
-    accent: "#6C5CE7",
+    accent: "#FA521C",
     span: "col-span-2 row-span-2",
   },
   {
@@ -43,7 +43,7 @@ const CATEGORIES = [
     description: "Curated for you",
     image: "https://images.unsplash.com/photo-1602607616907-e8faad94e2e1?q=80&w=600&auto=format&fit=crop",
     href: "/products?category=Lifestyle",
-    accent: "#A29BFE",
+    accent: "#FF7A45",
     span: "col-span-1",
   },
 ];

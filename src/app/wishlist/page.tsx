@@ -20,7 +20,7 @@ export default function WishlistPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-[#2D3436]">
+    <div className="min-h-screen bg-[#F8F9FA] text-[#111111]">
       <Navbar />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-28 pb-16">
@@ -57,7 +57,7 @@ export default function WishlistPage() {
             </p>
             <Link
               href="/products"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-[#6C5CE7] hover:bg-[#5848d2] text-white font-semibold text-sm shadow-lg shadow-[#6C5CE7]/30 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-[#FA521C] hover:bg-[#E0400B] text-white font-semibold text-sm shadow-lg shadow-[#FA521C]/30 transition-all"
             >
               <span>Explore Products</span>
               <ArrowRight className="w-4 h-4" />
@@ -87,11 +87,11 @@ export default function WishlistPage() {
                 </div>
 
                 <div className="p-5 flex flex-col flex-1">
-                  <span className="text-[10px] font-bold text-[#6C5CE7] uppercase mb-1">
+                  <span className="text-[10px] font-bold text-[#FA521C] uppercase mb-1">
                     {item.category}
                   </span>
                   <Link href={`/products/${item.slug || item.id}`}>
-                    <h3 className="font-display font-bold text-base text-gray-900 hover:text-[#6C5CE7] line-clamp-1 mb-1">
+                    <h3 className="font-display font-bold text-base text-gray-900 hover:text-[#FA521C] line-clamp-1 mb-1">
                       {item.name}
                     </h3>
                   </Link>
@@ -109,7 +109,7 @@ export default function WishlistPage() {
 
                   <button
                     onClick={() => handleMoveToCart(item)}
-                    className="w-full mt-auto py-2.5 px-4 rounded-xl bg-[#6C5CE7] hover:bg-[#5848d2] text-white text-xs font-semibold shadow-md shadow-[#6C5CE7]/25 flex items-center justify-center gap-2 transition-all"
+                    className="w-full mt-auto py-2.5 px-4 rounded-xl bg-[#FA521C] hover:bg-[#E0400B] text-white text-xs font-semibold shadow-md shadow-[#FA521C]/25 flex items-center justify-center gap-2 transition-all"
                   >
                     <ShoppingBag className="w-4 h-4" />
                     <span>Move to Bag</span>

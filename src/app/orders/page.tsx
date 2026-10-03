@@ -49,7 +49,7 @@ export default function OrdersPage() {
       case "processing":
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-50 text-[#6C5CE7]">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-[#FA521C]">
             <Clock className="w-3.5 h-3.5" /> Processing
           </span>
         );
@@ -57,7 +57,7 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-[#2D3436]">
+    <div className="min-h-screen bg-[#F8F9FA] text-[#111111]">
       <Navbar />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16">
@@ -74,7 +74,7 @@ export default function OrdersPage() {
           {!isAuthenticated && (
             <button
               onClick={() => openAuthModal("login")}
-              className="text-xs font-semibold text-[#6C5CE7] hover:underline"
+              className="text-xs font-semibold text-[#FA521C] hover:underline"
             >
               Sign In for full account sync
             </button>
@@ -98,7 +98,7 @@ export default function OrdersPage() {
             </p>
             <Link
               href="/products"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#6C5CE7] text-white text-xs font-semibold"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#FA521C] text-white text-xs font-semibold"
             >
               Start Shopping
             </Link>
@@ -128,7 +128,7 @@ export default function OrdersPage() {
                   </div>
                   <div>
                     <span className="text-[10px] text-gray-400 uppercase font-semibold block">Total Amount</span>
-                    <span className="text-sm font-bold text-[#6C5CE7]">
+                    <span className="text-sm font-bold text-[#FA521C]">
                       ₹{ord.total_amount.toLocaleString()}
                     </span>
                   </div>

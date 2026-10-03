@@ -26,9 +26,9 @@ export function FeaturedProducts() {
           transition={{ duration: 0.6 }}
           className="text-center mb-14"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#6C5CE7]/8 rounded-full border border-[#6C5CE7]/15 mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-[#6C5CE7]" />
-            <span className="text-xs font-mono font-semibold text-[#6C5CE7] tracking-wide uppercase">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#FA521C]/8 rounded-full border border-[#FA521C]/15 mb-4">
+            <Sparkles className="w-3.5 h-3.5 text-[#FA521C]" />
+            <span className="text-xs font-mono font-semibold text-[#FA521C] tracking-wide uppercase">
               Curated Picks
             </span>
           </div>
@@ -49,12 +49,12 @@ export function FeaturedProducts() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-[#6C5CE7]/8 transition-all duration-500 border border-gray-100"
+              className="group relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-[#FA521C]/8 transition-all duration-500 border border-gray-100"
             >
               {/* Badge */}
               {product.badge && (
                 <div className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-xs font-bold ${
-                  product.badge === "New" ? "bg-[#6C5CE7] text-white" :
+                  product.badge === "New" ? "bg-[#FA521C] text-white" :
                   product.badge === "Sale" ? "bg-[#FF6B6B] text-white" :
                   product.badge === "Trending" ? "bg-[#00D2D3] text-white" :
                   product.badge === "Limited" ? "bg-[#2D3436] text-white" :
@@ -93,11 +93,11 @@ export function FeaturedProducts() {
 
               {/* Info */}
               <div className="p-5">
-                <p className="text-xs font-mono text-[#6C5CE7] uppercase tracking-wider mb-1">
+                <p className="text-xs font-mono text-[#FA521C] uppercase tracking-wider mb-1">
                   {product.category}
                 </p>
                 <Link href={`/products/${product.slug}`}>
-                  <h3 className="font-display font-semibold text-[#2D3436] text-base mb-1 hover:text-[#6C5CE7] transition-colors line-clamp-1">
+                  <h3 className="font-display font-semibold text-[#2D3436] text-base mb-1 hover:text-[#FA521C] transition-colors line-clamp-1">
                     {product.name}
                   </h3>
                 </Link>
@@ -127,7 +127,7 @@ export function FeaturedProducts() {
                       addToCart(product);
                       openCart();
                     }}
-                    className="w-10 h-10 rounded-xl bg-[#6C5CE7] hover:bg-[#4834D4] flex items-center justify-center transition-colors btn-press shadow-md shadow-[#6C5CE7]/20"
+                    className="w-10 h-10 rounded-xl bg-[#FA521C] hover:bg-[#E0400B] flex items-center justify-center transition-colors btn-press shadow-md shadow-[#FA521C]/20"
                   >
                     <ShoppingBag className="w-4 h-4 text-white" />
                   </button>
@@ -147,7 +147,7 @@ export function FeaturedProducts() {
         >
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 px-8 py-3.5 border-2 border-[#6C5CE7] text-[#6C5CE7] font-semibold rounded-2xl hover:bg-[#6C5CE7] hover:text-white transition-all duration-300"
+            className="inline-flex items-center gap-2 px-8 py-3.5 border-2 border-[#FA521C] text-[#FA521C] font-semibold rounded-2xl hover:bg-[#FA521C] hover:text-white transition-all duration-300"
           >
             View All Products
             <ArrowRight className="w-4 h-4" />

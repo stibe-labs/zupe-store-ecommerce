@@ -87,13 +87,13 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-[#2D3436]">
+    <div className="min-h-screen bg-[#F8F9FA] text-[#111111]">
       <Navbar />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-28 pb-16">
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-display font-bold text-[#2D3436]">
+            <h1 className="text-3xl sm:text-4xl font-display font-bold text-[#111111]">
               Shopping Bag
             </h1>
             <p className="text-xs text-gray-500 mt-1">
@@ -157,7 +157,7 @@ export default function CartPage() {
 
                 {/* Info */}
                 <div className="flex-1 w-full sm:w-auto text-center sm:text-left">
-                  <span className="text-[10px] font-bold text-[#6C5CE7] uppercase">
+                  <span className="text-[10px] font-bold text-[#FA521C] uppercase">
                     {item.category}
                   </span>
                   <h3 className="font-display font-bold text-base text-gray-900 line-clamp-1">
@@ -229,7 +229,7 @@ export default function CartPage() {
                       placeholder="Promo Code (e.g. ZUPE10)"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-medium uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-[#6C5CE7]/30"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-medium uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30 focus:border-[#FA521C]"
                     />
                   </div>
                   <button

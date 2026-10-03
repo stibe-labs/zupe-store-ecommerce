@@ -132,7 +132,7 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between">
               <span>Total Paid:</span>
-              <span className="font-bold text-[#6C5CE7] text-sm">₹{grandTotal.toLocaleString()}</span>
+              <span className="font-bold text-[#FA521C] text-sm">₹{grandTotal.toLocaleString()}</span>
             </div>
           </div>
 
@@ -145,7 +145,7 @@ export default function CheckoutPage() {
             </Link>
             <Link
               href="/"
-              className="flex-1 py-3 px-6 rounded-xl bg-[#6C5CE7] text-white font-semibold text-sm hover:bg-[#5848d2] transition-colors"
+              className="flex-1 py-3 px-6 rounded-xl bg-[#FA521C] text-white font-semibold text-sm hover:bg-[#E0400B] transition-colors"
             >
               Continue Shopping
             </Link>
@@ -161,14 +161,14 @@ export default function CheckoutPage() {
       <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
         <Navbar />
         <div className="max-w-md mx-auto py-32 px-4 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 flex items-center justify-center text-[#6C5CE7]">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center text-[#FA521C]">
             <PackageCheck className="w-8 h-8" />
           </div>
           <h2 className="text-2xl font-bold font-display text-gray-900 mb-2">No Items in Cart</h2>
           <p className="text-sm text-gray-500 mb-6">Your shopping cart is empty. Add products to continue to checkout.</p>
           <Link
             href="/products"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#6C5CE7] text-white font-semibold text-sm shadow-md"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#FA521C] text-white font-semibold text-sm shadow-md"
           >
             Browse Catalog
           </Link>
@@ -179,13 +179,13 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-[#2D3436]">
+    <div className="min-h-screen bg-[#F8F9FA] text-[#111111]">
       <Navbar />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-28 pb-16">
         <div className="mb-8">
           <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
-            <Link href="/cart" className="hover:text-[#6C5CE7]">Bag</Link>
+            <Link href="/cart" className="hover:text-[#FA521C]">Bag</Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
             <span className="font-semibold text-gray-900">Checkout</span>
           </div>
@@ -206,7 +206,7 @@ export default function CheckoutPage() {
             {/* 1. Shipping Address */}
             <div className="p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 shadow-sm space-y-6">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-[#6C5CE7]/10 text-[#6C5CE7] flex items-center justify-center font-bold text-sm">
+                <div className="w-8 h-8 rounded-xl bg-[#FA521C]/10 text-[#FA521C] flex items-center justify-center font-bold text-sm">
                   1
                 </div>
                 <h2 className="font-display font-bold text-lg text-gray-900">
@@ -225,7 +225,7 @@ export default function CheckoutPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Alex Morgan"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C5CE7]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
                   />
                 </div>
 
@@ -239,7 +239,7 @@ export default function CheckoutPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="alex@example.com"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C5CE7]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
                   />
                 </div>
 
@@ -252,7 +252,7 @@ export default function CheckoutPage() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+91 98765 43210"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C5CE7]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
                   />
                 </div>
 
@@ -266,7 +266,7 @@ export default function CheckoutPage() {
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
                     placeholder="560001"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C5CE7]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
                   />
                 </div>
 
@@ -280,7 +280,7 @@ export default function CheckoutPage() {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="Flat / House No., Building, Street Area"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C5CE7]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
                   />
                 </div>
 
@@ -294,7 +294,7 @@ export default function CheckoutPage() {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="Bengaluru"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C5CE7]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
                   />
                 </div>
 
@@ -307,7 +307,7 @@ export default function CheckoutPage() {
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     placeholder="Karnataka"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C5CE7]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
                   />
                 </div>
               </div>
@@ -316,7 +316,7 @@ export default function CheckoutPage() {
             {/* 2. Payment Method */}
             <div className="p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 shadow-sm space-y-6">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-[#6C5CE7]/10 text-[#6C5CE7] flex items-center justify-center font-bold text-sm">
+                <div className="w-8 h-8 rounded-xl bg-[#FA521C]/10 text-[#FA521C] flex items-center justify-center font-bold text-sm">
                   2
                 </div>
                 <h2 className="font-display font-bold text-lg text-gray-900">
@@ -330,11 +330,11 @@ export default function CheckoutPage() {
                   onClick={() => setPaymentMethod("card")}
                   className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all ${
                     paymentMethod === "card"
-                      ? "border-[#6C5CE7] bg-[#6C5CE7]/5 shadow-sm"
+                      ? "border-[#FA521C] bg-[#FA521C]/5 shadow-sm"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <CreditCard className={`w-5 h-5 mb-3 ${paymentMethod === "card" ? "text-[#6C5CE7]" : "text-gray-400"}`} />
+                  <CreditCard className={`w-5 h-5 mb-3 ${paymentMethod === "card" ? "text-[#FA521C]" : "text-gray-400"}`} />
                   <div>
                     <span className="text-xs font-bold text-gray-900 block">Credit/Debit Card</span>
                     <span className="text-[10px] text-gray-500">Visa, Mastercard, RuPay</span>
@@ -346,11 +346,11 @@ export default function CheckoutPage() {
                   onClick={() => setPaymentMethod("upi")}
                   className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all ${
                     paymentMethod === "upi"
-                      ? "border-[#6C5CE7] bg-[#6C5CE7]/5 shadow-sm"
+                      ? "border-[#FA521C] bg-[#FA521C]/5 shadow-sm"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <QrCode className={`w-5 h-5 mb-3 ${paymentMethod === "upi" ? "text-[#6C5CE7]" : "text-gray-400"}`} />
+                  <QrCode className={`w-5 h-5 mb-3 ${paymentMethod === "upi" ? "text-[#FA521C]" : "text-gray-400"}`} />
                   <div>
                     <span className="text-xs font-bold text-gray-900 block">UPI Instant</span>
                     <span className="text-[10px] text-gray-500">GPay, PhonePe, Paytm</span>
@@ -362,11 +362,11 @@ export default function CheckoutPage() {
                   onClick={() => setPaymentMethod("cod")}
                   className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all ${
                     paymentMethod === "cod"
-                      ? "border-[#6C5CE7] bg-[#6C5CE7]/5 shadow-sm"
+                      ? "border-[#FA521C] bg-[#FA521C]/5 shadow-sm"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <Truck className={`w-5 h-5 mb-3 ${paymentMethod === "cod" ? "text-[#6C5CE7]" : "text-gray-400"}`} />
+                  <Truck className={`w-5 h-5 mb-3 ${paymentMethod === "cod" ? "text-[#FA521C]" : "text-gray-400"}`} />
                   <div>
                     <span className="text-xs font-bold text-gray-900 block">Cash on Delivery</span>
                     <span className="text-[10px] text-gray-500">Pay when delivered</span>
@@ -445,7 +445,7 @@ export default function CheckoutPage() {
                 <hr className="border-gray-100 pt-2" />
                 <div className="flex justify-between items-baseline text-base font-bold text-gray-900">
                   <span>Grand Total</span>
-                  <span className="text-2xl font-display text-[#6C5CE7]">
+                  <span className="text-2xl font-display text-[#FA521C]">
                     ₹{grandTotal.toLocaleString()}
                   </span>
                 </div>
@@ -454,7 +454,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 px-6 rounded-2xl bg-[#6C5CE7] hover:bg-[#5848d2] text-white font-semibold text-sm shadow-xl shadow-[#6C5CE7]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-4 px-6 rounded-2xl bg-[#FA521C] hover:bg-[#E0400B] text-white font-semibold text-sm shadow-xl shadow-[#FA521C]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />

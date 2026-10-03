@@ -33,8 +33,8 @@ export function Footer() {
   return (
     <footer className="bg-[#1A1A2E] text-white relative overflow-hidden">
       {/* Decorative */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#6C5CE7]/40 to-transparent" />
-      <div className="absolute top-20 right-20 w-64 h-64 bg-[#6C5CE7]/5 rounded-full blur-3xl" />
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#FA521C]/40 to-transparent" />
+      <div className="absolute top-20 right-20 w-64 h-64 bg-[#FA521C]/5 rounded-full blur-3xl" />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-14 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12">
