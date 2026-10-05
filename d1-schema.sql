@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS products (
     poster_image TEXT,
     images TEXT,
     color TEXT,
+    colors TEXT,
     material TEXT,
     badge TEXT,
     in_stock INTEGER DEFAULT 1,

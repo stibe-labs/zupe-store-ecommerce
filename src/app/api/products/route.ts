@@ -21,18 +21,37 @@ export async function GET(req: NextRequest) {
       const d1Results = await executeD1Query<Product>(query, [param]);
       if (d1Results && d1Results.length > 0) {
         const p: any = d1Results[0];
+        const defaultFound = DEFAULT_PRODUCTS.find((dp) => dp.id === p.id || dp.slug === p.slug);
+        const parsedImages =
+          typeof p.images === "string"
+            ? (() => {
+                try {
+                  const arr = JSON.parse(p.images);
+                  return Array.isArray(arr) && arr.length > 0 ? arr : defaultFound?.images || [];
+                } catch {
+                  return defaultFound?.images || [];
+                }
+              })()
+            : (p.images && p.images.length > 0 ? p.images : defaultFound?.images || []);
+
+        const parsedColors =
+          typeof p.colors === "string"
+            ? (() => {
+                try {
+                  const c = JSON.parse(p.colors);
+                  return Array.isArray(c) && c.length > 0 ? c : defaultFound?.colors || [];
+                } catch {
+                  return defaultFound?.colors || [];
+                }
+              })()
+            : (p.colors && p.colors.length > 0 ? p.colors : defaultFound?.colors || []);
+
         const formatted: Product = {
+          ...(defaultFound || {}),
           ...p,
-          images:
-            typeof p.images === "string"
-              ? (() => {
-                  try {
-                    return JSON.parse(p.images);
-                  } catch {
-                    return [];
-                  }
-                })()
-              : p.images || [],
+          images: parsedImages,
+          colors: parsedColors,
+          poster_image: p.poster_image || defaultFound?.poster_image,
           in_stock: Number(p.in_stock),
           stock_count: Number(p.stock_count),
           price: Number(p.price),
@@ -46,7 +65,7 @@ export async function GET(req: NextRequest) {
       }
 
       // In-memory fallback
-      const found = serverProductsCache.find((p) => p.id === param || p.slug === param);
+      const found = serverProductsCache.find((p) => p.id === param || p.slug === param) || DEFAULT_PRODUCTS.find((p) => p.id === param || p.slug === param);
       if (found) {
         return NextResponse.json(
           { success: true, product: found, source: "cache" },
@@ -60,24 +79,45 @@ export async function GET(req: NextRequest) {
     // Full catalog query
     const d1Results = await executeD1Query<Product>("SELECT * FROM products ORDER BY created_at DESC;");
     if (d1Results && Array.isArray(d1Results) && d1Results.length > 0) {
-      const formatted = d1Results.map((p: any) => ({
-        ...p,
-        images:
+      const formatted = d1Results.map((p: any) => {
+        const defaultFound = DEFAULT_PRODUCTS.find((dp) => dp.id === p.id || dp.slug === p.slug);
+        const parsedImages =
           typeof p.images === "string"
             ? (() => {
                 try {
-                  return JSON.parse(p.images);
+                  const arr = JSON.parse(p.images);
+                  return Array.isArray(arr) && arr.length > 0 ? arr : defaultFound?.images || [];
                 } catch {
-                  return [];
+                  return defaultFound?.images || [];
                 }
               })()
-            : p.images || [],
-        in_stock: Number(p.in_stock),
-        stock_count: Number(p.stock_count),
-        price: Number(p.price),
-        offer_price: Number(p.offer_price ?? p.price),
-        mrp: Number(p.mrp ?? p.price),
-      }));
+            : (p.images && p.images.length > 0 ? p.images : defaultFound?.images || []);
+
+        const parsedColors =
+          typeof p.colors === "string"
+            ? (() => {
+                try {
+                  const c = JSON.parse(p.colors);
+                  return Array.isArray(c) && c.length > 0 ? c : defaultFound?.colors || [];
+                } catch {
+                  return defaultFound?.colors || [];
+                }
+              })()
+            : (p.colors && p.colors.length > 0 ? p.colors : defaultFound?.colors || []);
+
+        return {
+          ...(defaultFound || {}),
+          ...p,
+          images: parsedImages,
+          colors: parsedColors,
+          poster_image: p.poster_image || defaultFound?.poster_image,
+          in_stock: Number(p.in_stock),
+          stock_count: Number(p.stock_count),
+          price: Number(p.price),
+          offer_price: Number(p.offer_price ?? p.price),
+          mrp: Number(p.mrp ?? p.price),
+        };
+      });
 
       // Sync memory cache
       serverProductsCache = formatted;
@@ -220,6 +260,7 @@ export async function POST(req: NextRequest) {
           ? [existingProd.poster_image]
           : [],
       color: color !== undefined ? color : existingProd?.color || "",
+      colors: body.colors !== undefined ? body.colors : existingProd?.colors || [],
       material: material !== undefined ? material : existingProd?.material || "",
       badge: badge !== undefined ? badge : existingProd?.badge || "",
       in_stock: effectiveInStock,

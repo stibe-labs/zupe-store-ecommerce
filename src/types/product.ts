@@ -1,3 +1,11 @@
+export interface ProductColorVariant {
+  name: string;
+  image: string;
+  thumb?: string;
+  colorHex?: string;
+  images?: string[];
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -22,12 +30,7 @@ export interface Product {
   badge?: "New" | "Sale" | "Trending" | "Limited" | "";
   created_at?: string;
   sold_count?: string;
-  colors?: {
-    name: string;
-    image: string;
-    thumb?: string;
-    colorHex?: string;
-  }[];
+  colors?: ProductColorVariant[];
   features?: string[];
   specifications?: Record<string, string>;
   whats_in_box?: string[];

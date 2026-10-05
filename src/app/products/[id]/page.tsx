@@ -61,19 +61,26 @@ export default function ProductDetailPage() {
 
   const applyProduct = (found: Product) => {
     setProduct(found);
+    const initialColor =
+      found.colors && found.colors.length > 0
+        ? found.colors[0].name
+        : found.color || "Standard";
+    setSelectedColor(initialColor);
+
+    const firstColorObj =
+      found.colors && found.colors.length > 0
+        ? found.colors.find((c) => c.name.toLowerCase() === initialColor.toLowerCase()) || found.colors[0]
+        : null;
+
     const defaultImg =
-      found.images && Array.isArray(found.images) && found.images.length > 0
+      firstColorObj?.images?.[0] ||
+      firstColorObj?.image ||
+      (found.images && Array.isArray(found.images) && found.images.length > 0
         ? found.images[0]
-        : found.poster_image || "/products/steam-iron.jpg";
+        : found.poster_image || "/products/steam-iron.jpg");
+
     setSelectedImage(defaultImg);
     setActiveImageIndex(0);
-    if (found.color) {
-      setSelectedColor(found.color);
-    } else if (found.colors && found.colors.length > 0) {
-      setSelectedColor(found.colors[0].name);
-    } else {
-      setSelectedColor("Standard");
-    }
   };
 
   // Load product by slug or ID with priority on fresh live API data
@@ -170,23 +177,37 @@ export default function ProductDetailPage() {
     return product.id === "ripple-lamp" || product.slug?.includes("ripple");
   }, [product]);
 
-  // Gallery images derived from product.images or poster_image
+  // Currently active color variant object
+  const activeColorVariant = useMemo(() => {
+    if (!product?.colors || product.colors.length === 0) return null;
+    return (
+      product.colors.find((c) => c.name.toLowerCase() === selectedColor.toLowerCase()) ||
+      product.colors[0]
+    );
+  }, [product, selectedColor]);
+
+  // Gallery images derived from active color's different angle photos, or product.images, or poster_image
   const gallery = useMemo(() => {
     if (!product) return [];
+    if (activeColorVariant?.images && activeColorVariant.images.length > 0) {
+      return activeColorVariant.images;
+    }
+    if (activeColorVariant?.image) {
+      return [activeColorVariant.image];
+    }
     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
       return product.images;
     }
     return [product.poster_image || "/products/steam-iron.jpg"];
-  }, [product]);
+  }, [product, activeColorVariant]);
 
-  // 16-color RGB Swatches for Ripple Lamp only
-  const rippleColorSwatches = [
-    { name: "Amber Gold", image: "/products/ripple/ripple-amber.jpg", hex: "#F59E0B" },
-    { name: "Ocean Blue", image: "/products/ripple/ripple-blue.jpg", hex: "#3B82F6" },
-    { name: "Rose Pink", image: "/products/ripple/ripple-pink.jpg", hex: "#EC4899" },
-    { name: "Electric Purple", image: "/products/ripple/ripple-purple.jpg", hex: "#A855F7" },
-    { name: "Emerald Green", image: "/products/ripple/ripple-green.jpg", hex: "#10B981" },
-  ];
+  // Available color options for current product
+  const availableColors = useMemo(() => {
+    if (product?.colors && product.colors.length > 0) {
+      return product.colors;
+    }
+    return [];
+  }, [product]);
 
   // Product-specific feature bullet points
   const productHighlights = useMemo(() => {
@@ -292,11 +313,10 @@ export default function ProductDetailPage() {
 
   const handleSelectColorSwatch = (colorName: string, imgSrc: string) => {
     setSelectedColor(colorName);
-    setSelectedImage(imgSrc);
-    const idx = gallery.indexOf(imgSrc);
-    if (idx !== -1) {
-      setActiveImageIndex(idx);
-    }
+    const colorObj = product?.colors?.find((c) => c.name.toLowerCase() === colorName.toLowerCase());
+    const firstImg = colorObj?.images?.[0] || colorObj?.image || imgSrc;
+    setSelectedImage(firstImg);
+    setActiveImageIndex(0);
   };
 
   const toggleAccordion = (section: string) => {
@@ -311,7 +331,14 @@ export default function ProductDetailPage() {
       showToast("Sorry, this item is currently out of stock!");
       return;
     }
-    addToCart(product, quantity);
+    addToCart(
+      {
+        ...product,
+        color: selectedColor,
+        poster_image: selectedImage || product.poster_image,
+      },
+      quantity
+    );
     showToast(`Added ${quantity} item(s) to Cart! 🛒`);
     openCart();
   };
@@ -321,7 +348,14 @@ export default function ProductDetailPage() {
       showToast("Sorry, this item is currently out of stock!");
       return;
     }
-    addToCart(product, quantity);
+    addToCart(
+      {
+        ...product,
+        color: selectedColor,
+        poster_image: selectedImage || product.poster_image,
+      },
+      quantity
+    );
     router.push("/checkout?method=cod");
   };
 
@@ -330,7 +364,14 @@ export default function ProductDetailPage() {
       showToast("Sorry, this item is currently out of stock!");
       return;
     }
-    addToCart(product, quantity);
+    addToCart(
+      {
+        ...product,
+        color: selectedColor,
+        poster_image: selectedImage || product.poster_image,
+      },
+      quantity
+    );
     router.push("/checkout?method=upi");
   };
 
@@ -596,25 +637,27 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* Color / Variant Selector */}
-            {isRippleLamp ? (
+            {/* Color / Variant Selector - Universal for all products */}
+            {availableColors.length > 0 ? (
               <div className="mt-5">
                 <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-900 mb-2">
-                  Color / Light Mode: <span className="font-semibold text-[#FA521C]">{selectedColor}</span>
+                  Color: <span className="font-semibold text-[#FA521C]">{selectedColor}</span>
                 </h3>
-                <div className="flex items-center gap-2.5">
-                  {rippleColorSwatches.map((c, i) => {
-                    const isSelected = selectedColor === c.name;
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  {availableColors.map((c, i) => {
+                    const isSelected = selectedColor.toLowerCase() === c.name.toLowerCase();
                     return (
                       <button
                         key={i}
                         onClick={() => handleSelectColorSwatch(c.name, c.image)}
-                        className={`relative w-12 h-12 rounded-[14px] overflow-hidden flex-shrink-0 transition-all ${
+                        className={`relative w-12 h-12 rounded-[14px] overflow-hidden flex-shrink-0 transition-all duration-200 ${
                           isSelected
-                            ? "ring-2 ring-[#FA521C] ring-offset-2 scale-105"
-                            : "border border-gray-200 opacity-85 hover:opacity-100"
+                            ? "ring-2 ring-[#FA521C] ring-offset-2 scale-105 shadow-md"
+                            : "border border-gray-200 opacity-80 hover:opacity-100 hover:scale-105"
                         }`}
                         title={c.name}
+                        aria-label={c.name}
+                        aria-pressed={isSelected}
                       >
                         <Image
                           src={c.image}
@@ -622,15 +665,26 @@ export default function ProductDetailPage() {
                           fill
                           className="object-cover"
                         />
+                        {c.colorHex && (
+                          <span
+                            className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 rounded-full border border-white/80 shadow-sm"
+                            style={{ backgroundColor: c.colorHex }}
+                          />
+                        )}
                       </button>
                     );
                   })}
                 </div>
+                {activeColorVariant?.images && activeColorVariant.images.length > 1 && (
+                  <p className="text-[10px] text-gray-400 mt-1.5">
+                    {activeColorVariant.images.length} photos for {selectedColor}
+                  </p>
+                )}
               </div>
             ) : product.color ? (
               <div className="mt-5">
                 <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-900 mb-1">
-                  Color Option: <span className="font-semibold text-[#FA521C]">{product.color}</span>
+                  Color: <span className="font-semibold text-[#FA521C]">{product.color}</span>
                 </h3>
               </div>
             ) : null}
