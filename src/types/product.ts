@@ -55,17 +55,30 @@ export interface Product {
 }
 
 export interface AdminProductFormData {
+  id?: string;
+  slug?: string;
   name: string;
-  subtitle: string;
+  subtitle?: string;
   category: string;
-  tagline: string;
-  description: string;
-  volume: string;
+  tagline?: string;
+  description?: string;
+  volume?: string;
+  price: number;
   mrp: number;
-  offer_price: number;
+  offer_price?: number;
+  cost_price?: number;
   stock_count: number;
+  in_stock: number;
   poster_image: string;
-  images: string;
-  color: string;
-  material: string;
+  images?: string[];
+  color?: string;
+  colors?: ProductColorVariant[];
+  material?: string;
+  badge?: string;
+  rating?: number;
+  review_count?: number;
+  sold_count?: string;
+  features?: string[];
+  specifications?: Record<string, string>;
+  whats_in_box?: string[];
 }

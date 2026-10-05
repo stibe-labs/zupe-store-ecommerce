@@ -212,6 +212,14 @@ export default function ProductDetailPage() {
   // Product-specific feature bullet points
   const productHighlights = useMemo(() => {
     if (!product) return [];
+    if (product.features && Array.isArray(product.features) && product.features.length > 0) {
+      return product.features.map((feat: any) => {
+        if (typeof feat === "string") {
+          return { icon: "✨", text: feat };
+        }
+        return { icon: feat.icon || "✨", text: feat.text || String(feat) };
+      });
+    }
     if (isRippleLamp) {
       return [
         { icon: "✨", text: "Creates a calming ocean water ripple effect on walls & ceilings" },
@@ -510,6 +518,11 @@ export default function ProductDetailPage() {
             <h1 className="text-[20px] sm:text-[24px] font-display font-bold text-[#111111] leading-snug tracking-tight">
               {product.name}
             </h1>
+            {product.subtitle && (
+              <p className="text-[13px] sm:text-[14px] text-gray-500 font-medium mt-0.5">
+                {product.subtitle}
+              </p>
+            )}
 
             {/* Rating & Sold Stats Row */}
             <div className="flex items-center gap-2 mt-1.5 text-xs text-[#6B7280]">
@@ -839,6 +852,14 @@ export default function ProductDetailPage() {
                             <span className="font-semibold text-gray-900">{product.volume}</span>
                           </div>
                         )}
+                        {product.specifications &&
+                          typeof product.specifications === "object" &&
+                          Object.entries(product.specifications).map(([key, val]) => (
+                            <div key={key} className="py-2 flex justify-between">
+                              <span className="font-medium text-gray-500">{key}</span>
+                              <span className="font-semibold text-gray-900">{String(val)}</span>
+                            </div>
+                          ))}
                         <div className="py-2 flex justify-between">
                           <span className="font-medium text-gray-500">Stock Availability</span>
                           <span className={`font-semibold ${!isOutOfStock ? "text-emerald-600" : "text-rose-600"}`}>
@@ -877,20 +898,31 @@ export default function ProductDetailPage() {
                       exit={{ height: 0, opacity: 0 }}
                       className="px-4 pb-4 pt-1 text-[13px] text-gray-600 leading-relaxed border-t border-gray-50"
                     >
-                      <ul className="space-y-2">
-                        <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-[#FA521C]" />
-                          <span>1 × {product.name}</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-[#FA521C]" />
-                          <span>1 × Official User Manual & Operating Guide</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-[#FA521C]" />
-                          <span>1 × Zupe Store Quality Verification & Warranty Seal</span>
-                        </li>
-                      </ul>
+                      {product.whats_in_box && Array.isArray(product.whats_in_box) && product.whats_in_box.length > 0 ? (
+                        <ul className="space-y-2">
+                          {product.whats_in_box.map((item, idx) => (
+                            <li key={idx} className="flex items-center gap-2">
+                              <Check className="w-4 h-4 text-[#FA521C] shrink-0" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <ul className="space-y-2">
+                          <li className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-[#FA521C]" />
+                            <span>1 × {product.name}</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-[#FA521C]" />
+                            <span>1 × Official User Manual & Operating Guide</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-[#FA521C]" />
+                            <span>1 × Zupe Store Quality Verification & Warranty Seal</span>
+                          </li>
+                        </ul>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
