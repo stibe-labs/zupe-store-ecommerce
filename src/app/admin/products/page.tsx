@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import {
@@ -43,6 +43,21 @@ export default function AdminProductsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteConfirmProduct, setDeleteConfirmProduct] = useState<Product | null>(null);
+  const modalScrollRef = useRef<HTMLDivElement>(null);
+
+  // Lock body & html scroll completely when any modal is open
+  useEffect(() => {
+    if (showModal || deleteConfirmProduct) {
+      const prevBodyOverflow = document.body.style.overflow;
+      const prevHtmlOverflow = document.documentElement.style.overflow;
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prevBodyOverflow;
+        document.documentElement.style.overflow = prevHtmlOverflow;
+      };
+    }
+  }, [showModal, deleteConfirmProduct]);
 
   // Tab state in Edit/Add Modal
   const [activeTab, setActiveTab] = useState<
@@ -905,9 +920,27 @@ export default function AdminProductsPage() {
           FULL EDIT & ADD PRODUCT MODAL (FIXED SCROLL & PINNED FOOTER)
          ======================================================== */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div
+          data-lenis-prevent="true"
+          onWheel={(e) => {
+            e.stopPropagation();
+            if (modalScrollRef.current && !modalScrollRef.current.contains(e.target as Node)) {
+              modalScrollRef.current.scrollTop += e.deltaY;
+            }
+          }}
+          style={{ overscrollBehavior: "contain", touchAction: "none" }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm overflow-hidden"
+        >
           <form
+            data-lenis-prevent="true"
             onSubmit={handleSaveProduct}
+            onWheel={(e) => {
+              e.stopPropagation();
+              if (modalScrollRef.current && !modalScrollRef.current.contains(e.target as Node)) {
+                modalScrollRef.current.scrollTop += e.deltaY;
+              }
+            }}
+            style={{ overscrollBehavior: "contain" }}
             className="bg-white rounded-2xl max-w-4xl w-full h-[90vh] max-h-[850px] flex flex-col shadow-2xl border border-slate-200 overflow-hidden"
           >
             {/* 1. Modal Header (shrink-0) */}
@@ -1051,7 +1084,19 @@ export default function AdminProductsPage() {
             )}
 
             {/* 3. Fully Scrollable Body (flex-1 min-h-0 overflow-y-auto) */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-6 space-y-5 text-xs sm:text-sm">
+            <div
+              ref={modalScrollRef}
+              data-lenis-prevent="true"
+              onWheel={(e) => {
+                e.stopPropagation();
+              }}
+              style={{
+                overscrollBehavior: "contain",
+                WebkitOverflowScrolling: "touch",
+                touchAction: "pan-y",
+              }}
+              className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-6 space-y-5 text-xs sm:text-sm"
+            >
               {/* ========================================================
                   TAB 1: BASIC INFO
                  ======================================================== */}
@@ -2000,7 +2045,12 @@ export default function AdminProductsPage() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div
+          data-lenis-prevent="true"
+          onWheel={(e) => e.stopPropagation()}
+          style={{ overscrollBehavior: "contain" }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+        >
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
