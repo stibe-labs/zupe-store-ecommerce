@@ -301,7 +301,7 @@ export default function AdminSettingsPage() {
 
           {loading ? (
             <div className="bg-white rounded-2xl p-12 border border-slate-200/90 flex flex-col items-center justify-center gap-3">
-              <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
+              <RefreshCw className="w-8 h-8 text-[#FA521C] animate-spin" />
               <p className="text-sm font-semibold text-slate-600">Loading stored integration credentials...</p>
             </div>
           ) : (
@@ -309,7 +309,7 @@ export default function AdminSettingsPage() {
               {/* 1. General Store Profile */}
               <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-4">
                 <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FA521C] flex items-center justify-center">
                     <Store className="w-4 h-4 stroke-[2.2]" />
                   </div>
                   <div>
@@ -466,7 +466,7 @@ export default function AdminSettingsPage() {
               <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#FA521C] flex items-center justify-center">
                       <Truck className="w-4 h-4 stroke-[2.2]" />
                     </div>
                     <div>
@@ -484,7 +484,7 @@ export default function AdminSettingsPage() {
                     >
                       {testingProvider === "shiprocket" ? "Testing..." : "Test Connection"}
                     </button>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
                       <CheckCircle2 className="w-3.5 h-3.5" /> Connected
                     </span>
                   </div>
@@ -617,7 +617,7 @@ export default function AdminSettingsPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-500/20 text-xs sm:text-sm transition-all disabled:opacity-60"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl font-bold shadow-md shadow-orange-500/25 text-xs sm:text-sm transition-all disabled:opacity-60"
                 >
                   <Save className={`w-4 h-4 ${saving ? "animate-spin" : ""}`} />
                   <span>{saving ? "Saving All Settings..." : "Save All Settings"}</span>

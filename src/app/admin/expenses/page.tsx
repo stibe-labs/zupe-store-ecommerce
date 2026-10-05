@@ -182,7 +182,7 @@ export default function AdminExpensesPage() {
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                   Operating Expenses & Ad Spend
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-50 text-[#FA521C] border border-orange-200">
                   Total: ₹{totalExpense.toLocaleString("en-IN")}
                 </span>
               </div>
@@ -197,7 +197,7 @@ export default function AdminExpensesPage() {
                 disabled={isRefreshing || loading}
                 className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm disabled:opacity-60"
               >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-blue-600" : ""}`} />
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-[#FA521C]" : ""}`} />
                 <span>Sync</span>
               </button>
 
@@ -211,7 +211,7 @@ export default function AdminExpensesPage() {
 
               <button
                 onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#FA521C] hover:bg-[#D4380D] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25"
               >
                 <Plus className="w-4 h-4 stroke-[2.5]" />
                 <span>Add Expense</span>
@@ -223,7 +223,7 @@ export default function AdminExpensesPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {[
               { cat: "Meta Ads", color: "text-purple-600", bg: "bg-purple-50" },
-              { cat: "Shiprocket/shipping", color: "text-blue-600", bg: "bg-blue-50" },
+              { cat: "Shiprocket/shipping", color: "text-[#FA521C]", bg: "bg-orange-50" },
               { cat: "Product cost", color: "text-emerald-600", bg: "bg-emerald-50" },
               { cat: "RTO charges", color: "text-rose-600", bg: "bg-rose-50" },
               { cat: "Software/subscriptions", color: "text-amber-600", bg: "bg-amber-50" },
@@ -234,7 +234,7 @@ export default function AdminExpensesPage() {
                 onClick={() => setCategoryFilter(categoryFilter === item.cat ? "all" : item.cat)}
                 className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                   categoryFilter === item.cat
-                    ? "border-blue-600 bg-white ring-2 ring-blue-500/20 shadow-md"
+                    ? "border-[#FA521C] bg-white ring-2 ring-[#FA521C]/20 shadow-md"
                     : "border-slate-200/90 bg-white hover:border-slate-300 shadow-sm"
                 }`}
               >
@@ -291,7 +291,7 @@ export default function AdminExpensesPage() {
                   {loading ? (
                     <tr>
                       <td colSpan={8} className="py-12 text-center">
-                        <RefreshCw className="w-6 h-6 text-blue-600 animate-spin mx-auto mb-2" />
+                        <RefreshCw className="w-6 h-6 text-[#FA521C] animate-spin mx-auto mb-2" />
                         <span className="text-slate-500 font-medium">Loading expense records...</span>
                       </td>
                     </tr>
@@ -318,7 +318,7 @@ export default function AdminExpensesPage() {
                         <td className="py-3.5 px-4 font-semibold text-slate-800 whitespace-nowrap">
                           {exp.vendor || "-"}
                         </td>
-                        <td className="py-3.5 px-4 font-mono text-blue-600 whitespace-nowrap">
+                        <td className="py-3.5 px-4 font-mono text-[#FA521C] whitespace-nowrap">
                           {exp.reference_no || "-"}
                         </td>
                         <td className="py-3.5 px-4 text-slate-600 max-w-xs truncate">
@@ -370,7 +370,7 @@ export default function AdminExpensesPage() {
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                 >
                   <option value="Meta Ads">Meta Ads</option>
                   <option value="Shiprocket/shipping">Shiprocket/shipping</option>
@@ -392,7 +392,7 @@ export default function AdminExpensesPage() {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                   />
                 </div>
 
@@ -405,7 +405,7 @@ export default function AdminExpensesPage() {
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                   />
                 </div>
               </div>
@@ -420,7 +420,7 @@ export default function AdminExpensesPage() {
                     placeholder="Meta Platforms"
                     value={vendor}
                     onChange={(e) => setVendor(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                   />
                 </div>
 
@@ -433,7 +433,7 @@ export default function AdminExpensesPage() {
                     placeholder="INV-12345"
                     value={referenceNo}
                     onChange={(e) => setReferenceNo(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                   />
                 </div>
               </div>
@@ -447,7 +447,7 @@ export default function AdminExpensesPage() {
                   placeholder="Details of campaign or inventory batch"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                 />
               </div>
 
@@ -462,7 +462,7 @@ export default function AdminExpensesPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold shadow-sm disabled:opacity-60"
+                  className="px-5 py-2 bg-[#FA521C] text-white rounded-xl hover:bg-[#D4380D] font-semibold shadow-sm shadow-orange-500/25 disabled:opacity-60"
                 >
                   {submitting ? "Saving..." : "Save Expense"}
                 </button>

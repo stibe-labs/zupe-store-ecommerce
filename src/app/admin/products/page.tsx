@@ -622,7 +622,7 @@ export default function AdminProductsPage() {
 
             <button
               onClick={openAddModal}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm shadow-orange-500/25 active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
               <span>Add New Product</span>
@@ -689,16 +689,16 @@ export default function AdminProductsPage() {
                 placeholder="Search by title, category, or slug..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
               />
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
               <button
                 onClick={() => setCategoryFilter("all")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                   categoryFilter === "all"
-                    ? "bg-blue-600 text-white shadow-xs"
+                    ? "bg-[#FA521C] text-white shadow-sm shadow-orange-500/20"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
@@ -708,9 +708,9 @@ export default function AdminProductsPage() {
                 <button
                   key={cat}
                   onClick={() => setCategoryFilter(cat)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                     categoryFilter === cat
-                      ? "bg-blue-600 text-white shadow-xs"
+                      ? "bg-[#FA521C] text-white shadow-sm shadow-orange-500/20"
                       : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
@@ -885,14 +885,14 @@ export default function AdminProductsPage() {
                                 target="_blank"
                                 rel="noreferrer"
                                 title="View Live Product Page"
-                                className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition-colors"
+                                className="p-1.5 text-slate-400 hover:text-[#FA521C] rounded-lg hover:bg-orange-50 transition-colors"
                               >
                                 <ExternalLink className="w-4 h-4" />
                               </a>
                               <button
                                 onClick={() => openEditModal(prod)}
                                 title="Edit All Product Details"
-                                className="p-1.5 text-slate-400 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition-colors"
+                                className="p-1.5 text-slate-400 hover:text-[#FA521C] rounded-lg hover:bg-orange-50 transition-colors"
                               >
                                 <Edit2 className="w-4 h-4" />
                               </button>
@@ -946,7 +946,7 @@ export default function AdminProductsPage() {
             {/* 1. Modal Header (shrink-0) */}
             <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/80 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 text-[#FA521C] flex items-center justify-center font-bold shrink-0">
                   {editingProduct ? <Edit2 className="w-4 h-4" /> : <Plus className="w-5 h-5" />}
                 </div>
                 <div>
@@ -965,7 +965,7 @@ export default function AdminProductsPage() {
                     href={`/products/${editingProduct.slug || editingProduct.id}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all"
+                    className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#FA521C] bg-orange-50 hover:bg-orange-100 rounded-lg transition-all"
                   >
                     <span>View Live</span>
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -991,7 +991,7 @@ export default function AdminProductsPage() {
                 onClick={() => setActiveTab("basic")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   activeTab === "basic"
-                    ? "border-blue-600 text-blue-600"
+                    ? "border-[#FA521C] text-[#FA521C]"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -1004,7 +1004,7 @@ export default function AdminProductsPage() {
                 onClick={() => setActiveTab("pricing")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   activeTab === "pricing"
-                    ? "border-blue-600 text-blue-600"
+                    ? "border-[#FA521C] text-[#FA521C]"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -1017,7 +1017,7 @@ export default function AdminProductsPage() {
                 onClick={() => setActiveTab("colors")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   activeTab === "colors"
-                    ? "border-blue-600 text-blue-600"
+                    ? "border-[#FA521C] text-[#FA521C]"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -1030,7 +1030,7 @@ export default function AdminProductsPage() {
                 onClick={() => setActiveTab("media")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   activeTab === "media"
-                    ? "border-blue-600 text-blue-600"
+                    ? "border-[#FA521C] text-[#FA521C]"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -1043,7 +1043,7 @@ export default function AdminProductsPage() {
                 onClick={() => setActiveTab("highlights")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   activeTab === "highlights"
-                    ? "border-blue-600 text-blue-600"
+                    ? "border-[#FA521C] text-[#FA521C]"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -1056,7 +1056,7 @@ export default function AdminProductsPage() {
                 onClick={() => setActiveTab("specs")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   activeTab === "specs"
-                    ? "border-blue-600 text-blue-600"
+                    ? "border-[#FA521C] text-[#FA521C]"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -1112,7 +1112,7 @@ export default function AdminProductsPage() {
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
                       placeholder="e.g. Portable Menstrual Heating Pad"
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                     />
                   </div>
 
@@ -1126,7 +1126,7 @@ export default function AdminProductsPage() {
                         value={formSubtitle}
                         onChange={(e) => setFormSubtitle(e.target.value)}
                         placeholder="e.g. Cordless Waist Relief"
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                       />
                     </div>
 
@@ -1139,7 +1139,7 @@ export default function AdminProductsPage() {
                         value={formSlug}
                         onChange={(e) => setFormSlug(e.target.value)}
                         placeholder="e.g. portable-menstrual-heating-pad"
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-mono text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-mono text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                       />
                       <p className="text-[10px] text-slate-400 mt-0.5">
                         Leave blank to auto-generate from Product Name.
@@ -1158,7 +1158,7 @@ export default function AdminProductsPage() {
                         value={formCategory}
                         onChange={(e) => setFormCategory(e.target.value)}
                         placeholder="e.g. Health & Wellness, Gadgets, Home & Living"
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                       />
                     </div>
 
@@ -1169,7 +1169,7 @@ export default function AdminProductsPage() {
                       <select
                         value={formBadge}
                         onChange={(e) => setFormBadge(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                       >
                         <option value="">No Badge</option>
                         <option value="Sale">Sale (e.g. Red/Orange Badge)</option>
@@ -1189,7 +1189,7 @@ export default function AdminProductsPage() {
                       value={formTagline}
                       onChange={(e) => setFormTagline(e.target.value)}
                       placeholder="e.g. Soothing warmth & multi-frequency massage"
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                     />
                   </div>
 
@@ -1202,7 +1202,7 @@ export default function AdminProductsPage() {
                       value={formDescription}
                       onChange={(e) => setFormDescription(e.target.value)}
                       placeholder="Provide full details about the product, materials, operations, and benefits..."
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C] leading-relaxed"
                     />
                   </div>
                 </div>
@@ -1229,7 +1229,7 @@ export default function AdminProductsPage() {
                           value={formPrice}
                           onChange={(e) => setFormPrice(e.target.value)}
                           placeholder="799"
-                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         />
                       </div>
 
@@ -1242,7 +1242,7 @@ export default function AdminProductsPage() {
                           value={formMrp}
                           onChange={(e) => setFormMrp(e.target.value)}
                           placeholder="1149"
-                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         />
                       </div>
 
@@ -1255,7 +1255,7 @@ export default function AdminProductsPage() {
                           value={formCost}
                           onChange={(e) => setFormCost(e.target.value)}
                           placeholder="280"
-                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-amber-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-amber-700 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         />
                       </div>
                     </div>
@@ -1301,7 +1301,7 @@ export default function AdminProductsPage() {
                         value={formStock}
                         onChange={(e) => setFormStock(e.target.value)}
                         placeholder="92"
-                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                       />
                       <p className="text-[10px] text-slate-400 mt-1">
                         Displayed to customer as "In Stock (XX units available)".
@@ -1360,7 +1360,7 @@ export default function AdminProductsPage() {
                     <button
                       type="button"
                       onClick={addColorVariant}
-                      className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
+                      className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-[#FA521C] rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add Color Variant</span>
@@ -1374,7 +1374,7 @@ export default function AdminProductsPage() {
                       <button
                         type="button"
                         onClick={addColorVariant}
-                        className="mt-3 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold"
+                        className="mt-3 px-3 py-1.5 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-lg text-xs font-semibold shadow-sm shadow-orange-500/20"
                       >
                         Add First Color
                       </button>
@@ -1417,7 +1417,7 @@ export default function AdminProductsPage() {
                                   updateColorField(cIdx, "name", e.target.value)
                                 }
                                 placeholder="e.g. Soft Pink, Pearl White"
-                                className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                               />
                             </div>
 
@@ -1428,7 +1428,7 @@ export default function AdminProductsPage() {
                               <div className="flex items-center gap-2">
                                 <input
                                   type="color"
-                                  value={colorItem.colorHex || "#3B82F6"}
+                                  value={colorItem.colorHex || "#FA521C"}
                                   onChange={(e) =>
                                     updateColorField(cIdx, "colorHex", e.target.value)
                                   }
@@ -1441,7 +1441,7 @@ export default function AdminProductsPage() {
                                     updateColorField(cIdx, "colorHex", e.target.value)
                                   }
                                   placeholder="#F9A8D4"
-                                  className="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                  className="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                                 />
                               </div>
                             </div>
@@ -1458,7 +1458,7 @@ export default function AdminProductsPage() {
                                     updateColorField(cIdx, "image", e.target.value)
                                   }
                                   placeholder="/products/... or https://..."
-                                  className="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                  className="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                                 />
                                 <label
                                   className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg cursor-pointer transition-colors shrink-0"
@@ -1530,7 +1530,7 @@ export default function AdminProductsPage() {
                                 type="text"
                                 id={`angle-input-${cIdx}`}
                                 placeholder="Paste image path / URL (e.g. /products/heating-pad/pad-pink-1.jpg)"
-                                className="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                className="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter") {
                                     e.preventDefault();
@@ -1568,7 +1568,7 @@ export default function AdminProductsPage() {
                                     el.value = "";
                                   }
                                 }}
-                                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold transition-colors shrink-0"
+                                className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-[#FA521C] rounded-lg text-xs font-semibold transition-colors shrink-0"
                               >
                                 + Add Angle Photo
                               </button>
@@ -1596,7 +1596,7 @@ export default function AdminProductsPage() {
                         value={formImage}
                         onChange={(e) => setFormImage(e.target.value)}
                         placeholder="/products/steam-iron.jpg or https://..."
-                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                       />
                       <label
                         className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 shrink-0"
@@ -1679,7 +1679,7 @@ export default function AdminProductsPage() {
                         value={newGalleryInput}
                         onChange={(e) => setNewGalleryInput(e.target.value)}
                         placeholder="Paste image URL (e.g. /products/washer/washer-green-1.jpg)"
-                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
@@ -1707,7 +1707,7 @@ export default function AdminProductsPage() {
                       <button
                         type="button"
                         onClick={addGalleryImage}
-                        className="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-semibold shrink-0 transition-colors"
+                        className="px-4 py-2 bg-orange-50 hover:bg-orange-100 text-[#FA521C] rounded-xl text-xs font-semibold shrink-0 transition-colors"
                       >
                         + Add Image
                       </button>
@@ -1742,7 +1742,7 @@ export default function AdminProductsPage() {
                           value={feat}
                           onChange={(e) => updateFeature(fIdx, e.target.value)}
                           placeholder="Edit this highlight bullet..."
-                          className="flex-1 px-2 py-1 bg-slate-50/50 border border-transparent rounded-lg text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-blue-500 focus:outline-none"
+                          className="flex-1 px-2 py-1 bg-slate-50/50 border border-transparent rounded-lg text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-[#FA521C] focus:outline-none"
                         />
                         <button
                           type="button"
@@ -1766,7 +1766,7 @@ export default function AdminProductsPage() {
                         value={newFeatureInput}
                         onChange={(e) => setNewFeatureInput(e.target.value)}
                         placeholder="e.g. Dual wet & dry ironing modes for all delicate and heavy fabrics"
-                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
@@ -1777,7 +1777,7 @@ export default function AdminProductsPage() {
                       <button
                         type="button"
                         onClick={addFeature}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shrink-0 transition-colors"
+                        className="px-4 py-2 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl text-xs font-semibold shrink-0 transition-colors shadow-sm shadow-orange-500/20 active:scale-[0.98]"
                       >
                         + Add Highlight
                       </button>
@@ -1806,7 +1806,7 @@ export default function AdminProductsPage() {
                           value={formVolume}
                           onChange={(e) => setFormVolume(e.target.value)}
                           placeholder="e.g. Adjustable Elastic Strap, 50ml Tank, 8L Capacity"
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         />
                       </div>
 
@@ -1819,7 +1819,7 @@ export default function AdminProductsPage() {
                           value={formMaterial}
                           onChange={(e) => setFormMaterial(e.target.value)}
                           placeholder="e.g. Lycra + Plush Velvet, Ceramic + ABS"
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         />
                       </div>
                     </div>
@@ -1847,14 +1847,14 @@ export default function AdminProductsPage() {
                             value={s.key}
                             onChange={(e) => updateSpecKey(idx, e.target.value)}
                             placeholder="Spec Name (e.g. Dimensions)"
-                            className="w-1/3 px-2 py-1 bg-slate-50/50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 focus:bg-white focus:border-blue-500 focus:outline-none"
+                            className="w-1/3 px-2 py-1 bg-slate-50/50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 focus:bg-white focus:border-[#FA521C] focus:outline-none"
                           />
                           <input
                             type="text"
                             value={s.val}
                             onChange={(e) => updateSpecVal(idx, e.target.value)}
                             placeholder="Spec Value (e.g. 12 cm × 12 cm × 13 cm)"
-                            className="flex-1 px-2 py-1 bg-slate-50/50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:bg-white focus:border-blue-500 focus:outline-none"
+                            className="flex-1 px-2 py-1 bg-slate-50/50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:bg-white focus:border-[#FA521C] focus:outline-none"
                           />
                           <button
                             type="button"
@@ -1879,19 +1879,19 @@ export default function AdminProductsPage() {
                           placeholder="Spec Name (e.g. Battery Capacity)"
                           value={newSpecKey}
                           onChange={(e) => setNewSpecKey(e.target.value)}
-                          className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         />
                         <input
                           type="text"
                           placeholder="Spec Value (e.g. 1800mAh Rechargeable)"
                           value={newSpecVal}
                           onChange={(e) => setNewSpecVal(e.target.value)}
-                          className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         />
                         <button
                           type="button"
                           onClick={addSpec}
-                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold transition-colors"
+                          className="px-3 py-1.5 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl text-xs font-semibold transition-colors shadow-sm shadow-orange-500/20 active:scale-[0.98]"
                         >
                           + Add Spec Row
                         </button>
@@ -1920,7 +1920,7 @@ export default function AdminProductsPage() {
                             value={boxItem}
                             onChange={(e) => updateBoxItem(bIdx, e.target.value)}
                             placeholder="Edit box item..."
-                            className="flex-1 px-2 py-1 bg-slate-50/50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:bg-white focus:border-blue-500 focus:outline-none"
+                            className="flex-1 px-2 py-1 bg-slate-50/50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:bg-white focus:border-[#FA521C] focus:outline-none"
                           />
                           <button
                             type="button"
@@ -1940,7 +1940,7 @@ export default function AdminProductsPage() {
                         value={newBoxInput}
                         onChange={(e) => setNewBoxInput(e.target.value)}
                         placeholder="e.g. 1 × USB-C Charging Cable"
-                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
@@ -1951,7 +1951,7 @@ export default function AdminProductsPage() {
                       <button
                         type="button"
                         onClick={addBoxItem}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shrink-0 transition-colors"
+                        className="px-4 py-2 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl text-xs font-semibold shrink-0 transition-colors shadow-sm shadow-orange-500/20 active:scale-[0.98]"
                       >
                         + Add Box Item
                       </button>
@@ -1976,7 +1976,7 @@ export default function AdminProductsPage() {
                           value={formRating}
                           onChange={(e) => setFormRating(e.target.value)}
                           placeholder="4.8"
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         />
                       </div>
 
@@ -1989,7 +1989,7 @@ export default function AdminProductsPage() {
                           value={formReviewCount}
                           onChange={(e) => setFormReviewCount(e.target.value)}
                           placeholder="1250"
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         />
                       </div>
 
@@ -2002,7 +2002,7 @@ export default function AdminProductsPage() {
                           value={formSoldCount}
                           onChange={(e) => setFormSoldCount(e.target.value)}
                           placeholder="1,250+ verified orders"
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         />
                       </div>
                     </div>
@@ -2027,7 +2027,7 @@ export default function AdminProductsPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs transition-all shadow-sm flex items-center gap-2 disabled:opacity-50"
+                className="px-6 py-2.5 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-2 disabled:opacity-50 active:scale-[0.98]"
               >
                 {isSubmitting ? (
                   <>

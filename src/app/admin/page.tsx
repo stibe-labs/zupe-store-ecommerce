@@ -133,7 +133,7 @@ export default function AdminDashboardPage() {
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                   Operations & Profit Command Center
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-50 text-[#FA521C] border border-orange-200">
                   Live Edge Sync
                 </span>
               </div>
@@ -144,14 +144,14 @@ export default function AdminDashboardPage() {
 
             <div className="flex flex-wrap items-center gap-2.5">
               {syncStatus && (
-                <div className="text-xs font-semibold px-3 py-1.5 bg-blue-50 text-blue-700 rounded-xl border border-blue-200 animate-pulse">
+                <div className="text-xs font-semibold px-3 py-1.5 bg-orange-50 text-[#FA521C] rounded-xl border border-orange-200 animate-pulse">
                   {syncStatus}
                 </div>
               )}
 
               <button
                 onClick={triggerShopifySync}
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 transition-all"
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-50 hover:bg-orange-50 hover:border-orange-200 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 hover:text-[#FA521C] transition-all"
               >
                 <RefreshCw className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Sync Shopify</span>
@@ -159,15 +159,15 @@ export default function AdminDashboardPage() {
 
               <button
                 onClick={triggerShiprocketSync}
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 transition-all"
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-50 hover:bg-orange-50 hover:border-orange-200 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 hover:text-[#FA521C] transition-all"
               >
-                <Truck className="w-3.5 h-3.5 text-blue-600" />
+                <Truck className="w-3.5 h-3.5 text-[#FA521C]" />
                 <span>Sync Shiprocket</span>
               </button>
 
               <Link
                 href="/admin/rto-refund-balance"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition-all"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl text-xs sm:text-sm font-semibold shadow-sm shadow-orange-500/25 transition-all active:scale-[0.98]"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>RTO Balance (₹{kpis.totalRTOBalance.toLocaleString("en-IN")})</span>
@@ -188,7 +188,7 @@ export default function AdminDashboardPage() {
                 onClick={() => setTimeframe(p.id as any)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                   timeframe === p.id
-                    ? "bg-slate-900 text-white shadow-sm"
+                    ? "bg-[#FA521C] text-white shadow-sm shadow-orange-500/20"
                     : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
                 }`}
               >
@@ -206,7 +206,7 @@ export default function AdminDashboardPage() {
               <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
                 {kpis.totalOrders}
               </p>
-              <span className="text-[11px] text-blue-600 font-semibold flex items-center mt-1">
+              <span className="text-[11px] text-[#FA521C] font-semibold flex items-center mt-1">
                 <ShoppingBag className="w-3 h-3 mr-1" /> 100% Volume
               </span>
             </div>
@@ -227,7 +227,7 @@ export default function AdminDashboardPage() {
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Shipped
               </span>
-              <p className="text-xl sm:text-2xl font-bold text-blue-600 mt-1">
+              <p className="text-xl sm:text-2xl font-bold text-sky-700 mt-1">
                 {kpis.shippedOrders}
               </p>
               <span className="text-[11px] text-slate-500 font-medium mt-1 block">
@@ -280,7 +280,7 @@ export default function AdminDashboardPage() {
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Total Sales Revenue
                 </span>
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FA521C] flex items-center justify-center">
                   <DollarSign className="w-4 h-4 stroke-[2.5]" />
                 </div>
               </div>
@@ -348,7 +348,7 @@ export default function AdminDashboardPage() {
                 <span className="text-slate-500">Held by couriers</span>
                 <Link
                   href="/admin/payments"
-                  className="text-blue-600 font-semibold hover:underline"
+                  className="text-[#FA521C] font-semibold hover:underline"
                 >
                   Reconcile →
                 </Link>
@@ -370,9 +370,9 @@ export default function AdminDashboardPage() {
                 </span>
               </div>
 
-              <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100">
-                <span className="text-blue-700 block">Shiprocket Shipping</span>
-                <span className="text-base font-bold text-blue-900 block mt-0.5">
+              <div className="p-3 bg-sky-50/60 rounded-xl border border-sky-100">
+                <span className="text-sky-700 block">Shiprocket Shipping</span>
+                <span className="text-base font-bold text-sky-900 block mt-0.5">
                   ₹{kpis.shippingCosts.toLocaleString("en-IN")}
                 </span>
               </div>
@@ -414,7 +414,7 @@ export default function AdminDashboardPage() {
 
               <Link
                 href="/admin/orders"
-                className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700"
+                className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#FA521C] hover:text-[#D4380D]"
               >
                 <span>View All Orders</span>
                 <ChevronRight className="w-4 h-4" />
@@ -438,7 +438,7 @@ export default function AdminDashboardPage() {
                 <tbody className="divide-y divide-slate-100 font-medium">
                   {recentOrders.map((ord) => (
                     <tr key={ord.id} className="hover:bg-slate-50/70">
-                      <td className="py-3.5 px-5 font-bold text-blue-600 whitespace-nowrap">
+                      <td className="py-3.5 px-5 font-bold text-[#FA521C] whitespace-nowrap">
                         {ord.shopify_order_id}
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
@@ -450,7 +450,7 @@ export default function AdminDashboardPage() {
                           className={`inline-flex px-2 py-0.5 rounded text-[11px] font-bold ${
                             ord.payment_method === "COD"
                               ? "bg-amber-50 text-amber-700 border border-amber-200"
-                              : "bg-blue-50 text-blue-700 border border-blue-200"
+                              : "bg-orange-50 text-[#FA521C] border border-orange-200"
                           }`}
                         >
                           {ord.payment_method}
@@ -458,7 +458,7 @@ export default function AdminDashboardPage() {
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <p className="font-semibold text-slate-800">{ord.courier_partner || "Delhivery"}</p>
-                        <p className="text-[11px] text-blue-600 font-mono">{ord.shiprocket_awb || "AWB Pending"}</p>
+                        <p className="text-[11px] text-slate-500 font-mono">{ord.shiprocket_awb || "AWB Pending"}</p>
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         {ord.delivery_status === "Delivered" && (
@@ -467,8 +467,8 @@ export default function AdminDashboardPage() {
                           </span>
                         )}
                         {ord.delivery_status === "In Transit" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600" /> In Transit
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-sky-600" /> In Transit
                           </span>
                         )}
                         {ord.delivery_status === "NDR" && (
@@ -482,8 +482,8 @@ export default function AdminDashboardPage() {
                           </span>
                         )}
                         {ord.delivery_status === "Out for Delivery" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
-                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" /> Out for Delivery
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-600" /> Out for Delivery
                           </span>
                         )}
                       </td>
@@ -502,7 +502,7 @@ export default function AdminDashboardPage() {
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         <Link
                           href="/admin/orders"
-                          className="text-xs font-semibold text-blue-600 hover:underline"
+                          className="text-xs font-semibold text-[#FA521C] hover:underline"
                         >
                           Details
                         </Link>

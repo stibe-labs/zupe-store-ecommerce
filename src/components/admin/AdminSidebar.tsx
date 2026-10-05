@@ -99,25 +99,30 @@ export default function AdminSidebar({
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#0B132B] text-slate-300 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#121417] text-slate-300 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 border-r border-white/[0.07] ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Brand / Logo */}
         <div>
-          <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800/80">
+          <div className="h-16 flex items-center justify-between px-6 border-b border-white/[0.08]">
             <Link href="/admin" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#FA521C] to-[#FF7A45] flex items-center justify-center text-white shadow-md shadow-orange-500/25 group-hover:scale-105 transition-transform">
                 <ShoppingBag className="w-4 h-4" />
               </div>
-              <span className="font-bold text-lg text-white tracking-tight">
-                Zupestore
-              </span>
+              <div className="flex items-baseline gap-1">
+                <span className="font-extrabold text-lg text-white tracking-tight font-display">
+                  Zupe
+                </span>
+                <span className="text-xs uppercase tracking-widest text-[#FA521C] font-bold">
+                  Store
+                </span>
+              </div>
             </Link>
             {onCloseMobile && (
               <button
                 onClick={onCloseMobile}
-                className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+                className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -139,8 +144,8 @@ export default function AdminSidebar({
                   onClick={onCloseMobile}
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group ${
                     isActive
-                      ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30 font-semibold"
-                      : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                      ? "bg-gradient-to-r from-[#FA521C] to-[#FF6B35] text-white shadow-md shadow-orange-500/25 font-semibold"
+                      : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -158,8 +163,8 @@ export default function AdminSidebar({
                         item.badgeColor
                           ? item.badgeColor
                           : isActive
-                          ? "bg-blue-500 text-white"
-                          : "bg-slate-800 text-slate-300"
+                          ? "bg-white/20 text-white"
+                          : "bg-white/10 text-slate-300"
                       }`}
                     >
                       {item.badge}
@@ -172,8 +177,8 @@ export default function AdminSidebar({
         </div>
 
         {/* Bottom Orders Sparkline Card & Brand Footnote */}
-        <div className="p-4 space-y-3 border-t border-slate-800/80">
-          <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between shadow-inner">
+        <div className="p-4 space-y-3 border-t border-white/[0.08]">
+          <div className="p-3 rounded-xl bg-[#181B20] border border-white/[0.08] flex items-center justify-between shadow-inner">
             <div>
               <p className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
                 Total Live Orders
@@ -189,16 +194,16 @@ export default function AdminSidebar({
             </div>
             {/* Mini Sparkline Bar Chart Icon */}
             <div className="w-9 h-7 flex items-end justify-between gap-1 px-1">
-              <div className="w-1.5 h-3 bg-blue-500/60 rounded-t" />
-              <div className="w-1.5 h-4 bg-blue-500/80 rounded-t" />
-              <div className="w-1.5 h-6 bg-blue-500 rounded-t" />
+              <div className="w-1.5 h-3 bg-[#FA521C]/50 rounded-t" />
+              <div className="w-1.5 h-4 bg-[#FA521C]/80 rounded-t" />
+              <div className="w-1.5 h-6 bg-[#FA521C] rounded-t" />
             </div>
           </div>
 
           <div className="flex items-center justify-between px-1 pt-1">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-slate-800 flex items-center justify-center text-slate-300 text-xs">
-                🛍️
+              <div className="w-6 h-6 rounded bg-[#FA521C]/15 text-[#FA521C] flex items-center justify-center text-xs font-bold">
+                Z
               </div>
               <div>
                 <p className="text-xs font-semibold text-slate-200">Zupe Store</p>
@@ -212,7 +217,7 @@ export default function AdminSidebar({
                 window.location.href = "/";
               }}
               title="Lock Admin Session"
-              className="inline-flex items-center gap-1 p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors text-xs"
+              className="inline-flex items-center gap-1 p-1.5 rounded-lg text-slate-400 hover:text-[#FA521C] hover:bg-white/[0.06] transition-colors text-xs"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Exit</span>
