@@ -40,12 +40,22 @@ function NavbarContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const { totalItems, openCart } = useCart();
   const { totalWishlistItems } = useWishlist();
-  const { user, isAuthenticated, openAuthModal, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { openSearch } = useSearch();
+
+  const handleAccountClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isAuthenticated) {
+      router.push("/account");
+    } else {
+      router.push(
+        "/signin?redirect=/account&notice=Please sign in to view your profile and orders"
+      );
+    }
+  };
 
   const isItemActive = (href: string) => {
     if (href === "/") {
@@ -163,21 +173,18 @@ function NavbarContent() {
 
         {/* Desktop View Header */}
         <div className="hidden sm:flex items-center justify-between gap-4 lg:gap-8">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
-            <div className="relative w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center">
+          {/* Logo: Increased size without 'Zupestore' text */}
+          <Link href="/" className="flex items-center flex-shrink-0 group" aria-label="Zupe Store">
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 lg:w-[68px] lg:h-[68px] flex items-center justify-center">
               <Image
                 src="/zupe-logo.png"
                 alt="Zupe Store"
-                width={48}
-                height={48}
-                className="object-contain transition-transform group-hover:scale-105"
+                width={68}
+                height={68}
+                className="object-contain w-full h-full transition-transform group-hover:scale-105"
                 priority
               />
             </div>
-            <span className="font-display font-black text-2xl sm:text-[27px] tracking-tight text-[#111111]">
-              Zupe<span className="text-[#FA521C]">store</span>
-            </span>
           </Link>
 
           {/* Search Bar (Center, Triggers Animated Search Modal with Collections) */}
@@ -202,58 +209,19 @@ function NavbarContent() {
 
           {/* Right Action Icons: Account, Wishlist, Cart */}
           <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0">
-            {/* Account */}
-            <div className="relative">
-              <button
-                onClick={() => {
-                  if (isAuthenticated) {
-                    setUserDropdownOpen(!userDropdownOpen);
-                  } else {
-                    router.push("/signin");
-                  }
-                }}
-                className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors py-1 group/account cursor-pointer"
-              >
-                <div className="relative p-1 rounded-full group-hover/account:bg-orange-50 transition-colors">
-                  <User className="w-5 h-5 text-gray-700 group-hover/account:text-[#FA521C] anim-user-hover transition-colors" />
-                </div>
-                <span className="hidden md:inline">
-                  {isAuthenticated ? (user?.name?.split(" ")[0] || "Account") : "Account"}
-                </span>
-              </button>
-
-              {userDropdownOpen && isAuthenticated && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
-                  <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-xs font-bold text-gray-900 truncate">{user?.name}</p>
-                    <p className="text-[11px] text-gray-500 truncate">{user?.email}</p>
-                  </div>
-                  <Link
-                    href="/orders"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50"
-                  >
-                    My Orders
-                  </Link>
-                  <Link
-                    href="/wishlist"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50"
-                  >
-                    Wishlist
-                  </Link>
-                  <button
-                    onClick={() => {
-                      logout();
-                      setUserDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 border-t border-gray-100"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              )}
-            </div>
+            {/* Account (Redirects directly to /account like mobile view) */}
+            <button
+              onClick={handleAccountClick}
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors py-1 group/account cursor-pointer"
+              aria-label="Account"
+            >
+              <div className="relative p-1 rounded-full group-hover/account:bg-orange-50 transition-colors">
+                <User className="w-5 h-5 text-gray-700 group-hover/account:text-[#FA521C] anim-user-hover transition-colors" />
+              </div>
+              <span className="hidden md:inline">
+                {isAuthenticated ? (user?.name?.split(" ")[0] || "Account") : "Account"}
+              </span>
+            </button>
 
             {/* Wishlist */}
             <Link
