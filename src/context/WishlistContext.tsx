@@ -23,26 +23,51 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
+    if (!user) {
+      setWishlist([]);
+      setIsInitialized(true);
+      return;
+    }
+
     try {
-      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+      const userKey = `zp_user_wishlist_${user.id}`;
+      const stored = localStorage.getItem(userKey);
+      let initialList: Product[] = [];
       if (stored) {
-        setWishlist(JSON.parse(stored));
+        initialList = JSON.parse(stored);
       }
+
+      // Check for pending wishlist action from pre-login intent
+      const pendingWStr = localStorage.getItem("zp_pending_wishlist_action");
+      if (pendingWStr) {
+        const pendingW = JSON.parse(pendingWStr);
+        localStorage.removeItem("zp_pending_wishlist_action");
+        if (pendingW.product && !initialList.some((item) => item.id === pendingW.product.id)) {
+          initialList.push(pendingW.product);
+        }
+      }
+
+      // Clean up legacy shared global key so old test data never leaks
+      localStorage.removeItem("zp_user_wishlist");
+
+      setWishlist(initialList);
     } catch (e) {
-      console.warn("Could not load wishlist:", e);
+      console.warn("Could not load user wishlist:", e);
+      setWishlist([]);
     } finally {
       setIsInitialized(true);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!isInitialized || !user) return;
     try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(wishlist));
+      const userKey = `zp_user_wishlist_${user.id}`;
+      localStorage.setItem(userKey, JSON.stringify(wishlist));
     } catch (e) {
       console.warn("Could not save wishlist:", e);
     }
-  }, [wishlist, isInitialized]);
+  }, [wishlist, isInitialized, user]);
 
   const isInWishlist = (productId: string): boolean => {
     if (!user) return false;
@@ -52,6 +77,15 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const toggleWishlist = (product: Product): boolean => {
     if (!user) {
       if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(
+            "zp_pending_wishlist_action",
+            JSON.stringify({
+              action: "wishlist",
+              product,
+            })
+          );
+        } catch (e) {}
         const currentPath = window.location.pathname + window.location.search;
         const redirectUrl = `/signin?redirect=${encodeURIComponent(currentPath)}&notice=${encodeURIComponent("Please sign in to save items to your wishlist")}`;
         window.location.href = redirectUrl;
@@ -71,10 +105,14 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeFromWishlist = (productId: string) => {
+    if (!user) return;
     setWishlist((prev) => prev.filter((item) => item.id !== productId));
   };
 
-  const clearWishlist = () => setWishlist([]);
+  const clearWishlist = () => {
+    if (!user) return;
+    setWishlist([]);
+  };
 
   return (
     <WishlistContext.Provider
@@ -84,7 +122,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         toggleWishlist,
         removeFromWishlist,
         clearWishlist,
-        totalWishlistItems: wishlist.length,
+        totalWishlistItems: !user ? 0 : wishlist.length,
       }}
     >
       {children}

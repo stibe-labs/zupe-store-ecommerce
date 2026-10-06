@@ -342,6 +342,21 @@ export default function ProductDetailPage() {
       return;
     }
     if (!user) {
+      try {
+        localStorage.setItem(
+          "zp_pending_cart_action",
+          JSON.stringify({
+            action: "add_to_cart",
+            product: {
+              ...product,
+              color: selectedColor,
+              poster_image: selectedImage || product.poster_image,
+            },
+            quantity,
+            autoOpenCart: true,
+          })
+        );
+      } catch (e) {}
       const currentPath = typeof window !== "undefined" ? window.location.pathname : `/products/${idOrSlug}`;
       router.push(`/signin?redirect=${encodeURIComponent(currentPath)}&notice=${encodeURIComponent("Please sign in to add this item to your cart")}`);
       return;
@@ -366,6 +381,21 @@ export default function ProductDetailPage() {
       return;
     }
     if (!user) {
+      try {
+        localStorage.setItem(
+          "zp_pending_cart_action",
+          JSON.stringify({
+            action: "buy_now",
+            product: {
+              ...product,
+              color: selectedColor,
+              poster_image: selectedImage || product.poster_image,
+            },
+            quantity,
+            method: "cod",
+          })
+        );
+      } catch (e) {}
       router.push(`/signin?redirect=${encodeURIComponent("/checkout?method=cod")}&notice=${encodeURIComponent("Please sign in to place an order")}`);
       return;
     }
@@ -386,6 +416,21 @@ export default function ProductDetailPage() {
       return;
     }
     if (!user) {
+      try {
+        localStorage.setItem(
+          "zp_pending_cart_action",
+          JSON.stringify({
+            action: "buy_now",
+            product: {
+              ...product,
+              color: selectedColor,
+              poster_image: selectedImage || product.poster_image,
+            },
+            quantity,
+            method: "upi",
+          })
+        );
+      } catch (e) {}
       router.push(`/signin?redirect=${encodeURIComponent("/checkout?method=upi")}&notice=${encodeURIComponent("Please sign in to place an order")}`);
       return;
     }
@@ -422,6 +467,15 @@ export default function ProductDetailPage() {
 
   const handleWishlistClick = () => {
     if (!user) {
+      try {
+        localStorage.setItem(
+          "zp_pending_wishlist_action",
+          JSON.stringify({
+            action: "wishlist",
+            product,
+          })
+        );
+      } catch (e) {}
       const currentPath = typeof window !== "undefined" ? window.location.pathname : `/products/${idOrSlug}`;
       router.push(`/signin?redirect=${encodeURIComponent(currentPath)}&notice=${encodeURIComponent("Please sign in to save items to your wishlist")}`);
       return;

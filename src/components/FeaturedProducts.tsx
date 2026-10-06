@@ -72,6 +72,12 @@ export function FeaturedProducts() {
               <button
                 onClick={() => {
                   if (!user) {
+                    try {
+                      localStorage.setItem(
+                        "zp_pending_wishlist_action",
+                        JSON.stringify({ action: "wishlist", product })
+                      );
+                    } catch (e) {}
                     router.push(
                       `/signin?redirect=/&notice=${encodeURIComponent(
                         "Please sign in to save items to your wishlist"
@@ -139,6 +145,12 @@ export function FeaturedProducts() {
                   <button
                     onClick={() => {
                       if (!user) {
+                        try {
+                          localStorage.setItem(
+                            "zp_pending_cart_action",
+                            JSON.stringify({ action: "add_to_cart", product, quantity: 1, autoOpenCart: true })
+                          );
+                        } catch (e) {}
                         router.push(
                           `/signin?redirect=/&notice=${encodeURIComponent(
                             "Please sign in to add items to your cart"

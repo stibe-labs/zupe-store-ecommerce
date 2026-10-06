@@ -103,8 +103,8 @@ function SignInContent() {
       } else {
         setSuccess("Signed in successfully! Redirecting...");
         setTimeout(() => {
-          router.replace(redirectUrl);
-        }, 500);
+          window.location.href = redirectUrl || "/";
+        }, 400);
       }
     } else {
       if (!otp) {
@@ -119,8 +119,8 @@ function SignInContent() {
       } else {
         setSuccess("Account created successfully! Redirecting...");
         setTimeout(() => {
-          router.replace(redirectUrl);
-        }, 500);
+          window.location.href = redirectUrl || "/";
+        }, 400);
       }
     }
   };

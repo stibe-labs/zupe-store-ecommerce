@@ -132,9 +132,11 @@ export function Navbar() {
               aria-label="Wishlist"
             >
               <Heart className="w-5 h-5 stroke-[2.2]" />
-              <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center leading-none shadow-sm">
-                {totalWishlistItems > 0 ? totalWishlistItems : 3}
-              </span>
+              {totalWishlistItems > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center leading-none shadow-sm">
+                  {totalWishlistItems}
+                </span>
+              )}
             </Link>
 
             <button
@@ -143,9 +145,11 @@ export function Navbar() {
               aria-label="Shopping Cart"
             >
               <ShoppingBag className="w-5 h-5 stroke-[2.2]" />
-              <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center leading-none shadow-sm">
-                {totalItems > 0 ? totalItems : 2}
-              </span>
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center leading-none shadow-sm">
+                  {totalItems}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -436,9 +440,11 @@ export function Navbar() {
             >
               <Heart className="w-5 h-5 text-gray-700" />
               <span className="hidden md:inline">Wishlist</span>
-              <span className="absolute -top-1.5 -right-2 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center">
-                {totalWishlistItems > 0 ? totalWishlistItems : 3}
-              </span>
+              {totalWishlistItems > 0 && (
+                <span className="absolute -top-1.5 -right-2 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center">
+                  {totalWishlistItems}
+                </span>
+              )}
             </Link>
 
             {/* Cart */}
@@ -449,9 +455,11 @@ export function Navbar() {
             >
               <div className="relative">
                 <ShoppingBag className="w-5 h-5 text-gray-700" />
-                <span className="absolute -top-2 -right-2.5 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white">
-                  {totalItems > 0 ? totalItems : 2}
-                </span>
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2.5 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white">
+                    {totalItems}
+                  </span>
+                )}
               </div>
               <span className="hidden md:inline font-bold">Cart</span>
             </button>

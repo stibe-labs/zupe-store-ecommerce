@@ -60,15 +60,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     let isMounted = true;
     async function initCart() {
       if (!user) {
-        try {
-          const stored = localStorage.getItem(GUEST_CART_KEY);
-          if (stored && isMounted) {
-            setCart(JSON.parse(stored));
-          }
-        } catch (e) {
-          console.warn("Could not load guest cart:", e);
-        } finally {
-          if (isMounted) setIsInitialized(true);
+        if (isMounted) {
+          setCart([]);
+          setIsInitialized(true);
         }
         return;
       }
@@ -82,23 +76,51 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
 
         let merged = [...remoteItems];
+
+        // Process pending cart action if any (saved before redirecting to sign in)
         try {
-          const guestStored = localStorage.getItem(GUEST_CART_KEY);
-          if (guestStored) {
-            const guestItems: CartItem[] = JSON.parse(guestStored);
-            guestItems.forEach((gItem) => {
-              const idx = merged.findIndex((m) => m.id === gItem.id);
+          const pendingActionStr = localStorage.getItem("zp_pending_cart_action");
+          if (pendingActionStr) {
+            const pending = JSON.parse(pendingActionStr);
+            localStorage.removeItem("zp_pending_cart_action");
+            if (pending.product) {
+              const p = pending.product;
+              const pPrice = p.offer_price || p.price || 990;
+              const pMrp = p.mrp || Math.round(pPrice * 1.25);
+              const pImage = p.poster_image || p.image || "";
+              const pQty = pending.quantity || 1;
+
+              const idx = merged.findIndex((m) => m.id === p.id);
               if (idx > -1) {
-                merged[idx].quantity += gItem.quantity;
+                merged[idx].quantity += pQty;
               } else {
-                merged.push(gItem);
+                merged.push({
+                  id: p.id,
+                  name: p.name,
+                  subtitle: p.subtitle,
+                  category: p.category || "Product",
+                  price: pPrice,
+                  mrp: pMrp,
+                  quantity: pQty,
+                  poster_image: pImage,
+                  volume: p.volume,
+                  color: p.color,
+                });
               }
-            });
-            localStorage.removeItem(GUEST_CART_KEY);
+
+              if (pending.autoOpenCart) {
+                setTimeout(() => setIsOpen(true), 350);
+              }
+            }
           }
         } catch (e) {
-          console.warn("Could not merge guest cart:", e);
+          console.warn("Could not process pending cart action:", e);
         }
+
+        // Clean up legacy guest cart
+        try {
+          localStorage.removeItem(GUEST_CART_KEY);
+        } catch (e) {}
 
         if (isMounted) setCart(merged);
       } catch (err) {
@@ -113,15 +135,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   useEffect(() => {
-    if (!isInitialized) return;
-    if (!user) {
-      try {
-        localStorage.setItem(GUEST_CART_KEY, JSON.stringify(cart));
-      } catch (e) {
-        console.warn("Failed to persist guest cart:", e);
-      }
-      return;
-    }
+    if (!isInitialized || !user) return;
 
     const timer = setTimeout(async () => {
       try {
@@ -160,6 +174,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   ): boolean => {
     if (!user) {
       if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(
+            "zp_pending_cart_action",
+            JSON.stringify({
+              action: "add_to_cart",
+              product,
+              quantity,
+              autoOpenCart: true,
+            })
+          );
+        } catch (e) {}
         const currentPath = window.location.pathname + window.location.search;
         const redirectUrl = `/signin?redirect=${encodeURIComponent(currentPath)}&notice=${encodeURIComponent("Please sign in to add items to your cart")}`;
         window.location.href = redirectUrl;

@@ -110,6 +110,12 @@ function ProductsContent() {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
+      try {
+        localStorage.setItem(
+          "zp_pending_cart_action",
+          JSON.stringify({ action: "add_to_cart", product, quantity: 1, autoOpenCart: true })
+        );
+      } catch (e) {}
       router.push(
         `/signin?redirect=/products&notice=${encodeURIComponent(
           "Please sign in to add items to your cart"
@@ -125,6 +131,12 @@ function ProductsContent() {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
+      try {
+        localStorage.setItem(
+          "zp_pending_wishlist_action",
+          JSON.stringify({ action: "wishlist", product })
+        );
+      } catch (e) {}
       router.push(
         `/signin?redirect=/products&notice=${encodeURIComponent(
           "Please sign in to save items to your wishlist"
