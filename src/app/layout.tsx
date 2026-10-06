@@ -6,6 +6,7 @@ import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 import { CartDrawer } from "@/components/CartDrawer";
 import { AuthModal } from "@/components/AuthModal";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -41,6 +42,7 @@ export default function RootLayout({
                 {children}
                 <CartDrawer />
                 <AuthModal />
+                <MobileBottomNav />
               </SmoothScrollProvider>
             </CartProvider>
           </WishlistProvider>
