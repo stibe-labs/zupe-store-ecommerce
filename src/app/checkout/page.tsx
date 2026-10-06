@@ -147,15 +147,15 @@ function CheckoutContent() {
 
     // Online Payment via Razorpay (UPI, Credit/Debit Cards, Net Banking)
     try {
-      // 1. Ensure Razorpay SDK script is loaded
+      // 1. Ensure payment gateway script is loaded
       const isScriptLoaded = await loadRazorpayScript();
       if (!isScriptLoaded) {
         setLoading(false);
-        setErrorMessage("Could not load secure Razorpay gateway. Please check your connection and retry.");
+        setErrorMessage("Could not initialize secure payment gateway. Please check your connection and retry.");
         return;
       }
 
-      // 2. Create Razorpay order on server
+      // 2. Create payment order on server
       const createOrderRes = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -174,16 +174,16 @@ function CheckoutContent() {
       const orderData = await createOrderRes.json();
       if (!orderData.success || !orderData.orderId) {
         setLoading(false);
-        setErrorMessage(orderData.error || "Failed to initialize Razorpay payment. Please try again.");
+        setErrorMessage(orderData.error || "Failed to initialize payment. Please try again.");
         return;
       }
 
       const methodLabel =
         paymentMethod === "upi"
-          ? "UPI via Razorpay"
+          ? "UPI"
           : paymentMethod === "netbanking"
-          ? "Net Banking via Razorpay"
-          : "Card via Razorpay";
+          ? "Net Banking"
+          : "Credit / Debit Card";
 
       // 3. Configure Razorpay modal options
       const options = {
@@ -308,7 +308,7 @@ function CheckoutContent() {
             </div>
             {confirmedPaymentId && (
               <div className="flex justify-between items-center py-1 border-b border-gray-100">
-                <span className="text-gray-500">Razorpay Payment ID:</span>
+                <span className="text-gray-500">Transaction ID:</span>
                 <span className="font-mono font-bold text-emerald-600 text-xs">{confirmedPaymentId}</span>
               </div>
             )}
@@ -316,11 +316,11 @@ function CheckoutContent() {
               <span className="text-gray-500">Payment Mode:</span>
               <span className="font-semibold text-gray-900">
                 {paymentMethod === "upi"
-                  ? "UPI (Razorpay)"
+                  ? "UPI Instant"
                   : paymentMethod === "netbanking"
-                  ? "Net Banking (Razorpay)"
+                  ? "Net Banking"
                   : paymentMethod === "card"
-                  ? "Card (Razorpay)"
+                  ? "Credit / Debit Card"
                   : "Cash on Delivery"}
               </span>
             </div>
@@ -424,7 +424,7 @@ function CheckoutContent() {
             </h1>
             <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Razorpay Verified</span>
+              <span>100% Secure Checkout</span>
             </div>
           </div>
         </div>
@@ -564,13 +564,9 @@ function CheckoutContent() {
                       Payment Options
                     </h2>
                     <p className="text-xs text-gray-500">
-                      Choose your preferred method (Online via Razorpay or Cash on Delivery)
+                      Choose your preferred payment method (Online or Cash on Delivery)
                     </p>
                   </div>
-                </div>
-                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-[#FA521C] text-[11px] font-bold">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Razorpay Test Mode</span>
                 </div>
               </div>
 
@@ -596,7 +592,7 @@ function CheckoutContent() {
                   </div>
                   <div>
                     <span className="text-sm font-bold text-gray-900 block">
-                      UPI Instant (Razorpay)
+                      UPI Instant
                     </span>
                     <span className="text-[11px] text-gray-500 block mt-0.5">
                       GPay, PhonePe, Paytm, BHIM, CRED & QR
@@ -698,13 +694,13 @@ function CheckoutContent() {
                   <div className="flex-1 text-xs">
                     <p className="font-bold text-gray-900 mb-0.5">
                       {paymentMethod === "upi"
-                        ? "Razorpay UPI Instant Gateway"
+                        ? "Instant UPI Payment"
                         : paymentMethod === "netbanking"
-                        ? "Razorpay Net Banking Gateway"
-                        : "Razorpay Card Checkout"}
+                        ? "Direct Net Banking"
+                        : "Encrypted Card Payment"}
                     </p>
                     <p className="text-gray-500 leading-relaxed">
-                      Clicking <strong>&ldquo;Pay with Razorpay&rdquo;</strong> will open the official 256-bit encrypted Razorpay payment modal with live UPI QR code, mobile app auto-intent, and zero convenience charges.
+                      All online payments are end-to-end encrypted with 256-bit bank-grade SSL security. Instant confirmation with zero convenience fees.
                     </p>
                   </div>
                 </div>
@@ -805,7 +801,7 @@ function CheckoutContent() {
               <div className="pt-2 border-t border-gray-100 space-y-2">
                 <div className="flex items-center justify-center gap-2 text-[11px] text-gray-500">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Razorpay 256-bit Bank Grade Security</span>
+                  <span>256-Bit Bank Grade SSL Security</span>
                 </div>
                 <div className="flex items-center justify-center gap-2 text-[10px] text-gray-400">
                   <span>UPI • Google Pay • PhonePe • Net Banking • Cards</span>
