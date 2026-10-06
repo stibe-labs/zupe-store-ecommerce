@@ -15,11 +15,11 @@ export const metadata: Metadata = {
     "Discover beautifully curated decor, modern accessories, and everyday essentials designed to elevate your space and simplify your life.",
   icons: {
     icon: [
+      { url: "/zupe-logo.png", type: "image/png" },
       { url: "/favicon.ico" },
-      { url: "/zupe-store-with-bg-logo.jpeg", type: "image/jpeg" },
     ],
-    shortcut: ["/zupe-store-with-bg-logo.jpeg"],
-    apple: [{ url: "/zupe-store-with-bg-logo.jpeg" }],
+    shortcut: ["/zupe-logo.png"],
+    apple: [{ url: "/zupe-logo.png" }],
   },
 };
 
