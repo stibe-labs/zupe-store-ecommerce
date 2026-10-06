@@ -132,9 +132,10 @@ function NavbarContent() {
     <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
       {/* Main Header Row */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
-        {/* Mobile View Header (Exact match to reference mockup) */}
-        <div className="flex sm:hidden items-center justify-between">
-          <div className="flex items-center gap-3">
+        {/* Mobile View Header */}
+        <div className="flex sm:hidden items-center justify-between relative min-h-[42px]">
+          {/* Left: Hamburger Menu + Search Button */}
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setMobileMenuOpen(true)}
               className="p-1 -ml-1 text-gray-900 hover:text-[#FA521C] transition-colors"
@@ -143,24 +144,6 @@ function NavbarContent() {
               <Menu className="w-6 h-6 stroke-[2.2]" />
             </button>
 
-            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-              <div className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center">
-                <Image
-                  src="/zupe-logo.png"
-                  alt="Zupe Store"
-                  width={36}
-                  height={36}
-                  className="object-contain"
-                  priority
-                />
-              </div>
-              <span className="font-display font-black text-2xl tracking-tight text-black flex items-center">
-                Zupe<span className="text-[#FA521C]">store</span>
-              </span>
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-3.5">
             <button
               onClick={() => {
                 setMobileSearchOpen(!mobileSearchOpen);
@@ -171,7 +154,26 @@ function NavbarContent() {
             >
               <Search className="w-5 h-5 stroke-[2.2]" />
             </button>
+          </div>
 
+          {/* Center: Increased size Logo without 'Zupestore' text */}
+          <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex items-center justify-center">
+            <Link href="/" className="flex items-center justify-center" aria-label="Zupe Store">
+              <div className="relative w-10 h-10 flex items-center justify-center">
+                <Image
+                  src="/zupe-logo.png"
+                  alt="Zupe Store"
+                  width={44}
+                  height={44}
+                  className="object-contain w-full h-full"
+                  priority
+                />
+              </div>
+            </Link>
+          </div>
+
+          {/* Right: Wishlist + Cart */}
+          <div className="flex items-center gap-3">
             <Link
               href="/wishlist"
               className="relative p-1 text-gray-900 hover:text-[#FA521C] transition-colors"
