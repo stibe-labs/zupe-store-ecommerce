@@ -133,12 +133,12 @@ function NavbarContent() {
       {/* Main Header Row */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
         {/* Mobile View Header */}
-        <div className="flex sm:hidden items-center justify-between relative min-h-[42px]">
+        <div className="flex sm:hidden items-center justify-between relative min-h-[48px]">
           {/* Left: Hamburger Menu + Search Button */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="p-1 -ml-1 text-gray-900 hover:text-[#FA521C] transition-colors"
+              className="p-1.5 -ml-1 text-gray-900 hover:text-[#FA521C] transition-colors"
               aria-label="Open Menu"
             >
               <Menu className="w-6 h-6 stroke-[2.2]" />
@@ -149,7 +149,7 @@ function NavbarContent() {
                 setMobileSearchOpen(!mobileSearchOpen);
                 setSearchDropdownOpen(true);
               }}
-              className="p-1 text-gray-900 hover:text-[#FA521C] transition-colors"
+              className="p-1.5 text-gray-900 hover:text-[#FA521C] transition-colors"
               aria-label="Search"
             >
               <Search className="w-5 h-5 stroke-[2.2]" />
@@ -159,12 +159,12 @@ function NavbarContent() {
           {/* Center: Increased size Logo without 'Zupestore' text */}
           <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex items-center justify-center">
             <Link href="/" className="flex items-center justify-center" aria-label="Zupe Store">
-              <div className="relative w-10 h-10 flex items-center justify-center">
+              <div className="relative w-14 h-14 flex items-center justify-center">
                 <Image
                   src="/zupe-logo.png"
                   alt="Zupe Store"
-                  width={44}
-                  height={44}
+                  width={58}
+                  height={58}
                   className="object-contain w-full h-full"
                   priority
                 />
