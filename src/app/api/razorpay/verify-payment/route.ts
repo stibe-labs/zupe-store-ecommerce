@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       postal_code: postal_code || "",
       total_amount: Number(total_amount),
       discount_amount: Number(discount_amount || 0),
-      payment_method: payment_method || "Razorpay Online",
+      payment_method: payment_method || "Online Payment",
       payment_status: "paid",
       order_status: "processing",
       items: items || [],
