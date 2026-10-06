@@ -281,33 +281,35 @@ export function SearchModal() {
                       </div>
 
                       {/* Collections Cards Container */}
-                      <div className="bg-gray-50/80 rounded-2xl p-2.5 sm:p-3.5 border border-gray-100">
-                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-2.5">
+                      <div className="bg-gray-50/80 rounded-2xl p-2 sm:p-3.5 border border-gray-100 overflow-hidden">
+                        {/* Mobile: 1-Row Horizontal Sliding / Swiping Cards. Desktop (sm): 6-Column Grid */}
+                        <div className="flex sm:grid sm:grid-cols-6 gap-2 sm:gap-2.5 overflow-x-auto sm:overflow-x-visible pb-1 sm:pb-0 scrollbar-none snap-x snap-mandatory -mx-1 px-1">
                           {COLLECTIONS.map((col, idx) => (
                             <motion.div
                               key={col.title}
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: idx * 0.04, duration: 0.2 }}
+                              className="w-[94px] min-w-[94px] sm:w-auto sm:min-w-0 flex-shrink-0 snap-start"
                             >
                               <Link
                                 href={col.href}
                                 onClick={closeSearch}
-                                className="group flex flex-col items-center p-2 rounded-xl bg-white border border-gray-100 hover:border-[#FA521C]/50 hover:shadow-md transition-all text-center h-full"
+                                className="group flex flex-col items-center p-2 rounded-xl bg-white border border-gray-100 hover:border-[#FA521C]/50 hover:shadow-md transition-all text-center h-full active:scale-95"
                               >
-                                <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gray-100 mb-2">
+                                <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gray-100 mb-1.5">
                                   <Image
                                     src={col.image}
                                     alt={col.title}
                                     fill
-                                    sizes="(max-width: 768px) 30vw, 15vw"
+                                    sizes="(max-width: 768px) 94px, 15vw"
                                     className="object-cover group-hover:scale-108 transition-transform duration-500"
                                   />
                                 </div>
                                 <span className="text-[10px] sm:text-[11px] font-bold text-gray-900 tracking-tight group-hover:text-[#FA521C] transition-colors truncate w-full uppercase">
                                   {col.title}
                                 </span>
-                                <span className="text-[9px] font-bold text-gray-400 tracking-wider uppercase mt-0.5 group-hover:text-[#FA521C] transition-colors">
+                                <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 tracking-wider uppercase mt-0.5 group-hover:text-[#FA521C] transition-colors">
                                   {col.subtitle}
                                 </span>
                               </Link>
