@@ -33,7 +33,13 @@ export default function CartPage() {
     subtotal,
     freeShippingThreshold,
     freeShippingRemaining,
+    openCart,
   } = useCart();
+
+  React.useEffect(() => {
+    openCart();
+    router.replace("/products");
+  }, [openCart, router]);
 
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);

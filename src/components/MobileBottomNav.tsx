@@ -21,7 +21,7 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 export function MobileBottomNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { totalItems } = useCart();
+  const { totalItems, openCart } = useCart();
   const { isAuthenticated } = useAuth();
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -38,9 +38,8 @@ export function MobileBottomNav() {
   }
 
   // Active status helper
-  const isShopActive = pathname === "/products" && !searchModalOpen;
+  const isShopActive = pathname?.startsWith("/products") && !searchModalOpen;
   const isHomeActive = pathname === "/" && !searchModalOpen;
-  const isBagActive = (pathname === "/cart" || pathname === "/bag") && !searchModalOpen;
   const isAccountActive =
     (pathname === "/account" || pathname === "/signin" || pathname === "/login") &&
     !searchModalOpen;
@@ -208,13 +207,13 @@ export function MobileBottomNav() {
           <Link
             href="/products"
             className={`flex flex-col items-center justify-center w-full h-full py-1 transition-colors ${
-              isShopActive ? "text-[#111111] font-bold" : "text-gray-400 hover:text-gray-600"
+              isShopActive ? "text-[#FA521C]" : "text-gray-400 hover:text-gray-600"
             }`}
           >
             <Store className={`w-5 h-5 ${isShopActive ? "stroke-[2.5]" : "stroke-[2]"}`} />
             <span
               className={`text-[10px] mt-1 ${
-                isShopActive ? "font-bold text-[#111111]" : "font-medium text-gray-500"
+                isShopActive ? "font-bold text-[#FA521C]" : "font-medium text-gray-500"
               }`}
             >
               Shop
@@ -226,14 +225,14 @@ export function MobileBottomNav() {
             type="button"
             onClick={handleSearchClick}
             className={`flex flex-col items-center justify-center w-full h-full py-1 transition-colors ${
-              searchModalOpen ? "text-[#111111] font-bold" : "text-gray-400 hover:text-gray-600"
+              searchModalOpen ? "text-[#FA521C]" : "text-gray-400 hover:text-gray-600"
             }`}
             aria-label="Search products"
           >
             <Search className={`w-5 h-5 ${searchModalOpen ? "stroke-[2.5]" : "stroke-[2]"}`} />
             <span
               className={`text-[10px] mt-1 ${
-                searchModalOpen ? "font-bold text-[#111111]" : "font-medium text-gray-500"
+                searchModalOpen ? "font-bold text-[#FA521C]" : "font-medium text-gray-500"
               }`}
             >
               Search
@@ -249,53 +248,46 @@ export function MobileBottomNav() {
             <div
               className={`w-13 h-13 rounded-full flex items-center justify-center shadow-lg transition-transform group-active:scale-95 border-4 border-white ${
                 isHomeActive
-                  ? "bg-[#111827] shadow-black/25 ring-2 ring-gray-900/10"
-                  : "bg-[#111827] shadow-black/15"
+                  ? "bg-[#111827] shadow-black/25 ring-2 ring-[#FA521C]/40"
+                  : "bg-[#111827] shadow-black/15 opacity-90"
               }`}
             >
               <Home className="w-5 h-5 text-white stroke-[2.2]" />
             </div>
             <span
               className={`text-[10px] mt-0.5 tracking-tight ${
-                isHomeActive ? "font-bold text-[#111111]" : "font-semibold text-gray-600"
+                isHomeActive ? "font-bold text-[#111111]" : "font-semibold text-gray-500"
               }`}
             >
               Home
             </span>
           </Link>
 
-          {/* 4. Bag (Redirects to /cart) */}
-          <Link
-            href="/cart"
-            className={`flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative ${
-              isBagActive ? "text-[#111111] font-bold" : "text-gray-400 hover:text-gray-600"
-            }`}
-            aria-label="View Shopping Bag"
+          {/* 4. Bag (Slide open CartDrawer!) */}
+          <button
+            type="button"
+            onClick={openCart}
+            className="flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative text-gray-400 hover:text-[#FA521C] cursor-pointer"
+            aria-label="Open Shopping Bag"
           >
             <div className="relative">
-              <ShoppingBag
-                className={`w-5 h-5 ${isBagActive ? "stroke-[2.5]" : "stroke-[2]"}`}
-              />
+              <ShoppingBag className="w-5 h-5 stroke-[2]" />
               {totalItems > 0 && (
                 <span className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] px-1 rounded-full bg-[#E02B2B] text-white text-[9px] font-extrabold flex items-center justify-center leading-none border-2 border-white shadow-xs">
                   {totalItems}
                 </span>
               )}
             </div>
-            <span
-              className={`text-[10px] mt-1 ${
-                isBagActive ? "font-bold text-[#111111]" : "font-medium text-gray-500"
-              }`}
-            >
+            <span className="text-[10px] mt-1 font-medium text-gray-500">
               Bag
             </span>
-          </Link>
+          </button>
 
           {/* 5. Account (Profile if signed in, else Sign In) */}
           <button
             onClick={handleAccountClick}
             className={`flex flex-col items-center justify-center w-full h-full py-1 transition-colors ${
-              isAccountActive ? "text-[#111111] font-bold" : "text-gray-400 hover:text-gray-600"
+              isAccountActive ? "text-[#FA521C]" : "text-gray-400 hover:text-gray-600"
             }`}
             aria-label="Account details"
           >
@@ -304,7 +296,7 @@ export function MobileBottomNav() {
             />
             <span
               className={`text-[10px] mt-1 ${
-                isAccountActive ? "font-bold text-[#111111]" : "font-medium text-gray-500"
+                isAccountActive ? "font-bold text-[#FA521C]" : "font-medium text-gray-500"
               }`}
             >
               Account

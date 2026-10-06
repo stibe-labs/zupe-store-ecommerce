@@ -33,7 +33,7 @@ export default function AccountPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { totalWishlistItems } = useWishlist();
-  const { totalItems } = useCart();
+  const { totalItems, openCart } = useCart();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -234,12 +234,13 @@ export default function AccountPage() {
                   <p className="text-xs text-gray-500">{totalItems} item{totalItems === 1 ? "" : "s"} in cart</p>
                 </div>
               </div>
-              <Link
-                href="/cart"
-                className="px-3.5 py-1.5 rounded-xl bg-[#FA521C] text-white text-xs font-bold hover:bg-[#E04515] transition-colors"
+              <button
+                type="button"
+                onClick={openCart}
+                className="px-3.5 py-1.5 rounded-xl bg-[#FA521C] text-white text-xs font-bold hover:bg-[#E04515] transition-colors cursor-pointer"
               >
-                Go to Cart
-              </Link>
+                Open Bag
+              </button>
             </div>
             <p className="text-xs text-gray-500 leading-relaxed">
               Items in your cart are reserved with express checkout and free shipping offers.

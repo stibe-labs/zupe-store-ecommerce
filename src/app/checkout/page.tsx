@@ -412,8 +412,8 @@ function CheckoutContent() {
               Home
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href="/cart" className="hover:text-[#FA521C] transition-colors">
-              Cart
+            <Link href="/products" className="hover:text-[#FA521C] transition-colors">
+              Shop
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-[#FA521C] font-semibold">Secure Checkout</span>

@@ -186,13 +186,6 @@ export function CartDrawer() {
                   </span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Link
-                    href="/cart"
-                    onClick={closeCart}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-gray-100 text-gray-800 font-semibold rounded-xl hover:bg-gray-200 transition-colors text-sm"
-                  >
-                    View Shopping Bag
-                  </Link>
                   <button
                     onClick={() => {
                       closeCart();

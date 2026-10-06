@@ -330,9 +330,9 @@ function ProductsContent() {
       <Navbar />
 
       {/* Header Banner */}
-      <div className="pt-28 pb-12 bg-gradient-to-b from-[#FA521C]/10 via-[#F8F9FA]/60 to-[#F8F9FA] border-b border-gray-100">
+      <div className="pt-16 sm:pt-24 pb-6 sm:pb-8 bg-gradient-to-b from-[#FA521C]/10 via-[#F8F9FA]/60 to-[#F8F9FA] border-b border-gray-100">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
-          <div className="flex items-center gap-2 text-xs text-[#636E72] mb-3">
+          <div className="flex items-center gap-2 text-xs text-[#636E72] mb-2 sm:mb-3">
             <Link href="/" className="hover:text-[#FA521C] transition-colors">
               Home
             </Link>
@@ -355,16 +355,16 @@ function ProductsContent() {
             )}
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4">
             <div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#FA521C]/10 text-[#FA521C] mb-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FA521C]/10 text-[#FA521C] mb-1.5">
                 {banner.icon}
                 <span>{banner.badge}</span>
               </span>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-[#2D3436]">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-extrabold text-[#111111]">
                 {banner.title}
               </h1>
-              <p className="text-sm text-[#636E72] mt-1">
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
                 {banner.subtitle}
               </p>
             </div>
@@ -660,7 +660,7 @@ function ProductsContent() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                 {filteredProducts.map((product) => {
                   const wishlisted = isInWishlist(product.id);
                   const discount =
@@ -674,99 +674,91 @@ function ProductsContent() {
                       layout
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="group bg-white rounded-3xl border border-gray-100/80 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-[#FA521C]/10 transition-all duration-300 flex flex-col"
+                      className="bg-white rounded-2xl border border-gray-100 p-2.5 sm:p-3 flex flex-col justify-between shadow-xs hover:shadow-md transition-all duration-300 group"
                     >
-                      {/* Image Frame */}
-                      <Link href={`/products/${product.slug || product.id}`} className="relative block aspect-square bg-[#F1F2F6] overflow-hidden">
-                        <Image
-                          src={product.poster_image}
-                          alt={product.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
+                      <div>
+                        {/* Image Frame */}
+                        <Link
+                          href={`/products/${product.slug || product.id}`}
+                          className="relative block w-full aspect-square rounded-xl overflow-hidden bg-gray-50 mb-2 sm:mb-2.5"
+                        >
+                          <Image
+                            src={product.poster_image}
+                            alt={product.name}
+                            fill
+                            sizes="(max-width: 768px) 50vw, 25vw"
+                            className="object-cover object-bottom group-hover:scale-105 transition-transform duration-500"
+                          />
 
-                        {/* Top Badges */}
-                        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-                          {product.badge && (
-                            <span className="px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase bg-[#FA521C] text-white shadow-sm">
-                              {product.badge}
-                            </span>
-                          )}
+                          {/* Discount Pill Badge */}
                           {discount > 0 && (
-                            <span className="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase bg-[#FF6B6B] text-white shadow-sm">
+                            <span className="absolute top-2 left-2 bg-[#E53E3E] text-white text-[10px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md shadow-xs">
                               -{discount}%
                             </span>
                           )}
-                        </div>
 
-                        {/* Wishlist Button */}
-                        <button
-                          onClick={(e) => handleToggleWishlist(e, product)}
-                          className={`absolute top-3 right-3 p-2.5 rounded-full backdrop-blur-md transition-all duration-200 z-10 ${
-                            wishlisted
-                              ? "bg-[#FF6B6B] text-white shadow-md"
-                              : "bg-white/80 text-gray-600 hover:bg-white hover:text-[#FF6B6B]"
-                          }`}
-                          aria-label="Wishlist"
-                        >
-                          <Heart className={`w-4 h-4 ${wishlisted ? "fill-current" : ""}`} />
-                        </button>
-                      </Link>
+                          {/* Wishlist Button */}
+                          <button
+                            onClick={(e) => handleToggleWishlist(e, product)}
+                            className={`absolute top-2 right-2 p-1.5 sm:p-2 rounded-full backdrop-blur-xs transition-colors z-10 ${
+                              wishlisted
+                                ? "bg-rose-50 text-rose-500 shadow-xs"
+                                : "bg-white/80 text-gray-400 hover:text-rose-500 hover:bg-white"
+                            }`}
+                            aria-label="Wishlist"
+                          >
+                            <Heart
+                              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+                                wishlisted ? "fill-current" : ""
+                              }`}
+                            />
+                          </button>
+                        </Link>
 
-                      {/* Content */}
-                      <div className="p-5 flex flex-col flex-1">
-                        <div className="flex items-center justify-between text-xs text-[#636E72] mb-1.5">
-                          <span className="font-semibold uppercase tracking-wider text-[10px] text-[#FA521C]">
+                        {/* Category & Rating */}
+                        <div className="flex items-center justify-between text-[10px] text-gray-400 mb-1">
+                          <span className="font-semibold uppercase tracking-wider text-[#FA521C] truncate max-w-[65%]">
                             {product.category}
                           </span>
                           {product.rating && (
-                            <div className="flex items-center gap-1 text-amber-500">
-                              <Star className="w-3.5 h-3.5 fill-current" />
-                              <span className="font-bold text-xs">{product.rating}</span>
-                              <span className="text-gray-400 text-[10px]">
-                                ({product.review_count || 10})
+                            <div className="flex items-center gap-1 text-amber-500 flex-shrink-0">
+                              <Star className="w-3 h-3 fill-current" />
+                              <span className="font-bold text-[10px] sm:text-[11px] text-gray-600">
+                                {product.rating.toFixed(1)}
                               </span>
                             </div>
                           )}
                         </div>
 
-                        <Link href={`/products/${product.slug || product.id}`}>
-                          <h3 className="font-display font-bold text-base text-[#2D3436] group-hover:text-[#FA521C] transition-colors line-clamp-1 mb-1">
-                            {product.name}
-                          </h3>
+                        {/* Title */}
+                        <Link
+                          href={`/products/${product.slug || product.id}`}
+                          className="block text-xs sm:text-sm font-bold text-gray-900 line-clamp-2 hover:text-[#FA521C] transition-colors leading-snug mb-1.5 min-h-[32px] sm:min-h-[36px]"
+                        >
+                          {product.name}
                         </Link>
 
-                        <p className="text-xs text-[#636E72] line-clamp-2 mb-4 flex-1">
-                          {product.tagline || product.description}
-                        </p>
-
-                        {/* Pricing & Add to Cart */}
-                        <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
-                          <div>
-                            <div className="flex items-baseline gap-1.5">
-                              <span className="font-display font-bold text-lg text-[#2D3436]">
-                                ₹{product.price.toLocaleString()}
-                              </span>
-                              {product.mrp && product.mrp > product.price && (
-                                <span className="text-xs text-gray-400 line-through">
-                                  ₹{product.mrp.toLocaleString()}
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[10px] text-emerald-600 font-medium">
-                              In Stock ({product.stock_count})
+                        {/* Price */}
+                        <div className="flex items-baseline gap-1.5 sm:gap-2 mb-2.5">
+                          <span className="text-sm sm:text-base font-extrabold text-[#111111]">
+                            ₹{product.price.toLocaleString("en-IN")}
+                          </span>
+                          {product.mrp && product.mrp > product.price && (
+                            <span className="text-[10px] sm:text-xs text-gray-400 line-through">
+                              ₹{product.mrp.toLocaleString("en-IN")}
                             </span>
-                          </div>
-
-                          <button
-                            onClick={(e) => handleQuickAdd(e, product)}
-                            className="p-2.5 rounded-xl bg-[#FA521C] hover:bg-[#E0400B] text-white shadow-md shadow-[#FA521C]/25 transition-all transform active:scale-95 flex items-center justify-center cursor-pointer"
-                            aria-label="Add to cart"
-                          >
-                            <ShoppingBag className="w-4 h-4" />
-                          </button>
+                          )}
                         </div>
                       </div>
+
+                      {/* Add to Cart Button */}
+                      <button
+                        onClick={(e) => handleQuickAdd(e, product)}
+                        className="w-full py-2 px-2.5 rounded-lg sm:rounded-xl bg-[#FA521C] hover:bg-[#E04515] active:scale-95 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        <span>Add to Cart</span>
+                      </button>
                     </motion.div>
                   );
                 })}

@@ -60,13 +60,13 @@ export default function OrdersPage() {
     <div className="min-h-screen bg-[#F8F9FA] text-[#111111]">
       <Navbar />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16">
-        <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 pb-12 sm:pb-16">
+        <div className="flex items-center justify-between mb-6 pb-3 border-b border-gray-200">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-display font-bold text-gray-900">
+            <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900">
               My Orders
             </h1>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 mt-0.5">
               Track packages, check shipping updates, and review past purchases
             </p>
           </div>
