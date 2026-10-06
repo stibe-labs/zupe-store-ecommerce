@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -106,16 +107,25 @@ export default function AdminSidebar({
         {/* Brand / Logo */}
         <div>
           <div className="h-16 flex items-center justify-between px-6 border-b border-white/[0.08]">
-            <Link href="/admin" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#FA521C] to-[#FF7A45] flex items-center justify-center text-white shadow-md shadow-orange-500/25 group-hover:scale-105 transition-transform">
-                <ShoppingBag className="w-4 h-4" />
+            <Link href="/admin" className="flex items-center gap-3 group">
+              <div className="relative w-9 h-9 rounded-xl bg-white p-1 shadow-md flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden flex-shrink-0">
+                <Image
+                  src="/zupe-logo.png"
+                  alt="Zupe Store"
+                  width={34}
+                  height={34}
+                  className="object-contain w-full h-full"
+                  priority
+                />
               </div>
-              <div className="flex items-baseline gap-1">
-                <span className="font-extrabold text-lg text-white tracking-tight font-display">
-                  Zupe
-                </span>
-                <span className="text-xs uppercase tracking-widest text-[#FA521C] font-bold">
-                  Store
+              <div className="flex flex-col">
+                <div className="flex items-baseline gap-1">
+                  <span className="font-extrabold text-base text-white tracking-tight font-display">
+                    Zupe<span className="text-[#FA521C]">store</span>
+                  </span>
+                </div>
+                <span className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold -mt-0.5">
+                  Admin Panel
                 </span>
               </div>
             </Link>

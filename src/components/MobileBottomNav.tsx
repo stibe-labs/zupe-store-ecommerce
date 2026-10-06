@@ -124,7 +124,7 @@ export function MobileBottomNav() {
           <button
             type="button"
             onClick={openCart}
-            className="flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative text-gray-400 hover:text-[#FA521C] cursor-pointer"
+            className="flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative text-gray-400 hover:text-[#FA521C] anim-tap-bounce active:text-[#FA521C] cursor-pointer"
             aria-label="Open Shopping Bag"
           >
             <div className="relative">

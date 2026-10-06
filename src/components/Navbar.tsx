@@ -131,14 +131,14 @@ function NavbarContent() {
             </Link>
           </div>
 
-          {/* Right: Wishlist + Cart */}
+          {/* Right: Wishlist + Cart with tap micro-animations */}
           <div className="flex items-center gap-3">
             <Link
               href="/wishlist"
-              className="relative p-1 text-gray-900 hover:text-[#FA521C] transition-colors"
+              className="relative p-1.5 text-gray-900 anim-tap-bounce active:text-[#FF3B30] transition-all cursor-pointer"
               aria-label="Wishlist"
             >
-              <Heart className="w-5 h-5 stroke-[2.2]" />
+              <Heart className="w-5 h-5 stroke-[2.2] active:fill-[#FF3B30]/30 active:scale-90 transition-all duration-150" />
               {totalWishlistItems > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center leading-none shadow-sm">
                   {totalWishlistItems}
@@ -148,10 +148,10 @@ function NavbarContent() {
 
             <button
               onClick={openCart}
-              className="relative p-1 text-gray-900 hover:text-[#FA521C] transition-colors"
+              className="relative p-1.5 text-gray-900 anim-tap-bounce active:text-[#FA521C] transition-all cursor-pointer"
               aria-label="Shopping Cart"
             >
-              <ShoppingBag className="w-5 h-5 stroke-[2.2]" />
+              <ShoppingBag className="w-5 h-5 stroke-[2.2] active:rotate-12 active:scale-90 transition-all duration-150" />
               {totalItems > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center leading-none shadow-sm">
                   {totalItems}
@@ -212,9 +212,11 @@ function NavbarContent() {
                     router.push("/signin");
                   }
                 }}
-                className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors py-1"
+                className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors py-1 group/account cursor-pointer"
               >
-                <User className="w-5 h-5 text-gray-700" />
+                <div className="relative p-1 rounded-full group-hover/account:bg-orange-50 transition-colors">
+                  <User className="w-5 h-5 text-gray-700 group-hover/account:text-[#FA521C] anim-user-hover transition-colors" />
+                </div>
                 <span className="hidden md:inline">
                   {isAuthenticated ? (user?.name?.split(" ")[0] || "Account") : "Account"}
                 </span>
@@ -256,12 +258,14 @@ function NavbarContent() {
             {/* Wishlist */}
             <Link
               href="/wishlist"
-              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors relative py-1"
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors relative py-1 group/wishlist"
             >
-              <Heart className="w-5 h-5 text-gray-700" />
+              <div className="relative p-1 rounded-full group-hover/wishlist:bg-rose-50 transition-colors">
+                <Heart className="w-5 h-5 text-gray-700 group-hover/wishlist:text-[#FF3B30] group-hover/wishlist:fill-[#FF3B30]/20 anim-heart-hover transition-colors" />
+              </div>
               <span className="hidden md:inline">Wishlist</span>
               {totalWishlistItems > 0 && (
-                <span className="absolute -top-1.5 -right-2 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center transition-transform group-hover/wishlist:scale-110 shadow-xs">
                   {totalWishlistItems}
                 </span>
               )}
@@ -270,13 +274,13 @@ function NavbarContent() {
             {/* Cart */}
             <button
               onClick={openCart}
-              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors relative py-1"
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors relative py-1 group/cart cursor-pointer"
               aria-label="View Cart"
             >
-              <div className="relative">
-                <ShoppingBag className="w-5 h-5 text-gray-700" />
+              <div className="relative p-1 rounded-full group-hover/cart:bg-orange-50 transition-colors">
+                <ShoppingBag className="w-5 h-5 text-gray-700 group-hover/cart:text-[#FA521C] anim-cart-hover transition-colors" />
                 {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2.5 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white">
+                  <span className="absolute -top-1.5 -right-2 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white transition-transform group-hover/cart:scale-110 shadow-xs">
                     {totalItems}
                   </span>
                 )}
