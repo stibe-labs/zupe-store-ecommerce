@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Search,
   ShoppingBag,
@@ -21,7 +21,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 
 const CATEGORY_NAV = [
-  { label: "Home", href: "/", active: true },
+  { label: "Home", href: "/" },
   { label: "New Arrivals", href: "/products?filter=new" },
   { label: "Best Sellers", href: "/products?filter=best" },
   { label: "Gadgets", href: "/products?category=Gadgets" },
@@ -32,8 +32,10 @@ const CATEGORY_NAV = [
   { label: "Offers", href: "/products?filter=offers" },
 ];
 
-export function Navbar() {
+function NavbarContent() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
   const searchDesktopRef = React.useRef<HTMLDivElement>(null);
@@ -80,6 +82,46 @@ export function Navbar() {
       setMobileSearchOpen(false);
       router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
     }
+  };
+
+  const isItemActive = (href: string) => {
+    if (href === "/") {
+      return (
+        pathname === "/" &&
+        !searchParams?.get("filter") &&
+        !searchParams?.get("category")
+      );
+    }
+    if (!pathname.startsWith("/products")) return false;
+
+    const [_, targetQuery] = href.split("?");
+    if (!targetQuery) {
+      return (
+        pathname === "/products" &&
+        !searchParams?.get("filter") &&
+        !searchParams?.get("category")
+      );
+    }
+
+    const targetParams = new URLSearchParams(targetQuery);
+    const targetFilter = targetParams.get("filter");
+    const targetCategory = targetParams.get("category");
+
+    const currentFilter = searchParams?.get("filter");
+    const currentCategory = searchParams?.get("category");
+
+    if (targetFilter) {
+      if (targetFilter === "offers" || targetFilter === "deals") {
+        return currentFilter === "offers" || currentFilter === "deals";
+      }
+      return currentFilter?.toLowerCase() === targetFilter.toLowerCase();
+    }
+
+    if (targetCategory) {
+      return currentCategory?.toLowerCase() === targetCategory.toLowerCase();
+    }
+
+    return false;
   };
 
   return (
@@ -474,30 +516,39 @@ export function Navbar() {
             {/* All Categories Dropdown button */}
             <Link
               href="/products"
-              className="flex items-center gap-2 py-3 px-3 text-gray-900 font-bold hover:text-[#FA521C] transition-colors border-r border-gray-100 mr-4"
+              className={`flex items-center gap-2 py-3 px-3 font-bold transition-colors border-r border-gray-100 mr-4 ${
+                pathname === "/products" &&
+                !searchParams?.get("filter") &&
+                (!searchParams?.get("category") || searchParams?.get("category") === "All")
+                  ? "text-[#FA521C]"
+                  : "text-gray-900 hover:text-[#FA521C]"
+              }`}
             >
-              <Menu className="w-4 h-4 text-[#111111]" />
+              <Menu className="w-4 h-4 text-current" />
               <span>All Categories</span>
             </Link>
 
             {/* Navigation Links */}
             <div className="flex items-center gap-6 overflow-x-auto scrollbar-none py-1">
-              {CATEGORY_NAV.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className={`py-3 whitespace-nowrap transition-colors relative ${
-                    item.active
-                      ? "text-[#FA521C] font-bold"
-                      : "text-gray-700 hover:text-[#FA521C] font-medium"
-                  }`}
-                >
-                  {item.label}
-                  {item.active && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FA521C] rounded-full" />
-                  )}
-                </Link>
-              ))}
+              {CATEGORY_NAV.map((item) => {
+                const active = isItemActive(item.href);
+                return (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className={`py-3 whitespace-nowrap transition-colors relative ${
+                      active
+                        ? "text-[#FA521C] font-bold"
+                        : "text-gray-700 hover:text-[#FA521C] font-medium"
+                    }`}
+                  >
+                    {item.label}
+                    {active && (
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FA521C] rounded-full" />
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -533,16 +584,23 @@ export function Navbar() {
               </div>
 
               <div className="space-y-1">
-                {CATEGORY_NAV.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block py-2.5 px-3 rounded-xl text-sm font-semibold text-gray-700 hover:bg-[#FA521C]/10 hover:text-[#FA521C]"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                {CATEGORY_NAV.map((item) => {
+                  const active = isItemActive(item.href);
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`block py-2.5 px-3 rounded-xl text-sm font-semibold transition-colors ${
+                        active
+                          ? "bg-[#FA521C]/10 text-[#FA521C] font-bold"
+                          : "text-gray-700 hover:bg-[#FA521C]/10 hover:text-[#FA521C]"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
 
@@ -553,5 +611,17 @@ export function Navbar() {
         </div>
       )}
     </header>
+  );
+}
+
+export function Navbar() {
+  return (
+    <React.Suspense
+      fallback={
+        <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm h-16 sm:h-[105px]" />
+      }
+    >
+      <NavbarContent />
+    </React.Suspense>
   );
 }
