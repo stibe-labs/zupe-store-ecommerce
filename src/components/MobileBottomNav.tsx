@@ -16,17 +16,14 @@ import {
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { useSearch } from "@/context/SearchContext";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { totalItems, openCart } = useCart();
   const { isAuthenticated } = useAuth();
-
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const { isSearchOpen, openSearch } = useSearch();
 
   // Hide bottom bar on admin dashboard and during checkout flow
   if (
@@ -38,44 +35,11 @@ export function MobileBottomNav() {
   }
 
   // Active status helper
-  const isShopActive = pathname?.startsWith("/products") && !searchModalOpen;
-  const isHomeActive = pathname === "/" && !searchModalOpen;
+  const isShopActive = pathname?.startsWith("/products") && !isSearchOpen;
+  const isHomeActive = pathname === "/" && !isSearchOpen;
   const isAccountActive =
     (pathname === "/account" || pathname === "/signin" || pathname === "/login") &&
-    !searchModalOpen;
-
-  const handleSearchClick = () => {
-    setSearchModalOpen(true);
-    setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, 100);
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      setSearchModalOpen(false);
-      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
-  };
-
-  const handleTagClick = (tag: string) => {
-    setSearchModalOpen(false);
-    router.push(`/products?search=${encodeURIComponent(tag)}`);
-    setSearchQuery("");
-  };
-
-  const liveResults = React.useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return [];
-    return DEFAULT_PRODUCTS.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.tagline.toLowerCase().includes(q)
-    ).slice(0, 4);
-  }, [searchQuery]);
+    !isSearchOpen;
 
   const handleAccountClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -90,113 +54,6 @@ export function MobileBottomNav() {
 
   return (
     <>
-      {/* Search Overlay Sheet (when search clicked) */}
-      {searchModalOpen && (
-        <div className="fixed inset-0 z-50 sm:hidden flex flex-col justify-end bg-black/60 backdrop-blur-xs animate-fadeIn">
-          <div
-            className="flex-1"
-            onClick={() => setSearchModalOpen(false)}
-          />
-
-          <div className="bg-white rounded-t-3xl p-5 shadow-2xl max-h-[80vh] flex flex-col animate-slideUp">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <Search className="w-4 h-4 text-[#FA521C]" />
-                <span className="text-sm font-bold text-gray-900 font-display">
-                  Search Zupe Store
-                </span>
-              </div>
-              <button
-                onClick={() => setSearchModalOpen(false)}
-                className="p-1 rounded-full text-gray-400 hover:text-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Input Form */}
-            <form onSubmit={handleSearchSubmit} className="mt-3 relative">
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search products, lamps, gadgets..."
-                className="w-full pl-4 pr-12 py-3 rounded-2xl bg-gray-50 border border-gray-200 text-sm text-gray-900 focus:outline-none focus:border-[#FA521C] focus:bg-white"
-              />
-              <button
-                type="submit"
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-[#FA521C] text-white"
-                aria-label="Submit search"
-              >
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
-
-            {/* Live Matches or Trending Tags */}
-            <div className="mt-4 overflow-y-auto flex-1">
-              {liveResults.length > 0 ? (
-                <div className="space-y-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-2">
-                    Quick Results
-                  </span>
-                  {liveResults.map((p) => (
-                    <Link
-                      key={p.id}
-                      href={`/products/${p.id}`}
-                      onClick={() => setSearchModalOpen(false)}
-                      className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="relative w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
-                        <Image
-                          src={p.poster_image || p.images[0]}
-                          alt={p.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-gray-900 truncate">
-                          {p.name}
-                        </p>
-                        <p className="text-[11px] font-bold text-[#FA521C]">
-                          ₹{p.price.toLocaleString()}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-2">
-                    Popular Searches
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      "Water Ripple Lamp",
-                      "Mini Steam Iron",
-                      "Heating Pad",
-                      "Nebulizer",
-                      "Gadgets",
-                      "Offers",
-                    ].map((tag) => (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => handleTagClick(tag)}
-                        className="px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-700 hover:bg-orange-50 hover:text-[#FA521C] transition-colors"
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Main Sticky Bottom Navigation Bar */}
       <nav
         aria-label="Mobile Navigation"
@@ -220,19 +77,19 @@ export function MobileBottomNav() {
             </span>
           </Link>
 
-          {/* 2. Search */}
+          {/* 2. Search (Triggers animated Collections search modal!) */}
           <button
             type="button"
-            onClick={handleSearchClick}
-            className={`flex flex-col items-center justify-center w-full h-full py-1 transition-colors ${
-              searchModalOpen ? "text-[#FA521C]" : "text-gray-400 hover:text-gray-600"
+            onClick={openSearch}
+            className={`flex flex-col items-center justify-center w-full h-full py-1 transition-colors cursor-pointer ${
+              isSearchOpen ? "text-[#FA521C]" : "text-gray-400 hover:text-gray-600"
             }`}
             aria-label="Search products"
           >
-            <Search className={`w-5 h-5 ${searchModalOpen ? "stroke-[2.5]" : "stroke-[2]"}`} />
+            <Search className={`w-5 h-5 ${isSearchOpen ? "stroke-[2.5]" : "stroke-[2]"}`} />
             <span
               className={`text-[10px] mt-1 ${
-                searchModalOpen ? "font-bold text-[#FA521C]" : "font-medium text-gray-500"
+                isSearchOpen ? "font-bold text-[#FA521C]" : "font-medium text-gray-500"
               }`}
             >
               Search

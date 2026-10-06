@@ -14,11 +14,13 @@ import {
   X,
   SlidersHorizontal,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
+import { useSearch } from "@/context/SearchContext";
 
 const CATEGORY_NAV = [
   { label: "Home", href: "/" },
@@ -37,53 +39,13 @@ function NavbarContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
-  const searchDesktopRef = React.useRef<HTMLDivElement>(null);
-  const searchMobileRef = React.useRef<HTMLDivElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const { totalItems, openCart } = useCart();
   const { totalWishlistItems } = useWishlist();
   const { user, isAuthenticated, openAuthModal, logout } = useAuth();
-
-  const liveResults = React.useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return [];
-    return DEFAULT_PRODUCTS.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.tagline.toLowerCase().includes(q) ||
-        (p.subtitle && p.subtitle.toLowerCase().includes(q))
-    ).slice(0, 5);
-  }, [searchQuery]);
-
-  React.useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        searchDesktopRef.current &&
-        !searchDesktopRef.current.contains(e.target as Node) &&
-        searchMobileRef.current &&
-        !searchMobileRef.current.contains(e.target as Node)
-      ) {
-        setSearchDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      setSearchDropdownOpen(false);
-      setMobileSearchOpen(false);
-      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
+  const { openSearch } = useSearch();
 
   const isItemActive = (href: string) => {
     if (href === "/") {
@@ -145,11 +107,8 @@ function NavbarContent() {
             </button>
 
             <button
-              onClick={() => {
-                setMobileSearchOpen(!mobileSearchOpen);
-                setSearchDropdownOpen(true);
-              }}
-              className="p-1.5 text-gray-900 hover:text-[#FA521C] transition-colors"
+              onClick={openSearch}
+              className="p-1.5 text-gray-900 hover:text-[#FA521C] transition-colors cursor-pointer"
               aria-label="Search"
             >
               <Search className="w-5 h-5 stroke-[2.2]" />
@@ -202,110 +161,6 @@ function NavbarContent() {
           </div>
         </div>
 
-        {/* Mobile Search Dropdown/Bar (when toggled) */}
-        {mobileSearchOpen && (
-          <div ref={searchMobileRef} className="mt-2.5 sm:hidden relative">
-            <form onSubmit={handleSearchSubmit} className="relative flex items-center">
-              <Search className="absolute left-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
-              <input
-                type="text"
-                autoFocus
-                value={searchQuery}
-                onFocus={() => setSearchDropdownOpen(true)}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setSearchDropdownOpen(true);
-                }}
-                placeholder="Search products..."
-                className="w-full pl-10 pr-16 py-2.5 rounded-full border border-gray-200 bg-[#FAFAFA] text-xs text-[#111111] focus:outline-none focus:border-[#FA521C] focus:bg-white shadow-inner"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSearchDropdownOpen(false);
-                  }}
-                  className="absolute right-10 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full"
-                  aria-label="Clear mobile search"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-              <button
-                type="submit"
-                aria-label="Submit search"
-                className="absolute right-1 top-1 bottom-1 px-3.5 rounded-full bg-[#FA521C] text-white text-xs flex items-center justify-center cursor-pointer shadow-sm"
-              >
-                <Search className="w-3.5 h-3.5" />
-              </button>
-            </form>
-
-            {/* Mobile Live Suggestions Dropdown */}
-            {searchDropdownOpen && searchQuery.trim().length >= 1 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 p-2">
-                <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center justify-between">
-                  <span>Suggestions</span>
-                  <span>{liveResults.length} found</span>
-                </div>
-
-                {liveResults.length > 0 ? (
-                  <div className="space-y-1 mt-1">
-                    {liveResults.map((item) => (
-                      <Link
-                        key={item.id}
-                        href={`/products/${item.slug || item.id}`}
-                        onClick={() => {
-                          setSearchDropdownOpen(false);
-                          setMobileSearchOpen(false);
-                        }}
-                        className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-orange-50/70 transition-colors"
-                      >
-                        <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100">
-                          <Image
-                            src={item.poster_image}
-                            alt={item.name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0 text-left">
-                          <p className="text-xs font-semibold text-gray-900 truncate">
-                            {item.name}
-                          </p>
-                          <p className="text-[10px] text-gray-400">{item.category}</p>
-                        </div>
-                        <span className="text-xs font-bold text-[#FA521C]">
-                          ₹{item.offer_price.toLocaleString()}
-                        </span>
-                      </Link>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={(e) => handleSearchSubmit(e)}
-                      className="w-full mt-1.5 pt-2 border-t border-gray-100 text-center text-xs font-bold text-[#FA521C] flex items-center justify-center gap-1 py-1"
-                    >
-                      <span>View all results ({liveResults.length})</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="p-3 text-center">
-                    <p className="text-xs text-gray-600">No products matching "{searchQuery}"</p>
-                    <button
-                      type="button"
-                      onClick={(e) => handleSearchSubmit(e)}
-                      className="text-xs font-bold text-[#FA521C] hover:underline mt-1"
-                    >
-                      Search all catalog →
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Desktop View Header */}
         <div className="hidden sm:flex items-center justify-between gap-4 lg:gap-8">
           {/* Logo */}
@@ -325,107 +180,24 @@ function NavbarContent() {
             </span>
           </Link>
 
-          {/* Search Bar (Center, Wide with Live Results) */}
-          <div ref={searchDesktopRef} className="flex-1 max-w-2xl relative">
-            <form
-              onSubmit={handleSearchSubmit}
-              className="w-full relative flex items-center"
-            >
-              <Search className="absolute left-4 w-4 h-4 text-gray-400 pointer-events-none" />
+          {/* Search Bar (Center, Triggers Animated Search Modal with Collections) */}
+          <div
+            onClick={openSearch}
+            className="flex-1 max-w-2xl relative cursor-pointer group"
+          >
+            <div className="w-full relative flex items-center">
+              <Search className="absolute left-4 w-4 h-4 text-gray-400 group-hover:text-[#FA521C] transition-colors pointer-events-none stroke-[2.2]" />
               <input
                 type="text"
-                value={searchQuery}
-                onFocus={() => setSearchDropdownOpen(true)}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setSearchDropdownOpen(true);
-                }}
-                placeholder="Search for amazing products..."
-                className="w-full pl-11 pr-20 py-2.5 rounded-full border border-gray-200 bg-[#FAFAFA] text-sm text-[#111111] placeholder:text-gray-400 focus:outline-none focus:border-[#FA521C] focus:bg-white transition-all shadow-inner"
+                readOnly
+                placeholder="Search products, lamps, gadgets, collections..."
+                className="w-full pl-11 pr-24 py-2.5 rounded-full border border-gray-200 bg-[#FAFAFA] text-sm text-[#111111] placeholder:text-gray-400 cursor-pointer group-hover:border-[#FA521C]/50 group-hover:bg-white transition-all shadow-inner select-none"
               />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSearchDropdownOpen(false);
-                  }}
-                  className="absolute right-12 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full transition-colors"
-                  aria-label="Clear search text"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-              <button
-                type="submit"
-                aria-label="Submit search"
-                className="absolute right-1 top-1 bottom-1 px-4 rounded-full bg-[#FA521C] hover:bg-[#E0400B] text-white flex items-center justify-center transition-colors shadow-sm cursor-pointer"
-              >
-                <Search className="w-4 h-4" />
-              </button>
-            </form>
-
-            {/* Desktop Live Search Dropdown */}
-            {searchDropdownOpen && searchQuery.trim().length >= 1 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 p-2.5">
-                <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-400 flex items-center justify-between">
-                  <span>Suggested Products</span>
-                  <span>{liveResults.length} matches</span>
-                </div>
-
-                {liveResults.length > 0 ? (
-                  <div className="space-y-1 mt-1">
-                    {liveResults.map((item) => (
-                      <Link
-                        key={item.id}
-                        href={`/products/${item.slug || item.id}`}
-                        onClick={() => setSearchDropdownOpen(false)}
-                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-orange-50/70 transition-colors group"
-                      >
-                        <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100">
-                          <Image
-                            src={item.poster_image}
-                            alt={item.name}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0 text-left">
-                          <p className="text-sm font-semibold text-gray-900 group-hover:text-[#FA521C] transition-colors truncate">
-                            {item.name}
-                          </p>
-                          <p className="text-xs text-gray-400">{item.category}</p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <span className="text-sm font-bold text-[#FA521C]">
-                            ₹{item.offer_price.toLocaleString()}
-                          </span>
-                        </div>
-                      </Link>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={(e) => handleSearchSubmit(e)}
-                      className="w-full mt-2 pt-2.5 border-t border-gray-100 text-center text-xs font-bold text-[#FA521C] hover:text-[#E0400B] flex items-center justify-center gap-1.5 py-1.5 transition-colors cursor-pointer"
-                    >
-                      <span>View all results for "{searchQuery}"</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="p-4 text-center">
-                    <p className="text-xs text-gray-600">No products matching "{searchQuery}"</p>
-                    <button
-                      type="button"
-                      onClick={(e) => handleSearchSubmit(e)}
-                      className="text-xs font-bold text-[#FA521C] hover:underline mt-1.5 cursor-pointer"
-                    >
-                      Search all catalog for "{searchQuery}" →
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 rounded-full bg-orange-50 text-[#FA521C] text-xs font-bold border border-[#FA521C]/20 flex items-center gap-1 group-hover:bg-[#FA521C] group-hover:text-white transition-all">
+                <span>Search</span>
+                <Sparkles className="w-3 h-3" />
+              </span>
+            </div>
           </div>
 
           {/* Right Action Icons: Account, Wishlist, Cart */}

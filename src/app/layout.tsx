@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { SearchProvider } from "@/context/SearchContext";
 import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 import { CartDrawer } from "@/components/CartDrawer";
 import { AuthModal } from "@/components/AuthModal";
+import { SearchModal } from "@/components/SearchModal";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import "./globals.css";
@@ -38,12 +40,15 @@ export default function RootLayout({
         <AuthProvider>
           <WishlistProvider>
             <CartProvider>
-              <SmoothScrollProvider>
-                {children}
-                <CartDrawer />
-                <AuthModal />
-                <MobileBottomNav />
-              </SmoothScrollProvider>
+              <SearchProvider>
+                <SmoothScrollProvider>
+                  {children}
+                  <CartDrawer />
+                  <AuthModal />
+                  <SearchModal />
+                  <MobileBottomNav />
+                </SmoothScrollProvider>
+              </SearchProvider>
             </CartProvider>
           </WishlistProvider>
         </AuthProvider>
