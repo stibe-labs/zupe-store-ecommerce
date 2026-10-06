@@ -79,7 +79,7 @@ export default function ProductDetailPage() {
       firstColorObj?.image ||
       (found.images && Array.isArray(found.images) && found.images.length > 0
         ? found.images[0]
-        : found.poster_image || "/products/steam-iron.jpg");
+        : found.poster_image || "");
 
     setSelectedImage(defaultImg);
     setActiveImageIndex(0);
@@ -200,7 +200,7 @@ export default function ProductDetailPage() {
     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
       return product.images;
     }
-    return [product.poster_image || "/products/steam-iron.jpg"];
+    return [product.poster_image || ""];
   }, [product, activeColorVariant]);
 
   // Available color options for current product

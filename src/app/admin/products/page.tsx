@@ -27,9 +27,78 @@ import {
   Star,
   Info,
   Upload,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { Product, ProductColorVariant } from "@/types/product";
+
+// Exact Category & Subcategory taxonomy from official catalog structure
+const PRODUCT_CATEGORIES_DATA = [
+  {
+    main: "Tech & Gadgets",
+    subcategories: [
+      "Mobile & Charging",
+      "Smart Tech & Audio",
+      "Gaming",
+      "Computer & Accessories",
+    ],
+  },
+  {
+    main: "Home Essentials",
+    subcategories: [
+      "Kitchen & Dining",
+      "Cleaning & Organization",
+      "Home Comfort & Utility",
+    ],
+  },
+  {
+    main: "Personal Care",
+    subcategories: [
+      "Grooming & Care",
+      "Massage & Wellness",
+      "Women's Care",
+    ],
+  },
+  {
+    main: "Auto Essentials",
+    subcategories: [
+      "Car Care",
+      "Car Accessories",
+    ],
+  },
+  {
+    main: "Fitness & Wellness",
+    subcategories: [
+      "Fitness Accessories",
+      "Recovery & Wellness",
+    ],
+  },
+  {
+    main: "Kids & Fun",
+    subcategories: [
+      "Toys & Games",
+      "Fun & Entertainment",
+    ],
+  },
+  {
+    main: "Deals & Offers",
+    subcategories: [
+      "Curated sale products only",
+    ],
+  },
+] as const;
+
+const FORM_TABS_LIST = [
+  "basic",
+  "pricing",
+  "colors",
+  "media",
+  "highlights",
+  "specs",
+] as const;
+
+type FormTabKey = (typeof FORM_TABS_LIST)[number];
 
 export default function AdminProductsPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -167,7 +236,7 @@ export default function AdminProductsPage() {
     setFormName("");
     setFormSubtitle("");
     setFormSlug("");
-    setFormCategory("Gadgets");
+    setFormCategory("Mobile & Charging");
     setFormBadge("New");
     setFormTagline("");
     setFormDescription("");
@@ -182,8 +251,8 @@ export default function AdminProductsPage() {
       {
         name: "Standard",
         colorHex: "#3B82F6",
-        image: "/products/steam-iron.jpg",
-        images: ["/products/steam-iron.jpg"],
+        image: "",
+        images: [],
       },
     ]);
 
@@ -229,7 +298,7 @@ export default function AdminProductsPage() {
     setFormName(prod.name || "");
     setFormSubtitle(prod.subtitle || "");
     setFormSlug(prod.slug || "");
-    setFormCategory(prod.category || "Decor");
+    setFormCategory(prod.category || "Tech & Gadgets");
     setFormBadge(prod.badge || "");
     setFormTagline(prod.tagline || "");
     setFormDescription(prod.description || "");
@@ -249,7 +318,12 @@ export default function AdminProductsPage() {
               name: prod.color || "Standard",
               colorHex: "#3B82F6",
               image: prod.poster_image || "",
-              images: prod.images || [prod.poster_image || ""],
+              images:
+                prod.images && prod.images.length > 0
+                  ? prod.images
+                  : prod.poster_image
+                  ? [prod.poster_image]
+                  : [],
             },
           ]
     );
@@ -318,10 +392,55 @@ export default function AdminProductsPage() {
       {
         name: `Color ${prev.length + 1}`,
         colorHex: "#10B981",
-        image: formImage || "/products/steam-iron.jpg",
-        images: [formImage || "/products/steam-iron.jpg"],
+        image: formImage || "",
+        images: formImage ? [formImage] : [],
       },
     ]);
+  };
+
+  // Step-by-Step wizard navigation helpers
+  const handleNextTab = () => {
+    setActionMessage(null);
+    if (activeTab === "basic") {
+      if (!formName.trim()) {
+        setActionMessage({
+          text: "Please enter a Product Name before proceeding to the next step.",
+          type: "error",
+        });
+        return;
+      }
+      setActiveTab("pricing");
+    } else if (activeTab === "pricing") {
+      if (!formPrice.trim()) {
+        setActionMessage({
+          text: "Please enter a Selling Price before proceeding to the next step.",
+          type: "error",
+        });
+        return;
+      }
+      setActiveTab("colors");
+    } else if (activeTab === "colors") {
+      setActiveTab("media");
+    } else if (activeTab === "media") {
+      setActiveTab("highlights");
+    } else if (activeTab === "highlights") {
+      setActiveTab("specs");
+    }
+
+    if (modalScrollRef.current) {
+      modalScrollRef.current.scrollTop = 0;
+    }
+  };
+
+  const handlePrevTab = () => {
+    setActionMessage(null);
+    const currentIndex = FORM_TABS_LIST.indexOf(activeTab);
+    if (currentIndex > 0) {
+      setActiveTab(FORM_TABS_LIST[currentIndex - 1]);
+      if (modalScrollRef.current) {
+        modalScrollRef.current.scrollTop = 0;
+      }
+    }
   };
 
   const removeColorVariant = (idx: number) => {
@@ -465,7 +584,7 @@ export default function AdminProductsPage() {
       formImage.trim() ||
       formColors[0]?.image ||
       formColors[0]?.images?.[0] ||
-      "/products/steam-iron.jpg";
+      "";
 
     const payload = {
       ...(editingProduct ? { id: editingProduct.id } : {}),
@@ -763,15 +882,21 @@ export default function AdminProductsPage() {
                           {/* Product & Visuals */}
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-3">
-                              <img
-                                src={prod.poster_image || "/products/steam-iron.jpg"}
-                                alt={prod.name}
-                                className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0"
-                                onError={(e) => {
-                                  (e.target as any).src =
-                                    "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
-                                }}
-                              />
+                              {prod.poster_image ? (
+                                <img
+                                  src={prod.poster_image}
+                                  alt={prod.name}
+                                  className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0"
+                                  onError={(e) => {
+                                    (e.target as any).src =
+                                      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                                  <ImageIcon className="w-5 h-5 text-slate-400" />
+                                </div>
+                              )}
                               <div className="min-w-0">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <span className="font-bold text-slate-900 truncate max-w-[200px]">
@@ -996,7 +1121,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <Info className="w-3.5 h-3.5" />
-                <span>Basic Info</span>
+                <span>1. Basic Info</span>
               </button>
 
               <button
@@ -1009,7 +1134,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <DollarSign className="w-3.5 h-3.5" />
-                <span>Pricing & Stock</span>
+                <span>2. Pricing & Stock</span>
               </button>
 
               <button
@@ -1022,7 +1147,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <Palette className="w-3.5 h-3.5" />
-                <span>Colors & Multi-Angle Photos ({formColors.length})</span>
+                <span>3. Colors & Photos ({formColors.length})</span>
               </button>
 
               <button
@@ -1035,7 +1160,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <ImageIcon className="w-3.5 h-3.5" />
-                <span>Poster & Gallery</span>
+                <span>4. Poster & Gallery</span>
               </button>
 
               <button
@@ -1048,7 +1173,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Highlights ({formFeatures.length})</span>
+                <span>5. Highlights ({formFeatures.length})</span>
               </button>
 
               <button
@@ -1061,7 +1186,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <ListPlus className="w-3.5 h-3.5" />
-                <span>Specs & Box</span>
+                <span>6. Specs & Box</span>
               </button>
             </div>
 
@@ -1152,14 +1277,36 @@ export default function AdminProductsPage() {
                       <label className="block text-[11px] font-bold text-slate-700 mb-1">
                         Category *
                       </label>
-                      <input
-                        type="text"
+                      <select
                         required
                         value={formCategory}
                         onChange={(e) => setFormCategory(e.target.value)}
-                        placeholder="e.g. Health & Wellness, Gadgets, Home & Living"
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
-                      />
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C] cursor-pointer"
+                      >
+                        <option value="" disabled>
+                          Select Category...
+                        </option>
+                        {PRODUCT_CATEGORIES_DATA.map((group) => (
+                          <optgroup key={group.main} label={`── ${group.main} ──`}>
+                            <option value={group.main}>{group.main} (General)</option>
+                            {group.subcategories.map((sub) => (
+                              <option key={sub} value={sub}>
+                                {sub}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
+                        {formCategory &&
+                          !PRODUCT_CATEGORIES_DATA.some(
+                            (g) =>
+                              g.main === formCategory ||
+                              (g.subcategories as readonly string[]).includes(formCategory)
+                          ) && (
+                            <optgroup label="── Current / Other ──">
+                              <option value={formCategory}>{formCategory}</option>
+                            </optgroup>
+                          )}
+                      </select>
                     </div>
 
                     <div>
@@ -1595,7 +1742,7 @@ export default function AdminProductsPage() {
                         type="text"
                         value={formImage}
                         onChange={(e) => setFormImage(e.target.value)}
-                        placeholder="/products/steam-iron.jpg or https://..."
+                        placeholder="https://... or click Upload File"
                         className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                       />
                       <label
@@ -1765,7 +1912,7 @@ export default function AdminProductsPage() {
                         type="text"
                         value={newFeatureInput}
                         onChange={(e) => setNewFeatureInput(e.target.value)}
-                        placeholder="e.g. Dual wet & dry ironing modes for all delicate and heavy fabrics"
+                        placeholder="e.g. Ergonomic travel-friendly design with smart protection"
                         className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
@@ -2012,32 +2159,73 @@ export default function AdminProductsPage() {
             </div>
 
             {/* 4. Pinned Sticky Footer (shrink-0) - ALWAYS VISIBLE! */}
-            <div className="p-4 border-t border-slate-200 bg-slate-50/90 flex items-center justify-between shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowModal(false);
-                  setEditingProduct(null);
-                }}
-                className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl font-semibold text-xs transition-colors"
-              >
-                Cancel
-              </button>
+            {/* 4. Pinned Sticky Footer (shrink-0) - Step Navigation & Create/Update */}
+            <div className="p-4 border-t border-slate-200 bg-slate-50/95 flex items-center justify-between shrink-0 gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingProduct(null);
+                  }}
+                  className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl font-semibold text-xs transition-colors"
+                >
+                  Cancel
+                </button>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-6 py-2.5 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-2 disabled:opacity-50 active:scale-[0.98]"
-              >
-                {isSubmitting ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Saving to Cloudflare D1...</span>
-                  </>
-                ) : (
-                  <span>{editingProduct ? "Update Product" : "Create Product"}</span>
+                {activeTab !== "basic" && (
+                  <button
+                    type="button"
+                    onClick={handlePrevTab}
+                    className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl font-semibold text-xs transition-colors flex items-center gap-1.5"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Back</span>
+                  </button>
                 )}
-              </button>
+              </div>
+
+              <div className="text-[11px] font-medium text-slate-500 hidden sm:flex items-center gap-1.5">
+                <span className="font-semibold text-slate-700">
+                  Step {FORM_TABS_LIST.indexOf(activeTab) + 1} of {FORM_TABS_LIST.length}:
+                </span>
+                <span>
+                  {activeTab === "basic" && "Basic Info"}
+                  {activeTab === "pricing" && "Pricing & Stock"}
+                  {activeTab === "colors" && "Colors & Multi-Angle Photos"}
+                  {activeTab === "media" && "Poster & Gallery"}
+                  {activeTab === "highlights" && "Highlights"}
+                  {activeTab === "specs" && "Specs & Box"}
+                </span>
+              </div>
+
+              <div>
+                {activeTab !== "specs" ? (
+                  <button
+                    type="button"
+                    onClick={handleNextTab}
+                    className="px-6 py-2.5 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-2 active:scale-[0.98]"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-6 py-2.5 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-2 disabled:opacity-50 active:scale-[0.98]"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Saving to Cloudflare D1...</span>
+                      </>
+                    ) : (
+                      <span>{editingProduct ? "Update Product" : "Create Product"}</span>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           </form>
         </div>

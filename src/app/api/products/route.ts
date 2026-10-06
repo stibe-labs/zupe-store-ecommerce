@@ -48,7 +48,7 @@ function formatDbProduct(p: any): Product {
     cost_price: costNum,
     stock_count: Number(p.stock_count ?? 0),
     volume: p.volume ?? defaultFound?.volume ?? "",
-    poster_image: p.poster_image || defaultFound?.poster_image || "/products/steam-iron.jpg",
+    poster_image: p.poster_image || defaultFound?.poster_image || "",
     images: Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages : (defaultFound?.images || []),
     color: p.color ?? defaultFound?.color ?? "",
     colors: Array.isArray(parsedColors) && parsedColors.length > 0 ? parsedColors : (defaultFound?.colors || []),
