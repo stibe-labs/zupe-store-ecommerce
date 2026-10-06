@@ -17,6 +17,7 @@ import {
   UserCheck,
   Settings,
   TrendingUp,
+  Palette,
   X,
   LogOut,
 } from "lucide-react";
@@ -74,6 +75,7 @@ export default function AdminSidebar({
       badgeColor: "bg-rose-500/20 text-rose-300 border border-rose-500/30",
     },
     { name: "Products", href: "/admin/products", icon: Box },
+    { name: "Website Content", href: "/admin/website-content", icon: Palette },
     { name: "Suppliers", href: "/admin/suppliers", icon: Users },
     { name: "Expenses", href: "/admin/expenses", icon: DollarSign },
     { name: "Payments", href: "/admin/payments", icon: CreditCard },

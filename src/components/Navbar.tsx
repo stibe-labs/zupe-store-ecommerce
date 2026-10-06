@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -40,6 +40,32 @@ function NavbarContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [navCategories, setNavCategories] = useState<{ label: string; href: string }[]>(CATEGORY_NAV);
+
+  useEffect(() => {
+    fetch("/api/content/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
+          const activeNavCats = data.categories
+            .filter((c: any) => c.active !== false && c.showInNavbar !== false)
+            .map((c: any) => ({
+              label: c.name,
+              href: `/products?category=${encodeURIComponent(c.slug || c.name)}`,
+            }));
+
+          setNavCategories([
+            { label: "Home", href: "/" },
+            { label: "New Arrivals", href: "/products?filter=new" },
+            { label: "Best Sellers", href: "/products?filter=best" },
+            ...activeNavCats,
+            { label: "Offers", href: "/products?filter=offers" },
+            { label: "Order Tracking", href: "/order-tracking" },
+          ]);
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch dynamic categories for navbar:", err));
+  }, []);
 
   const { totalItems, openCart } = useCart();
   const { totalWishlistItems } = useWishlist();
@@ -280,7 +306,7 @@ function NavbarContent() {
 
             {/* Navigation Links */}
             <div className="flex items-center gap-6 overflow-x-auto scrollbar-none py-1">
-              {CATEGORY_NAV.map((item) => {
+              {navCategories.map((item) => {
                 const active = isItemActive(item.href);
                 return (
                   <Link
@@ -334,7 +360,7 @@ function NavbarContent() {
               </div>
 
               <div className="space-y-1">
-                {CATEGORY_NAV.map((item) => {
+                {navCategories.map((item) => {
                   const active = isItemActive(item.href);
                   return (
                     <Link

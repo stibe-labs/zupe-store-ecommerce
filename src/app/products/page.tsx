@@ -42,6 +42,21 @@ function ProductsContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [activeFilter, setActiveFilter] = useState<string>(initialFilter);
+  const [categoryList, setCategoryList] = useState<string[]>([...PRODUCT_CATEGORIES]);
+
+  useEffect(() => {
+    fetch("/api/content/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
+          const names: string[] = data.categories
+            .filter((c: any) => c.active !== false)
+            .map((c: any) => String(c.name));
+          setCategoryList(["All", ...Array.from(new Set<string>(names))]);
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch dynamic categories:", err));
+  }, []);
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "rating">("featured");
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const sortDropdownRef = React.useRef<HTMLDivElement>(null);
@@ -427,7 +442,7 @@ function ProductsContent() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
           {/* Category Tabs */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {PRODUCT_CATEGORIES.map((cat) => (
+            {categoryList.map((cat) => (
               <button
                 key={cat}
                 onClick={() => handleCategorySelect(cat)}

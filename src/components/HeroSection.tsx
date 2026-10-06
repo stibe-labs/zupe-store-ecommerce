@@ -6,49 +6,27 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, Truck, Banknote, RotateCcw, Heart } from "lucide-react";
 
+import { DEFAULT_HERO_BANNERS, HeroBannerSlide } from "@/lib/storeContent";
+
 export function HeroSection() {
+  const [slides, setSlides] = useState<HeroBannerSlide[]>(DEFAULT_HERO_BANNERS);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  const slides = [
-    {
-      id: "ripple-lamp",
-      badge: "SMART SOLUTIONS FOR A BETTER LIFE",
-      titleLine1: "Innovative Products",
-      titleLine2: "Modern Living.",
-      description: "Discover unique and useful products that make your life easier, smarter and more fun.",
-      ctaText: "Shop Now",
-      ctaLink: "/products/dynamic-water-ripple-night-light",
-      image: "/products/hero-banner.jpg",
-      taglineRight: "Small Products Big Happiness ♡",
-    },
-    {
-      id: "car-accessories",
-      badge: "PREMIUM LIFESTYLE ESSENTIALS",
-      titleLine1: "Car Accessories",
-      titleLine2: "Style & Comfort.",
-      description: "Upgrade your driving experience with solar powered diffusing fragrances and smart organizers.",
-      ctaText: "Explore Now",
-      ctaLink: "/products/helicopter-car-perfume",
-      image: "/products/helicopter-perfume.jpg",
-      taglineRight: "Drive In Luxury ♡",
-    },
-    {
-      id: "smart-gadgets",
-      badge: "CUTTING-EDGE EVERYDAY TECH",
-      titleLine1: "Smart Tech Gadgets",
-      titleLine2: "Everyday Ease.",
-      description: "High-performance portable audio and emergency power to keep your routine charged and effortless.",
-      ctaText: "Discover Tech",
-      ctaLink: "/products/tf20-multipurpose-powerbank-with-airpods",
-      image: "/products/powerbank-earbuds.jpg",
-      taglineRight: "Pure Sound & Power ♡",
-    },
-  ];
+  useEffect(() => {
+    fetch("/api/content/banners")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.banners) && data.banners.length > 0) {
+          setSlides(data.banners);
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch dynamic hero banners:", err));
+  }, []);
 
   // Auto-advance slides every 5 seconds (5000ms) with pause on hover
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || slides.length <= 1) return;
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -57,7 +35,8 @@ export function HeroSection() {
     return () => clearInterval(interval);
   }, [isPaused, slides.length]);
 
-  const slide = slides[currentSlide];
+  const safeSlideIndex = slides.length > 0 ? currentSlide % slides.length : 0;
+  const slide = slides[safeSlideIndex] || DEFAULT_HERO_BANNERS[0];
 
   const handlePrev = () => {
     setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));

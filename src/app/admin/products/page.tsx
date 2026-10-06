@@ -226,8 +226,18 @@ export default function AdminProductsPage() {
     }
   };
 
+  const [dynamicCategories, setDynamicCategories] = useState<{ id: string; name: string }[]>([]);
+
   useEffect(() => {
     fetchProducts();
+    fetch("/api/content/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.categories)) {
+          setDynamicCategories(data.categories.filter((c: any) => c.active !== false));
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch dynamic categories in admin products:", err));
   }, []);
 
   const openAddModal = () => {
@@ -1318,6 +1328,15 @@ export default function AdminProductsPage() {
                         <option value="" disabled>
                           Select Category...
                         </option>
+                        {dynamicCategories.length > 0 && (
+                          <optgroup label="── Store Customizer Categories ──">
+                            {dynamicCategories.map((cat) => (
+                              <option key={cat.id} value={cat.name}>
+                                {cat.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
                         {PRODUCT_CATEGORIES_DATA.map((group) => (
                           <optgroup key={group.main} label={`── ${group.main} ──`}>
                             <option value={group.main}>{group.main} (General)</option>
@@ -1329,12 +1348,13 @@ export default function AdminProductsPage() {
                           </optgroup>
                         ))}
                         {formCategory &&
+                          !dynamicCategories.some((c) => c.name === formCategory) &&
                           !PRODUCT_CATEGORIES_DATA.some(
                             (g) =>
                               g.main === formCategory ||
                               (g.subcategories as readonly string[]).includes(formCategory)
                           ) && (
-                            <optgroup label="── Current / Other ──">
+                            <optgroup label="── Custom / Other ──">
                               <option value={formCategory}>{formCategory}</option>
                             </optgroup>
                           )}

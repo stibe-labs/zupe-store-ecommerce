@@ -98,11 +98,63 @@ const CATEGORIES: CategoryItem[] = [
   },
 ];
 
+const ICON_MAP: Record<string, React.ReactNode> = {
+  Armchair: <Armchair className="w-5 h-5" />,
+  Headphones: <Headphones className="w-5 h-5" />,
+  Sparkles: <Sparkles className="w-5 h-5" />,
+  Leaf: <Leaf className="w-5 h-5" />,
+  Car: <Car className="w-5 h-5" />,
+  UtensilsCrossed: <UtensilsCrossed className="w-5 h-5" />,
+  PenTool: <PenTool className="w-5 h-5" />,
+  Footprints: <Footprints className="w-5 h-5" />,
+  Tag: <LayoutGrid className="w-5 h-5" />,
+};
+
+function getIconForCategory(name: string) {
+  const lower = name.toLowerCase();
+  if (lower.includes("car") || lower.includes("auto")) return <Car className="w-5 h-5" />;
+  if (lower.includes("gadget") || lower.includes("audio") || lower.includes("tech")) return <Headphones className="w-5 h-5" />;
+  if (lower.includes("health") || lower.includes("plant") || lower.includes("wellness")) return <Leaf className="w-5 h-5" />;
+  if (lower.includes("home") || lower.includes("living") || lower.includes("decor")) return <Armchair className="w-5 h-5" />;
+  if (lower.includes("care") || lower.includes("beauty")) return <Sparkles className="w-5 h-5" />;
+  if (lower.includes("kitchen") || lower.includes("food")) return <UtensilsCrossed className="w-5 h-5" />;
+  if (lower.includes("stationery") || lower.includes("office")) return <PenTool className="w-5 h-5" />;
+  if (lower.includes("pet") || lower.includes("dog") || lower.includes("cat")) return <Footprints className="w-5 h-5" />;
+  return <LayoutGrid className="w-5 h-5" />;
+}
+
 export function CategoryPills() {
+  const [categoryItems, setCategoryItems] = React.useState<CategoryItem[]>(CATEGORIES);
+
+  React.useEffect(() => {
+    fetch("/api/content/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
+          const dynamicPills = data.categories
+            .filter((c: any) => c.active !== false && c.showInPills !== false)
+            .map((c: any) => ({
+              id: c.id,
+              name: c.name,
+              href: `/products?category=${encodeURIComponent(c.slug || c.name)}`,
+              bgColor: c.bgColor || "bg-orange-50",
+              iconColor: c.iconColor || "text-[#FA521C]",
+              icon: ICON_MAP[c.icon] || getIconForCategory(c.name),
+            }));
+
+          setCategoryItems([
+            CATEGORIES[0], // "All Categories"
+            ...dynamicPills,
+          ]);
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch dynamic category pills:", err));
+  }, []);
+
   return (
     <section className="max-w-[1600px] mx-auto px-4 sm:px-6 py-4">
       <div className="flex items-center justify-between gap-3 sm:gap-4 overflow-x-auto scrollbar-none py-2 px-1">
-        {CATEGORIES.map((cat) => (
+        {categoryItems.map((cat) => (
           <Link
             key={cat.id}
             href={cat.href}
