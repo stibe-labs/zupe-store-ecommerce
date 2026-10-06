@@ -30,6 +30,7 @@ const CATEGORY_NAV = [
   { label: "Personal Care", href: "/products?category=Personal+Care" },
   { label: "Car Accessories", href: "/products?category=Car+Accessories" },
   { label: "Offers", href: "/products?filter=offers" },
+  { label: "Order Tracking", href: "/order-tracking" },
 ];
 
 function NavbarContent() {
@@ -91,6 +92,9 @@ function NavbarContent() {
         !searchParams?.get("filter") &&
         !searchParams?.get("category")
       );
+    }
+    if (href === "/order-tracking" || href === "/track-order") {
+      return pathname === "/order-tracking" || pathname === "/track-order";
     }
     if (!pathname.startsWith("/products")) return false;
 

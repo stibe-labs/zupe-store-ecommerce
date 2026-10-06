@@ -18,7 +18,7 @@ const FOOTER_LINKS = {
     { label: "FAQs", href: "/faq" },
     { label: "Shipping Info", href: "/shipping" },
     { label: "Returns & Exchange", href: "/returns" },
-    { label: "Track Order", href: "/orders" },
+    { label: "Track Order", href: "/order-tracking" },
   ],
   Company: [
     { label: "About Us", href: "/about" },
