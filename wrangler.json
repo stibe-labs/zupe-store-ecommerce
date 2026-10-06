@@ -26,6 +26,9 @@
     "CLOUDFLARE_ACCOUNT_ID": "4eed09d0032a07881825f4e926cb997f",
     "CLOUDFLARE_D1_DATABASE_ID": "1ebc3c22-07be-4f35-b437-5292d137d246",
     "ADMIN_EMAIL": "admin@zupestore.com",
-    "ADMIN_PASSWORD": "ZupeAdmin@2026"
+    "ADMIN_PASSWORD": "ZupeAdmin@2026",
+    "NEXT_PUBLIC_RAZORPAY_KEY_ID": "rzp_test_TaEJzNfBmA5jmF",
+    "RAZORPAY_KEY_ID": "rzp_test_TaEJzNfBmA5jmF",
+    "RAZORPAY_KEY_SECRET": "cmw5Lw6uCwUPwyf48Jxdz5Pt"
   }
 }
