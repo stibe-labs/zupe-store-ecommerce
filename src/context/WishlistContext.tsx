@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 interface WishlistContextType {
   wishlist: Product[];
   isInWishlist: (productId: string) => boolean;
-  toggleWishlist: (product: Product) => void;
+  toggleWishlist: (product: Product) => boolean;
   removeFromWishlist: (productId: string) => void;
   clearWishlist: () => void;
   totalWishlistItems: number;
@@ -45,10 +45,20 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   }, [wishlist, isInitialized]);
 
   const isInWishlist = (productId: string): boolean => {
+    if (!user) return false;
     return wishlist.some((item) => item.id === productId);
   };
 
-  const toggleWishlist = (product: Product) => {
+  const toggleWishlist = (product: Product): boolean => {
+    if (!user) {
+      if (typeof window !== "undefined") {
+        const currentPath = window.location.pathname + window.location.search;
+        const redirectUrl = `/signin?redirect=${encodeURIComponent(currentPath)}&notice=${encodeURIComponent("Please sign in to save items to your wishlist")}`;
+        window.location.href = redirectUrl;
+      }
+      return false;
+    }
+
     setWishlist((prev) => {
       const exists = prev.some((item) => item.id === product.id);
       if (exists) {
@@ -57,6 +67,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         return [...prev, product];
       }
     });
+    return true;
   };
 
   const removeFromWishlist = (productId: string) => {

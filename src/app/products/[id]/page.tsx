@@ -33,11 +33,13 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const idOrSlug = params?.id as string;
+  const { user } = useAuth();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
@@ -339,7 +341,12 @@ export default function ProductDetailPage() {
       showToast("Sorry, this item is currently out of stock!");
       return;
     }
-    addToCart(
+    if (!user) {
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : `/products/${idOrSlug}`;
+      router.push(`/signin?redirect=${encodeURIComponent(currentPath)}&notice=${encodeURIComponent("Please sign in to add this item to your cart")}`);
+      return;
+    }
+    const added = addToCart(
       {
         ...product,
         color: selectedColor,
@@ -347,13 +354,19 @@ export default function ProductDetailPage() {
       },
       quantity
     );
-    showToast(`Added ${quantity} item(s) to Cart! 🛒`);
-    openCart();
+    if (added) {
+      showToast(`Added ${quantity} item(s) to Cart! 🛒`);
+      openCart();
+    }
   };
 
   const handleCashOnDelivery = () => {
     if (isOutOfStock) {
       showToast("Sorry, this item is currently out of stock!");
+      return;
+    }
+    if (!user) {
+      router.push(`/signin?redirect=${encodeURIComponent("/checkout?method=cod")}&notice=${encodeURIComponent("Please sign in to place an order")}`);
       return;
     }
     addToCart(
@@ -370,6 +383,10 @@ export default function ProductDetailPage() {
   const handleBuyWithUpi = () => {
     if (isOutOfStock) {
       showToast("Sorry, this item is currently out of stock!");
+      return;
+    }
+    if (!user) {
+      router.push(`/signin?redirect=${encodeURIComponent("/checkout?method=upi")}&notice=${encodeURIComponent("Please sign in to place an order")}`);
       return;
     }
     addToCart(
@@ -404,8 +421,15 @@ export default function ProductDetailPage() {
   };
 
   const handleWishlistClick = () => {
-    toggleWishlist(product);
-    showToast(wishlisted ? "Removed from Wishlist" : "Saved to Wishlist! ❤️");
+    if (!user) {
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : `/products/${idOrSlug}`;
+      router.push(`/signin?redirect=${encodeURIComponent(currentPath)}&notice=${encodeURIComponent("Please sign in to save items to your wishlist")}`);
+      return;
+    }
+    const success = toggleWishlist(product);
+    if (success) {
+      showToast(wishlisted ? "Removed from Wishlist" : "Saved to Wishlist! ❤️");
+    }
   };
 
   return (

@@ -8,16 +8,55 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function WishlistPage() {
   const { wishlist, removeFromWishlist, clearWishlist, totalWishlistItems } = useWishlist();
   const { addToCart, openCart } = useCart();
+  const { user, isLoading: authLoading } = useAuth();
 
   const handleMoveToCart = (product: any) => {
-    addToCart(product, 1);
-    removeFromWishlist(product.id);
-    openCart();
+    const success = addToCart(product, 1);
+    if (success) {
+      removeFromWishlist(product.id);
+      openCart();
+    }
   };
+
+  if (!authLoading && !user) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] text-[#111111] flex flex-col justify-between">
+        <Navbar />
+        <div className="max-w-md mx-auto py-32 px-4 text-center">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-pink-50 flex items-center justify-center text-[#FF6B6B]">
+            <Heart className="w-10 h-10" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold font-display text-gray-900 mb-2">
+            Sign In to View Wishlist
+          </h1>
+          <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+            Sign in to your Zupe Store account to access your saved favorite products, sync across all your devices, and get price drop notifications.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/signin?redirect=/wishlist&notice=Please sign in to access your saved wishlist"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-[#FA521C] hover:bg-[#E0400B] text-white font-semibold text-sm shadow-lg shadow-[#FA521C]/30 transition-all"
+            >
+              <span>Sign In to Your Account</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="/products"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-white border border-gray-200 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all"
+            >
+              <span>Explore Products</span>
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-[#111111]">

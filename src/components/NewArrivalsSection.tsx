@@ -7,10 +7,12 @@ import { useRouter } from "next/navigation";
 import { Star, Heart, ArrowRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 export function NewArrivalsSection() {
   const router = useRouter();
+  const { user } = useAuth();
   const { addToCart, addItem } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
@@ -65,6 +67,14 @@ export function NewArrivalsSection() {
                   <button
                     onClick={(e) => {
                       e.preventDefault();
+                      if (!user) {
+                        router.push(
+                          `/signin?redirect=/&notice=${encodeURIComponent(
+                            "Please sign in to save items to your wishlist"
+                          )}`
+                        );
+                        return;
+                      }
                       toggleWishlist(product);
                     }}
                     className={`absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center transition-all shadow-sm hover:scale-110 ${
@@ -111,6 +121,14 @@ export function NewArrivalsSection() {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  if (!user) {
+                    router.push(
+                      `/signin?redirect=/&notice=${encodeURIComponent(
+                        "Please sign in to add items to your cart"
+                      )}`
+                    );
+                    return;
+                  }
                   const addFn = addToCart || addItem;
                   if (typeof addFn === "function") {
                     addFn(product, 1);

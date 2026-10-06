@@ -72,12 +72,12 @@ export default function OrdersPage() {
           </div>
 
           {!isAuthenticated && (
-            <button
-              onClick={() => openAuthModal("login")}
+            <Link
+              href="/signin?redirect=/orders&notice=Please sign in to view and track your orders"
               className="text-xs font-semibold text-[#FA521C] hover:underline"
             >
               Sign In for full account sync
-            </button>
+            </Link>
           )}
         </div>
 

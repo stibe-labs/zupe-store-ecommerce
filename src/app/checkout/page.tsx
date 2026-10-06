@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -25,7 +25,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, subtotal, clearCart, freeShippingThreshold } = useCart();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
 
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
@@ -44,8 +44,33 @@ export default function CheckoutPage() {
   const shippingFee = subtotal >= freeShippingThreshold || subtotal === 0 ? 0 : 99;
   const grandTotal = subtotal + shippingFee;
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace(
+        `/signin?redirect=/checkout&notice=${encodeURIComponent(
+          "Please sign in to proceed with checkout and complete your order"
+        )}`
+      );
+    }
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
+    if (user) {
+      if (!name && user.name) setName(user.name);
+      if (!email && user.email) setEmail(user.email);
+    }
+  }, [user, name, email]);
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      router.push(
+        `/signin?redirect=/checkout&notice=${encodeURIComponent(
+          "Please sign in to place your order"
+        )}`
+      );
+      return;
+    }
     if (!name || !email || !address || !city || !postalCode) {
       setErrorMessage("Please complete all shipping address fields.");
       return;
@@ -150,6 +175,24 @@ export default function CheckoutPage() {
               Continue Shopping
             </Link>
           </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
+        <Navbar />
+        <div className="max-w-md mx-auto py-32 px-4 text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[#FA521C] mx-auto mb-4" />
+          <h2 className="text-xl font-bold font-display text-gray-900 mb-2">
+            Verifying your account...
+          </h2>
+          <p className="text-sm text-gray-500">
+            Please sign in to proceed with checkout.
+          </p>
         </div>
         <Footer />
       </div>

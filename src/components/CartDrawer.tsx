@@ -3,11 +3,15 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, Truck } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 
 export function CartDrawer() {
+  const router = useRouter();
+  const { user } = useAuth();
   const {
     cart,
     isOpen,
@@ -189,14 +193,24 @@ export function CartDrawer() {
                   >
                     View Shopping Bag
                   </Link>
-                  <Link
-                    href="/checkout"
-                    onClick={closeCart}
+                  <button
+                    onClick={() => {
+                      closeCart();
+                      if (!user) {
+                        router.push(
+                          `/signin?redirect=/checkout&notice=${encodeURIComponent(
+                            "Please sign in to proceed with checkout and complete your order"
+                          )}`
+                        );
+                        return;
+                      }
+                      router.push("/checkout");
+                    }}
                     className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#FA521C] text-white font-semibold rounded-xl hover:bg-[#E0400B] transition-colors shadow-lg shadow-[#FA521C]/25 text-sm"
                   >
                     Proceed to Checkout
                     <ArrowRight className="w-4 h-4" />
-                  </Link>
+                  </button>
                 </div>
                 <button
                   onClick={closeCart}

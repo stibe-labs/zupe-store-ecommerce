@@ -19,9 +19,11 @@ import {
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function CartPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const {
     cart,
     updateQuantity,
@@ -286,7 +288,17 @@ export default function CartPage() {
 
               {/* Checkout CTA */}
               <button
-                onClick={() => router.push("/checkout")}
+                onClick={() => {
+                  if (!user) {
+                    router.push(
+                      `/signin?redirect=/checkout&notice=${encodeURIComponent(
+                        "Please sign in to proceed with checkout and complete your order"
+                      )}`
+                    );
+                    return;
+                  }
+                  router.push("/checkout");
+                }}
                 className="w-full py-4 px-6 rounded-2xl bg-[#FA521C] hover:bg-[#E0400B] text-white font-semibold text-sm shadow-xl shadow-[#FA521C]/30 transition-all flex items-center justify-center gap-2 transform active:scale-95"
               >
                 <span>Proceed to Checkout</span>

@@ -3,13 +3,17 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ShoppingBag, Heart, Star, ArrowRight, Sparkles } from "lucide-react";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useAuth } from "@/context/AuthContext";
 
 export function FeaturedProducts() {
+  const router = useRouter();
+  const { user } = useAuth();
   const { addToCart, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
@@ -66,7 +70,17 @@ export function FeaturedProducts() {
 
               {/* Wishlist */}
               <button
-                onClick={() => toggleWishlist(product)}
+                onClick={() => {
+                  if (!user) {
+                    router.push(
+                      `/signin?redirect=/&notice=${encodeURIComponent(
+                        "Please sign in to save items to your wishlist"
+                      )}`
+                    );
+                    return;
+                  }
+                  toggleWishlist(product);
+                }}
                 className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:scale-110 transition-transform"
               >
                 <Heart
@@ -124,8 +138,16 @@ export function FeaturedProducts() {
                   </div>
                   <button
                     onClick={() => {
-                      addToCart(product);
-                      openCart();
+                      if (!user) {
+                        router.push(
+                          `/signin?redirect=/&notice=${encodeURIComponent(
+                            "Please sign in to add items to your cart"
+                          )}`
+                        );
+                        return;
+                      }
+                      const success = addToCart(product);
+                      if (success) openCart();
                     }}
                     className="w-10 h-10 rounded-xl bg-[#FA521C] hover:bg-[#E0400B] flex items-center justify-center transition-colors btn-press shadow-md shadow-[#FA521C]/20"
                   >

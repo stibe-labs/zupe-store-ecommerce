@@ -36,6 +36,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!user_id) {
+      return NextResponse.json(
+        { success: false, error: "Please sign in to place an order" },
+        { status: 401 }
+      );
+    }
+
     const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const newOrder: OrderRecord = {
       id: orderId,

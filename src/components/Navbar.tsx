@@ -385,7 +385,7 @@ export function Navbar() {
                   if (isAuthenticated) {
                     setUserDropdownOpen(!userDropdownOpen);
                   } else {
-                    openAuthModal("login");
+                    router.push("/signin");
                   }
                 }}
                 className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors py-1"

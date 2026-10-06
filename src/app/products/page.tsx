@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingBag,
@@ -23,9 +23,12 @@ import { DEFAULT_PRODUCTS, PRODUCT_CATEGORIES } from "@/data/zupeProducts";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useAuth } from "@/context/AuthContext";
 
 function ProductsContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const initialCategory = searchParams.get("category") || "All";
   const initialSearch = searchParams.get("search") || searchParams.get("q") || "";
 
@@ -106,13 +109,29 @@ function ProductsContent() {
   const handleQuickAdd = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product, 1);
-    openCart();
+    if (!user) {
+      router.push(
+        `/signin?redirect=/products&notice=${encodeURIComponent(
+          "Please sign in to add items to your cart"
+        )}`
+      );
+      return;
+    }
+    const success = addToCart(product, 1);
+    if (success) openCart();
   };
 
   const handleToggleWishlist = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!user) {
+      router.push(
+        `/signin?redirect=/products&notice=${encodeURIComponent(
+          "Please sign in to save items to your wishlist"
+        )}`
+      );
+      return;
+    }
     toggleWishlist(product);
   };
 

@@ -6,10 +6,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Star, ArrowRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 export function DealsSection() {
   const router = useRouter();
+  const { user } = useAuth();
   const { addToCart, addItem } = useCart();
 
   // The first 5 products correspond to Today's Best Deals
@@ -20,6 +22,14 @@ export function DealsSection() {
   const handleAddToCart = (e: React.MouseEvent, product: typeof dealProducts[0]) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!user) {
+      router.push(
+        `/signin?redirect=/&notice=${encodeURIComponent(
+          "Please sign in to add items to your cart"
+        )}`
+      );
+      return;
+    }
     const addFn = addToCart || addItem;
     if (typeof addFn === "function") {
       addFn(product, 1);

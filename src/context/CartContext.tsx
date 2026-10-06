@@ -158,6 +158,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     },
     quantity: number = 1
   ): boolean => {
+    if (!user) {
+      if (typeof window !== "undefined") {
+        const currentPath = window.location.pathname + window.location.search;
+        const redirectUrl = `/signin?redirect=${encodeURIComponent(currentPath)}&notice=${encodeURIComponent("Please sign in to add items to your cart")}`;
+        window.location.href = redirectUrl;
+      }
+      return false;
+    }
+
     const finalPrice = product.offer_price || product.price || 990;
     const finalMrp = product.mrp || Math.round(finalPrice * 1.25);
     const finalImage = product.poster_image || product.image || "";
