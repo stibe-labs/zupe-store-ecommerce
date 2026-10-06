@@ -399,7 +399,11 @@ export default function AdminProductsPage() {
   };
 
   // Step-by-Step wizard navigation helpers
-  const handleNextTab = () => {
+  const handleNextTab = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setActionMessage(null);
     if (activeTab === "basic") {
       if (!formName.trim()) {
@@ -432,7 +436,11 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handlePrevTab = () => {
+  const handlePrevTab = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setActionMessage(null);
     const currentIndex = FORM_TABS_LIST.indexOf(activeTab);
     if (currentIndex > 0) {
@@ -545,8 +553,17 @@ export default function AdminProductsPage() {
     setFormGalleryImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const handleSaveProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveProduct = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    // Safety guard: only allow creating or updating products when on the final specs tab
+    if (activeTab !== "specs") {
+      return;
+    }
+
     if (!formName.trim()) {
       setActiveTab("basic");
       setActionMessage({ text: "Product Name is required", type: "error" });
@@ -1058,7 +1075,22 @@ export default function AdminProductsPage() {
         >
           <form
             data-lenis-prevent="true"
-            onSubmit={handleSaveProduct}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (activeTab === "specs") {
+                handleSaveProduct(e);
+              }
+            }}
+            onKeyDown={(e) => {
+              // Prevent Enter key in inputs from accidentally submitting the form
+              if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
+                const target = e.target as HTMLInputElement;
+                if (target.id?.startsWith("angle-input")) {
+                  return;
+                }
+                e.preventDefault();
+              }
+            }}
             onWheel={(e) => {
               e.stopPropagation();
               if (modalScrollRef.current && !modalScrollRef.current.contains(e.target as Node)) {
@@ -2202,8 +2234,9 @@ export default function AdminProductsPage() {
               <div>
                 {activeTab !== "specs" ? (
                   <button
+                    key={`btn-step-${activeTab}`}
                     type="button"
-                    onClick={handleNextTab}
+                    onClick={(e) => handleNextTab(e)}
                     className="px-6 py-2.5 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-2 active:scale-[0.98]"
                   >
                     <span>Next</span>
@@ -2211,7 +2244,9 @@ export default function AdminProductsPage() {
                   </button>
                 ) : (
                   <button
-                    type="submit"
+                    key="btn-step-create-submit"
+                    type="button"
+                    onClick={(e) => handleSaveProduct(e)}
                     disabled={isSubmitting}
                     className="px-6 py-2.5 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-2 disabled:opacity-50 active:scale-[0.98]"
                   >
