@@ -97,13 +97,13 @@ export function CartDrawer() {
                     <ShoppingBag className="w-8 h-8 text-[#FA521C]" />
                   </div>
                   <p className="text-base font-semibold text-[#2D3436] mb-1">Your cart is empty</p>
-                  <p className="text-sm text-[#636E72] mb-6">Discover something you'll love</p>
-                  <button
+                  <Link
+                    href="/products"
                     onClick={closeCart}
-                    className="px-6 py-2.5 bg-[#FA521C] text-white font-semibold text-sm rounded-xl hover:bg-[#E0400B] transition-colors shadow-sm shadow-[#FA521C]/20"
+                    className="inline-flex items-center justify-center px-6 py-2.5 bg-[#FA521C] text-white font-semibold text-sm rounded-xl hover:bg-[#E0400B] transition-colors shadow-sm shadow-[#FA521C]/20 cursor-pointer"
                   >
                     Start Shopping
-                  </button>
+                  </Link>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -116,7 +116,11 @@ export function CartDrawer() {
                       exit={{ opacity: 0, x: 50 }}
                       className="flex gap-4 p-3 rounded-2xl bg-gray-50/80 border border-gray-100"
                     >
-                      <div className="w-20 h-20 rounded-xl overflow-hidden bg-white flex-shrink-0">
+                      <Link
+                        href={`/products/${item.id}`}
+                        onClick={closeCart}
+                        className="w-20 h-20 rounded-xl overflow-hidden bg-white flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+                      >
                         <Image
                           src={item.poster_image}
                           alt={item.name}
@@ -124,9 +128,17 @@ export function CartDrawer() {
                           height={80}
                           className="w-full h-full object-cover"
                         />
-                      </div>
+                      </Link>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#2D3436] truncate">{item.name}</p>
+                        <Link
+                          href={`/products/${item.id}`}
+                          onClick={closeCart}
+                          className="hover:text-[#FA521C] transition-colors"
+                        >
+                          <p className="text-sm font-semibold text-[#2D3436] truncate hover:text-[#FA521C]">
+                            {item.name}
+                          </p>
+                        </Link>
                         <p className="text-xs text-[#636E72] mt-0.5">{item.category}</p>
                         <div className="flex items-center gap-2 mt-2">
                           <span className="text-sm font-bold text-[#FA521C]">
