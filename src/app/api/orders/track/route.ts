@@ -32,8 +32,9 @@ export async function GET(req: NextRequest) {
       const phoneDigits = (o.customer_phone || "").replace(/\D/g, "");
 
       if (oId === qLower || oIdClean === cleanNoOrd || oIdClean === cleanNoHash) return true;
+      if (qLower.length >= 6 && (oId.includes(qLower) || oIdClean.includes(cleanNoOrd))) return true;
       if (shopifyId === qLower || shopifyClean === cleanNoHash || shopifyClean === cleanNoOrd) return true;
-      if (awb && (awb === qLower || awb.includes(qLower))) return true;
+      if (awb && (awb === qLower || awb.includes(qLower) || (digitsOnly.length >= 5 && awb.includes(digitsOnly)))) return true;
       if (email && email === qLower) return true;
       if (digitsOnly.length >= 7 && phoneDigits.includes(digitsOnly)) return true;
 
@@ -57,6 +58,7 @@ export async function GET(req: NextRequest) {
       const phoneDigits = (o.customer_phone || "").replace(/\D/g, "");
 
       if (oId === qLower || oIdClean === cleanNoOrd || oIdClean === cleanNoHash) return true;
+      if (qLower.length >= 6 && (oId.includes(qLower) || oIdClean.includes(cleanNoOrd))) return true;
       if (email && email === qLower) return true;
       if (digitsOnly.length >= 7 && phoneDigits.includes(digitsOnly)) return true;
 

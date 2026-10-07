@@ -53,6 +53,7 @@ function CheckoutContent() {
   const [orderComplete, setOrderComplete] = useState(false);
   const [confirmedOrderId, setConfirmedOrderId] = useState<string>("");
   const [confirmedPaymentId, setConfirmedPaymentId] = useState<string>("");
+  const [confirmedTotal, setConfirmedTotal] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState("");
 
   const shippingFee = subtotal >= freeShippingThreshold || subtotal === 0 ? 0 : 99;
@@ -254,6 +255,7 @@ function CheckoutContent() {
 
         if (data.success && data.order) {
           syncAddressAfterOrder();
+          setConfirmedTotal(grandTotal);
           setConfirmedOrderId(data.order.id);
           setConfirmedPaymentId("");
           setOrderComplete(true);
@@ -370,6 +372,7 @@ function CheckoutContent() {
             const verifyData = await verifyRes.json();
             if (verifyData.success && verifyData.order) {
               syncAddressAfterOrder();
+              setConfirmedTotal(grandTotal);
               setConfirmedOrderId(verifyData.order.id);
               setConfirmedPaymentId(response.razorpay_payment_id);
               setOrderComplete(true);
@@ -460,20 +463,27 @@ function CheckoutContent() {
             </div>
             <div className="flex justify-between items-center pt-1 text-sm">
               <span className="font-bold text-gray-900">Total Paid:</span>
-              <span className="font-extrabold text-[#FA521C] text-base">₹{grandTotal.toLocaleString()}</span>
+              <span className="font-extrabold text-[#FA521C] text-base">₹{(confirmedTotal || grandTotal).toLocaleString()}</span>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
+              href={`/order-tracking?query=${encodeURIComponent(confirmedOrderId)}`}
+              className="flex-1 py-3 px-6 rounded-xl bg-[#FA521C] text-white font-semibold text-sm hover:bg-[#E0400B] transition-colors flex items-center justify-center gap-2 shadow-sm shadow-[#FA521C]/25"
+            >
+              <Truck className="w-4 h-4" />
+              <span>Track Order</span>
+            </Link>
+            <Link
               href="/orders"
-              className="flex-1 py-3 px-6 rounded-xl bg-gray-900 text-white font-semibold text-sm hover:bg-black transition-colors"
+              className="flex-1 py-3 px-6 rounded-xl bg-gray-900 text-white font-semibold text-sm hover:bg-black transition-colors flex items-center justify-center"
             >
               View Order History
             </Link>
             <Link
               href="/"
-              className="flex-1 py-3 px-6 rounded-xl bg-[#FA521C] text-white font-semibold text-sm hover:bg-[#E0400B] transition-colors"
+              className="flex-1 py-3 px-6 rounded-xl bg-gray-100 text-gray-700 font-semibold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center"
             >
               Continue Shopping
             </Link>

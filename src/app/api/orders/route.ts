@@ -1,12 +1,66 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createOrder, getOrders, updateOrderStatus, OrderRecord } from "@/lib/orderStore";
+import { getERPOrders } from "@/lib/erpStore";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const email = searchParams.get("email");
-    const orders = getOrders(email || undefined);
-    return NextResponse.json({ success: true, orders });
+    const storefrontOrders = getOrders(email || undefined);
+
+    let combinedOrders = [...storefrontOrders];
+
+    try {
+      const erpOrders = await getERPOrders();
+      const existingIds = new Set(storefrontOrders.map((o) => o.id));
+
+      const matchedErp = erpOrders.filter((o) => {
+        if (existingIds.has(o.id)) return false;
+        if (!email) return true;
+        const qLower = email.toLowerCase().trim();
+        const oEmail = (o.guest_email || "").toLowerCase().trim();
+        const oPhone = (o.customer_phone || "").replace(/\D/g, "");
+        const searchPhone = email.replace(/\D/g, "");
+        return oEmail === qLower || (searchPhone.length >= 7 && oPhone.includes(searchPhone));
+      });
+
+      const mappedErp: OrderRecord[] = matchedErp.map((o) => ({
+        id: o.id,
+        customer_name: o.customer_name,
+        customer_email: o.guest_email || "",
+        customer_phone: o.customer_phone,
+        total_amount: o.total_amount,
+        shipping_address: o.shipping_address,
+        city: "",
+        postal_code: "",
+        payment_method: o.payment_method,
+        payment_status: o.payment_status === "Completed" || o.payment_status === "Settled" ? "paid" : "pending",
+        order_status:
+          o.delivery_status === "Delivered"
+            ? "delivered"
+            : o.delivery_status === "In Transit" || o.delivery_status === "Out for Delivery"
+            ? "shipped"
+            : "processing",
+        items: (o.items || []).map((it) => ({
+          product_id: (it as any).product_id || "prod-1",
+          name: it.product_name,
+          price: it.unit_price,
+          quantity: it.quantity,
+          image: (it as any).image,
+        })),
+        created_at: o.created_at,
+      }));
+
+      combinedOrders = [...storefrontOrders, ...mappedErp];
+    } catch (e) {
+      console.warn("Failed to merge ERP orders in /api/orders GET:", e);
+    }
+
+    combinedOrders.sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    return NextResponse.json({ success: true, orders: combinedOrders });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

@@ -841,7 +841,18 @@ export async function getERPOrders(filters?: {
     sql += " ORDER BY created_at DESC";
 
     const rows = await executeD1Query<ERPOrder>(sql, params);
-    if (rows && rows.length > 0) return rows;
+    if (rows && rows.length > 0) {
+      const d1Ids = new Set(rows.map((r) => r.id));
+      const memoryOnly = inMemoryERPOrders.filter((m) => !d1Ids.has(m.id));
+      const combined = [...memoryOnly, ...rows].map((row) => {
+        const mem = inMemoryERPOrders.find((m) => m.id === row.id);
+        if (mem && mem.items && (!row.items || row.items.length === 0)) {
+          return { ...row, items: mem.items };
+        }
+        return row;
+      });
+      return combined;
+    }
   } catch (err) {
     console.warn("D1 getERPOrders fallback:", err);
   }

@@ -132,8 +132,15 @@ export default function OrdersPage() {
                       ₹{ord.total_amount.toLocaleString()}
                     </span>
                   </div>
-                  <div>
+                  <div className="flex items-center gap-2.5">
                     {getStatusBadge(ord.order_status)}
+                    <Link
+                      href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-orange-50 text-[#FA521C] hover:bg-[#FA521C] hover:text-white border border-[#FA521C]/20 transition-all cursor-pointer"
+                    >
+                      <Truck className="w-3.5 h-3.5" />
+                      <span>Track Package</span>
+                    </Link>
                   </div>
                 </div>
 
@@ -161,7 +168,7 @@ export default function OrdersPage() {
 
                 {/* Shipping address footer */}
                 <div className="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between text-xs text-gray-500 gap-2">
-                  <span>Ship to: {ord.shipping_address}, {ord.city}</span>
+                  <span>Ship to: {ord.shipping_address}{ord.city ? `, ${ord.city}` : ""}</span>
                   <span>Payment: {ord.payment_method}</span>
                 </div>
               </div>
