@@ -79,9 +79,24 @@ export default function AccountPage() {
     }
   }, [isLoading, isAuthenticated, router]);
 
+  // Key for local address cache
+  const getCacheKey = (email: string) => `zp_user_addresses_${email.toLowerCase().trim()}`;
+
   // Load and auto-sync delivery addresses for this customer
   const loadAddresses = async () => {
     if (!user?.email) return;
+
+    // 1. Immediately read from local storage for 0ms instant display
+    try {
+      const cached = localStorage.getItem(getCacheKey(user.email));
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setAddresses(parsed);
+        }
+      }
+    } catch (e) {}
+
     setLoadingAddresses(true);
 
     try {
@@ -91,7 +106,28 @@ export default function AccountPage() {
       const data = await res.json();
 
       if (data.success && Array.isArray(data.addresses)) {
-        setAddresses(data.addresses);
+        if (data.addresses.length > 0) {
+          setAddresses(data.addresses);
+          try {
+            localStorage.setItem(getCacheKey(user.email), JSON.stringify(data.addresses));
+          } catch (e) {}
+        } else {
+          // If server returned 0 but client has cached addresses, sync client cache to server!
+          try {
+            const cached = localStorage.getItem(getCacheKey(user.email));
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setAddresses(parsed);
+                fetch("/api/user/addresses", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(parsed[0]),
+                });
+              }
+            }
+          } catch (e) {}
+        }
 
         // If user has no phone in profile, but has a phone in an address, sync it to profile
         if (!user.phone && data.addresses.length > 0) {
@@ -162,24 +198,43 @@ export default function AccountPage() {
     setAddressSaving(true);
     setAddressError("");
 
+    const newAddr: UserAddress = {
+      id: editingAddressId || `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      user_id: user.id,
+      user_email: user.email,
+      recipient_name: recipientName.trim(),
+      phone: addressPhone.trim(),
+      street: street.trim(),
+      city: city.trim(),
+      state: state.trim(),
+      postal_code: postalCode.trim(),
+      country: "India",
+      is_default: isDefault || addresses.length === 0,
+      tag,
+      created_at: new Date().toISOString(),
+    };
+
+    // Instant optimistic update in state & localStorage
+    let updatedList = [...addresses];
+    if (newAddr.is_default) {
+      updatedList = updatedList.map((a) => ({ ...a, is_default: false }));
+    }
+    const idx = updatedList.findIndex((a) => a.id === newAddr.id);
+    if (idx >= 0) {
+      updatedList[idx] = newAddr;
+    } else {
+      updatedList = [newAddr, ...updatedList];
+    }
+    setAddresses(updatedList);
+    try {
+      localStorage.setItem(getCacheKey(user.email), JSON.stringify(updatedList));
+    } catch (e) {}
+
     try {
       const res = await fetch("/api/user/addresses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: editingAddressId || undefined,
-          user_id: user.id,
-          user_email: user.email,
-          recipient_name: recipientName.trim(),
-          phone: addressPhone.trim(),
-          street: street.trim(),
-          city: city.trim(),
-          state: state.trim(),
-          postal_code: postalCode.trim(),
-          country: "India",
-          is_default: isDefault || addresses.length === 0,
-          tag,
-        }),
+        body: JSON.stringify(newAddr),
       });
 
       const data = await res.json();
@@ -198,7 +253,10 @@ export default function AccountPage() {
       setTimeout(() => setAddressNotice(null), 3500);
       loadAddresses();
     } catch (err: any) {
-      setAddressError("Network error while saving address.");
+      // Even if network fails, address is safely kept in localStorage
+      setIsAddressModalOpen(false);
+      setAddressNotice("Delivery address saved locally!");
+      setTimeout(() => setAddressNotice(null), 3500);
     } finally {
       setAddressSaving(false);
     }
@@ -209,14 +267,20 @@ export default function AccountPage() {
     if (!user?.email) return;
     if (!confirm("Are you sure you want to delete this delivery address?")) return;
 
+    const updated = addresses.filter((a) => a.id !== id);
+    if (updated.length > 0 && !updated.some((a) => a.is_default)) {
+      updated[0].is_default = true;
+    }
+    setAddresses(updated);
     try {
-      const res = await fetch(
+      localStorage.setItem(getCacheKey(user.email), JSON.stringify(updated));
+    } catch (e) {}
+
+    try {
+      await fetch(
         `/api/user/addresses?id=${encodeURIComponent(id)}&email=${encodeURIComponent(user.email)}`,
         { method: "DELETE" }
       );
-      if (res.ok) {
-        setAddresses((prev) => prev.filter((a) => a.id !== id));
-      }
     } catch (err) {
       console.warn("Failed to delete address:", err);
     }
@@ -226,20 +290,21 @@ export default function AccountPage() {
   const handleSetDefaultAddress = async (id: string) => {
     if (!user?.email) return;
 
+    const updated = addresses.map((a) => ({
+      ...a,
+      is_default: a.id === id,
+    }));
+    setAddresses(updated);
     try {
-      const res = await fetch("/api/user/addresses", {
+      localStorage.setItem(getCacheKey(user.email), JSON.stringify(updated));
+    } catch (e) {}
+
+    try {
+      await fetch("/api/user/addresses", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, email: user.email, action: "set_default" }),
       });
-      if (res.ok) {
-        setAddresses((prev) =>
-          prev.map((a) => ({
-            ...a,
-            is_default: a.id === id,
-          }))
-        );
-      }
     } catch (err) {
       console.warn("Failed to set default address:", err);
     }

@@ -89,14 +89,41 @@ function CheckoutContent() {
   useEffect(() => {
     if (!user?.email) return;
 
+    const cacheKey = `zp_user_addresses_${user.email.toLowerCase().trim()}`;
+
+    // 1. Instantly hydrate from localStorage for instantaneous 0ms display & fill
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSavedAddresses(parsed);
+          const defaultAddr = parsed.find((a: any) => a.is_default) || parsed[0];
+          if (defaultAddr && !address) {
+            setSelectedAddressId(defaultAddr.id);
+            if (defaultAddr.recipient_name) setName(defaultAddr.recipient_name);
+            if (defaultAddr.phone) setPhone(defaultAddr.phone);
+            setAddress(defaultAddr.street || "");
+            setCity(defaultAddr.city || "");
+            setState(defaultAddr.state || "");
+            setPostalCode(defaultAddr.postal_code || "");
+          }
+        }
+      }
+    } catch (e) {}
+
+    // 2. Fetch from server to sync latest
     fetch(`/api/user/addresses?email=${encodeURIComponent(user.email)}&userId=${encodeURIComponent(user.id || "")}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.addresses) && data.addresses.length > 0) {
           setSavedAddresses(data.addresses);
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(data.addresses));
+          } catch (e) {}
           // If address fields are empty, auto-select default address
           const defaultAddr = data.addresses.find((a: any) => a.is_default) || data.addresses[0];
-          if (defaultAddr) {
+          if (defaultAddr && !address) {
             setSelectedAddressId(defaultAddr.id);
             if (defaultAddr.recipient_name) setName(defaultAddr.recipient_name);
             if (defaultAddr.phone) setPhone(defaultAddr.phone);
@@ -133,22 +160,35 @@ function CheckoutContent() {
   const syncAddressAfterOrder = async () => {
     try {
       if (email.trim() && address.trim()) {
+        const newAddr = {
+          id: `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          user_email: email.trim(),
+          user_id: user?.id,
+          recipient_name: name.trim(),
+          phone: phone.trim(),
+          street: address.trim(),
+          city: city.trim(),
+          state: state.trim(),
+          postal_code: postalCode.trim(),
+          country: "India",
+          is_default: savedAddresses.length === 0,
+          tag: "Home",
+          created_at: new Date().toISOString(),
+        };
+
+        const cacheKey = `zp_user_addresses_${email.toLowerCase().trim()}`;
+        const existing = savedAddresses.filter(
+          (a: any) => a.street?.toLowerCase().trim() !== address.toLowerCase().trim()
+        );
+        const updated = [newAddr, ...existing];
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(updated));
+        } catch (e) {}
+
         await fetch("/api/user/addresses", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_email: email.trim(),
-            user_id: user?.id,
-            recipient_name: name.trim(),
-            phone: phone.trim(),
-            street: address.trim(),
-            city: city.trim(),
-            state: state.trim(),
-            postal_code: postalCode.trim(),
-            country: "India",
-            is_default: savedAddresses.length === 0,
-            tag: "Home",
-          }),
+          body: JSON.stringify(newAddr),
         });
       }
       if (phone.trim() && (!user?.phone || user.phone !== phone.trim())) {

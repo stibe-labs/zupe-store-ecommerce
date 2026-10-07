@@ -32,7 +32,7 @@ export async function ensureAddressTable(): Promise<void> {
       CREATE TABLE IF NOT EXISTS addresses (
         id TEXT PRIMARY KEY,
         user_id TEXT,
-        user_email TEXT,
+        user_email TEXT NOT NULL,
         recipient_name TEXT NOT NULL,
         phone TEXT,
         street TEXT NOT NULL,
@@ -46,21 +46,9 @@ export async function ensureAddressTable(): Promise<void> {
       );
     `);
 
-    // Best-effort column additions for existing schema upgrades
-    const optionalColumns = [
-      "ALTER TABLE addresses ADD COLUMN user_email TEXT;",
-      "ALTER TABLE addresses ADD COLUMN phone TEXT;",
-      "ALTER TABLE addresses ADD COLUMN tag TEXT DEFAULT 'Home';",
-      "ALTER TABLE addresses ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;",
-    ];
-
-    for (const alterSql of optionalColumns) {
-      try {
-        await executeD1Query(alterSql);
-      } catch {
-        // Column already exists or table cannot be altered, safe to ignore
-      }
-    }
+    try {
+      await executeD1Query(`CREATE INDEX IF NOT EXISTS idx_addresses_email ON addresses(user_email);`);
+    } catch {}
   } catch (err) {
     console.warn("Could not ensure addresses table:", err);
   }
@@ -77,11 +65,11 @@ export async function getUserAddresses(
 
   let addresses: UserAddress[] = inMemoryAddresses.get(normEmail) || [];
 
-  // Query D1
+  // Query D1 by verified email
   try {
     const rows = await executeD1Query<any>(
-      `SELECT * FROM addresses WHERE LOWER(user_email) = ? OR user_id = ? ORDER BY is_default DESC, created_at DESC`,
-      [normEmail, userId || ""]
+      `SELECT * FROM addresses WHERE LOWER(user_email) = ? ${userId ? "OR user_id = ?" : ""} ORDER BY is_default DESC, created_at DESC`,
+      userId ? [normEmail, userId] : [normEmail]
     );
 
     if (rows && rows.length > 0) {
