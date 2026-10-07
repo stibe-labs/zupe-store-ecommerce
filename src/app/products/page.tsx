@@ -227,6 +227,27 @@ function ProductsContent() {
     if (success) openCart();
   };
 
+  const handleBuyNow = (e: React.MouseEvent, product: Product) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      try {
+        localStorage.setItem(
+          "zp_pending_cart_action",
+          JSON.stringify({ action: "buy_now", product, quantity: 1, autoOpenCart: false })
+        );
+      } catch (e) {}
+      router.push(
+        `/signin?redirect=${encodeURIComponent("/checkout")}&notice=${encodeURIComponent(
+          "Please sign in to place an order"
+        )}`
+      );
+      return;
+    }
+    addToCart(product, 1);
+    router.push("/checkout");
+  };
+
   const handleToggleWishlist = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
@@ -754,7 +775,7 @@ function ProductsContent() {
                         </Link>
 
                         {/* Price */}
-                        <div className="flex items-baseline gap-1.5 sm:gap-2 mb-2.5">
+                        <div className="flex items-baseline gap-1.5 sm:gap-2 mb-1">
                           <span className="text-sm sm:text-base font-extrabold text-[#111111]">
                             ₹{product.price.toLocaleString("en-IN")}
                           </span>
@@ -764,16 +785,34 @@ function ProductsContent() {
                             </span>
                           )}
                         </div>
+
+                        {/* Save Discount Percentage (Matching reference image) */}
+                        {discount > 0 ? (
+                          <div className="text-[11px] sm:text-xs font-bold text-[#E53935] mb-2.5">
+                            Save {discount}%
+                          </div>
+                        ) : (
+                          <div className="h-4 mb-1" />
+                        )}
                       </div>
 
-                      {/* Add to Cart Button */}
-                      <button
-                        onClick={(e) => handleQuickAdd(e, product)}
-                        className="w-full py-2 px-2.5 rounded-lg sm:rounded-xl bg-[#FA521C] hover:bg-[#E04515] active:scale-95 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                        <span>Add to Cart</span>
-                      </button>
+                      {/* Dual Action Buttons (Matching reference image: Buy now & Add to cart) */}
+                      <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mt-auto pt-1">
+                        <button
+                          type="button"
+                          onClick={(e) => handleBuyNow(e, product)}
+                          className="w-full py-2 px-1.5 sm:px-2 rounded-xl border border-gray-900 bg-white hover:bg-gray-900 hover:text-white active:scale-95 text-gray-900 text-xs sm:text-[13px] font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
+                        >
+                          Buy now
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => handleQuickAdd(e, product)}
+                          className="w-full py-2 px-1.5 sm:px-2 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 active:scale-95 text-gray-900 text-xs sm:text-[13px] font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
+                        >
+                          Add to cart
+                        </button>
+                      </div>
                     </motion.div>
                   );
                 })}

@@ -122,35 +122,67 @@ export function NewArrivalsSection() {
                 </div>
               </div>
 
-              {/* Add to Cart button */}
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (!user) {
-                    try {
-                      localStorage.setItem(
-                        "zp_pending_cart_action",
-                        JSON.stringify({ action: "add_to_cart", product, quantity: 1, autoOpenCart: true })
+              {/* Dual Action Buttons: Buy now & Add to cart */}
+              <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mt-auto pt-1">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!user) {
+                      try {
+                        localStorage.setItem(
+                          "zp_pending_cart_action",
+                          JSON.stringify({ action: "buy_now", product, quantity: 1, autoOpenCart: false })
+                        );
+                      } catch (err) {}
+                      router.push(
+                        `/signin?redirect=${encodeURIComponent("/checkout")}&notice=${encodeURIComponent(
+                          "Please sign in to place an order"
+                        )}`
                       );
-                    } catch (e) {}
-                    router.push(
-                      `/signin?redirect=/&notice=${encodeURIComponent(
-                        "Please sign in to add items to your cart"
-                      )}`
-                    );
-                    return;
-                  }
-                  const addFn = addToCart || addItem;
-                  if (typeof addFn === "function") {
-                    addFn(product, 1);
-                  }
-                  router.push("/cart");
-                }}
-                className="w-full py-2 px-3 rounded-lg bg-[#FF5722] hover:bg-[#E64A19] text-white text-xs sm:text-sm font-semibold transition-colors shadow-sm active:scale-95 duration-150"
-              >
-                Add to Cart
-              </button>
+                      return;
+                    }
+                    const addFn = addToCart || addItem;
+                    if (typeof addFn === "function") {
+                      addFn(product, 1);
+                    }
+                    router.push("/checkout");
+                  }}
+                  className="w-full py-2 px-1.5 sm:px-2 rounded-xl border border-gray-900 bg-white hover:bg-gray-900 hover:text-white active:scale-95 text-gray-900 text-xs sm:text-[13px] font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
+                >
+                  Buy now
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!user) {
+                      try {
+                        localStorage.setItem(
+                          "zp_pending_cart_action",
+                          JSON.stringify({ action: "add_to_cart", product, quantity: 1, autoOpenCart: true })
+                        );
+                      } catch (err) {}
+                      router.push(
+                        `/signin?redirect=/&notice=${encodeURIComponent(
+                          "Please sign in to add items to your cart"
+                        )}`
+                      );
+                      return;
+                    }
+                    const addFn = addToCart || addItem;
+                    if (typeof addFn === "function") {
+                      addFn(product, 1);
+                    }
+                    router.push("/cart");
+                  }}
+                  className="w-full py-2 px-1.5 sm:px-2 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 active:scale-95 text-gray-900 text-xs sm:text-[13px] font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
+                >
+                  Add to cart
+                </button>
+              </div>
             </div>
           );
         })}

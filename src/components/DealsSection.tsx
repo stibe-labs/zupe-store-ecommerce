@@ -43,6 +43,30 @@ export function DealsSection() {
     router.push("/cart");
   };
 
+  const handleBuyNow = (e: React.MouseEvent, product: typeof dealProducts[0]) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      try {
+        localStorage.setItem(
+          "zp_pending_cart_action",
+          JSON.stringify({ action: "buy_now", product, quantity: 1, autoOpenCart: false })
+        );
+      } catch (e) {}
+      router.push(
+        `/signin?redirect=${encodeURIComponent("/checkout")}&notice=${encodeURIComponent(
+          "Please sign in to place an order"
+        )}`
+      );
+      return;
+    }
+    const addFn = addToCart || addItem;
+    if (typeof addFn === "function") {
+      addFn(product, 1);
+    }
+    router.push("/checkout");
+  };
+
   return (
     <section className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6">
       {/* Header */}
@@ -113,7 +137,7 @@ export function DealsSection() {
               </div>
 
               {/* Price */}
-              <div className="flex items-baseline gap-2 mb-3">
+              <div className="flex items-baseline gap-2 mb-1">
                 <span className="text-sm sm:text-base font-extrabold text-[#111111]">
                   ₹{product.price.toLocaleString("en-IN")}
                 </span>
@@ -123,15 +147,32 @@ export function DealsSection() {
                   </span>
                 )}
               </div>
+
+              {/* Save Discount Percentage */}
+              {product.mrp && product.mrp > product.price && (
+                <div className="text-[11px] sm:text-xs font-bold text-[#E53935] mb-2.5">
+                  Save {Math.round(((product.mrp - product.price) / product.mrp) * 100)}%
+                </div>
+              )}
             </div>
 
-            {/* Add to Cart Button */}
-            <button
-              onClick={(e) => handleAddToCart(e, product)}
-              className="w-full py-2 px-3 rounded-lg bg-[#FF5722] hover:bg-[#E64A19] text-white text-xs sm:text-sm font-semibold transition-colors shadow-sm active:scale-95 duration-150"
-            >
-              Add to Cart
-            </button>
+            {/* Dual Action Buttons: Buy now & Add to cart */}
+            <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mt-auto pt-1">
+              <button
+                type="button"
+                onClick={(e) => handleBuyNow(e, product)}
+                className="w-full py-2 px-1.5 sm:px-2 rounded-xl border border-gray-900 bg-white hover:bg-gray-900 hover:text-white active:scale-95 text-gray-900 text-xs sm:text-[13px] font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
+              >
+                Buy now
+              </button>
+              <button
+                type="button"
+                onClick={(e) => handleAddToCart(e, product)}
+                className="w-full py-2 px-1.5 sm:px-2 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 active:scale-95 text-gray-900 text-xs sm:text-[13px] font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
+              >
+                Add to cart
+              </button>
+            </div>
           </div>
         ))}
       </div>
