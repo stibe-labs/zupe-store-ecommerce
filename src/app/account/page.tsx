@@ -505,7 +505,7 @@ export default function AccountPage() {
               </div>
               <h3 className="text-base font-bold text-gray-900 mb-1">My Orders</h3>
               <p className="text-xs text-gray-500 leading-relaxed">
-                Review past purchases, download invoice receipts, and check delivery status.
+                Track delivery status, rate & review delivered products, and upload photos.
               </p>
             </div>
             <div className="mt-5 pt-3 border-t border-gray-50 flex items-center text-xs font-semibold text-[#FA521C]">

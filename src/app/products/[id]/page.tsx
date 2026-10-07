@@ -29,7 +29,7 @@ import {
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { UpiLogo } from "@/components/UpiLogo";
-import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { ProductReviewsSection } from "@/components/ProductReviewsSection";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -603,18 +603,23 @@ export default function ProductDetailPage() {
             )}
 
             {/* Rating & Sold Stats Row */}
-            <div className="flex items-center gap-2 mt-1.5 text-xs text-[#6B7280]">
-              <div className="flex items-center gap-0.5 text-[#F59E0B]">
+            <a
+              href="#reviews"
+              className="inline-flex items-center gap-2 mt-1.5 text-xs text-[#6B7280] hover:text-[#FA521C] transition-colors cursor-pointer group"
+            >
+              <div className="flex items-center gap-0.5 text-[#F59E0B] group-hover:scale-105 transition-transform">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-3.5 h-3.5 fill-current" />
                 ))}
               </div>
-              <span className="font-semibold text-gray-800">
+              <span className="font-semibold text-gray-800 group-hover:text-[#FA521C]">
                 ({product.rating ? product.rating.toFixed(1) : "4.8"})
               </span>
               <span className="text-gray-300">|</span>
-              <span>{product.sold_count || "1,250+ verified orders"}</span>
-            </div>
+              <span className="underline decoration-dotted underline-offset-2">
+                {product.sold_count || "1,250+ verified orders"} • Customer Reviews ↓
+              </span>
+            </a>
 
             {/* Price & Discount Row */}
             <div className="mt-3 flex items-baseline gap-2.5">
@@ -1086,6 +1091,19 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </main>
+
+      {/* ========================================================
+          CUSTOMER REVIEWS & RATINGS SECTION (LAST OF PRODUCT PAGE)
+         ======================================================== */}
+      {product && (
+        <ProductReviewsSection
+          productId={product.slug || product.id}
+          productName={product.name}
+          productImage={product.poster_image || (product.images && product.images[0])}
+          fallbackRating={product.rating || 4.8}
+          fallbackReviewCount={product.review_count || 1250}
+        />
+      )}
 
       {/* ========================================================
           STICKY BOTTOM BAR (SLIDES IN ON SCROLL DOWN)
