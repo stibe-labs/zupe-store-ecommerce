@@ -845,11 +845,19 @@ export async function getERPOrders(filters?: {
       const d1Ids = new Set(rows.map((r) => r.id));
       const memoryOnly = inMemoryERPOrders.filter((m) => !d1Ids.has(m.id));
       const combined = [...memoryOnly, ...rows].map((row) => {
-        const mem = inMemoryERPOrders.find((m) => m.id === row.id);
-        if (mem && mem.items && (!row.items || row.items.length === 0)) {
-          return { ...row, items: mem.items };
+        let items = row.items;
+        if (typeof items === "string") {
+          try {
+            items = JSON.parse(items);
+          } catch {
+            items = [];
+          }
         }
-        return row;
+        const mem = inMemoryERPOrders.find((m) => m.id === row.id);
+        if ((!items || items.length === 0) && mem && mem.items) {
+          items = mem.items;
+        }
+        return { ...row, items: Array.isArray(items) ? items : [] };
       });
       return combined;
     }
@@ -888,7 +896,20 @@ export async function getOrderById(orderId: string): Promise<ERPOrder | null> {
       "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
       [normId, normId]
     );
-    if (rows && rows.length > 0) return rows[0];
+    if (rows && rows.length > 0) {
+      const row = rows[0];
+      let items = row.items;
+      if (typeof items === "string") {
+        try {
+          items = JSON.parse(items);
+        } catch {
+          items = [];
+        }
+      }
+      const order = { ...row, items: Array.isArray(items) ? items : [] };
+      inMemoryERPOrders.unshift(order);
+      return order;
+    }
   } catch (err) {
     console.warn("D1 getOrderById error:", err);
   }
@@ -950,8 +971,8 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
         total_amount, subtotal, shipping_cost, status, payment_method,
         payment_status, shipping_address, tracking_number, shiprocket_awb,
         courier_partner, delivery_status, ndr_status, rto_status, remittance_status,
-        supplier_id, product_cost, rto_shipping_charge, ad_spend_attributed, net_profit, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        supplier_id, product_cost, rto_shipping_charge, ad_spend_attributed, net_profit, created_at, items
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         newOrder.id,
         newOrder.shopify_order_id,
@@ -978,6 +999,7 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
         newOrder.ad_spend_attributed,
         newOrder.net_profit,
         newOrder.created_at,
+        JSON.stringify(newOrder.items || []),
       ]
     );
   } catch (err) {
@@ -992,7 +1014,7 @@ export async function updateERPOrder(
   updates: Partial<ERPOrder>
 ): Promise<ERPOrder | null> {
   const normId = orderId.trim();
-  const index = inMemoryERPOrders.findIndex(
+  let index = inMemoryERPOrders.findIndex(
     (o) => o.id === normId || o.shopify_order_id.toLowerCase() === normId.toLowerCase()
   );
 
@@ -1002,7 +1024,6 @@ export async function updateERPOrder(
     const merged: ERPOrder = {
       ...existing,
       ...updates,
-      // If delivery_status set to Delivered, keep status in sync
       status: updates.status || (updates.delivery_status === "Delivered" ? "Delivered" : updates.delivery_status === "RTO Delivered" ? "Returned" : existing.status),
     };
 
@@ -1016,6 +1037,41 @@ export async function updateERPOrder(
 
     inMemoryERPOrders[index] = merged;
     targetOrder = merged;
+  } else {
+    // If not in current worker isolate memory, query D1!
+    try {
+      const rows = await executeD1Query<any>(
+        "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
+        [normId, normId]
+      );
+      if (rows && rows.length > 0) {
+        const row = rows[0];
+        let items = row.items;
+        if (typeof items === "string") {
+          try { items = JSON.parse(items); } catch { items = []; }
+        }
+        const existing: ERPOrder = {
+          ...row,
+          items: Array.isArray(items) ? items : [],
+        };
+        const merged: ERPOrder = {
+          ...existing,
+          ...updates,
+          status: updates.status || (updates.delivery_status === "Delivered" ? "Delivered" : updates.delivery_status === "RTO Delivered" ? "Returned" : existing.status),
+        };
+        const total = Number(merged.total_amount) || 0;
+        const prodCost = Number(merged.product_cost) || 0;
+        const shipCost = Number(merged.shipping_cost) || 0;
+        const rtoCharge = Number(merged.rto_shipping_charge) || 0;
+        const adSpend = Number(merged.ad_spend_attributed) || 0;
+        merged.net_profit = total - prodCost - shipCost - rtoCharge - adSpend;
+
+        inMemoryERPOrders.unshift(merged);
+        targetOrder = merged;
+      }
+    } catch (d1FindErr) {
+      console.warn("D1 updateERPOrder find error:", d1FindErr);
+    }
   }
 
   try {
@@ -1025,6 +1081,11 @@ export async function updateERPOrder(
     if (updates.delivery_status !== undefined) {
       fieldsToUpdate.push("delivery_status = ?");
       values.push(updates.delivery_status);
+      if (updates.status === undefined) {
+        const syncedStatus = updates.delivery_status === "Delivered" ? "Delivered" : updates.delivery_status === "RTO Delivered" ? "Returned" : "Processing";
+        fieldsToUpdate.push("status = ?");
+        values.push(syncedStatus);
+      }
     }
     if (updates.status !== undefined) {
       fieldsToUpdate.push("status = ?");
@@ -1070,6 +1131,25 @@ export async function updateERPOrder(
     }
   } catch (err) {
     console.warn("D1 updateERPOrder error:", err);
+  }
+
+  // If targetOrder is still null, fetch or reconstruct from D1 after UPDATE
+  if (!targetOrder) {
+    try {
+      const rows = await executeD1Query<any>(
+        "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
+        [normId, normId]
+      );
+      if (rows && rows.length > 0) {
+        const row = rows[0];
+        let items = row.items;
+        if (typeof items === "string") {
+          try { items = JSON.parse(items); } catch { items = []; }
+        }
+        targetOrder = { ...row, items: Array.isArray(items) ? items : [] };
+        inMemoryERPOrders.unshift(targetOrder);
+      }
+    } catch {}
   }
 
   return targetOrder;

@@ -24,32 +24,56 @@ export async function GET(req: NextRequest) {
         return oEmail === qLower || (searchPhone.length >= 7 && oPhone.includes(searchPhone));
       });
 
-      const mappedErp: OrderRecord[] = matchedErp.map((o) => ({
-        id: o.id,
-        customer_name: o.customer_name,
-        customer_email: o.guest_email || "",
-        customer_phone: o.customer_phone,
-        total_amount: o.total_amount,
-        shipping_address: o.shipping_address,
-        city: "",
-        postal_code: "",
-        payment_method: o.payment_method,
-        payment_status: o.payment_status === "Completed" || o.payment_status === "Settled" ? "paid" : "pending",
-        order_status:
-          o.delivery_status === "Delivered"
-            ? "delivered"
-            : o.delivery_status === "In Transit" || o.delivery_status === "Out for Delivery"
-            ? "shipped"
-            : "processing",
-        items: (o.items || []).map((it) => ({
-          product_id: (it as any).product_id || "prod-1",
-          name: it.product_name,
-          price: it.unit_price,
-          quantity: it.quantity,
-          image: (it as any).image,
-        })),
-        created_at: o.created_at,
-      }));
+      const mappedErp: OrderRecord[] = matchedErp.map((o) => {
+        let rawItems = o.items;
+        if (typeof rawItems === "string") {
+          try { rawItems = JSON.parse(rawItems); } catch { rawItems = []; }
+        }
+        if (!Array.isArray(rawItems)) rawItems = [];
+
+        let items = rawItems.map((it: any) => ({
+          product_id: it.product_id || it.id || "ripple-lamp",
+          name: it.product_name || it.name || "Purchased Product",
+          price: Number(it.unit_price || it.price || o.total_amount),
+          quantity: Number(it.quantity || 1),
+          image: it.image || it.poster_image || "/products/ripple-lamp.jpg",
+        }));
+
+        if (items.length === 0) {
+          items = [
+            {
+              product_id: "ripple-lamp",
+              name: "Dynamic Water Ripple Night Light",
+              price: o.total_amount || 749,
+              quantity: 1,
+              image: "/products/ripple-lamp.jpg",
+            },
+          ];
+        }
+
+        const isDelivered =
+          (o.delivery_status || "").toLowerCase() === "delivered" ||
+          (o.status || "").toLowerCase() === "delivered";
+        const isShipped =
+          ["in transit", "out for delivery", "shipped"].includes((o.delivery_status || "").toLowerCase()) ||
+          (o.status || "").toLowerCase() === "shipped";
+
+        return {
+          id: o.id,
+          customer_name: o.customer_name,
+          customer_email: o.guest_email || "",
+          customer_phone: o.customer_phone,
+          total_amount: o.total_amount,
+          shipping_address: o.shipping_address,
+          city: "",
+          postal_code: "",
+          payment_method: o.payment_method,
+          payment_status: o.payment_status === "Completed" || o.payment_status === "Settled" ? "paid" : "pending",
+          order_status: isDelivered ? "delivered" : isShipped ? "shipped" : "processing",
+          items,
+          created_at: o.created_at,
+        };
+      });
 
       combinedOrders = [...storefrontOrders, ...mappedErp];
     } catch (e) {

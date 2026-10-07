@@ -87,8 +87,8 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
   // 2. Persist to D1 if available
   try {
     await executeD1Query(
-      `INSERT INTO orders (id, user_id, total_amount, discount_amount, payment_method, payment_status, order_status, shipping_address, customer_email, customer_phone, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO orders (id, user_id, total_amount, discount_amount, payment_method, payment_status, status, order_status, shipping_address, customer_email, customer_phone, items, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         order.id,
         order.user_id || null,
@@ -97,9 +97,11 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
         order.payment_method,
         order.payment_status,
         order.order_status,
+        order.order_status,
         `${order.shipping_address}, ${order.city} ${order.postal_code}`,
         order.customer_email,
         order.customer_phone || null,
+        JSON.stringify(order.items || []),
         order.created_at,
       ]
     );
@@ -122,7 +124,7 @@ export async function updateOrderStatus(orderId: string, status: OrderRecord["or
     ord.order_status = status;
   }
 
-  // Also sync status update to ERP
+  // Also sync status update to ERP & D1
   try {
     const erpDeliveryStatus =
       status === "delivered"
@@ -141,5 +143,5 @@ export async function updateOrderStatus(orderId: string, status: OrderRecord["or
     console.warn("Error updating ERP order status:", err);
   }
 
-  return !!ord;
+  return true;
 }

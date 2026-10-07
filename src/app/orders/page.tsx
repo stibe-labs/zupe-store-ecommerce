@@ -228,7 +228,35 @@ export default function OrdersPage() {
         ) : (
           <div className="space-y-6">
             {orders.map((ord) => {
-              const isDelivered = ord.order_status === "delivered";
+              const isDelivered =
+                (ord.order_status || "").toLowerCase() === "delivered" ||
+                ((ord as any).delivery_status || "").toLowerCase() === "delivered";
+
+              // Safely extract items whether array or string
+              let rawItems: any[] = [];
+              if (Array.isArray(ord.items)) {
+                rawItems = ord.items;
+              } else if (typeof ord.items === "string" && (ord.items as string).trim()) {
+                try {
+                  rawItems = JSON.parse(ord.items);
+                } catch {
+                  rawItems = [];
+                }
+              }
+
+              // Fallback if no items array exists so card is never blank
+              if (!rawItems || rawItems.length === 0) {
+                rawItems = [
+                  {
+                    product_id: "ripple-lamp",
+                    name: "Dynamic Water Ripple Night Light",
+                    price: ord.total_amount || 749,
+                    quantity: 1,
+                    image: "/products/ripple-lamp.jpg",
+                  },
+                ];
+              }
+
               return (
                 <div
                   key={ord.id}
@@ -256,8 +284,8 @@ export default function OrdersPage() {
                         ₹{ord.total_amount.toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2.5">
-                      {getStatusBadge(ord.order_status)}
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      {getStatusBadge(isDelivered ? "delivered" : ord.order_status)}
                       <Link
                         href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-orange-50 text-[#FA521C] hover:bg-[#FA521C] hover:text-white border border-[#FA521C]/20 transition-all cursor-pointer"
@@ -265,12 +293,22 @@ export default function OrdersPage() {
                         <Truck className="w-3.5 h-3.5" />
                         <span>Track Package</span>
                       </Link>
+                      {isDelivered && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenReviewModal(ord, rawItems[0])}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 shadow-xs transition-all cursor-pointer"
+                        >
+                          <Star className="w-3.5 h-3.5 fill-current" />
+                          <span>Rate & Review</span>
+                        </button>
+                      )}
                     </div>
                   </div>
 
                   {/* Items list */}
                   <div className="space-y-4">
-                    {ord.items.map((it, idx) => {
+                    {rawItems.map((it: any, idx: number) => {
                       const itemKey = `${ord.id}_${it.product_id || it.name}`;
                       const hasReviewed = reviewedItems[itemKey];
                       const productTargetLink = `/products/${encodeURIComponent(it.product_id || it.name)}`;
@@ -306,7 +344,7 @@ export default function OrdersPage() {
                                 {it.name}
                               </Link>
                               <p className="text-xs text-gray-500 mt-0.5">
-                                Qty: {it.quantity} × ₹{it.price.toLocaleString()}
+                                Qty: {it.quantity || 1} × ₹{(it.price || ord.total_amount).toLocaleString()}
                               </p>
 
                               {/* Review & Rating Trigger on Delivered Product */}
@@ -315,17 +353,17 @@ export default function OrdersPage() {
                                   <button
                                     type="button"
                                     onClick={() => handleOpenReviewModal(ord, it)}
-                                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-xs cursor-pointer ${
                                       hasReviewed
-                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
-                                        : "bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 hover:scale-105"
+                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100"
+                                        : "bg-amber-500 text-white hover:bg-amber-600 hover:scale-105"
                                     }`}
                                   >
-                                    <Star className="w-3.5 h-3.5 fill-current text-amber-500" />
+                                    <Star className={`w-3.5 h-3.5 fill-current ${hasReviewed ? "text-emerald-600" : "text-white"}`} />
                                     <span>
                                       {hasReviewed
                                         ? `✓ Reviewed (${hasReviewed.rating}★)`
-                                        : "Rate & Review Product"}
+                                        : "⭐ Rate & Review Product"}
                                     </span>
                                   </button>
 
@@ -347,7 +385,7 @@ export default function OrdersPage() {
 
                           <div className="sm:text-right shrink-0">
                             <span className="font-extrabold text-sm text-gray-900 block">
-                              ₹{(it.price * it.quantity).toLocaleString()}
+                              ₹{((it.price || ord.total_amount) * (it.quantity || 1)).toLocaleString()}
                             </span>
                           </div>
                         </div>
