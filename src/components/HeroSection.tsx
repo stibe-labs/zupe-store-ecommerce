@@ -108,10 +108,22 @@ export function HeroSection() {
               <div className="mb-8">
                 <Link
                   href={slide.ctaLink}
-                  className="inline-flex items-center gap-2.5 px-7 py-3 rounded-full bg-white text-[#111111] font-bold text-sm hover:bg-gray-100 transition-all shadow-lg shadow-black/25 group"
+                  className="relative inline-flex items-center gap-2.5 px-7 py-3 rounded-full font-bold text-sm overflow-hidden group shadow-lg shadow-black/30 hover:shadow-[0_12px_30px_-4px_rgba(250,82,28,0.55),0_0_16px_rgba(255,122,69,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 select-none cursor-pointer"
                 >
-                  <span>{slide.ctaText}</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  {/* Default White Background */}
+                  <span className="absolute inset-0 bg-white transition-opacity duration-300 ease-out group-hover:opacity-0" />
+
+                  {/* Animated Color-Changing Gradient Overlay on Hover */}
+                  <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out anim-shopnow-gradient" />
+
+                  {/* Shimmer Light Sweep on Hover */}
+                  <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none" />
+
+                  {/* Button Content */}
+                  <span className="relative z-10 flex items-center gap-2.5 text-[#111111] group-hover:text-white transition-colors duration-300">
+                    <span className="font-extrabold tracking-wide">{slide.ctaText}</span>
+                    <ArrowRight className="w-4 h-4 transition-all duration-300 group-hover:translate-x-1.5 group-hover:scale-110" />
+                  </span>
                 </Link>
               </div>
 
