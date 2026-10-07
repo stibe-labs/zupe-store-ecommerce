@@ -178,7 +178,7 @@ export function NewArrivalsSection() {
                     }
                     router.push("/cart");
                   }}
-                  className="w-full py-2 px-1.5 sm:px-2 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 active:scale-95 text-gray-900 text-xs sm:text-[13px] font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
+                  className="w-full py-2 px-1.5 sm:px-2 rounded-xl bg-[#FA521C] hover:bg-[#E04515] active:scale-95 text-white text-xs sm:text-[13px] font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
                 >
                   Add to cart
                 </button>
