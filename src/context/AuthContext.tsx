@@ -23,6 +23,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string, otp: string) => Promise<{ success: boolean; error?: string }>;
   sendOtp: (email: string, name?: string) => Promise<{ success: boolean; message?: string; emailSent?: boolean; otp?: string; error?: string }>;
   logout: () => void;
+  updateUserProfile: (data: { name?: string; phone?: string }) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -157,6 +158,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateUserProfile = async (data: { name?: string; phone?: string }): Promise<{ success: boolean; error?: string }> => {
+    if (!user) return { success: false, error: "Not logged in" };
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, ...data }),
+      });
+      const resData = await res.json();
+      if (!res.ok || !resData.success) {
+        return { success: false, error: resData.error || "Failed to update profile" };
+      }
+
+      const updatedUser: UserSession = {
+        ...user,
+        name: data.name !== undefined ? data.name : user.name,
+        phone: data.phone !== undefined ? data.phone : user.phone,
+      };
+
+      setUser(updatedUser);
+      localStorage.setItem("zp_user_session", JSON.stringify(updatedUser));
+      return { success: true };
+    } catch (err: any) {
+      const updatedUser: UserSession = {
+        ...user,
+        name: data.name !== undefined ? data.name : user.name,
+        phone: data.phone !== undefined ? data.phone : user.phone,
+      };
+      setUser(updatedUser);
+      localStorage.setItem("zp_user_session", JSON.stringify(updatedUser));
+      return { success: true };
+    }
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem("zp_user_session");
@@ -177,6 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         sendOtp,
         logout,
+        updateUserProfile,
       }}
     >
       {children}

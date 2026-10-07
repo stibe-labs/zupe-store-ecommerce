@@ -19,6 +19,9 @@ import {
   PackageCheck,
   AlertCircle,
   Sparkles,
+  MapPin,
+  Phone,
+  Plus,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -30,7 +33,7 @@ function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { cart, subtotal, clearCart, freeShippingThreshold } = useCart();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, updateUserProfile } = useAuth();
 
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
@@ -40,6 +43,11 @@ function CheckoutContent() {
   const [state, setState] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "netbanking" | "cod">("upi");
+
+  // Saved Delivery Addresses from Profile
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [isUsingNewAddress, setIsUsingNewAddress] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
@@ -76,6 +84,80 @@ function CheckoutContent() {
       if (!phone && user.phone) setPhone(user.phone);
     }
   }, [user, name, email, phone]);
+
+  // Load Saved Addresses for the logged-in customer and pre-fill default
+  useEffect(() => {
+    if (!user?.email) return;
+
+    fetch(`/api/user/addresses?email=${encodeURIComponent(user.email)}&userId=${encodeURIComponent(user.id || "")}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.addresses) && data.addresses.length > 0) {
+          setSavedAddresses(data.addresses);
+          // If address fields are empty, auto-select default address
+          const defaultAddr = data.addresses.find((a: any) => a.is_default) || data.addresses[0];
+          if (defaultAddr) {
+            setSelectedAddressId(defaultAddr.id);
+            if (defaultAddr.recipient_name) setName(defaultAddr.recipient_name);
+            if (defaultAddr.phone) setPhone(defaultAddr.phone);
+            setAddress(defaultAddr.street || "");
+            setCity(defaultAddr.city || "");
+            setState(defaultAddr.state || "");
+            setPostalCode(defaultAddr.postal_code || "");
+          }
+        }
+      })
+      .catch((err) => console.warn("Failed to load saved addresses in checkout:", err));
+  }, [user?.email, user?.id]);
+
+  const handleSelectSavedAddress = (addr: any) => {
+    setSelectedAddressId(addr.id);
+    setIsUsingNewAddress(false);
+    if (addr.recipient_name) setName(addr.recipient_name);
+    if (addr.phone) setPhone(addr.phone);
+    setAddress(addr.street || "");
+    setCity(addr.city || "");
+    setState(addr.state || "");
+    setPostalCode(addr.postal_code || "");
+  };
+
+  const handleUseNewAddress = () => {
+    setSelectedAddressId(null);
+    setIsUsingNewAddress(true);
+    setAddress("");
+    setCity("");
+    setState("");
+    setPostalCode("");
+  };
+
+  const syncAddressAfterOrder = async () => {
+    try {
+      if (email.trim() && address.trim()) {
+        await fetch("/api/user/addresses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_email: email.trim(),
+            user_id: user?.id,
+            recipient_name: name.trim(),
+            phone: phone.trim(),
+            street: address.trim(),
+            city: city.trim(),
+            state: state.trim(),
+            postal_code: postalCode.trim(),
+            country: "India",
+            is_default: savedAddresses.length === 0,
+            tag: "Home",
+          }),
+        });
+      }
+      if (phone.trim() && (!user?.phone || user.phone !== phone.trim())) {
+        await updateUserProfile({ phone: phone.trim() });
+      }
+    } catch (e) {
+      console.warn("Failed to sync address on frontend:", e);
+    }
+  };
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,6 +213,7 @@ function CheckoutContent() {
         setLoading(false);
 
         if (data.success && data.order) {
+          syncAddressAfterOrder();
           setConfirmedOrderId(data.order.id);
           setConfirmedPaymentId("");
           setOrderComplete(true);
@@ -246,6 +329,7 @@ function CheckoutContent() {
 
             const verifyData = await verifyRes.json();
             if (verifyData.success && verifyData.order) {
+              syncAddressAfterOrder();
               setConfirmedOrderId(verifyData.order.id);
               setConfirmedPaymentId(response.razorpay_payment_id);
               setOrderComplete(true);
@@ -443,14 +527,99 @@ function CheckoutContent() {
           <div className="lg:col-span-2 space-y-6">
             {/* 1. Shipping Details */}
             <div className="p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 shadow-sm space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-[#FA521C]/10 text-[#FA521C] flex items-center justify-center font-bold text-sm">
-                  1
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-[#FA521C]/10 text-[#FA521C] flex items-center justify-center font-bold text-sm">
+                    1
+                  </div>
+                  <h2 className="font-display font-bold text-lg text-gray-900">
+                    Shipping Details
+                  </h2>
                 </div>
-                <h2 className="font-display font-bold text-lg text-gray-900">
-                  Shipping Details
-                </h2>
+                {savedAddresses.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleUseNewAddress}
+                    className="text-xs font-bold text-[#FA521C] hover:text-[#E04515] hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>{isUsingNewAddress ? "Entering New Address" : "Use New Address"}</span>
+                  </button>
+                )}
               </div>
+
+              {/* Saved Delivery Addresses Selection Cards */}
+              {savedAddresses.length > 0 && (
+                <div className="bg-gray-50/90 p-4 sm:p-5 rounded-2xl border border-gray-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-[#FA521C]" />
+                      Saved Delivery Addresses ({savedAddresses.length})
+                    </p>
+                    <span className="text-[11px] text-gray-500 hidden sm:inline">
+                      Click to auto-fill address
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {savedAddresses.map((addr) => {
+                      const isSelected = selectedAddressId === addr.id && !isUsingNewAddress;
+                      return (
+                        <div
+                          key={addr.id}
+                          onClick={() => handleSelectSavedAddress(addr)}
+                          className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all relative select-none ${
+                            isSelected
+                              ? "border-[#FA521C] bg-orange-50/30 shadow-sm ring-2 ring-[#FA521C]/25"
+                              : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/60"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-bold text-xs text-gray-900">{addr.recipient_name}</span>
+                              {addr.tag && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600">
+                                  {addr.tag}
+                                </span>
+                              )}
+                              {addr.is_default && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#FA521C]/10 text-[#FA521C]">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+                            <div
+                              className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                                isSelected ? "border-[#FA521C] bg-[#FA521C] text-white" : "border-gray-300 bg-white"
+                              }`}
+                            >
+                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            </div>
+                          </div>
+
+                          {addr.phone && (
+                            <p className="text-[11px] text-gray-500 flex items-center gap-1 mb-1">
+                              <Phone className="w-3 h-3 text-gray-400" />
+                              <span>{addr.phone}</span>
+                            </p>
+                          )}
+
+                          <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                            {addr.street}, {addr.city} {addr.postal_code}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {selectedAddressId && !isUsingNewAddress && (
+                    <p className="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                      Address selected & auto-filled below. You can customize fields before ordering if needed.
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

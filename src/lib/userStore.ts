@@ -70,3 +70,39 @@ export function saveUser(user: UserRecord): void {
     ]
   ).catch((err) => console.warn("D1 user sync warning:", err));
 }
+
+export async function updateUserAsync(
+  email: string,
+  updates: { name?: string; phone?: string }
+): Promise<UserRecord | null> {
+  const normalized = email.toLowerCase().trim();
+  let user = await findUserByEmailAsync(normalized);
+  if (!user) {
+    user = {
+      id: `usr_${Date.now()}`,
+      name: updates.name || "Customer",
+      email: normalized,
+      password_hash: "",
+      phone: updates.phone,
+      role: "customer",
+      created_at: new Date().toISOString(),
+    };
+  } else {
+    if (updates.name !== undefined) user.name = updates.name;
+    if (updates.phone !== undefined) user.phone = updates.phone;
+  }
+
+  inMemoryUsers.set(normalized, user);
+
+  try {
+    await executeD1Query(
+      `UPDATE users SET name = COALESCE(?, name), phone = COALESCE(?, phone) WHERE LOWER(email) = ?`,
+      [updates.name ?? null, updates.phone ?? null, normalized]
+    );
+  } catch (err) {
+    console.warn("D1 update user warning:", err);
+  }
+
+  return user;
+}
+

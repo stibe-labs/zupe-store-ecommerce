@@ -78,6 +78,22 @@ export async function POST(req: NextRequest) {
 
     await createOrder(newOrder);
 
+    // Automatically sync delivery address and phone to customer profile
+    try {
+      const { syncAddressFromOrder } = await import("@/lib/addressStore");
+      await syncAddressFromOrder({
+        customer_name,
+        customer_email,
+        customer_phone,
+        shipping_address,
+        city,
+        postal_code,
+        user_id,
+      });
+    } catch (syncErr) {
+      console.warn("Auto-sync address from online order failed:", syncErr);
+    }
+
     return NextResponse.json({
       success: true,
       order: newOrder,
