@@ -63,13 +63,27 @@ export function HeroSection() {
             transition={{ duration: 0.6, ease: "easeInOut" }}
             className="absolute inset-0 z-0"
           >
+            {/* Desktop View Banner (Landscape 16:9) */}
             <Image
               src={slide.image}
               alt={slide.titleLine1}
               fill
               priority
-              className="object-cover object-right sm:object-center opacity-85"
+              className={`object-cover object-right sm:object-center opacity-85 ${
+                slide.mobileImage ? "hidden sm:block" : "block"
+              }`}
             />
+
+            {/* Mobile View Banner (Portrait / Mobile optimized ratio) */}
+            {slide.mobileImage && (
+              <Image
+                src={slide.mobileImage}
+                alt={slide.titleLine1}
+                fill
+                priority
+                className="object-cover object-center opacity-90 block sm:hidden"
+              />
+            )}
             {/* Subtle gradient vignette to keep text readable on the left */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#140F0A] via-[#140F0A]/85 sm:via-[#140F0A]/70 to-transparent w-full sm:w-2/3 z-10" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-10" />

@@ -9,7 +9,8 @@ export interface HeroBannerSlide {
   description: string;
   ctaText: string;
   ctaLink: string;
-  image: string;
+  image: string; // Desktop view photo (16:9 / landscape)
+  mobileImage?: string; // Mobile view photo (4:5 / 1:1 portrait)
   taglineRight?: string;
   active: boolean;
   order?: number;
@@ -19,7 +20,8 @@ export interface StoreCategory {
   id: string;
   name: string;
   slug: string;
-  icon?: string;
+  icon?: string; // Preset icon name (e.g. Armchair, Headphones)
+  customIcon?: string; // Custom uploaded icon URL / Data URL
   bgColor?: string;
   iconColor?: string;
   showInNavbar?: boolean;

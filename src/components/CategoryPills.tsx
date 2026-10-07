@@ -139,7 +139,16 @@ export function CategoryPills() {
               href: `/products?category=${encodeURIComponent(c.slug || c.name)}`,
               bgColor: c.bgColor || "bg-orange-50",
               iconColor: c.iconColor || "text-[#FA521C]",
-              icon: ICON_MAP[c.icon] || getIconForCategory(c.name),
+              icon: c.customIcon ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={c.customIcon}
+                  alt={c.name}
+                  className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded-full"
+                />
+              ) : (
+                ICON_MAP[c.icon] || getIconForCategory(c.name)
+              ),
             }));
 
           setCategoryItems([
@@ -162,7 +171,7 @@ export function CategoryPills() {
           >
             {/* Pastel Circle Container */}
             <div
-              className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full ${cat.bgColor} ${cat.iconColor} flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-md mb-2`}
+              className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full ${cat.bgColor} ${cat.iconColor} flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-md mb-2 overflow-hidden`}
             >
               {cat.icon}
             </div>

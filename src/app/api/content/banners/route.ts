@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, banners: reset });
     }
 
-    const { badge, titleLine1, titleLine2, description, ctaText, ctaLink, image, taglineRight, active } = body;
+    const { badge, titleLine1, titleLine2, description, ctaText, ctaLink, image, mobileImage, taglineRight, active } = body;
 
     if (!titleLine1 || !image) {
       return NextResponse.json({ success: false, error: "Title and Image are required" }, { status: 400 });
@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
       ctaText: (ctaText || "Explore Now").trim(),
       ctaLink: (ctaLink || "/products").trim(),
       image: image.trim(),
+      mobileImage: mobileImage ? mobileImage.trim() : undefined,
       taglineRight: taglineRight || "Exclusive Offers ♡",
       active: active !== false,
       order: currentBanners.length + 1,

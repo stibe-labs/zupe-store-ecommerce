@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, categories: reset });
     }
 
-    const { name, slug, icon, bgColor, iconColor, showInNavbar, showInPills, showInCollections, active } = body;
+    const { name, slug, icon, customIcon, bgColor, iconColor, showInNavbar, showInPills, showInCollections, active } = body;
 
     if (!name || !name.trim()) {
       return NextResponse.json({ success: false, error: "Category name is required" }, { status: 400 });
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
       name: trimmedName,
       slug: (slug && slug.trim()) || trimmedName,
       icon: icon || "Tag",
+      customIcon: customIcon ? customIcon.trim() : undefined,
       bgColor: bgColor || "bg-orange-50",
       iconColor: iconColor || "text-[#FA521C]",
       showInNavbar: showInNavbar !== false,
