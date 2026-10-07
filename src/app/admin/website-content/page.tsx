@@ -25,6 +25,12 @@ import {
   X,
   Check,
   ChevronRight,
+  ChevronLeft,
+  Truck,
+  Banknote,
+  Search,
+  ShoppingBag,
+  Menu,
   Info,
   Upload,
   Smartphone,
@@ -99,6 +105,7 @@ export default function WebsiteContentPage() {
   const [bannerModalOpen, setBannerModalOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<HeroBannerSlide | null>(null);
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+  const [cardViewModes, setCardViewModes] = useState<Record<string, "desktop" | "mobile">>({});
   const [bannerForm, setBannerForm] = useState({
     badge: "",
     titleLine1: "",
@@ -612,25 +619,17 @@ export default function WebsiteContentPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {banners.map((slide, idx) => (
-                    <div
-                      key={slide.id}
-                      className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col"
-                    >
-                      {/* Banner Mockup Preview */}
-                      <div className="relative h-48 sm:h-56 bg-[#18130E] text-white overflow-hidden p-5 flex flex-col justify-between">
-                        <Image
-                          src={slide.image}
-                          alt={slide.titleLine1}
-                          fill
-                          className="object-cover object-right opacity-70"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
-
-                        {/* Top info badge inside preview */}
-                        <div className="relative z-10 flex items-center justify-between">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-extrabold uppercase tracking-widest text-orange-200 border border-white/10">
+                  {banners.map((slide, idx) => {
+                    const cardMode = cardViewModes[slide.id] || "desktop";
+                    return (
+                      <div
+                        key={slide.id}
+                        className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col"
+                      >
+                        {/* Top Bar with Device Preview Switcher */}
+                        <div className="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-white">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-[10px] font-extrabold uppercase tracking-wider text-orange-200">
                               Slide #{idx + 1} • {slide.badge}
                             </span>
                             {slide.mobileImage ? (
@@ -643,26 +642,107 @@ export default function WebsiteContentPage() {
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] font-bold text-amber-200">
-                            {slide.taglineRight}
-                          </span>
-                        </div>
-
-                        {/* Bottom text inside preview */}
-                        <div className="relative z-10 max-w-sm">
-                          <h3 className="text-lg sm:text-xl font-black font-display text-white leading-tight">
-                            {slide.titleLine1}{" "}
-                            <span className="text-[#FA521C]">{slide.titleLine2}</span>
-                          </h3>
-                          <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
-                            {slide.description}
-                          </p>
-                          <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FA521C] text-white text-[10px] font-bold">
-                            <span>{slide.ctaText}</span>
-                            <ArrowRight className="w-3 h-3" />
+                          {/* Device Toggle */}
+                          <div className="flex items-center bg-slate-800 p-0.5 rounded-lg border border-slate-700">
+                            <button
+                              type="button"
+                              onClick={() => setCardViewModes((prev) => ({ ...prev, [slide.id]: "desktop" }))}
+                              className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                                cardMode === "desktop"
+                                  ? "bg-white text-slate-900 shadow-xs"
+                                  : "text-slate-400 hover:text-white"
+                              }`}
+                            >
+                              <Monitor className="w-3 h-3" />
+                              <span>Desktop</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setCardViewModes((prev) => ({ ...prev, [slide.id]: "mobile" }))}
+                              className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                                cardMode === "mobile"
+                                  ? "bg-white text-slate-900 shadow-xs"
+                                  : "text-slate-400 hover:text-white"
+                              }`}
+                            >
+                              <Smartphone className="w-3 h-3" />
+                              <span>Mobile</span>
+                            </button>
                           </div>
                         </div>
-                      </div>
+
+                        {/* Live Storefront Mockup Preview */}
+                        <div className="relative h-64 sm:h-72 bg-[#18130E] text-white overflow-hidden p-5 flex flex-col justify-between">
+                          <Image
+                            src={cardMode === "mobile" && slide.mobileImage ? slide.mobileImage : slide.image}
+                            alt={slide.titleLine1}
+                            fill
+                            className={`object-cover ${cardMode === "mobile" ? "object-center" : "object-right sm:object-center"} opacity-85`}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-r from-[#140F0A] via-[#140F0A]/85 sm:via-[#140F0A]/70 to-transparent w-full sm:w-2/3 z-10" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-10" />
+
+                          {/* Top corner indicators */}
+                          <div className="relative z-10 flex items-center justify-between">
+                            <span className="text-[10px] font-bold tracking-[0.2em] text-[#C4B5A5] uppercase">
+                              {slide.badge}
+                            </span>
+                            {slide.taglineRight && (
+                              <span className="font-serif italic text-amber-100/90 text-sm tracking-wide drop-shadow-md">
+                                {slide.taglineRight}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Content identical to live site */}
+                          <div className="relative z-10 max-w-sm">
+                            <h3 className="text-lg sm:text-2xl font-black font-display text-white leading-[1.15] tracking-tight mb-1.5">
+                              {slide.titleLine1} <br />
+                              <span className="text-white font-normal text-xs sm:text-sm mr-1">for</span>
+                              <span className="text-[#FA521C]">{slide.titleLine2}</span>
+                            </h3>
+                            <p className="text-[11px] text-gray-300 line-clamp-2 mb-3">
+                              {slide.description}
+                            </p>
+
+                            {/* Live White Pill Button */}
+                            <div className="mb-3">
+                              <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white text-[#111111] text-xs font-extrabold shadow-md shadow-black/30">
+                                <span>{slide.ctaText || "Shop Now"}</span>
+                                <ArrowRight className="w-3 h-3 text-[#111111]" />
+                              </div>
+                            </div>
+
+                            {/* Trust Badges */}
+                            <div className="flex flex-wrap items-center gap-3 text-[10px] font-medium text-gray-200">
+                              <div className="flex items-center gap-1">
+                                <Truck className="w-3 h-3 text-white" />
+                                <span>Free Shipping</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Banknote className="w-3 h-3 text-white" />
+                                <span>COD Available</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <RotateCcw className="w-3 h-3 text-white" />
+                                <span>Easy Returns</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Arrows & Dots simulation */}
+                          <div className="absolute left-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center z-20 backdrop-blur-xs">
+                            <ChevronLeft className="w-3.5 h-3.5" />
+                          </div>
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center z-20 backdrop-blur-xs">
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </div>
+                          <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20">
+                            <span className="h-1.5 w-5 rounded-full bg-white shadow-xs" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
+                          </div>
+                        </div>
 
                       {/* Card Controls & Details */}
                       <div className="p-4 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between gap-3">
@@ -709,7 +789,8 @@ export default function WebsiteContentPage() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  );
+                })}
                 </div>
               )}
             </div>
@@ -909,14 +990,14 @@ export default function WebsiteContentPage() {
          ======================================================== */}
       {bannerModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-scaleIn">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-scaleIn">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
               <div>
                 <h3 className="text-base font-bold text-slate-900">
                   {editingBanner ? "Edit Hero Banner Slide" : "Add New Hero Banner"}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Configure headings, imagery, and target CTA button.
+                  Live real-time preview matches the storefront 100% across desktop and mobile screens.
                 </p>
               </div>
               <button
@@ -931,94 +1012,282 @@ export default function WebsiteContentPage() {
               {/* Live Dual Preview Box (Desktop vs Mobile) */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                    Live Banner Preview ({previewMode === "desktop" ? "Desktop 16:9 Landscape" : "Mobile 4:5 Phone View"})
-                  </label>
+                  <div className="flex items-center gap-2">
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700">
+                      100% Live Site Preview
+                    </label>
+                    <span className="text-[10px] text-slate-500 font-medium hidden sm:inline">
+                      ({previewMode === "desktop" ? "Widescreen Desktop 16:9 View" : "Smartphone 4:5 / 1:1 Portrait View"})
+                    </span>
+                  </div>
                   <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
                     <button
                       type="button"
                       onClick={() => setPreviewMode("desktop")}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
                         previewMode === "desktop"
                           ? "bg-white text-slate-900 shadow-xs"
                           : "text-slate-500 hover:text-slate-900"
                       }`}
                     >
-                      <Monitor className="w-3.5 h-3.5" />
+                      <Monitor className="w-3.5 h-3.5 text-blue-600" />
                       <span>Desktop 16:9</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setPreviewMode("mobile")}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
                         previewMode === "mobile"
                           ? "bg-white text-slate-900 shadow-xs"
                           : "text-slate-500 hover:text-slate-900"
                       }`}
                     >
-                      <Smartphone className="w-3.5 h-3.5" />
+                      <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Mobile 4:5</span>
                     </button>
                   </div>
                 </div>
 
                 {previewMode === "desktop" ? (
-                  /* Desktop Preview */
-                  <div className="relative h-44 sm:h-52 rounded-2xl bg-[#18130E] text-white overflow-hidden p-4 flex flex-col justify-between border border-slate-200 shadow-xs">
-                    <Image
-                      src={bannerForm.image || "/products/hero-banner.jpg"}
-                      alt={bannerForm.titleLine1 || "Preview"}
-                      fill
-                      className="object-cover object-right opacity-70"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
-                    <div className="relative z-10 flex items-center justify-between">
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-orange-200">
-                        {bannerForm.badge || "BADGE"}
+                  /* ===================================================
+                     EXACT DESKTOP BROWSER / STOREFRONT PREVIEW (16:9)
+                     =================================================== */
+                  <div className="rounded-2xl border border-slate-300/80 bg-slate-950 shadow-xl overflow-hidden">
+                    {/* Simulated Browser Address Bar */}
+                    <div className="px-4 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-slate-300">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-red-500/80 inline-block" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block" />
+                        </div>
+                        <div className="ml-2 px-3 py-0.5 bg-slate-950/80 rounded-md text-[10px] font-mono text-slate-400 flex items-center gap-1.5 border border-slate-800">
+                          <span className="text-emerald-400 font-bold">🔒 https://</span>
+                          <span>zupe-store.stibelabs.workers.dev</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        Live Desktop Storefront (16:9)
                       </span>
-                      <span className="text-[10px] text-amber-200">{bannerForm.taglineRight}</span>
                     </div>
-                    <div className="relative z-10 max-w-xs">
-                      <h4 className="text-base font-black text-white leading-tight">
-                        {bannerForm.titleLine1 || "Heading Line 1"}{" "}
-                        <span className="text-[#FA521C]">{bannerForm.titleLine2 || "Highlight"}</span>
-                      </h4>
-                      <p className="text-[10px] text-slate-300 truncate mt-0.5">
-                        {bannerForm.description || "Description preview goes here..."}
-                      </p>
-                      <div className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FA521C] text-white text-[10px] font-bold">
-                        <span>{bannerForm.ctaText}</span>
-                        <ArrowRight className="w-2.5 h-2.5" />
+
+                    {/* Desktop Hero Section Canvas */}
+                    <div className="p-3 sm:p-4 bg-[#0d0907]">
+                      <div className="relative rounded-2xl overflow-hidden bg-[#18130E] text-white shadow-2xl min-h-[360px] sm:min-h-[400px] flex items-center select-none border border-white/5">
+                        {/* Background Visual */}
+                        <Image
+                          src={bannerForm.image || "/products/hero-banner.jpg"}
+                          alt={bannerForm.titleLine1 || "Preview"}
+                          fill
+                          className="object-cover object-right sm:object-center opacity-85"
+                        />
+                        {/* Vignettes matching HeroSection.tsx */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#140F0A] via-[#140F0A]/85 sm:via-[#140F0A]/70 to-transparent w-full sm:w-2/3 z-10" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-10" />
+
+                        {/* Content */}
+                        <div className="relative z-20 w-full px-6 sm:px-10 py-8 flex flex-col justify-between h-full">
+                          <div className="max-w-md">
+                            {/* Eyebrow */}
+                            <p className="text-[11px] font-bold tracking-[0.2em] text-[#C4B5A5] uppercase mb-2.5">
+                              {bannerForm.badge || "SMART SOLUTIONS FOR A BETTER LIFE"}
+                            </p>
+
+                            {/* Main Headline with exact styling */}
+                            <h2 className="text-2xl sm:text-4xl font-display font-extrabold text-white leading-[1.12] tracking-tight mb-3">
+                              {bannerForm.titleLine1 || "Innovative Products"} <br />
+                              <span className="text-white font-normal text-base sm:text-xl mr-1.5">for</span>
+                              <span className="text-[#FA521C]">{bannerForm.titleLine2 || "Modern Living."}</span>
+                            </h2>
+
+                            {/* Description */}
+                            <p className="text-xs sm:text-sm text-gray-300 font-normal leading-relaxed max-w-sm mb-6">
+                              {bannerForm.description || "Discover unique and useful products that make your life easier, smarter and more fun."}
+                            </p>
+
+                            {/* Exact Live White Pill Action Button */}
+                            <div className="mb-6">
+                              <div className="inline-flex items-center gap-2.5 px-6 py-2.5 rounded-full font-bold text-xs sm:text-sm bg-white text-[#111111] shadow-lg shadow-black/30 hover:scale-105 transition-all">
+                                <span className="font-extrabold tracking-wide">{bannerForm.ctaText || "Shop Now"}</span>
+                                <ArrowRight className="w-3.5 h-3.5 text-[#111111]" />
+                              </div>
+                            </div>
+
+                            {/* Trust Badges Row */}
+                            <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-[11px] font-medium text-gray-200">
+                              <div className="flex items-center gap-1.5">
+                                <Truck className="w-3.5 h-3.5 text-white" />
+                                <span>Free Shipping</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <Banknote className="w-3.5 h-3.5 text-white" />
+                                <span>COD Available</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <RotateCcw className="w-3.5 h-3.5 text-white" />
+                                <span>Easy Returns</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Right Cursive floating badge */}
+                          {bannerForm.taglineRight && (
+                            <div className="absolute right-6 sm:right-10 top-6 sm:top-10 text-right z-20 pointer-events-none">
+                              <p className="font-serif italic text-amber-100/90 text-lg sm:text-xl tracking-wide drop-shadow-md leading-tight">
+                                {bannerForm.taglineRight}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Carousel Prev/Next Buttons */}
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center z-20 backdrop-blur-xs shadow-md">
+                          <ChevronLeft className="w-4 h-4" />
+                        </div>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center z-20 backdrop-blur-xs shadow-md">
+                          <ChevronRight className="w-4 h-4" />
+                        </div>
+
+                        {/* Pagination Dots */}
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+                          <span className="h-1.5 w-6 rounded-full bg-white shadow-xs" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
+                        </div>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  /* Mobile Phone Frame Preview */
-                  <div className="relative max-w-[280px] mx-auto h-64 rounded-3xl bg-[#18130E] text-white overflow-hidden p-4 flex flex-col justify-between border-4 border-slate-800 shadow-xl">
-                    <Image
-                      src={bannerForm.mobileImage || bannerForm.image || "/products/hero-banner.jpg"}
-                      alt={bannerForm.titleLine1 || "Preview"}
-                      fill
-                      className="object-cover object-center opacity-75"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30" />
-                    <div className="relative z-10 flex items-center justify-between">
-                      <span className="text-[9px] font-extrabold uppercase tracking-widest text-orange-200 bg-black/40 px-2 py-0.5 rounded-full">
-                        {bannerForm.badge || "MOBILE VIEW"}
-                      </span>
-                      <span className="text-[9px] text-amber-200">{bannerForm.taglineRight}</span>
-                    </div>
-                    <div className="relative z-10 text-center pb-2">
-                      <h4 className="text-sm font-black text-white leading-snug">
-                        {bannerForm.titleLine1 || "Heading Line 1"}{" "}
-                        <span className="text-[#FA521C]">{bannerForm.titleLine2 || "Highlight"}</span>
-                      </h4>
-                      <p className="text-[10px] text-slate-300 line-clamp-2 mt-1">
-                        {bannerForm.description || "Description preview..."}
-                      </p>
-                      <div className="mt-2.5 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#FA521C] text-white text-[10px] font-bold">
-                        <span>{bannerForm.ctaText}</span>
-                        <ArrowRight className="w-2.5 h-2.5" />
+                  /* ===================================================
+                     EXACT IPHONE 16 MOBILE PHONE SIMULATOR (4:5 / 1:1)
+                     =================================================== */
+                  <div className="py-2 flex flex-col items-center justify-center">
+                    {/* Device container with Dynamic Island */}
+                    <div className="w-full max-w-[340px] bg-slate-950 p-3 rounded-[40px] shadow-2xl border-4 border-slate-800">
+                      {/* Dynamic Island Notch */}
+                      <div className="w-24 h-4 bg-black rounded-full mx-auto mb-2 flex items-center justify-between px-3">
+                        <div className="w-2 h-2 rounded-full bg-slate-900 border border-slate-800" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-[#0a192f] border border-blue-900/60" />
+                      </div>
+
+                      {/* Phone screen */}
+                      <div className="rounded-[28px] overflow-hidden bg-white flex flex-col shadow-inner">
+                        {/* Mobile top store bar (Screenshot 4) */}
+                        <div className="px-4 py-2.5 bg-white border-b border-slate-100 flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <Menu className="w-4 h-4 text-slate-800" />
+                            <Search className="w-3.5 h-3.5 text-slate-500" />
+                          </div>
+                          <span className="font-extrabold text-xs tracking-tight text-slate-900 font-display">
+                            ZUPE <span className="text-[#FA521C]">STORE</span>
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <Heart className="w-3.5 h-3.5 text-slate-700" />
+                            <ShoppingBag className="w-3.5 h-3.5 text-slate-700" />
+                          </div>
+                        </div>
+
+                        {/* Mobile Banner (Exact same as HeroSection.tsx on mobile screen) */}
+                        <div className="p-2 bg-slate-100">
+                          <div className="relative rounded-2xl overflow-hidden bg-[#18130E] text-white shadow-md min-h-[380px] flex items-center select-none">
+                            {/* Background image: uses mobileImage if provided, else falls back to image */}
+                            <Image
+                              src={bannerForm.mobileImage || bannerForm.image || "/products/hero-banner.jpg"}
+                              alt={bannerForm.titleLine1 || "Preview"}
+                              fill
+                              className="object-cover object-center opacity-85"
+                            />
+                            {/* Vignette gradients */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#140F0A] via-[#140F0A]/85 to-transparent w-full z-10" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-10" />
+
+                            {/* Mobile Content (LEFT ALIGNED! NOT CENTERED! Exactly matching Screenshot 4!) */}
+                            <div className="relative z-20 w-full px-5 py-6 flex flex-col justify-between h-full">
+                              <div>
+                                {/* Eyebrow */}
+                                <p className="text-[10px] font-bold tracking-[0.2em] text-[#C4B5A5] uppercase mb-2">
+                                  {bannerForm.badge || "SMART SOLUTIONS FOR A BETTER LIFE"}
+                                </p>
+
+                                {/* Main Headline */}
+                                <h2 className="text-xl sm:text-2xl font-display font-extrabold text-white leading-[1.15] tracking-tight mb-2.5">
+                                  {bannerForm.titleLine1 || "Innovative Products"} <br />
+                                  <span className="text-white font-normal text-xs mr-1">for</span>
+                                  <span className="text-[#FA521C]">{bannerForm.titleLine2 || "Modern Living."}</span>
+                                </h2>
+
+                                {/* Subtitle */}
+                                <p className="text-[11px] text-gray-300 font-normal leading-relaxed max-w-[240px] mb-4">
+                                  {bannerForm.description || "Discover unique and useful products that make your life easier, smarter and more fun."}
+                                </p>
+
+                                {/* Action Button: White pill button */}
+                                <div className="mb-4">
+                                  <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full font-bold text-xs bg-white text-[#111111] shadow-md shadow-black/30">
+                                    <span className="font-extrabold tracking-wide">{bannerForm.ctaText || "Shop Now"}</span>
+                                    <ArrowRight className="w-3.5 h-3.5 text-[#111111]" />
+                                  </div>
+                                </div>
+
+                                {/* Trust Badges */}
+                                <div className="flex flex-wrap items-center gap-2.5 text-[10px] font-medium text-gray-200">
+                                  <div className="flex items-center gap-1">
+                                    <Truck className="w-3 h-3 text-white" />
+                                    <span>Free Shipping</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Banknote className="w-3 h-3 text-white" />
+                                    <span>COD Available</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <RotateCcw className="w-3 h-3 text-white" />
+                                    <span>Easy Returns</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Prev/Next arrows on mobile */}
+                            <div className="absolute left-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center z-20 backdrop-blur-xs">
+                              <ChevronLeft className="w-3.5 h-3.5" />
+                            </div>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center z-20 backdrop-blur-xs">
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </div>
+
+                            {/* Dots */}
+                            <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20">
+                              <span className="h-1.5 w-5 rounded-full bg-white shadow-xs" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Mini Storefront Category Pills Preview below banner (Screenshot 4) */}
+                        <div className="px-3 py-2 bg-white flex items-center justify-between border-t border-slate-100">
+                          <div className="flex items-center gap-2 overflow-hidden">
+                            <div className="flex flex-col items-center shrink-0">
+                              <div className="w-7 h-7 rounded-full bg-[#EEF2FF] text-[#3B82F6] flex items-center justify-center text-[10px] font-bold">⊞</div>
+                              <span className="text-[8px] text-slate-500 font-semibold mt-0.5">All</span>
+                            </div>
+                            <div className="flex flex-col items-center shrink-0">
+                              <div className="w-7 h-7 rounded-full bg-[#FEEBEA] text-[#E0533C] flex items-center justify-center text-[10px] font-bold">🪑</div>
+                              <span className="text-[8px] text-slate-500 font-semibold mt-0.5">Home</span>
+                            </div>
+                            <div className="flex flex-col items-center shrink-0">
+                              <div className="w-7 h-7 rounded-full bg-[#E0F2FE] text-[#0284C7] flex items-center justify-center text-[10px] font-bold">🎧</div>
+                              <span className="text-[8px] text-slate-500 font-semibold mt-0.5">Gadgets</span>
+                            </div>
+                            <div className="flex flex-col items-center shrink-0">
+                              <div className="w-7 h-7 rounded-full bg-[#F3E8FF] text-[#9333EA] flex items-center justify-center text-[10px] font-bold">✨</div>
+                              <span className="text-[8px] text-slate-500 font-semibold mt-0.5">Care</span>
+                            </div>
+                          </div>
+                          <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                            {bannerForm.mobileImage ? "Custom Mobile Photo" : "Desktop Photo Scaled"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
