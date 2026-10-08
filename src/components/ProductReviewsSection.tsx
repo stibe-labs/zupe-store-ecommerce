@@ -543,9 +543,19 @@ export function ProductReviewsSection({
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-sm text-gray-900">{rev.userName}</span>
                         {rev.verifiedPurchase && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <CheckCircle2 className="w-3 h-3" /> Verified Buyer
-                          </span>
+                          rev.source === "amazon" ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-300">
+                              <CheckCircle2 className="w-3 h-3 text-amber-600" /> Verified Amazon Purchase
+                            </span>
+                          ) : rev.source === "flipkart" ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-300">
+                              <CheckCircle2 className="w-3 h-3 text-blue-600" /> Verified Flipkart Buyer
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              <CheckCircle2 className="w-3 h-3" /> Verified Buyer
+                            </span>
+                          )
                         )}
                       </div>
                       <span className="text-[11px] text-gray-400">
