@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  Sparkles,
 } from "lucide-react";
 
 interface DeliveryEstimatorProps {
@@ -24,19 +23,6 @@ export function DeliveryEstimator({ businessDays = 5 }: DeliveryEstimatorProps) 
   const [isChecking, setIsChecking] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [animTrigger, setAnimTrigger] = useState<number>(0);
-
-  // Load previously checked PIN code from localStorage if available
-  useEffect(() => {
-    try {
-      const savedPin = localStorage.getItem("zp_delivery_pincode");
-      if (savedPin && /^\d{6}$/.test(savedPin)) {
-        setPincode(savedPin);
-        setCheckedPincode(savedPin);
-      }
-    } catch {
-      // Ignore storage errors
-    }
-  }, []);
 
   // Compute live delivery dates based on current day and 5 business days
   const dates = useMemo(() => {
@@ -117,11 +103,6 @@ export function DeliveryEstimator({ businessDays = 5 }: DeliveryEstimatorProps) 
       setIsChecking(false);
       setCheckedPincode(cleanPin);
       setAnimTrigger((prev) => prev + 1);
-      try {
-        localStorage.setItem("zp_delivery_pincode", cleanPin);
-      } catch {
-        // Ignore storage errors
-      }
     }, 350);
   };
 
@@ -129,16 +110,15 @@ export function DeliveryEstimator({ businessDays = 5 }: DeliveryEstimatorProps) 
     const val = e.target.value.replace(/\D/g, "").slice(0, 6);
     setPincode(val);
     if (error) setError(null);
+    if (checkedPincode && val !== checkedPincode) {
+      setCheckedPincode(null);
+    }
   };
 
   const handleClear = () => {
     setPincode("");
     setCheckedPincode(null);
-    try {
-      localStorage.removeItem("zp_delivery_pincode");
-    } catch {
-      // Ignore
-    }
+    setError(null);
   };
 
   return (
@@ -207,140 +187,129 @@ export function DeliveryEstimator({ businessDays = 5 }: DeliveryEstimatorProps) 
         </motion.div>
       )}
 
-      {/* 3. Delivery Availability Status Banner */}
-      <div className="mt-3">
-        {checkedPincode ? (
+      {/* 3. Delivery Availability Status Banner & Animated 3-Step Timeline (ONLY SHOWN AFTER CHECKING) */}
+      <AnimatePresence>
+        {checkedPincode && (
           <motion.div
             key={checkedPincode + animTrigger}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 text-emerald-700 bg-emerald-50/80 border border-emerald-200/60 rounded-xl px-3 py-2"
+            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+            animate={{ opacity: 1, height: "auto", marginTop: 12 }}
+            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="overflow-hidden"
           >
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 stroke-[2.5]" />
-            <div className="text-xs sm:text-[13px] font-semibold leading-tight">
-              <span>Delivery available to </span>
-              <span className="font-extrabold text-emerald-800">{checkedPincode}</span>
-              <span className="text-emerald-500 mx-1.5 font-bold">•</span>
-              <span>Estimated in {businessDays} business days</span>
+            {/* Status Banner */}
+            <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50/80 border border-emerald-200/60 rounded-xl px-3 py-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 stroke-[2.5]" />
+              <div className="text-xs sm:text-[13px] font-semibold leading-tight">
+                <span>Delivery available to </span>
+                <span className="font-extrabold text-emerald-800">{checkedPincode}</span>
+                <span className="text-emerald-500 mx-1.5 font-bold">•</span>
+                <span>Estimated in {businessDays} business days</span>
+              </div>
+            </div>
+
+            {/* Horizontal Animated 3-Step Delivery Timeline Track */}
+            <div className="mt-4 pt-4 border-t border-gray-200/70">
+              <div className="relative pb-1">
+                {/* Background Connecting Line */}
+                <div className="absolute top-[22px] sm:top-[24px] left-[16.67%] right-[16.67%] h-[2.5px] bg-gray-200 rounded-full overflow-hidden">
+                  <motion.div
+                    key={`line-${animTrigger}`}
+                    className="h-full bg-gradient-to-r from-emerald-500 via-emerald-500 to-emerald-600 origin-left"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 0.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  />
+                </div>
+
+                {/* 3 Milestones Grid */}
+                <div className="relative grid grid-cols-3 gap-2">
+                  {/* Step 1: Ordered */}
+                  <motion.div
+                    key={`step1-${animTrigger}`}
+                    initial={{ scale: 0.7, opacity: 0, y: 12 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 280,
+                      damping: 20,
+                      delay: 0.1,
+                    }}
+                    className="flex flex-col items-center text-center z-10"
+                  >
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white border border-gray-200 shadow-xs flex items-center justify-center text-gray-800 group hover:border-gray-400 transition-colors">
+                      <ShoppingCart className="w-5 h-5 stroke-[2] text-gray-800" />
+                    </div>
+                    <span className="text-[12px] sm:text-[13px] font-bold text-gray-900 mt-2 leading-tight">
+                      {dates.orderedDate}
+                    </span>
+                    <span className="text-[11px] sm:text-[12px] text-gray-500 font-medium mt-0.5">
+                      Ordered
+                    </span>
+                  </motion.div>
+
+                  {/* Step 2: Order Shipped */}
+                  <motion.div
+                    key={`step2-${animTrigger}`}
+                    initial={{ scale: 0.7, opacity: 0, y: 12 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 280,
+                      damping: 20,
+                      delay: 0.3,
+                    }}
+                    className="flex flex-col items-center text-center z-10"
+                  >
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white border border-gray-200 shadow-xs flex items-center justify-center text-gray-800 hover:border-gray-400 transition-colors">
+                      <Truck className="w-5 h-5 stroke-[2] text-gray-800" />
+                    </div>
+                    <span className="text-[12px] sm:text-[13px] font-bold text-gray-900 mt-2 leading-tight">
+                      {dates.shippedDate}
+                    </span>
+                    <span className="text-[11px] sm:text-[12px] text-gray-500 font-medium mt-0.5">
+                      Order Shipped
+                    </span>
+                  </motion.div>
+
+                  {/* Step 3: Delivered */}
+                  <motion.div
+                    key={`step3-${animTrigger}`}
+                    initial={{ scale: 0.7, opacity: 0, y: 12 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 280,
+                      damping: 20,
+                      delay: 0.55,
+                    }}
+                    className="flex flex-col items-center text-center z-10"
+                  >
+                    <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-emerald-50 border-2 border-emerald-500 shadow-xs flex items-center justify-center text-emerald-700 ring-4 ring-emerald-100/60">
+                      <Package className="w-5 h-5 stroke-[2] text-emerald-700" />
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.8, type: "spring" }}
+                        className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-600 rounded-full border-2 border-white flex items-center justify-center text-white"
+                      >
+                        <Check className="w-2.5 h-2.5 stroke-[3]" />
+                      </motion.span>
+                    </div>
+                    <span className="text-[12px] sm:text-[13px] font-bold text-gray-900 mt-2 leading-tight">
+                      {dates.deliveredRange}
+                    </span>
+                    <span className="text-[11px] sm:text-[12px] text-emerald-700 font-bold mt-0.5">
+                      Delivered
+                    </span>
+                  </motion.div>
+                </div>
+              </div>
             </div>
           </motion.div>
-        ) : (
-          <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium px-1">
-            <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5] shrink-0" />
-            <span>Delivery available Pan-India • Estimated in {businessDays} business days</span>
-          </div>
         )}
-      </div>
-
-      {/* 4. Horizontal Animated 3-Step Delivery Timeline Track */}
-      <div className="mt-5 pt-4 border-t border-gray-200/70">
-        <div className="relative pb-1">
-          {/* Background Connecting Line */}
-          <div className="absolute top-[22px] sm:top-[24px] left-[16.67%] right-[16.67%] h-[2.5px] bg-gray-200 rounded-full overflow-hidden">
-            <motion.div
-              key={`line-${animTrigger}`}
-              className="h-full bg-gradient-to-r from-emerald-500 via-emerald-500 to-emerald-600 origin-left"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ duration: 0.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            />
-          </div>
-
-          {/* 3 Milestones Grid */}
-          <div className="relative grid grid-cols-3 gap-2">
-            {/* Step 1: Ordered */}
-            <motion.div
-              key={`step1-${animTrigger}`}
-              initial={{ scale: 0.7, opacity: 0, y: 12 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              transition={{
-                type: "spring",
-                stiffness: 280,
-                damping: 20,
-                delay: 0.1,
-              }}
-              className="flex flex-col items-center text-center z-10"
-            >
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white border border-gray-200 shadow-xs flex items-center justify-center text-gray-800 group hover:border-gray-400 transition-colors">
-                <ShoppingCart className="w-5 h-5 stroke-[2] text-gray-800" />
-              </div>
-              <span className="text-[12px] sm:text-[13px] font-bold text-gray-900 mt-2 leading-tight">
-                {dates.orderedDate}
-              </span>
-              <span className="text-[11px] sm:text-[12px] text-gray-500 font-medium mt-0.5">
-                Ordered
-              </span>
-            </motion.div>
-
-            {/* Step 2: Order Shipped */}
-            <motion.div
-              key={`step2-${animTrigger}`}
-              initial={{ scale: 0.7, opacity: 0, y: 12 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              transition={{
-                type: "spring",
-                stiffness: 280,
-                damping: 20,
-                delay: 0.3,
-              }}
-              className="flex flex-col items-center text-center z-10"
-            >
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white border border-gray-200 shadow-xs flex items-center justify-center text-gray-800 hover:border-gray-400 transition-colors">
-                <Truck className="w-5 h-5 stroke-[2] text-gray-800" />
-              </div>
-              <span className="text-[12px] sm:text-[13px] font-bold text-gray-900 mt-2 leading-tight">
-                {dates.shippedDate}
-              </span>
-              <span className="text-[11px] sm:text-[12px] text-gray-500 font-medium mt-0.5">
-                Order Shipped
-              </span>
-            </motion.div>
-
-            {/* Step 3: Delivered */}
-            <motion.div
-              key={`step3-${animTrigger}`}
-              initial={{ scale: 0.7, opacity: 0, y: 12 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              transition={{
-                type: "spring",
-                stiffness: 280,
-                damping: 20,
-                delay: 0.55,
-              }}
-              className="flex flex-col items-center text-center z-10"
-            >
-              <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-emerald-50 border-2 border-emerald-500 shadow-xs flex items-center justify-center text-emerald-700 ring-4 ring-emerald-100/60">
-                <Package className="w-5 h-5 stroke-[2] text-emerald-700" />
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.8, type: "spring" }}
-                  className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-600 rounded-full border-2 border-white flex items-center justify-center text-white"
-                >
-                  <Check className="w-2.5 h-2.5 stroke-[3]" />
-                </motion.span>
-              </div>
-              <span className="text-[12px] sm:text-[13px] font-bold text-gray-900 mt-2 leading-tight">
-                {dates.deliveredRange}
-              </span>
-              <span className="text-[11px] sm:text-[12px] text-emerald-700 font-bold mt-0.5">
-                Delivered
-              </span>
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Reassuring Guarantee Tagline */}
-        <div className="mt-3.5 pt-2.5 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
-          <span className="flex items-center gap-1 font-medium">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            Guaranteed safe dispatch via Bluedart & Delhivery
-          </span>
-          <span className="font-semibold text-gray-700 hidden sm:inline">
-            Free Express Shipping
-          </span>
-        </div>
-      </div>
+      </AnimatePresence>
     </div>
   );
 }
