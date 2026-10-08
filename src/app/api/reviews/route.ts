@@ -74,22 +74,60 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { productId, orderId, userName, userEmail, rating, title, comment, images, verifiedPurchase } = body;
+
+    // Support bulk review import (e.g. from Admin CSV / Amazon / Flipkart import)
+    if (Array.isArray(body.reviews)) {
+      const addedList: ProductReview[] = [];
+      const pid = body.productId;
+
+      for (const item of body.reviews) {
+        if (!item.comment && !item.title) continue;
+        const review = await addReview({
+          productId: item.productId || pid,
+          orderId: item.orderId || "IMPORTED",
+          userName: item.userName || "Verified Customer",
+          userEmail: item.userEmail,
+          rating: Number(item.rating) || 5,
+          title: item.title,
+          comment: item.comment || item.title || "",
+          images: Array.isArray(item.images) ? item.images : [],
+          verifiedPurchase: item.verifiedPurchase !== false,
+          createdAt: item.createdAt || new Date().toISOString(),
+        });
+        addedList.push(review);
+      }
+
+      const targetPid = pid || (addedList[0]?.productId);
+      const allReviews = targetPid ? await getReviewsByProduct(targetPid) : [];
+      const stats = computeReviewStats(allReviews);
+
+      return NextResponse.json({
+        success: true,
+        importedCount: addedList.length,
+        stats,
+        message: `Successfully imported ${addedList.length} reviews!`,
+      });
+    }
+
+    const { productId, orderId, userName, userEmail, rating, title, comment, images, verifiedPurchase, isAdminImport } = body;
 
     if (!productId || !comment) {
       return NextResponse.json({ success: false, error: "Product ID and comment are required" }, { status: 400 });
     }
 
+    // Unless it's an admin import or contains a verified order, check buyer verification
+    const isVerified = Boolean(orderId || isAdminImport || verifiedPurchase);
+
     const newReview = await addReview({
       productId,
-      orderId,
+      orderId: orderId || (isAdminImport ? "ADMIN_IMPORT" : undefined),
       userName: userName || "Verified Buyer",
       userEmail,
       rating: Number(rating) || 5,
       title,
       comment,
       images,
-      verifiedPurchase: verifiedPurchase !== false,
+      verifiedPurchase: isVerified,
     });
 
     const allReviews = await getReviewsByProduct(productId);

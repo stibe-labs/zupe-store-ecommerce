@@ -236,6 +236,7 @@ export async function addReview(newRev: {
   comment: string;
   images?: string[];
   verifiedPurchase?: boolean;
+  createdAt?: string;
 }): Promise<ProductReview> {
   const review: ProductReview = {
     id: "rev-" + Date.now().toString(36) + "-" + Math.random().toString(36).substring(2, 6),
@@ -248,7 +249,7 @@ export async function addReview(newRev: {
     comment: newRev.comment.trim(),
     images: Array.isArray(newRev.images) ? newRev.images.filter(Boolean) : [],
     verifiedPurchase: newRev.verifiedPurchase !== false,
-    createdAt: new Date().toISOString(),
+    createdAt: newRev.createdAt || new Date().toISOString(),
     helpfulCount: 0,
   };
 
@@ -261,7 +262,7 @@ export async function addReview(newRev: {
     await executeD1Query(
       `INSERT INTO product_reviews 
        (id, product_id, order_id, user_name, user_email, rating, title, comment, images, verified_purchase, helpful_count, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now'))`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
       [
         review.id,
         review.productId,
@@ -273,6 +274,7 @@ export async function addReview(newRev: {
         review.comment,
         JSON.stringify(review.images || []),
         review.verifiedPurchase ? 1 : 0,
+        review.createdAt,
       ]
     );
   } catch (err) {

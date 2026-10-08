@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   Star,
   CheckCircle2,
@@ -14,9 +15,13 @@ import {
   Upload,
   ArrowRight,
   ShieldCheck,
+  ShieldAlert,
+  Lock,
+  Loader2,
   ImageIcon,
 } from "lucide-react";
 import { ProductReview } from "@/lib/reviewStore";
+import { useAuth } from "@/context/AuthContext";
 
 interface ProductReviewsSectionProps {
   productId: string;
@@ -48,7 +53,19 @@ export function ProductReviewsSection({
   const [lightboxData, setLightboxData] = useState<{ image: string; review?: ProductReview } | null>(null);
 
   // Write Review Modal state (for direct submissions on product page)
+  const { user } = useAuth();
   const [writeModalOpen, setWriteModalOpen] = useState(false);
+  const [gateModalOpen, setGateModalOpen] = useState(false);
+  const [checkingEligibility, setCheckingEligibility] = useState(false);
+  const [verifiedOrder, setVerifiedOrder] = useState<{
+    orderId: string;
+    customerName?: string;
+    customerEmail?: string;
+  } | null>(null);
+  const [manualVerifyInput, setManualVerifyInput] = useState("");
+  const [verifyingManual, setVerifyingManual] = useState(false);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+
   const [submitting, setSubmitting] = useState(false);
   const [formRating, setFormRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
@@ -135,6 +152,92 @@ export function ProductReviewsSection({
     setFormPhotos((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const handleOpenWriteReview = async () => {
+    setVerifyError(null);
+
+    // 1. If already verified in this session, open form directly
+    if (verifiedOrder) {
+      setWriteModalOpen(true);
+      return;
+    }
+
+    // 2. If logged in, automatically check buyer verification against orders
+    if (user?.email) {
+      setCheckingEligibility(true);
+      try {
+        const res = await fetch(
+          `/api/reviews/verify-buyer?productId=${encodeURIComponent(productId)}&email=${encodeURIComponent(
+            user.email
+          )}`
+        );
+        const data = await res.json();
+        if (data.success && data.isVerified) {
+          setVerifiedOrder({
+            orderId: data.orderId,
+            customerName: data.customerName || user.name || "",
+            customerEmail: data.customerEmail || user.email || "",
+          });
+          if (data.customerName || user.name) {
+            setFormName(data.customerName || user.name || "");
+          }
+          setWriteModalOpen(true);
+          setCheckingEligibility(false);
+          return;
+        }
+      } catch (err) {
+        console.warn("Failed to check buyer verification:", err);
+      } finally {
+        setCheckingEligibility(false);
+      }
+    }
+
+    // 3. Unordered or Not logged in -> Show gate modal
+    setGateModalOpen(true);
+  };
+
+  const handleManualVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanInput = manualVerifyInput.trim();
+    if (!cleanInput) {
+      setVerifyError("Please enter your Order ID or registered mobile number");
+      return;
+    }
+
+    setVerifyingManual(true);
+    setVerifyError(null);
+
+    try {
+      const res = await fetch(
+        `/api/reviews/verify-buyer?productId=${encodeURIComponent(productId)}&orderId=${encodeURIComponent(
+          cleanInput
+        )}&phone=${encodeURIComponent(cleanInput)}`
+      );
+      const data = await res.json();
+
+      if (data.success && data.isVerified) {
+        setVerifiedOrder({
+          orderId: data.orderId,
+          customerName: data.customerName || "",
+          customerEmail: data.customerEmail || "",
+        });
+        if (data.customerName) {
+          setFormName(data.customerName);
+        }
+        setGateModalOpen(false);
+        setWriteModalOpen(true);
+      } else {
+        setVerifyError(
+          data.message ||
+            "No completed order for this product was found matching this Order ID or phone number."
+        );
+      }
+    } catch (err: any) {
+      setVerifyError("Failed to verify order. Please try again or contact support.");
+    } finally {
+      setVerifyingManual(false);
+    }
+  };
+
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formComment.trim()) return;
@@ -146,7 +249,9 @@ export function ProductReviewsSection({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId,
-          userName: formName.trim() || "Verified Buyer",
+          orderId: verifiedOrder?.orderId,
+          userName: formName.trim() || verifiedOrder?.customerName || user?.name || "Verified Buyer",
+          userEmail: verifiedOrder?.customerEmail || user?.email,
           rating: formRating,
           title: formTitle.trim(),
           comment: formComment.trim(),
@@ -231,10 +336,15 @@ export function ProductReviewsSection({
           </div>
 
           <button
-            onClick={() => setWriteModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#111111] text-white text-xs font-bold hover:bg-[#FA521C] transition-all shadow-sm shrink-0 cursor-pointer"
+            onClick={handleOpenWriteReview}
+            disabled={checkingEligibility}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#111111] text-white text-xs font-bold hover:bg-[#FA521C] transition-all shadow-sm shrink-0 cursor-pointer disabled:opacity-60"
           >
-            <Star className="w-4 h-4 fill-current text-amber-400" />
+            {checkingEligibility ? (
+              <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+            ) : (
+              <Star className="w-4 h-4 fill-current text-amber-400" />
+            )}
             <span>Write a Customer Review</span>
           </button>
         </div>
@@ -407,9 +517,10 @@ export function ProductReviewsSection({
             <button
               onClick={() => {
                 setActiveFilter("all");
-                setWriteModalOpen(true);
+                handleOpenWriteReview();
               }}
-              className="px-5 py-2 rounded-full bg-[#FA521C] text-white text-xs font-bold hover:bg-[#E04515]"
+              disabled={checkingEligibility}
+              className="px-5 py-2 rounded-full bg-[#FA521C] text-white text-xs font-bold hover:bg-[#E04515] disabled:opacity-60 cursor-pointer"
             >
               Write First Review
             </button>
@@ -510,6 +621,119 @@ export function ProductReviewsSection({
           </div>
         )}
       </div>
+
+      {/* ========================================================
+          MODAL: BUYER VERIFICATION GATE (ONLY VERIFIED BUYERS CAN REVIEW)
+         ======================================================== */}
+      {gateModalOpen && (
+        <div
+          data-lenis-prevent
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setGateModalOpen(false);
+          }}
+        >
+          <div
+            data-lenis-prevent
+            className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setGateModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+              title="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-[#FA521C] flex items-center justify-center mb-4">
+              <ShieldAlert className="w-6 h-6 stroke-[2.2]" />
+            </div>
+
+            <h3 className="text-lg font-bold text-gray-900 leading-snug">
+              Verified Buyers Only
+            </h3>
+            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+              To guarantee 100% genuine reviews, only customers who have ordered{" "}
+              <strong className="text-gray-800">{productName}</strong> can submit a rating and review.
+            </p>
+
+            {/* If user is logged in but has no order */}
+            {user ? (
+              <div className="mt-4 p-3 bg-gray-50 rounded-2xl border border-gray-100 text-xs text-gray-600">
+                <span>Signed in as: </span>
+                <span className="font-bold text-gray-900">{user.email}</span>
+                <p className="mt-1 text-gray-500">
+                  We could not find an order for this product under your account. If you purchased under a different email, phone number, or as a guest, please verify below:
+                </p>
+              </div>
+            ) : (
+              <div className="mt-4">
+                <Link
+                  href={`/signin?redirect=${encodeURIComponent(
+                    typeof window !== "undefined" ? window.location.pathname + "#reviews" : "/products"
+                  )}&notice=${encodeURIComponent("Please sign in to verify your purchase and review")}`}
+                  className="w-full py-3 px-4 rounded-xl bg-[#111111] hover:bg-black text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Sign In with Your Account</span>
+                </Link>
+
+                <div className="flex items-center gap-2 my-4">
+                  <div className="h-px bg-gray-200 flex-1" />
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                    Or Verify As Guest
+                  </span>
+                  <div className="h-px bg-gray-200 flex-1" />
+                </div>
+              </div>
+            )}
+
+            {/* Manual Order Verification Form */}
+            <form onSubmit={handleManualVerify} className="mt-4 space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Enter Order ID or Mobile Number
+                </label>
+                <input
+                  type="text"
+                  value={manualVerifyInput}
+                  onChange={(e) => {
+                    setManualVerifyInput(e.target.value);
+                    if (verifyError) setVerifyError(null);
+                  }}
+                  placeholder="e.g. ord_zupe_1001 or 9876543210"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#FA521C] focus:ring-1 focus:ring-[#FA521C]"
+                />
+              </div>
+
+              {verifyError && (
+                <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium leading-relaxed">
+                  {verifyError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={verifyingManual || !manualVerifyInput.trim()}
+                className="w-full py-3 px-4 rounded-xl bg-[#FA521C] hover:bg-[#E04414] active:scale-[0.98] text-white font-bold text-xs tracking-wide transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {verifyingManual ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Verifying Purchase...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Verify Purchase & Write Review</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================
           MODAL: WRITE A CUSTOMER REVIEW
