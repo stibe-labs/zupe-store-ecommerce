@@ -194,7 +194,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("zp_user_session");
+    try {
+      localStorage.removeItem("zp_user_session");
+      fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    } catch {}
   };
 
   return (

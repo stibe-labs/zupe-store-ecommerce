@@ -41,13 +41,18 @@ export async function POST(req: NextRequest) {
       `,
     });
 
+    const isProd = process.env.NODE_ENV === "production";
+
     return NextResponse.json({
       success: true,
       message: emailResult.success
         ? "Verification code sent to your email!"
+        : isProd
+        ? "Verification code sent to your email!"
         : `Verification code generated: ${otp}`,
       emailSent: emailResult.success,
-      otp: otp, // Provided for instant auto-fill and fallback
+      // In production, OTP is strictly dispatched via secure email and NEVER leaked in API response
+      ...(isProd ? {} : { otp }),
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

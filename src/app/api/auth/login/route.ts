@@ -5,6 +5,10 @@ import {
   createAdminSessionToken,
   ADMIN_COOKIE_NAME,
 } from "@/lib/adminAuth";
+import {
+  createUserSessionToken,
+  USER_COOKIE_NAME,
+} from "@/lib/userAuth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,6 +42,7 @@ export async function POST(req: NextRequest) {
             email: adminCheck.email,
             role: "admin",
           },
+          token,
         });
 
         res.cookies.set({
@@ -53,7 +58,7 @@ export async function POST(req: NextRequest) {
         return res;
       } else {
         return NextResponse.json(
-          { success: false, error: "Invalid admin password" },
+          { success: false, error: "Invalid admin credentials" },
           { status: 401 }
         );
       }
@@ -80,10 +85,33 @@ export async function POST(req: NextRequest) {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: "customer",
+      role: user.role || "customer",
     };
 
-    return NextResponse.json({ success: true, user: session });
+    const userToken = await createUserSessionToken({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role || "customer",
+    });
+
+    const res = NextResponse.json({
+      success: true,
+      user: session,
+      token: userToken,
+    });
+
+    res.cookies.set({
+      name: USER_COOKIE_NAME,
+      value: userToken,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      path: "/",
+    });
+
+    return res;
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message || "Login failed" },

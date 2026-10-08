@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBanners, saveBanners, HeroBannerSlide, DEFAULT_HERO_BANNERS } from "@/lib/storeContent";
+import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/adminAuth";
+
+async function checkAdminAuth(req: NextRequest): Promise<boolean> {
+  const token = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+  if (!token) return false;
+  const session = await verifyAdminSessionToken(token);
+  return session.valid;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,6 +22,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const isAdmin = await checkAdminAuth(req);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Admin privileges required." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
 
     if (body.action === "reset_defaults") {
@@ -52,6 +68,14 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
+    const isAdmin = await checkAdminAuth(req);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Admin privileges required." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { id, updates, reorder } = body;
 
@@ -83,6 +107,14 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const isAdmin = await checkAdminAuth(req);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Admin privileges required." },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     let id = searchParams.get("id");
 

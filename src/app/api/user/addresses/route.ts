@@ -6,21 +6,39 @@ import {
   setDefaultUserAddress,
   UserAddress,
 } from "@/lib/addressStore";
+import { getAuthenticatedUser } from "@/lib/userAuth";
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
     const { searchParams } = new URL(req.url);
-    const email = searchParams.get("email");
+    const queryEmail = searchParams.get("email")?.toLowerCase().trim();
     const userId = searchParams.get("userId") || undefined;
 
-    if (!email) {
+    if (!auth.authenticated || !auth.user) {
+      if (!queryEmail) {
+        return NextResponse.json(
+          { success: false, error: "Authentication or email required" },
+          { status: 401 }
+        );
+      }
+    }
+
+    const targetEmail =
+      auth.isAdmin && queryEmail
+        ? queryEmail
+        : auth.user
+        ? auth.user.email
+        : queryEmail!;
+
+    if (!auth.isAdmin && auth.user && queryEmail && queryEmail !== auth.user.email) {
       return NextResponse.json(
-        { success: false, error: "Email is required" },
-        { status: 400 }
+        { success: false, error: "Forbidden: Cannot access addresses of another user" },
+        { status: 403 }
       );
     }
 
-    const addresses = await getUserAddresses(email, userId);
+    const addresses = await getUserAddresses(targetEmail, userId);
     return NextResponse.json({ success: true, addresses });
   } catch (err: any) {
     return NextResponse.json(
@@ -32,6 +50,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
     const body = await req.json();
     const {
       id,
@@ -55,10 +74,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const normalizedEmail = user_email.toLowerCase().trim();
+
+    if (auth.authenticated && auth.user && !auth.isAdmin && normalizedEmail !== auth.user.email) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden: Cannot save address for another user" },
+        { status: 403 }
+      );
+    }
+
     const address: UserAddress = {
       id: id || `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      user_id,
-      user_email: user_email.toLowerCase().trim(),
+      user_id: user_id || auth.user?.id,
+      user_email: normalizedEmail,
       recipient_name: recipient_name.trim(),
       phone: phone ? phone.trim() : "",
       street: street.trim(),
@@ -83,6 +111,7 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     const email = searchParams.get("email");
@@ -94,7 +123,16 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const ok = await deleteUserAddress(id, email);
+    const normalizedEmail = email.toLowerCase().trim();
+
+    if (auth.authenticated && auth.user && !auth.isAdmin && normalizedEmail !== auth.user.email) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden: Cannot delete address for another user" },
+        { status: 403 }
+      );
+    }
+
+    const ok = await deleteUserAddress(id, normalizedEmail);
     return NextResponse.json({ success: ok });
   } catch (err: any) {
     return NextResponse.json(
@@ -106,6 +144,7 @@ export async function DELETE(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
     const body = await req.json();
     const { id, email, action } = body;
 
@@ -116,8 +155,17 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+
+    if (auth.authenticated && auth.user && !auth.isAdmin && normalizedEmail !== auth.user.email) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden: Cannot modify address for another user" },
+        { status: 403 }
+      );
+    }
+
     if (action === "set_default") {
-      const ok = await setDefaultUserAddress(id, email);
+      const ok = await setDefaultUserAddress(id, normalizedEmail);
       return NextResponse.json({ success: ok });
     }
 

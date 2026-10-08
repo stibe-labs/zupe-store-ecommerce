@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyOTP } from "@/lib/otpService";
 import { saveUser, findUserByEmail } from "@/lib/userStore";
+import { createUserSessionToken, USER_COOKIE_NAME } from "@/lib/userAuth";
 
 export interface UserSession {
   id: string;
@@ -58,7 +59,30 @@ export async function POST(req: NextRequest) {
       role: "customer",
     };
 
-    return NextResponse.json({ success: true, user: session });
+    const userToken = await createUserSessionToken({
+      id: userId,
+      name,
+      email: email.toLowerCase().trim(),
+      role: "customer",
+    });
+
+    const res = NextResponse.json({
+      success: true,
+      user: session,
+      token: userToken,
+    });
+
+    res.cookies.set({
+      name: USER_COOKIE_NAME,
+      value: userToken,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      path: "/",
+    });
+
+    return res;
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message || "Registration failed" },

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVideosByProduct, getAllVideos } from "@/lib/videoStore";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
-export const runtime = "edge";
 
 export async function GET(req: NextRequest) {
   try {

@@ -1,12 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createOrder, getOrders, updateOrderStatus, OrderRecord } from "@/lib/orderStore";
 import { getERPOrders } from "@/lib/erpStore";
+import { getAuthenticatedUser } from "@/lib/userAuth";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const email = searchParams.get("email");
-    const storefrontOrders = getOrders(email || undefined);
+    const requestedEmail = searchParams.get("email")?.toLowerCase().trim();
+
+    // Authenticate caller (Admin or Customer)
+    const auth = await getAuthenticatedUser(req);
+
+    let targetEmail: string | undefined;
+
+    if (auth.isAdmin) {
+      // Admin can view all orders or filter by specific email
+      targetEmail = requestedEmail || undefined;
+    } else if (auth.authenticated && auth.user) {
+      // Authenticated customer can ONLY view their own orders
+      targetEmail = auth.user.email;
+      if (requestedEmail && requestedEmail !== auth.user.email) {
+        return NextResponse.json(
+          { success: false, error: "Forbidden: Cannot access orders of another account" },
+          { status: 403 }
+        );
+      }
+    } else {
+      // Unauthenticated caller must provide an email (e.g. guest order lookup), but NEVER gets all orders
+      if (!requestedEmail) {
+        return NextResponse.json(
+          { success: false, error: "Authentication required to view order history" },
+          { status: 401 }
+        );
+      }
+      targetEmail = requestedEmail;
+    }
+
+    const storefrontOrders = getOrders(targetEmail || undefined);
 
     let combinedOrders = [...storefrontOrders];
 
@@ -16,11 +46,11 @@ export async function GET(req: NextRequest) {
 
       const matchedErp = erpOrders.filter((o) => {
         if (existingIds.has(o.id)) return false;
-        if (!email) return true;
-        const qLower = email.toLowerCase().trim();
+        if (!targetEmail) return true;
+        const qLower = targetEmail.toLowerCase().trim();
         const oEmail = (o.guest_email || "").toLowerCase().trim();
         const oPhone = (o.customer_phone || "").replace(/\D/g, "");
-        const searchPhone = email.replace(/\D/g, "");
+        const searchPhone = targetEmail.replace(/\D/g, "");
         return oEmail === qLower || (searchPhone.length >= 7 && oPhone.includes(searchPhone));
       });
 
@@ -166,6 +196,14 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.isAdmin) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Admin privileges required to update order status." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { order_id, order_status } = body;
 

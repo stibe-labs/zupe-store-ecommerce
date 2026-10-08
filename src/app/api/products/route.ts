@@ -3,6 +3,14 @@ import { executeD1Query } from "@/lib/d1";
 import { Product } from "@/types/product";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { getProductReviewStatsMap, getProductReviewStats } from "@/lib/reviewStore";
+import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/adminAuth";
+
+async function checkAdminAuth(req: NextRequest): Promise<boolean> {
+  const token = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+  if (!token) return false;
+  const session = await verifyAdminSessionToken(token);
+  return session.valid;
+}
 
 let serverProductsCache: Product[] = [...DEFAULT_PRODUCTS];
 
@@ -157,6 +165,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const isAdmin = await checkAdminAuth(req);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Admin privileges required to create or modify products." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const {
       id,
@@ -419,6 +435,14 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const isAdmin = await checkAdminAuth(req);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Admin privileges required to delete products." },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 

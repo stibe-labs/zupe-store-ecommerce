@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getReviewsByProduct, addReview, markReviewHelpful, ProductReview } from "@/lib/reviewStore";
+import { getAuthenticatedUser } from "@/lib/userAuth";
 
 function computeReviewStats(reviews: ProductReview[]) {
   const total = reviews.length;
@@ -73,10 +74,18 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
     const body = await req.json();
 
     // Support bulk review import (e.g. from Admin CSV / Amazon / Flipkart import)
     if (Array.isArray(body.reviews)) {
+      if (!auth.isAdmin) {
+        return NextResponse.json(
+          { success: false, error: "Unauthorized: Admin privileges required for bulk reviews import." },
+          { status: 401 }
+        );
+      }
+
       const addedList: ProductReview[] = [];
       const pid = body.productId;
 
@@ -87,7 +96,7 @@ export async function POST(req: NextRequest) {
           orderId: item.orderId || "IMPORTED",
           userName: item.userName || "Verified Customer",
           userEmail: item.userEmail,
-          rating: Number(item.rating) || 5,
+          rating: Math.max(1, Math.min(5, Math.round(Number(item.rating) || 5))),
           title: item.title,
           comment: item.comment || item.title || "",
           images: Array.isArray(item.images) ? item.images : [],
@@ -115,18 +124,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Product ID and comment are required" }, { status: 400 });
     }
 
-    // Unless it's an admin import or contains a verified order, check buyer verification
-    const isVerified = Boolean(orderId || isAdminImport || verifiedPurchase);
+    // Check if admin import flag was attempted by non-admin
+    if (isAdminImport && !auth.isAdmin) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Cannot use admin import flag without administrator authentication." },
+        { status: 401 }
+      );
+    }
+
+    // Buyer verification: Must have valid orderId, or be an authenticated admin, or have verified order
+    const isVerified = Boolean(orderId || auth.isAdmin || verifiedPurchase);
+
+    const safeRating = Math.max(1, Math.min(5, Math.round(Number(rating) || 5)));
+    const cleanComment = String(comment).replace(/<[^>]*>/g, "").trim();
+    const cleanTitle = title ? String(title).replace(/<[^>]*>/g, "").trim() : undefined;
 
     const newReview = await addReview({
       productId,
-      orderId: orderId || (isAdminImport ? "ADMIN_IMPORT" : undefined),
-      userName: userName || "Verified Buyer",
+      orderId: orderId || (auth.isAdmin ? "ADMIN_IMPORT" : undefined),
+      userName: userName ? String(userName).replace(/<[^>]*>/g, "").trim() : "Verified Buyer",
       userEmail,
-      rating: Number(rating) || 5,
-      title,
-      comment,
-      images,
+      rating: safeRating,
+      title: cleanTitle,
+      comment: cleanComment,
+      images: Array.isArray(images) ? images : [],
       verifiedPurchase: isVerified,
     });
 

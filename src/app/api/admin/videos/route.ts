@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllVideos, addVideo, updateVideo, deleteVideo } from "@/lib/videoStore";
 
-export const runtime = "edge";
 
 export async function GET() {
   try {
