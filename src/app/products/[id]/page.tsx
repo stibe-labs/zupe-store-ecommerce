@@ -32,6 +32,7 @@ import { Footer } from "@/components/Footer";
 import { UpiLogo } from "@/components/UpiLogo";
 import { ProductReviewsSection } from "@/components/ProductReviewsSection";
 import { YouMayAlsoLike } from "@/components/YouMayAlsoLike";
+import { ShoppableVideosSection } from "@/components/ShoppableVideosSection";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -1151,6 +1152,16 @@ export default function ProductDetailPage() {
          ======================================================== */}
       {product && (
         <YouMayAlsoLike
+          currentProduct={product}
+          onToast={(msg) => showToast(msg)}
+        />
+      )}
+
+      {/* ========================================================
+          SHOPPABLE PRODUCT VIDEOS & REELS (BEFORE REVIEWS)
+         ======================================================== */}
+      {product && (
+        <ShoppableVideosSection
           currentProduct={product}
           onToast={(msg) => showToast(msg)}
         />
