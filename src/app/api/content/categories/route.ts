@@ -21,7 +21,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, categories: reset });
     }
 
-    const { name, slug, icon, customIcon, bgColor, iconColor, showInNavbar, showInPills, showInCollections, active } = body;
+    const {
+      name,
+      slug,
+      icon,
+      customIcon,
+      bgColor,
+      iconColor,
+      showInNavbar,
+      showInPills,
+      showInCollections,
+      active,
+      subcategories,
+    } = body;
 
     if (!name || !name.trim()) {
       return NextResponse.json({ success: false, error: "Category name is required" }, { status: 400 });
@@ -34,6 +46,10 @@ export async function POST(req: NextRequest) {
     if (current.some((c) => c.name.toLowerCase() === trimmedName.toLowerCase())) {
       return NextResponse.json({ success: false, error: "A category with this name already exists" }, { status: 400 });
     }
+
+    const cleanSubcategories = Array.isArray(subcategories)
+      ? Array.from(new Set(subcategories.map((s: any) => String(s).trim()).filter(Boolean)))
+      : [];
 
     const newCategory: StoreCategory = {
       id: "cat-" + Date.now().toString(36) + "-" + Math.random().toString(36).substring(2, 6),
@@ -48,6 +64,7 @@ export async function POST(req: NextRequest) {
       showInCollections: showInCollections !== false,
       order: current.length + 1,
       active: active !== false,
+      subcategories: cleanSubcategories,
     };
 
     const updated = await saveCategories([...current, newCategory]);
@@ -63,7 +80,13 @@ export async function PUT(req: NextRequest) {
     const { id, updates, reorder } = body;
 
     if (reorder && Array.isArray(reorder)) {
-      const updated = await saveCategories(reorder);
+      const sanitized = reorder.map((cat: any) => ({
+        ...cat,
+        subcategories: Array.isArray(cat.subcategories)
+          ? Array.from(new Set(cat.subcategories.map((s: any) => String(s).trim()).filter(Boolean)))
+          : [],
+      }));
+      const updated = await saveCategories(sanitized);
       return NextResponse.json({ success: true, categories: updated });
     }
 
@@ -76,6 +99,12 @@ export async function PUT(req: NextRequest) {
 
     if (index === -1) {
       return NextResponse.json({ success: false, error: "Category not found" }, { status: 404 });
+    }
+
+    if (updates.subcategories && Array.isArray(updates.subcategories)) {
+      updates.subcategories = Array.from(
+        new Set(updates.subcategories.map((s: any) => String(s).trim()).filter(Boolean))
+      );
     }
 
     current[index] = { ...current[index], ...updates };

@@ -60,6 +60,21 @@ export default function AdminPaymentsPage() {
     fetchRemittances();
   }, []);
 
+  // Lock background scroll when modals are open
+  useEffect(() => {
+    if (showAddModal) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [showAddModal]);
+
   const handleAddRemittance = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!crnId || !collected || !date) return;
@@ -246,7 +261,7 @@ export default function AdminPaymentsPage() {
       {/* Record Remittance Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto overscroll-contain">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="font-bold text-slate-900 text-base">
                 Record Courier Remittance

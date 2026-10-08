@@ -139,29 +139,31 @@ function SignInContent() {
   return (
     <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between selection:bg-[#FA521C]/20 selection:text-[#FA521C]">
       {/* Top Header */}
-      <header className="w-full bg-white border-b border-gray-100 py-4 px-6 sm:px-12 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="relative w-9 h-9 flex items-center justify-center">
-            <Image
-              src="/zupe-logo.png"
-              alt="Zupe Store"
-              width={36}
-              height={36}
-              className="object-contain group-hover:scale-105 transition-transform"
-            />
-          </div>
-          <span className="font-display font-black text-xl text-gray-900 tracking-tight">
-            Zupe<span className="text-[#FA521C]">store</span>
-          </span>
-        </Link>
+      <header className="w-full bg-white border-b border-gray-100 py-3 sm:py-4">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 w-full flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="relative w-9 h-9 flex items-center justify-center">
+              <Image
+                src="/zupe-logo.png"
+                alt="Zupe Store"
+                width={36}
+                height={36}
+                className="object-contain group-hover:scale-105 transition-transform"
+              />
+            </div>
+            <span className="font-display font-black text-xl text-gray-900 tracking-tight">
+              Zupe<span className="text-[#FA521C]">store</span>
+            </span>
+          </Link>
 
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-600 hover:text-[#FA521C] transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>Back to Store</span>
-        </Link>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-600 hover:text-[#FA521C] transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span>Back to Store</span>
+          </Link>
+        </div>
       </header>
 
       {/* Main Container */}

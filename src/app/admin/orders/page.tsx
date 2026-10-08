@@ -47,6 +47,25 @@ function AdminOrdersContent() {
   const [isSavingOrder, setIsSavingOrder] = useState<boolean>(false);
   const [isCreditingSupplier, setIsCreditingSupplier] = useState<boolean>(false);
   const [orderModalMsg, setOrderModalMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  const showToast = (type: "success" | "error", text: string) => {
+    setToastMessage({ type, text });
+    setTimeout(() => {
+      setToastMessage((prev) => (prev?.text === text ? null : prev));
+    }, 5000);
+  };
+
+  // Lock background body scroll when order modal is open
+  useEffect(() => {
+    if (selectedOrder) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [selectedOrder]);
 
   useEffect(() => {
     if (selectedOrder) {
@@ -56,6 +75,16 @@ function AdminOrdersContent() {
       setEditPaymentStatus(selectedOrder.payment_status || "Pending");
       setEditRemittance(selectedOrder.remittance_status || "Pending");
       setOrderModalMsg(null);
+
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+        document.body.style.overflow = originalOverflow;
+      };
     }
   }, [selectedOrder]);
 
@@ -63,6 +92,7 @@ function AdminOrdersContent() {
     if (!selectedOrder) return;
     setIsSavingOrder(true);
     setOrderModalMsg(null);
+    const orderDisplayId = selectedOrder.shopify_order_id || selectedOrder.id;
     try {
       const res = await fetch("/api/admin/orders", {
         method: "PATCH",
@@ -77,17 +107,21 @@ function AdminOrdersContent() {
         }),
       });
       const data = await res.json();
-      if (data.success && data.order) {
-        setSelectedOrder(data.order);
+      if (res.ok && data.success && data.order) {
         setOrders((prev) =>
           prev.map((o) => (o.id === data.order.id ? data.order : o))
         );
-        setOrderModalMsg({ text: "Order updated successfully!", type: "success" });
+        setSelectedOrder(null); // Auto close the form
+        showToast("success", `Order #${orderDisplayId} changes saved successfully!`);
       } else {
-        setOrderModalMsg({ text: data.error || "Update failed", type: "error" });
+        const errMsg = data.error || `Update failed (${res.status})`;
+        setOrderModalMsg({ text: errMsg, type: "error" });
+        showToast("error", errMsg);
       }
     } catch (err: any) {
-      setOrderModalMsg({ text: err.message || "Failed to update order", type: "error" });
+      const errMsg = err.message || "Failed to update order";
+      setOrderModalMsg({ text: errMsg, type: "error" });
+      showToast("error", errMsg);
     } finally {
       setIsSavingOrder(false);
     }
@@ -127,15 +161,21 @@ function AdminOrdersContent() {
             prev.map((o) => (o.id === patchData.order.id ? patchData.order : o))
           );
         }
+        const successMsg = `Successfully credited ₹${selectedOrder.product_cost} to supplier balance!`;
         setOrderModalMsg({
-          text: `Successfully credited ₹${selectedOrder.product_cost} to supplier balance!`,
+          text: successMsg,
           type: "success",
         });
+        showToast("success", successMsg);
       } else {
-        setOrderModalMsg({ text: creditData.error || "Credit failed", type: "error" });
+        const errMsg = creditData.error || "Credit failed";
+        setOrderModalMsg({ text: errMsg, type: "error" });
+        showToast("error", errMsg);
       }
     } catch (err: any) {
-      setOrderModalMsg({ text: err.message || "Failed to credit supplier", type: "error" });
+      const errMsg = err.message || "Failed to credit supplier";
+      setOrderModalMsg({ text: errMsg, type: "error" });
+      showToast("error", errMsg);
     } finally {
       setIsCreditingSupplier(false);
     }
@@ -437,9 +477,18 @@ function AdminOrdersContent() {
 
       {/* Order Detail Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm overflow-hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedOrder(null);
+          }}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 flex flex-col min-h-0 max-h-[92vh] sm:max-h-[88vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header (fixed at top) */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0 bg-white">
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-slate-900 text-base">
                   Order 360° Management: {selectedOrder.shopify_order_id}
@@ -450,30 +499,35 @@ function AdminOrdersContent() {
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100"
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                title="Close modal"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {orderModalMsg && (
-              <div
-                className={`mt-4 p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
-                  orderModalMsg.type === "success"
-                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                    : "bg-rose-50 text-rose-800 border border-rose-200"
-                }`}
-              >
-                {orderModalMsg.type === "success" ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                ) : (
-                  <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                )}
-                <span>{orderModalMsg.text}</span>
-              </div>
-            )}
+            {/* Scrollable Form Body */}
+            <div
+              className="p-6 overflow-y-auto overscroll-contain flex-1 min-h-0 space-y-4"
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
+              {orderModalMsg && (
+                <div
+                  className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                    orderModalMsg.type === "success"
+                      ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                      : "bg-rose-50 text-rose-800 border border-rose-200"
+                  }`}
+                >
+                  {orderModalMsg.type === "success" ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                  )}
+                  <span>{orderModalMsg.text}</span>
+                </div>
+              )}
 
-            <div className="mt-4 space-y-4 text-xs sm:text-sm">
               {/* Customer details card */}
               <div className="bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 space-y-1.5">
                 <div className="flex justify-between">
@@ -634,11 +688,12 @@ function AdminOrdersContent() {
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-between pt-3 border-t border-slate-100">
+            {/* Modal Footer (fixed at bottom) */}
+            <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50/80 shrink-0 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition-all"
+                className="px-4 py-2 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl font-semibold text-xs transition-all shadow-sm"
               >
                 Close
               </button>
@@ -662,6 +717,33 @@ function AdminOrdersContent() {
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Toast Notification Alert */}
+      {toastMessage && (
+        <div className="fixed top-5 right-5 sm:right-6 z-[9999] max-w-sm sm:max-w-md w-full shadow-2xl transition-all animate-in fade-in slide-in-from-top-4 duration-300">
+          <div
+            className={`p-4 rounded-2xl text-xs sm:text-sm font-semibold flex items-center gap-3 border shadow-xl ${
+              toastMessage.type === "success"
+                ? "bg-emerald-600 text-white border-emerald-500 shadow-emerald-600/30 ring-4 ring-emerald-500/20"
+                : "bg-rose-600 text-white border-rose-500 shadow-rose-600/30 ring-4 ring-rose-500/20"
+            }`}
+          >
+            {toastMessage.type === "success" ? (
+              <CheckCircle2 className="w-5 h-5 text-white shrink-0" />
+            ) : (
+              <AlertTriangle className="w-5 h-5 text-white shrink-0" />
+            )}
+            <div className="flex-1 leading-snug">{toastMessage.text}</div>
+            <button
+              onClick={() => setToastMessage(null)}
+              className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/20 transition-colors"
+              aria-label="Dismiss notification"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}

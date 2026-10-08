@@ -59,6 +59,24 @@ export function ProductReviewsSection({
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [votedHelpful, setVotedHelpful] = useState<Set<string>>(new Set());
 
+  // Freeze background scrolling when review modal is open
+  useEffect(() => {
+    if (writeModalOpen) {
+      const origBody = document.body.style.overflow;
+      const origHtml = document.documentElement.style.overflow;
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      return () => {
+        document.body.style.overflow = origBody;
+        document.documentElement.style.overflow = origHtml;
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+      };
+    }
+  }, [writeModalOpen]);
+
   const fetchReviews = async () => {
     try {
       const res = await fetch(`/api/reviews?productId=${encodeURIComponent(productId)}&_t=${Date.now()}`);
@@ -81,6 +99,21 @@ export function ProductReviewsSection({
       fetchReviews();
     }
   }, [productId]);
+
+  // Lock background scroll when review modal or lightbox is open
+  useEffect(() => {
+    if (writeModalOpen || Boolean(lightboxData)) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      const prevBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+        document.body.style.overflow = prevBodyOverflow;
+      };
+    }
+  }, [writeModalOpen, lightboxData]);
 
   // Handle local photo uploads (converts files to base64 Data URLs)
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -181,7 +214,7 @@ export function ProductReviewsSection({
 
   return (
     <section id="reviews" className="w-full pt-12 pb-16 border-t border-gray-200 mt-14 bg-white/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
@@ -482,22 +515,38 @@ export function ProductReviewsSection({
           MODAL: WRITE A CUSTOMER REVIEW
          ======================================================== */}
       {writeModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-scaleIn">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div 
+          data-lenis-prevent
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setWriteModalOpen(false);
+          }}
+        >
+          <div 
+            data-lenis-prevent
+            className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col min-h-0 overflow-hidden shadow-2xl animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
               <div>
                 <h3 className="text-base font-bold text-gray-900">Write a Product Review</h3>
                 <p className="text-xs text-gray-500">Share your experience with verified Zupe Store shoppers</p>
               </div>
               <button
                 onClick={() => setWriteModalOpen(false)}
-                className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg cursor-pointer"
+                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                title="Close"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmitReview} className="p-6 overflow-y-auto space-y-4 flex-1">
+            <form 
+              onSubmit={handleSubmitReview} 
+              data-lenis-prevent
+              className="p-6 overflow-y-auto min-h-0 overscroll-contain space-y-4 flex-1"
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
               {submitSuccess ? (
                 <div className="py-12 text-center space-y-3">
                   <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
@@ -674,8 +723,8 @@ export function ProductReviewsSection({
           MODAL: CUSTOMER PHOTO LIGHTBOX
          ======================================================== */}
       {lightboxData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
-          <div className="relative max-w-2xl w-full bg-slate-900 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+        <div data-lenis-prevent className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+          <div data-lenis-prevent className="relative max-w-2xl w-full bg-slate-900 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <button
               onClick={() => setLightboxData(null)}
               className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/60 text-white hover:bg-black/90 transition-colors cursor-pointer"

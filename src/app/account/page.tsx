@@ -79,6 +79,21 @@ export default function AccountPage() {
     }
   }, [isLoading, isAuthenticated, router]);
 
+  // Lock background scroll when modals are open
+  useEffect(() => {
+    if (isAddressModalOpen || isProfileModalOpen) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      const originalBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+        document.body.style.overflow = originalBodyOverflow;
+      };
+    }
+  }, [isAddressModalOpen, isProfileModalOpen]);
+
   // Key for local address cache
   const getCacheKey = (email: string) => `zp_user_addresses_${email.toLowerCase().trim()}`;
 
@@ -403,7 +418,7 @@ export default function AccountPage() {
     <div className="min-h-screen bg-[#FBFBFC] text-[#111111] flex flex-col justify-between pb-24 sm:pb-0">
       <Navbar />
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <main className="flex-1 max-w-[1600px] mx-auto w-full px-4 sm:px-6 py-8 sm:py-12">
         {/* Profile Header Banner */}
         <div className="bg-gradient-to-r from-[#111111] via-[#1C1F26] to-[#111111] text-white rounded-3xl p-6 sm:p-8 shadow-xl mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-72 h-72 bg-[#FA521C]/15 rounded-full blur-3xl pointer-events-none" />
@@ -789,7 +804,7 @@ export default function AccountPage() {
       {/* ─── Modal 1: Add / Edit Delivery Address ─── */}
       {isAddressModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-3xl w-full max-w-lg p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div data-lenis-prevent className="bg-white rounded-3xl w-full max-w-lg p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto overscroll-contain">
             <button
               type="button"
               onClick={() => setIsAddressModalOpen(false)}
@@ -971,7 +986,7 @@ export default function AccountPage() {
       {/* ─── Modal 2: Edit Profile & Phone Number ─── */}
       {isProfileModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-3xl w-full max-w-md p-6 sm:p-8 shadow-2xl relative">
+          <div data-lenis-prevent className="bg-white rounded-3xl w-full max-w-md p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto overscroll-contain">
             <button
               type="button"
               onClick={() => setIsProfileModalOpen(false)}

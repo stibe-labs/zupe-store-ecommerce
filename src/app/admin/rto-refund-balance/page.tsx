@@ -103,6 +103,21 @@ export default function RTORefundBalancePage() {
     fetchData();
   }, [supplierFilter, statusFilter, searchQuery]);
 
+  // Lock background scroll when modals are open
+  useEffect(() => {
+    if (showAddCreditModal || showUseCreditModal || showHowItWorksModal || Boolean(selectedEntry)) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [showAddCreditModal, showUseCreditModal, showHowItWorksModal, selectedEntry]);
+
   // Handle Add RTO Credit submit
   const handleAddCredit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -810,7 +825,7 @@ export default function RTORefundBalancePage() {
       {/* ======================================================== */}
       {showAddCreditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto overscroll-contain">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
@@ -942,7 +957,7 @@ export default function RTORefundBalancePage() {
       {/* ======================================================== */}
       {showUseCreditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto overscroll-contain">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#FA521C] flex items-center justify-center">
@@ -1053,7 +1068,7 @@ export default function RTORefundBalancePage() {
       {/* ======================================================== */}
       {showHowItWorksModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto overscroll-contain">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-orange-100 text-[#FA521C] flex items-center justify-center">
@@ -1140,7 +1155,7 @@ export default function RTORefundBalancePage() {
       {/* ======================================================== */}
       {selectedEntry && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto overscroll-contain">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="font-bold text-slate-900 text-base">
                 Transaction Detail

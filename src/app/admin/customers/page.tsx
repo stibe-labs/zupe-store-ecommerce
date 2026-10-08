@@ -81,6 +81,21 @@ export default function AdminCustomersPage() {
     fetchCustomers();
   }, []);
 
+  // Lock background scroll when modals are open
+  useEffect(() => {
+    if (selectedCustomer) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [selectedCustomer]);
+
   const handleExportCSV = () => {
     const headers = [
       "Customer Name",
@@ -346,7 +361,7 @@ export default function AdminCustomersPage() {
       {/* Customer 360° Profile Modal */}
       {selectedCustomer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[92vh] overflow-y-auto overscroll-contain">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-xl bg-orange-100 text-[#FA521C] flex items-center justify-center font-bold text-base">

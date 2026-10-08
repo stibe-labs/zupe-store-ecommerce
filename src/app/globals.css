@@ -326,5 +326,20 @@ p, li, span:not([class*="tracking"]), label, td, th, blockquote {
   animation: shopNowColorFlow 3s ease infinite;
 }
 
+/* ─── Universal Modal Scroll Containment & Background Freeze ─── */
+html.modal-open,
+body.modal-open,
+body[style*="overflow: hidden"] {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+[data-lenis-prevent],
+.overflow-y-auto,
+.overflow-auto {
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch;
+}
+
 
 

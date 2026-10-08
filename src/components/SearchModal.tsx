@@ -19,40 +19,46 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 const COLLECTIONS = [
   {
-    title: "LIGHTING",
-    subtitle: "DISCOVER",
-    image: "/products/ripple-lamp.jpg",
-    href: "/products?category=Home+%26+Living",
-  },
-  {
-    title: "GADGETS",
-    subtitle: "DISCOVER",
-    image: "/products/steam-iron.jpg",
-    href: "/products?category=Gadgets",
-  },
-  {
-    title: "CAR DECOR",
-    subtitle: "DISCOVER",
-    image: "/products/helicopter-perfume.jpg",
-    href: "/products?category=Car+Accessories",
-  },
-  {
-    title: "STATIONERY",
+    title: "TECH & GADGETS",
     subtitle: "DISCOVER",
     image: "/products/thermal-printer.jpg",
-    href: "/products?category=Stationery",
+    href: "/products?category=Tech+%26+Gadgets",
   },
   {
-    title: "KITCHEN",
+    title: "HOME ESSENTIALS",
     subtitle: "DISCOVER",
-    image: "/products/popcorn-maker.jpg",
-    href: "/products?category=Kitchen+Essentials",
+    image: "/products/ripple-lamp.jpg",
+    href: "/products?category=Home+Essentials",
   },
   {
-    title: "WELLNESS",
+    title: "PERSONAL CARE",
     subtitle: "DISCOVER",
     image: "/products/heating-pad.jpg",
-    href: "/products?category=Health+%26+Wellness",
+    href: "/products?category=Personal+Care",
+  },
+  {
+    title: "AUTO ESSENTIALS",
+    subtitle: "DISCOVER",
+    image: "/products/helicopter-perfume.jpg",
+    href: "/products?category=Auto+Essentials",
+  },
+  {
+    title: "FITNESS & WELLNESS",
+    subtitle: "DISCOVER",
+    image: "/products/mesh-nebulizer.jpg",
+    href: "/products?category=Fitness+%26+Wellness",
+  },
+  {
+    title: "KIDS & FUN",
+    subtitle: "DISCOVER",
+    image: "/products/popcorn-maker.jpg",
+    href: "/products?category=Kids+%26+Fun",
+  },
+  {
+    title: "DEALS & OFFERS",
+    subtitle: "DISCOVER",
+    image: "/products/hero-banner.jpg",
+    href: "/products?category=Deals+%26+Offers",
   },
 ];
 
@@ -91,6 +97,24 @@ export function SearchModal() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isSearchOpen, closeSearch]);
 
+  // Lock background scroll when SearchModal is open
+  useEffect(() => {
+    if (isSearchOpen) {
+      const origBody = document.body.style.overflow;
+      const origHtml = document.documentElement.style.overflow;
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      return () => {
+        document.body.style.overflow = origBody;
+        document.documentElement.style.overflow = origHtml;
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+      };
+    }
+  }, [isSearchOpen]);
+
   // Live matching products
   const liveResults = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -119,7 +143,7 @@ export function SearchModal() {
   return (
     <AnimatePresence>
       {isSearchOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-start">
+        <div data-lenis-prevent className="fixed inset-0 z-50 flex flex-col justify-start overflow-hidden">
           {/* Dimmed Blurred Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -132,15 +156,16 @@ export function SearchModal() {
 
           {/* Animated Dropdown Search Container */}
           <motion.div
+            data-lenis-prevent
             initial={{ opacity: 0, y: -25, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.98 }}
             transition={{ type: "spring", damping: 26, stiffness: 320 }}
-            className="relative z-10 w-full max-w-3xl mx-auto px-3 sm:px-4 pt-3 sm:pt-6"
+            className="relative z-10 w-full max-w-4xl mx-auto px-3 sm:px-4 pt-3 sm:pt-6"
           >
-            <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col min-h-0 max-h-[85vh]">
               {/* Search Bar Header */}
-              <div className="p-3.5 sm:p-5 border-b border-gray-100/90">
+              <div className="p-3.5 sm:p-5 border-b border-gray-100/90 shrink-0 bg-white">
                 <form
                   onSubmit={handleSearchSubmit}
                   className="flex items-center gap-2 sm:gap-3"
@@ -180,7 +205,7 @@ export function SearchModal() {
               </div>
 
               {/* Scrollable Body: Collections or Live Search Results */}
-              <div className="overflow-y-auto p-4 sm:p-6 scrollbar-thin space-y-6">
+              <div data-lenis-prevent className="overflow-y-auto flex-1 min-h-0 overscroll-contain p-4 sm:p-6 scrollbar-thin space-y-6" style={{ WebkitOverflowScrolling: "touch" }}>
                 {/* 1. Live Search Results (when typing) */}
                 {searchQuery.trim().length > 0 ? (
                   <div>
@@ -282,31 +307,31 @@ export function SearchModal() {
 
                       {/* Collections Cards Container */}
                       <div className="bg-gray-50/80 rounded-2xl p-2 sm:p-3.5 border border-gray-100 overflow-hidden">
-                        {/* Mobile: 1-Row Horizontal Sliding / Swiping Cards. Desktop (sm): 6-Column Grid */}
-                        <div className="flex sm:grid sm:grid-cols-6 gap-2 sm:gap-2.5 overflow-x-auto sm:overflow-x-visible pb-1 sm:pb-0 scrollbar-none snap-x snap-mandatory -mx-1 px-1">
+                        {/* Mobile: 1-Row Horizontal Sliding / Swiping Cards. Desktop (sm): 7-Column Grid */}
+                        <div className="flex sm:grid sm:grid-cols-7 gap-2 sm:gap-2.5 overflow-x-auto sm:overflow-x-visible pb-1 sm:pb-0 scrollbar-none snap-x snap-mandatory -mx-1 px-1">
                           {COLLECTIONS.map((col, idx) => (
                             <motion.div
                               key={col.title}
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: idx * 0.04, duration: 0.2 }}
-                              className="w-[94px] min-w-[94px] sm:w-auto sm:min-w-0 flex-shrink-0 snap-start"
+                              className="w-[102px] min-w-[102px] sm:w-auto sm:min-w-0 flex-shrink-0 snap-start"
                             >
                               <Link
                                 href={col.href}
                                 onClick={closeSearch}
-                                className="group flex flex-col items-center p-2 rounded-xl bg-white border border-gray-100 hover:border-[#FA521C]/50 hover:shadow-md transition-all text-center h-full active:scale-95"
+                                className="group flex flex-col items-center p-2 rounded-xl bg-white border border-gray-100 hover:border-[#FA521C] hover:shadow-md hover:ring-2 hover:ring-[#FA521C]/15 transition-all text-center h-full active:scale-95"
                               >
-                                <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gray-100 mb-1.5">
+                                <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gray-100 mb-1.5 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]">
                                   <Image
                                     src={col.image}
                                     alt={col.title}
                                     fill
-                                    sizes="(max-width: 768px) 94px, 15vw"
-                                    className="object-cover group-hover:scale-108 transition-transform duration-500"
+                                    sizes="(max-width: 768px) 102px, 15vw"
+                                    className="object-cover group-hover:scale-110 transition-transform duration-500"
                                   />
                                 </div>
-                                <span className="text-[10px] sm:text-[11px] font-bold text-gray-900 tracking-tight group-hover:text-[#FA521C] transition-colors truncate w-full uppercase">
+                                <span className="text-[10px] sm:text-[10.5px] font-bold text-gray-900 tracking-tight group-hover:text-[#FA521C] transition-colors text-center uppercase leading-tight line-clamp-2 min-h-[26px] flex items-center justify-center">
                                   {col.title}
                                 </span>
                                 <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 tracking-wider uppercase mt-0.5 group-hover:text-[#FA521C] transition-colors">

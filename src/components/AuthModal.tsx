@@ -57,6 +57,21 @@ export function AuthModal() {
     return () => clearTimeout(timer);
   }, [authModalMode, isAuthModalOpen]);
 
+  // Lock background scrolling when Auth modal is open
+  React.useEffect(() => {
+    if (isAuthModalOpen) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      const originalBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+        document.body.style.overflow = originalBodyOverflow;
+      };
+    }
+  }, [isAuthModalOpen]);
+
   if (!isAuthModalOpen) return null;
 
   const handleSendOtp = async () => {
@@ -132,8 +147,8 @@ export function AuthModal() {
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 16 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 16 }}
-        className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-8 z-10 overflow-hidden"
+        data-lenis-prevent
+        className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-8 z-10 max-h-[90vh] overflow-y-auto overscroll-contain"
       >
         {/* Close Button */}
         <button

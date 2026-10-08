@@ -74,6 +74,21 @@ export default function AdminSuppliersPage() {
     fetchSuppliers();
   }, []);
 
+  // Lock background scroll when modals are open
+  useEffect(() => {
+    if (showAddModal || showEditModal) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [showAddModal, showEditModal]);
+
   const handleAddSupplier = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim() || !newCode.trim()) return;
@@ -428,7 +443,7 @@ export default function AdminSuppliersPage() {
       {/* Add Supplier Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto overscroll-contain">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-[#FA521C]" />
@@ -568,7 +583,7 @@ export default function AdminSuppliersPage() {
       {/* Edit Supplier Modal */}
       {showEditModal && selectedSupplier && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto overscroll-contain">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
                 <h3 className="font-bold text-slate-900 text-base">

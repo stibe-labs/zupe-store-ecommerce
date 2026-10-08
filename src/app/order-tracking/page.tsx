@@ -486,7 +486,7 @@ function OrderTrackingContent() {
         </div>
 
         {/* Results / Error Area */}
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 mt-8">
           {/* Error Message */}
           {errorMessage && (
             <div className="mb-8 p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3">

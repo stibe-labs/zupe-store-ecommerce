@@ -30,7 +30,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { DEFAULT_PRODUCTS, getSubcategoriesForCategory } from "@/data/zupeProducts";
 import { Product, ProductColorVariant } from "@/types/product";
 
 // Exact Category & Subcategory taxonomy from official catalog structure
@@ -117,11 +117,15 @@ export default function AdminProductsPage() {
   // Lock body & html scroll completely when any modal is open
   useEffect(() => {
     if (showModal || deleteConfirmProduct) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
       const prevBodyOverflow = document.body.style.overflow;
       const prevHtmlOverflow = document.documentElement.style.overflow;
       document.body.style.overflow = "hidden";
       document.documentElement.style.overflow = "hidden";
       return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
         document.body.style.overflow = prevBodyOverflow;
         document.documentElement.style.overflow = prevHtmlOverflow;
       };
@@ -138,7 +142,8 @@ export default function AdminProductsPage() {
   const [formName, setFormName] = useState("");
   const [formSubtitle, setFormSubtitle] = useState("");
   const [formSlug, setFormSlug] = useState("");
-  const [formCategory, setFormCategory] = useState("Gadgets");
+  const [formCategory, setFormCategory] = useState("Home Essentials");
+  const [formSubcategory, setFormSubcategory] = useState("");
   const [formBadge, setFormBadge] = useState("");
   const [formTagline, setFormTagline] = useState("");
   const [formDescription, setFormDescription] = useState("");
@@ -246,7 +251,8 @@ export default function AdminProductsPage() {
     setFormName("");
     setFormSubtitle("");
     setFormSlug("");
-    setFormCategory("Mobile & Charging");
+    setFormCategory("Home & Living");
+    setFormSubcategory("Home Comfort & Utility");
     setFormBadge("New");
     setFormTagline("");
     setFormDescription("");
@@ -308,7 +314,8 @@ export default function AdminProductsPage() {
     setFormName(prod.name || "");
     setFormSubtitle(prod.subtitle || "");
     setFormSlug(prod.slug || "");
-    setFormCategory(prod.category || "Tech & Gadgets");
+    setFormCategory(prod.category || "Home & Living");
+    setFormSubcategory(prod.subcategory || "");
     setFormBadge(prod.badge || "");
     setFormTagline(prod.tagline || "");
     setFormDescription(prod.description || "");
@@ -619,6 +626,7 @@ export default function AdminProductsPage() {
       name: formName.trim(),
       subtitle: formSubtitle.trim(),
       category: formCategory.trim(),
+      subcategory: formSubcategory.trim(),
       badge: formBadge,
       tagline: formTagline.trim(),
       description: formDescription.trim(),
@@ -1108,7 +1116,7 @@ export default function AdminProductsPage() {
               }
             }}
             style={{ overscrollBehavior: "contain" }}
-            className="bg-white rounded-2xl max-w-4xl w-full h-[90vh] max-h-[850px] flex flex-col shadow-2xl border border-slate-200 overflow-hidden"
+            className="bg-white rounded-2xl max-w-4xl w-full h-[90vh] max-h-[850px] flex flex-col min-h-0 shadow-2xl border border-slate-200 overflow-hidden"
           >
             {/* 1. Modal Header (shrink-0) */}
             <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/80 shrink-0">
@@ -1314,7 +1322,7 @@ export default function AdminProductsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block text-[11px] font-bold text-slate-700 mb-1">
                         Category *
@@ -1322,7 +1330,16 @@ export default function AdminProductsPage() {
                       <select
                         required
                         value={formCategory}
-                        onChange={(e) => setFormCategory(e.target.value)}
+                        onChange={(e) => {
+                          const newCat = e.target.value;
+                          setFormCategory(newCat);
+                          const subs = getSubcategoriesForCategory(newCat, dynamicCategories);
+                          if (subs.length > 0) {
+                            setFormSubcategory(subs[0]);
+                          } else {
+                            setFormSubcategory("");
+                          }
+                        }}
                         className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C] cursor-pointer"
                       >
                         <option value="" disabled>
@@ -1338,26 +1355,28 @@ export default function AdminProductsPage() {
                           </optgroup>
                         )}
                         {PRODUCT_CATEGORIES_DATA.map((group) => (
-                          <optgroup key={group.main} label={`── ${group.main} ──`}>
-                            <option value={group.main}>{group.main} (General)</option>
-                            {group.subcategories.map((sub) => (
-                              <option key={sub} value={sub}>
-                                {sub}
-                              </option>
-                            ))}
-                          </optgroup>
+                          <option key={group.main} value={group.main}>
+                            {group.main}
+                          </option>
                         ))}
-                        {formCategory &&
-                          !dynamicCategories.some((c) => c.name === formCategory) &&
-                          !PRODUCT_CATEGORIES_DATA.some(
-                            (g) =>
-                              g.main === formCategory ||
-                              (g.subcategories as readonly string[]).includes(formCategory)
-                          ) && (
-                            <optgroup label="── Custom / Other ──">
-                              <option value={formCategory}>{formCategory}</option>
-                            </optgroup>
-                          )}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Subcategory
+                      </label>
+                      <select
+                        value={formSubcategory}
+                        onChange={(e) => setFormSubcategory(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C] cursor-pointer"
+                      >
+                        <option value="">None / General</option>
+                        {getSubcategoriesForCategory(formCategory, dynamicCategories).map((sub) => (
+                          <option key={sub} value={sub}>
+                            {sub}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
@@ -2294,7 +2313,7 @@ export default function AdminProductsPage() {
           style={{ overscrollBehavior: "contain" }}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
         >
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[92vh] overflow-y-auto overscroll-contain">
             <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
             </div>

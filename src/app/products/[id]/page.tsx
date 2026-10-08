@@ -34,6 +34,8 @@ import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
+import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { DeliveryEstimator } from "@/components/DeliveryEstimator";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -492,8 +494,8 @@ export default function ProductDetailPage() {
       <Navbar />
 
       {/* Main Container */}
-      <main className="max-w-[480px] sm:max-w-2xl lg:max-w-5xl mx-auto px-4 sm:px-6 pt-2 sm:pt-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-12 items-start">
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-2 sm:pt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-14 items-start">
           
           {/* ========================================================
               LEFT COLUMN: HERO IMAGE & THUMBNAILS CAROUSEL
@@ -828,6 +830,9 @@ export default function ProductDetailPage() {
                 </div>
               </div>
             </div>
+
+            {/* PIN Code Delivery Availability Checker & Animated Timeline */}
+            <DeliveryEstimator businessDays={5} />
 
             {/* "Why You'll Love This ❤️" Card */}
             <div className="mt-5 p-4 sm:p-5 rounded-[20px] bg-[#F8F9FA] border border-gray-100">

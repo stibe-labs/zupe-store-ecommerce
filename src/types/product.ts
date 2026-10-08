@@ -12,6 +12,7 @@ export interface Product {
   name: string;
   subtitle?: string;
   category: "Decor" | "Accessories" | "Essentials" | "Modern Living" | "Lifestyle" | string;
+  subcategory?: string;
   tagline: string;
   description: string;
   price: number;
@@ -60,6 +61,7 @@ export interface AdminProductFormData {
   name: string;
   subtitle?: string;
   category: string;
+  subcategory?: string;
   tagline?: string;
   description?: string;
   volume?: string;

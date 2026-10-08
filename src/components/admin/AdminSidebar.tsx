@@ -59,6 +59,21 @@ export default function AdminSidebar({
     fetchSidebarBadges();
   }, []);
 
+  // Lock body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [mobileOpen]);
+
   const navigation = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     {
@@ -102,7 +117,7 @@ export default function AdminSidebar({
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#121417] text-slate-300 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 border-r border-white/[0.07] ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#121417] text-slate-300 flex flex-col justify-between overflow-y-auto overscroll-contain transition-transform duration-300 ease-in-out lg:translate-x-0 border-r border-white/[0.07] ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

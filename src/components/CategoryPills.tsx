@@ -9,9 +9,8 @@ import {
   Sparkles,
   Leaf,
   Car,
-  UtensilsCrossed,
-  PenTool,
-  Footprints,
+  Gamepad2,
+  Tag,
 } from "lucide-react";
 
 interface CategoryItem {
@@ -33,20 +32,20 @@ const CATEGORIES: CategoryItem[] = [
     icon: <LayoutGrid className="w-5 h-5" />,
   },
   {
-    id: "home-living",
-    name: "Home & Living",
-    href: "/products?category=Home+%26+Living",
-    bgColor: "bg-[#FEEBEA]",
-    iconColor: "text-[#E0533C]",
-    icon: <Armchair className="w-5 h-5" />,
-  },
-  {
-    id: "gadgets",
-    name: "Gadgets",
-    href: "/products?category=Gadgets",
+    id: "tech-gadgets",
+    name: "Tech & Gadgets",
+    href: "/products?category=Tech+%26+Gadgets",
     bgColor: "bg-[#E0F2FE]",
     iconColor: "text-[#0284C7]",
     icon: <Headphones className="w-5 h-5" />,
+  },
+  {
+    id: "home-essentials",
+    name: "Home Essentials",
+    href: "/products?category=Home+Essentials",
+    bgColor: "bg-[#FEEBEA]",
+    iconColor: "text-[#E0533C]",
+    icon: <Armchair className="w-5 h-5" />,
   },
   {
     id: "personal-care",
@@ -57,44 +56,36 @@ const CATEGORIES: CategoryItem[] = [
     icon: <Sparkles className="w-5 h-5" />,
   },
   {
-    id: "health-wellness",
-    name: "Health & Wellness",
-    href: "/products?category=Health+%26+Wellness",
+    id: "auto-essentials",
+    name: "Auto Essentials",
+    href: "/products?category=Auto+Essentials",
+    bgColor: "bg-[#FEF3C7]",
+    iconColor: "text-[#D97706]",
+    icon: <Car className="w-5 h-5" />,
+  },
+  {
+    id: "fitness-wellness",
+    name: "Fitness & Wellness",
+    href: "/products?category=Fitness+%26+Wellness",
     bgColor: "bg-[#DCFCE7]",
     iconColor: "text-[#16A34A]",
     icon: <Leaf className="w-5 h-5" />,
   },
   {
-    id: "car-accessories",
-    name: "Car Accessories",
-    href: "/products?category=Car+Accessories",
-    bgColor: "bg-[#FFE4E6]",
-    iconColor: "text-[#E11D48]",
-    icon: <Car className="w-5 h-5" />,
-  },
-  {
-    id: "kitchen-essentials",
-    name: "Kitchen Essentials",
-    href: "/products?category=Kitchen+Essentials",
-    bgColor: "bg-[#FEF3C7]",
-    iconColor: "text-[#D97706]",
-    icon: <UtensilsCrossed className="w-5 h-5" />,
-  },
-  {
-    id: "stationery",
-    name: "Stationery",
-    href: "/products?category=Stationery",
-    bgColor: "bg-[#DBEAFE]",
-    iconColor: "text-[#2563EB]",
-    icon: <PenTool className="w-5 h-5" />,
-  },
-  {
-    id: "pet-essentials",
-    name: "Pet Essentials",
-    href: "/products?category=Pet+Essentials",
+    id: "kids-fun",
+    name: "Kids & Fun",
+    href: "/products?category=Kids+%26+Fun",
     bgColor: "bg-[#FCE7F3]",
     iconColor: "text-[#DB2777]",
-    icon: <Footprints className="w-5 h-5" />,
+    icon: <Gamepad2 className="w-5 h-5" />,
+  },
+  {
+    id: "deals-offers",
+    name: "Deals & Offers",
+    href: "/products?category=Deals+%26+Offers",
+    bgColor: "bg-[#FFE4E6]",
+    iconColor: "text-[#E11D48]",
+    icon: <Tag className="w-5 h-5" />,
   },
 ];
 
@@ -104,22 +95,20 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   Sparkles: <Sparkles className="w-5 h-5" />,
   Leaf: <Leaf className="w-5 h-5" />,
   Car: <Car className="w-5 h-5" />,
-  UtensilsCrossed: <UtensilsCrossed className="w-5 h-5" />,
-  PenTool: <PenTool className="w-5 h-5" />,
-  Footprints: <Footprints className="w-5 h-5" />,
-  Tag: <LayoutGrid className="w-5 h-5" />,
+  Gamepad2: <Gamepad2 className="w-5 h-5" />,
+  Tag: <Tag className="w-5 h-5" />,
+  LayoutGrid: <LayoutGrid className="w-5 h-5" />,
 };
 
 function getIconForCategory(name: string) {
   const lower = name.toLowerCase();
   if (lower.includes("car") || lower.includes("auto")) return <Car className="w-5 h-5" />;
   if (lower.includes("gadget") || lower.includes("audio") || lower.includes("tech")) return <Headphones className="w-5 h-5" />;
-  if (lower.includes("health") || lower.includes("plant") || lower.includes("wellness")) return <Leaf className="w-5 h-5" />;
-  if (lower.includes("home") || lower.includes("living") || lower.includes("decor")) return <Armchair className="w-5 h-5" />;
+  if (lower.includes("health") || lower.includes("plant") || lower.includes("wellness") || lower.includes("fitness")) return <Leaf className="w-5 h-5" />;
+  if (lower.includes("home") || lower.includes("living") || lower.includes("essential")) return <Armchair className="w-5 h-5" />;
   if (lower.includes("care") || lower.includes("beauty")) return <Sparkles className="w-5 h-5" />;
-  if (lower.includes("kitchen") || lower.includes("food")) return <UtensilsCrossed className="w-5 h-5" />;
-  if (lower.includes("stationery") || lower.includes("office")) return <PenTool className="w-5 h-5" />;
-  if (lower.includes("pet") || lower.includes("dog") || lower.includes("cat")) return <Footprints className="w-5 h-5" />;
+  if (lower.includes("kid") || lower.includes("fun") || lower.includes("toy") || lower.includes("game")) return <Gamepad2 className="w-5 h-5" />;
+  if (lower.includes("deal") || lower.includes("offer") || lower.includes("sale")) return <Tag className="w-5 h-5" />;
   return <LayoutGrid className="w-5 h-5" />;
 }
 

@@ -8,10 +8,13 @@ import { Instagram, Twitter, Mail, MapPin, Phone, ArrowUpRight } from "lucide-re
 const FOOTER_LINKS = {
   Shop: [
     { label: "All Products", href: "/products" },
-    { label: "Decor", href: "/products?category=Decor" },
-    { label: "Accessories", href: "/products?category=Accessories" },
-    { label: "Essentials", href: "/products?category=Essentials" },
-    { label: "Modern Living", href: "/products?category=Modern+Living" },
+    { label: "Tech & Gadgets", href: "/products?category=Tech+%26+Gadgets" },
+    { label: "Home Essentials", href: "/products?category=Home+Essentials" },
+    { label: "Personal Care", href: "/products?category=Personal+Care" },
+    { label: "Auto Essentials", href: "/products?category=Auto+Essentials" },
+    { label: "Fitness & Wellness", href: "/products?category=Fitness+%26+Wellness" },
+    { label: "Kids & Fun", href: "/products?category=Kids+%26+Fun" },
+    { label: "Deals & Offers", href: "/products?category=Deals+%26+Offers" },
   ],
   Support: [
     { label: "Contact Us", href: "/contact" },

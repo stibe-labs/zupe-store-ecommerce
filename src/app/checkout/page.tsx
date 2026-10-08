@@ -540,7 +540,7 @@ function CheckoutContent() {
 
       {/* Breadcrumb Header */}
       <div className="pt-24 sm:pt-28 pb-6 border-b border-gray-100 bg-white">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-2 text-xs text-[#636E72] mb-2">
             <Link href="/" className="hover:text-[#FA521C] transition-colors">
               Home
@@ -564,7 +564,7 @@ function CheckoutContent() {
         </div>
       </div>
 
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
         {errorMessage && (
           <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-3">
             <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-500" />

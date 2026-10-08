@@ -21,7 +21,7 @@ export function PromoBanners() {
             </p>
             <div className="pt-1">
               <Link
-                href="/products?category=Gadgets"
+                href="/products?category=Tech+%26+Gadgets"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#1A1A1A] text-white text-xs font-bold hover:bg-black transition-colors group shadow-md"
               >
                 <span>Explore Now</span>
@@ -55,7 +55,7 @@ export function PromoBanners() {
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#1F2329] via-[#171B20] to-[#0F1216] text-white p-6 sm:p-8 flex items-center justify-between min-h-[240px] shadow-sm">
           <div className="max-w-[200px] sm:max-w-xs z-10 space-y-3">
             <h3 className="text-xl sm:text-2xl lg:text-3xl font-display font-extrabold text-white leading-tight">
-              Car Accessories
+              Auto Essentials
             </h3>
             <p className="text-xs sm:text-sm text-gray-400 font-medium">
               Drive in Style <br />
@@ -63,7 +63,7 @@ export function PromoBanners() {
             </p>
             <div className="pt-1">
               <Link
-                href="/products?category=Car+Accessories"
+                href="/products?category=Auto+Essentials"
                 className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold overflow-hidden group shadow-md hover:shadow-[0_10px_24px_-4px_rgba(250,82,28,0.5),0_0_14px_rgba(255,122,69,0.25)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 select-none cursor-pointer"
               >
                 {/* Default White Background */}

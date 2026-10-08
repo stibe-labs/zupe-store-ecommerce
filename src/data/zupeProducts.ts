@@ -8,6 +8,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     name: "Dynamic Water Ripple Night Light",
     subtitle: "Ambient Crystal Lamp",
     category: "Home & Living",
+    subcategory: "Home Comfort & Utility",
     tagline: "Romantic rotating ambient crystal cube",
     description: "Dynamic rotating water ripple crystal night lamp with 16 RGB color modes, remote control, and ambient lighting for bedroom, living room, and desk decoration.",
     price: 650,
@@ -180,7 +181,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     slug: "mini-portable-steam-iron",
     name: "Mini Portable Steam Iron",
     subtitle: "Travel Garment Steamer",
-    category: "Gadgets",
+    category: "Home & Living",
+    subcategory: "Cleaning & Organization",
     tagline: "Wrinkle-free clothes anywhere, anytime",
     description: "Compact foldable handheld steam iron with ceramic non-stick soleplate, rapid 30s heat-up, and dual wet/dry ironing modes for home and travel.",
     price: 599,
@@ -236,7 +238,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     slug: "portable-menstrual-heating-pad",
     name: "Portable Menstrual Heating Pad",
     subtitle: "Cordless Waist Relief",
-    category: "Health & Wellness",
+    category: "Personal Care",
+    subcategory: "Women's Care",
     tagline: "Soothing warmth & multi-frequency massage",
     description: "Wireless heating belt with 3 temperature levels (45°C - 65°C), 4 vibration massage modes, and ultra-soft plush velvet back for fast cramp relief.",
     price: 799,
@@ -293,6 +296,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     name: "Portable Mesh Nebulizer",
     subtitle: "Ultrasonic Inhaler",
     category: "Health & Wellness",
+    subcategory: "Recovery & Wellness",
     tagline: "Whisper-quiet medical aerosol treatment",
     description: "Pocket-sized ultrasonic handheld mesh nebulizer with rechargeable battery, adult and pediatric masks, and micro-particle delivery for easy breathing.",
     price: 599,
@@ -349,6 +353,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     name: "Portable Mini Foldable Washer & Spin Dryer",
     subtitle: "Compact Bucket Laundry",
     category: "Home & Living",
+    subcategory: "Cleaning & Organization",
     tagline: "Effortless small garment washing",
     description: "Collapsible 8L mini washing machine with forward/reverse pulsator, blue ray sterilization, touch controls, and drain basket for delicates and baby clothes.",
     price: 1299,
@@ -409,6 +414,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     name: "Mini Thermal Printer",
     subtitle: "Wireless Bluetooth Pocket Printer",
     category: "Gadgets",
+    subcategory: "Computer & Accessories",
     tagline: "Inkless printing right from your phone",
     description: "Pocket-sized Bluetooth 200DPI thermal printer with mobile app compatibility for labels, study notes, photo memos, and journal stickers without ink cartridges.",
     price: 999,
@@ -466,6 +472,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     name: "Helicopter Car Perfume",
     subtitle: "Solar Powered Rotating Diffuser",
     category: "Car Accessories",
+    subcategory: "Car Accessories",
     tagline: "Sunlight drives the propeller to diffuse fragrance",
     description: "Aviation-grade alloy solar rotating helicopter dashboard air freshener with pure essential oil beech wood core. Spins automatically under sunlight.",
     price: 699,
@@ -521,7 +528,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     slug: "instant-water-heater-faucet",
     name: "Instant Water Heater Faucet",
     subtitle: "Digital LED Fast Tap",
-    category: "Kitchen Essentials",
+    category: "Home & Living",
+    subcategory: "Kitchen & Dining",
     tagline: "Hot water in 3 seconds directly from tap",
     description: "3000W electric fast heating faucet with real-time digital LED temperature display, 360° rotational stainless steel spout, and dry-burn safety protection.",
     price: 1499,
@@ -579,6 +587,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     name: "TF20 Multipurpose Powerbank with AirPods",
     subtitle: "2-in-1 Charging Dock + TWS",
     category: "Gadgets",
+    subcategory: "Mobile & Charging",
     tagline: "Portable emergency power + wireless audio",
     description: "Compact high-capacity power bank featuring an integrated storage and charging compartment for Bluetooth 5.3 wireless earbuds. All-in-one travel essential.",
     price: 1299,
@@ -635,7 +644,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     slug: "mini-hot-air-popcorn-maker",
     name: "Mini Hot Air Popcorn Maker",
     subtitle: "Oil-Free Healthy Snacking",
-    category: "Kitchen Essentials",
+    category: "Home & Living",
+    subcategory: "Kitchen & Dining",
     tagline: "Fresh hot popcorn in under 2 minutes",
     description: "Vintage-styled red hot air popcorn popper with turbine heat circulation chamber, 98% popping rate, and one-touch operation without adding oil or butter.",
     price: 899,
@@ -691,12 +701,220 @@ export const DEFAULT_PRODUCTS: Product[] = [
 
 export const PRODUCT_CATEGORIES = [
   "All",
-  "Home & Living",
-  "Gadgets",
+  "Tech & Gadgets",
+  "Home Essentials",
   "Personal Care",
-  "Health & Wellness",
-  "Car Accessories",
-  "Kitchen Essentials",
-  "Stationery",
-  "Pet Essentials",
+  "Auto Essentials",
+  "Fitness & Wellness",
+  "Kids & Fun",
+  "Deals & Offers",
 ] as const;
+
+export interface SubcategoryGroup {
+  mainCategory: string;
+  aliases: string[];
+  subcategories: string[];
+}
+
+export const CATEGORY_SUBCATEGORIES_CONFIG: SubcategoryGroup[] = [
+  {
+    mainCategory: "Tech & Gadgets",
+    aliases: ["tech & gadgets", "gadgets", "electronics", "tech"],
+    subcategories: [
+      "Mobile & Charging",
+      "Smart Tech & Audio",
+      "Gaming",
+      "Computer & Accessories",
+    ],
+  },
+  {
+    mainCategory: "Home Essentials",
+    aliases: [
+      "home essentials",
+      "home & living",
+      "home living",
+      "kitchen essentials",
+      "kitchen & dining",
+      "decor",
+      "essentials",
+      "modern living",
+    ],
+    subcategories: [
+      "Kitchen & Dining",
+      "Cleaning & Organization",
+      "Home Comfort & Utility",
+    ],
+  },
+  {
+    mainCategory: "Personal Care",
+    aliases: ["personal care", "grooming", "beauty"],
+    subcategories: [
+      "Grooming & Care",
+      "Massage & Wellness",
+      "Women's Care",
+    ],
+  },
+  {
+    mainCategory: "Auto Essentials",
+    aliases: ["auto essentials", "car accessories", "car care", "automotive"],
+    subcategories: [
+      "Car Care",
+      "Car Accessories",
+    ],
+  },
+  {
+    mainCategory: "Fitness & Wellness",
+    aliases: ["fitness & wellness", "health & wellness", "wellness", "fitness", "health"],
+    subcategories: [
+      "Fitness Accessories",
+      "Recovery & Wellness",
+    ],
+  },
+  {
+    mainCategory: "Kids & Fun",
+    aliases: ["kids & fun", "kids", "toys & games", "toys"],
+    subcategories: [
+      "Toys & Games",
+      "Fun & Entertainment",
+    ],
+  },
+  {
+    mainCategory: "Deals & Offers",
+    aliases: ["deals & offers", "offers", "deals", "sale"],
+    subcategories: [
+      "Curated sale products only",
+    ],
+  },
+];
+
+export const CATEGORY_SUBCATEGORIES_MAP: Record<string, string[]> = {
+  "Tech & Gadgets": ["Mobile & Charging", "Smart Tech & Audio", "Gaming", "Computer & Accessories"],
+  "Gadgets": ["Mobile & Charging", "Smart Tech & Audio", "Gaming", "Computer & Accessories"],
+  "Home Essentials": ["Kitchen & Dining", "Cleaning & Organization", "Home Comfort & Utility"],
+  "Home & Living": ["Kitchen & Dining", "Cleaning & Organization", "Home Comfort & Utility"],
+  "Kitchen Essentials": ["Kitchen & Dining", "Cleaning & Organization", "Home Comfort & Utility"],
+  "Personal Care": ["Grooming & Care", "Massage & Wellness", "Women's Care"],
+  "Auto Essentials": ["Car Care", "Car Accessories"],
+  "Car Accessories": ["Car Care", "Car Accessories"],
+  "Fitness & Wellness": ["Fitness Accessories", "Recovery & Wellness"],
+  "Health & Wellness": ["Fitness Accessories", "Recovery & Wellness"],
+  "Kids & Fun": ["Toys & Games", "Fun & Entertainment"],
+  "Deals & Offers": ["Curated sale products only"],
+  "Offers": ["Curated sale products only"],
+};
+
+export function getSubcategoriesForCategory(categoryName: string, dynamicCategories?: any[]): string[] {
+  if (!categoryName || categoryName.toLowerCase() === "all") return [];
+  const lower = categoryName.trim().toLowerCase();
+
+  // 1. Check dynamicCategories if provided
+  if (Array.isArray(dynamicCategories) && dynamicCategories.length > 0) {
+    const dynamicMatch = dynamicCategories.find(
+      (c) => (c.name && c.name.toLowerCase() === lower) || (c.slug && c.slug.toLowerCase() === lower)
+    );
+    if (dynamicMatch && Array.isArray(dynamicMatch.subcategories) && dynamicMatch.subcategories.length > 0) {
+      return dynamicMatch.subcategories;
+    }
+  }
+
+  // 2. Direct map check
+  const directKey = Object.keys(CATEGORY_SUBCATEGORIES_MAP).find(
+    (k) => k.toLowerCase() === lower
+  );
+  if (directKey) return CATEGORY_SUBCATEGORIES_MAP[directKey];
+
+  const found = CATEGORY_SUBCATEGORIES_CONFIG.find(
+    (g) =>
+      g.mainCategory.toLowerCase() === lower ||
+      g.aliases.some((alias) => alias.toLowerCase() === lower)
+  );
+  return found ? found.subcategories : [];
+}
+
+export function doesCategoryMatch(productCategory: string, selectedCategory: string, dynamicCategories?: any[]): boolean {
+  if (!selectedCategory || selectedCategory.toLowerCase() === "all") return true;
+  if (!productCategory) return false;
+  const pLower = productCategory.trim().toLowerCase();
+  const sLower = selectedCategory.trim().toLowerCase();
+  if (pLower === sLower) return true;
+
+  if (Array.isArray(dynamicCategories) && dynamicCategories.length > 0) {
+    const dynamicMatch = dynamicCategories.find(
+      (c) => (c.name && c.name.toLowerCase() === sLower) || (c.slug && c.slug.toLowerCase() === sLower)
+    );
+    if (dynamicMatch) {
+      if (dynamicMatch.name.toLowerCase() === pLower || (dynamicMatch.slug && dynamicMatch.slug.toLowerCase() === pLower)) return true;
+      if (Array.isArray(dynamicMatch.subcategories) && dynamicMatch.subcategories.some((sub: string) => sub.toLowerCase() === pLower)) return true;
+    }
+  }
+
+  const group = CATEGORY_SUBCATEGORIES_CONFIG.find(
+    (g) =>
+      g.mainCategory.toLowerCase() === sLower ||
+      g.aliases.some((alias) => alias.toLowerCase() === sLower)
+  );
+  if (group) {
+    if (group.mainCategory.toLowerCase() === pLower) return true;
+    if (group.aliases.some((alias) => alias.toLowerCase() === pLower)) return true;
+    if (group.subcategories.some((sub) => sub.toLowerCase() === pLower)) return true;
+  }
+  return false;
+}
+
+export function doesSubcategoryMatch(product: Product, selectedSubcategory: string): boolean {
+  if (!selectedSubcategory || selectedSubcategory.toLowerCase() === "all") return true;
+  const sLower = selectedSubcategory.trim().toLowerCase();
+
+  // 1. Direct subcategory field match
+  if (product.subcategory && product.subcategory.trim().toLowerCase() === sLower) {
+    return true;
+  }
+
+  // 2. Category column matches subcategory name directly (e.g., category: "Kitchen & Dining")
+  if (product.category && product.category.trim().toLowerCase() === sLower) {
+    return true;
+  }
+
+  // 3. Direct keyword or phrase match in product text
+  const searchCorpus = `${product.name} ${product.tagline || ""} ${product.description || ""}`.toLowerCase();
+  if (searchCorpus.includes(sLower)) {
+    return true;
+  }
+
+  // 4. Fallback heuristic keyword match
+  if (sLower === "kitchen & dining" && (searchCorpus.includes("kitchen") || searchCorpus.includes("popcorn") || searchCorpus.includes("oil") || searchCorpus.includes("faucet") || searchCorpus.includes("dining"))) {
+    return true;
+  }
+  if (sLower === "cleaning & organization" && (searchCorpus.includes("cleaning") || searchCorpus.includes("mop") || searchCorpus.includes("washer") || searchCorpus.includes("iron"))) {
+    return true;
+  }
+  if (sLower === "home comfort & utility" && (searchCorpus.includes("lamp") || searchCorpus.includes("light") || searchCorpus.includes("humidifier") || searchCorpus.includes("crystal"))) {
+    return true;
+  }
+  if (sLower === "mobile & charging" && (searchCorpus.includes("powerbank") || searchCorpus.includes("charging") || searchCorpus.includes("phone"))) {
+    return true;
+  }
+  if (sLower === "smart tech & audio" && (searchCorpus.includes("airpods") || searchCorpus.includes("audio") || searchCorpus.includes("watch") || searchCorpus.includes("smart"))) {
+    return true;
+  }
+  if (sLower === "computer & accessories" && (searchCorpus.includes("printer") || searchCorpus.includes("backpack") || searchCorpus.includes("laptop") || searchCorpus.includes("computer"))) {
+    return true;
+  }
+  if (sLower === "women's care" && (searchCorpus.includes("menstrual") || searchCorpus.includes("heating pad") || searchCorpus.includes("women"))) {
+    return true;
+  }
+  if (sLower === "recovery & wellness" && (searchCorpus.includes("nebulizer") || searchCorpus.includes("recovery") || searchCorpus.includes("therapy"))) {
+    return true;
+  }
+  if (sLower === "car accessories" && (searchCorpus.includes("perfume") || searchCorpus.includes("car") || searchCorpus.includes("auto"))) {
+    return true;
+  }
+  if (sLower === "car care" && (searchCorpus.includes("vacuum") || searchCorpus.includes("cleaner") || searchCorpus.includes("wash"))) {
+    return true;
+  }
+  if (sLower === "curated sale products only" && (product.badge?.toLowerCase() === "sale" || (product.mrp && product.price && product.mrp > product.price))) {
+    return true;
+  }
+
+  return false;
+}

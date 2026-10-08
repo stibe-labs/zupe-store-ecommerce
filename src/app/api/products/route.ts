@@ -40,6 +40,7 @@ function formatDbProduct(p: any): Product {
     name: p.name,
     subtitle: p.subtitle ?? defaultFound?.subtitle ?? "",
     category: p.category,
+    subcategory: p.subcategory ?? defaultFound?.subcategory ?? "",
     tagline: p.tagline ?? defaultFound?.tagline ?? "",
     description: p.description ?? defaultFound?.description ?? "",
     price: priceNum,
@@ -137,6 +138,7 @@ export async function POST(req: NextRequest) {
       name,
       subtitle,
       category,
+      subcategory,
       tagline,
       description,
       price,
@@ -224,6 +226,7 @@ export async function POST(req: NextRequest) {
       name: name !== undefined ? name : existingProd?.name || "Product",
       subtitle: subtitle !== undefined ? subtitle : existingProd?.subtitle || "",
       category: category !== undefined ? category : existingProd?.category || "Gadgets",
+      subcategory: subcategory !== undefined ? subcategory : existingProd?.subcategory || "",
       tagline: tagline !== undefined ? tagline : existingProd?.tagline || "",
       description: description !== undefined ? description : existingProd?.description || "",
       price: priceNum,
@@ -277,7 +280,7 @@ export async function POST(req: NextRequest) {
       if (existingRows && existingRows.length > 0) {
         await executeD1Query(
           `UPDATE products 
-           SET slug = ?, name = ?, subtitle = ?, category = ?, tagline = ?, description = ?,
+           SET slug = ?, name = ?, subtitle = ?, category = ?, subcategory = ?, tagline = ?, description = ?,
                price = ?, mrp = ?, offer_price = ?, cost_price = ?, stock_count = ?, volume = ?,
                poster_image = ?, images = ?, color = ?, colors = ?, material = ?, badge = ?,
                in_stock = ?, rating = ?, review_count = ?, sold_count = ?, features = ?,
@@ -288,6 +291,7 @@ export async function POST(req: NextRequest) {
             newProd.name,
             newProd.subtitle ?? null,
             newProd.category,
+            newProd.subcategory ?? null,
             newProd.tagline ?? null,
             newProd.description ?? null,
             newProd.price,
@@ -315,19 +319,20 @@ export async function POST(req: NextRequest) {
       } else {
         await executeD1Query(
           `INSERT INTO products (
-             id, slug, name, subtitle, category, tagline, description,
+             id, slug, name, subtitle, category, subcategory, tagline, description,
              price, mrp, offer_price, cost_price, stock_count, volume,
              poster_image, images, color, colors, material, badge,
              in_stock, rating, review_count, sold_count, features,
              specifications, whats_in_box
            )
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
           [
             newProd.id,
             newProd.slug,
             newProd.name,
             newProd.subtitle ?? null,
             newProd.category,
+            newProd.subcategory ?? null,
             newProd.tagline ?? null,
             newProd.description ?? null,
             newProd.price,

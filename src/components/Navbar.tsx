@@ -16,7 +16,7 @@ import {
   ArrowRight,
   Sparkles,
 } from "lucide-react";
-import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { DEFAULT_PRODUCTS, doesCategoryMatch } from "@/data/zupeProducts";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
@@ -26,12 +26,13 @@ const CATEGORY_NAV = [
   { label: "Home", href: "/" },
   { label: "New Arrivals", href: "/products?filter=new" },
   { label: "Best Sellers", href: "/products?filter=best" },
-  { label: "Gadgets", href: "/products?category=Gadgets" },
-  { label: "Home & Living", href: "/products?category=Home+%26+Living" },
-  { label: "Health & Wellness", href: "/products?category=Health+%26+Wellness" },
+  { label: "Tech & Gadgets", href: "/products?category=Tech+%26+Gadgets" },
+  { label: "Home Essentials", href: "/products?category=Home+Essentials" },
   { label: "Personal Care", href: "/products?category=Personal+Care" },
-  { label: "Car Accessories", href: "/products?category=Car+Accessories" },
-  { label: "Offers", href: "/products?filter=offers" },
+  { label: "Auto Essentials", href: "/products?category=Auto+Essentials" },
+  { label: "Fitness & Wellness", href: "/products?category=Fitness+%26+Wellness" },
+  { label: "Kids & Fun", href: "/products?category=Kids+%26+Fun" },
+  { label: "Deals & Offers", href: "/products?category=Deals+%26+Offers" },
   { label: "Order Tracking", href: "/order-tracking" },
 ];
 
@@ -59,13 +60,27 @@ function NavbarContent() {
             { label: "New Arrivals", href: "/products?filter=new" },
             { label: "Best Sellers", href: "/products?filter=best" },
             ...activeNavCats,
-            { label: "Offers", href: "/products?filter=offers" },
             { label: "Order Tracking", href: "/order-tracking" },
           ]);
         }
       })
       .catch((err) => console.warn("Failed to fetch dynamic categories for navbar:", err));
   }, []);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [mobileMenuOpen]);
 
   const { totalItems, openCart } = useCart();
   const { totalWishlistItems } = useWishlist();
@@ -120,7 +135,10 @@ function NavbarContent() {
     }
 
     if (targetCategory) {
-      return currentCategory?.toLowerCase() === targetCategory.toLowerCase();
+      if (currentCategory?.toLowerCase() === targetCategory.toLowerCase()) {
+        return true;
+      }
+      return doesCategoryMatch(currentCategory || "", targetCategory);
     }
 
     return false;
@@ -332,12 +350,12 @@ function NavbarContent() {
 
       {/* Mobile Slide-in Menu */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 sm:hidden flex">
+        <div data-lenis-prevent className="fixed inset-0 z-50 sm:hidden flex">
           <div
             className="fixed inset-0 bg-black/40"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="relative w-4/5 max-w-xs bg-white h-full z-10 p-5 flex flex-col justify-between">
+          <div data-lenis-prevent className="relative w-4/5 max-w-xs bg-white h-full z-10 p-5 flex flex-col justify-between overflow-y-auto overscroll-contain">
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
                 <div className="flex items-center gap-2">
