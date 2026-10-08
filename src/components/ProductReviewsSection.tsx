@@ -29,6 +29,7 @@ interface ProductReviewsSectionProps {
   productImage?: string;
   fallbackRating?: number;
   fallbackReviewCount?: number;
+  onStatsChange?: (stats: { averageRating: number; totalReviews: number }) => void;
 }
 
 export function ProductReviewsSection({
@@ -37,6 +38,7 @@ export function ProductReviewsSection({
   productImage,
   fallbackRating = 4.8,
   fallbackReviewCount = 1250,
+  onStatsChange,
 }: ProductReviewsSectionProps) {
   const [reviews, setReviews] = useState<ProductReview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,6 +104,10 @@ export function ProductReviewsSection({
         setReviews(data.reviews || []);
         if (data.stats) {
           setStats(data.stats);
+          onStatsChange?.({
+            averageRating: data.stats.averageRating,
+            totalReviews: data.stats.totalReviews,
+          });
         }
       }
     } catch (err) {

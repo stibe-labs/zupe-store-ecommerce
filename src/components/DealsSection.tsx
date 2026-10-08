@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,9 +13,21 @@ export function DealsSection() {
   const router = useRouter();
   const { user } = useAuth();
   const { addToCart, addItem } = useCart();
+  const [products, setProducts] = useState(DEFAULT_PRODUCTS);
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+          setProducts(data.products);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // The first 5 products correspond to Today's Best Deals
-  const dealProducts = DEFAULT_PRODUCTS.slice(0, 5);
+  const dealProducts = products.slice(0, 5);
 
   const discounts = ["-40%", "-35%", "-30%", "-45%", "-33%"];
 

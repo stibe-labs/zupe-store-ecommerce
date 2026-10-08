@@ -474,3 +474,68 @@ export async function markReviewHelpful(reviewId: string): Promise<number> {
 
   return mem?.helpfulCount || 1;
 }
+
+/**
+ * Get aggregated review stats (count & average rating) for all products
+ */
+export async function getProductReviewStatsMap(): Promise<Map<string, { count: number; rating: number }>> {
+  const statsMap = new Map<string, { count: number; sum: number; rating: number }>();
+
+  // 1. Accumulate from memory fallback
+  for (const r of inMemoryReviews) {
+    const key = r.productId.toLowerCase().trim();
+    const existing = statsMap.get(key) || { count: 0, sum: 0, rating: 5.0 };
+    existing.count += 1;
+    existing.sum += Number(r.rating) || 5;
+    existing.rating = Number((existing.sum / existing.count).toFixed(1));
+    statsMap.set(key, existing);
+  }
+
+  // 2. Query D1 for actual database stats
+  try {
+    await ensureReviewTable();
+    const rows = await executeD1Query<any>(
+      `SELECT lower(product_id) as pid, COUNT(*) as c, AVG(rating) as avg_rating 
+       FROM product_reviews 
+       GROUP BY lower(product_id)`
+    );
+
+    if (rows && Array.isArray(rows) && rows.length > 0) {
+      for (const row of rows) {
+        const key = String(row.pid || "").trim();
+        const count = Number(row.c) || 0;
+        const avg = Number(Number(row.avg_rating || 5).toFixed(1));
+        if (key && count > 0) {
+          statsMap.set(key, { count, sum: count * avg, rating: avg });
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Could not query review stats map from D1:", err);
+  }
+
+  const finalMap = new Map<string, { count: number; rating: number }>();
+  statsMap.forEach((val, key) => {
+    finalMap.set(key, { count: val.count, rating: val.rating });
+  });
+
+  return finalMap;
+}
+
+/**
+ * Get aggregated review stats for a single product ID or slug
+ */
+export async function getProductReviewStats(productId: string): Promise<{ count: number; rating: number } | null> {
+  const norm = productId.toLowerCase().trim();
+  const map = await getProductReviewStatsMap();
+
+  if (map.has(norm)) return map.get(norm)!;
+
+  for (const [key, val] of map.entries()) {
+    if (key === norm || key.includes(norm) || norm.includes(key)) {
+      return val;
+    }
+  }
+
+  return null;
+}

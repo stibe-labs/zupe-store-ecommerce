@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import {
@@ -647,9 +648,6 @@ export default function AdminProductsPage() {
       colors: formColors,
       volume: formVolume.trim(),
       material: formMaterial.trim(),
-      rating: Number(formRating) || 4.8,
-      review_count: Number(formReviewCount) || 120,
-      sold_count: formSoldCount.trim() || "1,250+ verified orders",
       features: formFeatures.filter(Boolean),
       specifications: Object.keys(specsObj).length > 0 ? specsObj : undefined,
       whats_in_box: formWhatsInBox.filter(Boolean),
@@ -2176,53 +2174,29 @@ export default function AdminProductsPage() {
                     </div>
                   </div>
 
-                  {/* Social Proof Stats */}
+                  {/* Real Reviews & Social Proof Auto-Sync Notice */}
                   <div className="pt-3 border-t border-slate-200">
-                    <h4 className="font-bold text-slate-800 text-xs sm:text-sm mb-2">
-                      Social Proof & Rating Indicators
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          Rating (Out of 5.0)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          min="1"
-                          max="5"
-                          value={formRating}
-                          onChange={(e) => setFormRating(e.target.value)}
-                          placeholder="4.8"
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
-                        />
+                    <div className="p-4 rounded-2xl bg-orange-50/70 border border-orange-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-[#FA521C] flex items-center justify-center shrink-0">
+                          <Star className="w-5 h-5 fill-current" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-800">
+                            Ratings & Reviews are Live & Auto-Synced
+                          </p>
+                          <p className="text-[11px] text-slate-500 mt-0.5">
+                            Customer ratings and review counts are calculated dynamically from genuine orders and imported marketplace reviews (Amazon, Flipkart, etc.).
+                          </p>
+                        </div>
                       </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          Review Count
-                        </label>
-                        <input
-                          type="number"
-                          value={formReviewCount}
-                          onChange={(e) => setFormReviewCount(e.target.value)}
-                          placeholder="1250"
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          Verified Sold Text
-                        </label>
-                        <input
-                          type="text"
-                          value={formSoldCount}
-                          onChange={(e) => setFormSoldCount(e.target.value)}
-                          placeholder="1,250+ verified orders"
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
-                        />
-                      </div>
+                      <Link
+                        href="/admin/reviews"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#FA521C] text-xs font-bold text-slate-700 hover:text-[#FA521C] shrink-0 transition-colors shadow-xs"
+                      >
+                        <span>Manage Reviews</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Link>
                     </div>
                   </div>
                 </div>

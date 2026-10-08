@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,9 +15,21 @@ export function NewArrivalsSection() {
   const { user } = useAuth();
   const { addToCart, addItem } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const [products, setProducts] = useState(DEFAULT_PRODUCTS);
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+          setProducts(data.products);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // The last 5 products are the New Arrivals
-  const newArrivals = DEFAULT_PRODUCTS.slice(5, 10);
+  const newArrivals = products.slice(5, 10);
 
   return (
     <section className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6">

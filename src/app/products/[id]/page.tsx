@@ -60,9 +60,27 @@ export default function ProductDetailPage() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [liveReviewStats, setLiveReviewStats] = useState<{ averageRating: number; totalReviews: number } | null>(null);
 
   const { addToCart, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
+
+  // Fetch real reviews stats immediately for flawless header synchronization
+  useEffect(() => {
+    if (idOrSlug) {
+      fetch(`/api/reviews?productId=${encodeURIComponent(idOrSlug)}&_t=${Date.now()}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success && data.stats) {
+            setLiveReviewStats({
+              averageRating: data.stats.averageRating,
+              totalReviews: data.stats.totalReviews,
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [idOrSlug]);
 
   const applyProduct = (found: Product) => {
     setProduct(found);
@@ -611,16 +629,26 @@ export default function ProductDetailPage() {
               className="inline-flex items-center gap-2 mt-1.5 text-xs text-[#6B7280] hover:text-[#FA521C] transition-colors cursor-pointer group"
             >
               <div className="flex items-center gap-0.5 text-[#F59E0B] group-hover:scale-105 transition-transform">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                ))}
+                {[...Array(5)].map((_, i) => {
+                  const effectiveRating = liveReviewStats?.averageRating ?? (product.rating ? Number(product.rating) : 5.0);
+                  return (
+                    <Star
+                      key={i}
+                      className={`w-3.5 h-3.5 ${
+                        i < Math.round(effectiveRating) ? "fill-current text-[#F59E0B]" : "text-gray-200"
+                      }`}
+                    />
+                  );
+                })}
               </div>
               <span className="font-semibold text-gray-800 group-hover:text-[#FA521C]">
-                ({product.rating ? product.rating.toFixed(1) : "4.8"})
+                ({(liveReviewStats?.averageRating ?? (product.rating ? Number(product.rating) : 5.0)).toFixed(1)})
               </span>
               <span className="text-gray-300">|</span>
               <span className="underline decoration-dotted underline-offset-2">
-                {product.sold_count || "1,250+ verified orders"} • Customer Reviews ↓
+                {(liveReviewStats?.totalReviews ?? (product.review_count ? Number(product.review_count) : 0)) > 0
+                  ? `${liveReviewStats?.totalReviews ?? product.review_count} verified customer ${(liveReviewStats?.totalReviews ?? product.review_count) === 1 ? "review" : "reviews"} • Customer Reviews ↓`
+                  : "Customer Reviews ↓"}
               </span>
             </a>
 
@@ -1125,8 +1153,9 @@ export default function ProductDetailPage() {
           productId={product.slug || product.id}
           productName={product.name}
           productImage={product.poster_image || (product.images && product.images[0])}
-          fallbackRating={product.rating || 4.8}
-          fallbackReviewCount={product.review_count || 1250}
+          fallbackRating={liveReviewStats?.averageRating ?? (product.rating ? Number(product.rating) : 5.0)}
+          fallbackReviewCount={liveReviewStats?.totalReviews ?? (product.review_count ? Number(product.review_count) : 0)}
+          onStatsChange={(newStats) => setLiveReviewStats(newStats)}
         />
       )}
 

@@ -286,8 +286,8 @@ export const DEFAULT_PRODUCTS: Product[] = [
     ],
     material: "Lycra + Plush Velvet",
     in_stock: 1,
-    rating: 4.6,
-    review_count: 275,
+    rating: 5.0,
+    review_count: 2,
     badge: "Sale",
   },
   {

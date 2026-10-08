@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { executeD1Query } from "@/lib/d1";
 import { Product } from "@/types/product";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { getProductReviewStatsMap, getProductReviewStats } from "@/lib/reviewStore";
 
 let serverProductsCache: Product[] = [...DEFAULT_PRODUCTS];
 
@@ -19,7 +20,7 @@ function parseJsonSafe<T>(val: any, fallback: T): T {
   return fallback;
 }
 
-function formatDbProduct(p: any): Product {
+function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; rating: number }>): Product {
   const defaultFound = DEFAULT_PRODUCTS.find((dp) => dp.id === p.id || dp.slug === p.slug);
 
   const parsedImages = parseJsonSafe(p.images, defaultFound?.images || []);
@@ -31,6 +32,23 @@ function formatDbProduct(p: any): Product {
   const priceNum = Number(p.price);
   const mrpNum = Number(p.mrp ?? p.price);
   const costNum = Number(p.cost_price ?? defaultFound?.cost_price ?? Math.round(priceNum * 0.42));
+
+  // Determine real synced review stats
+  const pid = String(p.id || "").toLowerCase().trim();
+  const pslug = String(p.slug || "").toLowerCase().trim();
+  const stats = reviewStatsMap?.get(pslug) || reviewStatsMap?.get(pid);
+
+  let realRating = 5.0;
+  let realReviewCount = 0;
+
+  if (stats && stats.count > 0) {
+    realRating = stats.rating;
+    realReviewCount = stats.count;
+  } else if (p.rating !== undefined && Number(p.rating) > 0 && p.review_count !== undefined && Number(p.review_count) > 0) {
+    // If statsMap had nothing but product row explicitly has existing data
+    realRating = Number(p.rating);
+    realReviewCount = Number(p.review_count);
+  }
 
   return {
     ...(defaultFound || {}),
@@ -56,8 +74,8 @@ function formatDbProduct(p: any): Product {
     material: p.material ?? defaultFound?.material ?? "",
     badge: p.badge ?? defaultFound?.badge ?? "",
     in_stock: Number(p.in_stock ?? 1),
-    rating: Number(p.rating ?? defaultFound?.rating ?? 4.8),
-    review_count: Number(p.review_count ?? defaultFound?.review_count ?? 120),
+    rating: realRating,
+    review_count: realReviewCount,
     sold_count: p.sold_count ?? defaultFound?.sold_count ?? "1,250+ verified orders",
     features: parsedFeatures,
     specifications: parsedSpecs,
@@ -72,6 +90,9 @@ export async function GET(req: NextRequest) {
     const id = searchParams.get("id");
     const slug = searchParams.get("slug");
 
+    // Fetch live review stats map for perfect synchronization
+    const reviewStatsMap = await getProductReviewStatsMap();
+
     // Single product query by ID or Slug
     if (id || slug) {
       const query = id
@@ -81,7 +102,7 @@ export async function GET(req: NextRequest) {
 
       const d1Results = await executeD1Query<Product>(query, [param]);
       if (d1Results && d1Results.length > 0) {
-        const formatted = formatDbProduct(d1Results[0]);
+        const formatted = formatDbProduct(d1Results[0], reviewStatsMap);
         return NextResponse.json(
           { success: true, product: formatted, source: "d1" },
           { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } }
@@ -93,8 +114,9 @@ export async function GET(req: NextRequest) {
         serverProductsCache.find((p) => p.id === param || p.slug === param) ||
         DEFAULT_PRODUCTS.find((p) => p.id === param || p.slug === param);
       if (found) {
+        const formatted = formatDbProduct(found, reviewStatsMap);
         return NextResponse.json(
-          { success: true, product: found, source: "cache" },
+          { success: true, product: formatted, source: "cache" },
           { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } }
         );
       }
@@ -105,7 +127,7 @@ export async function GET(req: NextRequest) {
     // Full catalog query
     const d1Results = await executeD1Query<Product>("SELECT * FROM products ORDER BY created_at DESC;");
     if (d1Results && Array.isArray(d1Results) && d1Results.length > 0) {
-      const formatted = d1Results.map((p: any) => formatDbProduct(p));
+      const formatted = d1Results.map((p: any) => formatDbProduct(p, reviewStatsMap));
 
       // Sync memory cache
       serverProductsCache = formatted;
@@ -119,11 +141,15 @@ export async function GET(req: NextRequest) {
     console.warn("D1 products query error, serving catalog fallback:", err);
   }
 
+  const reviewStatsMap = await getProductReviewStatsMap();
+  const rawList = serverProductsCache.length > 0 ? serverProductsCache : DEFAULT_PRODUCTS;
+  const synchronizedList = rawList.map((p) => formatDbProduct(p, reviewStatsMap));
+
   return NextResponse.json(
     {
       success: true,
       source: "zupe-catalog",
-      products: serverProductsCache.length > 0 ? serverProductsCache : DEFAULT_PRODUCTS,
+      products: synchronizedList,
     },
     { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } }
   );
@@ -255,14 +281,23 @@ export async function POST(req: NextRequest) {
       material: material !== undefined ? material : existingProd?.material || "",
       badge: badge !== undefined ? badge : existingProd?.badge || "",
       in_stock: inStockNum,
-      rating: rating !== undefined ? Number(rating) : existingProd?.rating || 4.8,
-      review_count: review_count !== undefined ? Number(review_count) : existingProd?.review_count || 120,
+      rating: 5.0,
+      review_count: 0,
       sold_count: sold_count !== undefined ? sold_count : existingProd?.sold_count || "1,250+ verified orders",
       features: features !== undefined ? features : existingProd?.features || undefined,
       specifications: specifications !== undefined ? specifications : existingProd?.specifications || undefined,
       whats_in_box: whats_in_box !== undefined ? whats_in_box : existingProd?.whats_in_box || undefined,
       created_at: existingProd?.created_at || new Date().toISOString(),
     };
+
+    // Calculate real dynamic review stats from reviewStore
+    try {
+      const realStats = await getProductReviewStats(newProd.slug || newProd.id);
+      if (realStats && realStats.count > 0) {
+        newProd.rating = realStats.rating;
+        newProd.review_count = realStats.count;
+      }
+    } catch {}
 
     // Update or Insert in Cloudflare D1
     try {

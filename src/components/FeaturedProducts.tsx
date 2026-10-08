@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,8 +16,20 @@ export function FeaturedProducts() {
   const { user } = useAuth();
   const { addToCart, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const [products, setProducts] = useState(DEFAULT_PRODUCTS);
 
-  const featured = DEFAULT_PRODUCTS.slice(0, 4);
+  useEffect(() => {
+    fetch("/api/products")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+          setProducts(data.products);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const featured = products.slice(0, 4);
 
   return (
     <section className="py-20 lg:py-28 relative">
