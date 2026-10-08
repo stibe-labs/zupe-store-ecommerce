@@ -31,6 +31,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { UpiLogo } from "@/components/UpiLogo";
 import { ProductReviewsSection } from "@/components/ProductReviewsSection";
+import { YouMayAlsoLike } from "@/components/YouMayAlsoLike";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -1144,6 +1145,16 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </main>
+
+      {/* ========================================================
+          YOU MAY ALSO LIKE (MATCHING PRODUCTS SET)
+         ======================================================== */}
+      {product && (
+        <YouMayAlsoLike
+          currentProduct={product}
+          onToast={(msg) => showToast(msg)}
+        />
+      )}
 
       {/* ========================================================
           CUSTOMER REVIEWS & RATINGS SECTION (LAST OF PRODUCT PAGE)
