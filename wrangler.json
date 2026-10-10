@@ -28,7 +28,7 @@
   "vars": {
     "SMTP_HOST": "smtp.gmail.com",
     "SMTP_PORT": "587",
-    "SMTP_USER": "",
+    "SMTP_USER": "stibelabs@gmail.com",
     "CLOUDFLARE_ACCOUNT_ID": "4eed09d0032a07881825f4e926cb997f",
     "CLOUDFLARE_D1_DATABASE_ID": "1ebc3c22-07be-4f35-b437-5292d137d246",
     "ADMIN_EMAIL": "admin@zupestore.com",

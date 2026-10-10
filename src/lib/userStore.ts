@@ -51,24 +51,27 @@ export async function findUserByEmailAsync(email: string): Promise<UserRecord | 
   return null;
 }
 
-export function saveUser(user: UserRecord): void {
+export async function saveUser(user: UserRecord): Promise<void> {
   const normalized = user.email.toLowerCase().trim();
   inMemoryUsers.set(normalized, user);
 
-  // Attempt D1 write async
-  executeD1Query(
-    `INSERT OR REPLACE INTO users (id, name, email, password_hash, phone, role, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [
-      user.id,
-      user.name,
-      user.email,
-      user.password_hash,
-      user.phone || null,
-      user.role || "customer",
-      user.created_at,
-    ]
-  ).catch((err) => console.warn("D1 user sync warning:", err));
+  try {
+    await executeD1Query(
+      `INSERT OR REPLACE INTO users (id, name, email, password_hash, phone, role, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        user.id,
+        user.name,
+        user.email,
+        user.password_hash,
+        user.phone || null,
+        user.role || "customer",
+        user.created_at,
+      ]
+    );
+  } catch (err) {
+    console.warn("D1 user sync warning:", err);
+  }
 }
 
 export async function updateUserAsync(

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyOTP } from "@/lib/otpService";
-import { saveUser, findUserByEmail } from "@/lib/userStore";
+import { saveUser, findUserByEmailAsync } from "@/lib/userStore";
 import { createUserSessionToken, USER_COOKIE_NAME } from "@/lib/userAuth";
 
 export interface UserSession {
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user already exists
-    const existing = findUserByEmail(email);
+    const existing = await findUserByEmailAsync(email);
     if (existing) {
       return NextResponse.json(
         { success: false, error: "An account with this email already exists" },
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const userId = `usr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const simpleHash = Buffer.from(password).toString("base64");
 
-    saveUser({
+    await saveUser({
       id: userId,
       name,
       email: email.toLowerCase().trim(),
