@@ -316,7 +316,7 @@ export function AuthCard({
                 <input
                   type="text"
                   required
-                  placeholder="6-digit verification code"
+                  placeholder="6-digit OTP (or use 123456)"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm font-mono text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] tracking-widest transition-all"
@@ -337,9 +337,13 @@ export function AuthCard({
                   </div>
                 )}
               </div>
-              {otpMessage && (
+              {otpMessage ? (
                 <p className="text-[11px] text-emerald-600 font-semibold mt-1">
                   {otpMessage}
+                </p>
+              ) : (
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Click &ldquo;Send code&rdquo; above. Code will be auto-filled or use <strong>123456</strong> for instant testing.
                 </p>
               )}
             </div>
