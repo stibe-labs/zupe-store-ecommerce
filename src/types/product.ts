@@ -1,3 +1,18 @@
+export interface BuyMoreSaveMoreTier {
+  qty: number;
+  badge: string;
+  discountPercent: number;
+  customPrice?: number;
+  tagText?: string;
+  enabled?: boolean;
+}
+
+export interface BuyMoreSaveMoreConfig {
+  enabled: boolean;
+  headerTitle?: string;
+  tiers: BuyMoreSaveMoreTier[];
+}
+
 export interface ProductColorVariant {
   name: string;
   image: string;
@@ -35,6 +50,7 @@ export interface Product {
   features?: string[];
   specifications?: Record<string, string>;
   whats_in_box?: string[];
+  bundle_tiers?: BuyMoreSaveMoreConfig;
   shipping_info?: string[];
   return_info?: string[];
   reviews_data?: {
@@ -83,4 +99,5 @@ export interface AdminProductFormData {
   features?: string[];
   specifications?: Record<string, string>;
   whats_in_box?: string[];
+  bundle_tiers?: BuyMoreSaveMoreConfig;
 }

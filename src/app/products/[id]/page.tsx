@@ -501,42 +501,72 @@ export default function ProductDetailPage() {
     }));
   };
 
-  // Product pricing calculations for Buy More Save More
+  // Dynamic Product pricing calculations for Buy More Save More
   const singleUnitPrice = product ? (product.offer_price || product.price || 799) : 799;
 
-  // Tier 1: Buy 1 (Best Price)
-  const tier1Price = singleUnitPrice;
-  const tier1Savings = 0;
+  const bundleConfig = product?.bundle_tiers;
+  const isBundleEnabled = bundleConfig?.enabled !== false;
+  const bundleHeaderTitle = bundleConfig?.headerTitle || "Buy More Save More";
 
-  // Tier 2: Buy 2 (Most Popular) -> Extra 15% OFF
-  const tier2Regular = singleUnitPrice * 2;
-  const tier2Savings = Math.round(tier2Regular * 0.15);
-  const tier2Total = tier2Regular - tier2Savings;
-  const tier2UnitPrice = Math.round(tier2Total / 2);
+  // Derive dynamic bundle tiers from product configuration or fallback to standard defaults
+  const computedBundleTiers = useMemo(() => {
+    const rawTiers =
+      bundleConfig?.tiers && Array.isArray(bundleConfig.tiers) && bundleConfig.tiers.length > 0
+        ? bundleConfig.tiers.filter((t) => t.enabled !== false)
+        : [
+            { qty: 1, badge: "BEST PRICE", discountPercent: 0, tagText: "", enabled: true },
+            { qty: 2, badge: "MOST POPULAR", discountPercent: 15, tagText: "Extra 15% OFF", enabled: true },
+            { qty: 3, badge: "BEST DEAL", discountPercent: 25, tagText: "Extra 25% OFF", enabled: true },
+          ];
 
-  // Tier 3: Buy 3 (Best Deal) -> Extra 25% OFF
-  const tier3Regular = singleUnitPrice * 3;
-  const tier3Savings = Math.round(tier3Regular * 0.25);
-  const tier3Total = tier3Regular - tier3Savings;
-  const tier3UnitPrice = Math.round(tier3Total / 3);
+    return rawTiers.map((tier) => {
+      const regularTotal = singleUnitPrice * (tier.qty || 1);
+      let totalPrice = regularTotal;
+      let savings = 0;
+      let discountPct = tier.discountPercent || 0;
+
+      if (tier.customPrice && tier.customPrice > 0) {
+        totalPrice = tier.customPrice;
+        savings = Math.max(0, regularTotal - totalPrice);
+        discountPct = regularTotal > 0 ? Math.round((savings / regularTotal) * 100) : 0;
+      } else if (discountPct > 0) {
+        savings = Math.round(regularTotal * (discountPct / 100));
+        totalPrice = Math.max(0, regularTotal - savings);
+      }
+
+      const unitPrice = Math.round(totalPrice / Math.max(1, tier.qty || 1));
+      const tagText = tier.tagText || (discountPct > 0 ? `Extra ${discountPct}% OFF` : "");
+      const badge =
+        tier.badge ||
+        (tier.qty === 1 ? "BEST PRICE" : tier.qty === 2 ? "MOST POPULAR" : "BEST DEAL");
+
+      return {
+        qty: tier.qty || 1,
+        badge,
+        tagText,
+        discountPercent: discountPct,
+        regularTotal,
+        totalPrice,
+        savings,
+        unitPrice,
+      };
+    });
+  }, [bundleConfig, singleUnitPrice]);
 
   const getBundleDetails = (qty: number) => {
-    if (qty === 2) {
+    // Look for exact tier or closest matching tier
+    const matched =
+      computedBundleTiers.find((t) => t.qty === qty) ||
+      [...computedBundleTiers].reverse().find((t) => qty >= t.qty) ||
+      computedBundleTiers[0];
+
+    if (matched && matched.qty > 1) {
       return {
-        tier: 2,
-        unitPrice: tier2UnitPrice,
-        totalPrice: tier2Total,
-        savings: tier2Savings,
-        label: "Buy 2 - Extra 15% OFF",
-      };
-    }
-    if (qty >= 3) {
-      return {
-        tier: 3,
-        unitPrice: tier3UnitPrice,
-        totalPrice: tier3Total,
-        savings: tier3Savings,
-        label: "Buy 3 - Extra 25% OFF",
+        tier: matched.qty,
+        unitPrice: matched.unitPrice,
+        totalPrice: matched.totalPrice,
+        savings: matched.savings,
+        label: `Buy ${matched.qty} - ${matched.tagText || matched.badge || "Offer Price"}`,
       };
     }
     return {
@@ -1031,174 +1061,115 @@ export default function ProductDetailPage() {
             </div>
 
             {/* ========================================================
-                BUY MORE SAVE MORE - BUNDLE TIERS (ZUPE BRAND DESIGN)
+                BUY MORE SAVE MORE - BUNDLE TIERS (DYNAMICALLY CONFIGURED BY ADMIN)
                ======================================================== */}
-            <div className="mt-5 mb-2 select-none">
-              <div className="flex items-center justify-center gap-3 mb-3">
-                <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-gray-300 flex-1" />
-                <h3 className="font-display font-extrabold text-[15px] sm:text-base text-gray-900 tracking-tight flex items-center gap-1.5 select-none">
-                  <span>Buy More Save More</span>
-                  <span className="text-amber-500">✨</span>
-                </h3>
-                <div className="h-px bg-gradient-to-l from-transparent via-gray-300 to-gray-300 flex-1" />
-              </div>
-
-              <div className="space-y-3">
-                {/* Tier 1: Buy 1 - Best Price */}
-                <div
-                  onClick={() => {
-                    setSelectedBundleTier(1);
-                    setQuantity(1);
-                  }}
-                  className={`relative p-3.5 sm:p-4 rounded-2xl cursor-pointer transition-all duration-200 flex items-center justify-between ${
-                    selectedBundleTier === 1
-                      ? "bg-[#FFF8F4] border-2 border-[#FF5722] shadow-sm ring-1 ring-[#FF5722]/30"
-                      : "bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
-                  }`}
-                >
-                  {/* Badge top-right */}
-                  <div className="absolute -top-2.5 right-4 bg-[#282736] text-white text-[10px] sm:text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs uppercase tracking-wider">
-                    Best Price
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {/* Custom Radio Button */}
-                    <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all shrink-0 ${
-                        selectedBundleTier === 1
-                          ? "border-[#FF5722] bg-[#FF5722]"
-                          : "border-gray-300 bg-white"
-                      }`}
-                    >
-                      {selectedBundleTier === 1 && (
-                        <div className="w-2 h-2 rounded-full bg-white" />
-                      )}
-                    </div>
-                    <div>
-                      <span className="font-bold text-sm sm:text-base text-gray-900">
-                        Buy 1
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="font-extrabold text-base sm:text-lg text-gray-900">
-                      ₹{tier1Price.toLocaleString("en-IN")}
-                    </span>
-                  </div>
+            {isBundleEnabled && computedBundleTiers.length > 0 && (
+              <div className="mt-5 mb-2 select-none">
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-gray-300 flex-1" />
+                  <h3 className="font-display font-extrabold text-[15px] sm:text-base text-gray-900 tracking-tight flex items-center gap-1.5 select-none">
+                    <span>{bundleHeaderTitle}</span>
+                    <span className="text-amber-500">✨</span>
+                  </h3>
+                  <div className="h-px bg-gradient-to-l from-transparent via-gray-300 to-gray-300 flex-1" />
                 </div>
 
-                {/* Tier 2: Buy 2 - Most Popular */}
-                <div
-                  onClick={() => {
-                    setSelectedBundleTier(2);
-                    setQuantity(2);
-                  }}
-                  className={`relative p-3.5 sm:p-4 rounded-2xl cursor-pointer transition-all duration-200 flex items-center justify-between ${
-                    selectedBundleTier === 2
-                      ? "bg-[#FFF8F4] border-2 border-[#FF5722] shadow-sm ring-1 ring-[#FF5722]/30"
-                      : "bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
-                  }`}
-                >
-                  {/* Badge top-right */}
-                  <div className="absolute -top-2.5 right-4 bg-gradient-to-r from-[#FF5722] to-[#FF7A00] text-white text-[10px] sm:text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs uppercase tracking-wider">
-                    Most Popular
-                  </div>
+                <div className="space-y-3">
+                  {computedBundleTiers.map((tier) => {
+                    const isSelected = selectedBundleTier === tier.qty;
+                    const isBestPrice =
+                      tier.badge?.toLowerCase().includes("best price") || tier.qty === 1;
+                    const isBestDeal =
+                      tier.badge?.toLowerCase().includes("deal") ||
+                      tier.badge?.toLowerCase().includes("mega") ||
+                      tier.qty >= 3;
+                    const badgeBg = isBestPrice
+                      ? "bg-[#282736]"
+                      : isBestDeal
+                      ? "bg-gradient-to-r from-[#E53E3E] to-[#FA3B00]"
+                      : "bg-gradient-to-r from-[#FF5722] to-[#FF7A00]";
+                    const activeBorder = isBestDeal
+                      ? "border-[#E53E3E] ring-[#E53E3E]/30"
+                      : "border-[#FF5722] ring-[#FF5722]/30";
+                    const radioColor = isBestDeal
+                      ? "bg-[#E53E3E] border-[#E53E3E]"
+                      : "bg-[#FF5722] border-[#FF5722]";
 
-                  <div className="flex items-center gap-3">
-                    {/* Custom Radio Button */}
-                    <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all shrink-0 ${
-                        selectedBundleTier === 2
-                          ? "border-[#FF5722] bg-[#FF5722]"
-                          : "border-gray-300 bg-white"
-                      }`}
-                    >
-                      {selectedBundleTier === 2 && (
-                        <div className="w-2 h-2 rounded-full bg-white" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-sm sm:text-base text-gray-900">
-                          Buy 2
-                        </span>
-                        <span className="border border-[#FF5722] text-[#FF5722] bg-orange-50/80 text-[10px] sm:text-[11px] font-black px-1.5 py-0.5 rounded-md leading-none">
-                          Extra 15% OFF
-                        </span>
+                    return (
+                      <div
+                        key={tier.qty}
+                        onClick={() => {
+                          setSelectedBundleTier(tier.qty);
+                          setQuantity(tier.qty);
+                        }}
+                        className={`relative p-3.5 sm:p-4 rounded-2xl cursor-pointer transition-all duration-200 flex items-center justify-between ${
+                          isSelected
+                            ? `bg-[#FFF8F4] border-2 ${activeBorder} shadow-sm ring-1`
+                            : "bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
+                        }`}
+                      >
+                        {/* Badge top-right */}
+                        {tier.badge && (
+                          <div
+                            className={`absolute -top-2.5 right-4 ${badgeBg} text-white text-[10px] sm:text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs uppercase tracking-wider`}
+                          >
+                            {tier.badge}
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-3">
+                          {/* Custom Radio Button */}
+                          <div
+                            className={`w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all shrink-0 ${
+                              isSelected ? radioColor : "border-gray-300 bg-white"
+                            }`}
+                          >
+                            {isSelected && (
+                              <div className="w-2 h-2 rounded-full bg-white" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-sm sm:text-base text-gray-900">
+                                Buy {tier.qty}
+                              </span>
+                              {tier.tagText && (
+                                <span className="border border-[#FF5722] text-[#FF5722] bg-orange-50/80 text-[10px] sm:text-[11px] font-black px-1.5 py-0.5 rounded-md leading-none">
+                                  {tier.tagText}
+                                </span>
+                              )}
+                            </div>
+                            {tier.savings > 0 && (
+                              <p className="text-[11px] sm:text-xs text-gray-500 font-semibold mt-0.5">
+                                You save{" "}
+                                <span className="text-emerald-600 font-bold">
+                                  ₹{tier.savings.toLocaleString("en-IN")}
+                                </span>
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <span
+                            className={`font-extrabold text-base sm:text-lg ${
+                              tier.savings > 0 ? "text-[#E53E3E]" : "text-gray-900"
+                            } block`}
+                          >
+                            ₹{tier.totalPrice.toLocaleString("en-IN")}
+                          </span>
+                          {tier.savings > 0 && (
+                            <span className="line-through text-xs text-gray-400 block -mt-0.5">
+                              ₹{tier.regularTotal.toLocaleString("en-IN")}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-[11px] sm:text-xs text-gray-500 font-semibold mt-0.5">
-                        You save <span className="text-emerald-600 font-bold">₹{tier2Savings.toLocaleString("en-IN")}</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="font-extrabold text-base sm:text-lg text-[#E53E3E] block">
-                      ₹{tier2Total.toLocaleString("en-IN")}
-                    </span>
-                    <span className="line-through text-xs text-gray-400 block -mt-0.5">
-                      ₹{tier2Regular.toLocaleString("en-IN")}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Tier 3: Buy 3 - Best Deal (No 3+1 text) */}
-                <div
-                  onClick={() => {
-                    setSelectedBundleTier(3);
-                    setQuantity(3);
-                  }}
-                  className={`relative p-3.5 sm:p-4 rounded-2xl cursor-pointer transition-all duration-200 flex items-center justify-between ${
-                    selectedBundleTier === 3
-                      ? "bg-[#FFF8F4] border-2 border-[#E53E3E] shadow-sm ring-1 ring-[#E53E3E]/30"
-                      : "bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
-                  }`}
-                >
-                  {/* Badge top-right */}
-                  <div className="absolute -top-2.5 right-4 bg-gradient-to-r from-[#E53E3E] to-[#FA3B00] text-white text-[10px] sm:text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs uppercase tracking-wider">
-                    Best Deal
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {/* Custom Radio Button */}
-                    <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all shrink-0 ${
-                        selectedBundleTier === 3
-                          ? "border-[#E53E3E] bg-[#E53E3E]"
-                          : "border-gray-300 bg-white"
-                      }`}
-                    >
-                      {selectedBundleTier === 3 && (
-                        <div className="w-2 h-2 rounded-full bg-white" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-sm sm:text-base text-gray-900">
-                          Buy 3
-                        </span>
-                        <span className="border border-[#E53E3E] text-[#E53E3E] bg-rose-50/80 text-[10px] sm:text-[11px] font-black px-1.5 py-0.5 rounded-md leading-none">
-                          Extra 25% OFF
-                        </span>
-                      </div>
-                      <p className="text-[11px] sm:text-xs text-gray-500 font-semibold mt-0.5">
-                        You save <span className="text-emerald-600 font-bold">₹{tier3Savings.toLocaleString("en-IN")}</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="font-extrabold text-base sm:text-lg text-[#E53E3E] block">
-                      ₹{tier3Total.toLocaleString("en-IN")}
-                    </span>
-                    <span className="line-through text-xs text-gray-400 block -mt-0.5">
-                      ₹{tier3Regular.toLocaleString("en-IN")}
-                    </span>
-                  </div>
+                    );
+                  })}
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Color / Variant Selector - Universal for all products */}
             {availableColors.length > 0 ? (

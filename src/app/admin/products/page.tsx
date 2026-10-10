@@ -31,8 +31,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { Product, ProductColorVariant, BuyMoreSaveMoreConfig, BuyMoreSaveMoreTier } from "@/types/product";
 import { DEFAULT_PRODUCTS, getSubcategoriesForCategory } from "@/data/zupeProducts";
-import { Product, ProductColorVariant } from "@/types/product";
 
 // Exact Category & Subcategory taxonomy from official catalog structure
 const PRODUCT_CATEGORIES_DATA = [
@@ -101,6 +101,16 @@ const FORM_TABS_LIST = [
 
 type FormTabKey = (typeof FORM_TABS_LIST)[number];
 
+const DEFAULT_BUNDLE_TIERS: BuyMoreSaveMoreConfig = {
+  enabled: true,
+  headerTitle: "Buy More Save More",
+  tiers: [
+    { qty: 1, badge: "BEST PRICE", discountPercent: 0, tagText: "", enabled: true },
+    { qty: 2, badge: "MOST POPULAR", discountPercent: 15, tagText: "Extra 15% OFF", enabled: true },
+    { qty: 3, badge: "BEST DEAL", discountPercent: 25, tagText: "Extra 25% OFF", enabled: true },
+  ],
+};
+
 export default function AdminProductsPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
@@ -155,6 +165,48 @@ export default function AdminProductsPage() {
   const [formCost, setFormCost] = useState("");
   const [formStock, setFormStock] = useState("50");
   const [formInStock, setFormInStock] = useState(true);
+  const [formBundleTiers, setFormBundleTiers] = useState<BuyMoreSaveMoreConfig>(DEFAULT_BUNDLE_TIERS);
+
+  // Buy More Save More helpers
+  const updateBundleTier = (idx: number, field: keyof BuyMoreSaveMoreTier, value: any) => {
+    setFormBundleTiers((prev) => ({
+      ...prev,
+      tiers: prev.tiers.map((t, i) => (i === idx ? { ...t, [field]: value } : t)),
+    }));
+  };
+
+  const addBundleTier = () => {
+    setFormBundleTiers((prev) => {
+      const currentTiers = prev.tiers || [];
+      const lastTier = currentTiers[currentTiers.length - 1];
+      const nextQty = (lastTier?.qty || currentTiers.length) + 1;
+      const nextDiscount = Math.min(50, (lastTier?.discountPercent || 25) + 5);
+      return {
+        ...prev,
+        tiers: [
+          ...currentTiers,
+          {
+            qty: nextQty,
+            badge: `BUY ${nextQty} VALUE`,
+            discountPercent: nextDiscount,
+            tagText: `Extra ${nextDiscount}% OFF`,
+            enabled: true,
+          },
+        ],
+      };
+    });
+  };
+
+  const removeBundleTier = (idx: number) => {
+    setFormBundleTiers((prev) => ({
+      ...prev,
+      tiers: prev.tiers.filter((_, i) => i !== idx),
+    }));
+  };
+
+  const resetDefaultBundleTiers = () => {
+    setFormBundleTiers(JSON.parse(JSON.stringify(DEFAULT_BUNDLE_TIERS)));
+  };
 
   // Tab 3: Colors & Multi-Angle Photos
   const [formColors, setFormColors] = useState<ProductColorVariant[]>([]);
@@ -263,6 +315,7 @@ export default function AdminProductsPage() {
     setFormCost("");
     setFormStock("50");
     setFormInStock(true);
+    setFormBundleTiers(JSON.parse(JSON.stringify(DEFAULT_BUNDLE_TIERS)));
 
     setFormColors([
       {
@@ -326,6 +379,15 @@ export default function AdminProductsPage() {
     setFormCost(String(cost));
     setFormStock(String(prod.stock_count || 0));
     setFormInStock(prod.in_stock === 1);
+    if (prod.bundle_tiers && Array.isArray(prod.bundle_tiers.tiers) && prod.bundle_tiers.tiers.length > 0) {
+      setFormBundleTiers({
+        enabled: prod.bundle_tiers.enabled !== false,
+        headerTitle: prod.bundle_tiers.headerTitle || "Buy More Save More",
+        tiers: JSON.parse(JSON.stringify(prod.bundle_tiers.tiers)),
+      });
+    } else {
+      setFormBundleTiers(JSON.parse(JSON.stringify(DEFAULT_BUNDLE_TIERS)));
+    }
 
     // Deep clone colors
     setFormColors(
@@ -651,6 +713,7 @@ export default function AdminProductsPage() {
       features: formFeatures.filter(Boolean),
       specifications: Object.keys(specsObj).length > 0 ? specsObj : undefined,
       whats_in_box: formWhatsInBox.filter(Boolean),
+      bundle_tiers: formBundleTiers,
     };
 
     try {
@@ -1555,6 +1618,317 @@ export default function AdminProductsPage() {
                         </button>
                       </div>
                     </div>
+                  </div>
+
+                  {/* ========================================================
+                      BUY MORE SAVE MORE (TIERED QUANTITY BUNDLE DISCOUNTS)
+                     ======================================================== */}
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="p-1 rounded-md bg-orange-100 text-[#FF7A00]">
+                            <Sparkles className="w-3.5 h-3.5" />
+                          </span>
+                          <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                            Buy More Save More Offers
+                          </span>
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-orange-50 text-[#FF7A00] border border-orange-200">
+                            Customizable Tiers
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Configure multi-unit quantity discounts shown right below the Buy Now button on this product&apos;s page.
+                        </p>
+                      </div>
+
+                      {/* Master Enable/Disable Switch */}
+                      <div className="flex items-center gap-2 self-start sm:self-auto bg-white px-3 py-1.5 rounded-xl border border-slate-200">
+                        <span className="text-xs font-bold text-slate-700">
+                          {formBundleTiers.enabled ? "Bundle Offers Active" : "Offers Disabled"}
+                        </span>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={formBundleTiers.enabled}
+                          onClick={() =>
+                            setFormBundleTiers((prev) => ({
+                              ...prev,
+                              enabled: !prev.enabled,
+                            }))
+                          }
+                          className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                            formBundleTiers.enabled ? "bg-emerald-500" : "bg-slate-300"
+                          }`}
+                        >
+                          <span
+                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                              formBundleTiers.enabled ? "translate-x-5" : "translate-x-0"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+
+                    {formBundleTiers.enabled && (
+                      <div className="space-y-4">
+                        {/* Section Heading & Quick Actions */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                              Storefront Section Heading
+                            </label>
+                            <input
+                              type="text"
+                              value={formBundleTiers.headerTitle || "Buy More Save More"}
+                              onChange={(e) =>
+                                setFormBundleTiers((prev) => ({
+                                  ...prev,
+                                  headerTitle: e.target.value,
+                                }))
+                              }
+                              placeholder="Buy More Save More"
+                              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                            />
+                            <p className="text-[10px] text-slate-400 mt-1">
+                              Title displayed above the bundle cards on the product page.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2 justify-end">
+                            <button
+                              type="button"
+                              onClick={resetDefaultBundleTiers}
+                              className="px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-200 transition-colors flex items-center gap-1.5"
+                            >
+                              <RefreshCw className="w-3 h-3 text-slate-500" />
+                              <span>Reset Standard (1x, 2x, 3x)</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={addBundleTier}
+                              className="px-3 py-2 rounded-xl text-xs font-semibold text-white bg-[#FF7A00] hover:bg-[#E66E00] shadow-sm shadow-orange-500/20 transition-colors flex items-center gap-1.5"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>Add Tier</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Tier Cards List */}
+                        <div className="space-y-3">
+                          {formBundleTiers.tiers.map((tier, idx) => {
+                            const unitPriceNum = Number(formPrice) || 0;
+                            const regTotal = unitPriceNum * (tier.qty || 1);
+                            let customerTotal = regTotal;
+                            let savings = 0;
+                            const discPct = tier.discountPercent || 0;
+
+                            if (tier.customPrice && tier.customPrice > 0) {
+                              customerTotal = tier.customPrice;
+                              savings = Math.max(0, regTotal - customerTotal);
+                            } else if (discPct > 0) {
+                              savings = Math.round(regTotal * (discPct / 100));
+                              customerTotal = Math.max(0, regTotal - savings);
+                            }
+
+                            const effectivePerUnit = tier.qty > 0 ? Math.round(customerTotal / tier.qty) : 0;
+                            const costPriceNum = Number(formCost) || 0;
+                            const totalCost = costPriceNum * (tier.qty || 1);
+                            const totalProfit = customerTotal - totalCost;
+
+                            return (
+                              <div
+                                key={idx}
+                                className={`p-3.5 rounded-xl border transition-all ${
+                                  tier.enabled !== false
+                                    ? "bg-white border-slate-200/90 shadow-2xs"
+                                    : "bg-slate-100/70 border-slate-200 opacity-60"
+                                }`}
+                              >
+                                {/* Card Header */}
+                                <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100">
+                                  <div className="flex items-center gap-2">
+                                    <span className="w-5 h-5 rounded-full bg-slate-900 text-white text-[10px] font-black flex items-center justify-center">
+                                      {idx + 1}
+                                    </span>
+                                    <span className="text-xs font-bold text-slate-800">
+                                      Tier {idx + 1}: Buy {tier.qty} {tier.qty === 1 ? "Unit" : "Units"}
+                                    </span>
+                                    {tier.badge && (
+                                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 uppercase tracking-wider">
+                                        {tier.badge}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <label className="flex items-center gap-1.5 cursor-pointer text-[11px] font-semibold text-slate-600">
+                                      <input
+                                        type="checkbox"
+                                        checked={tier.enabled !== false}
+                                        onChange={(e) =>
+                                          updateBundleTier(idx, "enabled", e.target.checked)
+                                        }
+                                        className="rounded border-slate-300 text-[#FF7A00] focus:ring-[#FF7A00] w-3.5 h-3.5"
+                                      />
+                                      <span>Active</span>
+                                    </label>
+                                    {formBundleTiers.tiers.length > 1 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => removeBundleTier(idx)}
+                                        title="Delete tier"
+                                        className="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Inputs Grid */}
+                                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                                  {/* Quantity */}
+                                  <div>
+                                    <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                                      Quantity (Qty) *
+                                    </label>
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      value={tier.qty}
+                                      onChange={(e) =>
+                                        updateBundleTier(idx, "qty", Math.max(1, parseInt(e.target.value) || 1))
+                                      }
+                                      className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#FF7A00] focus:border-[#FF7A00]"
+                                    />
+                                  </div>
+
+                                  {/* Badge Text */}
+                                  <div>
+                                    <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                                      Badge Label
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={tier.badge}
+                                      onChange={(e) =>
+                                        updateBundleTier(idx, "badge", e.target.value)
+                                      }
+                                      placeholder="e.g. BEST PRICE"
+                                      className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#FF7A00] focus:border-[#FF7A00]"
+                                    />
+                                  </div>
+
+                                  {/* Discount % */}
+                                  <div>
+                                    <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                                      Discount %
+                                    </label>
+                                    <div className="relative">
+                                      <input
+                                        type="number"
+                                        min={0}
+                                        max={100}
+                                        value={tier.discountPercent}
+                                        onChange={(e) =>
+                                          updateBundleTier(idx, "discountPercent", parseInt(e.target.value) || 0)
+                                        }
+                                        placeholder="15"
+                                        className="w-full px-2.5 py-1.5 pr-6 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#FF7A00] focus:border-[#FF7A00]"
+                                      />
+                                      <span className="absolute right-2 top-1.5 text-xs text-slate-400 font-bold">
+                                        %
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Custom Fixed Price Override */}
+                                  <div>
+                                    <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                                      Fixed Price (₹) <span className="text-slate-400 font-normal">opt</span>
+                                    </label>
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      value={tier.customPrice !== undefined ? tier.customPrice : ""}
+                                      onChange={(e) =>
+                                        updateBundleTier(
+                                          idx,
+                                          "customPrice",
+                                          e.target.value ? parseFloat(e.target.value) : undefined
+                                        )
+                                      }
+                                      placeholder="Overrides %"
+                                      className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#FF7A00] focus:border-[#FF7A00]"
+                                    />
+                                  </div>
+
+                                  {/* Promo Tag */}
+                                  <div className="col-span-2 sm:col-span-1">
+                                    <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                                      Promo Pill Tag
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={tier.tagText || ""}
+                                      onChange={(e) =>
+                                        updateBundleTier(idx, "tagText", e.target.value)
+                                      }
+                                      placeholder="Extra 15% OFF"
+                                      className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#FF7A00] focus:border-[#FF7A00]"
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Live Real-Time Calculation for Admin */}
+                                {unitPriceNum > 0 && (
+                                  <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between text-[11px] gap-2 bg-slate-50/70 p-2 rounded-lg">
+                                    <div className="flex items-center gap-3 flex-wrap">
+                                      <span className="text-slate-600">
+                                        Cust. Total:{" "}
+                                        <strong className="text-slate-900 font-extrabold text-xs">
+                                          ₹{customerTotal.toLocaleString("en-IN")}
+                                        </strong>
+                                      </span>
+                                      {savings > 0 && (
+                                        <span className="text-slate-500">
+                                          Regular:{" "}
+                                          <span className="line-through">
+                                            ₹{regTotal.toLocaleString("en-IN")}
+                                          </span>
+                                        </span>
+                                      )}
+                                      {savings > 0 && (
+                                        <span className="text-emerald-700 font-bold">
+                                          Save: ₹{savings.toLocaleString("en-IN")}
+                                        </span>
+                                      )}
+                                      <span className="text-slate-500">
+                                        Per Unit:{" "}
+                                        <span className="font-semibold text-slate-700">
+                                          ₹{effectivePerUnit.toLocaleString("en-IN")}
+                                        </span>
+                                      </span>
+                                    </div>
+
+                                    {costPriceNum > 0 && (
+                                      <div className="text-amber-800 font-semibold">
+                                        Profit: ₹{totalProfit.toLocaleString("en-IN")}{" "}
+                                        <span className="text-slate-400">
+                                          ({customerTotal > 0 ? Math.round((totalProfit / customerTotal) * 100) : 0}% margin)
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

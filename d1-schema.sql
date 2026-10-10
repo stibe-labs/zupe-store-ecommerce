@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS products (
     specifications TEXT,
     whats_in_box TEXT,
     sold_count TEXT,
+    bundle_tiers TEXT,
     in_stock INTEGER DEFAULT 1,
     rating REAL DEFAULT 4.9,
     review_count INTEGER DEFAULT 0,

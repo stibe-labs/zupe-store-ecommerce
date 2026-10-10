@@ -40,6 +40,7 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
   const parsedFeatures = parseJsonSafe(p.features, defaultFound?.features || undefined);
   const parsedSpecs = parseJsonSafe(p.specifications, defaultFound?.specifications || undefined);
   const parsedBox = parseJsonSafe(p.whats_in_box, defaultFound?.whats_in_box || undefined);
+  const parsedTiers = parseJsonSafe(p.bundle_tiers, defaultFound?.bundle_tiers || undefined);
 
   const priceNum = Number(p.price);
   const mrpNum = Number(p.mrp ?? p.price);
@@ -100,6 +101,7 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
     features: parsedFeatures,
     specifications: parsedSpecs,
     whats_in_box: parsedBox,
+    bundle_tiers: parsedTiers,
     created_at: p.created_at || defaultFound?.created_at || new Date().toISOString(),
   };
 }
@@ -214,6 +216,7 @@ export async function POST(req: NextRequest) {
       features,
       specifications,
       whats_in_box,
+      bundle_tiers,
     } = body;
 
     // Find existing product in D1 first, then cache or defaults
@@ -315,6 +318,7 @@ export async function POST(req: NextRequest) {
       features: features !== undefined ? features : existingProd?.features || undefined,
       specifications: specifications !== undefined ? specifications : existingProd?.specifications || undefined,
       whats_in_box: whats_in_box !== undefined ? whats_in_box : existingProd?.whats_in_box || undefined,
+      bundle_tiers: bundle_tiers !== undefined ? bundle_tiers : existingProd?.bundle_tiers || undefined,
       created_at: existingProd?.created_at || new Date().toISOString(),
     };
 
@@ -339,6 +343,7 @@ export async function POST(req: NextRequest) {
       const featuresJson = newProd.features ? JSON.stringify(newProd.features) : null;
       const specsJson = newProd.specifications ? JSON.stringify(newProd.specifications) : null;
       const boxJson = newProd.whats_in_box ? JSON.stringify(newProd.whats_in_box) : null;
+      const tiersJson = newProd.bundle_tiers ? JSON.stringify(newProd.bundle_tiers) : null;
 
       if (existingRows && existingRows.length > 0) {
         await executeD1Query(
@@ -347,7 +352,7 @@ export async function POST(req: NextRequest) {
                price = ?, mrp = ?, offer_price = ?, cost_price = ?, stock_count = ?, volume = ?,
                poster_image = ?, images = ?, color = ?, colors = ?, material = ?, badge = ?,
                in_stock = ?, rating = ?, review_count = ?, sold_count = ?, features = ?,
-               specifications = ?, whats_in_box = ?
+               specifications = ?, whats_in_box = ?, bundle_tiers = ?
            WHERE id = ?;`,
           [
             newProd.slug,
@@ -376,6 +381,7 @@ export async function POST(req: NextRequest) {
             featuresJson,
             specsJson,
             boxJson,
+            tiersJson,
             existingRows[0].id,
           ]
         );
@@ -386,9 +392,9 @@ export async function POST(req: NextRequest) {
              price, mrp, offer_price, cost_price, stock_count, volume,
              poster_image, images, color, colors, material, badge,
              in_stock, rating, review_count, sold_count, features,
-             specifications, whats_in_box
+             specifications, whats_in_box, bundle_tiers
            )
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
           [
             newProd.id,
             newProd.slug,
@@ -417,6 +423,7 @@ export async function POST(req: NextRequest) {
             featuresJson,
             specsJson,
             boxJson,
+            tiersJson,
           ]
         );
       }
