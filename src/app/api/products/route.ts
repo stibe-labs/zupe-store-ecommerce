@@ -4,6 +4,7 @@ import { Product } from "@/types/product";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { getProductReviewStatsMap, getProductReviewStats } from "@/lib/reviewStore";
 import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/adminAuth";
+import { getMemoryStockOverride } from "@/lib/inventoryService";
 
 async function checkAdminAuth(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
@@ -11,6 +12,9 @@ async function checkAdminAuth(req: NextRequest): Promise<boolean> {
   const session = await verifyAdminSessionToken(token);
   return session.valid;
 }
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 let serverProductsCache: Product[] = [...DEFAULT_PRODUCTS];
 
@@ -58,30 +62,38 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
     realReviewCount = Number(p.review_count);
   }
 
-  return {
-    ...(defaultFound || {}),
-    ...p,
-    id: p.id,
-    slug: p.slug,
-    name: p.name,
-    subtitle: p.subtitle ?? defaultFound?.subtitle ?? "",
-    category: p.category,
-    subcategory: p.subcategory ?? defaultFound?.subcategory ?? "",
-    tagline: p.tagline ?? defaultFound?.tagline ?? "",
-    description: p.description ?? defaultFound?.description ?? "",
-    price: priceNum,
-    mrp: mrpNum,
-    offer_price: Number(p.offer_price ?? priceNum),
-    cost_price: costNum,
-    stock_count: Number(p.stock_count ?? 0),
-    volume: p.volume ?? defaultFound?.volume ?? "",
-    poster_image: p.poster_image || defaultFound?.poster_image || "",
-    images: Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages : (defaultFound?.images || []),
-    color: p.color ?? defaultFound?.color ?? "",
-    colors: Array.isArray(parsedColors) && parsedColors.length > 0 ? parsedColors : (defaultFound?.colors || []),
-    material: p.material ?? defaultFound?.material ?? "",
-    badge: p.badge ?? defaultFound?.badge ?? "",
-    in_stock: Number(p.in_stock ?? 1),
+  const stockOverride = getMemoryStockOverride(p.id || "") || getMemoryStockOverride(p.slug || "");
+  const d1Stock = p.stock_count !== undefined && p.stock_count !== null ? Number(p.stock_count) : null;
+  const baseStock = d1Stock !== null ? d1Stock : Number(defaultFound?.stock_count ?? 50);
+  const finalStock = stockOverride !== null && d1Stock !== null
+    ? Math.min(d1Stock, stockOverride.stock_count)
+    : (stockOverride ? stockOverride.stock_count : baseStock);
+  const finalInStock = finalStock <= 0 ? 0 : Number(p.in_stock ?? (stockOverride ? stockOverride.in_stock : 1));
+
+    return {
+      ...(defaultFound || {}),
+      ...p,
+      id: p.id,
+      slug: p.slug,
+      name: p.name,
+      subtitle: p.subtitle ?? defaultFound?.subtitle ?? "",
+      category: p.category,
+      subcategory: p.subcategory ?? defaultFound?.subcategory ?? "",
+      tagline: p.tagline ?? defaultFound?.tagline ?? "",
+      description: p.description ?? defaultFound?.description ?? "",
+      price: priceNum,
+      mrp: mrpNum,
+      offer_price: Number(p.offer_price ?? priceNum),
+      cost_price: costNum,
+      stock_count: finalStock,
+      volume: p.volume ?? defaultFound?.volume ?? "",
+      poster_image: p.poster_image || defaultFound?.poster_image || "",
+      images: Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages : (defaultFound?.images || []),
+      color: p.color ?? defaultFound?.color ?? "",
+      colors: Array.isArray(parsedColors) && parsedColors.length > 0 ? parsedColors : (defaultFound?.colors || []),
+      material: p.material ?? defaultFound?.material ?? "",
+      badge: p.badge ?? defaultFound?.badge ?? "",
+      in_stock: finalInStock,
     rating: realRating,
     review_count: realReviewCount,
     sold_count: p.sold_count ?? defaultFound?.sold_count ?? "1,250+ verified orders",

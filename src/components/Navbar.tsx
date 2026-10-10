@@ -154,7 +154,7 @@ function NavbarContent() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="p-1.5 -ml-1 text-gray-900 hover:text-[#FA521C] transition-colors"
+              className="p-1.5 -ml-1 text-gray-900 hover:text-[#FF7A00] transition-colors"
               aria-label="Open Menu"
             >
               <Menu className="w-6 h-6 stroke-[2.2]" />
@@ -162,26 +162,24 @@ function NavbarContent() {
 
             <button
               onClick={openSearch}
-              className="p-1.5 text-gray-900 hover:text-[#FA521C] transition-colors cursor-pointer"
+              className="p-1.5 text-gray-900 hover:text-[#FF7A00] transition-colors cursor-pointer"
               aria-label="Search"
             >
               <Search className="w-5 h-5 stroke-[2.2]" />
             </button>
           </div>
 
-          {/* Center: Increased size Logo without 'Zupestore' text */}
+          {/* Center: Only text label in mobile view navbar as requested */}
           <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex items-center justify-center">
             <Link href="/" className="flex items-center justify-center" aria-label="Zupe Store">
-              <div className="relative w-14 h-14 flex items-center justify-center">
-                <Image
-                  src="/zupe-logo.png"
-                  alt="Zupe Store"
-                  width={58}
-                  height={58}
-                  className="object-contain w-full h-full"
-                  priority
-                />
-              </div>
+              <Image
+                src="/zupe-label.png"
+                alt="Zupestore"
+                width={120}
+                height={30}
+                className="h-6 sm:h-7 w-auto object-contain"
+                priority
+              />
             </Link>
           </div>
 
@@ -202,7 +200,7 @@ function NavbarContent() {
 
             <button
               onClick={openCart}
-              className="relative p-1.5 text-gray-900 anim-tap-bounce active:text-[#FA521C] transition-all cursor-pointer"
+              className="relative p-1.5 text-gray-900 anim-tap-bounce active:text-[#FF7A00] transition-all cursor-pointer"
               aria-label="Shopping Cart"
             >
               <ShoppingBag className="w-5 h-5 stroke-[2.2] active:rotate-12 active:scale-90 transition-all duration-150" />
@@ -217,18 +215,16 @@ function NavbarContent() {
 
         {/* Desktop View Header */}
         <div className="hidden sm:flex items-center justify-between gap-4 lg:gap-8">
-          {/* Logo: Increased size without 'Zupestore' text */}
-          <Link href="/" className="flex items-center flex-shrink-0 group" aria-label="Zupe Store">
-            <div className="relative w-14 h-14 sm:w-16 sm:h-16 lg:w-[68px] lg:h-[68px] flex items-center justify-center">
-              <Image
-                src="/zupe-logo.png"
-                alt="Zupe Store"
-                width={68}
-                height={68}
-                className="object-contain w-full h-full transition-transform group-hover:scale-105"
-                priority
-              />
-            </div>
+          {/* Brand: Text Label only */}
+          <Link href="/" className="flex items-center flex-shrink-0 group py-1" aria-label="Zupe Store">
+            <Image
+              src="/zupe-label.png"
+              alt="Zupestore"
+              width={145}
+              height={38}
+              className="h-8 sm:h-9 w-auto object-contain transition-opacity group-hover:opacity-90"
+              priority
+            />
           </Link>
 
           {/* Search Bar (Center, Triggers Animated Search Modal with Collections) */}
@@ -237,14 +233,14 @@ function NavbarContent() {
             className="flex-1 max-w-2xl relative cursor-pointer group"
           >
             <div className="w-full relative flex items-center">
-              <Search className="absolute left-4 w-4 h-4 text-gray-400 group-hover:text-[#FA521C] transition-colors pointer-events-none stroke-[2.2]" />
+              <Search className="absolute left-4 w-4 h-4 text-gray-400 group-hover:text-[#FF7A00] transition-colors pointer-events-none stroke-[2.2]" />
               <input
                 type="text"
                 readOnly
                 placeholder="Search products, lamps, gadgets, collections..."
-                className="w-full pl-11 pr-24 py-2.5 rounded-full border border-gray-200 bg-[#FAFAFA] text-sm text-[#111111] placeholder:text-gray-400 cursor-pointer group-hover:border-[#FA521C]/50 group-hover:bg-white transition-all shadow-inner select-none"
+                className="w-full pl-11 pr-24 py-2.5 rounded-full border border-gray-200 bg-[#FAFAFA] text-sm text-[#111111] placeholder:text-gray-400 cursor-pointer group-hover:border-[#FF7A00]/50 group-hover:bg-white transition-all shadow-inner select-none"
               />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 rounded-full bg-orange-50 text-[#FA521C] text-xs font-bold border border-[#FA521C]/20 flex items-center gap-1 group-hover:bg-[#FA521C] group-hover:text-white transition-all">
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 rounded-full bg-orange-50 text-[#FF7A00] text-xs font-bold border border-[#FF7A00]/20 flex items-center gap-1 group-hover:bg-[#FF7A00] group-hover:text-white transition-all">
                 <span>Search</span>
                 <Sparkles className="w-3 h-3" />
               </span>
@@ -256,11 +252,11 @@ function NavbarContent() {
             {/* Account (Redirects directly to /account like mobile view) */}
             <button
               onClick={handleAccountClick}
-              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors py-1 group/account cursor-pointer"
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors py-1 group/account cursor-pointer"
               aria-label="Account"
             >
               <div className="relative p-1 rounded-full group-hover/account:bg-orange-50 transition-colors">
-                <User className="w-5 h-5 text-gray-700 group-hover/account:text-[#FA521C] anim-user-hover transition-colors" />
+                <User className="w-5 h-5 text-gray-700 group-hover/account:text-[#FF7A00] anim-user-hover transition-colors" />
               </div>
               <span className="hidden md:inline">
                 {isAuthenticated ? (user?.name?.split(" ")[0] || "Account") : "Account"}
@@ -270,7 +266,7 @@ function NavbarContent() {
             {/* Wishlist */}
             <Link
               href="/wishlist"
-              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors relative py-1 group/wishlist"
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors relative py-1 group/wishlist"
             >
               <div className="relative p-1 rounded-full group-hover/wishlist:bg-rose-50 transition-colors">
                 <Heart className="w-5 h-5 text-gray-700 group-hover/wishlist:text-[#FF3B30] group-hover/wishlist:fill-[#FF3B30]/20 anim-heart-hover transition-colors" />
@@ -286,11 +282,11 @@ function NavbarContent() {
             {/* Cart */}
             <button
               onClick={openCart}
-              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FA521C] transition-colors relative py-1 group/cart cursor-pointer"
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors relative py-1 group/cart cursor-pointer"
               aria-label="View Cart"
             >
               <div className="relative p-1 rounded-full group-hover/cart:bg-orange-50 transition-colors">
-                <ShoppingBag className="w-5 h-5 text-gray-700 group-hover/cart:text-[#FA521C] anim-cart-hover transition-colors" />
+                <ShoppingBag className="w-5 h-5 text-gray-700 group-hover/cart:text-[#FF7A00] anim-cart-hover transition-colors" />
                 {totalItems > 0 && (
                   <span className="absolute -top-1.5 -right-2 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white transition-transform group-hover/cart:scale-110 shadow-xs">
                     {totalItems}
@@ -314,8 +310,8 @@ function NavbarContent() {
                 pathname === "/products" &&
                 !searchParams?.get("filter") &&
                 (!searchParams?.get("category") || searchParams?.get("category") === "All")
-                  ? "text-[#FA521C]"
-                  : "text-gray-900 hover:text-[#FA521C]"
+                  ? "text-[#FF7A00]"
+                  : "text-gray-900 hover:text-[#FF7A00]"
               }`}
             >
               <Menu className="w-4 h-4 text-current" />
@@ -332,13 +328,13 @@ function NavbarContent() {
                     href={item.href}
                     className={`py-3 whitespace-nowrap transition-colors relative ${
                       active
-                        ? "text-[#FA521C] font-bold"
-                        : "text-gray-700 hover:text-[#FA521C] font-medium"
+                        ? "text-[#FF7A00] font-bold"
+                        : "text-gray-700 hover:text-[#FF7A00] font-medium"
                     }`}
                   >
                     {item.label}
                     {active && (
-                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FA521C] rounded-full" />
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF7A00] rounded-full" />
                     )}
                   </Link>
                 );
@@ -358,7 +354,7 @@ function NavbarContent() {
           <div data-lenis-prevent className="relative w-4/5 max-w-xs bg-white h-full z-10 p-5 flex flex-col justify-between overflow-y-auto overscroll-contain">
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <div className="relative w-8 h-8 flex items-center justify-center">
                     <Image
                       src="/zupe-logo.png"
@@ -368,9 +364,13 @@ function NavbarContent() {
                       className="object-contain"
                     />
                   </div>
-                  <span className="font-display font-black text-xl text-gray-900">
-                    Zupe<span className="text-[#FA521C]">store</span>
-                  </span>
+                  <Image
+                    src="/zupe-label.png"
+                    alt="Zupestore"
+                    width={110}
+                    height={28}
+                    className="h-6 w-auto object-contain"
+                  />
                 </div>
                 <button onClick={() => setMobileMenuOpen(false)}>
                   <X className="w-5 h-5 text-gray-500" />
@@ -387,8 +387,8 @@ function NavbarContent() {
                       onClick={() => setMobileMenuOpen(false)}
                       className={`block py-2.5 px-3 rounded-xl text-sm font-semibold transition-colors ${
                         active
-                          ? "bg-[#FA521C]/10 text-[#FA521C] font-bold"
-                          : "text-gray-700 hover:bg-[#FA521C]/10 hover:text-[#FA521C]"
+                          ? "bg-[#FF7A00]/10 text-[#FF7A00] font-bold"
+                          : "text-gray-700 hover:bg-[#FF7A00]/10 hover:text-[#FF7A00]"
                       }`}
                     >
                       {item.label}

@@ -39,7 +39,7 @@ import { useAuth } from "@/context/AuthContext";
 function ProductsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const initialCategory = searchParams.get("category") || "All";
   const initialSubcategory = searchParams.get("subcategory") || "All";
   const initialSearch = searchParams.get("search") || searchParams.get("q") || "";
@@ -259,42 +259,22 @@ function ProductsContent() {
   const handleQuickAdd = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
+    const success = addToCart(product, 1);
     if (!user) {
-      try {
-        localStorage.setItem(
-          "zp_pending_cart_action",
-          JSON.stringify({ action: "add_to_cart", product, quantity: 1, autoOpenCart: true })
-        );
-      } catch (e) {}
-      router.push(
-        `/signin?redirect=/products&notice=${encodeURIComponent(
-          "Please sign in to add items to your cart"
-        )}`
-      );
+      openAuthModal("login", "Sign in required: Please log in to add items to your cart & checkout 🛍️");
       return;
     }
-    const success = addToCart(product, 1);
     if (success) openCart();
   };
 
   const handleBuyNow = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
+    addToCart(product, 1);
     if (!user) {
-      try {
-        localStorage.setItem(
-          "zp_pending_cart_action",
-          JSON.stringify({ action: "buy_now", product, quantity: 1, autoOpenCart: false })
-        );
-      } catch (e) {}
-      router.push(
-        `/signin?redirect=${encodeURIComponent("/checkout")}&notice=${encodeURIComponent(
-          "Please sign in to place an order"
-        )}`
-      );
+      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
       return;
     }
-    addToCart(product, 1);
     router.push("/checkout");
   };
 
@@ -308,11 +288,7 @@ function ProductsContent() {
           JSON.stringify({ action: "wishlist", product })
         );
       } catch (e) {}
-      router.push(
-        `/signin?redirect=/products&notice=${encodeURIComponent(
-          "Please sign in to save items to your wishlist"
-        )}`
-      );
+      openAuthModal("login", "Sign in required: Please log in to save items to your wishlist ❤️");
       return;
     }
     toggleWishlist(product);
@@ -323,7 +299,7 @@ function ProductsContent() {
     if (f === "new") {
       return {
         badge: "Fresh Drops",
-        icon: <Sparkles className="w-3.5 h-3.5 text-[#FA521C]" />,
+        icon: <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />,
         title: selectedCategory !== "All" ? `New Arrivals: ${selectedCategory}` : "New Arrivals",
         subtitle: "Be the first to explore our latest innovatively designed essentials",
         breadcrumb: "New Arrivals",
@@ -332,7 +308,7 @@ function ProductsContent() {
     if (f === "best") {
       return {
         badge: "Top Picks",
-        icon: <Flame className="w-3.5 h-3.5 text-[#FA521C]" />,
+        icon: <Flame className="w-3.5 h-3.5 text-[#FF7A00]" />,
         title: selectedCategory !== "All" ? `Best Sellers: ${selectedCategory}` : "Best Sellers",
         subtitle: "Our most popular, top-rated products loved by thousands of customers",
         breadcrumb: "Best Sellers",
@@ -341,7 +317,7 @@ function ProductsContent() {
     if (f === "offers" || f === "deals") {
       return {
         badge: "Limited Time Deals",
-        icon: <Tag className="w-3.5 h-3.5 text-[#FA521C]" />,
+        icon: <Tag className="w-3.5 h-3.5 text-[#FF7A00]" />,
         title: selectedCategory !== "All" ? `Special Deals: ${selectedCategory}` : "Special Offers & Deals",
         subtitle: "Save big on premium curated lifestyle products and daily essentials",
         breadcrumb: "Offers & Deals",
@@ -350,7 +326,7 @@ function ProductsContent() {
     if (selectedCategory !== "All") {
       return {
         badge: selectedCategory,
-        icon: <Sparkles className="w-3.5 h-3.5 text-[#FA521C]" />,
+        icon: <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />,
         title: selectedSubcategory !== "All" ? selectedSubcategory : selectedCategory,
         subtitle:
           selectedSubcategory !== "All"
@@ -362,7 +338,7 @@ function ProductsContent() {
     }
     return {
       badge: "Curated Catalog",
-      icon: <Sparkles className="w-3.5 h-3.5 text-[#FA521C]" />,
+      icon: <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />,
       title: "Explore All Products",
       subtitle: `Showing ${filteredProducts.length} handcrafted, minimalist designs`,
       breadcrumb: null,
@@ -383,9 +359,9 @@ function ProductsContent() {
       value: "featured",
       label: "Featured",
       desc: "Curated collection & top picks",
-      icon: <Sparkles className="w-3.5 h-3.5 text-[#FA521C]" />,
-      iconBg: "bg-orange-50 text-[#FA521C]",
-      activeIconBg: "bg-[#FA521C] text-white",
+      icon: <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />,
+      iconBg: "bg-orange-50 text-[#FF7A00]",
+      activeIconBg: "bg-[#FF7A00] text-white",
     },
     {
       value: "price-asc",
@@ -416,14 +392,14 @@ function ProductsContent() {
   const currentSortOption = SORT_OPTIONS.find((o) => o.value === sortBy) || SORT_OPTIONS[0];
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-[#2D3436]">
+    <div className="min-h-screen bg-[#F3F4F6] text-[#2D3436]">
       <Navbar />
 
       {/* Header Banner */}
-      <div className="pt-16 sm:pt-24 pb-6 sm:pb-8 bg-gradient-to-b from-[#FA521C]/10 via-[#F8F9FA]/60 to-[#F8F9FA] border-b border-gray-100">
+      <div className="pt-16 sm:pt-24 pb-6 sm:pb-8 bg-gradient-to-b from-[#FF7A00]/10 via-[#F3F4F6]/60 to-[#F3F4F6] border-b border-gray-100">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-2 text-xs text-[#636E72] mb-2 sm:mb-3">
-            <Link href="/" className="hover:text-[#FA521C] transition-colors">
+            <Link href="/" className="hover:text-[#FF7A00] transition-colors">
               Home
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -433,7 +409,7 @@ function ProductsContent() {
                 setActiveFilter("");
                 setSelectedCategory("All");
               }}
-              className="hover:text-[#FA521C] transition-colors font-medium"
+              className="hover:text-[#FF7A00] transition-colors font-medium"
             >
               Shop
             </Link>
@@ -444,26 +420,26 @@ function ProductsContent() {
                   <button
                     type="button"
                     onClick={() => handleSubcategorySelect("All")}
-                    className="hover:text-[#FA521C] transition-colors font-medium cursor-pointer"
+                    className="hover:text-[#FF7A00] transition-colors font-medium cursor-pointer"
                   >
                     {banner.breadcrumb}
                   </button>
                 ) : (
-                  <span className="text-[#FA521C] font-semibold">{banner.breadcrumb}</span>
+                  <span className="text-[#FF7A00] font-semibold">{banner.breadcrumb}</span>
                 )}
               </>
             )}
             {banner.subBreadcrumb && (
               <>
                 <ChevronRight className="w-3.5 h-3.5" />
-                <span className="text-[#FA521C] font-semibold">{banner.subBreadcrumb}</span>
+                <span className="text-[#FF7A00] font-semibold">{banner.subBreadcrumb}</span>
               </>
             )}
           </div>
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4">
             <div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FA521C]/10 text-[#FA521C] mb-1.5">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FF7A00]/10 text-[#FF7A00] mb-1.5">
                 {banner.icon}
                 <span>{banner.badge}</span>
               </span>
@@ -483,7 +459,7 @@ function ProductsContent() {
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-white border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30 focus:border-[#FA521C] shadow-sm transition-all"
+                className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-white border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] shadow-sm transition-all"
               />
               {searchQuery && (
                 <button
@@ -507,14 +483,14 @@ function ProductsContent() {
           <div className="flex items-center gap-2 mb-4 flex-wrap">
             <span className="text-xs font-semibold text-gray-500">Filter applied:</span>
             {activeFilter && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FA521C]/10 text-[#FA521C] border border-[#FA521C]/25 shadow-sm">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FF7A00]/10 text-[#FF7A00] border border-[#FF7A00]/25 shadow-sm">
                 {activeFilter.toLowerCase() === "new" && "✨ New Arrivals"}
                 {activeFilter.toLowerCase() === "best" && "🔥 Best Sellers"}
                 {(activeFilter.toLowerCase() === "offers" || activeFilter.toLowerCase() === "deals") && "⚡ Special Offers"}
                 {!["new", "best", "offers", "deals"].includes(activeFilter.toLowerCase()) && activeFilter}
                 <button
                   onClick={handleClearActiveFilter}
-                  className="p-0.5 hover:bg-[#FA521C]/20 rounded-full transition-colors ml-1 cursor-pointer"
+                  className="p-0.5 hover:bg-[#FF7A00]/20 rounded-full transition-colors ml-1 cursor-pointer"
                   title="Clear filter"
                   aria-label="Clear filter"
                 >
@@ -523,11 +499,11 @@ function ProductsContent() {
               </span>
             )}
             {selectedCategory !== "All" && selectedSubcategory !== "All" && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FA521C]/10 text-[#FA521C] border border-[#FA521C]/25 shadow-sm">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FF7A00]/10 text-[#FF7A00] border border-[#FF7A00]/25 shadow-sm">
                 <span>{selectedSubcategory}</span>
                 <button
                   onClick={() => handleSubcategorySelect("All")}
-                  className="p-0.5 hover:bg-[#FA521C]/20 rounded-full transition-colors ml-1 cursor-pointer"
+                  className="p-0.5 hover:bg-[#FF7A00]/20 rounded-full transition-colors ml-1 cursor-pointer"
                   title="Clear subcategory"
                   aria-label="Clear subcategory"
                 >
@@ -540,7 +516,7 @@ function ProductsContent() {
                 handleClearActiveFilter();
                 handleSubcategorySelect("All");
               }}
-              className="text-xs text-gray-500 hover:text-[#FA521C] font-semibold underline cursor-pointer ml-1"
+              className="text-xs text-gray-500 hover:text-[#FF7A00] font-semibold underline cursor-pointer ml-1"
             >
               Show all products
             </button>
@@ -561,7 +537,7 @@ function ProductsContent() {
                     onClick={() => handleSubcategorySelect(subcat)}
                     className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                       isSelected
-                        ? "bg-[#FA521C] text-white shadow-md shadow-[#FA521C]/25 font-bold"
+                        ? "bg-[#FF7A00] text-white shadow-md shadow-[#FF7A00]/25 font-bold"
                         : "bg-white text-[#636E72] hover:bg-gray-100 hover:text-gray-900 border border-gray-200/80"
                     }`}
                   >
@@ -577,7 +553,7 @@ function ProductsContent() {
                   onClick={() => handleCategorySelect(cat)}
                   className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                     selectedCategory.toLowerCase() === cat.toLowerCase()
-                      ? "bg-[#FA521C] text-white shadow-md shadow-[#FA521C]/25 font-bold"
+                      ? "bg-[#FF7A00] text-white shadow-md shadow-[#FF7A00]/25 font-bold"
                       : "bg-white text-[#636E72] hover:bg-gray-100 border border-gray-200/80"
                   }`}
                 >
@@ -593,7 +569,7 @@ function ProductsContent() {
               onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
               className="lg:hidden flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-[#2D3436] shadow-sm hover:bg-gray-50 cursor-pointer"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-[#FA521C]" />
+              <SlidersHorizontal className="w-3.5 h-3.5 text-[#FF7A00]" />
               <span>Filters</span>
             </button>
 
@@ -606,18 +582,18 @@ function ProductsContent() {
                 aria-haspopup="listbox"
                 className={`flex items-center gap-2.5 px-3.5 py-2 sm:px-4 sm:py-2.5 bg-white border rounded-2xl text-xs sm:text-sm font-semibold transition-all shadow-sm cursor-pointer ${
                   sortDropdownOpen
-                    ? "border-[#FA521C] ring-2 ring-[#FA521C]/15 shadow-md text-[#111111]"
+                    ? "border-[#FF7A00] ring-2 ring-[#FF7A00]/15 shadow-md text-[#111111]"
                     : "border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50/50"
                 }`}
               >
-                <div className="flex items-center justify-center w-5 h-5 rounded-md bg-orange-50 text-[#FA521C]">
+                <div className="flex items-center justify-center w-5 h-5 rounded-md bg-orange-50 text-[#FF7A00]">
                   {currentSortOption.icon}
                 </div>
                 <span className="text-gray-400 font-normal hidden sm:inline">Sort:</span>
                 <span className="font-bold text-gray-900">{currentSortOption.label}</span>
                 <ChevronDown
                   className={`w-4 h-4 text-gray-400 transition-transform duration-200 ml-0.5 ${
-                    sortDropdownOpen ? "rotate-180 text-[#FA521C]" : ""
+                    sortDropdownOpen ? "rotate-180 text-[#FF7A00]" : ""
                   }`}
                 />
               </button>
@@ -656,7 +632,7 @@ function ProductsContent() {
                             }}
                             className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all cursor-pointer ${
                               isSelected
-                                ? "bg-[#FA521C]/10 text-gray-900 font-semibold"
+                                ? "bg-[#FF7A00]/10 text-gray-900 font-semibold"
                                 : "hover:bg-gray-50 text-gray-700"
                             }`}
                           >
@@ -668,7 +644,7 @@ function ProductsContent() {
                               {opt.icon}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className={`text-xs sm:text-sm font-semibold truncate ${isSelected ? "text-[#FA521C]" : "text-gray-900"}`}>
+                              <p className={`text-xs sm:text-sm font-semibold truncate ${isSelected ? "text-[#FF7A00]" : "text-gray-900"}`}>
                                 {opt.label}
                               </p>
                               <p className="text-[11px] text-gray-400 truncate">
@@ -676,7 +652,7 @@ function ProductsContent() {
                               </p>
                             </div>
                             {isSelected && (
-                              <div className="w-5 h-5 rounded-full bg-[#FA521C] text-white flex items-center justify-center flex-shrink-0 shadow-sm shadow-[#FA521C]/40">
+                              <div className="w-5 h-5 rounded-full bg-[#FF7A00] text-white flex items-center justify-center flex-shrink-0 shadow-sm shadow-[#FF7A00]/40">
                                 <Check className="w-3 h-3 stroke-[3]" />
                               </div>
                             )}
@@ -702,7 +678,7 @@ function ProductsContent() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs font-semibold text-[#636E72]">
                     <span>₹0</span>
-                    <span className="text-[#FA521C]">Up to ₹{maxPrice.toLocaleString()}</span>
+                    <span className="text-[#FF7A00]">Up to ₹{maxPrice.toLocaleString()}</span>
                   </div>
                   <input
                     type="range"
@@ -712,7 +688,7 @@ function ProductsContent() {
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(Number(e.target.value))}
                     aria-label="Filter by maximum price"
-                    className="w-full accent-[#FA521C] cursor-pointer"
+                    className="w-full accent-[#FF7A00] cursor-pointer"
                   />
                 </div>
               </div>
@@ -728,7 +704,7 @@ function ProductsContent() {
                     type="checkbox"
                     checked={onlyInStock}
                     onChange={(e) => setOnlyInStock(e.target.checked)}
-                    className="w-4 h-4 rounded text-[#FA521C] focus:ring-[#FA521C] accent-[#FA521C]"
+                    className="w-4 h-4 rounded text-[#FF7A00] focus:ring-[#FF7A00] accent-[#FF7A00]"
                   />
                   <span className="text-xs font-medium text-[#2D3436]">
                     In-Stock Items Only
@@ -738,8 +714,8 @@ function ProductsContent() {
 
               <hr className="border-gray-100" />
 
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#FA521C]/10 to-[#FF7A45]/10 text-center">
-                <p className="text-xs font-bold text-[#FA521C] mb-1">Free Delivery</p>
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#FF7A00]/10 to-[#FF7A45]/10 text-center">
+                <p className="text-xs font-bold text-[#FF7A00] mb-1">Free Delivery</p>
                 <p className="text-[11px] text-[#636E72]">
                   On all orders over ₹1,499 across all categories
                 </p>
@@ -750,12 +726,12 @@ function ProductsContent() {
           {/* Product Grid */}
           <main className="lg:col-span-3">
             {searchQuery.trim() && (
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-orange-50/70 border border-[#FA521C]/25 text-sm">
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-orange-50/70 border border-[#FF7A00]/25 text-sm">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Search className="w-4 h-4 text-[#FA521C]" />
+                  <Search className="w-4 h-4 text-[#FF7A00]" />
                   <span className="text-[#636E72]">Search results for:</span>
-                  <span className="font-bold text-[#FA521C]">&quot;{searchQuery}&quot;</span>
-                  <span className="px-2 py-0.5 rounded-full bg-[#FA521C]/10 text-[#FA521C] text-xs font-semibold">
+                  <span className="font-bold text-[#FF7A00]">&quot;{searchQuery}&quot;</span>
+                  <span className="px-2 py-0.5 rounded-full bg-[#FF7A00]/10 text-[#FF7A00] text-xs font-semibold">
                     {filteredProducts.length} {filteredProducts.length === 1 ? "item" : "items"} found
                   </span>
                 </div>
@@ -770,7 +746,7 @@ function ProductsContent() {
                   )}
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-[#FA521C] hover:text-[#d43f10] bg-white px-3 py-1.5 rounded-xl border border-[#FA521C]/30 shadow-sm transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#FF7A00] hover:text-[#d43f10] bg-white px-3 py-1.5 rounded-xl border border-[#FF7A00]/30 shadow-sm transition-colors cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                     <span>Clear search</span>
@@ -799,7 +775,7 @@ function ProductsContent() {
                     setOnlyInStock(false);
                     router.push("/products");
                   }}
-                  className="px-6 py-2.5 rounded-xl bg-[#FA521C] text-white text-xs font-semibold hover:bg-[#E0400B] transition-colors cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl bg-[#FF7A00] text-white text-xs font-semibold hover:bg-[#E66E00] transition-colors cursor-pointer"
                 >
                   Reset All Filters
                 </button>
@@ -862,7 +838,7 @@ function ProductsContent() {
 
                         {/* Category & Rating */}
                         <div className="flex items-center justify-between text-[10px] text-gray-400 mb-1">
-                          <span className="font-semibold uppercase tracking-wider text-[#FA521C] truncate max-w-[65%]">
+                          <span className="font-semibold uppercase tracking-wider text-[#FF7A00] truncate max-w-[65%]">
                             {product.category}
                           </span>
                           {product.rating && (
@@ -878,7 +854,7 @@ function ProductsContent() {
                         {/* Title */}
                         <Link
                           href={`/products/${product.slug || product.id}`}
-                          className="block text-xs sm:text-sm font-bold text-gray-900 line-clamp-2 hover:text-[#FA521C] transition-colors leading-snug mb-1.5 min-h-[32px] sm:min-h-[36px]"
+                          className="block text-xs sm:text-sm font-bold text-gray-900 line-clamp-2 hover:text-[#FF7A00] transition-colors leading-snug mb-1.5 min-h-[32px] sm:min-h-[36px]"
                         >
                           {product.name}
                         </Link>
@@ -917,7 +893,7 @@ function ProductsContent() {
                         <button
                           type="button"
                           onClick={(e) => handleQuickAdd(e, product)}
-                          className="w-full py-2 px-1.5 sm:px-2 rounded-xl bg-[#FA521C] hover:bg-[#E04515] active:scale-95 text-white text-xs sm:text-[13px] font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
+                          className="w-full py-2 px-1.5 sm:px-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-xs sm:text-[13px] font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
                         >
                           Add to cart
                         </button>
@@ -953,7 +929,7 @@ function ProductsContent() {
               <div>
                 <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
                   <div className="flex items-center gap-2">
-                    <SlidersHorizontal className="w-4 h-4 text-[#FA521C]" />
+                    <SlidersHorizontal className="w-4 h-4 text-[#FF7A00]" />
                     <h3 className="font-display font-bold text-lg text-[#2D3436]">Filters</h3>
                   </div>
                   <button
@@ -970,7 +946,7 @@ function ProductsContent() {
                   <h4 className="font-semibold text-sm text-[#2D3436]">Price Range</h4>
                   <div className="flex justify-between text-xs font-semibold text-[#636E72]">
                     <span>₹0</span>
-                    <span className="text-[#FA521C]">Up to ₹{maxPrice.toLocaleString()}</span>
+                    <span className="text-[#FF7A00]">Up to ₹{maxPrice.toLocaleString()}</span>
                   </div>
                   <input
                     type="range"
@@ -979,7 +955,7 @@ function ProductsContent() {
                     step="100"
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(Number(e.target.value))}
-                    className="w-full accent-[#FA521C] cursor-pointer"
+                    className="w-full accent-[#FF7A00] cursor-pointer"
                   />
                 </div>
 
@@ -991,7 +967,7 @@ function ProductsContent() {
                       type="checkbox"
                       checked={onlyInStock}
                       onChange={(e) => setOnlyInStock(e.target.checked)}
-                      className="w-4 h-4 rounded text-[#FA521C] accent-[#FA521C]"
+                      className="w-4 h-4 rounded text-[#FF7A00] accent-[#FF7A00]"
                     />
                     <span className="text-xs font-medium text-[#2D3436]">In-Stock Items Only</span>
                   </label>
@@ -1001,7 +977,7 @@ function ProductsContent() {
               <div className="pt-6 border-t border-gray-100 space-y-2">
                 <button
                   onClick={() => setMobileFilterOpen(false)}
-                  className="w-full py-3 rounded-xl bg-[#FA521C] text-white text-sm font-bold shadow-md shadow-[#FA521C]/25 cursor-pointer"
+                  className="w-full py-3 rounded-xl bg-[#FF7A00] text-white text-sm font-bold shadow-md shadow-[#FF7A00]/25 cursor-pointer"
                 >
                   Apply Filters ({filteredProducts.length} items)
                 </button>
@@ -1033,9 +1009,9 @@ export default function ProductsPage() {
   return (
     <React.Suspense
       fallback={
-        <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
+        <div className="min-h-screen bg-[#F3F4F6] flex items-center justify-center">
           <div className="text-center">
-            <div className="w-10 h-10 border-4 border-[#FA521C] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <div className="w-10 h-10 border-4 border-[#FF7A00] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="text-sm font-semibold text-gray-500">Loading catalog...</p>
           </div>
         </div>

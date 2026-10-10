@@ -20,6 +20,7 @@ import {
   Phone,
   Eye,
   X,
+  Zap,
 } from "lucide-react";
 import { ERPOrder } from "@/lib/erpStore";
 
@@ -46,6 +47,8 @@ function AdminOrdersContent() {
   const [editRemittance, setEditRemittance] = useState<string>("Pending");
   const [isSavingOrder, setIsSavingOrder] = useState<boolean>(false);
   const [isCreditingSupplier, setIsCreditingSupplier] = useState<boolean>(false);
+  const [isPushingToShopify, setIsPushingToShopify] = useState<boolean>(false);
+  const [isGeneratingAWB, setIsGeneratingAWB] = useState<boolean>(false);
   const [orderModalMsg, setOrderModalMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
@@ -124,6 +127,92 @@ function AdminOrdersContent() {
       showToast("error", errMsg);
     } finally {
       setIsSavingOrder(false);
+    }
+  };
+
+  const handlePushToShopify = async () => {
+    if (!selectedOrder) return;
+    setIsPushingToShopify(true);
+    setOrderModalMsg(null);
+    try {
+      const res = await fetch("/api/admin/sync/shopify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "push_order",
+          order_id: selectedOrder.id,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.shopifyOrderId) {
+        const updated = { ...selectedOrder, shopify_order_id: data.shopifyOrderId };
+        setSelectedOrder(updated);
+        setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
+        showToast("success", `Pushed order to Shopify! Assigned Order ID: ${data.shopifyOrderId}`);
+        setOrderModalMsg({
+          text: `Successfully synced with Shopify! Assigned Order: ${data.shopifyOrderId}`,
+          type: "success",
+        });
+      } else {
+        const errMsg = data.error || data.message || "Failed to push order to Shopify";
+        setOrderModalMsg({ text: errMsg, type: "error" });
+        showToast("error", errMsg);
+      }
+    } catch (err: any) {
+      const errMsg = err.message || "Network error while pushing to Shopify";
+      setOrderModalMsg({ text: errMsg, type: "error" });
+      showToast("error", errMsg);
+    } finally {
+      setIsPushingToShopify(false);
+    }
+  };
+
+  const handleGenerateAWB = async () => {
+    if (!selectedOrder) return;
+    setIsGeneratingAWB(true);
+    setOrderModalMsg(null);
+    try {
+      const res = await fetch("/api/admin/sync/shiprocket", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "generate_awb",
+          order_id: selectedOrder.id,
+          preferredCourier: editCourier,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.awb) {
+        setEditAWB(data.awb);
+        setEditDeliveryStatus(data.delivery_status || "In Transit");
+        if (data.courier) setEditCourier(data.courier);
+
+        const updated = {
+          ...selectedOrder,
+          shiprocket_awb: data.awb,
+          tracking_number: data.awb,
+          courier_partner: data.courier || selectedOrder.courier_partner,
+          delivery_status: data.delivery_status || "In Transit",
+          status: data.delivery_status || "In Transit",
+        };
+        setSelectedOrder(updated);
+        setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
+        showToast("success", `Generated AWB ${data.awb} via ${data.courier || "Courier"}!`);
+        setOrderModalMsg({
+          text: data.message || `Generated AWB ${data.awb} via ${data.courier || "Courier"}!`,
+          type: "success",
+        });
+      } else {
+        const errMsg = data.error || "Failed to generate Shiprocket AWB";
+        setOrderModalMsg({ text: errMsg, type: "error" });
+        showToast("error", errMsg);
+      }
+    } catch (err: any) {
+      const errMsg = err.message || "Network error while generating AWB";
+      setOrderModalMsg({ text: errMsg, type: "error" });
+      showToast("error", errMsg);
+    } finally {
+      setIsGeneratingAWB(false);
     }
   };
 
@@ -309,7 +398,7 @@ function AdminOrdersContent() {
                 placeholder="Search Order ID, Customer, AWB..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
               />
               {search && (
                 <button
@@ -378,7 +467,7 @@ function AdminOrdersContent() {
                   ) : (
                     orders.map((ord) => (
                       <tr key={ord.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-3.5 px-4 sm:px-6 font-bold text-[#FA521C] whitespace-nowrap">
+                        <td className="py-3.5 px-4 sm:px-6 font-bold text-[#FF7A00] whitespace-nowrap">
                           {ord.shopify_order_id}
                         </td>
                         <td className="py-3.5 px-4 text-slate-500 whitespace-nowrap text-xs">
@@ -388,7 +477,7 @@ function AdminOrdersContent() {
                           <p className="font-semibold text-slate-900">{ord.customer_name}</p>
                           <a
                             href={`tel:${ord.customer_phone}`}
-                            className="text-[11px] text-slate-500 hover:text-[#FA521C] hover:underline flex items-center gap-1"
+                            className="text-[11px] text-slate-500 hover:text-[#FF7A00] hover:underline flex items-center gap-1"
                           >
                             <Phone className="w-3 h-3" />
                             <span>{ord.customer_phone}</span>
@@ -399,7 +488,7 @@ function AdminOrdersContent() {
                             className={`inline-flex px-2 py-0.5 rounded text-[11px] font-bold ${
                               ord.payment_method === "COD"
                                 ? "bg-amber-50 text-amber-700 border border-amber-200"
-                                : "bg-orange-50 text-[#FA521C] border border-orange-200"
+                                : "bg-orange-50 text-[#FF7A00] border border-orange-200"
                             }`}
                           >
                             {ord.payment_method}
@@ -459,7 +548,7 @@ function AdminOrdersContent() {
                         <td className="py-3.5 px-4 text-right whitespace-nowrap">
                           <button
                             onClick={() => setSelectedOrder(ord)}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-[#FA521C] hover:text-[#D4380D] hover:underline"
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-[#FF7A00] hover:text-[#E66E00] hover:underline"
                           >
                             <Eye className="w-3.5 h-3.5" />
                             <span>Details</span>
@@ -536,7 +625,7 @@ function AdminOrdersContent() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500 font-medium">Phone:</span>
-                  <a href={`tel:${selectedOrder.customer_phone}`} className="font-bold text-[#FA521C] hover:underline">
+                  <a href={`tel:${selectedOrder.customer_phone}`} className="font-bold text-[#FF7A00] hover:underline">
                     {selectedOrder.customer_phone}
                   </a>
                 </div>
@@ -550,6 +639,36 @@ function AdminOrdersContent() {
                   <span className="text-slate-500 font-medium">Address:</span>
                   <span className="text-slate-700 text-right max-w-xs">{selectedOrder.shipping_address}</span>
                 </div>
+              </div>
+
+              {/* Shopify Sync Card */}
+              <div className="bg-emerald-50/60 p-3.5 rounded-xl border border-emerald-200/80 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                    <ShoppingBag className="w-4 h-4 stroke-[2.2]" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Shopify Order:</span>
+                      <span className="font-mono font-bold text-xs text-emerald-800">
+                        {selectedOrder.shopify_order_id || "Unsynced"}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500">
+                      Syncs order with Shopify Admin API for fulfillment app routing
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handlePushToShopify}
+                  disabled={isPushingToShopify}
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50 shrink-0"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isPushingToShopify ? "animate-spin" : ""}`} />
+                  <span>{isPushingToShopify ? "Syncing..." : "Push to Shopify"}</span>
+                </button>
               </div>
 
               {/* Editable Operational Controls */}
@@ -566,7 +685,7 @@ function AdminOrdersContent() {
                     <select
                       value={editDeliveryStatus}
                       onChange={(e) => setEditDeliveryStatus(e.target.value)}
-                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                     >
                       <option value="Processing">Processing</option>
                       <option value="In Transit">In Transit</option>
@@ -585,7 +704,7 @@ function AdminOrdersContent() {
                     <select
                       value={editCourier}
                       onChange={(e) => setEditCourier(e.target.value)}
-                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                     >
                       <option value="Delhivery">Delhivery</option>
                       <option value="Bluedart">Bluedart</option>
@@ -595,15 +714,35 @@ function AdminOrdersContent() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                      AWB Tracking Number
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[11px] font-bold text-slate-600">
+                        AWB Tracking Number
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleGenerateAWB}
+                        disabled={isGeneratingAWB}
+                        className="text-[11px] font-bold text-[#FF7A00] hover:text-[#E66E00] flex items-center gap-1 disabled:opacity-50"
+                      >
+                        {isGeneratingAWB ? (
+                          <>
+                            <RefreshCw className="w-3 h-3 animate-spin" />
+                            <span>Generating...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Zap className="w-3 h-3 text-[#FF7A00]" />
+                            <span>Auto-Generate AWB</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                     <input
                       type="text"
                       value={editAWB}
                       onChange={(e) => setEditAWB(e.target.value)}
-                      placeholder="e.g. SR-AWB-9871101"
-                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                      placeholder="e.g. DEL-82910384"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                     />
                   </div>
 
@@ -614,7 +753,7 @@ function AdminOrdersContent() {
                     <select
                       value={editRemittance}
                       onChange={(e) => setEditRemittance(e.target.value)}
-                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                     >
                       <option value="Pending">Pending</option>
                       <option value="Remitted">Remitted</option>
@@ -702,7 +841,7 @@ function AdminOrdersContent() {
                 type="button"
                 onClick={handleSaveOrderUpdates}
                 disabled={isSavingOrder}
-                className="px-5 py-2 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 disabled:opacity-50"
+                className="px-5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 disabled:opacity-50"
               >
                 {isSavingOrder ? (
                   <>
@@ -757,7 +896,7 @@ export default function AdminOrdersPage() {
       fallback={
         <div className="min-h-screen bg-[#F4F6FA] flex items-center justify-center">
           <div className="text-center">
-            <div className="w-8 h-8 border-4 border-[#FA521C] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            <div className="w-8 h-8 border-4 border-[#FF7A00] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
             <p className="text-xs font-semibold text-slate-500">Loading orders...</p>
           </div>
         </div>

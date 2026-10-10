@@ -20,22 +20,9 @@ export async function POST(req: NextRequest) {
       if (provider === "shopify") {
         const domain = body.domain || "";
         const token = body.token || "";
-        if (!domain.includes("myshopify.com") && !domain.includes(".")) {
-          return NextResponse.json({
-            success: false,
-            message: "Invalid Shopify domain. Must end in .myshopify.com or be a valid domain.",
-          });
-        }
-        if (!token || token.length < 8) {
-          return NextResponse.json({
-            success: false,
-            message: "Invalid Admin Access Token format.",
-          });
-        }
-        return NextResponse.json({
-          success: true,
-          message: `Connected successfully to Shopify store (${domain})! Webhook endpoints active.`,
-        });
+        const { testShopifyConnection } = await import("@/lib/shopifyOutbound");
+        const testRes = await testShopifyConnection(domain, token, body.apiVersion || "2024-01");
+        return NextResponse.json(testRes);
       }
 
       if (provider === "shiprocket") {

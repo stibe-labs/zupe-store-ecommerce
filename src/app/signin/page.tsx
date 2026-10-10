@@ -127,9 +127,9 @@ function SignInContent() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
+      <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-[#FA521C]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#FF7A00]" />
           <p className="text-sm font-semibold text-gray-500">Loading your session...</p>
         </div>
       </div>
@@ -137,11 +137,11 @@ function SignInContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between selection:bg-[#FA521C]/20 selection:text-[#FA521C]">
+    <div className="min-h-screen bg-[#F3F4F6] flex flex-col justify-between selection:bg-[#FF7A00]/20 selection:text-[#FF7A00]">
       {/* Top Header */}
       <header className="w-full bg-white border-b border-gray-100 py-3 sm:py-4">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 w-full flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-2.5 group">
             <div className="relative w-9 h-9 flex items-center justify-center">
               <Image
                 src="/zupe-logo.png"
@@ -151,14 +151,18 @@ function SignInContent() {
                 className="object-contain group-hover:scale-105 transition-transform"
               />
             </div>
-            <span className="font-display font-black text-xl text-gray-900 tracking-tight">
-              Zupe<span className="text-[#FA521C]">store</span>
-            </span>
+            <Image
+              src="/zupe-label.png"
+              alt="Zupestore"
+              width={110}
+              height={28}
+              className="h-6 w-auto object-contain group-hover:opacity-90 transition-opacity"
+            />
           </Link>
 
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-600 hover:text-[#FA521C] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-600 hover:text-[#FF7A00] transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Back to Store</span>
@@ -174,9 +178,9 @@ function SignInContent() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-5 p-4 rounded-2xl bg-white border border-[#FA521C]/30 shadow-sm flex items-start gap-3"
+              className="mb-5 p-4 rounded-2xl bg-white border border-[#FF7A00]/30 shadow-sm flex items-start gap-3"
             >
-              <div className="w-8 h-8 rounded-xl bg-[#FA521C]/10 flex items-center justify-center flex-shrink-0 text-[#FA521C] mt-0.5">
+              <div className="w-8 h-8 rounded-xl bg-[#FF7A00]/10 flex items-center justify-center flex-shrink-0 text-[#FF7A00] mt-0.5">
                 <Sparkles className="w-4 h-4" />
               </div>
               <div className="flex-1">
@@ -276,7 +280,7 @@ function SignInContent() {
                       placeholder="e.g. Alex Johnson"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:border-[#FA521C] focus:ring-1 focus:ring-[#FA521C] transition-all"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
                     />
                   </div>
                 </div>
@@ -294,7 +298,7 @@ function SignInContent() {
                     placeholder="name@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:border-[#FA521C] focus:ring-1 focus:ring-[#FA521C] transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
                   />
                 </div>
               </div>
@@ -309,7 +313,7 @@ function SignInContent() {
                       type="button"
                       onClick={handleSendOtp}
                       disabled={loading || otpCountdown > 0}
-                      className="text-xs font-bold text-[#FA521C] hover:underline disabled:text-gray-400"
+                      className="text-xs font-bold text-[#FF7A00] hover:underline disabled:text-gray-400"
                     >
                       {otpCountdown > 0 ? `Resend code in ${otpCountdown}s` : otpSent ? "Resend code" : "Send code"}
                     </button>
@@ -321,7 +325,7 @@ function SignInContent() {
                       placeholder="6-digit verification code"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
-                      className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm font-mono text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:border-[#FA521C] focus:ring-1 focus:ring-[#FA521C] tracking-widest transition-all"
+                      className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm font-mono text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] tracking-widest transition-all"
                     />
                     {!otpSent && (
                       <button
@@ -354,7 +358,7 @@ function SignInContent() {
                     placeholder={mode === "login" ? "Enter your password" : "Create a password (min 6 chars)"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-11 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:border-[#FA521C] focus:ring-1 focus:ring-[#FA521C] transition-all"
+                    className="w-full pl-10 pr-11 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
                   />
                   <button
                     type="button"
@@ -370,7 +374,7 @@ function SignInContent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#FA521C] hover:bg-[#E0400B] text-white font-bold text-sm shadow-lg shadow-[#FA521C]/25 transition-all flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.99]"
+                className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-sm shadow-lg shadow-[#FF7A00]/25 transition-all flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.99]"
               >
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -394,7 +398,7 @@ function SignInContent() {
                     setError(null);
                     setSuccess(null);
                   }}
-                  className="font-bold text-[#FA521C] hover:underline ml-1"
+                  className="font-bold text-[#FF7A00] hover:underline ml-1"
                 >
                   {mode === "login" ? "Create one now" : "Sign in here"}
                 </button>
@@ -405,7 +409,7 @@ function SignInContent() {
           {/* Value Badges */}
           <div className="mt-8 grid grid-cols-3 gap-3 text-center">
             <div className="bg-white/80 backdrop-blur-xs rounded-2xl p-3 border border-gray-100 shadow-2xs">
-              <ShoppingBag className="w-4 h-4 mx-auto text-[#FA521C] mb-1.5" />
+              <ShoppingBag className="w-4 h-4 mx-auto text-[#FF7A00] mb-1.5" />
               <p className="text-[11px] font-bold text-gray-800">Saved Cart</p>
               <p className="text-[10px] text-gray-400">Syncs on any device</p>
             </div>
@@ -435,9 +439,9 @@ export default function SignInPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
+        <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
           <div className="flex flex-col items-center gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-[#FA521C]" />
+            <Loader2 className="w-8 h-8 animate-spin text-[#FF7A00]" />
             <p className="text-sm font-semibold text-gray-500">Loading sign in...</p>
           </div>
         </div>

@@ -61,8 +61,6 @@ export async function getUserAddresses(
   const normEmail = (email || "").toLowerCase().trim();
   if (!normEmail) return [];
 
-  await ensureAddressTable();
-
   let addresses: UserAddress[] = inMemoryAddresses.get(normEmail) || [];
 
   // Query D1 by verified email

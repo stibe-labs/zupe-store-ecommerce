@@ -29,24 +29,25 @@ interface ProductReviewsSectionProps {
   productImage?: string;
   fallbackRating?: number;
   fallbackReviewCount?: number;
-  onStatsChange?: (stats: { averageRating: number; totalReviews: number }) => void;
+  onStatsChange?: (stats: { averageRating: number; totalReviews: number; recommendPercentage?: number }) => void;
 }
 
 export function ProductReviewsSection({
   productId,
   productName,
   productImage,
-  fallbackRating = 4.8,
-  fallbackReviewCount = 1250,
+  fallbackRating = 0,
+  fallbackReviewCount = 0,
   onStatsChange,
 }: ProductReviewsSectionProps) {
   const [reviews, setReviews] = useState<ProductReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    averageRating: fallbackRating,
+    averageRating: fallbackReviewCount > 0 ? fallbackRating : 0,
     totalReviews: 0,
+    recommendPercentage: 0,
     ratingCounts: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } as Record<number, number>,
-    ratingPercentages: { 5: 85, 4: 11, 3: 3, 2: 1, 1: 0 } as Record<number, number>,
+    ratingPercentages: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } as Record<number, number>,
     customerPhotos: [] as string[],
   });
 
@@ -55,7 +56,7 @@ export function ProductReviewsSection({
   const [lightboxData, setLightboxData] = useState<{ image: string; review?: ProductReview } | null>(null);
 
   // Write Review Modal state (for direct submissions on product page)
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const [writeModalOpen, setWriteModalOpen] = useState(false);
   const [gateModalOpen, setGateModalOpen] = useState(false);
   const [checkingEligibility, setCheckingEligibility] = useState(false);
@@ -64,9 +65,6 @@ export function ProductReviewsSection({
     customerName?: string;
     customerEmail?: string;
   } | null>(null);
-  const [manualVerifyInput, setManualVerifyInput] = useState("");
-  const [verifyingManual, setVerifyingManual] = useState(false);
-  const [verifyError, setVerifyError] = useState<string | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [formRating, setFormRating] = useState(5);
@@ -103,10 +101,18 @@ export function ProductReviewsSection({
       if (data.success) {
         setReviews(data.reviews || []);
         if (data.stats) {
-          setStats(data.stats);
+          setStats({
+            averageRating: Number(data.stats.averageRating) || 0,
+            totalReviews: Number(data.stats.totalReviews) || 0,
+            recommendPercentage: Number(data.stats.recommendPercentage) || 0,
+            ratingCounts: data.stats.ratingCounts || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+            ratingPercentages: data.stats.ratingPercentages || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+            customerPhotos: Array.isArray(data.stats.customerPhotos) ? data.stats.customerPhotos : [],
+          });
           onStatsChange?.({
-            averageRating: data.stats.averageRating,
-            totalReviews: data.stats.totalReviews,
+            averageRating: Number(data.stats.averageRating) || 0,
+            totalReviews: Number(data.stats.totalReviews) || 0,
+            recommendPercentage: Number(data.stats.recommendPercentage) || 0,
           });
         }
       }
@@ -159,88 +165,52 @@ export function ProductReviewsSection({
   };
 
   const handleOpenWriteReview = async () => {
-    setVerifyError(null);
-
     // 1. If already verified in this session, open form directly
     if (verifiedOrder) {
       setWriteModalOpen(true);
       return;
     }
 
-    // 2. If logged in, automatically check buyer verification against orders
-    if (user?.email) {
-      setCheckingEligibility(true);
-      try {
-        const res = await fetch(
-          `/api/reviews/verify-buyer?productId=${encodeURIComponent(productId)}&email=${encodeURIComponent(
-            user.email
-          )}`
-        );
-        const data = await res.json();
-        if (data.success && data.isVerified) {
-          setVerifiedOrder({
-            orderId: data.orderId,
-            customerName: data.customerName || user.name || "",
-            customerEmail: data.customerEmail || user.email || "",
-          });
-          if (data.customerName || user.name) {
-            setFormName(data.customerName || user.name || "");
-          }
-          setWriteModalOpen(true);
-          setCheckingEligibility(false);
-          return;
-        }
-      } catch (err) {
-        console.warn("Failed to check buyer verification:", err);
-      } finally {
-        setCheckingEligibility(false);
-      }
-    }
-
-    // 3. Unordered or Not logged in -> Show gate modal
-    setGateModalOpen(true);
-  };
-
-  const handleManualVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanInput = manualVerifyInput.trim();
-    if (!cleanInput) {
-      setVerifyError("Please enter your Order ID or registered mobile number");
+    // 2. If not logged in, immediately show the clean warning alert
+    if (!user) {
+      setGateModalOpen(true);
       return;
     }
 
-    setVerifyingManual(true);
-    setVerifyError(null);
-
+    // 3. Automatically check if this user actually purchased this product
+    setCheckingEligibility(true);
     try {
-      const res = await fetch(
-        `/api/reviews/verify-buyer?productId=${encodeURIComponent(productId)}&orderId=${encodeURIComponent(
-          cleanInput
-        )}&phone=${encodeURIComponent(cleanInput)}`
-      );
+      const query = new URLSearchParams({
+        productId,
+        productName: productName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+      });
+
+      const res = await fetch(`/api/reviews/verify-buyer?${query.toString()}`);
       const data = await res.json();
 
       if (data.success && data.isVerified) {
+        // User actually purchased! Smoothly open the review form with zero interaction
         setVerifiedOrder({
           orderId: data.orderId,
-          customerName: data.customerName || "",
-          customerEmail: data.customerEmail || "",
+          customerName: data.customerName || user.name || "",
+          customerEmail: data.customerEmail || user.email || "",
         });
-        if (data.customerName) {
-          setFormName(data.customerName);
+        if (data.customerName || user.name) {
+          setFormName(data.customerName || user.name || "");
         }
-        setGateModalOpen(false);
         setWriteModalOpen(true);
+        return;
       } else {
-        setVerifyError(
-          data.message ||
-            "No completed order for this product was found matching this Order ID or phone number."
-        );
+        // User didn't purchase -> Show clean warning alert explaining reason
+        setGateModalOpen(true);
       }
-    } catch (err: any) {
-      setVerifyError("Failed to verify order. Please try again or contact support.");
+    } catch (err) {
+      console.warn("Failed to check buyer verification:", err);
+      setGateModalOpen(true);
     } finally {
-      setVerifyingManual(false);
+      setCheckingEligibility(false);
     }
   };
 
@@ -320,8 +290,18 @@ export function ProductReviewsSection({
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
-  const displayAverage = stats.totalReviews > 0 ? stats.averageRating : fallbackRating;
-  const displayTotal = stats.totalReviews > 0 ? stats.totalReviews : fallbackReviewCount;
+  const hasLiveReviews = stats.totalReviews > 0 || reviews.length > 0;
+  const displayTotal = hasLiveReviews ? stats.totalReviews : (fallbackReviewCount || 0);
+  const displayAverage = hasLiveReviews
+    ? stats.averageRating
+    : (displayTotal > 0 ? fallbackRating : 0);
+
+  // Live recommend percentage (synced with reviews rating >= 4)
+  const displayRecommendPct = hasLiveReviews
+    ? (typeof stats.recommendPercentage === "number" && stats.totalReviews > 0
+        ? stats.recommendPercentage
+        : Math.round((reviews.filter((r) => r.rating >= 4).length / (reviews.length || 1)) * 100))
+    : (displayTotal > 0 ? Math.min(99, Math.round((fallbackRating / 5) * 100)) : 0);
 
   return (
     <section id="reviews" className="w-full pt-12 pb-16 border-t border-gray-200 mt-14 bg-white/60">
@@ -344,7 +324,7 @@ export function ProductReviewsSection({
           <button
             onClick={handleOpenWriteReview}
             disabled={checkingEligibility}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#111111] text-white text-xs font-bold hover:bg-[#FA521C] transition-all shadow-sm shrink-0 cursor-pointer disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#111111] text-white text-xs font-bold hover:bg-[#FF7A00] transition-all shadow-sm shrink-0 cursor-pointer disabled:opacity-60"
           >
             {checkingEligibility ? (
               <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
@@ -361,7 +341,7 @@ export function ProductReviewsSection({
           <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left justify-center md:border-r md:border-gray-100 md:pr-8">
             <div className="flex items-baseline gap-2">
               <span className="text-5xl sm:text-6xl font-display font-black text-gray-900 tracking-tight">
-                {displayAverage.toFixed(1)}
+                {displayTotal > 0 ? displayAverage.toFixed(1) : "0.0"}
               </span>
               <span className="text-lg font-bold text-gray-400">/ 5.0</span>
             </div>
@@ -370,18 +350,29 @@ export function ProductReviewsSection({
                 <Star
                   key={star}
                   className={`w-5 h-5 fill-current ${
-                    star <= Math.round(displayAverage) ? "text-amber-400" : "text-gray-200"
+                    displayTotal > 0 && star <= Math.round(displayAverage) ? "text-amber-400" : "text-gray-200"
                   }`}
                 />
               ))}
             </div>
             <span className="text-xs font-semibold text-gray-600">
-              Based on {displayTotal.toLocaleString()} verified customer reviews
+              {displayTotal > 0
+                ? `Based on ${displayTotal.toLocaleString()} verified customer ${displayTotal === 1 ? "review" : "reviews"}`
+                : "Based on 0 verified customer reviews"}
             </span>
-            <div className="mt-3 flex items-center gap-1 text-[11px] text-emerald-600 font-bold">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>98% of customers recommend this product</span>
-            </div>
+
+            {/* Live Synced Recommendation badge */}
+            {displayTotal > 0 ? (
+              <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200/80">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>{displayRecommendPct}% of customers recommend this product</span>
+              </div>
+            ) : (
+              <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 text-[11px] font-semibold border border-amber-200/80">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span>Be the first to review and recommend this product</span>
+              </div>
+            )}
           </div>
 
           {/* Progress Bars Column */}
@@ -397,7 +388,7 @@ export function ProductReviewsSection({
                   </div>
                   <div className="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden relative">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-[#FA521C] transition-all duration-500"
+                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-[#FF7A00] transition-all duration-500"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -415,7 +406,7 @@ export function ProductReviewsSection({
           <div className="mb-10 p-6 rounded-3xl bg-white border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Camera className="w-5 h-5 text-[#FA521C]" />
+                <Camera className="w-5 h-5 text-[#FF7A00]" />
                 <h3 className="text-base font-bold text-gray-900">
                   Customer Photos & Unboxing ({stats.customerPhotos.length})
                 </h3>
@@ -431,7 +422,7 @@ export function ProductReviewsSection({
                     key={idx}
                     type="button"
                     onClick={() => setLightboxData({ image: photoUrl, review: matchingReview })}
-                    className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-gray-200 group hover:ring-2 hover:ring-[#FA521C] transition-all shadow-xs cursor-pointer"
+                    className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-gray-200 group hover:ring-2 hover:ring-[#FF7A00] transition-all shadow-xs cursor-pointer"
                   >
                     <Image
                       src={photoUrl}
@@ -468,7 +459,7 @@ export function ProductReviewsSection({
                 onClick={() => setActiveFilter("photos")}
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all cursor-pointer ${
                   activeFilter === "photos"
-                    ? "bg-[#FA521C] text-white shadow-xs"
+                    ? "bg-[#FF7A00] text-white shadow-xs"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
@@ -505,7 +496,7 @@ export function ProductReviewsSection({
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
               aria-label="Sort customer reviews"
-              className="bg-white border border-gray-200 rounded-xl px-2.5 py-1 text-xs font-bold text-gray-800 focus:outline-none focus:border-[#FA521C] cursor-pointer"
+              className="bg-white border border-gray-200 rounded-xl px-2.5 py-1 text-xs font-bold text-gray-800 focus:outline-none focus:border-[#FF7A00] cursor-pointer"
             >
               <option value="newest">Newest First</option>
               <option value="highest">Highest Rating</option>
@@ -526,7 +517,7 @@ export function ProductReviewsSection({
                 handleOpenWriteReview();
               }}
               disabled={checkingEligibility}
-              className="px-5 py-2 rounded-full bg-[#FA521C] text-white text-xs font-bold hover:bg-[#E04515] disabled:opacity-60 cursor-pointer"
+              className="px-5 py-2 rounded-full bg-[#FF7A00] text-white text-xs font-bold hover:bg-[#E66E00] disabled:opacity-60 cursor-pointer"
             >
               Write First Review
             </button>
@@ -591,7 +582,7 @@ export function ProductReviewsSection({
                         key={imgIdx}
                         type="button"
                         onClick={() => setLightboxData({ image: imgUrl, review: rev })}
-                        className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 hover:ring-2 hover:ring-[#FA521C] transition-all cursor-pointer shadow-xs"
+                        className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 hover:ring-2 hover:ring-[#FF7A00] transition-all cursor-pointer shadow-xs"
                       >
                         <Image
                           src={imgUrl}
@@ -636,14 +627,14 @@ export function ProductReviewsSection({
       {gateModalOpen && (
         <div
           data-lenis-prevent
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden"
           onClick={(e) => {
             if (e.target === e.currentTarget) setGateModalOpen(false);
           }}
         >
           <div
             data-lenis-prevent
-            className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative animate-scaleIn"
+            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative animate-scaleIn text-center"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -654,91 +645,61 @@ export function ProductReviewsSection({
               <X className="w-5 h-5" />
             </button>
 
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-[#FA521C] flex items-center justify-center mb-4">
-              <ShieldAlert className="w-6 h-6 stroke-[2.2]" />
+            {/* Warning Shield Badge */}
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 text-[#FF7A00] flex items-center justify-center mx-auto mb-4 shadow-xs">
+              <ShieldAlert className="w-7 h-7 stroke-[2.2]" />
             </div>
 
-            <h3 className="text-lg font-bold text-gray-900 leading-snug">
-              Verified Buyers Only
+            <h3 className="text-xl font-bold text-gray-900 leading-snug">
+              Verified Purchase Required
             </h3>
-            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-              To guarantee 100% genuine reviews, only customers who have ordered{" "}
-              <strong className="text-gray-800">{productName}</strong> can submit a rating and review.
-            </p>
 
-            {/* If user is logged in but has no order */}
             {user ? (
-              <div className="mt-4 p-3 bg-gray-50 rounded-2xl border border-gray-100 text-xs text-gray-600">
-                <span>Signed in as: </span>
-                <span className="font-bold text-gray-900">{user.email}</span>
-                <p className="mt-1 text-gray-500">
-                  We could not find an order for this product under your account. If you purchased under a different email, phone number, or as a guest, please verify below:
+              <div className="mt-3 space-y-3.5">
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                  You cannot submit a review for <strong className="text-gray-900">{productName}</strong> because we couldn&apos;t find a completed purchase for this item under your account.
                 </p>
+                <div className="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200/60 text-xs text-amber-900 text-left flex items-start gap-2.5">
+                  <div className="w-2 h-2 rounded-full bg-[#FF7A00] mt-1 shrink-0" />
+                  <p className="leading-relaxed">
+                    Signed in as <strong className="font-semibold">{user.email}</strong>. To guarantee 100% genuine reviews, only verified buyers who ordered this product can submit ratings &amp; feedback.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setGateModalOpen(false)}
+                  className="w-full mt-2 py-3 px-4 rounded-xl bg-[#111111] hover:bg-black active:scale-[0.98] text-white font-bold text-xs tracking-wide transition-all shadow-xs cursor-pointer"
+                >
+                  Understood
+                </button>
               </div>
             ) : (
-              <div className="mt-4">
-                <Link
-                  href={`/signin?redirect=${encodeURIComponent(
-                    typeof window !== "undefined" ? window.location.pathname + "#reviews" : "/products"
-                  )}&notice=${encodeURIComponent("Please sign in to verify your purchase and review")}`}
-                  className="w-full py-3 px-4 rounded-xl bg-[#111111] hover:bg-black text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
-                >
-                  <Lock className="w-3.5 h-3.5" />
-                  <span>Sign In with Your Account</span>
-                </Link>
-
-                <div className="flex items-center gap-2 my-4">
-                  <div className="h-px bg-gray-200 flex-1" />
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                    Or Verify As Guest
-                  </span>
-                  <div className="h-px bg-gray-200 flex-1" />
+              <div className="mt-3 space-y-3.5">
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                  Only customers who have ordered <strong className="text-gray-900">{productName}</strong> can submit a rating and review. Please sign in to verify your purchase.
+                </p>
+                <div className="flex flex-col gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGateModalOpen(false);
+                      openAuthModal("login", "Please sign in to verify your purchase and review");
+                    }}
+                    className="w-full py-3 px-4 rounded-xl bg-[#FF7A00] hover:bg-[#E04414] active:scale-[0.98] text-white font-bold text-xs tracking-wide transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Sign In to Review</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGateModalOpen(false)}
+                    className="w-full py-2.5 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
             )}
-
-            {/* Manual Order Verification Form */}
-            <form onSubmit={handleManualVerify} className="mt-4 space-y-3">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Enter Order ID or Mobile Number
-                </label>
-                <input
-                  type="text"
-                  value={manualVerifyInput}
-                  onChange={(e) => {
-                    setManualVerifyInput(e.target.value);
-                    if (verifyError) setVerifyError(null);
-                  }}
-                  placeholder="e.g. ord_zupe_1001 or 9876543210"
-                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#FA521C] focus:ring-1 focus:ring-[#FA521C]"
-                />
-              </div>
-
-              {verifyError && (
-                <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium leading-relaxed">
-                  {verifyError}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={verifyingManual || !manualVerifyInput.trim()}
-                className="w-full py-3 px-4 rounded-xl bg-[#FA521C] hover:bg-[#E04414] active:scale-[0.98] text-white font-bold text-xs tracking-wide transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {verifyingManual ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Verifying Purchase...</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Verify Purchase & Write Review</span>
-                  </>
-                )}
-              </button>
-            </form>
           </div>
         </div>
       )}
@@ -855,7 +816,7 @@ export function ProductReviewsSection({
                       value={formTitle}
                       onChange={(e) => setFormTitle(e.target.value)}
                       placeholder="e.g. Stunning design and fast delivery!"
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FA521C]"
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FF7A00]"
                     />
                   </div>
 
@@ -870,7 +831,7 @@ export function ProductReviewsSection({
                       value={formComment}
                       onChange={(e) => setFormComment(e.target.value)}
                       placeholder="What did you love about the product? Mention quality, packaging, finish, or functionality..."
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FA521C]"
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF7A00]"
                     />
                   </div>
 
@@ -879,7 +840,7 @@ export function ProductReviewsSection({
                     <label className="block text-xs font-bold text-gray-700 mb-1">
                       Upload Photos & Images (Optional)
                     </label>
-                    <label className="cursor-pointer border-2 border-dashed border-gray-200 hover:border-[#FA521C] bg-gray-50 hover:bg-orange-50/50 rounded-2xl p-4 flex flex-col items-center justify-center transition-all">
+                    <label className="cursor-pointer border-2 border-dashed border-gray-200 hover:border-[#FF7A00] bg-gray-50 hover:bg-orange-50/50 rounded-2xl p-4 flex flex-col items-center justify-center transition-all">
                       <Camera className="w-6 h-6 text-gray-400 mb-1" />
                       <span className="text-xs font-bold text-gray-700">Click to upload product pictures</span>
                       <span className="text-[10px] text-gray-400">Supports PNG, JPG, WebP</span>
@@ -924,7 +885,7 @@ export function ProductReviewsSection({
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
                       placeholder="e.g. Rahul M."
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FA521C]"
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FF7A00]"
                     />
                   </div>
 
@@ -939,7 +900,7 @@ export function ProductReviewsSection({
                     <button
                       type="submit"
                       disabled={submitting || !formComment.trim()}
-                      className="px-6 py-2.5 rounded-full text-xs font-bold text-white bg-[#FA521C] hover:bg-[#E04515] disabled:opacity-50 transition-all cursor-pointer shadow-sm"
+                      className="px-6 py-2.5 rounded-full text-xs font-bold text-white bg-[#FF7A00] hover:bg-[#E66E00] disabled:opacity-50 transition-all cursor-pointer shadow-sm"
                     >
                       {submitting ? "Publishing Review..." : "Submit Review"}
                     </button>

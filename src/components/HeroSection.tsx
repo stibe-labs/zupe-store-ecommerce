@@ -110,7 +110,7 @@ export function HeroSection() {
               <h1 className="text-3xl sm:text-5xl lg:text-[56px] font-display font-extrabold text-white leading-[1.12] tracking-tight mb-4">
                 {slide.titleLine1} <br />
                 <span className="text-white">for </span>
-                <span className="text-[#FA521C]">{slide.titleLine2}</span>
+                <span className="text-[#FF7A00]">{slide.titleLine2}</span>
               </h1>
 
               {/* Description */}
@@ -122,7 +122,7 @@ export function HeroSection() {
               <div className="mb-8">
                 <Link
                   href={slide.ctaLink}
-                  className="relative inline-flex items-center gap-2.5 px-7 py-3 rounded-full font-bold text-sm overflow-hidden group shadow-lg shadow-black/30 hover:shadow-[0_12px_30px_-4px_rgba(250,82,28,0.55),0_0_16px_rgba(255,122,69,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 select-none cursor-pointer"
+                  className="relative inline-flex items-center gap-2.5 px-7 py-3 rounded-full font-bold text-sm overflow-hidden group shadow-lg shadow-black/30 hover:shadow-[0_12px_30px_-4px_rgba(255, 122, 0,0.55),0_0_16px_rgba(255,122,69,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 select-none cursor-pointer"
                 >
                   {/* Default White Background */}
                   <span className="absolute inset-0 bg-white transition-opacity duration-300 ease-out group-hover:opacity-0" />

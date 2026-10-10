@@ -22,13 +22,13 @@ export function LoadingScreen() {
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.6, ease: "easeInOut" } }}
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#FFE600] pointer-events-auto"
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#FFC107] pointer-events-auto"
         >
-          {/* Centered Small Logo */}
+          {/* Centered Logo only */}
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.85, opacity: 0 }}
             animate={{
-              scale: [0.85, 1, 0.95],
+              scale: [0.92, 1, 0.95],
               opacity: 1,
             }}
             transition={{
@@ -37,15 +37,15 @@ export function LoadingScreen() {
               repeat: Infinity,
               repeatType: "reverse",
             }}
-            className="relative w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center"
+            className="relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center select-none"
           >
             <Image
               src="/zupe-logo.png"
               alt="Zupe Store"
-              width={160}
-              height={160}
+              width={112}
+              height={112}
               priority
-              className="object-contain drop-shadow-md"
+              className="object-contain w-full h-full drop-shadow-md"
             />
           </motion.div>
 

@@ -23,7 +23,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function CartPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const {
     cart,
     updateQuantity,
@@ -69,10 +69,10 @@ export default function CartPage() {
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
+      <div className="min-h-screen bg-[#F3F4F6] flex flex-col justify-between">
         <Navbar />
         <div className="max-w-md mx-auto py-32 px-4 text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-orange-100/70 flex items-center justify-center text-[#FA521C]">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-orange-100/70 flex items-center justify-center text-[#FF7A00]">
             <ShoppingBag className="w-10 h-10" />
           </div>
           <h1 className="text-3xl font-bold font-display text-gray-900 mb-2">
@@ -83,7 +83,7 @@ export default function CartPage() {
           </p>
           <Link
             href="/products"
-            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-[#FA521C] hover:bg-[#E0400B] text-white font-semibold text-sm shadow-lg shadow-[#FA521C]/30 transition-all"
+            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-sm shadow-lg shadow-[#FF7A00]/30 transition-all"
           >
             <span>Explore Collection</span>
             <ArrowRight className="w-4 h-4" />
@@ -95,7 +95,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-[#111111]">
+    <div className="min-h-screen bg-[#F3F4F6] text-[#111111]">
       <Navbar />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-28 pb-16">
@@ -120,14 +120,14 @@ export default function CartPage() {
         <div className="mb-8 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between text-xs font-semibold mb-2">
             <span className="flex items-center gap-1.5 text-gray-700">
-              <Truck className="w-4 h-4 text-[#FA521C]" />
+              <Truck className="w-4 h-4 text-[#FF7A00]" />
               {freeShippingRemaining === 0 ? (
                 <span className="text-emerald-600 font-bold">
                   You unlocked FREE Standard Delivery!
                 </span>
               ) : (
                 <span>
-                  Add <strong className="text-[#FA521C]">₹{freeShippingRemaining.toLocaleString()}</strong> more to get Free Delivery
+                  Add <strong className="text-[#FF7A00]">₹{freeShippingRemaining.toLocaleString()}</strong> more to get Free Delivery
                 </span>
               )}
             </span>
@@ -137,7 +137,7 @@ export default function CartPage() {
           </div>
           <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#FA521C] to-[#FF8A65] rounded-full transition-all duration-500"
+              className="h-full bg-gradient-to-r from-[#FF7A00] to-[#FF8A65] rounded-full transition-all duration-500"
               style={{
                 width: `${Math.min(100, (subtotal / freeShippingThreshold) * 100)}%`,
               }}
@@ -165,7 +165,7 @@ export default function CartPage() {
 
                 {/* Info */}
                 <div className="flex-1 w-full sm:w-auto text-center sm:text-left">
-                  <span className="text-[10px] font-bold text-[#FA521C] uppercase">
+                  <span className="text-[10px] font-bold text-[#FF7A00] uppercase">
                     {item.category}
                   </span>
                   <h3 className="font-display font-bold text-base text-gray-900 line-clamp-1">
@@ -237,7 +237,7 @@ export default function CartPage() {
                       placeholder="Promo Code (e.g. ZUPE10)"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-medium uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30 focus:border-[#FA521C]"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-medium uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00]"
                     />
                   </div>
                   <button
@@ -286,7 +286,7 @@ export default function CartPage() {
 
                 <div className="flex justify-between items-baseline text-base font-bold text-gray-900">
                   <span>Total Amount</span>
-                  <span className="text-2xl font-display text-[#FA521C]">
+                  <span className="text-2xl font-display text-[#FF7A00]">
                     ₹{grandTotal.toLocaleString()}
                   </span>
                 </div>
@@ -296,16 +296,12 @@ export default function CartPage() {
               <button
                 onClick={() => {
                   if (!user) {
-                    router.push(
-                      `/signin?redirect=/checkout&notice=${encodeURIComponent(
-                        "Please sign in to proceed with checkout and complete your order"
-                      )}`
-                    );
+                    openAuthModal("login", "Sign in required: Please log in or create an account to proceed to checkout 🔒");
                     return;
                   }
                   router.push("/checkout");
                 }}
-                className="w-full py-4 px-6 rounded-2xl bg-[#FA521C] hover:bg-[#E0400B] text-white font-semibold text-sm shadow-xl shadow-[#FA521C]/30 transition-all flex items-center justify-center gap-2 transform active:scale-95"
+                className="w-full py-4 px-6 rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-sm shadow-xl shadow-[#FF7A00]/30 transition-all flex items-center justify-center gap-2 transform active:scale-95 cursor-pointer"
               >
                 <span>Proceed to Checkout</span>
                 <ArrowRight className="w-4 h-4" />

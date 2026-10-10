@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -25,6 +25,7 @@ import {
   Package,
   ShoppingBag,
   AlertCircle,
+  ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
@@ -44,9 +45,10 @@ export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const idOrSlug = params?.id as string;
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [loadingProduct, setLoadingProduct] = useState<boolean>(true);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [selectedColor, setSelectedColor] = useState<string>("Standard");
@@ -63,6 +65,16 @@ export default function ProductDetailPage() {
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [liveReviewStats, setLiveReviewStats] = useState<{ averageRating: number; totalReviews: number } | null>(null);
+
+  // Swipe & Drag Gesture State for Product Gallery (must be unconditional top-level hooks)
+  const [dragOffset, setDragOffset] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const touchStartXRef = useRef<number>(0);
+  const touchStartYRef = useRef<number>(0);
+  const isSwipingHorizontalRef = useRef<boolean | null>(null);
+  const isMouseDownRef = useRef<boolean>(false);
+  const mouseStartXRef = useRef<number>(0);
+  const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const { addToCart, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -113,12 +125,34 @@ export default function ProductDetailPage() {
     let isMounted = true;
 
     async function loadProduct() {
+      const rawId = decodeURIComponent(idOrSlug || "").trim();
+      const normId = rawId.toLowerCase();
+      const normSlug = normId.replace(/[\s_]+/g, "-");
+      const normClean = normId.replace(/[-_ ]+/g, " ");
+
+      const matchesProduct = (p: Product) => {
+        if (!p) return false;
+        const pId = (p.id || "").toLowerCase();
+        const pSlug = (p.slug || "").toLowerCase();
+        const pClean = pSlug.replace(/[-_ ]+/g, " ") || pId.replace(/[-_ ]+/g, " ");
+        return (
+          pId === normId ||
+          pSlug === normId ||
+          pSlug === normSlug ||
+          pId === normSlug ||
+          pClean === normClean ||
+          (normClean && pClean.includes(normClean)) ||
+          (normClean && normClean.includes(pClean))
+        );
+      };
+
       // 1. Fetch fresh live product by ID from API
       try {
-        const res = await fetch(`/api/products?id=${encodeURIComponent(idOrSlug)}&_t=${Date.now()}`);
+        const res = await fetch(`/api/products?id=${encodeURIComponent(normSlug || normId)}&_t=${Date.now()}`);
         const data = await res.json();
         if (isMounted && data.success && data.product) {
           applyProduct(data.product);
+          setLoadingProduct(false);
           return;
         }
       } catch (e) {
@@ -127,10 +161,11 @@ export default function ProductDetailPage() {
 
       // 2. Fetch fresh live product by Slug from API
       try {
-        const res = await fetch(`/api/products?slug=${encodeURIComponent(idOrSlug)}&_t=${Date.now()}`);
+        const res = await fetch(`/api/products?slug=${encodeURIComponent(normSlug || normId)}&_t=${Date.now()}`);
         const data = await res.json();
         if (isMounted && data.success && data.product) {
           applyProduct(data.product);
+          setLoadingProduct(false);
           return;
         }
       } catch (e) {
@@ -142,11 +177,10 @@ export default function ProductDetailPage() {
         const res = await fetch(`/api/products?_t=${Date.now()}`);
         const data = await res.json();
         if (isMounted && data.products) {
-          const apiFound = data.products.find(
-            (p: Product) => p.slug === idOrSlug || p.id === idOrSlug
-          );
+          const apiFound = data.products.find(matchesProduct);
           if (apiFound) {
             applyProduct(apiFound);
+            setLoadingProduct(false);
             return;
           }
         }
@@ -155,11 +189,12 @@ export default function ProductDetailPage() {
       }
 
       // 4. Fallback to DEFAULT_PRODUCTS
-      const staticFound = DEFAULT_PRODUCTS.find(
-        (p) => p.slug === idOrSlug || p.id === idOrSlug
-      );
+      const staticFound = DEFAULT_PRODUCTS.find(matchesProduct);
       if (isMounted && staticFound) {
         applyProduct(staticFound);
+      }
+      if (isMounted) {
+        setLoadingProduct(false);
       }
     }
 
@@ -225,6 +260,22 @@ export default function ProductDetailPage() {
     }
     return [product.poster_image || ""];
   }, [product, activeColorVariant]);
+
+  const safeActiveIndex = useMemo(() => {
+    if (!gallery || gallery.length === 0) return 0;
+    return Math.max(0, Math.min(activeImageIndex, gallery.length - 1));
+  }, [activeImageIndex, gallery]);
+
+  // Keep thumbnail in view when active image changes
+  useEffect(() => {
+    if (thumbnailRefs.current[safeActiveIndex]) {
+      thumbnailRefs.current[safeActiveIndex]?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [safeActiveIndex]);
 
   // Available color options for current product
   const availableColors = useMemo(() => {
@@ -308,39 +359,129 @@ export default function ProductDetailPage() {
     ];
   }, [product, isRippleLamp]);
 
-  if (!product) {
-    return (
-      <div className="min-h-screen bg-[#FAFAFA] flex flex-col justify-between">
-        <Navbar />
-        <div className="max-w-md mx-auto py-32 px-4 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center text-[#FA521C]">
-            <ShoppingBag className="w-8 h-8" />
-          </div>
-          <h2 className="text-2xl font-bold font-display text-gray-900 mb-2">Product Not Found</h2>
-          <p className="text-sm text-gray-500 mb-6">The product you are looking for may have been moved or is currently unavailable.</p>
-          <Link
-            href="/products"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#FA521C] text-white font-semibold text-sm shadow-md"
-          >
-            Browse All Products
-          </Link>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  const wishlisted = isInWishlist(product.id);
-  const discountPercent =
-    product.mrp && product.mrp > product.price
-      ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
-      : 35;
-
   const handleSelectImage = (img: string, idx: number) => {
     setSelectedImage(img);
     setActiveImageIndex(idx);
     if (idx === 5 && isRippleLamp) {
       setVideoModalOpen(true);
+    }
+  };
+
+  const handlePrevImage = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (safeActiveIndex > 0) {
+      const prevIdx = safeActiveIndex - 1;
+      setActiveImageIndex(prevIdx);
+      setSelectedImage(gallery[prevIdx]);
+    }
+  };
+
+  const handleNextImage = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (safeActiveIndex < gallery.length - 1) {
+      const nextIdx = safeActiveIndex + 1;
+      setActiveImageIndex(nextIdx);
+      setSelectedImage(gallery[nextIdx]);
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (gallery.length <= 1) return;
+    const touch = e.touches[0];
+    touchStartXRef.current = touch.clientX;
+    touchStartYRef.current = touch.clientY;
+    isSwipingHorizontalRef.current = null;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDragging || gallery.length <= 1) return;
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - touchStartXRef.current;
+    const deltaY = touch.clientY - touchStartYRef.current;
+
+    // Detect horizontal swipe intent vs vertical scroll
+    if (isSwipingHorizontalRef.current === null) {
+      if (Math.abs(deltaX) > 6 || Math.abs(deltaY) > 6) {
+        isSwipingHorizontalRef.current = Math.abs(deltaX) > Math.abs(deltaY);
+      }
+    }
+
+    if (isSwipingHorizontalRef.current) {
+      let dampedDelta = deltaX;
+      if (
+        (safeActiveIndex === 0 && deltaX > 0) ||
+        (safeActiveIndex === gallery.length - 1 && deltaX < 0)
+      ) {
+        dampedDelta = deltaX * 0.25;
+      }
+      setDragOffset(dampedDelta);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+
+    const threshold = 35;
+    if (isSwipingHorizontalRef.current) {
+      if (dragOffset < -threshold && safeActiveIndex < gallery.length - 1) {
+        const nextIdx = safeActiveIndex + 1;
+        setActiveImageIndex(nextIdx);
+        setSelectedImage(gallery[nextIdx]);
+      } else if (dragOffset > threshold && safeActiveIndex > 0) {
+        const prevIdx = safeActiveIndex - 1;
+        setActiveImageIndex(prevIdx);
+        setSelectedImage(gallery[prevIdx]);
+      }
+    }
+
+    setDragOffset(0);
+    isSwipingHorizontalRef.current = null;
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (gallery.length <= 1) return;
+    if ((e.target as HTMLElement).closest("button")) return;
+    isMouseDownRef.current = true;
+    mouseStartXRef.current = e.clientX;
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isMouseDownRef.current || gallery.length <= 1) return;
+    const deltaX = e.clientX - mouseStartXRef.current;
+    let dampedDelta = deltaX;
+    if (
+      (safeActiveIndex === 0 && deltaX > 0) ||
+      (safeActiveIndex === gallery.length - 1 && deltaX < 0)
+    ) {
+      dampedDelta = deltaX * 0.25;
+    }
+    setDragOffset(dampedDelta);
+  };
+
+  const handleMouseUp = () => {
+    if (!isMouseDownRef.current) return;
+    isMouseDownRef.current = false;
+    setIsDragging(false);
+
+    const threshold = 35;
+    if (dragOffset < -threshold && safeActiveIndex < gallery.length - 1) {
+      const nextIdx = safeActiveIndex + 1;
+      setActiveImageIndex(nextIdx);
+      setSelectedImage(gallery[nextIdx]);
+    } else if (dragOffset > threshold && safeActiveIndex > 0) {
+      const prevIdx = safeActiveIndex - 1;
+      setActiveImageIndex(prevIdx);
+      setSelectedImage(gallery[prevIdx]);
+    }
+    setDragOffset(0);
+  };
+
+  const handleMouseLeave = () => {
+    if (isMouseDownRef.current) {
+      handleMouseUp();
     }
   };
 
@@ -364,26 +505,6 @@ export default function ProductDetailPage() {
       showToast("Sorry, this item is currently out of stock!");
       return;
     }
-    if (!user) {
-      try {
-        localStorage.setItem(
-          "zp_pending_cart_action",
-          JSON.stringify({
-            action: "add_to_cart",
-            product: {
-              ...product,
-              color: selectedColor,
-              poster_image: selectedImage || product.poster_image,
-            },
-            quantity,
-            autoOpenCart: true,
-          })
-        );
-      } catch (e) {}
-      const currentPath = typeof window !== "undefined" ? window.location.pathname : `/products/${idOrSlug}`;
-      router.push(`/signin?redirect=${encodeURIComponent(currentPath)}&notice=${encodeURIComponent("Please sign in to add this item to your cart")}`);
-      return;
-    }
     const added = addToCart(
       {
         ...product,
@@ -392,6 +513,10 @@ export default function ProductDetailPage() {
       },
       quantity
     );
+    if (!user) {
+      openAuthModal("login", "Sign in required: Please log in to add items to your cart & checkout 🛍️");
+      return;
+    }
     if (added) {
       showToast(`Added ${quantity} item(s) to Cart! 🛒`);
       openCart();
@@ -403,25 +528,6 @@ export default function ProductDetailPage() {
       showToast("Sorry, this item is currently out of stock!");
       return;
     }
-    if (!user) {
-      try {
-        localStorage.setItem(
-          "zp_pending_cart_action",
-          JSON.stringify({
-            action: "buy_now",
-            product: {
-              ...product,
-              color: selectedColor,
-              poster_image: selectedImage || product.poster_image,
-            },
-            quantity,
-            method: "cod",
-          })
-        );
-      } catch (e) {}
-      router.push(`/signin?redirect=${encodeURIComponent("/checkout?method=cod")}&notice=${encodeURIComponent("Please sign in to place an order")}`);
-      return;
-    }
     addToCart(
       {
         ...product,
@@ -430,6 +536,10 @@ export default function ProductDetailPage() {
       },
       quantity
     );
+    if (!user) {
+      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
+      return;
+    }
     router.push("/checkout?method=cod");
   };
 
@@ -438,25 +548,6 @@ export default function ProductDetailPage() {
       showToast("Sorry, this item is currently out of stock!");
       return;
     }
-    if (!user) {
-      try {
-        localStorage.setItem(
-          "zp_pending_cart_action",
-          JSON.stringify({
-            action: "buy_now",
-            product: {
-              ...product,
-              color: selectedColor,
-              poster_image: selectedImage || product.poster_image,
-            },
-            quantity,
-            method: "upi",
-          })
-        );
-      } catch (e) {}
-      router.push(`/signin?redirect=${encodeURIComponent("/checkout?method=upi")}&notice=${encodeURIComponent("Please sign in to place an order")}`);
-      return;
-    }
     addToCart(
       {
         ...product,
@@ -465,6 +556,10 @@ export default function ProductDetailPage() {
       },
       quantity
     );
+    if (!user) {
+      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
+      return;
+    }
     router.push("/checkout?method=upi");
   };
 
@@ -489,6 +584,8 @@ export default function ProductDetailPage() {
   };
 
   const handleWishlistClick = () => {
+    if (!product) return;
+    const isCurrentlyWishlisted = isInWishlist(product.id);
     if (!user) {
       try {
         localStorage.setItem(
@@ -499,18 +596,58 @@ export default function ProductDetailPage() {
           })
         );
       } catch (e) {}
-      const currentPath = typeof window !== "undefined" ? window.location.pathname : `/products/${idOrSlug}`;
-      router.push(`/signin?redirect=${encodeURIComponent(currentPath)}&notice=${encodeURIComponent("Please sign in to save items to your wishlist")}`);
+      openAuthModal("login", "Sign in required: Please log in to save items to your wishlist ❤️");
       return;
     }
     const success = toggleWishlist(product);
     if (success) {
-      showToast(wishlisted ? "Removed from Wishlist" : "Saved to Wishlist! ❤️");
+      showToast(isCurrentlyWishlisted ? "Removed from Wishlist" : "Saved to Wishlist! ❤️");
     }
   };
 
+  if (loadingProduct && !product) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] flex flex-col justify-between">
+        <Navbar />
+        <div className="max-w-md mx-auto py-32 px-4 text-center">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full border-3 border-[#FF7A00] border-t-transparent animate-spin" />
+          <p className="text-sm font-semibold text-gray-600">Loading product details...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] flex flex-col justify-between">
+        <Navbar />
+        <div className="max-w-md mx-auto py-32 px-4 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center text-[#FF7A00]">
+            <ShoppingBag className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-bold font-display text-gray-900 mb-2">Product Not Found</h2>
+          <p className="text-sm text-gray-500 mb-6">The product you are looking for may have been moved or is currently unavailable.</p>
+          <Link
+            href="/products"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#FF7A00] text-white font-semibold text-sm shadow-md"
+          >
+            Browse All Products
+          </Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const wishlisted = isInWishlist(product.id);
+  const discountPercent =
+    product.mrp && product.mrp > product.price
+      ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
+      : 35;
+
   return (
-    <div className="min-h-screen bg-white text-[#1E1E1E] antialiased pb-28 lg:pb-16 selection:bg-[#FA521C]/20 selection:text-[#FA521C]">
+    <div className="min-h-screen bg-white text-[#1E1E1E] antialiased pb-28 lg:pb-16 selection:bg-[#FF7A00]/20 selection:text-[#FF7A00]">
       {/* Top App Header */}
       <Navbar />
 
@@ -522,19 +659,48 @@ export default function ProductDetailPage() {
               LEFT COLUMN: HERO IMAGE & THUMBNAILS CAROUSEL
              ======================================================== */}
           <div className="w-full">
-            {/* Main Showcase Image Container */}
-            <div className="relative aspect-square w-full rounded-[24px] sm:rounded-[28px] overflow-hidden bg-[#F3F4F6] shadow-sm select-none">
-              <Image
-                src={selectedImage || gallery[0]}
-                alt={product.name}
-                fill
-                priority
-                className="object-cover transition-opacity duration-300"
-              />
+            {/* Main Showcase Image Container with Touch & Drag Swipe */}
+            <div
+              className={`group relative aspect-square w-full rounded-[24px] sm:rounded-[28px] overflow-hidden bg-[#F3F4F6] shadow-sm select-none touch-pan-y ${
+                gallery.length > 1 ? "cursor-grab active:cursor-grabbing" : ""
+              }`}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleTouchEnd}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+            >
+              {/* Sliding Track containing all gallery images */}
+              <div
+                className="flex w-full h-full will-change-transform"
+                style={{
+                  transform: `translateX(calc(-${safeActiveIndex * 100}% + ${dragOffset}px))`,
+                  transition: isDragging
+                    ? "none"
+                    : "transform 320ms cubic-bezier(0.22, 1, 0.36, 1)",
+                }}
+              >
+                {gallery.map((img, idx) => (
+                  <div key={idx} className="relative w-full h-full flex-shrink-0">
+                    <Image
+                      src={img}
+                      alt={`${product.name} ${idx + 1}`}
+                      fill
+                      priority={idx === 0}
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover pointer-events-none select-none"
+                      draggable={false}
+                    />
+                  </div>
+                ))}
+              </div>
 
               {/* Top-Left Badge: Discount */}
               {discountPercent > 0 && (
-                <div className="absolute top-3.5 left-3.5 z-10">
+                <div className="absolute top-3.5 left-3.5 z-20 pointer-events-none">
                   <span className="inline-block px-3 py-1 rounded-full bg-[#FF3B30] text-white text-[12px] font-extrabold tracking-tight shadow-md">
                     -{discountPercent}%
                   </span>
@@ -542,10 +708,10 @@ export default function ProductDetailPage() {
               )}
 
               {/* Top-Right Floating Action Buttons: Wishlist & Share */}
-              <div className="absolute top-3.5 right-3.5 z-10 flex flex-col gap-2.5">
+              <div className="absolute top-3.5 right-3.5 z-20 flex flex-col gap-2.5">
                 <button
                   onClick={handleWishlistClick}
-                  className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-md flex items-center justify-center text-gray-700 hover:text-[#FF3B30] hover:scale-105 active:scale-95 transition-all"
+                  className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-md flex items-center justify-center text-gray-700 hover:text-[#FF3B30] hover:scale-105 active:scale-95 transition-all cursor-pointer"
                   aria-label="Wishlist"
                 >
                   <Heart
@@ -557,33 +723,80 @@ export default function ProductDetailPage() {
 
                 <button
                   onClick={handleShare}
-                  className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-md flex items-center justify-center text-gray-800 hover:text-black hover:scale-105 active:scale-95 transition-all"
+                  className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-md flex items-center justify-center text-gray-800 hover:text-black hover:scale-105 active:scale-95 transition-all cursor-pointer"
                   aria-label="Share"
                 >
                   <Share2 className="w-5 h-5 text-gray-800 stroke-[2.2]" />
                 </button>
               </div>
 
+              {/* Left & Right Interactive Arrow Buttons */}
+              {gallery.length > 1 && (
+                <>
+                  {safeActiveIndex > 0 && (
+                    <button
+                      type="button"
+                      onClick={handlePrevImage}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 hover:bg-white backdrop-blur-md shadow-md flex items-center justify-center text-gray-800 hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+                    </button>
+                  )}
+                  {safeActiveIndex < gallery.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={handleNextImage}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 hover:bg-white backdrop-blur-md shadow-md flex items-center justify-center text-gray-800 hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="w-5 h-5 stroke-[2.5]" />
+                    </button>
+                  )}
+                </>
+              )}
+
               {/* Bottom-Right Counter Badge */}
-              <div className="absolute bottom-3.5 right-3.5 z-10">
-                <span className="px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white text-[11px] font-semibold tracking-wide">
-                  {activeImageIndex + 1}/{gallery.length}
-                </span>
-              </div>
+              {gallery.length > 1 && (
+                <div className="absolute bottom-3.5 right-3.5 z-20 pointer-events-none">
+                  <span className="px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white text-[11px] font-semibold tracking-wide">
+                    {safeActiveIndex + 1}/{gallery.length}
+                  </span>
+                </div>
+              )}
+
+              {/* Mobile Swipe Pagination Dots */}
+              {gallery.length > 1 && (
+                <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:hidden pointer-events-none">
+                  {gallery.map((_, i) => (
+                    <span
+                      key={i}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        i === safeActiveIndex
+                          ? "w-4 bg-white shadow-sm"
+                          : "w-1.5 bg-white/50"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Thumbnail Gallery Carousel */}
             {gallery.length > 1 && (
               <div className="mt-3 flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none select-none">
                 {gallery.map((img, idx) => {
-                  const isActive = activeImageIndex === idx;
+                  const isActive = safeActiveIndex === idx;
                   const isVideo = idx === 5 && isRippleLamp;
 
                   return (
                     <button
                       key={idx}
+                      ref={(el) => {
+                        thumbnailRefs.current[idx] = el;
+                      }}
                       onClick={() => handleSelectImage(img, idx)}
-                      className={`relative w-[60px] h-[60px] sm:w-[68px] sm:h-[68px] rounded-[16px] overflow-hidden flex-shrink-0 transition-all ${
+                      className={`relative w-[60px] h-[60px] sm:w-[68px] sm:h-[68px] rounded-[16px] overflow-hidden flex-shrink-0 transition-all cursor-pointer ${
                         isActive
                           ? "border-2 border-black ring-1 ring-black/10 scale-100"
                           : "border border-gray-200 opacity-80 hover:opacity-100"
@@ -626,33 +839,39 @@ export default function ProductDetailPage() {
             )}
 
             {/* Rating & Sold Stats Row */}
-            <a
-              href="#reviews"
-              className="inline-flex items-center gap-2 mt-1.5 text-xs text-[#6B7280] hover:text-[#FA521C] transition-colors cursor-pointer group"
-            >
-              <div className="flex items-center gap-0.5 text-[#F59E0B] group-hover:scale-105 transition-transform">
-                {[...Array(5)].map((_, i) => {
-                  const effectiveRating = liveReviewStats?.averageRating ?? (product.rating ? Number(product.rating) : 5.0);
-                  return (
-                    <Star
-                      key={i}
-                      className={`w-3.5 h-3.5 ${
-                        i < Math.round(effectiveRating) ? "fill-current text-[#F59E0B]" : "text-gray-200"
-                      }`}
-                    />
-                  );
-                })}
-              </div>
-              <span className="font-semibold text-gray-800 group-hover:text-[#FA521C]">
-                ({(liveReviewStats?.averageRating ?? (product.rating ? Number(product.rating) : 5.0)).toFixed(1)})
-              </span>
-              <span className="text-gray-300">|</span>
-              <span className="underline decoration-dotted underline-offset-2">
-                {(liveReviewStats?.totalReviews ?? (product.review_count ? Number(product.review_count) : 0)) > 0
-                  ? `${liveReviewStats?.totalReviews ?? product.review_count} verified customer ${(liveReviewStats?.totalReviews ?? product.review_count) === 1 ? "review" : "reviews"} • Customer Reviews ↓`
-                  : "Customer Reviews ↓"}
-              </span>
-            </a>
+            {(() => {
+              const reviewCount = liveReviewStats ? liveReviewStats.totalReviews : (product.review_count ? Number(product.review_count) : 0);
+              const effectiveRating = reviewCount > 0
+                ? (liveReviewStats?.averageRating ?? (product.rating ? Number(product.rating) : 0))
+                : 0;
+
+              return (
+                <a
+                  href="#reviews"
+                  className="inline-flex items-center gap-2 mt-1.5 text-xs text-[#6B7280] hover:text-[#FF7A00] transition-colors cursor-pointer group"
+                >
+                  <div className="flex items-center gap-0.5 text-[#F59E0B] group-hover:scale-105 transition-transform">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-3.5 h-3.5 ${
+                          reviewCount > 0 && i < Math.round(effectiveRating) ? "fill-current text-[#F59E0B]" : "text-gray-200"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-semibold text-gray-800 group-hover:text-[#FF7A00]">
+                    ({reviewCount > 0 ? effectiveRating.toFixed(1) : "0.0"})
+                  </span>
+                  <span className="text-gray-300">|</span>
+                  <span className="underline decoration-dotted underline-offset-2">
+                    {reviewCount > 0
+                      ? `${reviewCount} verified customer ${reviewCount === 1 ? "review" : "reviews"} • Customer Reviews ↓`
+                      : "Write First Review • Customer Reviews ↓"}
+                  </span>
+                </a>
+              );
+            })()}
 
             {/* Price & Discount Row */}
             <div className="mt-3 flex items-baseline gap-2.5">
@@ -694,7 +913,7 @@ export default function ProductDetailPage() {
                 className={`w-full py-3.5 sm:py-4 px-4 rounded-xl font-black text-[15px] sm:text-[16px] uppercase tracking-wider flex items-center justify-center gap-2.5 transition-all ${
                   isOutOfStock
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-70"
-                    : "bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] hover:brightness-105 active:scale-[0.99] text-white shadow-md shadow-[#FA521C]/25"
+                    : "bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] hover:brightness-105 active:scale-[0.99] text-white shadow-md shadow-[#FF7A00]/25"
                 }`}
               >
                 {isOutOfStock ? (
@@ -789,7 +1008,7 @@ export default function ProductDetailPage() {
             {availableColors.length > 0 ? (
               <div className="mt-5">
                 <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-900 mb-2">
-                  Color: <span className="font-semibold text-[#FA521C]">{selectedColor}</span>
+                  Color: <span className="font-semibold text-[#FF7A00]">{selectedColor}</span>
                 </h3>
                 <div className="flex items-center gap-2.5 flex-wrap">
                   {availableColors.map((c, i) => {
@@ -800,7 +1019,7 @@ export default function ProductDetailPage() {
                         onClick={() => handleSelectColorSwatch(c.name, c.image)}
                         className={`relative w-12 h-12 rounded-[14px] overflow-hidden flex-shrink-0 transition-all duration-200 ${
                           isSelected
-                            ? "ring-2 ring-[#FA521C] ring-offset-2 scale-105 shadow-md"
+                            ? "ring-2 ring-[#FF7A00] ring-offset-2 scale-105 shadow-md"
                             : "border border-gray-200 opacity-80 hover:opacity-100 hover:scale-105"
                         }`}
                         title={c.name}
@@ -832,7 +1051,7 @@ export default function ProductDetailPage() {
             ) : product.color ? (
               <div className="mt-5">
                 <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-900 mb-1">
-                  Color: <span className="font-semibold text-[#FA521C]">{product.color}</span>
+                  Color: <span className="font-semibold text-[#FF7A00]">{product.color}</span>
                 </h3>
               </div>
             ) : null}
@@ -885,7 +1104,7 @@ export default function ProductDetailPage() {
             <DeliveryEstimator businessDays={5} />
 
             {/* "Why You'll Love This ❤️" Card */}
-            <div className="mt-5 p-4 sm:p-5 rounded-[20px] bg-[#F8F9FA] border border-gray-100">
+            <div className="mt-5 p-4 sm:p-5 rounded-[20px] bg-[#F3F4F6] border border-gray-100">
               <h3 className="text-[14px] sm:text-[15px] font-bold text-gray-900 mb-3 flex items-center gap-1.5">
                 <span>Why You'll Love This</span>
                 <span>❤️</span>
@@ -1040,7 +1259,7 @@ export default function ProductDetailPage() {
                         <ul className="space-y-2">
                           {product.whats_in_box.map((item, idx) => (
                             <li key={idx} className="flex items-center gap-2">
-                              <Check className="w-4 h-4 text-[#FA521C] shrink-0" />
+                              <Check className="w-4 h-4 text-[#FF7A00] shrink-0" />
                               <span>{item}</span>
                             </li>
                           ))}
@@ -1048,15 +1267,15 @@ export default function ProductDetailPage() {
                       ) : (
                         <ul className="space-y-2">
                           <li className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-[#FA521C]" />
+                            <Check className="w-4 h-4 text-[#FF7A00]" />
                             <span>1 × {product.name}</span>
                           </li>
                           <li className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-[#FA521C]" />
+                            <Check className="w-4 h-4 text-[#FF7A00]" />
                             <span>1 × Official User Manual & Operating Guide</span>
                           </li>
                           <li className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-[#FA521C]" />
+                            <Check className="w-4 h-4 text-[#FF7A00]" />
                             <span>1 × Zupe Store Quality Verification & Warranty Seal</span>
                           </li>
                         </ul>
@@ -1175,7 +1394,7 @@ export default function ProductDetailPage() {
           productId={product.slug || product.id}
           productName={product.name}
           productImage={product.poster_image || (product.images && product.images[0])}
-          fallbackRating={liveReviewStats?.averageRating ?? (product.rating ? Number(product.rating) : 5.0)}
+          fallbackRating={liveReviewStats?.averageRating ?? (product.rating ? Number(product.rating) : 0)}
           fallbackReviewCount={liveReviewStats?.totalReviews ?? (product.review_count ? Number(product.review_count) : 0)}
           onStatsChange={(newStats) => setLiveReviewStats(newStats)}
         />
@@ -1209,7 +1428,7 @@ export default function ProductDetailPage() {
             className={`py-3 px-3 rounded-xl font-black text-[13px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${
               isOutOfStock
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-70"
-                : "bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] text-white shadow-md shadow-[#FA521C]/25 active:scale-95"
+                : "bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] text-white shadow-md shadow-[#FF7A00]/25 active:scale-95"
             }`}
           >
             {isOutOfStock ? (

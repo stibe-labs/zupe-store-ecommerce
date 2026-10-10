@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getReviewsByProduct, addReview, markReviewHelpful, ProductReview } from "@/lib/reviewStore";
 import { getAuthenticatedUser } from "@/lib/userAuth";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function computeReviewStats(reviews: ProductReview[]) {
   const total = reviews.length;
   if (total === 0) {
     return {
-      averageRating: 5.0,
+      averageRating: 0,
       totalReviews: 0,
+      recommendPercentage: 0,
       ratingCounts: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
       ratingPercentages: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
       customerPhotos: [] as string[],
@@ -16,12 +20,16 @@ function computeReviewStats(reviews: ProductReview[]) {
 
   const counts: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
   let sum = 0;
+  let recommendCount = 0;
   const photos: string[] = [];
 
   for (const r of reviews) {
     const star = Math.max(1, Math.min(5, Math.round(r.rating)));
     counts[star] = (counts[star] || 0) + 1;
     sum += r.rating;
+    if (r.rating >= 4) {
+      recommendCount++;
+    }
     if (r.images && Array.isArray(r.images)) {
       for (const img of r.images) {
         if (img && !photos.includes(img)) {
@@ -32,6 +40,7 @@ function computeReviewStats(reviews: ProductReview[]) {
   }
 
   const avg = Number((sum / total).toFixed(1));
+  const recommendPercentage = Math.round((recommendCount / total) * 100);
   const percentages: Record<number, number> = {
     5: Math.round(((counts[5] || 0) / total) * 100),
     4: Math.round(((counts[4] || 0) / total) * 100),
@@ -43,6 +52,7 @@ function computeReviewStats(reviews: ProductReview[]) {
   return {
     averageRating: avg,
     totalReviews: total,
+    recommendPercentage,
     ratingCounts: counts,
     ratingPercentages: percentages,
     customerPhotos: photos,
@@ -61,12 +71,19 @@ export async function GET(req: NextRequest) {
     const reviews = await getReviewsByProduct(productId);
     const stats = computeReviewStats(reviews);
 
-    return NextResponse.json({
-      success: true,
-      productId,
-      reviews,
-      stats,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        productId,
+        reviews,
+        stats,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
+    );
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

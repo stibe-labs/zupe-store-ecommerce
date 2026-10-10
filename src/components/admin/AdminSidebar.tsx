@@ -120,7 +120,7 @@ export default function AdminSidebar({
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#121417] text-slate-300 flex flex-col justify-between overflow-y-auto overscroll-contain transition-transform duration-300 ease-in-out lg:translate-x-0 border-r border-white/[0.07] ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#0F172A] text-slate-300 flex flex-col justify-between overflow-y-auto overscroll-contain transition-transform duration-300 ease-in-out lg:translate-x-0 border-r border-white/[0.07] ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -138,13 +138,18 @@ export default function AdminSidebar({
                   priority
                 />
               </div>
-              <div className="flex flex-col">
-                <div className="flex items-baseline gap-1">
-                  <span className="font-extrabold text-base text-white tracking-tight font-display">
-                    Zupe<span className="text-[#FA521C]">store</span>
-                  </span>
+              <div className="flex flex-col justify-center">
+                <div className="flex items-center">
+                  <Image
+                    src="/zupe-label-white.png"
+                    alt="Zupestore"
+                    width={96}
+                    height={24}
+                    className="h-5 w-auto object-contain"
+                    priority
+                  />
                 </div>
-                <span className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold -mt-0.5">
+                <span className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mt-0.5">
                   Admin Panel
                 </span>
               </div>
@@ -174,7 +179,7 @@ export default function AdminSidebar({
                   onClick={onCloseMobile}
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group ${
                     isActive
-                      ? "bg-gradient-to-r from-[#FA521C] to-[#FF6B35] text-white shadow-md shadow-orange-500/25 font-semibold"
+                      ? "bg-gradient-to-r from-[#FF7A00] to-[#FF6B35] text-white shadow-md shadow-orange-500/25 font-semibold"
                       : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
                   }`}
                 >
@@ -224,15 +229,15 @@ export default function AdminSidebar({
             </div>
             {/* Mini Sparkline Bar Chart Icon */}
             <div className="w-9 h-7 flex items-end justify-between gap-1 px-1">
-              <div className="w-1.5 h-3 bg-[#FA521C]/50 rounded-t" />
-              <div className="w-1.5 h-4 bg-[#FA521C]/80 rounded-t" />
-              <div className="w-1.5 h-6 bg-[#FA521C] rounded-t" />
+              <div className="w-1.5 h-3 bg-[#FF7A00]/50 rounded-t" />
+              <div className="w-1.5 h-4 bg-[#FF7A00]/80 rounded-t" />
+              <div className="w-1.5 h-6 bg-[#FF7A00] rounded-t" />
             </div>
           </div>
 
           <div className="flex items-center justify-between px-1 pt-1">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-[#FA521C]/15 text-[#FA521C] flex items-center justify-center text-xs font-bold">
+              <div className="w-6 h-6 rounded bg-[#FF7A00]/15 text-[#FF7A00] flex items-center justify-center text-xs font-bold">
                 Z
               </div>
               <div>
@@ -247,7 +252,7 @@ export default function AdminSidebar({
                 window.location.href = "/";
               }}
               title="Lock Admin Session"
-              className="inline-flex items-center gap-1 p-1.5 rounded-lg text-slate-400 hover:text-[#FA521C] hover:bg-white/[0.06] transition-colors text-xs"
+              className="inline-flex items-center gap-1 p-1.5 rounded-lg text-slate-400 hover:text-[#FF7A00] hover:bg-white/[0.06] transition-colors text-xs"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Exit</span>

@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       icon: icon || "Tag",
       customIcon: customIcon ? customIcon.trim() : undefined,
       bgColor: bgColor || "bg-orange-50",
-      iconColor: iconColor || "text-[#FA521C]",
+      iconColor: iconColor || "text-[#FF7A00]",
       showInNavbar: showInNavbar !== false,
       showInPills: showInPills !== false,
       showInCollections: showInCollections !== false,

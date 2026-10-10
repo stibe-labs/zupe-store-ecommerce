@@ -1,5 +1,6 @@
 // In-Memory & Cloudflare D1 Store for Shoppable Product Videos
 import { executeD1Query } from "./d1";
+import { uploadBase64Media } from "./r2";
 
 export interface ProductVideo {
   id: string;
@@ -20,6 +21,22 @@ export interface ProductVideo {
 
 // Default seed videos for instant demonstration
 const DEFAULT_VIDEOS: ProductVideo[] = [
+  {
+    id: "vid-watch-01",
+    productId: "watch",
+    title: "Titan Minimalist Analog Watch Hands-on",
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+    posterUrl: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800",
+    viewsText: "24.5k",
+    badge: "NEW",
+    productName: "watch",
+    productPrice: 1999,
+    productMrp: 3499,
+    productSlug: "watch",
+    productImage: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=600",
+    active: true,
+    createdAt: "2026-03-08T12:00:00.000Z",
+  },
   {
     id: "vid-heating-pad-01",
     productId: "portable-menstrual-heating-pad",
@@ -87,12 +104,8 @@ const DEFAULT_VIDEOS: ProductVideo[] = [
 ];
 
 let inMemoryVideos: ProductVideo[] = [...DEFAULT_VIDEOS];
-let tableInitialized = false;
 
 export async function ensureVideoTable(): Promise<void> {
-  if (tableInitialized) return;
-  tableInitialized = true;
-
   try {
     await executeD1Query(`
       CREATE TABLE IF NOT EXISTS product_videos (
@@ -107,9 +120,6 @@ export async function ensureVideoTable(): Promise<void> {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    try {
-      await executeD1Query(`CREATE INDEX IF NOT EXISTS idx_videos_product ON product_videos(product_id);`);
-    } catch {}
   } catch (err) {
     console.warn("Could not ensure product_videos table in D1:", err);
   }
@@ -120,7 +130,6 @@ export async function ensureVideoTable(): Promise<void> {
  */
 export async function getAllVideos(): Promise<ProductVideo[]> {
   try {
-    await ensureVideoTable();
     const rows = await executeD1Query<any>(
       `SELECT * FROM product_videos ORDER BY created_at DESC`
     );
@@ -131,10 +140,10 @@ export async function getAllVideos(): Promise<ProductVideo[]> {
         productId: String(r.product_id),
         title: String(r.title),
         videoUrl: String(r.video_url),
-        posterUrl: r.poster_url || "",
-        viewsText: r.views_text || "24.5k",
+        posterUrl: r.posterUrl || r.poster_url || "",
+        viewsText: r.viewsText || r.views_text || "24.5k",
         badge: r.badge || "NEW",
-        active: r.active === 1 || r.active === true || r.active === "1",
+        active: r.active === 0 || r.active === "0" || r.active === false ? false : true,
         createdAt: r.created_at || new Date().toISOString(),
       }));
 
@@ -143,40 +152,50 @@ export async function getAllVideos(): Promise<ProductVideo[]> {
       const extras = inMemoryVideos.filter((v) => !dbIds.has(v.id));
       return [...dbVideos, ...extras];
     }
-  } catch (err) {
+  } catch (err: any) {
     console.warn("Error loading videos from D1:", err);
+    if (err?.message?.includes("no such table")) {
+      await ensureVideoTable();
+    }
   }
 
   return inMemoryVideos;
 }
 
 /**
- * Get active videos matching a product ID or slug (plus 'all' videos)
+ * Get active videos matching a product ID or slug (plus all other active store videos)
+ * Ensures all active videos appear on every product while product-specific reels appear first.
  */
 export async function getVideosByProduct(productId: string): Promise<ProductVideo[]> {
   const normId = (productId || "").trim().toLowerCase();
   const all = await getAllVideos();
 
-  // Filter active videos
+  // Strictly filter for active & visible on store videos
   const activeVideos = all.filter((v) => v.active !== false);
 
-  // 1. Strict match on product id / slug or 'all'
+  if (!normId) return activeVideos;
+
+  const normClean = normId.replace(/[-_ ]+/g, " ").trim();
+
+  // Prioritize videos specifically attached to this product first
   const matching = activeVideos.filter((v) => {
     const vPid = (v.productId || "").toLowerCase().trim();
+    if (!vPid || vPid === "none" || vPid === "all") return false;
+    const vPidClean = vPid.replace(/[-_ ]+/g, " ").trim();
     return (
-      vPid === "all" ||
       vPid === normId ||
+      vPidClean === normClean ||
       normId.includes(vPid) ||
-      vPid.includes(normId)
+      vPid.includes(normId) ||
+      normClean.includes(vPidClean) ||
+      vPidClean.includes(normClean)
     );
   });
 
-  if (matching.length > 0) {
-    return matching;
-  }
+  // Then append all other active videos so the shopper sees all store videos
+  const remaining = activeVideos.filter((v) => !matching.some((m) => m.id === v.id));
 
-  // 2. Fallback: if no specific video attached to this product, show top active videos
-  return activeVideos.slice(0, 4);
+  return [...matching, ...remaining];
 }
 
 /**
@@ -188,12 +207,32 @@ export async function addVideo(
   const newId = video.id || `vid-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
   const now = new Date().toISOString();
 
+  // Safety: auto-upload base64 to R2 if submitted
+  let cleanVideoUrl = video.videoUrl.trim();
+  let cleanPosterUrl = video.posterUrl?.trim() || "";
+
+  if (cleanVideoUrl.startsWith("data:")) {
+    try {
+      cleanVideoUrl = await uploadBase64Media(cleanVideoUrl, "videos");
+    } catch (e) {
+      console.warn("Failed to auto-upload base64 videoUrl:", e);
+    }
+  }
+
+  if (cleanPosterUrl.startsWith("data:")) {
+    try {
+      cleanPosterUrl = await uploadBase64Media(cleanPosterUrl, "images");
+    } catch (e) {
+      console.warn("Failed to auto-upload base64 posterUrl:", e);
+    }
+  }
+
   const fullVideo: ProductVideo = {
     id: newId,
-    productId: (video.productId || "all").trim(),
+    productId: (video.productId || "none").trim(),
     title: video.title.trim(),
-    videoUrl: video.videoUrl.trim(),
-    posterUrl: video.posterUrl?.trim() || "",
+    videoUrl: cleanVideoUrl,
+    posterUrl: cleanPosterUrl,
     viewsText: video.viewsText?.trim() || "15.4k",
     badge: video.badge?.trim() || "NEW",
     active: video.active !== false,
@@ -202,9 +241,10 @@ export async function addVideo(
 
   inMemoryVideos.unshift(fullVideo);
 
+  await ensureVideoTable();
+
   try {
-    await ensureVideoTable();
-    await executeD1Query(
+    const res = await executeD1Query(
       `INSERT INTO product_videos (id, product_id, title, video_url, poster_url, views_text, badge, active, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -219,6 +259,9 @@ export async function addVideo(
         fullVideo.createdAt,
       ]
     );
+    if (!res) {
+      console.warn("D1 query returned null when inserting video:", fullVideo.id);
+    }
   } catch (err) {
     console.warn("Could not save video to D1:", err);
   }
@@ -233,50 +276,113 @@ export async function updateVideo(
   id: string,
   updates: Partial<ProductVideo>
 ): Promise<ProductVideo | null> {
-  const index = inMemoryVideos.findIndex((v) => v.id === id);
-  if (index >= 0) {
-    inMemoryVideos[index] = { ...inMemoryVideos[index], ...updates };
+  let cleanVideoUrl = updates.videoUrl !== undefined ? updates.videoUrl.trim() : undefined;
+  let cleanPosterUrl = updates.posterUrl !== undefined ? updates.posterUrl.trim() : undefined;
+
+  if (cleanVideoUrl && cleanVideoUrl.startsWith("data:")) {
+    try {
+      cleanVideoUrl = await uploadBase64Media(cleanVideoUrl, "videos");
+    } catch (e) {
+      console.warn("Failed to auto-upload base64 videoUrl in update:", e);
+    }
   }
 
+  if (cleanPosterUrl && cleanPosterUrl.startsWith("data:")) {
+    try {
+      cleanPosterUrl = await uploadBase64Media(cleanPosterUrl, "images");
+    } catch (e) {
+      console.warn("Failed to auto-upload base64 posterUrl in update:", e);
+    }
+  }
+
+  const sanitizedUpdates: Partial<ProductVideo> = { ...updates };
+  if (cleanVideoUrl !== undefined) sanitizedUpdates.videoUrl = cleanVideoUrl;
+  if (cleanPosterUrl !== undefined) sanitizedUpdates.posterUrl = cleanPosterUrl;
+
+  const index = inMemoryVideos.findIndex((v) => v.id === id);
+  if (index >= 0) {
+    inMemoryVideos[index] = { ...inMemoryVideos[index], ...sanitizedUpdates };
+  }
+
+  await ensureVideoTable();
+
   try {
-    await ensureVideoTable();
-    const sets: string[] = [];
-    const params: any[] = [];
+    // Check if the record already exists in D1
+    const existing = await executeD1Query<any>(
+      `SELECT id FROM product_videos WHERE id = ? LIMIT 1`,
+      [id]
+    );
 
-    if (updates.productId !== undefined) {
-      sets.push("product_id = ?");
-      params.push(updates.productId);
-    }
-    if (updates.title !== undefined) {
-      sets.push("title = ?");
-      params.push(updates.title);
-    }
-    if (updates.videoUrl !== undefined) {
-      sets.push("video_url = ?");
-      params.push(updates.videoUrl);
-    }
-    if (updates.posterUrl !== undefined) {
-      sets.push("poster_url = ?");
-      params.push(updates.posterUrl);
-    }
-    if (updates.viewsText !== undefined) {
-      sets.push("views_text = ?");
-      params.push(updates.viewsText);
-    }
-    if (updates.badge !== undefined) {
-      sets.push("badge = ?");
-      params.push(updates.badge);
-    }
-    if (updates.active !== undefined) {
-      sets.push("active = ?");
-      params.push(updates.active ? 1 : 0);
-    }
+    if (existing && existing.length > 0) {
+      // Row exists: perform UPDATE
+      const sets: string[] = [];
+      const params: any[] = [];
 
-    if (sets.length > 0) {
-      params.push(id);
+      if (sanitizedUpdates.productId !== undefined) {
+        sets.push("product_id = ?");
+        params.push(sanitizedUpdates.productId);
+      }
+      if (sanitizedUpdates.title !== undefined) {
+        sets.push("title = ?");
+        params.push(sanitizedUpdates.title);
+      }
+      if (sanitizedUpdates.videoUrl !== undefined) {
+        sets.push("video_url = ?");
+        params.push(sanitizedUpdates.videoUrl);
+      }
+      if (sanitizedUpdates.posterUrl !== undefined) {
+        sets.push("poster_url = ?");
+        params.push(sanitizedUpdates.posterUrl);
+      }
+      if (sanitizedUpdates.viewsText !== undefined) {
+        sets.push("views_text = ?");
+        params.push(sanitizedUpdates.viewsText);
+      }
+      if (sanitizedUpdates.badge !== undefined) {
+        sets.push("badge = ?");
+        params.push(sanitizedUpdates.badge);
+      }
+      if (sanitizedUpdates.active !== undefined) {
+        sets.push("active = ?");
+        params.push(sanitizedUpdates.active ? 1 : 0);
+      }
+
+      if (sets.length > 0) {
+        params.push(id);
+        await executeD1Query(
+          `UPDATE product_videos SET ${sets.join(", ")} WHERE id = ?`,
+          params
+        );
+      }
+    } else {
+      // Row did not exist in D1 (e.g. was a seed video that hadn't been persisted yet)
+      const current = inMemoryVideos.find((v) => v.id === id) || DEFAULT_VIDEOS.find((v) => v.id === id);
+      const toInsert: ProductVideo = {
+        id,
+        productId: sanitizedUpdates.productId ?? current?.productId ?? "none",
+        title: sanitizedUpdates.title ?? current?.title ?? "Untitled Video",
+        videoUrl: sanitizedUpdates.videoUrl ?? current?.videoUrl ?? "",
+        posterUrl: sanitizedUpdates.posterUrl ?? current?.posterUrl ?? "",
+        viewsText: sanitizedUpdates.viewsText ?? current?.viewsText ?? "24.5k",
+        badge: sanitizedUpdates.badge ?? current?.badge ?? "NEW",
+        active: sanitizedUpdates.active !== undefined ? sanitizedUpdates.active : (current?.active !== false),
+        createdAt: new Date().toISOString(),
+      };
+
       await executeD1Query(
-        `UPDATE product_videos SET ${sets.join(", ")} WHERE id = ?`,
-        params
+        `INSERT INTO product_videos (id, product_id, title, video_url, poster_url, views_text, badge, active, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          toInsert.id,
+          toInsert.productId,
+          toInsert.title,
+          toInsert.videoUrl,
+          toInsert.posterUrl || "",
+          toInsert.viewsText,
+          toInsert.badge,
+          toInsert.active ? 1 : 0,
+          toInsert.createdAt,
+        ]
       );
     }
   } catch (err) {
@@ -294,7 +400,6 @@ export async function deleteVideo(id: string): Promise<boolean> {
   inMemoryVideos = inMemoryVideos.filter((v) => v.id !== id);
 
   try {
-    await ensureVideoTable();
     await executeD1Query(`DELETE FROM product_videos WHERE id = ?`, [id]);
     return true;
   } catch (err) {

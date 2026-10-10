@@ -9,7 +9,7 @@ const TRUST_ITEMS = [
     icon: Truck,
     title: "Free Shipping",
     desc: "On orders above ₹1,499",
-    accent: "#FA521C",
+    accent: "#FF7A00",
   },
   {
     icon: ShieldCheck,

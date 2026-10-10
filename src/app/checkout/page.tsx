@@ -33,7 +33,7 @@ function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { cart, subtotal, clearCart, freeShippingThreshold } = useCart();
-  const { user, isLoading: authLoading, updateUserProfile } = useAuth();
+  const { user, isLoading: authLoading, openAuthModal, updateUserProfile } = useAuth();
 
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
@@ -70,13 +70,10 @@ function CheckoutContent() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.replace(
-        `/signin?redirect=/checkout&notice=${encodeURIComponent(
-          "Please sign in to proceed with checkout and complete your order"
-        )}`
-      );
+      openAuthModal("login", "Sign in required: Please log in or create an account to proceed with checkout 🔒");
     }
-  }, [user, authLoading, router]);
+  }, [authLoading, user]);
+
 
   useEffect(() => {
     if (user) {
@@ -192,7 +189,7 @@ function CheckoutContent() {
           body: JSON.stringify(newAddr),
         });
       }
-      if (phone.trim() && (!user?.phone || user.phone !== phone.trim())) {
+      if (user && phone.trim() && (!user?.phone || user.phone !== phone.trim())) {
         await updateUserProfile({ phone: phone.trim() });
       }
     } catch (e) {
@@ -202,14 +199,6 @@ function CheckoutContent() {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      router.push(
-        `/signin?redirect=/checkout&notice=${encodeURIComponent(
-          "Please sign in to place your order"
-        )}`
-      );
-      return;
-    }
     if (!name.trim() || !email.trim() || !address.trim() || !city.trim() || !postalCode.trim()) {
       setErrorMessage("Please complete all shipping address fields.");
       return;
@@ -329,7 +318,7 @@ function CheckoutContent() {
           shipping_address: `${address.trim()}, ${city.trim()} - ${postalCode.trim()}`,
         },
         theme: {
-          color: "#FA521C",
+          color: "#FF7A00",
           backdrop_color: "rgba(17, 17, 17, 0.7)",
         },
         modal: {
@@ -407,7 +396,7 @@ function CheckoutContent() {
 
   if (orderComplete) {
     return (
-      <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
+      <div className="min-h-screen bg-[#F3F4F6] flex flex-col justify-between">
         <Navbar />
         <div className="max-w-lg mx-auto py-24 sm:py-32 px-4 text-center">
           <motion.div
@@ -463,14 +452,14 @@ function CheckoutContent() {
             </div>
             <div className="flex justify-between items-center pt-1 text-sm">
               <span className="font-bold text-gray-900">Total Paid:</span>
-              <span className="font-extrabold text-[#FA521C] text-base">₹{(confirmedTotal || grandTotal).toLocaleString()}</span>
+              <span className="font-extrabold text-[#FF7A00] text-base">₹{(confirmedTotal || grandTotal).toLocaleString()}</span>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
               href={`/order-tracking?query=${encodeURIComponent(confirmedOrderId)}`}
-              className="flex-1 py-3 px-6 rounded-xl bg-[#FA521C] text-white font-semibold text-sm hover:bg-[#E0400B] transition-colors flex items-center justify-center gap-2 shadow-sm shadow-[#FA521C]/25"
+              className="flex-1 py-3 px-6 rounded-xl bg-[#FF7A00] text-white font-semibold text-sm hover:bg-[#E66E00] transition-colors flex items-center justify-center gap-2 shadow-sm shadow-[#FF7A00]/25"
             >
               <Truck className="w-4 h-4" />
               <span>Track Order</span>
@@ -494,18 +483,53 @@ function CheckoutContent() {
     );
   }
 
-  if (authLoading || !user) {
+  if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
+      <div className="min-h-screen bg-[#F3F4F6] flex flex-col justify-between">
         <Navbar />
         <div className="max-w-md mx-auto py-32 px-4 text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-[#FA521C] mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#FF7A00] mx-auto mb-4" />
           <h2 className="text-xl font-bold font-display text-gray-900 mb-2">
-            Verifying your account...
+            Loading checkout...
           </h2>
-          <p className="text-sm text-gray-500">
-            Please sign in to proceed with checkout.
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#F3F4F6] flex flex-col justify-between">
+        <Navbar />
+        <div className="max-w-md mx-auto py-20 px-4 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-3xl bg-orange-100 flex items-center justify-center text-[#FF7A00] shadow-sm">
+            <Lock className="w-7 h-7" />
+          </div>
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 mb-3">
+            Sign In Required
+          </span>
+          <h2 className="text-2xl font-bold font-display text-gray-900 mb-2">
+            Sign In to Complete Your Order
+          </h2>
+          <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto leading-relaxed">
+            Please sign in to your Zupe Store account to securely enter your delivery address and complete checkout.
           </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => openAuthModal("login", "Sign in required: Please log in or register to complete your order 🔒")}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-sm shadow-md shadow-[#FF7A00]/25 transition-all cursor-pointer"
+            >
+              <span>Sign In / Register</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <Link
+              href="/cart"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-white border border-gray-200 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all"
+            >
+              <span>View Cart</span>
+            </Link>
+          </div>
         </div>
         <Footer />
       </div>
@@ -514,17 +538,17 @@ function CheckoutContent() {
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
+      <div className="min-h-screen bg-[#F3F4F6] flex flex-col justify-between">
         <Navbar />
         <div className="max-w-md mx-auto py-32 px-4 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center text-[#FA521C]">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center text-[#FF7A00]">
             <PackageCheck className="w-8 h-8" />
           </div>
           <h2 className="text-2xl font-bold font-display text-gray-900 mb-2">No Items in Cart</h2>
           <p className="text-sm text-gray-500 mb-6">Your shopping cart is empty. Add products to continue to checkout.</p>
           <Link
             href="/products"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#FA521C] text-white font-semibold text-sm shadow-md"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#FF7A00] text-white font-semibold text-sm shadow-md"
           >
             Browse Catalog
           </Link>
@@ -535,22 +559,22 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-[#2D3436]">
+    <div className="min-h-screen bg-[#F3F4F6] text-[#2D3436]">
       <Navbar />
 
       {/* Breadcrumb Header */}
       <div className="pt-24 sm:pt-28 pb-6 border-b border-gray-100 bg-white">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-2 text-xs text-[#636E72] mb-2">
-            <Link href="/" className="hover:text-[#FA521C] transition-colors">
+            <Link href="/" className="hover:text-[#FF7A00] transition-colors">
               Home
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href="/products" className="hover:text-[#FA521C] transition-colors">
+            <Link href="/products" className="hover:text-[#FF7A00] transition-colors">
               Shop
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-[#FA521C] font-semibold">Secure Checkout</span>
+            <span className="text-[#FF7A00] font-semibold">Secure Checkout</span>
           </div>
           <div className="flex items-center justify-between">
             <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-[#111111]">
@@ -579,7 +603,7 @@ function CheckoutContent() {
             <div className="p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 shadow-sm space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#FA521C]/10 text-[#FA521C] flex items-center justify-center font-bold text-sm">
+                  <div className="w-8 h-8 rounded-xl bg-[#FF7A00]/10 text-[#FF7A00] flex items-center justify-center font-bold text-sm">
                     1
                   </div>
                   <h2 className="font-display font-bold text-lg text-gray-900">
@@ -590,7 +614,7 @@ function CheckoutContent() {
                   <button
                     type="button"
                     onClick={handleUseNewAddress}
-                    className="text-xs font-bold text-[#FA521C] hover:text-[#E04515] hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-xs font-bold text-[#FF7A00] hover:text-[#E66E00] hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>{isUsingNewAddress ? "Entering New Address" : "Use New Address"}</span>
@@ -603,7 +627,7 @@ function CheckoutContent() {
                 <div className="bg-gray-50/90 p-4 sm:p-5 rounded-2xl border border-gray-200/80 space-y-3">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-[#FA521C]" />
+                      <MapPin className="w-3.5 h-3.5 text-[#FF7A00]" />
                       Saved Delivery Addresses ({savedAddresses.length})
                     </p>
                     <span className="text-[11px] text-gray-500 hidden sm:inline">
@@ -620,7 +644,7 @@ function CheckoutContent() {
                           onClick={() => handleSelectSavedAddress(addr)}
                           className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all relative select-none ${
                             isSelected
-                              ? "border-[#FA521C] bg-orange-50/30 shadow-sm ring-2 ring-[#FA521C]/25"
+                              ? "border-[#FF7A00] bg-orange-50/30 shadow-sm ring-2 ring-[#FF7A00]/25"
                               : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/60"
                           }`}
                         >
@@ -633,14 +657,14 @@ function CheckoutContent() {
                                 </span>
                               )}
                               {addr.is_default && (
-                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#FA521C]/10 text-[#FA521C]">
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#FF7A00]/10 text-[#FF7A00]">
                                   Default
                                 </span>
                               )}
                             </div>
                             <div
                               className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                                isSelected ? "border-[#FA521C] bg-[#FA521C] text-white" : "border-gray-300 bg-white"
+                                isSelected ? "border-[#FF7A00] bg-[#FF7A00] text-white" : "border-gray-300 bg-white"
                               }`}
                             >
                               {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
@@ -682,7 +706,7 @@ function CheckoutContent() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter your full name"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
                   />
                 </div>
 
@@ -696,7 +720,7 @@ function CheckoutContent() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="yourname@gmail.com"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
                   />
                 </div>
 
@@ -710,7 +734,7 @@ function CheckoutContent() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="10-digit mobile number"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
                   />
                 </div>
 
@@ -724,7 +748,7 @@ function CheckoutContent() {
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
                     placeholder="6-digit PIN code"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
                   />
                 </div>
 
@@ -738,7 +762,7 @@ function CheckoutContent() {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="Flat / House No., Street, Landmark, Area"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
                   />
                 </div>
 
@@ -752,7 +776,7 @@ function CheckoutContent() {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="City name"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
                   />
                 </div>
 
@@ -765,7 +789,7 @@ function CheckoutContent() {
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     placeholder="State"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/30"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
                   />
                 </div>
               </div>
@@ -775,7 +799,7 @@ function CheckoutContent() {
             <div className="p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 shadow-sm space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#FA521C]/10 text-[#FA521C] flex items-center justify-center font-bold text-sm">
+                  <div className="w-8 h-8 rounded-xl bg-[#FF7A00]/10 text-[#FF7A00] flex items-center justify-center font-bold text-sm">
                     2
                   </div>
                   <div>
@@ -797,7 +821,7 @@ function CheckoutContent() {
                   onClick={() => setPaymentMethod("upi")}
                   className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
                     paymentMethod === "upi"
-                      ? "border-[#FA521C] bg-[#FA521C]/5 ring-2 ring-[#FA521C]/15 shadow-sm"
+                      ? "border-[#FF7A00] bg-[#FF7A00]/5 ring-2 ring-[#FF7A00]/15 shadow-sm"
                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
                   }`}
                 >
@@ -825,7 +849,7 @@ function CheckoutContent() {
                   onClick={() => setPaymentMethod("card")}
                   className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
                     paymentMethod === "card"
-                      ? "border-[#FA521C] bg-[#FA521C]/5 ring-2 ring-[#FA521C]/15 shadow-sm"
+                      ? "border-[#FF7A00] bg-[#FF7A00]/5 ring-2 ring-[#FF7A00]/15 shadow-sm"
                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
                   }`}
                 >
@@ -853,7 +877,7 @@ function CheckoutContent() {
                   onClick={() => setPaymentMethod("netbanking")}
                   className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
                     paymentMethod === "netbanking"
-                      ? "border-[#FA521C] bg-[#FA521C]/5 ring-2 ring-[#FA521C]/15 shadow-sm"
+                      ? "border-[#FF7A00] bg-[#FF7A00]/5 ring-2 ring-[#FF7A00]/15 shadow-sm"
                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
                   }`}
                 >
@@ -881,7 +905,7 @@ function CheckoutContent() {
                   onClick={() => setPaymentMethod("cod")}
                   className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
                     paymentMethod === "cod"
-                      ? "border-[#FA521C] bg-[#FA521C]/5 ring-2 ring-[#FA521C]/15 shadow-sm"
+                      ? "border-[#FF7A00] bg-[#FF7A00]/5 ring-2 ring-[#FF7A00]/15 shadow-sm"
                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
                   }`}
                 >
@@ -907,7 +931,7 @@ function CheckoutContent() {
               {/* Online Payment Explainer Banner */}
               {paymentMethod !== "cod" && (
                 <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-50/80 via-white to-amber-50/60 border border-orange-200/60 flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-[#FA521C]/10 text-[#FA521C] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-7 h-7 rounded-lg bg-[#FF7A00]/10 text-[#FF7A00] flex items-center justify-center flex-shrink-0 mt-0.5">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div className="flex-1 text-xs">
@@ -983,7 +1007,7 @@ function CheckoutContent() {
                 </div>
                 <div className="pt-2 border-t border-gray-100 flex justify-between items-baseline">
                   <span className="font-bold text-sm text-gray-900">Total Payable</span>
-                  <span className="font-display font-extrabold text-2xl text-[#FA521C]">
+                  <span className="font-display font-extrabold text-2xl text-[#FF7A00]">
                     ₹{grandTotal.toLocaleString()}
                   </span>
                 </div>
@@ -993,7 +1017,7 @@ function CheckoutContent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 px-6 rounded-2xl bg-[#FA521C] hover:bg-[#E0400B] text-white font-semibold text-sm shadow-xl shadow-[#FA521C]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer transform active:scale-95"
+                className="w-full py-4 px-6 rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-sm shadow-xl shadow-[#FF7A00]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer transform active:scale-95"
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
@@ -1040,9 +1064,9 @@ export default function CheckoutPage() {
   return (
     <React.Suspense
       fallback={
-        <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
+        <div className="min-h-screen bg-[#F3F4F6] flex items-center justify-center">
           <div className="text-center">
-            <div className="w-10 h-10 border-4 border-[#FA521C] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <div className="w-10 h-10 border-4 border-[#FF7A00] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="text-sm font-semibold text-gray-500">Loading checkout...</p>
           </div>
         </div>

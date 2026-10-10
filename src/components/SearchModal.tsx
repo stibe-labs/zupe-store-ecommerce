@@ -171,14 +171,14 @@ export function SearchModal() {
                   className="flex items-center gap-2 sm:gap-3"
                 >
                   <div className="relative flex-1 flex items-center">
-                    <Search className="absolute left-4 w-4 h-4 sm:w-5 sm:h-5 text-[#FA521C] pointer-events-none stroke-[2.2]" />
+                    <Search className="absolute left-4 w-4 h-4 sm:w-5 sm:h-5 text-[#FF7A00] pointer-events-none stroke-[2.2]" />
                     <input
                       ref={inputRef}
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search products, lamps, gadgets, essentials..."
-                      className="w-full pl-11 sm:pl-12 pr-10 py-3 sm:py-3.5 rounded-2xl bg-gray-50 border border-gray-200/80 text-sm sm:text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FA521C] focus:bg-white focus:ring-2 focus:ring-[#FA521C]/20 transition-all font-medium"
+                      className="w-full pl-11 sm:pl-12 pr-10 py-3 sm:py-3.5 rounded-2xl bg-gray-50 border border-gray-200/80 text-sm sm:text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:bg-white focus:ring-2 focus:ring-[#FF7A00]/20 transition-all font-medium"
                     />
                     {searchQuery && (
                       <button
@@ -216,7 +216,7 @@ export function SearchModal() {
                       {liveResults.length > 0 && (
                         <button
                           onClick={handleSearchSubmit}
-                          className="text-xs font-bold text-[#FA521C] hover:underline flex items-center gap-1 cursor-pointer"
+                          className="text-xs font-bold text-[#FF7A00] hover:underline flex items-center gap-1 cursor-pointer"
                         >
                           <span>View all</span>
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -226,7 +226,7 @@ export function SearchModal() {
 
                     {liveResults.length === 0 ? (
                       <div className="py-10 text-center">
-                        <div className="w-12 h-12 rounded-full bg-orange-50 text-[#FA521C] flex items-center justify-center mx-auto mb-3">
+                        <div className="w-12 h-12 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-3">
                           <Search className="w-6 h-6" />
                         </div>
                         <p className="text-sm font-bold text-gray-900 mb-1">
@@ -238,7 +238,7 @@ export function SearchModal() {
                         <Link
                           href="/products"
                           onClick={closeSearch}
-                          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FA521C] text-white text-xs font-semibold shadow-sm hover:bg-[#E04515] transition-all"
+                          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FF7A00] text-white text-xs font-semibold shadow-sm hover:bg-[#E66E00] transition-all"
                         >
                           Browse All Products
                         </Link>
@@ -250,7 +250,7 @@ export function SearchModal() {
                             key={product.id}
                             href={`/products/${product.slug || product.id}`}
                             onClick={closeSearch}
-                            className="flex items-center gap-3 p-2.5 rounded-2xl bg-gray-50/70 hover:bg-orange-50/50 border border-gray-100 hover:border-[#FA521C]/30 transition-all group"
+                            className="flex items-center gap-3 p-2.5 rounded-2xl bg-gray-50/70 hover:bg-orange-50/50 border border-gray-100 hover:border-[#FF7A00]/30 transition-all group"
                           >
                             <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-white flex-shrink-0 border border-gray-100">
                               <Image
@@ -262,10 +262,10 @@ export function SearchModal() {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#FA521C] block">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#FF7A00] block">
                                 {product.category}
                               </span>
-                              <h4 className="text-xs sm:text-sm font-bold text-gray-900 group-hover:text-[#FA521C] transition-colors truncate">
+                              <h4 className="text-xs sm:text-sm font-bold text-gray-900 group-hover:text-[#FF7A00] transition-colors truncate">
                                 {product.name}
                               </h4>
                               <div className="flex items-center gap-2 mt-0.5">
@@ -280,7 +280,7 @@ export function SearchModal() {
                                 )}
                               </div>
                             </div>
-                            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#FA521C] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#FF7A00] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                           </Link>
                         ))}
                       </div>
@@ -292,13 +292,13 @@ export function SearchModal() {
                     <div>
                       <div className="flex items-center justify-between mb-2.5">
                         <span className="text-[11px] font-extrabold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-[#FA521C]" />
+                          <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />
                           COLLECTIONS
                         </span>
                         <Link
                           href="/products"
                           onClick={closeSearch}
-                          className="text-xs font-bold text-[#FA521C] hover:underline flex items-center gap-0.5"
+                          className="text-xs font-bold text-[#FF7A00] hover:underline flex items-center gap-0.5"
                         >
                           <span>Explore All</span>
                           <ChevronRight className="w-3.5 h-3.5" />
@@ -320,7 +320,7 @@ export function SearchModal() {
                               <Link
                                 href={col.href}
                                 onClick={closeSearch}
-                                className="group flex flex-col items-center p-2 rounded-xl bg-white border border-gray-100 hover:border-[#FA521C] hover:shadow-md hover:ring-2 hover:ring-[#FA521C]/15 transition-all text-center h-full active:scale-95"
+                                className="group flex flex-col items-center p-2 rounded-xl bg-white border border-gray-100 hover:border-[#FF7A00] hover:shadow-md hover:ring-2 hover:ring-[#FF7A00]/15 transition-all text-center h-full active:scale-95"
                               >
                                 <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gray-100 mb-1.5 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]">
                                   <Image
@@ -331,10 +331,10 @@ export function SearchModal() {
                                     className="object-cover group-hover:scale-110 transition-transform duration-500"
                                   />
                                 </div>
-                                <span className="text-[10px] sm:text-[10.5px] font-bold text-gray-900 tracking-tight group-hover:text-[#FA521C] transition-colors text-center uppercase leading-tight line-clamp-2 min-h-[26px] flex items-center justify-center">
+                                <span className="text-[10px] sm:text-[10.5px] font-bold text-gray-900 tracking-tight group-hover:text-[#FF7A00] transition-colors text-center uppercase leading-tight line-clamp-2 min-h-[26px] flex items-center justify-center">
                                   {col.title}
                                 </span>
-                                <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 tracking-wider uppercase mt-0.5 group-hover:text-[#FA521C] transition-colors">
+                                <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 tracking-wider uppercase mt-0.5 group-hover:text-[#FF7A00] transition-colors">
                                   {col.subtitle}
                                 </span>
                               </Link>
@@ -347,7 +347,7 @@ export function SearchModal() {
                     {/* 3. Popular Searches */}
                     <div>
                       <span className="text-[11px] font-extrabold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 mb-2.5">
-                        <TrendingUp className="w-3.5 h-3.5 text-[#FA521C]" />
+                        <TrendingUp className="w-3.5 h-3.5 text-[#FF7A00]" />
                         POPULAR SEARCHES
                       </span>
                       <div className="flex flex-wrap gap-2">
@@ -356,7 +356,7 @@ export function SearchModal() {
                             key={tag}
                             type="button"
                             onClick={() => handleTagClick(tag)}
-                            className="px-3.5 py-1.5 rounded-full bg-gray-100 hover:bg-orange-50 hover:text-[#FA521C] hover:border-[#FA521C]/30 border border-transparent text-xs font-semibold text-gray-700 transition-all cursor-pointer"
+                            className="px-3.5 py-1.5 rounded-full bg-gray-100 hover:bg-orange-50 hover:text-[#FF7A00] hover:border-[#FF7A00]/30 border border-transparent text-xs font-semibold text-gray-700 transition-all cursor-pointer"
                           >
                             {tag}
                           </button>

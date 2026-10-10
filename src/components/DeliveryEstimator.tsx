@@ -144,7 +144,7 @@ export function DeliveryEstimator({ businessDays = 5 }: DeliveryEstimatorProps) 
             value={pincode}
             onChange={handleInputChange}
             placeholder="Enter 6-digit PIN code (e.g. 683547)"
-            className="w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl bg-white border border-gray-300 text-[14px] sm:text-[15px] font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#FA521C] focus:ring-2 focus:ring-[#FA521C]/20 transition-all tracking-wide"
+            className="w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl bg-white border border-gray-300 text-[14px] sm:text-[15px] font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all tracking-wide"
           />
           {pincode && (
             <button

@@ -1,5 +1,6 @@
 import { executeD1Query } from "@/lib/d1";
 import { createERPOrder, updateERPOrder, getERPOrders } from "@/lib/erpStore";
+import { decrementInventory, restockInventory } from "@/lib/inventoryService";
 
 export interface OrderItem {
   product_id: string;
@@ -109,6 +110,8 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
     console.warn("D1 createOrder warning:", err);
   }
 
+  // (Note: Inventory decrement is cleanly handled once inside createERPOrder)
+
   return order;
 }
 
@@ -122,6 +125,21 @@ export async function updateOrderStatus(orderId: string, status: OrderRecord["or
   const ord = inMemoryOrders.find((o) => o.id === orderId);
   if (ord) {
     ord.order_status = status;
+  }
+
+  // Restock items if order is cancelled
+  if (status === "cancelled" && ord?.items) {
+    try {
+      await restockInventory(
+        ord.items.map((it) => ({
+          product_id: it.product_id,
+          name: it.name,
+          quantity: it.quantity,
+        }))
+      );
+    } catch (restockErr) {
+      console.warn("Failed to restock inventory in updateOrderStatus:", restockErr);
+    }
   }
 
   // Also sync status update to ERP & D1

@@ -18,7 +18,7 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 const LOCAL_STORAGE_KEY = "zp_user_wishlist";
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -86,9 +86,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             })
           );
         } catch (e) {}
-        const currentPath = window.location.pathname + window.location.search;
-        const redirectUrl = `/signin?redirect=${encodeURIComponent(currentPath)}&notice=${encodeURIComponent("Please sign in to save items to your wishlist")}`;
-        window.location.href = redirectUrl;
+        openAuthModal("login", "Sign in required: Please log in to save items to your wishlist ❤️");
       }
       return false;
     }

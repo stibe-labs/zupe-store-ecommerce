@@ -61,7 +61,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     async function initCart() {
       if (!user) {
         if (isMounted) {
-          setCart([]);
+          try {
+            const savedGuestCart = localStorage.getItem(GUEST_CART_KEY);
+            if (savedGuestCart) {
+              const parsed = JSON.parse(savedGuestCart);
+              if (Array.isArray(parsed)) {
+                setCart(parsed);
+              }
+            } else {
+              setCart([]);
+            }
+          } catch (e) {
+            setCart([]);
+          }
           setIsInitialized(true);
         }
         return;
@@ -76,6 +88,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
 
         let merged = [...remoteItems];
+
+        // Process guest cart items and merge them into remote items
+        try {
+          const savedGuestCart = localStorage.getItem(GUEST_CART_KEY);
+          if (savedGuestCart) {
+            const guestItems = JSON.parse(savedGuestCart);
+            if (Array.isArray(guestItems)) {
+              for (const gItem of guestItems) {
+                const idx = merged.findIndex((m) => m.id === gItem.id);
+                if (idx > -1) {
+                  merged[idx].quantity += gItem.quantity;
+                } else {
+                  merged.push(gItem);
+                }
+              }
+            }
+          }
+        } catch (e) {}
 
         // Process pending cart action if any (saved before redirecting to sign in)
         try {
@@ -135,7 +165,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   useEffect(() => {
-    if (!isInitialized || !user) return;
+    if (!isInitialized) return;
+
+    if (!user) {
+      try {
+        localStorage.setItem(GUEST_CART_KEY, JSON.stringify(cart));
+      } catch (e) {}
+      return;
+    }
 
     const timer = setTimeout(async () => {
       try {
@@ -172,26 +209,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     },
     quantity: number = 1
   ): boolean => {
-    if (!user) {
-      if (typeof window !== "undefined") {
-        try {
-          localStorage.setItem(
-            "zp_pending_cart_action",
-            JSON.stringify({
-              action: "add_to_cart",
-              product,
-              quantity,
-              autoOpenCart: true,
-            })
-          );
-        } catch (e) {}
-        const currentPath = window.location.pathname + window.location.search;
-        const redirectUrl = `/signin?redirect=${encodeURIComponent(currentPath)}&notice=${encodeURIComponent("Please sign in to add items to your cart")}`;
-        window.location.href = redirectUrl;
-      }
-      return false;
-    }
-
     const finalPrice = product.offer_price || product.price || 990;
     const finalMrp = product.mrp || Math.round(finalPrice * 1.25);
     const finalImage = product.poster_image || product.image || "";
@@ -240,7 +257,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCart((prev) => prev.filter((item) => item.id !== productId));
   };
 
-  const clearCart = () => setCart([]);
+  const clearCart = () => {
+    setCart([]);
+    try {
+      localStorage.removeItem(GUEST_CART_KEY);
+    } catch (e) {}
+  };
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);

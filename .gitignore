@@ -37,3 +37,5 @@ yarn-error.log*
 *.sublime-project
 *.sublime-workspace
 *.tsbuildinfo
+scratch/
+cookies.txt

@@ -25,7 +25,7 @@ export default function WishlistPage() {
 
   if (!authLoading && !user) {
     return (
-      <div className="min-h-screen bg-[#F8F9FA] text-[#111111] flex flex-col justify-between">
+      <div className="min-h-screen bg-[#F3F4F6] text-[#111111] flex flex-col justify-between">
         <Navbar />
         <div className="max-w-md mx-auto py-16 sm:py-24 px-4 text-center">
           <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-5 rounded-3xl bg-pink-50 flex items-center justify-center text-[#FF6B6B]">
@@ -40,7 +40,7 @@ export default function WishlistPage() {
           <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center">
             <Link
               href="/signin?redirect=/wishlist&notice=Please sign in to access your saved wishlist"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl sm:rounded-2xl bg-[#FA521C] hover:bg-[#E0400B] text-white font-semibold text-xs sm:text-sm shadow-md shadow-[#FA521C]/25 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl sm:rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-xs sm:text-sm shadow-md shadow-[#FF7A00]/25 transition-all"
             >
               <span>Sign In to Your Account</span>
               <ArrowRight className="w-4 h-4" />
@@ -59,7 +59,7 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-[#111111]">
+    <div className="min-h-screen bg-[#F3F4F6] text-[#111111]">
       <Navbar />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-12 sm:pb-16">
@@ -96,7 +96,7 @@ export default function WishlistPage() {
             </p>
             <Link
               href="/products"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#FA521C] hover:bg-[#E0400B] text-white font-semibold text-xs sm:text-sm shadow-md shadow-[#FA521C]/25 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-xs sm:text-sm shadow-md shadow-[#FF7A00]/25 transition-all"
             >
               <span>Explore Products</span>
               <ArrowRight className="w-4 h-4" />
@@ -144,14 +144,14 @@ export default function WishlistPage() {
                     </div>
 
                     {/* Category */}
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[#FA521C] truncate mb-1">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[#FF7A00] truncate mb-1">
                       {item.category}
                     </div>
 
                     {/* Title */}
                     <Link
                       href={`/products/${item.slug || item.id}`}
-                      className="block text-xs sm:text-sm font-bold text-gray-900 line-clamp-2 hover:text-[#FA521C] transition-colors leading-snug mb-1.5 min-h-[32px] sm:min-h-[36px]"
+                      className="block text-xs sm:text-sm font-bold text-gray-900 line-clamp-2 hover:text-[#FF7A00] transition-colors leading-snug mb-1.5 min-h-[32px] sm:min-h-[36px]"
                     >
                       {item.name}
                     </Link>
@@ -172,7 +172,7 @@ export default function WishlistPage() {
                   {/* Move to Bag Button */}
                   <button
                     onClick={() => handleMoveToCart(item)}
-                    className="w-full py-2 px-2.5 rounded-lg sm:rounded-xl bg-[#FA521C] hover:bg-[#E04515] active:scale-95 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full py-2 px-2.5 rounded-lg sm:rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <ShoppingBag className="w-3.5 h-3.5" />
                     <span>Move to Bag</span>

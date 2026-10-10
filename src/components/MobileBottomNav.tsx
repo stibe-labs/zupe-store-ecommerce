@@ -64,13 +64,13 @@ export function MobileBottomNav() {
           <Link
             href="/products"
             className={`flex flex-col items-center justify-center w-full h-full py-1 transition-colors ${
-              isShopActive ? "text-[#FA521C]" : "text-gray-400 hover:text-gray-600"
+              isShopActive ? "text-[#FF7A00]" : "text-gray-400 hover:text-gray-600"
             }`}
           >
             <Store className={`w-5 h-5 ${isShopActive ? "stroke-[2.5]" : "stroke-[2]"}`} />
             <span
               className={`text-[10px] mt-1 ${
-                isShopActive ? "font-bold text-[#FA521C]" : "font-medium text-gray-500"
+                isShopActive ? "font-bold text-[#FF7A00]" : "font-medium text-gray-500"
               }`}
             >
               Shop
@@ -82,14 +82,14 @@ export function MobileBottomNav() {
             type="button"
             onClick={openSearch}
             className={`flex flex-col items-center justify-center w-full h-full py-1 transition-colors cursor-pointer ${
-              isSearchOpen ? "text-[#FA521C]" : "text-gray-400 hover:text-gray-600"
+              isSearchOpen ? "text-[#FF7A00]" : "text-gray-400 hover:text-gray-600"
             }`}
             aria-label="Search products"
           >
             <Search className={`w-5 h-5 ${isSearchOpen ? "stroke-[2.5]" : "stroke-[2]"}`} />
             <span
               className={`text-[10px] mt-1 ${
-                isSearchOpen ? "font-bold text-[#FA521C]" : "font-medium text-gray-500"
+                isSearchOpen ? "font-bold text-[#FF7A00]" : "font-medium text-gray-500"
               }`}
             >
               Search
@@ -105,7 +105,7 @@ export function MobileBottomNav() {
             <div
               className={`w-13 h-13 rounded-full flex items-center justify-center shadow-lg transition-transform group-active:scale-95 border-4 border-white ${
                 isHomeActive
-                  ? "bg-[#111827] shadow-black/25 ring-2 ring-[#FA521C]/40"
+                  ? "bg-[#111827] shadow-black/25 ring-2 ring-[#FF7A00]/40"
                   : "bg-[#111827] shadow-black/15 opacity-90"
               }`}
             >
@@ -124,7 +124,7 @@ export function MobileBottomNav() {
           <button
             type="button"
             onClick={openCart}
-            className="flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative text-gray-400 hover:text-[#FA521C] anim-tap-bounce active:text-[#FA521C] cursor-pointer"
+            className="flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative text-gray-400 hover:text-[#FF7A00] anim-tap-bounce active:text-[#FF7A00] cursor-pointer"
             aria-label="Open Shopping Bag"
           >
             <div className="relative">
@@ -144,7 +144,7 @@ export function MobileBottomNav() {
           <button
             onClick={handleAccountClick}
             className={`flex flex-col items-center justify-center w-full h-full py-1 transition-colors ${
-              isAccountActive ? "text-[#FA521C]" : "text-gray-400 hover:text-gray-600"
+              isAccountActive ? "text-[#FF7A00]" : "text-gray-400 hover:text-gray-600"
             }`}
             aria-label="Account details"
           >
@@ -153,7 +153,7 @@ export function MobileBottomNav() {
             />
             <span
               className={`text-[10px] mt-1 ${
-                isAccountActive ? "font-bold text-[#FA521C]" : "font-medium text-gray-500"
+                isAccountActive ? "font-bold text-[#FF7A00]" : "font-medium text-gray-500"
               }`}
             >
               Account

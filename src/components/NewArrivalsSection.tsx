@@ -12,7 +12,7 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 export function NewArrivalsSection() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const { addToCart, addItem } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
@@ -86,11 +86,7 @@ export function NewArrivalsSection() {
                             JSON.stringify({ action: "wishlist", product })
                           );
                         } catch (e) {}
-                        router.push(
-                          `/signin?redirect=/&notice=${encodeURIComponent(
-                            "Please sign in to save items to your wishlist"
-                          )}`
-                        );
+                        openAuthModal("login", "Sign in required: Please log in to save items to your wishlist ❤️");
                         return;
                       }
                       toggleWishlist(product);
@@ -141,23 +137,13 @@ export function NewArrivalsSection() {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (!user) {
-                      try {
-                        localStorage.setItem(
-                          "zp_pending_cart_action",
-                          JSON.stringify({ action: "buy_now", product, quantity: 1, autoOpenCart: false })
-                        );
-                      } catch (err) {}
-                      router.push(
-                        `/signin?redirect=${encodeURIComponent("/checkout")}&notice=${encodeURIComponent(
-                          "Please sign in to place an order"
-                        )}`
-                      );
-                      return;
-                    }
                     const addFn = addToCart || addItem;
                     if (typeof addFn === "function") {
                       addFn(product, 1);
+                    }
+                    if (!user) {
+                      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
+                      return;
                     }
                     router.push("/checkout");
                   }}
@@ -170,27 +156,17 @@ export function NewArrivalsSection() {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (!user) {
-                      try {
-                        localStorage.setItem(
-                          "zp_pending_cart_action",
-                          JSON.stringify({ action: "add_to_cart", product, quantity: 1, autoOpenCart: true })
-                        );
-                      } catch (err) {}
-                      router.push(
-                        `/signin?redirect=/&notice=${encodeURIComponent(
-                          "Please sign in to add items to your cart"
-                        )}`
-                      );
-                      return;
-                    }
                     const addFn = addToCart || addItem;
                     if (typeof addFn === "function") {
                       addFn(product, 1);
                     }
+                    if (!user) {
+                      openAuthModal("login", "Sign in required: Please log in to add items to your cart & checkout 🛍️");
+                      return;
+                    }
                     router.push("/cart");
                   }}
-                  className="w-full py-2 px-1.5 sm:px-2 rounded-xl bg-[#FA521C] hover:bg-[#E04515] active:scale-95 text-white text-xs sm:text-[13px] font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
+                  className="w-full py-2 px-1.5 sm:px-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-xs sm:text-[13px] font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
                 >
                   Add to cart
                 </button>

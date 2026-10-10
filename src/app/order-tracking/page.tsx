@@ -259,6 +259,7 @@ function OrderTrackingContent() {
   const [inputTerm, setInputTerm] = useState(urlQuery);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [errorSupport, setErrorSupport] = useState<string | null>(null);
   const [matchedOrders, setMatchedOrders] = useState<ERPOrder[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<ERPOrder | null>(null);
   const [copiedAWB, setCopiedAWB] = useState(false);
@@ -269,11 +270,13 @@ function OrderTrackingContent() {
     const trimmed = termToSearch.trim();
     if (!trimmed) {
       setErrorMessage("Please enter an Order ID, AWB number, or Phone/Email");
+      setErrorSupport(null);
       return;
     }
 
     setLoading(true);
     setErrorMessage("");
+    setErrorSupport(null);
     setMatchedOrders([]);
     setSelectedOrder(null);
 
@@ -288,6 +291,9 @@ function OrderTrackingContent() {
         setErrorMessage(
           data.error || `No order found matching "${trimmed}". Please double check your order details.`
         );
+        if (data.support_whatsapp) {
+          setErrorSupport(data.support_whatsapp);
+        }
       }
     } catch (err: any) {
       setErrorMessage("Unable to fetch order status at this moment. Please try again.");
@@ -363,8 +369,8 @@ function OrderTrackingContent() {
         };
       default:
         return {
-          bg: "bg-orange-50 text-[#FA521C] border-orange-200",
-          dot: "bg-[#FA521C] animate-pulse",
+          bg: "bg-orange-50 text-[#FF7A00] border-orange-200",
+          dot: "bg-[#FF7A00] animate-pulse",
           icon: Clock,
           label: "Processing at Warehouse",
         };
@@ -408,16 +414,16 @@ function OrderTrackingContent() {
             {/* Live Tracking Pill */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white shadow-sm border border-orange-200/60 mb-5">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FA521C] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#FA521C]"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF7A00] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#FF7A00]"></span>
               </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#FA521C]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#FF7A00]">
                 Live Shipment Tracking
               </span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl font-display font-extrabold text-gray-900 tracking-tight leading-tight">
-              Track Your <span className="text-[#FA521C]">Order</span>
+              Track Your <span className="text-[#FF7A00]">Order</span>
             </h1>
             <p className="mt-3 text-sm sm:text-base text-gray-600 max-w-xl mx-auto">
               Enter your Order Number, Shiprocket AWB, or registered Mobile Number to see instant, live courier updates.
@@ -451,7 +457,7 @@ function OrderTrackingContent() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-[#FA521C] hover:bg-[#E04515] active:scale-[0.98] text-white font-bold text-sm sm:text-base transition-all shadow-md shadow-[#FA521C]/25 disabled:opacity-70 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-[0.98] text-white font-bold text-sm sm:text-base transition-all shadow-md shadow-[#FF7A00]/25 disabled:opacity-70 cursor-pointer"
                 >
                   {loading ? (
                     <>
@@ -476,7 +482,7 @@ function OrderTrackingContent() {
                   key={tag.id}
                   type="button"
                   onClick={() => handleSelectSample(tag.id)}
-                  className="px-2.5 py-1 rounded-full bg-white hover:bg-orange-50 border border-gray-200 hover:border-[#FA521C]/40 text-gray-700 hover:text-[#FA521C] transition-all cursor-pointer font-medium"
+                  className="px-2.5 py-1 rounded-full bg-white hover:bg-orange-50 border border-gray-200 hover:border-[#FF7A00]/40 text-gray-700 hover:text-[#FF7A00] transition-all cursor-pointer font-medium"
                 >
                   {tag.label} <span className="text-[10px] text-gray-400">({tag.note})</span>
                 </button>
@@ -491,11 +497,24 @@ function OrderTrackingContent() {
           {errorMessage && (
             <div className="mb-8 p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-600" />
-              <div className="text-sm">
+              <div className="text-sm flex-1">
                 <p className="font-bold">{errorMessage}</p>
                 <p className="text-xs text-rose-600 mt-1">
                   Tip: Please check your SMS/WhatsApp confirmation or try searching with your 10-digit registered mobile number.
                 </p>
+                {errorSupport && (
+                  <div className="mt-3">
+                    <a
+                      href={errorSupport}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors shadow-xs"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>Chat with Zupe Support on WhatsApp</span>
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -515,7 +534,7 @@ function OrderTrackingContent() {
                       onClick={() => setSelectedOrder(ord)}
                       className={`text-left p-4 rounded-2xl border transition-all ${
                         isSelected
-                          ? "bg-orange-50/70 border-[#FA521C] ring-2 ring-[#FA521C]/20 shadow-sm"
+                          ? "bg-orange-50/70 border-[#FF7A00] ring-2 ring-[#FF7A00]/20 shadow-sm"
                           : "bg-white border-gray-200 hover:border-gray-300 shadow-xs"
                       }`}
                     >
@@ -530,7 +549,7 @@ function OrderTrackingContent() {
                       <p className="text-xs text-gray-500 truncate">
                         {ord.items?.[0]?.product_name || "Zupe Store Item"}
                       </p>
-                      <p className="text-xs font-semibold text-[#FA521C] mt-2">
+                      <p className="text-xs font-semibold text-[#FF7A00] mt-2">
                         ₹{ord.total_amount?.toLocaleString()}
                       </p>
                     </button>
@@ -610,7 +629,7 @@ function OrderTrackingContent() {
                             Courier Partner
                           </span>
                           <div className="flex items-center gap-2">
-                            <Truck className="w-4 h-4 text-[#FA521C]" />
+                            <Truck className="w-4 h-4 text-[#FF7A00]" />
                             <span className="text-sm font-bold text-gray-900">
                               {selectedOrder.courier_partner || "Delhivery Logistics"}
                             </span>
@@ -655,7 +674,7 @@ function OrderTrackingContent() {
                             }
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FA521C] hover:underline"
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FF7A00] hover:underline"
                           >
                             <span>Open Courier Portal</span>
                             <ExternalLink className="w-3.5 h-3.5" />
@@ -667,7 +686,7 @@ function OrderTrackingContent() {
                     {/* Step Visual Progress Bar */}
                     <div className="p-6 sm:p-8">
                       <h3 className="text-base font-bold text-gray-900 mb-6 flex items-center gap-2">
-                        <Truck className="w-5 h-5 text-[#FA521C]" />
+                        <Truck className="w-5 h-5 text-[#FF7A00]" />
                         <span>Live Shipment Journey</span>
                       </h3>
 
@@ -679,7 +698,7 @@ function OrderTrackingContent() {
                             <div
                               className={`absolute -left-[31px] sm:-left-[39px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center border-2 ${
                                 cp.active
-                                  ? "bg-[#FA521C] border-white ring-4 ring-orange-200 text-white"
+                                  ? "bg-[#FF7A00] border-white ring-4 ring-orange-200 text-white"
                                   : cp.completed
                                   ? "bg-emerald-500 border-white text-white"
                                   : "bg-gray-200 border-white text-gray-400"
@@ -699,7 +718,7 @@ function OrderTrackingContent() {
                               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
                                 <h4
                                   className={`text-sm font-bold ${
-                                    cp.active ? "text-[#FA521C]" : "text-gray-900"
+                                    cp.active ? "text-[#FF7A00]" : "text-gray-900"
                                   }`}
                                 >
                                   {cp.title}
@@ -731,7 +750,7 @@ function OrderTrackingContent() {
                 {/* Items in this Shipment */}
                 <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
                   <h3 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Package className="w-5 h-5 text-[#FA521C]" />
+                    <Package className="w-5 h-5 text-[#FF7A00]" />
                     <span>Items in this Package</span>
                   </h3>
 
@@ -768,7 +787,7 @@ function OrderTrackingContent() {
                       })
                     ) : (
                       <div className="py-4 flex items-center gap-4">
-                        <div className="relative w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center text-[#FA521C]">
+                        <div className="relative w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center text-[#FF7A00]">
                           <Package className="w-8 h-8" />
                         </div>
                         <div>
@@ -789,7 +808,7 @@ function OrderTrackingContent() {
                     </div>
                     <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100">
                       <span>Total Paid</span>
-                      <span className="text-[#FA521C]">
+                      <span className="text-[#FF7A00]">
                         ₹{selectedOrder.total_amount?.toLocaleString()}
                       </span>
                     </div>
@@ -801,7 +820,7 @@ function OrderTrackingContent() {
                   {/* Delivery Address */}
                   <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
                     <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-[#FA521C]" />
+                      <MapPin className="w-4 h-4 text-[#FF7A00]" />
                       <span>Shipping Destination</span>
                     </h3>
                     <p className="text-sm font-semibold text-gray-900">
@@ -819,7 +838,7 @@ function OrderTrackingContent() {
 
                   {/* Need Help Card */}
                   <div className="bg-gradient-to-br from-[#111111] to-[#1F2937] rounded-3xl p-6 text-white shadow-md">
-                    <div className="flex items-center gap-2 text-[#FA521C] mb-2">
+                    <div className="flex items-center gap-2 text-[#FF7A00] mb-2">
                       <ShieldCheck className="w-5 h-5" />
                       <span className="text-xs font-bold uppercase tracking-wider">
                         Zupe Care Guarantee
@@ -832,24 +851,24 @@ function OrderTrackingContent() {
 
                     <div className="space-y-2">
                       <a
-                        href={`https://wa.me/919876543210?text=${encodeURIComponent(
+                        href={`https://wa.me/919744122854?text=${encodeURIComponent(
                           `Hi Zupe Store, I need updates on my Order ${
                             selectedOrder.shopify_order_id || selectedOrder.id
                           }`
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors"
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors cursor-pointer"
                       >
                         <MessageSquare className="w-4 h-4" />
                         <span>Chat on WhatsApp</span>
                       </a>
                       <a
-                        href="tel:+919876543210"
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors"
+                        href="tel:+919744122854"
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
                       >
                         <Phone className="w-4 h-4" />
-                        <span>Call +91 98765 43210</span>
+                        <span>Call +91 97441 22854</span>
                       </a>
                     </div>
                   </div>
@@ -864,7 +883,7 @@ function OrderTrackingContent() {
               {/* 3 Step Process */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FA521C] flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-4">
                     <Package className="w-6 h-6" />
                   </div>
                   <h3 className="font-bold text-base text-gray-900 mb-1.5">1. Order Dispatched</h3>
@@ -874,7 +893,7 @@ function OrderTrackingContent() {
                 </div>
 
                 <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FA521C] flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-4">
                     <Truck className="w-6 h-6" />
                   </div>
                   <h3 className="font-bold text-base text-gray-900 mb-1.5">2. Express Logistics</h3>
@@ -884,7 +903,7 @@ function OrderTrackingContent() {
                 </div>
 
                 <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FA521C] flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-4">
                     <CheckCircle2 className="w-6 h-6" />
                   </div>
                   <h3 className="font-bold text-base text-gray-900 mb-1.5">3. Doorstep Delivery</h3>
@@ -912,7 +931,7 @@ function OrderTrackingContent() {
                       <div key={idx} className="py-4">
                         <button
                           onClick={() => setFaqOpen(isOpen ? null : idx)}
-                          className="w-full flex items-center justify-between text-left font-bold text-sm text-gray-900 hover:text-[#FA521C] transition-colors py-1"
+                          className="w-full flex items-center justify-between text-left font-bold text-sm text-gray-900 hover:text-[#FF7A00] transition-colors py-1"
                         >
                           <span>{faq.q}</span>
                           {isOpen ? (
@@ -946,7 +965,7 @@ export default function OrderTrackingPage() {
     <React.Suspense
       fallback={
         <div className="min-h-screen bg-[#FBFBFC] flex items-center justify-center">
-          <RefreshCw className="w-6 h-6 text-[#FA521C] animate-spin" />
+          <RefreshCw className="w-6 h-6 text-[#FF7A00] animate-spin" />
         </div>
       }
     >

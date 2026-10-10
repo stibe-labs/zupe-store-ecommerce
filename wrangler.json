@@ -19,6 +19,12 @@
       "database_id": "1ebc3c22-07be-4f35-b437-5292d137d246"
     }
   ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      "bucket_name": "stibe-media"
+    }
+  ],
   "vars": {
     "SMTP_HOST": "smtp.gmail.com",
     "SMTP_PORT": "587",

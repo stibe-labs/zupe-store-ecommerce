@@ -14,6 +14,7 @@ import {
   Phone,
   X,
   RefreshCw,
+  Zap,
 } from "lucide-react";
 import { ERPOrder } from "@/lib/erpStore";
 
@@ -24,6 +25,7 @@ export default function AdminShipmentsPage() {
   const [courierFilter, setCourierFilter] = useState("all");
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isGeneratingAWB, setIsGeneratingAWB] = useState<string | null>(null);
   const [selectedShipment, setSelectedShipment] = useState<ERPOrder | null>(null);
   const [editDeliveryStatus, setEditDeliveryStatus] = useState("In Transit");
   const [editCourier, setEditCourier] = useState("Delhivery");
@@ -104,6 +106,73 @@ export default function AdminShipmentsPage() {
     }
   };
 
+  const handleGenerateAWB = async (orderId: string, preferredCourier?: string) => {
+    setIsGeneratingAWB(orderId);
+    setModalMsg(null);
+    try {
+      const res = await fetch("/api/admin/sync/shiprocket", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "generate_awb",
+          order_id: orderId,
+          preferredCourier: preferredCourier || editCourier,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.awb) {
+        setEditAWB(data.awb);
+        setEditDeliveryStatus(data.delivery_status || "In Transit");
+        if (data.courier) setEditCourier(data.courier);
+
+        // Update in orders list
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === orderId
+              ? {
+                  ...o,
+                  shiprocket_awb: data.awb,
+                  tracking_number: data.awb,
+                  courier_partner: data.courier || o.courier_partner,
+                  delivery_status: data.delivery_status || "In Transit",
+                  status: data.delivery_status || "In Transit",
+                }
+              : o
+          )
+        );
+
+        if (selectedShipment && selectedShipment.id === orderId) {
+          setSelectedShipment((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  shiprocket_awb: data.awb,
+                  tracking_number: data.awb,
+                  courier_partner: data.courier || prev.courier_partner,
+                  delivery_status: data.delivery_status || "In Transit",
+                  status: data.delivery_status || "In Transit",
+                }
+              : null
+          );
+        }
+
+        setModalMsg({
+          text: data.message || `Generated AWB ${data.awb} via ${data.courier || "Courier"}!`,
+          type: "success",
+        });
+      } else {
+        setModalMsg({
+          text: data.error || "Failed to generate Shiprocket AWB",
+          type: "error",
+        });
+      }
+    } catch (err: any) {
+      setModalMsg({ text: err.message || "Network error", type: "error" });
+    } finally {
+      setIsGeneratingAWB(null);
+    }
+  };
+
   const filtered = orders.filter((o) => {
     if (courierFilter !== "all" && o.courier_partner !== courierFilter) return false;
     if (search.trim()) {
@@ -152,7 +221,7 @@ export default function AdminShipmentsPage() {
                 placeholder="Search AWB, Customer, Order..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
               />
               {search && (
                 <button
@@ -170,7 +239,7 @@ export default function AdminShipmentsPage() {
               <select
                 value={courierFilter}
                 onChange={(e) => setCourierFilter(e.target.value)}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C] focus:outline-none"
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
               >
                 <option value="all">All Courier Partners</option>
                 <option value="Delhivery">Delhivery</option>
@@ -201,7 +270,7 @@ export default function AdminShipmentsPage() {
                 <tbody className="divide-y divide-slate-100 font-medium">
                   {filtered.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/70">
-                      <td className="py-3.5 px-5 font-mono font-bold text-[#FA521C] whitespace-nowrap">
+                      <td className="py-3.5 px-5 font-mono font-bold text-[#FF7A00] whitespace-nowrap">
                         {item.shiprocket_awb || "AWB-PENDING"}
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-slate-900 whitespace-nowrap">
@@ -260,13 +329,31 @@ export default function AdminShipmentsPage() {
                         ₹{item.shipping_cost}
                       </td>
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedShipment(item)}
-                          className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-all"
-                        >
-                          Update
-                        </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          {(!item.shiprocket_awb || item.shiprocket_awb.includes("PENDING")) && (
+                            <button
+                              type="button"
+                              onClick={() => handleGenerateAWB(item.id, item.courier_partner)}
+                              disabled={isGeneratingAWB === item.id}
+                              className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 disabled:opacity-50"
+                              title="Generate Shiprocket AWB"
+                            >
+                              {isGeneratingAWB === item.id ? (
+                                <RefreshCw className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <Zap className="w-3 h-3 text-amber-600" />
+                              )}
+                              <span>AWB</span>
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setSelectedShipment(item)}
+                            className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-all"
+                          >
+                            Update
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -323,7 +410,7 @@ export default function AdminShipmentsPage() {
                 <select
                   value={editDeliveryStatus}
                   onChange={(e) => setEditDeliveryStatus(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                 >
                   <option value="Processing">Processing</option>
                   <option value="In Transit">In Transit</option>
@@ -342,7 +429,7 @@ export default function AdminShipmentsPage() {
                 <select
                   value={editCourier}
                   onChange={(e) => setEditCourier(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                 >
                   <option value="Delhivery">Delhivery</option>
                   <option value="Bluedart">Bluedart</option>
@@ -352,15 +439,35 @@ export default function AdminShipmentsPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                  AWB Tracking Number
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-bold text-slate-600">
+                    AWB Tracking Number
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateAWB(selectedShipment.id, editCourier)}
+                    disabled={isGeneratingAWB === selectedShipment.id}
+                    className="text-[11px] font-bold text-[#FF7A00] hover:text-[#E66E00] flex items-center gap-1 disabled:opacity-50"
+                  >
+                    {isGeneratingAWB === selectedShipment.id ? (
+                      <>
+                        <RefreshCw className="w-3 h-3 animate-spin" />
+                        <span>Generating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-3 h-3 text-[#FF7A00]" />
+                        <span>Auto-Generate AWB</span>
+                      </>
+                    )}
+                  </button>
+                </div>
                 <input
                   type="text"
                   value={editAWB}
                   onChange={(e) => setEditAWB(e.target.value)}
-                  placeholder="e.g. SR-AWB-9871101"
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                  placeholder="e.g. DEL-82910384"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -373,7 +480,7 @@ export default function AdminShipmentsPage() {
                   value={editNDR}
                   onChange={(e) => setEditNDR(e.target.value)}
                   placeholder="e.g. Customer Unavailable / None"
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                 />
               </div>
             </div>
@@ -391,7 +498,7 @@ export default function AdminShipmentsPage() {
                 type="button"
                 onClick={handleSaveShipment}
                 disabled={isSaving}
-                className="px-5 py-2 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 disabled:opacity-50"
+                className="px-5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 disabled:opacity-50"
               >
                 {isSaving ? (
                   <>

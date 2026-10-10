@@ -11,7 +11,7 @@ const CATEGORIES = [
     description: "Elevate every corner",
     image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=600&auto=format&fit=crop",
     href: "/products?category=Decor",
-    accent: "#FA521C",
+    accent: "#FF7A00",
     span: "col-span-2 row-span-2",
   },
   {

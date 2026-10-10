@@ -238,13 +238,13 @@ export default function AdminReportsPage() {
                 disabled={refreshing || loading}
                 className="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm disabled:opacity-60"
               >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-[#FA521C]" : ""}`} />
+                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-[#FF7A00]" : ""}`} />
                 <span>{refreshing ? "Refreshing..." : "Sync Live"}</span>
               </button>
 
               <button
                 onClick={handleExport}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FA521C] hover:bg-[#D4380D] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25"
               >
                 <Download className="w-4 h-4" />
                 <span>Export ({reportType.toUpperCase()})</span>
@@ -259,7 +259,7 @@ export default function AdminReportsPage() {
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                   Total Gross Revenue
                 </span>
-                <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FA521C] flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center font-bold">
                   ₹
                 </div>
               </div>
@@ -347,7 +347,7 @@ export default function AdminReportsPage() {
                   onClick={() => setReportType(t.id as any)}
                   className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                     reportType === t.id
-                      ? "bg-[#FA521C] text-white shadow-sm shadow-orange-500/20"
+                      ? "bg-[#FF7A00] text-white shadow-sm shadow-orange-500/20"
                       : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
                   }`}
                 >
@@ -361,7 +361,7 @@ export default function AdminReportsPage() {
           {/* Loading Skeleton */}
           {loading ? (
             <div className="bg-white rounded-2xl p-12 border border-slate-200/90 flex flex-col items-center justify-center gap-3">
-              <RefreshCw className="w-8 h-8 text-[#FA521C] animate-spin" />
+              <RefreshCw className="w-8 h-8 text-[#FF7A00] animate-spin" />
               <p className="text-sm font-semibold text-slate-600">
                 Aggregating real financial statements from database...
               </p>
@@ -444,7 +444,7 @@ export default function AdminReportsPage() {
                                   parseFloat(row.margin) >= 20
                                     ? "bg-emerald-50 text-emerald-700"
                                     : parseFloat(row.margin) > 0
-                                    ? "bg-orange-50 text-[#FA521C]"
+                                    ? "bg-orange-50 text-[#FF7A00]"
                                     : "bg-rose-50 text-rose-700"
                                 }`}>
                                   {row.margin}
@@ -579,9 +579,9 @@ export default function AdminReportsPage() {
                         <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                           RTO Credit Recovery Rate
                         </span>
-                        <ShieldCheck className="w-4 h-4 text-[#FA521C]" />
+                        <ShieldCheck className="w-4 h-4 text-[#FF7A00]" />
                       </div>
-                      <p className="text-lg font-bold text-[#FA521C]">
+                      <p className="text-lg font-bold text-[#FF7A00]">
                         {rtoDiagnostics.recoveryRate}
                       </p>
                       <p className="text-xs text-slate-500">
@@ -622,7 +622,7 @@ export default function AdminReportsPage() {
                               return (
                                 <tr key={c.courier} className="hover:bg-slate-50/70">
                                   <td className="py-3.5 px-5 font-bold text-slate-900 flex items-center gap-2">
-                                    <Truck className="w-4 h-4 text-[#FA521C]" />
+                                    <Truck className="w-4 h-4 text-[#FF7A00]" />
                                     <span>{c.courier}</span>
                                   </td>
                                   <td className="py-3.5 px-4 text-center font-bold text-slate-800">

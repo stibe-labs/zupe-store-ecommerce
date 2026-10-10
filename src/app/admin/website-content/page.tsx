@@ -54,16 +54,16 @@ const IMAGE_PRESETS = [
   { label: "Water Ripple Lamp", url: "/products/hero-banner.jpg" },
   { label: "Helicopter Perfume", url: "/products/helicopter-perfume.jpg" },
   { label: "Powerbank Earbuds", url: "/products/powerbank-earbuds.jpg" },
-  { label: "Mini Steam Iron", url: "/products/iron/iron-green.jpg" },
+  { label: "Mini Steam Iron", url: "/products/iron/iron-teal-1.jpg" },
   { label: "Car Diffuser", url: "/products/car-perfume.jpg" },
   { label: "Crystal Lamp", url: "/products/ripple-lamp.jpg" },
 ];
 
 const MOBILE_IMAGE_PRESETS = [
   { label: "Ripple Lamp (Square)", url: "/products/ripple/ripple-amber.jpg" },
-  { label: "Helicopter (Square)", url: "/products/helicopter/heli-black.jpg" },
+  { label: "Helicopter (Square)", url: "/products/helicopter/heli-black-1.jpg" },
   { label: "Earbuds (Square)", url: "/products/earbuds/earbuds-matte.jpg" },
-  { label: "Steam Iron (Portrait)", url: "/products/iron/iron-green.jpg" },
+  { label: "Steam Iron (Portrait)", url: "/products/iron/iron-teal-1.jpg" },
 ];
 
 const CATEGORY_ICON_PRESETS = [
@@ -552,7 +552,7 @@ export default function WebsiteContentPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="p-2 rounded-xl bg-orange-50 text-[#FA521C]">
+                <span className="p-2 rounded-xl bg-orange-50 text-[#FF7A00]">
                   <Palette className="w-5 h-5" />
                 </span>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-display">
@@ -612,7 +612,7 @@ export default function WebsiteContentPage() {
               onClick={() => setActiveTab("banners")}
               className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                 activeTab === "banners"
-                  ? "border-[#FA521C] text-[#FA521C]"
+                  ? "border-[#FF7A00] text-[#FF7A00]"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -627,7 +627,7 @@ export default function WebsiteContentPage() {
               onClick={() => setActiveTab("categories")}
               className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                 activeTab === "categories"
-                  ? "border-[#FA521C] text-[#FA521C]"
+                  ? "border-[#FF7A00] text-[#FF7A00]"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -656,7 +656,7 @@ export default function WebsiteContentPage() {
                 <button
                   type="button"
                   onClick={handleOpenAddBanner}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FA521C] text-white text-xs font-bold hover:bg-[#E04515] transition-all shadow-sm cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FF7A00] text-white text-xs font-bold hover:bg-[#E66E00] transition-all shadow-sm cursor-pointer"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5]" />
                   <span>Add New Hero Banner</span>
@@ -665,7 +665,7 @@ export default function WebsiteContentPage() {
 
               {loading ? (
                 <div className="p-12 text-center bg-white rounded-2xl border border-slate-200">
-                  <RefreshCw className="w-6 h-6 animate-spin text-[#FA521C] mx-auto mb-2" />
+                  <RefreshCw className="w-6 h-6 animate-spin text-[#FF7A00] mx-auto mb-2" />
                   <p className="text-xs text-slate-500">Loading hero banners...</p>
                 </div>
               ) : banners.length === 0 ? (
@@ -675,7 +675,7 @@ export default function WebsiteContentPage() {
                   <p className="text-xs text-slate-500 mt-1 mb-4">Click below to add your first banner or restore defaults.</p>
                   <button
                     onClick={handleResetDefaults}
-                    className="px-4 py-2 rounded-xl bg-orange-50 text-[#FA521C] text-xs font-bold hover:bg-orange-100"
+                    className="px-4 py-2 rounded-xl bg-orange-50 text-[#FF7A00] text-xs font-bold hover:bg-orange-100"
                   >
                     Load Default Hero Banners
                   </button>
@@ -762,7 +762,7 @@ export default function WebsiteContentPage() {
                             <h3 className="text-lg sm:text-2xl font-black font-display text-white leading-[1.15] tracking-tight mb-1.5">
                               {slide.titleLine1} <br />
                               <span className="text-white font-normal text-xs sm:text-sm mr-1">for</span>
-                              <span className="text-[#FA521C]">{slide.titleLine2}</span>
+                              <span className="text-[#FF7A00]">{slide.titleLine2}</span>
                             </h3>
                             <p className="text-[11px] text-gray-300 line-clamp-2 mb-3">
                               {slide.description}
@@ -830,7 +830,7 @@ export default function WebsiteContentPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenEditBanner(slide)}
-                            className="p-2 text-slate-600 hover:text-[#FA521C] hover:bg-orange-50 rounded-xl transition-colors cursor-pointer"
+                            className="p-2 text-slate-600 hover:text-[#FF7A00] hover:bg-orange-50 rounded-xl transition-colors cursor-pointer"
                             title="Edit banner details"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -876,7 +876,7 @@ export default function WebsiteContentPage() {
                 <button
                   type="button"
                   onClick={handleOpenAddCategory}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FA521C] text-white text-xs font-bold hover:bg-[#E04515] transition-all shadow-sm cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FF7A00] text-white text-xs font-bold hover:bg-[#E66E00] transition-all shadow-sm cursor-pointer"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5]" />
                   <span>Add New Category</span>
@@ -885,7 +885,7 @@ export default function WebsiteContentPage() {
 
               {loading ? (
                 <div className="p-12 text-center bg-white rounded-2xl border border-slate-200">
-                  <RefreshCw className="w-6 h-6 animate-spin text-[#FA521C] mx-auto mb-2" />
+                  <RefreshCw className="w-6 h-6 animate-spin text-[#FF7A00] mx-auto mb-2" />
                   <p className="text-xs text-slate-500">Loading categories...</p>
                 </div>
               ) : categories.length === 0 ? (
@@ -894,7 +894,7 @@ export default function WebsiteContentPage() {
                   <p className="text-sm font-bold text-slate-700">No Categories Found</p>
                   <button
                     onClick={handleResetDefaults}
-                    className="mt-3 px-4 py-2 rounded-xl bg-orange-50 text-[#FA521C] text-xs font-bold hover:bg-orange-100"
+                    className="mt-3 px-4 py-2 rounded-xl bg-orange-50 text-[#FF7A00] text-xs font-bold hover:bg-orange-100"
                   >
                     Load Default Categories
                   </button>
@@ -922,7 +922,7 @@ export default function WebsiteContentPage() {
                                 <div
                                   className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs overflow-hidden ${
                                     cat.bgColor || "bg-orange-50"
-                                  } ${cat.iconColor || "text-[#FA521C]"}`}
+                                  } ${cat.iconColor || "text-[#FF7A00]"}`}
                                 >
                                   {cat.customIcon ? (
                                     // eslint-disable-next-line @next/next/no-img-element
@@ -971,7 +971,7 @@ export default function WebsiteContentPage() {
                                             </span>
                                           ))}
                                           {subs.length > 3 && (
-                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-orange-50 text-[#FA521C] text-[10px] font-bold">
+                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-orange-50 text-[#FF7A00] text-[10px] font-bold">
                                               +{subs.length - 3} more
                                             </span>
                                           )}
@@ -1047,7 +1047,7 @@ export default function WebsiteContentPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleOpenEditCategory(cat)}
-                                  className="p-1.5 text-slate-500 hover:text-[#FA521C] hover:bg-orange-50 rounded-lg transition-colors cursor-pointer"
+                                  className="p-1.5 text-slate-500 hover:text-[#FF7A00] hover:bg-orange-50 rounded-lg transition-colors cursor-pointer"
                                   title="Edit category"
                                 >
                                   <Edit2 className="w-4 h-4" />
@@ -1192,7 +1192,7 @@ export default function WebsiteContentPage() {
                             <h2 className="text-2xl sm:text-4xl font-display font-extrabold text-white leading-[1.12] tracking-tight mb-3">
                               {bannerForm.titleLine1 || "Innovative Products"} <br />
                               <span className="text-white font-normal text-base sm:text-xl mr-1.5">for</span>
-                              <span className="text-[#FA521C]">{bannerForm.titleLine2 || "Modern Living."}</span>
+                              <span className="text-[#FF7A00]">{bannerForm.titleLine2 || "Modern Living."}</span>
                             </h2>
 
                             {/* Description */}
@@ -1274,7 +1274,7 @@ export default function WebsiteContentPage() {
                             <Search className="w-3.5 h-3.5 text-slate-500" />
                           </div>
                           <span className="font-extrabold text-xs tracking-tight text-slate-900 font-display">
-                            ZUPE <span className="text-[#FA521C]">STORE</span>
+                            ZUPE <span className="text-[#FF7A00]">STORE</span>
                           </span>
                           <div className="flex items-center gap-2">
                             <Heart className="w-3.5 h-3.5 text-slate-700" />
@@ -1308,7 +1308,7 @@ export default function WebsiteContentPage() {
                                 <h2 className="text-xl sm:text-2xl font-display font-extrabold text-white leading-[1.15] tracking-tight mb-2.5">
                                   {bannerForm.titleLine1 || "Innovative Products"} <br />
                                   <span className="text-white font-normal text-xs mr-1">for</span>
-                                  <span className="text-[#FA521C]">{bannerForm.titleLine2 || "Modern Living."}</span>
+                                  <span className="text-[#FF7A00]">{bannerForm.titleLine2 || "Modern Living."}</span>
                                 </h2>
 
                                 {/* Subtitle */}
@@ -1409,7 +1409,7 @@ export default function WebsiteContentPage() {
                     value={bannerForm.image}
                     onChange={(e) => setBannerForm({ ...bannerForm, image: e.target.value })}
                     placeholder="Desktop image URL or click Upload File"
-                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   />
                   <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-black text-white text-xs font-bold transition-all shadow-xs shrink-0">
                     <Upload className="w-3.5 h-3.5" />
@@ -1429,7 +1429,7 @@ export default function WebsiteContentPage() {
                       key={preset.label}
                       type="button"
                       onClick={() => setBannerForm({ ...bannerForm, image: preset.url })}
-                      className="px-2 py-0.5 rounded-lg bg-white hover:bg-orange-50 hover:text-[#FA521C] text-[10px] font-semibold text-slate-600 border border-slate-200 transition-colors"
+                      className="px-2 py-0.5 rounded-lg bg-white hover:bg-orange-50 hover:text-[#FF7A00] text-[10px] font-semibold text-slate-600 border border-slate-200 transition-colors"
                     >
                       {preset.label}
                     </button>
@@ -1456,7 +1456,7 @@ export default function WebsiteContentPage() {
                     value={bannerForm.mobileImage}
                     onChange={(e) => setBannerForm({ ...bannerForm, mobileImage: e.target.value })}
                     placeholder="Optional: mobile image URL or click Upload File"
-                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   />
                   <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs shrink-0">
                     <Upload className="w-3.5 h-3.5" />
@@ -1508,7 +1508,7 @@ export default function WebsiteContentPage() {
                     value={bannerForm.badge}
                     onChange={(e) => setBannerForm({ ...bannerForm, badge: e.target.value })}
                     placeholder="e.g. PREMIUM LIFESTYLE ESSENTIALS"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
                 <div>
@@ -1520,7 +1520,7 @@ export default function WebsiteContentPage() {
                     value={bannerForm.taglineRight}
                     onChange={(e) => setBannerForm({ ...bannerForm, taglineRight: e.target.value })}
                     placeholder="e.g. Drive In Luxury ♡"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
               </div>
@@ -1537,7 +1537,7 @@ export default function WebsiteContentPage() {
                     value={bannerForm.titleLine1}
                     onChange={(e) => setBannerForm({ ...bannerForm, titleLine1: e.target.value })}
                     placeholder="e.g. Car Accessories"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
                 <div>
@@ -1549,7 +1549,7 @@ export default function WebsiteContentPage() {
                     value={bannerForm.titleLine2}
                     onChange={(e) => setBannerForm({ ...bannerForm, titleLine2: e.target.value })}
                     placeholder="e.g. Style & Comfort."
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-[#FA521C] focus:outline-none focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-[#FF7A00] focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
               </div>
@@ -1564,7 +1564,7 @@ export default function WebsiteContentPage() {
                   value={bannerForm.description}
                   onChange={(e) => setBannerForm({ ...bannerForm, description: e.target.value })}
                   placeholder="e.g. Upgrade your driving experience with solar powered diffusing fragrances..."
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -1579,7 +1579,7 @@ export default function WebsiteContentPage() {
                     value={bannerForm.ctaText}
                     onChange={(e) => setBannerForm({ ...bannerForm, ctaText: e.target.value })}
                     placeholder="e.g. Explore Now"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
                 <div>
@@ -1591,7 +1591,7 @@ export default function WebsiteContentPage() {
                     value={bannerForm.ctaLink}
                     onChange={(e) => setBannerForm({ ...bannerForm, ctaLink: e.target.value })}
                     placeholder="e.g. /products?category=Car+Accessories"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
               </div>
@@ -1603,7 +1603,7 @@ export default function WebsiteContentPage() {
                   id="banner-active"
                   checked={bannerForm.active}
                   onChange={(e) => setBannerForm({ ...bannerForm, active: e.target.checked })}
-                  className="w-4 h-4 rounded text-[#FA521C] focus:ring-[#FA521C]"
+                  className="w-4 h-4 rounded text-[#FF7A00] focus:ring-[#FF7A00]"
                 />
                 <label htmlFor="banner-active" className="text-xs font-bold text-slate-800">
                   Active (Display this banner in home hero rotation)
@@ -1621,7 +1621,7 @@ export default function WebsiteContentPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#FA521C] hover:bg-[#E04515] disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#FF7A00] hover:bg-[#E66E00] disabled:opacity-50"
                 >
                   {saving ? "Saving..." : editingBanner ? "Save Changes" : "Publish Banner"}
                 </button>
@@ -1672,7 +1672,7 @@ export default function WebsiteContentPage() {
                     });
                   }}
                   placeholder="e.g. Gaming Gear, Pet Essentials, Kitchenware"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -1685,7 +1685,7 @@ export default function WebsiteContentPage() {
                   value={categoryForm.slug}
                   onChange={(e) => setCategoryForm({ ...categoryForm, slug: e.target.value })}
                   placeholder="e.g. Gaming Gear (will be /products?category=Gaming+Gear)"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 focus:outline-none focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -1703,7 +1703,7 @@ export default function WebsiteContentPage() {
                   <button
                     type="button"
                     onClick={handleLoadDefaultSubcategories}
-                    className="text-[11px] font-bold text-[#FA521C] hover:underline cursor-pointer"
+                    className="text-[11px] font-bold text-[#FF7A00] hover:underline cursor-pointer"
                   >
                     Suggest Presets
                   </button>
@@ -1722,12 +1722,12 @@ export default function WebsiteContentPage() {
                       }
                     }}
                     placeholder="Type subcategory & press Enter or Add..."
-                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   />
                   <button
                     type="button"
                     onClick={handleAddSubcategory}
-                    className="px-3.5 py-2 rounded-xl bg-[#FA521C] hover:bg-[#E04515] text-white text-xs font-bold transition-all shadow-xs shrink-0 flex items-center gap-1 cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold transition-all shadow-xs shrink-0 flex items-center gap-1 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>Add</span>
@@ -1740,7 +1740,7 @@ export default function WebsiteContentPage() {
                     {categoryForm.subcategories.map((sub) => (
                       <span
                         key={sub}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-50 border border-orange-200/60 text-xs font-semibold text-[#FA521C] shadow-2xs group"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-50 border border-orange-200/60 text-xs font-semibold text-[#FF7A00] shadow-2xs group"
                       >
                         <span>{sub}</span>
                         <button
@@ -1786,14 +1786,14 @@ export default function WebsiteContentPage() {
                       onClick={() => setCategoryIconTab("custom")}
                       className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1 ${
                         categoryIconTab === "custom"
-                          ? "bg-white text-[#FA521C] shadow-xs"
+                          ? "bg-white text-[#FF7A00] shadow-xs"
                           : "text-slate-500 hover:text-slate-800"
                       }`}
                     >
                       <Upload className="w-3 h-3" />
                       <span>Custom Icon</span>
                       {categoryForm.customIcon && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#FA521C]" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#FF7A00]" />
                       )}
                     </button>
                   </div>
@@ -1871,7 +1871,7 @@ export default function WebsiteContentPage() {
                             }
                             className={`p-2 rounded-xl flex flex-col items-center gap-1 transition-all border ${
                               isSelected
-                                ? "bg-white border-[#FA521C] shadow-xs text-[#FA521C]"
+                                ? "bg-white border-[#FF7A00] shadow-xs text-[#FF7A00]"
                                 : "bg-white hover:bg-slate-50 border-slate-200/60 text-slate-700"
                             }`}
                             title={preset.label}
@@ -1904,7 +1904,7 @@ export default function WebsiteContentPage() {
                           setCategoryForm({ ...categoryForm, customIcon: e.target.value })
                         }
                         placeholder="Paste image/SVG URL or upload below"
-                        className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                        className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                       />
                       <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-black text-white text-xs font-bold transition-all shadow-xs shrink-0">
                         <Upload className="w-3.5 h-3.5" />
@@ -1950,7 +1950,7 @@ export default function WebsiteContentPage() {
                         col.bg
                       } ${col.text} ${
                         categoryForm.bgColor === col.bg
-                          ? "border-[#FA521C] ring-2 ring-[#FA521C]/20"
+                          ? "border-[#FF7A00] ring-2 ring-[#FF7A00]/20"
                           : "border-transparent"
                       }`}
                     >
@@ -1970,7 +1970,7 @@ export default function WebsiteContentPage() {
                     onChange={(e) =>
                       setCategoryForm({ ...categoryForm, showInNavbar: e.target.checked })
                     }
-                    className="w-4 h-4 rounded text-[#FA521C] focus:ring-[#FA521C]"
+                    className="w-4 h-4 rounded text-[#FF7A00] focus:ring-[#FF7A00]"
                   />
                   <label htmlFor="cat-navbar" className="text-xs font-bold text-slate-800">
                     Display in Navbar Sub-Nav Row
@@ -1985,7 +1985,7 @@ export default function WebsiteContentPage() {
                     onChange={(e) =>
                       setCategoryForm({ ...categoryForm, showInPills: e.target.checked })
                     }
-                    className="w-4 h-4 rounded text-[#FA521C] focus:ring-[#FA521C]"
+                    className="w-4 h-4 rounded text-[#FF7A00] focus:ring-[#FF7A00]"
                   />
                   <label htmlFor="cat-pills" className="text-xs font-bold text-slate-800">
                     Display in Home Circular Category Pills
@@ -2000,7 +2000,7 @@ export default function WebsiteContentPage() {
                     onChange={(e) =>
                       setCategoryForm({ ...categoryForm, active: e.target.checked })
                     }
-                    className="w-4 h-4 rounded text-[#FA521C] focus:ring-[#FA521C]"
+                    className="w-4 h-4 rounded text-[#FF7A00] focus:ring-[#FF7A00]"
                   />
                   <label htmlFor="cat-active" className="text-xs font-bold text-slate-800">
                     Active (Include in product catalog dropdowns & filters)
@@ -2019,7 +2019,7 @@ export default function WebsiteContentPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#FA521C] hover:bg-[#E04515] disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#FF7A00] hover:bg-[#E66E00] disabled:opacity-50"
                 >
                   {saving ? "Saving..." : editingCategory ? "Save Changes" : "Create Category"}
                 </button>

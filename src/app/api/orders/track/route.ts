@@ -114,7 +114,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: `No order found matching "${query}". Please verify your Order ID or registered mobile number.`,
+        error: `No order found matching "${query}". Please verify your Order ID (#1054), AWB, or 10-digit mobile number.`,
+        suggestions: [
+          "Check the order confirmation SMS or email sent at the time of purchase.",
+          "Ensure you entered the 10-digit mobile number used during checkout.",
+          "Newly placed orders may take up to 10-15 minutes to reflect in courier tracking systems.",
+        ],
+        support_whatsapp: `https://wa.me/919744122854?text=${encodeURIComponent(
+          `Hi Zupe Store, I need help tracking my order with query "${query}".`
+        )}`,
+        support_phone: "+91 97441 22854",
       },
       { status: 404 }
     );

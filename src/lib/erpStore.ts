@@ -1,5 +1,6 @@
 // Zupe Store ERP Data Store & Business Logic Layer
 import { executeD1Query } from "@/lib/d1";
+import { decrementInventory, restockInventory } from "@/lib/inventoryService";
 
 export interface Supplier {
   id: string;
@@ -834,9 +835,9 @@ export async function getERPOrders(filters?: {
       params.push(filters.payment_method);
     }
     if (filters?.search && filters.search.trim()) {
-      sql += " AND (shopify_order_id LIKE ? OR customer_name LIKE ? OR shiprocket_awb LIKE ?)";
+      sql += " AND (id LIKE ? OR shopify_order_id LIKE ? OR customer_name LIKE ? OR shiprocket_awb LIKE ? OR customer_phone LIKE ?)";
       const term = `%${filters.search.trim()}%`;
-      params.push(term, term, term);
+      params.push(term, term, term, term, term);
     }
     sql += " ORDER BY created_at DESC";
 
@@ -876,8 +877,10 @@ export async function getERPOrders(filters?: {
     const s = filters.search.toLowerCase();
     res = res.filter(
       (o) =>
+        o.id.toLowerCase().includes(s) ||
         o.shopify_order_id.toLowerCase().includes(s) ||
         o.customer_name.toLowerCase().includes(s) ||
+        (o.customer_phone && o.customer_phone.toLowerCase().includes(s)) ||
         (o.shiprocket_awb && o.shiprocket_awb.toLowerCase().includes(s))
     );
   }
@@ -1004,6 +1007,31 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
     );
   } catch (err) {
     console.warn("D1 createERPOrder warning:", err);
+  }
+
+  // Atomically decrement inventory in D1 and runtime memory
+  if (newOrder.items && newOrder.items.length > 0) {
+    try {
+      await decrementInventory(
+        newOrder.items.map((it: any) => ({
+          product_id: it.product_id || it.product_name,
+          name: it.product_name,
+          quantity: it.quantity,
+        }))
+      );
+    } catch (invErr) {
+      console.warn("Inventory decrement warning in createERPOrder:", invErr);
+    }
+  }
+
+  // Outbound push to Shopify Admin API (asynchronously, non-blocking)
+  try {
+    const { pushOrderToShopify } = await import("@/lib/shopifyOutbound");
+    pushOrderToShopify(newOrder).catch((e) =>
+      console.warn("Asynchronous Shopify order push warning:", e)
+    );
+  } catch (pushErr) {
+    console.warn("Shopify push loader warning:", pushErr);
   }
 
   return newOrder;
@@ -1152,6 +1180,25 @@ export async function updateERPOrder(
     } catch {}
   }
 
+  // Restock inventory if order was cancelled or returned via RTO
+  if (
+    targetOrder &&
+    targetOrder.items &&
+    (updates.status === "Cancelled" || updates.delivery_status === "RTO Delivered")
+  ) {
+    try {
+      await restockInventory(
+        targetOrder.items.map((it: any) => ({
+          product_id: it.product_id || it.product_name,
+          name: it.product_name,
+          quantity: it.quantity,
+        }))
+      );
+    } catch (restockErr) {
+      console.warn("Restock error in updateERPOrder:", restockErr);
+    }
+  }
+
   return targetOrder;
 }
 
@@ -1263,6 +1310,8 @@ export interface ERPIntegrationsSettings {
     domain: string;
     token: string;
     webhookSecret: string;
+    autoPushOrders?: boolean;
+    apiVersion?: string;
     isActive: boolean;
     lastSyncedAt?: string;
   };
@@ -1296,6 +1345,8 @@ let inMemorySettings: ERPIntegrationsSettings = {
     domain: "zupe-store.myshopify.com",
     token: "shpat_live_98a76d54f32e10cba",
     webhookSecret: "whsec_9871122334455",
+    autoPushOrders: true,
+    apiVersion: "2024-01",
     isActive: true,
     lastSyncedAt: new Date().toISOString(),
   },

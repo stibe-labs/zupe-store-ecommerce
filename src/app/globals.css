@@ -2,22 +2,23 @@
 @import "tailwindcss";
 
 :root {
-  /* ─── Zupe Brand Palette (Reference Match) ─── */
-  --zp-accent: #FA521C;
-  --zp-accent-light: #FF7A45;
-  --zp-accent-dark: #D4380D;
-  --zp-orange: #FA521C;
-  --zp-coral: #FF4D4F;
-  --zp-coral-light: #FF7875;
-  --zp-mint: #52C41A;
-  --zp-mint-dark: #389E0D;
-  --zp-charcoal: #141414;
-  --zp-charcoal-deep: #0A0A0A;
-  --zp-slate: #595959;
-  --zp-cloud: #F8F9FA;
+  /* ─── Zupe Official Brand Palette ─── */
+  --zp-orange: #FF7A00;          /* Brand / CTA */
+  --zp-accent: #FF7A00;
+  --zp-accent-light: #FF9633;
+  --zp-accent-dark: #E66E00;
+  --zp-amber: #FFC107;           /* Accent */
+  --zp-amber-light: #FFD54F;
+  --zp-amber-dark: #FFA000;
+  --zp-charcoal: #0F172A;        /* Text / dark section */
+  --zp-charcoal-deep: #020617;
+  --zp-charcoal-muted: #334155;
+  --zp-white: #FFFFFF;           /* Main background */
   --zp-snow: #FFFFFF;
-  --zp-sand: #F5F5F5;
-  --zp-warm: #FFEAA7;
+  --zp-soft-gray: #F3F4F6;       /* Secondary background */
+  --zp-cloud: #F3F4F6;
+  --zp-sand: #E5E7EB;
+  --zp-slate: #64748B;
   
   /* ─── Typography ─── */
   --font-display: 'Outfit', system-ui, sans-serif;
@@ -316,11 +317,11 @@ p, li, span:not([class*="tracking"]), label, td, th, blockquote {
 .anim-shopnow-gradient {
   background: linear-gradient(
     115deg,
-    #FA521C 0%,
+    #FF7A00 0%,
     #FF7A45 25%,
     #FF3366 50%,
     #FFA940 75%,
-    #FA521C 100%
+    #FF7A00 100%
   );
   background-size: 250% 250%;
   animation: shopNowColorFlow 3s ease infinite;

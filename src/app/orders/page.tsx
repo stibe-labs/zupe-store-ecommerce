@@ -191,7 +191,7 @@ export default function OrdersPage() {
       case "processing":
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-[#FA521C]">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-[#FF7A00]">
             <Clock className="w-3.5 h-3.5" /> Processing
           </span>
         );
@@ -199,7 +199,7 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-[#111111]">
+    <div className="min-h-screen bg-[#F3F4F6] text-[#111111]">
       <Navbar />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-12 sm:pb-16">
@@ -216,7 +216,7 @@ export default function OrdersPage() {
           {!isAuthenticated && (
             <Link
               href="/signin?redirect=/orders&notice=Please sign in to view and track your orders"
-              className="text-xs font-semibold text-[#FA521C] hover:underline"
+              className="text-xs font-semibold text-[#FF7A00] hover:underline"
             >
               Sign In for full account sync
             </Link>
@@ -240,7 +240,7 @@ export default function OrdersPage() {
             </p>
             <Link
               href="/products"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#FA521C] text-white text-xs font-semibold"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#FF7A00] text-white text-xs font-semibold"
             >
               Start Shopping
             </Link>
@@ -300,7 +300,7 @@ export default function OrdersPage() {
                     </div>
                     <div>
                       <span className="text-[10px] text-gray-400 uppercase font-semibold block">Total Amount</span>
-                      <span className="text-sm font-bold text-[#FA521C]">
+                      <span className="text-sm font-bold text-[#FF7A00]">
                         ₹{ord.total_amount.toLocaleString()}
                       </span>
                     </div>
@@ -308,7 +308,7 @@ export default function OrdersPage() {
                       {getStatusBadge(isDelivered ? "delivered" : ord.order_status)}
                       <Link
                         href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-orange-50 text-[#FA521C] hover:bg-[#FA521C] hover:text-white border border-[#FA521C]/20 transition-all cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-orange-50 text-[#FF7A00] hover:bg-[#FF7A00] hover:text-white border border-[#FF7A00]/20 transition-all cursor-pointer"
                       >
                         <Truck className="w-3.5 h-3.5" />
                         <span>Track Package</span>
@@ -359,7 +359,7 @@ export default function OrdersPage() {
                             <div className="flex-1 min-w-0">
                               <Link
                                 href={productTargetLink}
-                                className="text-sm font-bold text-gray-900 hover:text-[#FA521C] transition-colors truncate block"
+                                className="text-sm font-bold text-gray-900 hover:text-[#FF7A00] transition-colors truncate block"
                               >
                                 {it.name}
                               </Link>
@@ -389,7 +389,7 @@ export default function OrdersPage() {
 
                                   <Link
                                     href={`${productTargetLink}#reviews`}
-                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-500 hover:text-[#FA521C] transition-colors"
+                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-500 hover:text-[#FF7A00] transition-colors"
                                   >
                                     <span>View on Product Page</span>
                                     <ExternalLink className="w-3 h-3" />
@@ -470,7 +470,7 @@ export default function OrdersPage() {
                   <h4 className="text-sm font-bold text-gray-900 tracking-tight">
                     What makes a good review
                   </h4>
-                  <div className="w-8 h-0.5 bg-[#FA521C] rounded-full mt-2" />
+                  <div className="w-8 h-0.5 bg-[#FF7A00] rounded-full mt-2" />
                 </div>
 
                 <div className="space-y-6 text-xs">
@@ -544,7 +544,7 @@ export default function OrdersPage() {
                       <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-2">
                         <Link
                           href={`/products/${encodeURIComponent(reviewModalItem.product_id)}#reviews`}
-                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#111111] text-white text-xs font-bold hover:bg-[#FA521C] transition-colors"
+                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#111111] text-white text-xs font-bold hover:bg-[#FF7A00] transition-colors"
                         >
                           <span>View on Product Page</span>
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -631,7 +631,7 @@ export default function OrdersPage() {
                           value={reviewTitle}
                           onChange={(e) => setReviewTitle(e.target.value)}
                           placeholder="e.g. Excellent build quality, exactly as described!"
-                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FA521C]"
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FF7A00]"
                         />
                       </div>
 
@@ -646,7 +646,7 @@ export default function OrdersPage() {
                           value={reviewComment}
                           onChange={(e) => setReviewComment(e.target.value)}
                           placeholder="Tell future buyers what you liked about this item (quality, packaging, delivery speed, usefulness)..."
-                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FA521C]"
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF7A00]"
                         />
                       </div>
 
@@ -659,7 +659,7 @@ export default function OrdersPage() {
                           <span className="text-[10px] text-gray-400">Multiple files allowed</span>
                         </div>
 
-                        <label className="cursor-pointer border-2 border-dashed border-gray-200 hover:border-[#FA521C] bg-gray-50 hover:bg-orange-50/50 rounded-2xl p-4 flex flex-col items-center justify-center transition-all">
+                        <label className="cursor-pointer border-2 border-dashed border-gray-200 hover:border-[#FF7A00] bg-gray-50 hover:bg-orange-50/50 rounded-2xl p-4 flex flex-col items-center justify-center transition-all">
                           <Camera className="w-6 h-6 text-gray-400 mb-1" />
                           <span className="text-xs font-bold text-gray-700">Click to upload product pictures</span>
                           <span className="text-[10px] text-gray-400">PNG, JPG, WebP formats</span>
@@ -704,7 +704,7 @@ export default function OrdersPage() {
                           value={reviewerName}
                           onChange={(e) => setReviewerName(e.target.value)}
                           placeholder="e.g. Rahul M."
-                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FA521C]"
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FF7A00]"
                         />
                       </div>
 
@@ -720,7 +720,7 @@ export default function OrdersPage() {
                         <button
                           type="submit"
                           disabled={submittingReview || !reviewComment.trim()}
-                          className="px-6 py-2.5 rounded-full text-xs font-bold text-white bg-[#FA521C] hover:bg-[#E04515] disabled:opacity-50 transition-all cursor-pointer shadow-sm"
+                          className="px-6 py-2.5 rounded-full text-xs font-bold text-white bg-[#FF7A00] hover:bg-[#E66E00] disabled:opacity-50 transition-all cursor-pointer shadow-sm"
                         >
                           {submittingReview ? "Submitting Review..." : "Submit Verified Review"}
                         </button>

@@ -64,7 +64,7 @@ export function PromoBanners() {
             <div className="pt-1">
               <Link
                 href="/products?category=Auto+Essentials"
-                className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold overflow-hidden group shadow-md hover:shadow-[0_10px_24px_-4px_rgba(250,82,28,0.5),0_0_14px_rgba(255,122,69,0.25)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 select-none cursor-pointer"
+                className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold overflow-hidden group shadow-md hover:shadow-[0_10px_24px_-4px_rgba(255, 122, 0,0.5),0_0_14px_rgba(255,122,69,0.25)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 select-none cursor-pointer"
               >
                 {/* Default White Background */}
                 <span className="absolute inset-0 bg-white transition-opacity duration-300 ease-out group-hover:opacity-0" />

@@ -32,6 +32,8 @@ import {
   Video,
   Play,
   Edit,
+  ChevronDown,
+  Ban,
 } from "lucide-react";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { ProductReview } from "@/lib/reviewStore";
@@ -159,7 +161,7 @@ export default function AdminReviewsPage() {
 
   const [videoForm, setVideoForm] = useState({
     id: "",
-    productId: "all",
+    productId: "none",
     title: "",
     videoUrl: "",
     posterUrl: "",
@@ -168,6 +170,18 @@ export default function AdminReviewsPage() {
     active: true,
   });
   const [submittingVideo, setSubmittingVideo] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+  const [videoUploadError, setVideoUploadError] = useState<string | null>(null);
+  const [uploadedVideoMeta, setUploadedVideoMeta] = useState<{ name?: string; size?: string } | null>(null);
+
+  const [isUploadingPoster, setIsUploadingPoster] = useState(false);
+  const [posterUploadProgress, setPosterUploadProgress] = useState(0);
+  const [posterUploadError, setPosterUploadError] = useState<string | null>(null);
+
+  const [productDropdownOpen, setProductDropdownOpen] = useState(false);
+  const [productSearchQuery, setProductSearchQuery] = useState("");
+  const productDropdownRef = useRef<HTMLDivElement>(null);
 
   // Metrics
   const [metrics, setMetrics] = useState({
@@ -182,6 +196,7 @@ export default function AdminReviewsPage() {
     setIsRefreshing(true);
     try {
       const res = await fetch("/api/admin/reviews");
+      if (!res.ok) return;
       const data = await res.json();
       if (data.success) {
         setReviews(data.reviews || []);
@@ -199,6 +214,7 @@ export default function AdminReviewsPage() {
     setLoadingVideos(true);
     try {
       const res = await fetch(`/api/admin/videos?_t=${Date.now()}`);
+      if (!res.ok) return;
       const data = await res.json();
       if (data.success && Array.isArray(data.videos)) {
         setVideos(data.videos);
@@ -214,25 +230,61 @@ export default function AdminReviewsPage() {
     await Promise.all([fetchReviews(), fetchVideos()]);
   };
 
+  const getProductThumbnail = (p: any): string => {
+    if (!p) return "/images/placeholder.png";
+    if (p.poster_image) return p.poster_image;
+    if (Array.isArray(p.images) && p.images[0]) return p.images[0];
+    if (typeof p.images === "string") {
+      try {
+        const parsed = JSON.parse(p.images);
+        if (Array.isArray(parsed) && parsed[0]) return parsed[0];
+      } catch {}
+      if (p.images.startsWith("http")) return p.images;
+    }
+    return "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200";
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch(`/api/products?_t=${Date.now()}`, { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+        setProductsList(data.products);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch fresh products list:", err);
+    }
+  };
+
+  // Close custom product dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        productDropdownRef.current &&
+        !productDropdownRef.current.contains(event.target as Node)
+      ) {
+        setProductDropdownOpen(false);
+      }
+    }
+    if (productDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [productDropdownOpen]);
+
   useEffect(() => {
     refreshAll();
-
-    // Fetch dynamic products if available
-    fetch("/api/products")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
-          setProductsList(data.products);
-        }
-      })
-      .catch(() => {});
+    fetchProducts();
   }, []);
 
   const handleOpenAddVideo = () => {
     setEditingVideo(null);
     setVideoForm({
       id: "",
-      productId: productsList[0]?.slug || "all",
+      productId: "none",
       title: "",
       videoUrl: "",
       posterUrl: "",
@@ -240,6 +292,15 @@ export default function AdminReviewsPage() {
       badge: "NEW",
       active: true,
     });
+    setIsUploadingVideo(false);
+    setVideoUploadProgress(0);
+    setVideoUploadError(null);
+    setUploadedVideoMeta(null);
+    setIsUploadingPoster(false);
+    setPosterUploadProgress(0);
+    setPosterUploadError(null);
+    setProductDropdownOpen(false);
+    setProductSearchQuery("");
     setVideoModalOpen(true);
   };
 
@@ -247,7 +308,7 @@ export default function AdminReviewsPage() {
     setEditingVideo(v);
     setVideoForm({
       id: v.id,
-      productId: v.productId || "all",
+      productId: v.productId && v.productId !== "all" ? v.productId : "none",
       title: v.title,
       videoUrl: v.videoUrl,
       posterUrl: v.posterUrl || "",
@@ -255,32 +316,96 @@ export default function AdminReviewsPage() {
       badge: v.badge || "NEW",
       active: v.active !== false,
     });
+    setIsUploadingVideo(false);
+    setVideoUploadProgress(0);
+    setVideoUploadError(null);
+    setUploadedVideoMeta(null);
+    setIsUploadingPoster(false);
+    setPosterUploadProgress(0);
+    setPosterUploadError(null);
+    setProductDropdownOpen(false);
+    setProductSearchQuery("");
     setVideoModalOpen(true);
   };
 
   const handleSaveVideo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!videoForm.title || !videoForm.videoUrl) return;
+    if (isUploadingVideo || isUploadingPoster) {
+      alert("Please wait for the media file upload to complete before saving.");
+      return;
+    }
+    if (!videoForm.title || !videoForm.videoUrl) {
+      alert("Please provide both a video title and a video URL or uploaded file.");
+      return;
+    }
     setSubmittingVideo(true);
 
     try {
       const isEdit = Boolean(editingVideo && editingVideo.id);
+
+      // Final safety net: if URL is still a raw data: URL, convert it to cloud storage first
+      let finalVideoUrl = videoForm.videoUrl.trim();
+      let finalPosterUrl = (videoForm.posterUrl || "").trim();
+
+      if (finalVideoUrl.startsWith("data:")) {
+        try {
+          const upRes = await fetch("/api/admin/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ dataUrl: finalVideoUrl, folder: "videos" }),
+          });
+          const upData = await upRes.json();
+          if (upData.success && upData.url) {
+            finalVideoUrl = upData.url;
+          }
+        } catch (e) {
+          console.warn("Base64 auto-upload failed during save:", e);
+        }
+      }
+
+      if (finalPosterUrl.startsWith("data:")) {
+        try {
+          const upRes = await fetch("/api/admin/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ dataUrl: finalPosterUrl, folder: "images" }),
+          });
+          const upData = await upRes.json();
+          if (upData.success && upData.url) {
+            finalPosterUrl = upData.url;
+          }
+        } catch (e) {
+          console.warn("Poster auto-upload failed during save:", e);
+        }
+      }
+
       const payload = isEdit
-        ? { action: "update", ...videoForm }
-        : videoForm;
+        ? { action: "update", ...videoForm, videoUrl: finalVideoUrl, posterUrl: finalPosterUrl }
+        : { ...videoForm, videoUrl: finalVideoUrl, posterUrl: finalPosterUrl };
 
       const res = await fetch("/api/admin/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("Save video server response error:", res.status, errText);
+        alert(`Server error (${res.status}): Please try again.`);
+        return;
+      }
+
       const data = await res.json();
       if (data.success) {
         await fetchVideos();
         setVideoModalOpen(false);
+      } else {
+        alert(data.error || "Failed to save video");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error saving video:", err);
+      alert("Error saving video: " + (err?.message || "Check connection"));
     } finally {
       setSubmittingVideo(false);
     }
@@ -292,6 +417,7 @@ export default function AdminReviewsPage() {
       const res = await fetch(`/api/admin/videos?id=${encodeURIComponent(vidId)}`, {
         method: "DELETE",
       });
+      if (!res.ok) return;
       const data = await res.json();
       if (data.success) {
         setVideos((prev) => prev.filter((v) => v.id !== vidId));
@@ -326,30 +452,117 @@ export default function AdminReviewsPage() {
     }
   };
 
-  // Video file upload reader
+  // Video file upload reader with progress & cloud storage upload
   const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (reader.result) {
-        setVideoForm((prev) => ({ ...prev, videoUrl: reader.result as string }));
+
+    setVideoUploadError(null);
+
+    // Validate size (max 100MB)
+    const sizeInMB = file.size / (1024 * 1024);
+    if (sizeInMB > 100) {
+      setVideoUploadError(`Video file is too large (${sizeInMB.toFixed(1)} MB). Limit is 100 MB.`);
+      return;
+    }
+
+    const formattedSize =
+      sizeInMB >= 1 ? `${sizeInMB.toFixed(1)} MB` : `${(file.size / 1024).toFixed(0)} KB`;
+    setUploadedVideoMeta({ name: file.name, size: formattedSize });
+    setIsUploadingVideo(true);
+    setVideoUploadProgress(0);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", "videos");
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/admin/upload");
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.min(99, Math.round((event.loaded / event.total) * 100));
+        setVideoUploadProgress(percent);
       }
     };
-    reader.readAsDataURL(file);
+
+    xhr.onload = () => {
+      setIsUploadingVideo(false);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          if (res.success && res.url) {
+            setVideoForm((prev) => ({ ...prev, videoUrl: res.url }));
+            setVideoUploadProgress(100);
+          } else {
+            setVideoUploadError(res.error || "Upload failed. Please try again.");
+          }
+        } catch {
+          setVideoUploadError("Failed to parse server upload response.");
+        }
+      } else {
+        setVideoUploadError(`Upload failed with server error ${xhr.status}`);
+      }
+    };
+
+    xhr.onerror = () => {
+      setIsUploadingVideo(false);
+      setVideoUploadError("Network connection interrupted during video upload.");
+    };
+
+    xhr.send(formData);
+    e.target.value = "";
   };
 
-  // Poster photo upload reader
+  // Poster photo upload reader with progress & cloud storage upload
   const handlePosterFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (reader.result) {
-        setVideoForm((prev) => ({ ...prev, posterUrl: reader.result as string }));
+
+    setPosterUploadError(null);
+    setIsUploadingPoster(true);
+    setPosterUploadProgress(0);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", "images");
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/admin/upload");
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.min(99, Math.round((event.loaded / event.total) * 100));
+        setPosterUploadProgress(percent);
       }
     };
-    reader.readAsDataURL(file);
+
+    xhr.onload = () => {
+      setIsUploadingPoster(false);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          if (res.success && res.url) {
+            setVideoForm((prev) => ({ ...prev, posterUrl: res.url }));
+            setPosterUploadProgress(100);
+          } else {
+            setPosterUploadError(res.error || "Poster upload failed.");
+          }
+        } catch {
+          setPosterUploadError("Failed to parse server poster response.");
+        }
+      } else {
+        setPosterUploadError(`Upload failed with status ${xhr.status}`);
+      }
+    };
+
+    xhr.onerror = () => {
+      setIsUploadingPoster(false);
+      setPosterUploadError("Network error during poster upload.");
+    };
+
+    xhr.send(formData);
+    e.target.value = "";
   };
 
   // Filtered reviews
@@ -384,9 +597,13 @@ export default function AdminReviewsPage() {
   const filteredVideos = useMemo(() => {
     return videos.filter((v) => {
       if (videoFilterProduct !== "all") {
-        const vPid = (v.productId || "").toLowerCase();
-        const targetPid = videoFilterProduct.toLowerCase();
-        if (vPid !== targetPid && vPid !== "all") return false;
+        const vPid = (v.productId || "").toLowerCase().trim();
+        const targetPid = videoFilterProduct.toLowerCase().trim();
+        if (targetPid === "none") {
+          if (vPid && vPid !== "none" && vPid !== "all") return false;
+        } else {
+          if (vPid !== targetPid) return false;
+        }
       }
       if (videoSearchQuery.trim()) {
         const q = videoSearchQuery.toLowerCase().trim();
@@ -400,7 +617,14 @@ export default function AdminReviewsPage() {
 
   // Product helper lookup
   const getProductInfo = (prodSlug: string) => {
-    const norm = (prodSlug || "").toLowerCase();
+    const norm = (prodSlug || "").toLowerCase().trim();
+    if (!norm || norm === "none" || norm === "all") {
+      return {
+        name: norm === "all" ? "All Products (Storewide)" : "None (No product attached)",
+        image: "",
+        slug: "",
+      };
+    }
     const found = productsList.find(
       (p) =>
         p.slug?.toLowerCase() === norm ||
@@ -410,10 +634,37 @@ export default function AdminReviewsPage() {
     );
     return {
       name: found?.name || prodSlug || "Unknown Product",
-      image: found?.poster_image || found?.images?.[0] || "/products/ripple/ripple-amber.jpg",
+      image: found ? getProductThumbnail(found) : "",
       slug: found?.slug || prodSlug,
     };
   };
+
+  // Selected attached product in modal
+  const selectedAttachedProduct = useMemo(() => {
+    if (!videoForm.productId || videoForm.productId === "none" || videoForm.productId === "all") {
+      return null;
+    }
+    const norm = videoForm.productId.toLowerCase().trim();
+    return (
+      productsList.find(
+        (p) =>
+          String(p.slug || "").toLowerCase() === norm ||
+          String(p.id || "").toLowerCase() === norm
+      ) || null
+    );
+  }, [productsList, videoForm.productId]);
+
+  // Filtered products inside modal dropdown search
+  const filteredDropdownProducts = useMemo(() => {
+    if (!productSearchQuery.trim()) return productsList;
+    const q = productSearchQuery.toLowerCase().trim();
+    return productsList.filter(
+      (p) =>
+        (p.name && p.name.toLowerCase().includes(q)) ||
+        (p.category && p.category.toLowerCase().includes(q)) ||
+        (p.slug && p.slug.toLowerCase().includes(q))
+    );
+  }, [productsList, productSearchQuery]);
 
   // Delete review
   const handleDelete = async (id: string) => {
@@ -760,7 +1011,7 @@ export default function AdminReviewsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="p-1.5 rounded-lg bg-orange-100 text-[#FA521C]">
+                <span className="p-1.5 rounded-lg bg-orange-100 text-[#FF7A00]">
                   <Sparkles className="w-5 h-5 fill-current" />
                 </span>
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
@@ -788,7 +1039,7 @@ export default function AdminReviewsPage() {
                     onClick={() => setManualModalOpen(true)}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 text-xs font-semibold shadow-xs transition-all cursor-pointer"
                   >
-                    <Plus className="w-3.5 h-3.5 text-[#FA521C]" />
+                    <Plus className="w-3.5 h-3.5 text-[#FF7A00]" />
                     <span>Add Review</span>
                   </button>
 
@@ -797,7 +1048,7 @@ export default function AdminReviewsPage() {
                       setImportModalOpen(true);
                       setImportResult(null);
                     }}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm shadow-orange-500/25 active:scale-[0.98] cursor-pointer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm shadow-orange-500/25 active:scale-[0.98] cursor-pointer"
                   >
                     <Upload className="w-4 h-4" />
                     <span>Import Reviews (CSV)</span>
@@ -806,7 +1057,7 @@ export default function AdminReviewsPage() {
               ) : (
                 <button
                   onClick={handleOpenAddVideo}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm shadow-orange-500/25 active:scale-[0.98] cursor-pointer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm shadow-orange-500/25 active:scale-[0.98] cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Attach New Video</span>
@@ -822,7 +1073,7 @@ export default function AdminReviewsPage() {
               onClick={() => setActiveTab("reviews")}
               className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === "reviews"
-                  ? "bg-[#FA521C] text-white shadow-sm shadow-orange-500/25"
+                  ? "bg-[#FF7A00] text-white shadow-sm shadow-orange-500/25"
                   : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50"
               }`}
             >
@@ -835,7 +1086,7 @@ export default function AdminReviewsPage() {
               onClick={() => setActiveTab("videos")}
               className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === "videos"
-                  ? "bg-[#FA521C] text-white shadow-sm shadow-orange-500/25"
+                  ? "bg-[#FF7A00] text-white shadow-sm shadow-orange-500/25"
                   : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50"
               }`}
             >
@@ -931,7 +1182,7 @@ export default function AdminReviewsPage() {
                 placeholder="Search reviews by customer name, comments, or product..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
               />
             </div>
 
@@ -940,7 +1191,7 @@ export default function AdminReviewsPage() {
               <select
                 value={selectedProductFilter}
                 onChange={(e) => setSelectedProductFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#FA521C]"
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#FF7A00]"
               >
                 <option value="all">All Products ({productsList.length})</option>
                 {productsList.map((p) => (
@@ -954,7 +1205,7 @@ export default function AdminReviewsPage() {
               <select
                 value={selectedSourceFilter}
                 onChange={(e) => setSelectedSourceFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#FA521C]"
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#FF7A00]"
               >
                 <option value="all">All Sources</option>
                 <option value="storefront">Zupe Storefront</option>
@@ -968,7 +1219,7 @@ export default function AdminReviewsPage() {
               <select
                 value={selectedRatingFilter}
                 onChange={(e) => setSelectedRatingFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#FA521C]"
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#FF7A00]"
               >
                 <option value="all">All Ratings</option>
                 <option value="5">5 Stars</option>
@@ -996,12 +1247,12 @@ export default function AdminReviewsPage() {
 
             {loading ? (
               <div className="py-20 flex flex-col items-center justify-center gap-3">
-                <Loader2 className="w-8 h-8 animate-spin text-[#FA521C]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#FF7A00]" />
                 <span className="text-xs font-semibold text-slate-500">Loading reviews database...</span>
               </div>
             ) : filteredReviews.length === 0 ? (
               <div className="py-20 px-4 text-center max-w-sm mx-auto">
-                <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FA521C] flex items-center justify-center mx-auto mb-3">
+                <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-3">
                   <Star className="w-6 h-6 fill-current" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-900">No reviews found</h3>
@@ -1262,7 +1513,7 @@ export default function AdminReviewsPage() {
                       placeholder="Search video title or product..."
                       value={videoSearchQuery}
                       onChange={(e) => setVideoSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                     />
                   </div>
 
@@ -1270,9 +1521,10 @@ export default function AdminReviewsPage() {
                   <select
                     value={videoFilterProduct}
                     onChange={(e) => setVideoFilterProduct(e.target.value)}
-                    className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                    className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                   >
-                    <option value="all">All Products (Storewide)</option>
+                    <option value="all">All Videos</option>
+                    <option value="none">None (No product attached)</option>
                     {productsList.map((p) => (
                       <option key={p.id || p.slug} value={p.slug || p.id}>
                         {p.name}
@@ -1287,7 +1539,7 @@ export default function AdminReviewsPage() {
                   </span>
                   <button
                     onClick={handleOpenAddVideo}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Attach Video</span>
@@ -1298,7 +1550,7 @@ export default function AdminReviewsPage() {
               {/* Video Grid Cards */}
               {filteredVideos.length === 0 ? (
                 <div className="bg-white rounded-2xl p-12 text-center border border-slate-200/90 shadow-xs">
-                  <div className="w-14 h-14 rounded-2xl bg-orange-50 text-[#FA521C] mx-auto flex items-center justify-center mb-3">
+                  <div className="w-14 h-14 rounded-2xl bg-orange-50 text-[#FF7A00] mx-auto flex items-center justify-center mb-3">
                     <Video className="w-7 h-7" />
                   </div>
                   <h3 className="font-bold text-slate-800 text-base">No shoppable videos found</h3>
@@ -1307,7 +1559,7 @@ export default function AdminReviewsPage() {
                   </p>
                   <button
                     onClick={handleOpenAddVideo}
-                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Attach First Video</span>
@@ -1356,7 +1608,7 @@ export default function AdminReviewsPage() {
                             className="absolute inset-0 flex items-center justify-center cursor-pointer group-hover:scale-110 transition-transform"
                             title="Preview Video"
                           >
-                            <div className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-xs border border-white/30 text-white flex items-center justify-center group-hover:bg-[#FA521C] transition-colors shadow-lg">
+                            <div className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-xs border border-white/30 text-white flex items-center justify-center group-hover:bg-[#FF7A00] transition-colors shadow-lg">
                               <Play className="w-5 h-5 fill-white ml-0.5" />
                             </div>
                           </button>
@@ -1374,27 +1626,31 @@ export default function AdminReviewsPage() {
                           {/* Attached Product Tag */}
                           <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 min-w-0">
-                              <div className="w-7 h-7 rounded-lg overflow-hidden bg-white shrink-0 border border-slate-200">
-                                <img
-                                  src={prod?.image || poster}
-                                  alt=""
-                                  className="w-full h-full object-cover"
-                                />
+                              <div className="w-7 h-7 rounded-lg overflow-hidden bg-white shrink-0 border border-slate-200 flex items-center justify-center">
+                                {prod?.image ? (
+                                  <img
+                                    src={prod.image}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <Ban className="w-3.5 h-3.5 text-slate-400" />
+                                )}
                               </div>
                               <span className="text-[11px] font-bold text-slate-800 truncate">
-                                {prod?.name || (vid.productId === "all" ? "All Products" : vid.productId)}
+                                {prod?.name || (vid.productId === "none" || !vid.productId || vid.productId === "all" ? "None (No product attached)" : vid.productId)}
                               </span>
                             </div>
-                            {prod?.slug && (
+                            {prod?.slug ? (
                               <Link
                                 href={`/products/${prod.slug}`}
                                 target="_blank"
-                                className="text-slate-400 hover:text-[#FA521C] shrink-0"
+                                className="text-slate-400 hover:text-[#FF7A00] shrink-0"
                                 title="View live on store"
                               >
                                 <ExternalLink className="w-3.5 h-3.5" />
                               </Link>
-                            )}
+                            ) : null}
                           </div>
 
                           {/* Footer Action Controls: Active Toggle + Edit + Delete */}
@@ -1465,7 +1721,7 @@ export default function AdminReviewsPage() {
             </button>
 
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-2xl bg-orange-100 text-[#FA521C] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-orange-100 text-[#FF7A00] flex items-center justify-center">
                 <FileSpreadsheet className="w-5 h-5" />
               </div>
               <div>
@@ -1488,7 +1744,7 @@ export default function AdminReviewsPage() {
                   <select
                     value={defaultImportProduct}
                     onChange={(e) => setDefaultImportProduct(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   >
                     <option value="auto">Auto-detect from CSV 'product_slug'</option>
                     {productsList.map((p) => (
@@ -1506,7 +1762,7 @@ export default function AdminReviewsPage() {
                   <select
                     value={defaultImportSource}
                     onChange={(e) => setDefaultImportSource(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   >
                     <option value="amazon">Amazon India</option>
                     <option value="flipkart">Flipkart</option>
@@ -1521,7 +1777,7 @@ export default function AdminReviewsPage() {
               {/* Upload Dropzone */}
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-slate-300 hover:border-[#FA521C] rounded-2xl p-6 text-center cursor-pointer transition-colors bg-slate-50/50 hover:bg-orange-50/20"
+                className="border-2 border-dashed border-slate-300 hover:border-[#FF7A00] rounded-2xl p-6 text-center cursor-pointer transition-colors bg-slate-50/50 hover:bg-orange-50/20"
               >
                 <input
                   type="file"
@@ -1531,7 +1787,7 @@ export default function AdminReviewsPage() {
                   className="hidden"
                 />
                 <div className="w-12 h-12 rounded-full bg-white shadow-xs border border-slate-200 text-slate-500 mx-auto flex items-center justify-center mb-2">
-                  <Upload className="w-5 h-5 text-[#FA521C]" />
+                  <Upload className="w-5 h-5 text-[#FF7A00]" />
                 </div>
                 <p className="text-xs font-bold text-slate-800">
                   {csvFile ? csvFile.name : "Click to browse or drag and drop CSV file here"}
@@ -1546,7 +1802,7 @@ export default function AdminReviewsPage() {
                       e.stopPropagation();
                       handleDownloadSampleCSV();
                     }}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#FA521C] hover:underline"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#FF7A00] hover:underline"
                   >
                     <Download className="w-3 h-3" />
                     Download Sample CSV Template
@@ -1641,7 +1897,7 @@ export default function AdminReviewsPage() {
                 type="button"
                 onClick={handleImportSubmit}
                 disabled={isImporting || parsedRows.length === 0}
-                className="px-5 py-2 rounded-xl bg-[#FA521C] hover:bg-[#D4380D] text-white text-xs font-bold transition-all shadow-sm shadow-orange-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold transition-all shadow-sm shadow-orange-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
               >
                 {isImporting ? (
                   <>
@@ -1695,7 +1951,7 @@ export default function AdminReviewsPage() {
                 <select
                   value={manualForm.productId}
                   onChange={(e) => setManualForm({ ...manualForm, productId: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                 >
                   {productsList.map((p) => (
                     <option key={p.id} value={p.slug || p.id}>
@@ -1714,7 +1970,7 @@ export default function AdminReviewsPage() {
                     placeholder="e.g. Ramesh K."
                     value={manualForm.userName}
                     onChange={(e) => setManualForm({ ...manualForm, userName: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
                 <div>
@@ -1722,7 +1978,7 @@ export default function AdminReviewsPage() {
                   <select
                     value={manualForm.source}
                     onChange={(e) => setManualForm({ ...manualForm, source: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   >
                     <option value="amazon">Amazon India</option>
                     <option value="flipkart">Flipkart</option>
@@ -1760,7 +2016,7 @@ export default function AdminReviewsPage() {
                   placeholder="e.g. Awesome quality and fast shipping"
                   value={manualForm.title}
                   onChange={(e) => setManualForm({ ...manualForm, title: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -1772,7 +2028,7 @@ export default function AdminReviewsPage() {
                   placeholder="Write the detailed review experience..."
                   value={manualForm.comment}
                   onChange={(e) => setManualForm({ ...manualForm, comment: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -1783,7 +2039,7 @@ export default function AdminReviewsPage() {
                   placeholder="https://images-amazon.com/..."
                   value={manualForm.images}
                   onChange={(e) => setManualForm({ ...manualForm, images: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -1798,7 +2054,7 @@ export default function AdminReviewsPage() {
                 <button
                   type="submit"
                   disabled={submittingManual}
-                  className="px-5 py-2 rounded-xl bg-[#FA521C] hover:bg-[#D4380D] text-white font-bold transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 cursor-pointer"
                 >
                   {submittingManual ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
                   <span>Save Review</span>
@@ -1868,7 +2124,7 @@ export default function AdminReviewsPage() {
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-2xl bg-orange-100 text-[#FA521C] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-orange-100 text-[#FF7A00] flex items-center justify-center">
                 <Video className="w-5 h-5" />
               </div>
               <div>
@@ -1882,25 +2138,175 @@ export default function AdminReviewsPage() {
             </div>
 
             <form onSubmit={handleSaveVideo} className="space-y-4 overflow-y-auto pr-1 flex-1 text-xs">
-              {/* Product Selector */}
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Attached Product *
-                </label>
-                <select
-                  value={videoForm.productId}
-                  onChange={(e) => setVideoForm({ ...videoForm, productId: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 font-semibold focus:outline-none focus:border-[#FA521C]"
+              {/* Product Selector (Searchable Dropdown with Photo, Name & Price) */}
+              <div className="relative" ref={productDropdownRef}>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block font-bold text-slate-700">
+                    Attached Product *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={fetchProducts}
+                    className="text-[10px] text-[#FF7A00] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                    title="Refresh latest products from catalog"
+                  >
+                    <RefreshCw className="w-2.5 h-2.5" />
+                    <span>Sync Products</span>
+                  </button>
+                </div>
+
+                {/* Dropdown Trigger Button */}
+                <button
+                  type="button"
+                  onClick={() => setProductDropdownOpen((prev) => !prev)}
+                  className="w-full p-2 bg-slate-50 hover:bg-slate-100/80 border border-slate-300 rounded-xl text-left flex items-center justify-between gap-2.5 transition-colors focus:outline-none focus:border-[#FF7A00] cursor-pointer"
                 >
-                  <option value="all">⭐ All Products (Storewide Reel)</option>
-                  {productsList.map((p) => (
-                    <option key={p.id || p.slug} value={p.slug || p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
+                  {selectedAttachedProduct ? (
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
+                        <img
+                          src={getProductThumbnail(selectedAttachedProduct)}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-800 text-xs truncate">
+                          {selectedAttachedProduct.name}
+                        </p>
+                        <p className="text-[10px] text-slate-500">
+                          ₹{Number(selectedAttachedProduct.price || 0).toLocaleString("en-IN")}
+                          {selectedAttachedProduct.category ? ` • ${selectedAttachedProduct.category}` : ""}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-slate-200/80 border border-slate-300 flex items-center justify-center text-slate-500 shrink-0">
+                        <Ban className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-700 text-xs">None (No product attached)</p>
+                        <p className="text-[10px] text-slate-400">Plays as general unboxing / demo reel</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
+                      productDropdownOpen ? "rotate-180 text-[#FF7A00]" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Dropdown Menu Popover */}
+                {productDropdownOpen && (
+                  <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden animate-fadeIn">
+                    {/* Search Input */}
+                    <div className="p-2 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+                      <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <input
+                        type="text"
+                        placeholder="Search product by name or category..."
+                        value={productSearchQuery}
+                        onChange={(e) => setProductSearchQuery(e.target.value)}
+                        className="w-full bg-transparent text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+                        autoFocus
+                      />
+                      {productSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setProductSearchQuery("")}
+                          className="text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Options List */}
+                    <div className="max-h-56 overflow-y-auto divide-y divide-slate-100">
+                      {/* Option: None */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setVideoForm({ ...videoForm, productId: "none" });
+                          setProductDropdownOpen(false);
+                          setProductSearchQuery("");
+                        }}
+                        className={`w-full p-2.5 flex items-center gap-3 text-left transition-colors hover:bg-orange-50/60 cursor-pointer ${
+                          !selectedAttachedProduct ? "bg-orange-50/80" : ""
+                        }`}
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                          <Ban className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-slate-800 text-xs">None (No product attached)</p>
+                          <p className="text-[10px] text-slate-400">Plays as general reel across catalog</p>
+                        </div>
+                        {!selectedAttachedProduct && (
+                          <Check className="w-4 h-4 text-[#FF7A00] shrink-0" />
+                        )}
+                      </button>
+
+                      {/* Products List */}
+                      {filteredDropdownProducts.map((p: any) => {
+                        const isSel =
+                          selectedAttachedProduct?.id === p.id ||
+                          selectedAttachedProduct?.slug === p.slug;
+                        const thumb = getProductThumbnail(p);
+                        return (
+                          <button
+                            key={p.id || p.slug}
+                            type="button"
+                            onClick={() => {
+                              setVideoForm({ ...videoForm, productId: p.slug || p.id });
+                              setProductDropdownOpen(false);
+                              setProductSearchQuery("");
+                            }}
+                            className={`w-full p-2.5 flex items-center gap-3 text-left transition-colors hover:bg-orange-50/60 cursor-pointer ${
+                              isSel ? "bg-orange-50/80" : ""
+                            }`}
+                          >
+                            <div className="w-9 h-9 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                              <img src={thumb} alt="" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-bold text-slate-800 text-xs truncate">{p.name}</p>
+                              <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                                <span className="font-semibold text-slate-700">
+                                  ₹{Number(p.price || 0).toLocaleString("en-IN")}
+                                </span>
+                                {p.category && <span className="truncate">• {p.category}</span>}
+                              </div>
+                            </div>
+                            {isSel && <Check className="w-4 h-4 text-[#FF7A00] shrink-0" />}
+                          </button>
+                        );
+                      })}
+
+                      {filteredDropdownProducts.length === 0 && (
+                        <div className="p-4 text-center text-xs text-slate-400">
+                          No products matching "{productSearchQuery}"
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bottom Status Bar */}
+                    <div className="p-2 px-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
+                      <span>{productsList.length} products available</span>
+                      <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Auto-synced
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 <p className="text-[10px] text-slate-400 mt-1">
-                  This video will appear on this product's page between recommendations and reviews.
+                  {selectedAttachedProduct
+                    ? `This reel will attach to "${selectedAttachedProduct.name}" and redirect shoppers to its product page.`
+                    : "No specific product attached. This video will appear as a general store reel."}
                 </p>
               </div>
 
@@ -1913,57 +2319,191 @@ export default function AdminReviewsPage() {
                   placeholder="e.g. 3 Heat Modes & Gentle Vibration Test"
                   value={videoForm.title}
                   onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                 />
               </div>
 
-              {/* Video Source (URL + File Upload) */}
+              {/* Video Source (URL + File Upload with Real-time Uploading State) */}
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Video URL or Upload File *</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block font-bold text-slate-700">Video URL or Upload File *</label>
+                  {isUploadingVideo && (
+                    <span className="text-[10px] text-[#FF7A00] font-bold flex items-center gap-1 animate-pulse">
+                      <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                      Uploading video ({videoUploadProgress}%)...
+                    </span>
+                  )}
+                </div>
+
                 <div className="flex gap-2">
                   <input
                     type="url"
                     required
-                    placeholder="https://.../video.mp4 (or CDN / Cloudflare Stream)"
+                    placeholder="https://.../video.mp4 (or click Upload to select video file)"
                     value={videoForm.videoUrl}
                     onChange={(e) => setVideoForm({ ...videoForm, videoUrl: e.target.value })}
-                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   />
-                  <label className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer transition-colors flex items-center gap-1 shrink-0">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Upload</span>
-                    <input
-                      type="file"
-                      accept="video/*"
-                      className="hidden"
-                      onChange={handleVideoFileChange}
-                    />
-                  </label>
+
+                  {/* Upload Button with Live Loading State */}
+                  {isUploadingVideo ? (
+                    <div
+                      className="px-3.5 py-2 bg-orange-50 border border-[#FF7A00]/40 text-[#FF7A00] rounded-xl font-bold flex items-center gap-1.5 shrink-0 select-none shadow-xs"
+                      title="Uploading video to cloud storage..."
+                    >
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FF7A00]" />
+                      <span className="text-xs">
+                        {videoUploadProgress > 0 ? `Uploading ${videoUploadProgress}%` : "Uploading..."}
+                      </span>
+                    </div>
+                  ) : (
+                    <label className="px-3.5 py-2 bg-gradient-to-r from-orange-500 to-[#FF7A00] hover:from-orange-600 hover:to-[#e66e00] text-white rounded-xl font-bold cursor-pointer transition-all flex items-center gap-1.5 shrink-0 shadow-xs hover:shadow-md active:scale-95">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{videoForm.videoUrl ? "Replace" : "Upload"}</span>
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/quicktime,video/*"
+                        className="hidden"
+                        onChange={handleVideoFileChange}
+                        disabled={isUploadingVideo}
+                      />
+                    </label>
+                  )}
                 </div>
+
+                {/* Video Upload Progress Bar */}
+                {isUploadingVideo && (
+                  <div className="mt-2 p-2.5 bg-orange-50/90 border border-orange-200 rounded-xl space-y-1.5 animate-fadeIn">
+                    <div className="flex items-center justify-between text-[11px] text-orange-950 font-semibold">
+                      <span className="flex items-center gap-1.5 truncate">
+                        <Loader2 className="w-3 h-3 animate-spin text-[#FF7A00] shrink-0" />
+                        <span>Uploading "{uploadedVideoMeta?.name || 'video'}" {uploadedVideoMeta?.size ? `(${uploadedVideoMeta.size})` : ''}</span>
+                      </span>
+                      <span className="font-bold text-[#FF7A00] shrink-0">{videoUploadProgress}%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-orange-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-orange-400 to-[#FF7A00] transition-all duration-200"
+                        style={{ width: `${Math.max(5, videoUploadProgress)}%` }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-orange-700/80">
+                      Uploading to cloud media storage for fast, bufferless playback on customer reels.
+                    </p>
+                  </div>
+                )}
+
+                {/* Upload Error Alert */}
+                {videoUploadError && (
+                  <div className="mt-1.5 p-2 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-[11px] flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{videoUploadError}</span>
+                  </div>
+                )}
+
+                {/* Inline Video Preview Player */}
+                {videoForm.videoUrl && !isUploadingVideo && (
+                  <div className="mt-2 p-2 bg-slate-900 rounded-xl flex items-center gap-3 border border-slate-800 text-white animate-fadeIn">
+                    <div className="relative w-12 h-16 bg-black rounded-lg overflow-hidden shrink-0 border border-slate-700 flex items-center justify-center">
+                      <video
+                        src={videoForm.videoUrl}
+                        className="w-full h-full object-cover"
+                        muted
+                        loop
+                        autoPlay
+                        playsInline
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0 text-xs">
+                      <div className="flex items-center gap-1 text-emerald-400 font-bold text-[11px]">
+                        <CheckCircle2 className="w-3 h-3 shrink-0" />
+                        <span>Video Ready to Stream</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                        {videoForm.videoUrl}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setVideoForm({ ...videoForm, videoUrl: "" })}
+                      className="p-1 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                      title="Clear video URL"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Poster Thumbnail (URL + File Upload) */}
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Thumbnail Poster Image (Optional)</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block font-bold text-slate-700">Thumbnail Poster Image (Optional)</label>
+                  {isUploadingPoster && (
+                    <span className="text-[10px] text-[#FF7A00] font-bold flex items-center gap-1 animate-pulse">
+                      <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                      Uploading photo ({posterUploadProgress}%)...
+                    </span>
+                  )}
+                </div>
+
                 <div className="flex gap-2">
                   <input
                     type="url"
                     placeholder="https://.../poster.jpg (leave blank to auto-use product image)"
                     value={videoForm.posterUrl}
                     onChange={(e) => setVideoForm({ ...videoForm, posterUrl: e.target.value })}
-                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   />
-                  <label className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer transition-colors flex items-center gap-1 shrink-0">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Photo</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handlePosterFileChange}
-                    />
-                  </label>
+
+                  {isUploadingPoster ? (
+                    <div className="px-3.5 py-2 bg-orange-50 border border-[#FF7A00]/40 text-[#FF7A00] rounded-xl font-bold flex items-center gap-1.5 shrink-0 select-none shadow-xs">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FF7A00]" />
+                      <span className="text-xs">Uploading...</span>
+                    </div>
+                  ) : (
+                    <label className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer transition-colors flex items-center gap-1.5 shrink-0">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{videoForm.posterUrl ? "Replace" : "Photo"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handlePosterFileChange}
+                        disabled={isUploadingPoster}
+                      />
+                    </label>
+                  )}
                 </div>
+
+                {/* Poster Upload Error */}
+                {posterUploadError && (
+                  <div className="mt-1.5 p-2 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-[11px] flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{posterUploadError}</span>
+                  </div>
+                )}
+
+                {/* Inline Poster Thumbnail Preview */}
+                {videoForm.posterUrl && !isUploadingPoster && (
+                  <div className="mt-2 p-1.5 bg-slate-50 rounded-xl flex items-center gap-2.5 border border-slate-200 animate-fadeIn">
+                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-200 shrink-0 border border-slate-300">
+                      <img src={videoForm.posterUrl} alt="Poster" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0 text-xs">
+                      <p className="font-bold text-slate-700 text-[11px] truncate">Thumbnail Poster Preview</p>
+                      <p className="text-[10px] text-slate-400 truncate">{videoForm.posterUrl}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setVideoForm({ ...videoForm, posterUrl: "" })}
+                      className="p-1 text-slate-400 hover:text-rose-500 rounded-lg transition-colors cursor-pointer"
+                      title="Clear poster URL"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Views & Badge */}
@@ -1975,19 +2515,28 @@ export default function AdminReviewsPage() {
                     placeholder="e.g. 29.7k"
                     value={videoForm.viewsText}
                     onChange={(e) => setVideoForm({ ...videoForm, viewsText: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   />
                 </div>
 
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Badge Tag</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. NEW, TRENDING, VIRAL"
+                  <select
                     value={videoForm.badge}
                     onChange={(e) => setVideoForm({ ...videoForm, badge: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FA521C]"
-                  />
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 font-semibold focus:outline-none focus:border-[#FF7A00]"
+                  >
+                    <option value="NEW">🔥 NEW</option>
+                    <option value="TRENDING">⚡ TRENDING</option>
+                    <option value="POPULAR">⭐ POPULAR</option>
+                    <option value="HOT">🌶️ HOT</option>
+                    <option value="VIRAL">🚀 VIRAL</option>
+                    <option value="BESTSELLER">🏆 BESTSELLER</option>
+                    <option value="FEATURED">✨ FEATURED</option>
+                    <option value="MUST WATCH">👀 MUST WATCH</option>
+                    <option value="LIMITED">⏳ LIMITED</option>
+                    <option value="">(None / No Badge)</option>
+                  </select>
                 </div>
               </div>
 
@@ -2028,11 +2577,23 @@ export default function AdminReviewsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submittingVideo}
-                  className="px-5 py-2 rounded-xl bg-[#FA521C] hover:bg-[#D4380D] text-white font-bold transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  disabled={submittingVideo || isUploadingVideo || isUploadingPoster}
+                  className="px-5 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {submittingVideo && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  <span>{editingVideo ? "Update Video" : "Attach Video"}</span>
+                  {(submittingVideo || isUploadingVideo || isUploadingPoster) && (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  )}
+                  <span>
+                    {isUploadingVideo
+                      ? `Uploading Video (${videoUploadProgress}%)...`
+                      : isUploadingPoster
+                      ? "Uploading Poster..."
+                      : submittingVideo
+                      ? "Saving..."
+                      : editingVideo
+                      ? "Update Video"
+                      : "Attach Video"}
+                  </span>
                 </button>
               </div>
             </form>

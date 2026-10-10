@@ -204,7 +204,7 @@ export default function AdminCustomersPage() {
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Repeat Buyer Rate
               </span>
-              <p className="text-2xl sm:text-3xl font-bold text-[#FA521C] mt-2 tracking-tight">
+              <p className="text-2xl sm:text-3xl font-bold text-[#FF7A00] mt-2 tracking-tight">
                 {metrics.repeatRate}%
               </p>
               <span className="text-xs text-slate-500 mt-1 block">
@@ -246,7 +246,7 @@ export default function AdminCustomersPage() {
                 placeholder="Search by name, phone, email, city..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
               />
               {search && (
                 <button
@@ -304,7 +304,7 @@ export default function AdminCustomersPage() {
                           {c.name}
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <p className="font-semibold text-[#FA521C]">{c.phone || "No phone"}</p>
+                          <p className="font-semibold text-[#FF7A00]">{c.phone || "No phone"}</p>
                           <p className="text-[11px] text-slate-400">{c.email || "No email"}</p>
                         </td>
                         <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap">
@@ -364,7 +364,7 @@ export default function AdminCustomersPage() {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[92vh] overflow-y-auto overscroll-contain">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-orange-100 text-[#FA521C] flex items-center justify-center font-bold text-base">
+                <div className="w-10 h-10 rounded-xl bg-orange-100 text-[#FF7A00] flex items-center justify-center font-bold text-base">
                   {selectedCustomer.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -403,7 +403,7 @@ export default function AdminCustomersPage() {
               <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-1.5">
                 <div className="flex justify-between">
                   <span className="text-slate-500 font-medium">Contact Phone:</span>
-                  <a href={`tel:${selectedCustomer.phone}`} className="font-bold text-[#FA521C] hover:underline">
+                  <a href={`tel:${selectedCustomer.phone}`} className="font-bold text-[#FF7A00] hover:underline">
                     {selectedCustomer.phone || "Not specified"}
                   </a>
                 </div>
@@ -436,7 +436,7 @@ export default function AdminCustomersPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-slate-800">₹{ord.total_amount}</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-50 text-[#FA521C] border border-orange-200">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-50 text-[#FF7A00] border border-orange-200">
                           {ord.delivery_status}
                         </span>
                       </div>
@@ -449,7 +449,7 @@ export default function AdminCustomersPage() {
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
               <Link
                 href={`/admin/orders?search=${encodeURIComponent(selectedCustomer.name)}`}
-                className="text-xs font-semibold text-[#FA521C] hover:text-[#D4380D] hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-[#FF7A00] hover:text-[#E66E00] hover:underline flex items-center gap-1"
               >
                 <span>View All Customer Orders</span>
                 <ChevronRight className="w-3.5 h-3.5" />

@@ -15,9 +15,9 @@ function LoginRedirectContent() {
   }, [router, searchParams]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
+    <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
       <div className="flex flex-col items-center gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-[#FA521C]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#FF7A00]" />
         <p className="text-sm font-semibold text-gray-500">Redirecting to Sign In...</p>
       </div>
     </div>
@@ -28,8 +28,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
-          <Loader2 className="w-8 h-8 animate-spin text-[#FA521C]" />
+        <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
+          <Loader2 className="w-8 h-8 animate-spin text-[#FF7A00]" />
         </div>
       }
     >

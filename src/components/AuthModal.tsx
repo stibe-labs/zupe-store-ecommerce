@@ -181,9 +181,9 @@ export function AuthModal() {
         </div>
 
         {authModalNotice && (
-          <div className="mb-5 p-3 rounded-2xl bg-orange-50 border border-orange-100 text-xs text-[#FA521C] flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>{authModalNotice}</span>
+          <div className="mb-5 p-3.5 rounded-2xl bg-amber-50 border border-amber-200/90 text-amber-900 flex items-start gap-2.5 text-xs font-semibold shadow-xs">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 text-[#FF7A00] mt-0.5" />
+            <span className="leading-relaxed">{authModalNotice}</span>
           </div>
         )}
 
@@ -268,7 +268,7 @@ export function AuthModal() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. John Doe"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C] bg-white"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/25 focus:border-[#FF7A00] bg-white"
                 />
               </div>
             </div>
@@ -294,7 +294,7 @@ export function AuthModal() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="alex@example.com"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C] bg-white"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/25 focus:border-[#FF7A00] bg-white"
               />
             </div>
           </div>
@@ -319,7 +319,7 @@ export function AuthModal() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C] bg-white"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/25 focus:border-[#FF7A00] bg-white"
               />
             </div>
           </div>
@@ -334,7 +334,7 @@ export function AuthModal() {
                   type="button"
                   onClick={handleSendOtp}
                   disabled={loading || !email}
-                  className="text-xs font-bold text-[#FA521C] hover:underline disabled:opacity-50"
+                  className="text-xs font-bold text-[#FF7A00] hover:underline disabled:opacity-50"
                 >
                   {otpSent ? "Resend Code" : "Send Code"}
                 </button>
@@ -345,7 +345,7 @@ export function AuthModal() {
                 onChange={(e) => setOtp(e.target.value)}
                 placeholder="Enter 6-digit OTP"
                 maxLength={6}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm tracking-widest text-center font-mono font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/25 focus:border-[#FA521C] bg-orange-50/30"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm tracking-widest text-center font-mono font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/25 focus:border-[#FF7A00] bg-orange-50/30"
               />
               {otpMessage ? (
                 <p className="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1">
@@ -363,7 +363,7 @@ export function AuthModal() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 rounded-xl bg-[#FA521C] hover:bg-[#E0400B] text-white font-bold text-sm shadow-lg shadow-[#FA521C]/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50 mt-2 active:scale-98"
+            className="w-full py-3 px-4 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-sm shadow-lg shadow-[#FF7A00]/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50 mt-2 active:scale-98"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -384,7 +384,7 @@ export function AuthModal() {
                 setMode(mode === "login" ? "signup" : "login");
                 setError(null);
               }}
-              className="text-[#FA521C] font-bold hover:underline"
+              className="text-[#FF7A00] font-bold hover:underline"
             >
               {mode === "login" ? "Create an account" : "Sign in here"}
             </button>

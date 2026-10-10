@@ -13,7 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export function FeaturedProducts() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const { addToCart, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
@@ -42,9 +42,9 @@ export function FeaturedProducts() {
           transition={{ duration: 0.6 }}
           className="text-center mb-14"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#FA521C]/8 rounded-full border border-[#FA521C]/15 mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-[#FA521C]" />
-            <span className="text-xs font-mono font-semibold text-[#FA521C] tracking-wide uppercase">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#FF7A00]/8 rounded-full border border-[#FF7A00]/15 mb-4">
+            <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />
+            <span className="text-xs font-mono font-semibold text-[#FF7A00] tracking-wide uppercase">
               Curated Picks
             </span>
           </div>
@@ -65,12 +65,12 @@ export function FeaturedProducts() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-[#FA521C]/8 transition-all duration-500 border border-gray-100"
+              className="group relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-[#FF7A00]/8 transition-all duration-500 border border-gray-100"
             >
               {/* Badge */}
               {product.badge && (
                 <div className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-xs font-bold ${
-                  product.badge === "New" ? "bg-[#FA521C] text-white" :
+                  product.badge === "New" ? "bg-[#FF7A00] text-white" :
                   product.badge === "Sale" ? "bg-[#FF6B6B] text-white" :
                   product.badge === "Trending" ? "bg-[#00D2D3] text-white" :
                   product.badge === "Limited" ? "bg-[#2D3436] text-white" :
@@ -90,11 +90,7 @@ export function FeaturedProducts() {
                         JSON.stringify({ action: "wishlist", product })
                       );
                     } catch (e) {}
-                    router.push(
-                      `/signin?redirect=/&notice=${encodeURIComponent(
-                        "Please sign in to save items to your wishlist"
-                      )}`
-                    );
+                    openAuthModal("login", "Sign in required: Please log in to save items to your wishlist ❤️");
                     return;
                   }
                   toggleWishlist(product);
@@ -125,11 +121,11 @@ export function FeaturedProducts() {
 
               {/* Info */}
               <div className="p-5">
-                <p className="text-xs font-mono text-[#FA521C] uppercase tracking-wider mb-1">
+                <p className="text-xs font-mono text-[#FF7A00] uppercase tracking-wider mb-1">
                   {product.category}
                 </p>
                 <Link href={`/products/${product.slug}`}>
-                  <h3 className="font-display font-semibold text-[#2D3436] text-base mb-1 hover:text-[#FA521C] transition-colors line-clamp-1">
+                  <h3 className="font-display font-semibold text-[#2D3436] text-base mb-1 hover:text-[#FF7A00] transition-colors line-clamp-1">
                     {product.name}
                   </h3>
                 </Link>
@@ -157,23 +153,13 @@ export function FeaturedProducts() {
                   <button
                     onClick={() => {
                       if (!user) {
-                        try {
-                          localStorage.setItem(
-                            "zp_pending_cart_action",
-                            JSON.stringify({ action: "add_to_cart", product, quantity: 1, autoOpenCart: true })
-                          );
-                        } catch (e) {}
-                        router.push(
-                          `/signin?redirect=/&notice=${encodeURIComponent(
-                            "Please sign in to add items to your cart"
-                          )}`
-                        );
+                        openAuthModal("login", "Sign in required: Please log in to add items to your cart & checkout 🛍️");
                         return;
                       }
                       const success = addToCart(product);
                       if (success) openCart();
                     }}
-                    className="w-10 h-10 rounded-xl bg-[#FA521C] hover:bg-[#E0400B] flex items-center justify-center transition-colors btn-press shadow-md shadow-[#FA521C]/20"
+                    className="w-10 h-10 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] flex items-center justify-center transition-colors btn-press shadow-md shadow-[#FF7A00]/20"
                   >
                     <ShoppingBag className="w-4 h-4 text-white" />
                   </button>
@@ -193,7 +179,7 @@ export function FeaturedProducts() {
         >
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 px-8 py-3.5 border-2 border-[#FA521C] text-[#FA521C] font-semibold rounded-2xl hover:bg-[#FA521C] hover:text-white transition-all duration-300"
+            className="inline-flex items-center gap-2 px-8 py-3.5 border-2 border-[#FF7A00] text-[#FF7A00] font-semibold rounded-2xl hover:bg-[#FF7A00] hover:text-white transition-all duration-300"
           >
             View All Products
             <ArrowRight className="w-4 h-4" />

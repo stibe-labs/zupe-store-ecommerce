@@ -127,7 +127,7 @@ export function CategoryPills() {
               name: c.name,
               href: `/products?category=${encodeURIComponent(c.slug || c.name)}`,
               bgColor: c.bgColor || "bg-orange-50",
-              iconColor: c.iconColor || "text-[#FA521C]",
+              iconColor: c.iconColor || "text-[#FF7A00]",
               icon: c.customIcon ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -165,7 +165,7 @@ export function CategoryPills() {
               {cat.icon}
             </div>
             {/* Label */}
-            <span className="text-[11px] sm:text-xs font-semibold text-gray-700 group-hover:text-[#FA521C] transition-colors leading-tight">
+            <span className="text-[11px] sm:text-xs font-semibold text-gray-700 group-hover:text-[#FF7A00] transition-colors leading-tight">
               {cat.name}
             </span>
           </Link>

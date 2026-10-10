@@ -144,17 +144,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!user_id) {
-      return NextResponse.json(
-        { success: false, error: "Please sign in to place an order" },
-        { status: 401 }
+    const cleanPhone = (customer_phone || "").replace(/\D/g, "");
+    const effectiveUserId = user_id || (cleanPhone ? `guest_${cleanPhone}` : `guest_${Date.now()}`);
+
+    // Auto-provision guest user in D1 if not existing
+    try {
+      const { executeD1Query } = await import("@/lib/d1");
+      await executeD1Query(
+        `INSERT OR IGNORE INTO users (id, name, email, password_hash, phone, created_at)
+         VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP);`,
+        [effectiveUserId, customer_name, customer_email, "guest_verified_checkout", customer_phone || null]
       );
+    } catch (guestErr) {
+      // Non-fatal
     }
 
     const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const isCod =
+      (payment_method || "").toLowerCase().includes("cash on delivery") ||
+      (payment_method || "").toLowerCase() === "cod";
+
     const newOrder: OrderRecord = {
       id: orderId,
-      user_id: user_id || undefined,
+      user_id: effectiveUserId,
       customer_name,
       customer_email,
       customer_phone: customer_phone || "",
@@ -163,8 +175,8 @@ export async function POST(req: NextRequest) {
       postal_code: postal_code || "",
       total_amount: Number(total_amount),
       discount_amount: Number(discount_amount || 0),
-      payment_method: payment_method || "Credit Card",
-      payment_status: "paid",
+      payment_method: payment_method || (isCod ? "Cash on Delivery" : "Prepaid"),
+      payment_status: isCod ? "pending" : "paid",
       order_status: "processing",
       items,
       created_at: new Date().toISOString(),
@@ -182,7 +194,7 @@ export async function POST(req: NextRequest) {
         shipping_address,
         city,
         postal_code,
-        user_id,
+        user_id: effectiveUserId,
       });
     } catch (syncErr) {
       console.warn("Auto-sync address from order failed:", syncErr);
@@ -211,7 +223,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Missing order_id or order_status" }, { status: 400 });
     }
 
-    const updated = updateOrderStatus(order_id, order_status);
+    const updated = await updateOrderStatus(order_id, order_status);
     if (!updated) {
       return NextResponse.json({ success: false, error: "Order not found" }, { status: 404 });
     }

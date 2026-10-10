@@ -42,6 +42,8 @@ export default function AdminSettingsPage() {
   const [shopifyDomain, setShopifyDomain] = useState("zupe-store.myshopify.com");
   const [shopifyToken, setShopifyToken] = useState("shpat_live_98a76d54f32e10cba");
   const [shopifyWebhookSecret, setShopifyWebhookSecret] = useState("whsec_9871122334455");
+  const [shopifyAutoPush, setShopifyAutoPush] = useState(true);
+  const [shopifyApiVersion, setShopifyApiVersion] = useState("2024-01");
   const [shopifyActive, setShopifyActive] = useState(true);
 
   // Shiprocket
@@ -75,6 +77,8 @@ export default function AdminSettingsPage() {
           setShopifyDomain(s.shopify.domain || "");
           setShopifyToken(s.shopify.token || "");
           setShopifyWebhookSecret(s.shopify.webhookSecret || "");
+          setShopifyAutoPush((s.shopify as any).autoPushOrders !== false);
+          setShopifyApiVersion((s.shopify as any).apiVersion || "2024-01");
           setShopifyActive(s.shopify.isActive !== false);
         }
         if (s.shiprocket) {
@@ -120,6 +124,8 @@ export default function AdminSettingsPage() {
         domain: shopifyDomain.trim(),
         token: shopifyToken.trim(),
         webhookSecret: shopifyWebhookSecret.trim(),
+        autoPushOrders: shopifyAutoPush,
+        apiVersion: shopifyApiVersion.trim() || "2024-01",
         isActive: shopifyActive,
       },
       shiprocket: {
@@ -163,6 +169,7 @@ export default function AdminSettingsPage() {
     if (provider === "shopify") {
       testPayload.domain = shopifyDomain;
       testPayload.token = shopifyToken;
+      testPayload.apiVersion = shopifyApiVersion;
     } else if (provider === "shiprocket") {
       testPayload.email = shiprocketEmail;
       testPayload.token = shiprocketToken;
@@ -301,7 +308,7 @@ export default function AdminSettingsPage() {
 
           {loading ? (
             <div className="bg-white rounded-2xl p-12 border border-slate-200/90 flex flex-col items-center justify-center gap-3">
-              <RefreshCw className="w-8 h-8 text-[#FA521C] animate-spin" />
+              <RefreshCw className="w-8 h-8 text-[#FF7A00] animate-spin" />
               <p className="text-sm font-semibold text-slate-600">Loading stored integration credentials...</p>
             </div>
           ) : (
@@ -309,7 +316,7 @@ export default function AdminSettingsPage() {
               {/* 1. General Store Profile */}
               <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-4">
                 <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                  <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FA521C] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center">
                     <Store className="w-4 h-4 stroke-[2.2]" />
                   </div>
                   <div>
@@ -449,16 +456,52 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Auto-Configured Webhook Ingestion URL
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Shopify API Version
+                    </label>
+                    <select
+                      value={shopifyApiVersion}
+                      onChange={(e) => setShopifyApiVersion(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs font-semibold"
+                    >
+                      <option value="2024-01">2024-01 (Stable LTS)</option>
+                      <option value="2024-04">2024-04 (Latest)</option>
+                      <option value="2024-07">2024-07</option>
+                      <option value="2024-10">2024-10</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Auto-Configured Webhook Ingestion URL
+                    </label>
+                    <input
+                      type="text"
+                      readOnly
+                      value="https://zupe-store.stibelabs.workers.dev/api/admin/sync/shopify"
+                      className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-mono text-xs text-slate-600 cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-slate-900 text-xs">Automatically Push Web Orders to Shopify</p>
+                    <p className="text-[11px] text-slate-500">
+                      When customers place orders on Zupe Store, instantly post them to Shopify Admin API so fulfillment apps (Roposo/GlowRoad/DSers) can process them.
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
+                    <input
+                      type="checkbox"
+                      checked={shopifyAutoPush}
+                      onChange={(e) => setShopifyAutoPush(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
                   </label>
-                  <input
-                    type="text"
-                    readOnly
-                    value="https://zupe-store.stibelabs.workers.dev/api/admin/sync/shopify"
-                    className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-mono text-xs text-slate-600 cursor-not-allowed"
-                  />
                 </div>
               </div>
 
@@ -466,7 +509,7 @@ export default function AdminSettingsPage() {
               <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#FA521C] flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#FF7A00] flex items-center justify-center">
                       <Truck className="w-4 h-4 stroke-[2.2]" />
                     </div>
                     <div>
@@ -617,7 +660,7 @@ export default function AdminSettingsPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl font-bold shadow-md shadow-orange-500/25 text-xs sm:text-sm transition-all disabled:opacity-60"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl font-bold shadow-md shadow-orange-500/25 text-xs sm:text-sm transition-all disabled:opacity-60"
                 >
                   <Save className={`w-4 h-4 ${saving ? "animate-spin" : ""}`} />
                   <span>{saving ? "Saving All Settings..." : "Save All Settings"}</span>

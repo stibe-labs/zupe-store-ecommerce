@@ -53,10 +53,25 @@ export async function POST(req: NextRequest) {
       user_id,
     } = order_payload;
 
+    const cleanPhone = (customer_phone || "").replace(/\D/g, "");
+    const effectiveUserId = user_id || (cleanPhone ? `guest_${cleanPhone}` : `guest_${Date.now()}`);
+
+    // Auto-provision guest user in D1 if not existing
+    try {
+      const { executeD1Query } = await import("@/lib/d1");
+      await executeD1Query(
+        `INSERT OR IGNORE INTO users (id, name, email, password_hash, phone, created_at)
+         VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP);`,
+        [effectiveUserId, customer_name || "Customer", customer_email || "", "guest_verified_checkout", customer_phone || null]
+      );
+    } catch (guestErr) {
+      // Non-fatal
+    }
+
     const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const newOrder: OrderRecord = {
       id: orderId,
-      user_id: user_id || undefined,
+      user_id: effectiveUserId,
       customer_name: customer_name || "Customer",
       customer_email: customer_email || "",
       customer_phone: customer_phone || "",
@@ -88,7 +103,7 @@ export async function POST(req: NextRequest) {
         shipping_address,
         city,
         postal_code,
-        user_id,
+        user_id: effectiveUserId,
       });
     } catch (syncErr) {
       console.warn("Auto-sync address from online order failed:", syncErr);

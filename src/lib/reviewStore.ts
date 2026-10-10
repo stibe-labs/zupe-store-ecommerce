@@ -118,7 +118,7 @@ export const SEED_REVIEWS: ProductReview[] = [
     title: "Best dashboard accessory I have bought",
     comment:
       "Zinc alloy build is metallic and sturdy. The 3M adhesive pad holds firmly even over bumpy roads. Everyone who gets into my car asks where I got it from.",
-    images: ["/products/helicopter/heli-black.jpg"],
+    images: ["/products/helicopter/heli-black-1.jpg"],
     verifiedPurchase: true,
     createdAt: new Date(Date.now() - 10 * 86400000).toISOString(),
     helpfulCount: 20,
@@ -128,13 +128,13 @@ export const SEED_REVIEWS: ProductReview[] = [
   // Mini Portable Steam Iron
   {
     id: "rev-iron-1",
-    productId: "mini-steam-iron",
+    productId: "mini-portable-steam-iron",
     userName: "Kavita Rao",
     rating: 5,
     title: "Ergonomic foldable handle and fast heating",
     comment:
       "Heats up in under 30 seconds. Compact enough to slip into any travel pouch. Easily straightens out wrinkles on cotton shirts, linen, and silk dresses.",
-    images: ["/products/iron/iron-green.jpg"],
+    images: ["/products/iron/iron-teal-1.jpg"],
     verifiedPurchase: true,
     createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
     helpfulCount: 15,
@@ -144,12 +144,8 @@ export const SEED_REVIEWS: ProductReview[] = [
 
 // In-Memory store for fast local & worker fallback
 let inMemoryReviews: ProductReview[] = [...SEED_REVIEWS];
-let tableInitialized = false;
 
 export async function ensureReviewTable(): Promise<void> {
-  if (tableInitialized) return;
-  tableInitialized = true;
-
   try {
     await executeD1Query(`
       CREATE TABLE IF NOT EXISTS product_reviews (
@@ -168,12 +164,6 @@ export async function ensureReviewTable(): Promise<void> {
         source TEXT DEFAULT 'storefront'
       );
     `);
-    try {
-      await executeD1Query(`CREATE INDEX IF NOT EXISTS idx_reviews_product ON product_reviews(product_id);`);
-    } catch {}
-    try {
-      await executeD1Query(`ALTER TABLE product_reviews ADD COLUMN source TEXT DEFAULT 'storefront';`);
-    } catch {}
   } catch (err) {
     console.warn("Could not ensure product_reviews table in D1:", err);
   }
@@ -183,53 +173,92 @@ export async function ensureReviewTable(): Promise<void> {
  * Get all reviews matching a product ID or slug
  */
 export async function getReviewsByProduct(productId: string): Promise<ProductReview[]> {
-  const normId = productId.trim().toLowerCase();
+  const rawId = decodeURIComponent(productId || "").trim().toLowerCase();
+  const slugId = rawId.replace(/[\s_]+/g, "-");
+  const cleanId = rawId.replace(/[-_ ]+/g, " ");
+
+  const isMatching = (pid: string) => {
+    const pRaw = (pid || "").toLowerCase().trim();
+    if (!pRaw) return false;
+    const pSlug = pRaw.replace(/[\s_]+/g, "-");
+    const pClean = pRaw.replace(/[-_ ]+/g, " ");
+
+    if (pRaw === rawId || pSlug === slugId || pClean === cleanId) return true;
+    if (pClean && cleanId && (pClean === cleanId || pClean.includes(cleanId) || cleanId.includes(pClean))) return true;
+    if (pSlug && slugId && (pSlug === slugId || pSlug.includes(slugId) || slugId.includes(pSlug))) return true;
+
+    // Known alias mappings
+    const aliases: Record<string, string[]> = {
+      "mini-portable-steam-iron": ["mini-steam-iron", "steam-iron", "mini steam iron", "portable steam iron"],
+      "mini-steam-iron": ["mini-portable-steam-iron", "steam-iron", "mini portable steam iron", "portable steam iron"],
+      "dynamic-water-ripple-night-light": ["ripple-lamp", "water-ripple-lamp", "ripple light"],
+      "portable-menstrual-heating-pad": ["menstrual-heating-pad", "heating-pad"],
+      "car-fragrance-helicopter": ["helicopter-perfume", "solar-helicopter"],
+      "tf20-multipurpose-powerbank-with-airpods": ["powerbank-earbuds", "tf20-powerbank"],
+    };
+
+    const keysToCheck = [slugId, rawId, cleanId];
+    for (const key of keysToCheck) {
+      const mapped = aliases[key] || [];
+      if (
+        mapped.some((m) => {
+          const mSlug = m.replace(/[\s_]+/g, "-");
+          const mClean = m.replace(/[-_ ]+/g, " ");
+          return (
+            m === pRaw ||
+            mSlug === pSlug ||
+            mClean === pClean ||
+            pClean.includes(mClean) ||
+            mClean.includes(pClean)
+          );
+        })
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  };
 
   // 1. Try D1 table query
   try {
-    await ensureReviewTable();
     const rows = await executeD1Query<any>(
-      `SELECT * FROM product_reviews 
-       WHERE lower(product_id) = ? OR product_id IN (
-         SELECT slug FROM products WHERE lower(id) = ? UNION SELECT id FROM products WHERE lower(slug) = ?
-       )
-       ORDER BY created_at DESC`,
-      [normId, normId, normId]
+      `SELECT * FROM product_reviews ORDER BY created_at DESC`
     );
 
     if (rows && rows.length > 0) {
-      const d1Reviews: ProductReview[] = rows.map((r) => {
-        let parsedImages: string[] = [];
-        if (r.images) {
-          try {
-            parsedImages = typeof r.images === "string" ? JSON.parse(r.images) : r.images;
-          } catch {
-            parsedImages = [];
+      const d1Reviews: ProductReview[] = rows
+        .filter((r) => isMatching(String(r.product_id)))
+        .map((r) => {
+          let parsedImages: string[] = [];
+          if (r.images) {
+            try {
+              parsedImages = typeof r.images === "string" ? JSON.parse(r.images) : r.images;
+            } catch {
+              parsedImages = [];
+            }
           }
-        }
-        return {
-          id: String(r.id),
-          productId: String(r.product_id),
-          orderId: r.order_id || undefined,
-          userName: r.user_name || "Verified Customer",
-          userEmail: r.user_email || undefined,
-          rating: Number(r.rating) || 5,
-          title: r.title || undefined,
-          comment: r.comment || "",
-          images: Array.isArray(parsedImages) ? parsedImages : [],
-          verifiedPurchase: r.verified_purchase !== 0,
-          createdAt: r.created_at || new Date().toISOString(),
-          helpfulCount: Number(r.helpful_count) || 0,
-          source: r.source || "storefront",
-        };
-      });
+          return {
+            id: String(r.id),
+            productId: String(r.product_id),
+            orderId: r.order_id || undefined,
+            userName: r.user_name || "Verified Customer",
+            userEmail: r.user_email || undefined,
+            rating: Number(r.rating) || 5,
+            title: r.title || undefined,
+            comment: r.comment || "",
+            images: Array.isArray(parsedImages) ? parsedImages : [],
+            verifiedPurchase: r.verified_purchase !== 0,
+            createdAt: r.created_at || new Date().toISOString(),
+            helpfulCount: Number(r.helpful_count) || 0,
+            source: r.source || "storefront",
+          };
+        });
 
       // Merge with memory reviews (user-submitted reviews take priority)
       const existingIds = new Set(d1Reviews.map((r) => r.id));
       const memoryMatches = inMemoryReviews.filter(
-        (r) =>
-          (r.productId.toLowerCase() === normId || r.productId.toLowerCase().includes(normId)) &&
-          !existingIds.has(r.id)
+        (r) => isMatching(r.productId) && !existingIds.has(r.id)
       );
 
       return [...memoryMatches, ...d1Reviews];
@@ -239,10 +268,7 @@ export async function getReviewsByProduct(productId: string): Promise<ProductRev
   }
 
   // 2. Memory store fallback
-  const matches = inMemoryReviews.filter((r) => {
-    const rId = r.productId.toLowerCase();
-    return rId === normId || rId.includes(normId) || normId.includes(rId);
-  });
+  const matches = inMemoryReviews.filter((r) => isMatching(r.productId));
 
   return matches.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
@@ -259,7 +285,6 @@ export async function getAllReviews(options?: {
   let all: ProductReview[] = [];
 
   try {
-    await ensureReviewTable();
     const rows = await executeD1Query<any>(
       `SELECT * FROM product_reviews ORDER BY created_at DESC`
     );
@@ -367,7 +392,6 @@ export async function addReview(newRev: {
 
   // Persist to D1
   try {
-    await ensureReviewTable();
     await executeD1Query(
       `INSERT INTO product_reviews 
        (id, product_id, order_id, user_name, user_email, rating, title, comment, images, verified_purchase, helpful_count, created_at, source)
@@ -447,7 +471,6 @@ export async function bulkAddReviews(
 export async function deleteReview(reviewId: string): Promise<boolean> {
   inMemoryReviews = inMemoryReviews.filter((r) => r.id !== reviewId);
   try {
-    await ensureReviewTable();
     await executeD1Query(`DELETE FROM product_reviews WHERE id = ?`, [reviewId]);
     return true;
   } catch (err) {
@@ -493,7 +516,6 @@ export async function getProductReviewStatsMap(): Promise<Map<string, { count: n
 
   // 2. Query D1 for actual database stats
   try {
-    await ensureReviewTable();
     const rows = await executeD1Query<any>(
       `SELECT lower(product_id) as pid, COUNT(*) as c, AVG(rating) as avg_rating 
        FROM product_reviews 

@@ -18,7 +18,7 @@ interface YouMayAlsoLikeProps {
 
 export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const { addToCart, addItem } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [catalog, setCatalog] = useState<Product[]>(DEFAULT_PRODUCTS);
@@ -95,17 +95,7 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
     e.stopPropagation();
 
     if (!user) {
-      try {
-        localStorage.setItem(
-          "zp_pending_cart_action",
-          JSON.stringify({ action: "add_to_cart", product: prod, quantity: 1, autoOpenCart: true })
-        );
-      } catch (err) {}
-      router.push(
-        `/signin?redirect=${encodeURIComponent(
-          typeof window !== "undefined" ? window.location.pathname : `/products/${prod.slug}`
-        )}&notice=${encodeURIComponent("Please sign in to add items to your cart")}`
-      );
+      openAuthModal("login", "Sign in required: Please log in to add items to your cart 🛒");
       return;
     }
 
@@ -124,17 +114,7 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
     e.stopPropagation();
 
     if (!user) {
-      try {
-        localStorage.setItem(
-          "zp_pending_cart_action",
-          JSON.stringify({ action: "buy_now", product: prod, quantity: 1, autoOpenCart: false })
-        );
-      } catch (err) {}
-      router.push(
-        `/signin?redirect=${encodeURIComponent("/checkout")}&notice=${encodeURIComponent(
-          "Please sign in to place an order"
-        )}`
-      );
+      openAuthModal("login", "Sign in required: Please log in or create an account to proceed with purchase 🛍️");
       return;
     }
 
@@ -150,11 +130,7 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
     e.stopPropagation();
 
     if (!user) {
-      router.push(
-        `/signin?redirect=${encodeURIComponent(
-          typeof window !== "undefined" ? window.location.pathname : `/products/${prod.slug}`
-        )}&notice=${encodeURIComponent("Please sign in to save items to your wishlist")}`
-      );
+      openAuthModal("login", "Sign in required: Please log in to save items to your wishlist ❤️");
       return;
     }
 
@@ -180,7 +156,7 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
 
         <Link
           href={`/products?category=${encodeURIComponent(currentProduct.category || "all")}`}
-          className="hidden sm:inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#FA521C] hover:text-[#D4380D] transition-colors"
+          className="hidden sm:inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#FF7A00] hover:text-[#E66E00] transition-colors"
         >
           <span>View all in {currentProduct.category || "Catalog"}</span>
           <ArrowRight className="w-4 h-4" />
@@ -209,7 +185,7 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
             >
               <div>
                 {/* Product Image Box */}
-                <div className="relative block w-full aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-[#F8F9FA] mb-3 select-none">
+                <div className="relative block w-full aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-[#F3F4F6] mb-3 select-none">
                   <Link href={`/products/${item.slug || item.id}`} className="block w-full h-full">
                     <Image
                       src={imageSrc}
@@ -243,14 +219,14 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
                 </div>
 
                 {/* Product Category Label */}
-                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#FA521C] block mb-1">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#FF7A00] block mb-1">
                   {item.category || "Featured"}
                 </span>
 
                 {/* Product Title */}
                 <Link
                   href={`/products/${item.slug || item.id}`}
-                  className="block text-xs sm:text-sm font-bold text-gray-900 line-clamp-2 hover:text-[#FA521C] transition-colors leading-snug mb-1.5"
+                  className="block text-xs sm:text-sm font-bold text-gray-900 line-clamp-2 hover:text-[#FF7A00] transition-colors leading-snug mb-1.5"
                 >
                   {item.name}
                 </Link>
@@ -306,7 +282,7 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
                 <button
                   type="button"
                   onClick={(e) => handleAddToCart(e, item)}
-                  className="w-full py-2 px-1 sm:px-2 rounded-xl bg-[#FA521C] hover:bg-[#E04515] active:scale-95 text-white text-[11px] sm:text-xs font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
+                  className="w-full py-2 px-1 sm:px-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-[11px] sm:text-xs font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
                 >
                   Add to cart
                 </button>

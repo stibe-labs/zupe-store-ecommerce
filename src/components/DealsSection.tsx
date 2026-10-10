@@ -11,7 +11,7 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 export function DealsSection() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const { addToCart, addItem } = useCart();
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
 
@@ -35,17 +35,7 @@ export function DealsSection() {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
-      try {
-        localStorage.setItem(
-          "zp_pending_cart_action",
-          JSON.stringify({ action: "add_to_cart", product, quantity: 1, autoOpenCart: true })
-        );
-      } catch (e) {}
-      router.push(
-        `/signin?redirect=/&notice=${encodeURIComponent(
-          "Please sign in to add items to your cart"
-        )}`
-      );
+      openAuthModal("login", "Sign in required: Please log in to add items to your cart 🛒");
       return;
     }
     const addFn = addToCart || addItem;
@@ -59,17 +49,7 @@ export function DealsSection() {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
-      try {
-        localStorage.setItem(
-          "zp_pending_cart_action",
-          JSON.stringify({ action: "buy_now", product, quantity: 1, autoOpenCart: false })
-        );
-      } catch (e) {}
-      router.push(
-        `/signin?redirect=${encodeURIComponent("/checkout")}&notice=${encodeURIComponent(
-          "Please sign in to place an order"
-        )}`
-      );
+      openAuthModal("login", "Sign in required: Please log in or create an account to proceed with purchase 🛍️");
       return;
     }
     const addFn = addToCart || addItem;
@@ -180,7 +160,7 @@ export function DealsSection() {
               <button
                 type="button"
                 onClick={(e) => handleAddToCart(e, product)}
-                className="w-full py-2 px-1.5 sm:px-2 rounded-xl bg-[#FA521C] hover:bg-[#E04515] active:scale-95 text-white text-xs sm:text-[13px] font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
+                className="w-full py-2 px-1.5 sm:px-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-xs sm:text-[13px] font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
               >
                 Add to cart
               </button>

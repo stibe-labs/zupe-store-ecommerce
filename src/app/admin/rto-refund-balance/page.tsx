@@ -287,21 +287,21 @@ export default function RTORefundBalancePage() {
                 onClick={() => setShowHowItWorksModal(true)}
                 className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm"
               >
-                <HelpCircle className="w-4 h-4 text-[#FA521C]" />
+                <HelpCircle className="w-4 h-4 text-[#FF7A00]" />
                 <span>How it works?</span>
               </button>
 
               <button
                 onClick={() => setShowUseCreditModal(true)}
-                className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-orange-200 hover:bg-orange-50 text-[#FA521C] text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm"
+                className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-orange-200 hover:bg-orange-50 text-[#FF7A00] text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm"
               >
-                <MinusCircle className="w-4 h-4 text-[#FA521C]" />
+                <MinusCircle className="w-4 h-4 text-[#FF7A00]" />
                 <span>Use Credit</span>
               </button>
 
               <button
                 onClick={() => setShowAddCreditModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#FA521C] hover:bg-[#D4380D] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25"
               >
                 <Plus className="w-4 h-4 stroke-[2.5]" />
                 <span>Add RTO Credit</span>
@@ -345,7 +345,7 @@ export default function RTORefundBalancePage() {
 
             {/* Card 3: Available RTO Balance */}
             <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm flex items-center gap-4 hover:border-slate-300 transition-all">
-              <div className="w-12 h-12 rounded-xl bg-orange-50 text-[#FA521C] flex items-center justify-center shrink-0 border border-orange-100">
+              <div className="w-12 h-12 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center shrink-0 border border-orange-100">
                 <Wallet className="w-6 h-6 stroke-[2.2]" />
               </div>
               <div>
@@ -355,9 +355,9 @@ export default function RTORefundBalancePage() {
                 <p className="text-2xl font-bold text-slate-900 mt-0.5 tracking-tight">
                   ₹{metrics.availableBalance.toLocaleString("en-IN")}
                 </p>
-                <div className="flex items-center gap-1 mt-0.5 text-xs text-[#FA521C] font-medium">
+                <div className="flex items-center gap-1 mt-0.5 text-xs text-[#FF7A00] font-medium">
                   <span>Supplier Credit</span>
-                  <Info className="w-3.5 h-3.5 text-[#FA521C]" />
+                  <Info className="w-3.5 h-3.5 text-[#FF7A00]" />
                 </div>
               </div>
             </div>
@@ -396,7 +396,7 @@ export default function RTORefundBalancePage() {
                       <span className="w-2 h-2 rounded-full bg-rose-500" /> Credits Used
                     </span>
                     <span className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-[#FA521C]" /> Balance
+                      <span className="w-2 h-2 rounded-full bg-[#FF7A00]" /> Balance
                     </span>
                   </div>
                 </div>
@@ -477,7 +477,7 @@ export default function RTORefundBalancePage() {
                     />
                     {/* Supplier A: 42% (Orange) */}
                     <path
-                      className="text-[#FA521C]"
+                      className="text-[#FF7A00]"
                       strokeDasharray="42, 100"
                       strokeWidth="4"
                       stroke="currentColor"
@@ -528,7 +528,7 @@ export default function RTORefundBalancePage() {
                 <div className="space-y-2.5 text-xs flex-1">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2 text-slate-600">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#FA521C]" /> Supplier A
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#FF7A00]" /> Supplier A
                     </span>
                     <span className="font-bold text-slate-900">₹3,200</span>
                   </div>
@@ -590,7 +590,7 @@ export default function RTORefundBalancePage() {
                 {/* Partially Used */}
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-orange-100 text-[#FA521C] flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-full bg-orange-100 text-[#FF7A00] flex items-center justify-center">
                       <PlayCircle className="w-3.5 h-3.5 stroke-[2.5]" />
                     </div>
                     <span className="font-semibold text-slate-800">Partially Used</span>
@@ -633,7 +633,7 @@ export default function RTORefundBalancePage() {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`pb-3 font-semibold text-xs sm:text-sm border-b-2 transition-all ${
                     activeTab === tab.id
-                      ? "border-[#FA521C] text-[#FA521C]"
+                      ? "border-[#FF7A00] text-[#FF7A00]"
                       : "border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300"
                   }`}
                 >
@@ -653,7 +653,7 @@ export default function RTORefundBalancePage() {
                 placeholder="Search order ID, product, supplier..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
               />
               {searchQuery && (
                 <button
@@ -738,7 +738,7 @@ export default function RTORefundBalancePage() {
                         <td className="py-3.5 px-4 sm:px-6 text-slate-600 whitespace-nowrap">
                           {row.date}
                         </td>
-                        <td className="py-3.5 px-4 font-bold text-[#FA521C] hover:underline cursor-pointer whitespace-nowrap">
+                        <td className="py-3.5 px-4 font-bold text-[#FF7A00] hover:underline cursor-pointer whitespace-nowrap">
                           {row.order_id}
                         </td>
                         <td className="py-3.5 px-4 text-slate-700 font-semibold whitespace-nowrap">
@@ -780,8 +780,8 @@ export default function RTORefundBalancePage() {
                             </span>
                           )}
                           {row.status === "Partially Used" && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-100/70 text-[#FA521C]">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#FA521C]" /> Partially Used
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-100/70 text-[#FF7A00]">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#FF7A00]" /> Partially Used
                             </span>
                           )}
                           {row.status === "Pending" && (
@@ -792,7 +792,7 @@ export default function RTORefundBalancePage() {
                         </td>
                         <td className="py-3.5 px-4 text-slate-500 whitespace-nowrap font-medium">
                           {row.used_against_order_id ? (
-                            <span className="text-[#FA521C] font-semibold">
+                            <span className="text-[#FF7A00] font-semibold">
                               {row.used_against_order_id}
                             </span>
                           ) : (
@@ -802,7 +802,7 @@ export default function RTORefundBalancePage() {
                         <td className="py-3.5 px-4 text-right whitespace-nowrap">
                           <button
                             onClick={() => setSelectedEntry(row)}
-                            className="text-[#FA521C] font-semibold hover:text-[#D4380D] hover:underline text-xs mr-3"
+                            className="text-[#FF7A00] font-semibold hover:text-[#E66E00] hover:underline text-xs mr-3"
                           >
                             View
                           </button>
@@ -851,7 +851,7 @@ export default function RTORefundBalancePage() {
                 <select
                   value={formSupplierId}
                   onChange={(e) => setFormSupplierId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                 >
                   {suppliers.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -872,7 +872,7 @@ export default function RTORefundBalancePage() {
                     value={formOrderId}
                     onChange={(e) => setFormOrderId(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                   />
                 </div>
 
@@ -886,7 +886,7 @@ export default function RTORefundBalancePage() {
                     value={formAmount}
                     onChange={(e) => setFormAmount(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                   />
                 </div>
               </div>
@@ -901,7 +901,7 @@ export default function RTORefundBalancePage() {
                   value={formProductName}
                   onChange={(e) => setFormProductName(e.target.value)}
                   required
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -912,7 +912,7 @@ export default function RTORefundBalancePage() {
                 <select
                   value={formStatus}
                   onChange={(e) => setFormStatus(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                 >
                   <option value="Credited">Credited (Supplier Restocked & Approved)</option>
                   <option value="Pending">Pending (Delivered to Supplier, Pending Verification)</option>
@@ -928,7 +928,7 @@ export default function RTORefundBalancePage() {
                   placeholder="Returned unopened. Supplier credit memo received."
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -942,7 +942,7 @@ export default function RTORefundBalancePage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#FA521C] text-white rounded-xl hover:bg-[#D4380D] font-semibold shadow-sm shadow-orange-500/25"
+                  className="px-5 py-2 bg-[#FF7A00] text-white rounded-xl hover:bg-[#E66E00] font-semibold shadow-sm shadow-orange-500/25"
                 >
                   Save Credit
                 </button>
@@ -960,7 +960,7 @@ export default function RTORefundBalancePage() {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto overscroll-contain">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#FA521C] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#FF7A00] flex items-center justify-center">
                   <MinusCircle className="w-4 h-4 stroke-[2.5]" />
                 </div>
                 <h3 className="font-bold text-slate-900 text-base">
@@ -990,7 +990,7 @@ export default function RTORefundBalancePage() {
                 <select
                   value={useSupplierId}
                   onChange={(e) => setUseSupplierId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                 >
                   {suppliers.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -1011,7 +1011,7 @@ export default function RTORefundBalancePage() {
                     value={useOrderId}
                     onChange={(e) => setUseOrderId(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                   />
                 </div>
 
@@ -1025,7 +1025,7 @@ export default function RTORefundBalancePage() {
                     value={useAmount}
                     onChange={(e) => setUseAmount(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                   />
                 </div>
               </div>
@@ -1039,7 +1039,7 @@ export default function RTORefundBalancePage() {
                   placeholder="Offsetting product cost for customer order"
                   value={useNotes}
                   onChange={(e) => setUseNotes(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FA521C]/20 focus:border-[#FA521C]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                 />
               </div>
 
@@ -1053,7 +1053,7 @@ export default function RTORefundBalancePage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#FA521C] text-white rounded-xl hover:bg-[#D4380D] font-semibold shadow-sm shadow-orange-500/25"
+                  className="px-5 py-2 bg-[#FF7A00] text-white rounded-xl hover:bg-[#E66E00] font-semibold shadow-sm shadow-orange-500/25"
                 >
                   Apply Deduction
                 </button>
@@ -1071,7 +1071,7 @@ export default function RTORefundBalancePage() {
           <div className="bg-white rounded-2xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto overscroll-contain">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-100 text-[#FA521C] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-orange-100 text-[#FF7A00] flex items-center justify-center">
                   <HelpCircle className="w-5 h-5 stroke-[2.2]" />
                 </div>
                 <div>
@@ -1094,7 +1094,7 @@ export default function RTORefundBalancePage() {
             <div className="mt-5 space-y-4 text-xs sm:text-sm text-slate-700">
               <div className="p-4 bg-orange-50/70 border border-orange-200 rounded-xl space-y-2">
                 <h4 className="font-bold text-orange-950 flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded-full bg-[#FA521C] text-white text-[11px] font-bold flex items-center justify-center">
+                  <span className="w-5 h-5 rounded-full bg-[#FF7A00] text-white text-[11px] font-bold flex items-center justify-center">
                     1
                   </span>
                   Order Returns (RTO) to Supplier
@@ -1141,7 +1141,7 @@ export default function RTORefundBalancePage() {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setShowHowItWorksModal(false)}
-                className="px-5 py-2 bg-[#FA521C] hover:bg-[#D4380D] text-white rounded-xl font-semibold text-xs sm:text-sm shadow-sm shadow-orange-500/25"
+                className="px-5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl font-semibold text-xs sm:text-sm shadow-sm shadow-orange-500/25"
               >
                 Got it
               </button>
@@ -1171,7 +1171,7 @@ export default function RTORefundBalancePage() {
             <div className="mt-4 space-y-3 text-xs sm:text-sm">
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Order ID:</span>
-                <span className="font-bold text-[#FA521C]">{selectedEntry.order_id}</span>
+                <span className="font-bold text-[#FF7A00]">{selectedEntry.order_id}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Supplier:</span>
@@ -1202,7 +1202,7 @@ export default function RTORefundBalancePage() {
               {selectedEntry.used_against_order_id && (
                 <div className="flex justify-between py-1 border-b border-slate-100">
                   <span className="text-slate-500">Used Against:</span>
-                  <span className="font-bold text-[#FA521C]">{selectedEntry.used_against_order_id}</span>
+                  <span className="font-bold text-[#FF7A00]">{selectedEntry.used_against_order_id}</span>
                 </div>
               )}
               {selectedEntry.notes && (

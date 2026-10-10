@@ -13,7 +13,7 @@ import { Footer } from "@/components/Footer";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#F8F9FA] text-[#111111] selection:bg-[#FA521C] selection:text-white">
+    <main className="min-h-screen bg-[#F3F4F6] text-[#111111] selection:bg-[#FF7A00] selection:text-white">
       {/* 1. Top Announcement Bar (Black) */}
       <TopBar />
 
