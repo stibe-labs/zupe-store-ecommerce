@@ -159,6 +159,11 @@ export function CartDrawer() {
                           </p>
                         </Link>
                         <p className="text-xs text-[#636E72] mt-0.5">{item.category}</p>
+                        {item.offer_label && (
+                          <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-[#FF5722] border border-orange-200">
+                            ✨ {item.offer_label}
+                          </span>
+                        )}
                         <div className="flex items-center gap-2 mt-2">
                           <span className="text-sm font-bold text-[#FF7A00]">
                             ₹{item.price.toLocaleString()}

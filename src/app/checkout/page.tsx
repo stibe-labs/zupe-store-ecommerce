@@ -32,7 +32,7 @@ import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { cart, subtotal, clearCart, freeShippingThreshold } = useCart();
+  const { cart, subtotal, savings, clearCart, freeShippingThreshold } = useCart();
   const { user, isLoading: authLoading, openAuthModal, updateUserProfile } = useAuth();
 
   const [name, setName] = useState(user?.name || "");
@@ -222,6 +222,7 @@ function CheckoutContent() {
           city: state ? `${city.trim()}, ${state.trim()}` : city.trim(),
           postal_code: postalCode.trim(),
           total_amount: grandTotal,
+          discount_amount: savings,
           payment_method: "Cash on Delivery",
           user_id: user?.id,
           items: cart.map((c) => ({
@@ -345,6 +346,7 @@ function CheckoutContent() {
                   city: state ? `${city.trim()}, ${state.trim()}` : city.trim(),
                   postal_code: postalCode.trim(),
                   total_amount: grandTotal,
+                  discount_amount: savings,
                   payment_method: methodLabel,
                   user_id: user?.id,
                   items: cart.map((c) => ({
@@ -954,9 +956,27 @@ function CheckoutContent() {
           {/* Right Summary Card */}
           <div className="lg:col-span-1">
             <div className="p-6 rounded-3xl bg-white border border-gray-100 shadow-sm space-y-6 sticky top-28">
-              <h3 className="font-display font-bold text-base text-gray-900">
-                Order Summary
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-display font-bold text-base text-gray-900">
+                  Order Summary
+                </h3>
+                <span className="text-xs text-gray-500 font-medium">
+                  {cart.reduce((sum, it) => sum + it.quantity, 0)} items
+                </span>
+              </div>
+
+              {/* Buy More Save More Alert Banner if any bundle tier is in cart */}
+              {cart.some((item) => item.bundle_tier && item.bundle_tier > 1) && (
+                <div className="p-3 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border border-orange-200/90 text-orange-950 text-xs font-semibold flex items-center gap-2.5 shadow-2xs">
+                  <span className="text-base shrink-0">🎉</span>
+                  <div className="leading-tight">
+                    <p className="font-bold text-[#FF5722]">Bundle Discount Applied!</p>
+                    <p className="text-[11px] text-gray-600 mt-0.5">
+                      You saved <strong className="text-emerald-700">₹{savings.toLocaleString()}</strong> with our Buy More Save More offer.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Cart Items Preview */}
               <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
@@ -974,13 +994,27 @@ function CheckoutContent() {
                       <p className="text-xs font-semibold text-gray-900 truncate">
                         {item.name}
                       </p>
-                      <p className="text-[11px] text-gray-400">
-                        Qty: {item.quantity} × ₹{item.price.toLocaleString()}
-                      </p>
+                      <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                        <span className="text-[11px] text-gray-500 font-medium">
+                          Qty: <strong className="text-gray-800">{item.quantity}</strong> × ₹{item.price.toLocaleString()}
+                        </span>
+                        {item.offer_label && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-orange-100 text-[#FF5722] border border-orange-200">
+                            ✨ {item.offer_label}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-xs font-bold text-gray-900">
-                      ₹{(item.price * item.quantity).toLocaleString()}
-                    </span>
+                    <div className="text-right shrink-0">
+                      <span className="text-xs font-bold text-gray-900 block">
+                        ₹{(item.price * item.quantity).toLocaleString()}
+                      </span>
+                      {item.original_price && item.original_price > item.price && (
+                        <span className="line-through text-[10px] text-gray-400 block -mt-0.5">
+                          ₹{(item.original_price * item.quantity).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -995,6 +1029,15 @@ function CheckoutContent() {
                     ₹{subtotal.toLocaleString()}
                   </span>
                 </div>
+                {savings > 0 && (
+                  <div className="flex justify-between text-emerald-600 font-semibold bg-emerald-50/60 p-2 rounded-xl border border-emerald-100">
+                    <span className="flex items-center gap-1">
+                      <span>🏷️</span>
+                      <span>Total Savings</span>
+                    </span>
+                    <span className="font-bold">-₹{savings.toLocaleString()}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-gray-500">
                   <span>Standard Delivery</span>
                   <span className="font-semibold text-emerald-600">

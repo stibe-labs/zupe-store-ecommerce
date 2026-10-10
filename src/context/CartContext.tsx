@@ -9,11 +9,15 @@ export interface CartItem {
   subtitle?: string;
   category: string;
   price: number;
+  original_price?: number;
   mrp?: number;
   quantity: number;
   poster_image: string;
   volume?: string;
   color?: string;
+  bundle_tier?: number;
+  bundle_savings?: number;
+  offer_label?: string;
 }
 
 interface CartContextType {
@@ -22,20 +26,30 @@ interface CartContextType {
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
-  addToCart: (product: {
-    id: string;
-    name: string;
-    subtitle?: string;
-    category?: string;
-    price?: number;
-    offer_price?: number;
-    mrp?: number;
-    poster_image?: string;
-    image?: string;
-    volume?: string;
-    color?: string;
-  }, quantity?: number) => boolean;
-  addItem: (product: any, quantity?: number) => boolean;
+  addToCart: (
+    product: {
+      id: string;
+      name: string;
+      subtitle?: string;
+      category?: string;
+      price?: number;
+      offer_price?: number;
+      original_price?: number;
+      mrp?: number;
+      poster_image?: string;
+      image?: string;
+      volume?: string;
+      color?: string;
+      bundle_tier?: number;
+      bundle_savings?: number;
+      offer_label?: string;
+    },
+    quantity?: number,
+    options?: {
+      overrideQuantity?: boolean;
+    }
+  ) => boolean;
+  addItem: (product: any, quantity?: number, options?: any) => boolean;
   updateQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
@@ -201,23 +215,45 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       category?: string;
       price?: number;
       offer_price?: number;
+      original_price?: number;
       mrp?: number;
       poster_image?: string;
       image?: string;
       volume?: string;
       color?: string;
+      bundle_tier?: number;
+      bundle_savings?: number;
+      offer_label?: string;
     },
-    quantity: number = 1
+    quantity: number = 1,
+    options?: {
+      overrideQuantity?: boolean;
+    }
   ): boolean => {
     const finalPrice = product.offer_price || product.price || 990;
-    const finalMrp = product.mrp || Math.round(finalPrice * 1.25);
+    const finalMrp = product.mrp || Math.round((product.original_price || finalPrice) * 1.25);
     const finalImage = product.poster_image || product.image || "";
 
     setCart((prevCart) => {
       const existingIdx = prevCart.findIndex((item) => item.id === product.id);
       if (existingIdx > -1) {
         const updated = [...prevCart];
-        updated[existingIdx].quantity += quantity;
+        const newQty = options?.overrideQuantity || product.bundle_tier
+          ? quantity
+          : updated[existingIdx].quantity + quantity;
+
+        updated[existingIdx] = {
+          ...updated[existingIdx],
+          price: finalPrice,
+          original_price: product.original_price || updated[existingIdx].original_price || finalPrice,
+          mrp: finalMrp,
+          quantity: newQty,
+          poster_image: finalImage || updated[existingIdx].poster_image,
+          color: product.color || updated[existingIdx].color,
+          bundle_tier: product.bundle_tier !== undefined ? product.bundle_tier : updated[existingIdx].bundle_tier,
+          bundle_savings: product.bundle_savings !== undefined ? product.bundle_savings : updated[existingIdx].bundle_savings,
+          offer_label: product.offer_label !== undefined ? product.offer_label : updated[existingIdx].offer_label,
+        };
         return updated;
       } else {
         return [
@@ -228,11 +264,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             subtitle: product.subtitle,
             category: product.category || "Product",
             price: finalPrice,
+            original_price: product.original_price || finalPrice,
             mrp: finalMrp,
             quantity: quantity,
             poster_image: finalImage,
             volume: product.volume,
             color: product.color,
+            bundle_tier: product.bundle_tier,
+            bundle_savings: product.bundle_savings,
+            offer_label: product.offer_label,
           },
         ];
       }
@@ -247,9 +287,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     setCart((prev) =>
-      prev.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
-      )
+      prev.map((item) => {
+        if (item.id === productId) {
+          // If quantity changes manually, adjust bundle tier if it no longer matches
+          const isBundle = item.bundle_tier && item.bundle_tier === quantity;
+          return {
+            ...item,
+            quantity,
+            price: isBundle ? item.price : (item.original_price || item.price),
+            bundle_tier: isBundle ? item.bundle_tier : undefined,
+            bundle_savings: isBundle ? item.bundle_savings : undefined,
+            offer_label: isBundle ? item.offer_label : undefined,
+          };
+        }
+        return item;
+      })
     );
   };
 
@@ -266,7 +318,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const mrpTotal = cart.reduce((sum, item) => sum + (item.mrp || item.price) * item.quantity, 0);
+  const mrpTotal = cart.reduce(
+    (sum, item) => sum + (item.mrp || Math.round((item.original_price || item.price) * 1.25)) * item.quantity,
+    0
+  );
   const savings = Math.max(0, mrpTotal - subtotal);
   const freeShippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
 

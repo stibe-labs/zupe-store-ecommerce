@@ -482,6 +482,21 @@ function AdminOrdersContent() {
                             <Phone className="w-3 h-3" />
                             <span>{ord.customer_phone}</span>
                           </a>
+                          {(() => {
+                            let rawItems: any[] = [];
+                            if (Array.isArray(ord.items)) rawItems = ord.items;
+                            else if (typeof ord.items === "string") {
+                              try { rawItems = JSON.parse(ord.items); } catch { rawItems = []; }
+                            }
+                            const totalQty = rawItems.reduce((acc, it) => acc + Number(it.quantity || 1), 0);
+                            const firstName = rawItems[0]?.name || rawItems[0]?.product_name;
+                            if (!firstName) return null;
+                            return (
+                              <span className="block text-[11px] text-[#FF7A00] font-semibold truncate max-w-[180px] mt-0.5">
+                                📦 {totalQty > 1 ? `${totalQty}× ` : ""}{firstName}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           <span
@@ -640,6 +655,85 @@ function AdminOrdersContent() {
                   <span className="text-slate-700 text-right max-w-xs">{selectedOrder.shipping_address}</span>
                 </div>
               </div>
+
+              {/* Purchased Items & Quantity Breakdown Card */}
+              {(() => {
+                let parsedItems: any[] = [];
+                if (Array.isArray(selectedOrder.items)) {
+                  parsedItems = selectedOrder.items;
+                } else if (typeof selectedOrder.items === "string") {
+                  try {
+                    parsedItems = JSON.parse(selectedOrder.items);
+                  } catch (e) {
+                    parsedItems = [];
+                  }
+                }
+                if (!parsedItems || parsedItems.length === 0) return null;
+
+                const totalUnits = parsedItems.reduce((acc, it) => acc + Number(it.quantity || 1), 0);
+
+                return (
+                  <div className="bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <ShoppingBag className="w-3.5 h-3.5 text-[#FF7A00]" />
+                        Purchased Items ({parsedItems.length})
+                      </span>
+                      <span className="text-[11px] font-extrabold text-[#FF7A00] bg-orange-100 px-2 py-0.5 rounded-full">
+                        Total Quantity: {totalUnits} unit{totalUnits === 1 ? "" : "s"}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      {parsedItems.map((item, idx) => {
+                        const itemName = item.name || item.product_name || "Purchased Product";
+                        const itemQty = Number(item.quantity || 1);
+                        const itemPrice = Number(item.price || item.unit_price || 0);
+                        const itemImg = item.image || item.poster_image || "";
+
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between bg-white p-2.5 rounded-lg border border-slate-200/70 text-xs shadow-2xs"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              {itemImg ? (
+                                <img
+                                  src={itemImg}
+                                  alt={itemName}
+                                  className="w-10 h-10 object-cover rounded-md border border-slate-100 shrink-0"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-md bg-orange-50 text-[#FF7A00] flex items-center justify-center font-bold text-xs shrink-0">
+                                  ZP
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="font-bold text-slate-900 truncate max-w-[220px]">
+                                  {itemName}
+                                </p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FF7A00] text-white">
+                                    Qty: {itemQty}
+                                  </span>
+                                  <span className="text-slate-500 text-[11px]">
+                                    ₹{itemPrice.toLocaleString()} each
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className="font-extrabold text-slate-900 block text-xs">
+                                ₹{(itemPrice * itemQty).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Shopify Sync Card */}
               <div className="bg-emerald-50/60 p-3.5 rounded-xl border border-emerald-200/80 flex items-center justify-between gap-3">
