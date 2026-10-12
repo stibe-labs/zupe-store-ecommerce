@@ -810,15 +810,16 @@ export default function ProductDetailPage() {
 
       {/* Main Container */}
       <main className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-2 sm:pt-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-14 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-14 items-stretch">
           
           {/* ========================================================
-              LEFT COLUMN: HERO IMAGE & THUMBNAILS CAROUSEL
+              LEFT COLUMN: HERO IMAGE & THUMBNAILS CAROUSEL (STICKY ON DESKTOP)
              ======================================================== */}
-          <div className="w-full">
-            {/* Main Showcase Image Container with Touch & Drag Swipe */}
-            <div
-              className={`group relative aspect-square w-full rounded-[24px] sm:rounded-[28px] overflow-hidden bg-[#F3F4F6] shadow-sm select-none touch-pan-y ${
+          <div className="w-full h-full">
+            <div className="w-full lg:sticky lg:top-[115px] lg:pb-8">
+              {/* Main Showcase Image Container with Touch & Drag Swipe */}
+              <div
+                className={`group relative aspect-square w-full rounded-[24px] sm:rounded-[28px] overflow-hidden bg-[#F3F4F6] shadow-sm select-none touch-pan-y ${
                 gallery.length > 1 ? "cursor-grab active:cursor-grabbing" : ""
               }`}
               onTouchStart={handleTouchStart}
@@ -979,6 +980,7 @@ export default function ProductDetailPage() {
               </div>
             )}
           </div>
+        </div>
 
           {/* ========================================================
               RIGHT COLUMN: TITLE, PRICE, CTA BUTTONS, TRUST BADGES,
