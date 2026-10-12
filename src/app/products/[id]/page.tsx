@@ -1260,10 +1260,10 @@ export default function ProductDetailPage() {
                 return (
                   <div
                     key={idx}
-                    className={`trust-flow-card trust-flow-card-${idx} relative flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl border border-gray-200/80 bg-white text-center select-none cursor-default shadow-2xs transition-all duration-300`}
+                    className={`trust-flow-card trust-flow-card-${idx} relative flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl border border-gray-200/80 bg-white text-center select-none cursor-default shadow-2xs`}
                   >
                     <div
-                      className={`trust-flow-icon trust-flow-icon-${idx} w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center mb-1.5 bg-gray-100 text-gray-700 transition-all duration-300`}
+                      className={`trust-flow-icon trust-flow-icon-${idx} w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center mb-1.5 bg-gray-100 text-gray-700`}
                     >
                       <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
                     </div>
