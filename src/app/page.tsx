@@ -9,6 +9,7 @@ import { TrustBar } from "@/components/TrustBar";
 import { DealsSection } from "@/components/DealsSection";
 import { PromoBanners } from "@/components/PromoBanners";
 import { NewArrivalsSection } from "@/components/NewArrivalsSection";
+import { ShoppableVideosSection } from "@/components/ShoppableVideosSection";
 import { Footer } from "@/components/Footer";
 
 export default function Home() {
@@ -38,7 +39,10 @@ export default function Home() {
       {/* 8. New Arrivals (5 cards with floating wishlist hearts) */}
       <NewArrivalsSection />
 
-      {/* 9. Modern E-commerce Footer */}
+      {/* 9. Shoppable Video Reels (Before Footer, videos & attached products only) */}
+      <ShoppableVideosSection showHeader={false} />
+
+      {/* 10. Modern E-commerce Footer */}
       <Footer />
     </main>
   );

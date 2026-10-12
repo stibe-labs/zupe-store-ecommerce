@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
     let videos = productId
       ? await getVideosByProduct(productId)
-      : await getAllVideos();
+      : (await getAllVideos()).filter((v) => v.active !== false);
 
     // Query D1 products table to merge with DEFAULT_PRODUCTS
     let allProducts: any[] = [...DEFAULT_PRODUCTS];

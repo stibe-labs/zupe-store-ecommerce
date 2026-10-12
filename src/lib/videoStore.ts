@@ -147,10 +147,7 @@ export async function getAllVideos(): Promise<ProductVideo[]> {
         createdAt: r.created_at || new Date().toISOString(),
       }));
 
-      // Merge memory videos not in DB
-      const dbIds = new Set(dbVideos.map((v) => v.id));
-      const extras = inMemoryVideos.filter((v) => !dbIds.has(v.id));
-      return [...dbVideos, ...extras];
+      return dbVideos;
     }
   } catch (err: any) {
     console.warn("Error loading videos from D1:", err);

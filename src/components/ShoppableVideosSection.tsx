@@ -23,12 +23,14 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 
 interface ShoppableVideosSectionProps {
-  currentProduct: Product;
+  currentProduct?: Product;
+  showHeader?: boolean;
   onToast?: (msg: string) => void;
 }
 
 export function ShoppableVideosSection({
   currentProduct,
+  showHeader = true,
   onToast,
 }: ShoppableVideosSectionProps) {
   const router = useRouter();
@@ -45,11 +47,15 @@ export function ShoppableVideosSection({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const activeVideoRef = useRef<HTMLVideoElement>(null);
 
-  // Fetch videos for this product
+  // Fetch videos for this product or all store videos if no product specified
   useEffect(() => {
     let isMounted = true;
-    const prodKey = currentProduct.slug || currentProduct.id;
-    fetch(`/api/videos?productId=${encodeURIComponent(prodKey)}&_t=${Date.now()}`)
+    const prodKey = currentProduct?.slug || currentProduct?.id;
+    const url = prodKey
+      ? `/api/videos?productId=${encodeURIComponent(prodKey)}&_t=${Date.now()}`
+      : `/api/videos?_t=${Date.now()}`;
+
+    fetch(url)
       .then((res) => res.json())
       .then((data) => {
         if (isMounted && data.success && Array.isArray(data.videos)) {
@@ -152,22 +158,15 @@ export function ShoppableVideosSection({
       return;
     }
 
-    const attachedItem =
-      vid.productId &&
-      vid.productId !== "all" &&
-      vid.productId !== currentProduct.id &&
-      vid.productName
-        ? {
-            ...currentProduct,
-            id: vid.productSlug || vid.productId,
-            slug: vid.productSlug || vid.productId,
-            name: vid.productName,
-            price: vid.productPrice || currentProduct.price,
-            mrp: vid.productMrp || currentProduct.mrp,
-            poster_image: vid.productImage || currentProduct.poster_image,
-            images: [vid.productImage || currentProduct.poster_image],
-          }
-        : currentProduct;
+    const attachedItem = {
+      id: vid.productSlug || vid.productId || currentProduct?.id || "featured-product",
+      slug: vid.productSlug || vid.productId || currentProduct?.slug || "featured-product",
+      name: vid.productName || currentProduct?.name || vid.title || "Featured Product",
+      price: vid.productPrice !== undefined ? vid.productPrice : (currentProduct?.price || 799),
+      mrp: vid.productMrp !== undefined ? vid.productMrp : (currentProduct?.mrp || 1199),
+      poster_image: vid.productImage || currentProduct?.poster_image || vid.posterUrl || "/images/placeholder.png",
+      images: [vid.productImage || currentProduct?.poster_image || vid.posterUrl || "/images/placeholder.png"],
+    };
 
     const addFn = addToCart || addItem;
     if (typeof addFn === "function") {
@@ -182,22 +181,15 @@ export function ShoppableVideosSection({
       return;
     }
 
-    const attachedItem =
-      vid.productId &&
-      vid.productId !== "all" &&
-      vid.productId !== currentProduct.id &&
-      vid.productName
-        ? {
-            ...currentProduct,
-            id: vid.productSlug || vid.productId,
-            slug: vid.productSlug || vid.productId,
-            name: vid.productName,
-            price: vid.productPrice || currentProduct.price,
-            mrp: vid.productMrp || currentProduct.mrp,
-            poster_image: vid.productImage || currentProduct.poster_image,
-            images: [vid.productImage || currentProduct.poster_image],
-          }
-        : currentProduct;
+    const attachedItem = {
+      id: vid.productSlug || vid.productId || currentProduct?.id || "featured-product",
+      slug: vid.productSlug || vid.productId || currentProduct?.slug || "featured-product",
+      name: vid.productName || currentProduct?.name || vid.title || "Featured Product",
+      price: vid.productPrice !== undefined ? vid.productPrice : (currentProduct?.price || 799),
+      mrp: vid.productMrp !== undefined ? vid.productMrp : (currentProduct?.mrp || 1199),
+      poster_image: vid.productImage || currentProduct?.poster_image || vid.posterUrl || "/images/placeholder.png",
+      images: [vid.productImage || currentProduct?.poster_image || vid.posterUrl || "/images/placeholder.png"],
+    };
 
     const addFn = addToCart || addItem;
     if (typeof addFn === "function") {
@@ -217,154 +209,181 @@ export function ShoppableVideosSection({
   const currentReel = activeModalVideoIndex !== null ? videos[activeModalVideoIndex] : null;
 
   return (
-    <section className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 py-8 sm:py-12 border-t border-gray-100">
-      {/* Section Header */}
-      <div className="flex items-center justify-between mb-5 sm:mb-6">
-        <div>
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#111111] tracking-tight">
-            Watch in Action
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-            Real unboxings, tutorials, and authentic customer experiences
-          </p>
-        </div>
+    <section className={`w-full max-w-[1600px] mx-auto px-4 sm:px-6 ${showHeader ? "py-8 sm:py-12 border-t border-gray-100" : "py-5 sm:py-8"}`}>
+      {/* Section Header (Only rendered when showHeader is true) */}
+      {showHeader && (
+        <div className="flex items-center justify-between mb-5 sm:mb-6">
+          <div>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#111111] tracking-tight">
+              Watch in Action
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+              Real unboxings, tutorials, and authentic customer experiences
+            </p>
+          </div>
 
-        {/* Carousel Navigation Buttons */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={scrollPrev}
-            className="w-9 h-9 rounded-full bg-white border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-black flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
-            aria-label="Previous videos"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            type="button"
-            onClick={scrollNext}
-            className="w-9 h-9 rounded-full bg-white border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-black flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
-            aria-label="Next videos"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Horizontal Carousel of 9:16 Video Reel Cards */}
-      <div
-        ref={scrollContainerRef}
-        className="flex items-stretch gap-4 sm:gap-6 overflow-x-auto pb-4 pt-1 scrollbar-none snap-x snap-mandatory select-none"
-      >
-        {videos.map((vid, idx) => {
-          const poster =
-            vid.posterUrl ||
-            vid.productImage ||
-            currentProduct.poster_image ||
-            "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800";
-
-          return (
-            <div
-              key={vid.id || idx}
-              onClick={() => handleOpenReel(idx)}
-              className="group relative flex-shrink-0 w-[240px] sm:w-[280px] h-[390px] sm:h-[450px] rounded-[24px] sm:rounded-[28px] overflow-hidden bg-slate-900 shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer snap-start border border-gray-200/80 hover:border-[#FF7A00]/50"
+          {/* Carousel Navigation Buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={scrollPrev}
+              className="w-9 h-9 rounded-full bg-white border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-black flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
+              aria-label="Previous videos"
             >
-              {/* Background Video or Poster */}
-              <div className="absolute inset-0 z-0">
-                <img
-                  src={poster}
-                  alt={vid.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/40" />
-              </div>
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              onClick={scrollNext}
+              className="w-9 h-9 rounded-full bg-white border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-black flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
+              aria-label="Next videos"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
 
-              {/* Top Badges */}
-              <div className="absolute top-3.5 left-3.5 right-3.5 z-10 flex items-center justify-between">
-                {vid.badge ? (
-                  <span className="bg-[#FF3B30] text-white text-[10px] sm:text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-md">
-                    {vid.badge}
-                  </span>
-                ) : (
-                  <span />
-                )}
+      {/* Relative wrapper for video carousel & floating navigation */}
+      <div className="relative group/carousel">
+        {/* Horizontal Carousel of 9:16 Video Reel Cards */}
+        <div
+          ref={scrollContainerRef}
+          className="flex items-stretch gap-4 sm:gap-6 overflow-x-auto pb-4 pt-1 scrollbar-none snap-x snap-mandatory select-none"
+        >
+          {videos.map((vid, idx) => {
+            const poster =
+              vid.posterUrl ||
+              vid.productImage ||
+              currentProduct?.poster_image ||
+              "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800";
 
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-bold shadow-md">
-                  <Eye className="w-3 h-3 text-rose-400" />
-                  <span>{vid.viewsText || "24.5k"}</span>
-                </span>
-              </div>
-
-              {/* Center Play Button Icon */}
-              <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-                <div className="w-13 h-13 rounded-full bg-black/40 backdrop-blur-sm border border-white/30 text-white flex items-center justify-center group-hover:scale-115 group-hover:bg-[#FF7A00] transition-all duration-300 shadow-xl">
-                  <Play className="w-6 h-6 fill-white ml-0.5" />
+            return (
+              <div
+                key={vid.id || idx}
+                onClick={() => handleOpenReel(idx)}
+                className="group relative flex-shrink-0 w-[240px] sm:w-[280px] h-[390px] sm:h-[450px] rounded-[24px] sm:rounded-[28px] overflow-hidden bg-slate-900 shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer snap-start border border-gray-200/80 hover:border-[#FF7A00]/50"
+              >
+                {/* Background Video or Poster */}
+                <div className="absolute inset-0 z-0">
+                  <img
+                    src={poster}
+                    alt={vid.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/40" />
                 </div>
-              </div>
 
-              {/* Bottom Floating Shoppable Product Card Overlay (Only if product attached) */}
-              {vid.productId &&
-              vid.productId !== "none" &&
-              vid.productId !== "all" &&
-              (vid.productName || vid.productSlug) ? (
-                <div className="absolute bottom-3.5 left-3.5 right-3.5 z-10">
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const target = vid.productSlug || vid.productId;
-                      if (target && target !== "all" && target !== "none") {
-                        router.push(`/products/${target}`);
-                      } else {
-                        router.push("/products");
-                      }
-                    }}
-                    className="p-2.5 rounded-2xl bg-white/95 backdrop-blur-md border border-white/60 shadow-lg flex items-center gap-2.5 hover:bg-white hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group/pill"
-                    title={`View ${vid.productName || "product"} page`}
-                  >
-                    {/* Small Square Thumbnail */}
-                    <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
-                      <img
-                        src={vid.productImage || currentProduct.poster_image || poster}
-                        alt={vid.productName || currentProduct.name}
-                        className="w-full h-full object-cover group-hover/pill:scale-110 transition-transform duration-300"
-                      />
-                    </div>
+                {/* Top Badges */}
+                <div className="absolute top-3.5 left-3.5 right-3.5 z-10 flex items-center justify-between">
+                  {vid.badge ? (
+                    <span className="bg-[#FF3B30] text-white text-[10px] sm:text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-md">
+                      {vid.badge}
+                    </span>
+                  ) : (
+                    <span />
+                  )}
 
-                    {/* Product Details */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-gray-900 truncate leading-tight group-hover/pill:text-[#FF7A00] transition-colors">
-                        {vid.productName || currentProduct.name}
-                      </p>
-                      <div className="flex items-baseline gap-1.5 mt-0.5">
-                        <span className="text-xs font-black text-[#FF7A00]">
-                          ₹{(vid.productPrice || currentProduct.price).toLocaleString("en-IN")}
-                        </span>
-                        {(vid.productMrp || currentProduct.mrp) && (
-                          <span className="text-[10px] text-gray-400 line-through">
-                            ₹{(vid.productMrp || currentProduct.mrp).toLocaleString("en-IN")}
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-bold shadow-md">
+                    <Eye className="w-3 h-3 text-rose-400" />
+                    <span>{vid.viewsText || "24.5k"}</span>
+                  </span>
+                </div>
+
+                {/* Center Play Button Icon */}
+                <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+                  <div className="w-13 h-13 rounded-full bg-black/40 backdrop-blur-sm border border-white/30 text-white flex items-center justify-center group-hover:scale-115 group-hover:bg-[#FF7A00] transition-all duration-300 shadow-xl">
+                    <Play className="w-6 h-6 fill-white ml-0.5" />
+                  </div>
+                </div>
+
+                {/* Bottom Floating Shoppable Product Card Overlay (Only if product attached) */}
+                {vid.productId &&
+                vid.productId !== "none" &&
+                vid.productId !== "all" &&
+                (vid.productName || vid.productSlug) ? (
+                  <div className="absolute bottom-3.5 left-3.5 right-3.5 z-10">
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const target = vid.productSlug || vid.productId;
+                        if (target && target !== "all" && target !== "none") {
+                          router.push(`/products/${target}`);
+                        } else {
+                          router.push("/products");
+                        }
+                      }}
+                      className="p-2.5 rounded-2xl bg-white/95 backdrop-blur-md border border-white/60 shadow-lg flex items-center gap-2.5 hover:bg-white hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group/pill"
+                      title={`View ${vid.productName || "product"} page`}
+                    >
+                      {/* Small Square Thumbnail */}
+                      <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
+                        <img
+                          src={vid.productImage || currentProduct?.poster_image || poster}
+                          alt={vid.productName || currentProduct?.name || vid.title}
+                          className="w-full h-full object-cover group-hover/pill:scale-110 transition-transform duration-300"
+                        />
+                      </div>
+
+                      {/* Product Details */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-gray-900 truncate leading-tight group-hover/pill:text-[#FF7A00] transition-colors">
+                          {vid.productName || currentProduct?.name || vid.title}
+                        </p>
+                        <div className="flex items-baseline gap-1.5 mt-0.5">
+                          <span className="text-xs font-black text-[#FF7A00]">
+                            ₹{(vid.productPrice || currentProduct?.price || 799).toLocaleString("en-IN")}
                           </span>
-                        )}
+                          {(vid.productMrp || currentProduct?.mrp) && (
+                            <span className="text-[10px] text-gray-400 line-through">
+                              ₹{(vid.productMrp || currentProduct?.mrp || 1199).toLocaleString("en-IN")}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Quick Arrow / Action Icon */}
+                      <div className="w-7 h-7 rounded-full bg-[#FF7A00]/10 text-[#FF7A00] flex items-center justify-center shrink-0 group-hover/pill:bg-[#FF7A00] group-hover/pill:text-white transition-colors">
+                        <ExternalLink className="w-3.5 h-3.5" />
                       </div>
                     </div>
-
-                    {/* Quick Arrow / Action Icon */}
-                    <div className="w-7 h-7 rounded-full bg-[#FF7A00]/10 text-[#FF7A00] flex items-center justify-center shrink-0 group-hover/pill:bg-[#FF7A00] group-hover/pill:text-white transition-colors">
-                      <ExternalLink className="w-3.5 h-3.5" />
+                  </div>
+                ) : (
+                  <div className="absolute bottom-3.5 left-3.5 right-3.5 z-10 pointer-events-none">
+                    <div className="p-2.5 rounded-2xl bg-black/60 backdrop-blur-md border border-white/20 text-white">
+                      <p className="text-xs font-bold truncate leading-tight">
+                        {vid.title}
+                      </p>
+                      <p className="text-[10px] text-gray-300 mt-0.5">Tap to watch reel</p>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="absolute bottom-3.5 left-3.5 right-3.5 z-10 pointer-events-none">
-                  <div className="p-2.5 rounded-2xl bg-black/60 backdrop-blur-md border border-white/20 text-white">
-                    <p className="text-xs font-bold truncate leading-tight">
-                      {vid.title}
-                    </p>
-                    <p className="text-[10px] text-gray-300 mt-0.5">Tap to watch reel</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Floating Side Navigation Buttons for Desktop (Always active on Home or when header is hidden) */}
+        {!showHeader && videos.length > 2 && (
+          <>
+            <button
+              type="button"
+              onClick={scrollPrev}
+              className="hidden sm:flex absolute -left-2 sm:-left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-black items-center justify-center shadow-md transition-all active:scale-95 cursor-pointer opacity-90 hover:opacity-100"
+              aria-label="Previous videos"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              onClick={scrollNext}
+              className="hidden sm:flex absolute -right-2 sm:-right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-black items-center justify-center shadow-md transition-all active:scale-95 cursor-pointer opacity-90 hover:opacity-100"
+              aria-label="Next videos"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </>
+        )}
       </div>
 
       {/* ========================================================
@@ -501,25 +520,25 @@ export function ShoppableVideosSection({
                   >
                     <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-white/10 shrink-0 border border-white/20">
                       <img
-                        src={currentReel.productImage || currentProduct.poster_image}
-                        alt={currentReel.productName || currentProduct.name}
+                        src={currentReel.productImage || currentProduct?.poster_image}
+                        alt={currentReel.productName || currentProduct?.name || currentReel.title}
                         className="w-full h-full object-cover group-hover/modalpill:scale-105 transition-transform duration-300"
                       />
                     </div>
                     <div className="flex-1 min-w-0 text-white">
                       <div className="flex items-center gap-1.5">
                         <h4 className="text-xs font-bold truncate group-hover/modalpill:text-[#FF7A00] transition-colors">
-                          {currentReel.productName || currentProduct.name}
+                          {currentReel.productName || currentProduct?.name || currentReel.title}
                         </h4>
                         <ExternalLink className="w-3 h-3 text-gray-300 shrink-0" />
                       </div>
                       <div className="flex items-baseline gap-2 mt-0.5">
                         <span className="text-sm font-black text-[#FF7A00]">
-                          ₹{(currentReel.productPrice || currentProduct.price).toLocaleString("en-IN")}
+                          ₹{(currentReel.productPrice || currentProduct?.price || 799).toLocaleString("en-IN")}
                         </span>
-                        {(currentReel.productMrp || currentProduct.mrp) && (
+                        {(currentReel.productMrp || currentProduct?.mrp) && (
                           <span className="text-[11px] text-gray-400 line-through">
-                            ₹{(currentReel.productMrp || currentProduct.mrp).toLocaleString("en-IN")}
+                            ₹{(currentReel.productMrp || currentProduct?.mrp || 1199).toLocaleString("en-IN")}
                           </span>
                         )}
                       </div>
