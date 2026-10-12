@@ -46,6 +46,7 @@ export interface Product {
   badge?: "New" | "Sale" | "Trending" | "Limited" | "";
   created_at?: string;
   sold_count?: string;
+  has_colors?: boolean;
   colors?: ProductColorVariant[];
   features?: string[];
   specifications?: Record<string, string>;
@@ -90,6 +91,7 @@ export interface AdminProductFormData {
   poster_image: string;
   images?: string[];
   color?: string;
+  has_colors?: boolean;
   colors?: ProductColorVariant[];
   material?: string;
   badge?: string;

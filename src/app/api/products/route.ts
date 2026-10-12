@@ -71,6 +71,19 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
     : (stockOverride ? stockOverride.stock_count : baseStock);
   const finalInStock = finalStock <= 0 ? 0 : Number(p.in_stock ?? (stockOverride ? stockOverride.in_stock : 1));
 
+  const hasColorsVal =
+    p.has_colors !== undefined && p.has_colors !== null
+      ? Boolean(Number(p.has_colors))
+      : defaultFound?.has_colors !== undefined
+      ? Boolean(defaultFound.has_colors)
+      : Array.isArray(parsedColors) &&
+        parsedColors.length > 0 &&
+        !(parsedColors.length === 1 && parsedColors[0].name?.toLowerCase() === "standard");
+
+  const finalColors = hasColorsVal
+    ? (Array.isArray(parsedColors) && parsedColors.length > 0 ? parsedColors : (defaultFound?.colors || []))
+    : [];
+
     return {
       ...(defaultFound || {}),
       ...p,
@@ -90,8 +103,9 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
       volume: p.volume ?? defaultFound?.volume ?? "",
       poster_image: p.poster_image || defaultFound?.poster_image || "",
       images: Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages : (defaultFound?.images || []),
-      color: p.color ?? defaultFound?.color ?? "",
-      colors: Array.isArray(parsedColors) && parsedColors.length > 0 ? parsedColors : (defaultFound?.colors || []),
+      has_colors: hasColorsVal,
+      color: hasColorsVal ? (p.color ?? defaultFound?.color ?? "") : "",
+      colors: finalColors,
       material: p.material ?? defaultFound?.material ?? "",
       badge: p.badge ?? defaultFound?.badge ?? "",
       in_stock: finalInStock,
@@ -206,6 +220,7 @@ export async function POST(req: NextRequest) {
       poster_image,
       images,
       color,
+      has_colors,
       colors,
       material,
       badge,
@@ -302,9 +317,17 @@ export async function POST(req: NextRequest) {
             ? images
             : [images]
           : existingProd?.images || [],
-      color: color !== undefined ? color : existingProd?.color || "",
+      has_colors:
+        has_colors !== undefined
+          ? Boolean(has_colors)
+          : existingProd?.has_colors !== undefined
+          ? Boolean(existingProd.has_colors)
+          : Array.isArray(colors) && colors.length > 0 && !(colors.length === 1 && colors[0].name?.toLowerCase() === "standard"),
+      color: has_colors === false ? "" : color !== undefined ? color : existingProd?.color || "",
       colors:
-        colors !== undefined
+        has_colors === false
+          ? []
+          : colors !== undefined
           ? Array.isArray(colors)
             ? colors
             : [colors]

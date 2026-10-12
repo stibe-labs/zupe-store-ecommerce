@@ -99,16 +99,18 @@ export default function ProductDetailPage() {
 
   const applyProduct = (found: Product) => {
     setProduct(found);
-    const initialColor =
-      found.colors && found.colors.length > 0
-        ? found.colors[0].name
-        : found.color || "Standard";
+    const hasColors =
+      found.has_colors !== false &&
+      found.colors &&
+      found.colors.length > 0 &&
+      !(found.has_colors !== true && found.colors.length === 1 && found.colors[0].name.toLowerCase() === "standard");
+
+    const initialColor = hasColors ? found.colors![0].name : "";
     setSelectedColor(initialColor);
 
-    const firstColorObj =
-      found.colors && found.colors.length > 0
-        ? found.colors.find((c) => c.name.toLowerCase() === initialColor.toLowerCase()) || found.colors[0]
-        : null;
+    const firstColorObj = hasColors
+      ? found.colors!.find((c) => c.name.toLowerCase() === initialColor.toLowerCase()) || found.colors![0]
+      : null;
 
     const defaultImg =
       firstColorObj?.images?.[0] ||
@@ -240,6 +242,7 @@ export default function ProductDetailPage() {
 
   // Currently active color variant object
   const activeColorVariant = useMemo(() => {
+    if (product?.has_colors === false) return null;
     if (!product?.colors || product.colors.length === 0) return null;
     return (
       product.colors.find((c) => c.name.toLowerCase() === selectedColor.toLowerCase()) ||
@@ -250,10 +253,10 @@ export default function ProductDetailPage() {
   // Gallery images derived from active color's different angle photos, or product.images, or poster_image
   const gallery = useMemo(() => {
     if (!product) return [];
-    if (activeColorVariant?.images && activeColorVariant.images.length > 0) {
+    if (product.has_colors !== false && activeColorVariant?.images && activeColorVariant.images.length > 0) {
       return activeColorVariant.images;
     }
-    if (activeColorVariant?.image) {
+    if (product.has_colors !== false && activeColorVariant?.image) {
       return [activeColorVariant.image];
     }
     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
@@ -280,7 +283,16 @@ export default function ProductDetailPage() {
 
   // Available color options for current product
   const availableColors = useMemo(() => {
-    if (product?.colors && product.colors.length > 0) {
+    if (!product) return [];
+    if (product.has_colors === false) return [];
+    if (product.colors && product.colors.length > 0) {
+      if (
+        product.has_colors !== true &&
+        product.colors.length === 1 &&
+        product.colors[0].name.toLowerCase() === "standard"
+      ) {
+        return [];
+      }
       return product.colors;
     }
     return [];
@@ -587,7 +599,7 @@ export default function ProductDetailPage() {
     const added = addToCart(
       {
         ...product,
-        color: selectedColor,
+        color: availableColors.length > 0 && product.has_colors !== false ? selectedColor : undefined,
         poster_image: selectedImage || product.poster_image,
         price: bundle.unitPrice,
         original_price: singleUnitPrice,
@@ -617,7 +629,7 @@ export default function ProductDetailPage() {
     addToCart(
       {
         ...product,
-        color: selectedColor,
+        color: availableColors.length > 0 && product.has_colors !== false ? selectedColor : undefined,
         poster_image: selectedImage || product.poster_image,
         price: bundle.unitPrice,
         original_price: singleUnitPrice,
@@ -644,7 +656,7 @@ export default function ProductDetailPage() {
     addToCart(
       {
         ...product,
-        color: selectedColor,
+        color: availableColors.length > 0 && product.has_colors !== false ? selectedColor : undefined,
         poster_image: selectedImage || product.poster_image,
         price: bundle.unitPrice,
         original_price: singleUnitPrice,
@@ -1172,7 +1184,7 @@ export default function ProductDetailPage() {
             )}
 
             {/* Color / Variant Selector - Universal for all products */}
-            {availableColors.length > 0 ? (
+            {availableColors.length > 0 && product.has_colors !== false ? (
               <div className="mt-5">
                 <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-900 mb-2">
                   Color: <span className="font-semibold text-[#FF7A00]">{selectedColor}</span>
@@ -1215,7 +1227,7 @@ export default function ProductDetailPage() {
                   </p>
                 )}
               </div>
-            ) : product.color ? (
+            ) : product.color && product.has_colors !== false && product.color.toLowerCase() !== "standard" ? (
               <div className="mt-5">
                 <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-900 mb-1">
                   Color: <span className="font-semibold text-[#FF7A00]">{product.color}</span>
@@ -1372,7 +1384,7 @@ export default function ProductDetailPage() {
                             <span className="font-semibold text-gray-900">{product.material}</span>
                           </div>
                         )}
-                        {product.color && (
+                        {product.color && product.has_colors !== false && product.color.toLowerCase() !== "standard" && (
                           <div className="py-2 flex justify-between">
                             <span className="font-medium text-gray-500">Color</span>
                             <span className="font-semibold text-gray-900">{product.color}</span>

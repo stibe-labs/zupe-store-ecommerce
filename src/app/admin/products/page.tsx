@@ -210,6 +210,7 @@ export default function AdminProductsPage() {
 
   // Tab 3: Colors & Multi-Angle Photos
   const [formColors, setFormColors] = useState<ProductColorVariant[]>([]);
+  const [formHasColors, setFormHasColors] = useState<boolean>(true);
 
   // Tab 4: Media
   const [formImage, setFormImage] = useState("");
@@ -317,6 +318,7 @@ export default function AdminProductsPage() {
     setFormInStock(true);
     setFormBundleTiers(JSON.parse(JSON.stringify(DEFAULT_BUNDLE_TIERS)));
 
+    setFormHasColors(true);
     setFormColors([
       {
         name: "Standard",
@@ -389,7 +391,22 @@ export default function AdminProductsPage() {
       setFormBundleTiers(JSON.parse(JSON.stringify(DEFAULT_BUNDLE_TIERS)));
     }
 
-    // Deep clone colors
+    // Deep clone colors and evaluate whether colors are active
+    const hasColorsConfigured =
+      prod.has_colors !== undefined
+        ? Boolean(prod.has_colors)
+        : Boolean(
+            prod.colors &&
+              Array.isArray(prod.colors) &&
+              prod.colors.length > 0 &&
+              !(
+                prod.colors.length === 1 &&
+                prod.colors[0].name.toLowerCase() === "standard" &&
+                (!prod.colors[0].images || prod.colors[0].images.length <= 1)
+              )
+          );
+    setFormHasColors(hasColorsConfigured);
+
     setFormColors(
       prod.colors && Array.isArray(prod.colors) && prod.colors.length > 0
         ? JSON.parse(JSON.stringify(prod.colors))
@@ -706,8 +723,9 @@ export default function AdminProductsPage() {
           : formColors[0]?.images && formColors[0].images.length > 0
           ? formColors[0].images
           : [posterImg],
-      color: formColors[0]?.name || "",
-      colors: formColors,
+      has_colors: formHasColors,
+      color: formHasColors ? (formColors[0]?.name || "") : "",
+      colors: formHasColors ? formColors : [],
       volume: formVolume.trim(),
       material: formMaterial.trim(),
       features: formFeatures.filter(Boolean),
@@ -1020,7 +1038,7 @@ export default function AdminProductsPage() {
                           {/* Colors & Angles */}
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              {prod.colors && prod.colors.length > 0 ? (
+                              {prod.has_colors !== false && prod.colors && prod.colors.length > 0 ? (
                                 <>
                                   <div className="flex items-center -space-x-1.5">
                                     {prod.colors.slice(0, 4).map((c, i) => (
@@ -1040,7 +1058,7 @@ export default function AdminProductsPage() {
                                   </span>
                                 </>
                               ) : (
-                                <span className="text-xs text-slate-400 italic">Single photo</span>
+                                <span className="text-xs text-slate-400 italic">No color variants</span>
                               )}
                             </div>
                           </td>
@@ -1258,7 +1276,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <Palette className="w-3.5 h-3.5" />
-                <span>3. Colors & Photos ({formColors.length})</span>
+                <span>3. Colors & Photos {formHasColors ? `(${formColors.length})` : "(Off)"}</span>
               </button>
 
               <button
@@ -1938,39 +1956,115 @@ export default function AdminProductsPage() {
                  ======================================================== */}
               {activeTab === "colors" && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  {/* Master Enable/Disable Bar */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
                     <div>
                       <h4 className="font-bold text-slate-800 text-xs sm:text-sm">
-                        Product Color Swatches & Angle Galleries
+                        Product Color Options & Swatches
                       </h4>
-                      <p className="text-[11px] text-slate-500">
-                        Each color variant has its own thumbnail swatch, color dot, and independent multi-angle photo gallery.
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Enable if this product offers selectable color variants. Disable for single-style products with no color choices.
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={addColorVariant}
-                      className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-[#FF7A00] rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add Color Variant</span>
-                    </button>
-                  </div>
 
-                  {formColors.length === 0 ? (
-                    <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl">
-                      <Palette className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                      <p className="text-xs text-slate-500">No color variants added yet.</p>
+                    <div className="flex items-center gap-2.5 self-start sm:self-auto bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+                      <span className={`text-xs font-bold ${formHasColors ? "text-emerald-700" : "text-slate-500"}`}>
+                        {formHasColors ? "Color Options Enabled" : "Colors Disabled"}
+                      </span>
                       <button
                         type="button"
-                        onClick={addColorVariant}
-                        className="mt-3 px-3 py-1.5 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-lg text-xs font-semibold shadow-sm shadow-orange-500/20"
+                        role="switch"
+                        aria-checked={formHasColors}
+                        onClick={() => {
+                          setFormHasColors((prev) => {
+                            const next = !prev;
+                            if (next && formColors.length === 0) {
+                              setFormColors([
+                                {
+                                  name: "Standard",
+                                  colorHex: "#3B82F6",
+                                  image: formImage || "",
+                                  images: formImage ? [formImage] : [],
+                                },
+                              ]);
+                            }
+                            return next;
+                          });
+                        }}
+                        className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          formHasColors ? "bg-emerald-500" : "bg-slate-300"
+                        }`}
                       >
-                        Add First Color
+                        <span
+                          className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                            formHasColors ? "translate-x-5" : "translate-x-0"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  {!formHasColors ? (
+                    <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/60">
+                      <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto mb-2.5 text-slate-400">
+                        <Palette className="w-6 h-6 text-slate-400" />
+                      </div>
+                      <h5 className="text-xs sm:text-sm font-bold text-slate-700">Color Options are Disabled</h5>
+                      <p className="text-[11px] text-slate-500 max-w-sm mx-auto mt-1 leading-relaxed">
+                        This product is sold as a single style. No color selector, &ldquo;Color: Standard&rdquo; text, or swatch buttons will appear on the live storefront.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormHasColors(true);
+                          if (formColors.length === 0) {
+                            setFormColors([
+                              {
+                                name: "Standard",
+                                colorHex: "#3B82F6",
+                                image: formImage || "",
+                                images: formImage ? [formImage] : [],
+                              },
+                            ]);
+                          }
+                        }}
+                        className="mt-3.5 px-3.5 py-1.5 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
+                      >
+                        Enable Color Variants
                       </button>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-[11px] text-slate-500">
+                            Each color variant has its own thumbnail swatch, color dot, and independent multi-angle photo gallery.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={addColorVariant}
+                          className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-[#FF7A00] rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add Color Variant</span>
+                        </button>
+                      </div>
+
+                      {formColors.length === 0 ? (
+                        <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl">
+                          <Palette className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                          <p className="text-xs text-slate-500">No color variants added yet.</p>
+                          <button
+                            type="button"
+                            onClick={addColorVariant}
+                            className="mt-3 px-3 py-1.5 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-lg text-xs font-semibold shadow-sm shadow-orange-500/20"
+                          >
+                            Add First Color
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
                       {formColors.map((colorItem, cIdx) => (
                         <div
                           key={cIdx}
@@ -2168,8 +2262,10 @@ export default function AdminProductsPage() {
                       ))}
                     </div>
                   )}
-                </div>
+                </>
               )}
+            </div>
+          )}
 
               {/* ========================================================
                   TAB 4: POSTER & GALLERY (WITH UPLOAD & PREVIEWS)
