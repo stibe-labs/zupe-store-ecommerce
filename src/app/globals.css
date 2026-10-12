@@ -342,5 +342,93 @@ body[style*="overflow: hidden"] {
   -webkit-overflow-scrolling: touch;
 }
 
+/* ─── Trust Badges Flowing Wave Animation (Orange Low-Opacity Flow) ─── */
+@keyframes trustCardFlow {
+  0%, 100% {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    transform: translateY(0);
+  }
+  6%, 20% {
+    background-color: rgba(255, 122, 0, 0.09);
+    border-color: rgba(255, 122, 0, 0.45);
+    box-shadow: 0 4px 14px -2px rgba(255, 122, 0, 0.22);
+    transform: translateY(-2px);
+  }
+  28% {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    transform: translateY(0);
+  }
+}
+
+@keyframes trustIconFlow {
+  0%, 100% {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    transform: scale(1);
+  }
+  6%, 20% {
+    background-color: #FF7A00;
+    color: #ffffff;
+    transform: scale(1.08);
+    box-shadow: 0 2px 8px rgba(255, 122, 0, 0.35);
+  }
+  28% {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    transform: scale(1);
+  }
+}
+
+.trust-flow-card {
+  will-change: transform, background-color, border-color, box-shadow;
+}
+
+.trust-flow-icon {
+  will-change: transform, background-color, color;
+}
+
+.trust-flow-card-0 {
+  animation: trustCardFlow 3.6s infinite 0s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.trust-flow-card-1 {
+  animation: trustCardFlow 3.6s infinite 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.trust-flow-card-2 {
+  animation: trustCardFlow 3.6s infinite 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.trust-flow-card-3 {
+  animation: trustCardFlow 3.6s infinite 2.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.trust-flow-icon-0 {
+  animation: trustIconFlow 3.6s infinite 0s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.trust-flow-icon-1 {
+  animation: trustIconFlow 3.6s infinite 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.trust-flow-icon-2 {
+  animation: trustIconFlow 3.6s infinite 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.trust-flow-icon-3 {
+  animation: trustIconFlow 3.6s infinite 2.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.trust-flow-card:hover {
+  background-color: rgba(255, 122, 0, 0.12) !important;
+  border-color: rgba(255, 122, 0, 0.5) !important;
+  box-shadow: 0 4px 14px -2px rgba(255, 122, 0, 0.25) !important;
+  transform: translateY(-2px) !important;
+}
+
+.trust-flow-card:hover .trust-flow-icon {
+  background-color: #FF7A00 !important;
+  color: #ffffff !important;
+  transform: scale(1.08) !important;
+}
+
 
 

@@ -27,6 +27,7 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
+  Banknote,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -1230,6 +1231,52 @@ export default function ProductDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Trust Badges: 100% Secure, Free Shipping, Easy Returns, Cash on Delivery */}
+            <div className="mt-4 sm:mt-5 grid grid-cols-4 gap-2 sm:gap-2.5">
+              {[
+                {
+                  icon: ShieldCheck,
+                  title: "100% Secure",
+                  subtitle: "SSL Protected",
+                },
+                {
+                  icon: Truck,
+                  title: "Free Shipping",
+                  subtitle: "On All Orders",
+                },
+                {
+                  icon: RotateCcw,
+                  title: "Easy Returns",
+                  subtitle: "7 Days Window",
+                },
+                {
+                  icon: Banknote,
+                  title: "Cash on Delivery",
+                  subtitle: "COD Available",
+                },
+              ].map((badge, idx) => {
+                const IconComponent = badge.icon;
+                return (
+                  <div
+                    key={idx}
+                    className={`trust-flow-card trust-flow-card-${idx} relative flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl border border-gray-200/80 bg-white text-center select-none cursor-default shadow-2xs transition-all duration-300`}
+                  >
+                    <div
+                      className={`trust-flow-icon trust-flow-icon-${idx} w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center mb-1.5 bg-gray-100 text-gray-700 transition-all duration-300`}
+                    >
+                      <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
+                    </div>
+                    <span className="text-[10px] sm:text-[11.5px] font-bold text-gray-900 leading-tight">
+                      {badge.title}
+                    </span>
+                    <span className="text-[8px] sm:text-[9.5px] text-gray-500 font-medium leading-tight mt-0.5">
+                      {badge.subtitle}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
 
             {/* Color / Variant Selector - Universal for all products */}
             {availableColors.length > 0 && product.has_colors !== false ? (
