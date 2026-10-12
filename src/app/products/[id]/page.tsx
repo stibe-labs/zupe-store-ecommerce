@@ -940,9 +940,9 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* Thumbnail Gallery Carousel */}
+            {/* Thumbnail Gallery Carousel (Desktop only, hidden on mobile view) */}
             {gallery.length > 1 && (
-              <div className="mt-3 flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none select-none">
+              <div className="mt-3 hidden sm:flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none select-none">
                 {gallery.map((img, idx) => {
                   const isActive = safeActiveIndex === idx;
                   const isVideo = idx === 5 && isRippleLamp;
@@ -1338,22 +1338,6 @@ export default function ProductDetailPage() {
             {/* PIN Code Delivery Availability Checker & Animated Timeline */}
             <DeliveryEstimator businessDays={5} />
 
-            {/* "Why You'll Love This ❤️" Card */}
-            <div className="mt-5 p-4 sm:p-5 rounded-[20px] bg-[#F3F4F6] border border-gray-100">
-              <h3 className="text-[14px] sm:text-[15px] font-bold text-gray-900 mb-3 flex items-center gap-1.5">
-                <span>Why You'll Love This</span>
-                <span>❤️</span>
-              </h3>
-              <ul className="space-y-2 text-[13px] text-gray-700 leading-relaxed font-normal">
-                {productHighlights.map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-2.5">
-                    <span className="text-base select-none">{item.icon}</span>
-                    <span>{item.text}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
             {/* ========================================================
                 COLLAPSIBLE ACCORDIONS (DYNAMIC SPECIFICATIONS)
                ======================================================== */}
@@ -1624,6 +1608,22 @@ export default function ProductDetailPage() {
                   )}
                 </AnimatePresence>
               </div>
+            </div>
+
+            {/* "Why You'll Love This ❤️" Card (Repositioned after accordions before You May Also Like) */}
+            <div className="mt-6 p-4 sm:p-5 rounded-[20px] bg-[#F3F4F6] border border-gray-100">
+              <h3 className="text-[14px] sm:text-[15px] font-bold text-gray-900 mb-3 flex items-center gap-1.5">
+                <span>Why You'll Love This</span>
+                <span>❤️</span>
+              </h3>
+              <ul className="space-y-2 text-[13px] text-gray-700 leading-relaxed font-normal">
+                {productHighlights.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5">
+                    <span className="text-base select-none">{item.icon}</span>
+                    <span>{item.text}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
