@@ -21,6 +21,14 @@ export interface ProductColorVariant {
   images?: string[];
 }
 
+export interface ProductOverviewBlock {
+  id: string;
+  heading?: string;
+  details?: string;
+  media_url?: string;
+  media_caption?: string;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -48,6 +56,7 @@ export interface Product {
   sold_count?: string;
   has_colors?: boolean;
   colors?: ProductColorVariant[];
+  overview_blocks?: ProductOverviewBlock[];
   features?: string[];
   specifications?: Record<string, string>;
   whats_in_box?: string[];

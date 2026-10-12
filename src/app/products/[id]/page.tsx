@@ -1355,43 +1355,71 @@ export default function ProductDetailPage() {
             {/* ========================================================
                 COLLAPSIBLE ACCORDIONS (DYNAMIC SPECIFICATIONS)
                ======================================================== */}
-            <div className="mt-6 space-y-2.5 border-t border-gray-100 pt-5">
-              {/* 1. Product Details */}
-              <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden shadow-xs">
-                <button
-                  onClick={() => toggleAccordion("details")}
-                  className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <SquarePen className="w-5 h-5 text-gray-700 stroke-[1.8]" />
-                    <span className="font-bold text-[14px] sm:text-[15px] text-gray-900">
-                      Product Details & Overview
-                    </span>
-                  </div>
-                  <ChevronDown
-                    className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${
-                      openAccordions.details ? "rotate-180 text-gray-800" : ""
-                    }`}
-                  />
-                </button>
-                <AnimatePresence>
-                  {openAccordions.details && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="px-4 pb-4 pt-1 text-[13px] text-gray-600 leading-relaxed space-y-2 border-t border-gray-50"
-                    >
-                      <p>{product.description}</p>
-                      {product.tagline && (
-                        <p className="font-semibold text-gray-800 italic">
-                          "{product.tagline}"
-                        </p>
+            {/* ========================================================
+                PRODUCT DETAILS & OVERVIEW (OPEN VISUAL STORY & GIF SHOWCASE)
+               ======================================================== */}
+            {product.overview_blocks && product.overview_blocks.length > 0 ? (
+              <div className="mt-8 pt-6 border-t border-gray-100 space-y-7">
+                {product.overview_blocks.map((block, bIdx) => {
+                  const hasHeading = Boolean(block.heading && block.heading.trim());
+                  const hasDetails = Boolean(block.details && block.details.trim());
+                  const hasMedia = Boolean(block.media_url && block.media_url.trim());
+
+                  if (!hasHeading && !hasDetails && !hasMedia) return null;
+
+                  return (
+                    <div key={block.id || bIdx} className="space-y-3.5">
+                      {hasHeading && (
+                        <h2 className="text-[17px] sm:text-[19px] font-display font-bold text-gray-900 leading-snug tracking-tight">
+                          {block.heading}
+                        </h2>
                       )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+
+                      {hasDetails && (
+                        <div className="text-[13px] sm:text-[14px] text-gray-700 leading-relaxed whitespace-pre-line font-normal space-y-1">
+                          {block.details}
+                        </div>
+                      )}
+
+                      {hasMedia && (
+                        <div className="relative w-full rounded-2xl overflow-hidden bg-gray-50 border border-gray-100/90 shadow-2xs">
+                          <img
+                            src={block.media_url}
+                            alt={block.heading || `${product.name} visual story ${bIdx + 1}`}
+                            className="w-full h-auto object-cover rounded-2xl"
+                            loading="lazy"
+                          />
+                          {block.media_caption && (
+                            <p className="text-[11px] text-gray-500 italic text-center py-2 px-3 bg-gray-50/70 border-t border-gray-100">
+                              {block.media_caption}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
+            ) : product.description ? (
+              <div className="mt-8 pt-6 border-t border-gray-100 space-y-3">
+                <h2 className="text-[16px] sm:text-[18px] font-display font-bold text-gray-900 leading-snug">
+                  Product Details & Overview
+                </h2>
+                <div className="text-[13px] sm:text-[14px] text-gray-700 leading-relaxed whitespace-pre-line">
+                  {product.description}
+                </div>
+                {product.tagline && (
+                  <p className="font-semibold text-gray-800 italic text-[13px]">
+                    &ldquo;{product.tagline}&rdquo;
+                  </p>
+                )}
+              </div>
+            ) : null}
+
+            {/* ========================================================
+                COLLAPSIBLE ACCORDIONS (SPECIFICATIONS, WHAT'S IN THE BOX, ETC.)
+               ======================================================== */}
+            <div className="mt-6 space-y-2.5 border-t border-gray-100 pt-5">
 
               {/* 2. Specifications */}
               <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden shadow-xs">

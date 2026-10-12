@@ -30,8 +30,11 @@ import {
   Upload,
   ChevronLeft,
   ChevronRight,
+  FileText,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
-import { Product, ProductColorVariant, BuyMoreSaveMoreConfig, BuyMoreSaveMoreTier } from "@/types/product";
+import { Product, ProductColorVariant, BuyMoreSaveMoreConfig, BuyMoreSaveMoreTier, ProductOverviewBlock } from "@/types/product";
 import { DEFAULT_PRODUCTS, getSubcategoriesForCategory } from "@/data/zupeProducts";
 
 // Exact Category & Subcategory taxonomy from official catalog structure
@@ -95,6 +98,7 @@ const FORM_TABS_LIST = [
   "pricing",
   "colors",
   "media",
+  "overview",
   "highlights",
   "specs",
 ] as const;
@@ -144,9 +148,7 @@ export default function AdminProductsPage() {
   }, [showModal, deleteConfirmProduct]);
 
   // Tab state in Edit/Add Modal
-  const [activeTab, setActiveTab] = useState<
-    "basic" | "pricing" | "colors" | "media" | "highlights" | "specs"
-  >("basic");
+  const [activeTab, setActiveTab] = useState<FormTabKey>("basic");
 
   // Form states:
   // Tab 1: Basic
@@ -217,7 +219,10 @@ export default function AdminProductsPage() {
   const [formGalleryImages, setFormGalleryImages] = useState<string[]>([]);
   const [newGalleryInput, setNewGalleryInput] = useState("");
 
-  // Tab 5: Highlights ("Why You'll Love This ❤️")
+  // Tab 5: Product Details & Overview (Dynamic Long-Form Visual Story Blocks)
+  const [formOverviewBlocks, setFormOverviewBlocks] = useState<ProductOverviewBlock[]>([]);
+
+  // Tab 6: Highlights ("Why You'll Love This ❤️")
   const [formFeatures, setFormFeatures] = useState<string[]>([]);
   const [newFeatureInput, setNewFeatureInput] = useState("");
 
@@ -331,6 +336,7 @@ export default function AdminProductsPage() {
     setFormImage("");
     setFormGalleryImages([]);
     setNewGalleryInput("");
+    setFormOverviewBlocks([]);
 
     setFormFeatures([
       "Premium quality design and build materials",
@@ -450,6 +456,21 @@ export default function AdminProductsPage() {
     );
     setNewGalleryInput("");
 
+    if (prod.overview_blocks && Array.isArray(prod.overview_blocks) && prod.overview_blocks.length > 0) {
+      setFormOverviewBlocks(JSON.parse(JSON.stringify(prod.overview_blocks)));
+    } else if (prod.description && prod.description.trim()) {
+      setFormOverviewBlocks([
+        {
+          id: `block-${Date.now()}`,
+          heading: prod.name ? `${prod.name} – Overview` : "Product Details & Overview",
+          details: prod.description.trim(),
+          media_url: posterImg || "",
+        },
+      ]);
+    } else {
+      setFormOverviewBlocks([]);
+    }
+
     setFormFeatures(
       prod.features && Array.isArray(prod.features) ? [...prod.features] : []
     );
@@ -514,6 +535,43 @@ export default function AdminProductsPage() {
     ]);
   };
 
+  // Tab 5: Overview Blocks manipulation helpers
+  const addOverviewBlock = (mediaOnly = false) => {
+    const newBlock: ProductOverviewBlock = {
+      id: `block-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      heading: mediaOnly ? "" : "",
+      details: mediaOnly ? "" : "",
+      media_url: "",
+      media_caption: "",
+    };
+    setFormOverviewBlocks((prev) => [...prev, newBlock]);
+  };
+
+  const updateOverviewBlock = (id: string, field: keyof ProductOverviewBlock, val: string) => {
+    setFormOverviewBlocks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, [field]: val } : b))
+    );
+  };
+
+  const removeOverviewBlock = (id: string) => {
+    setFormOverviewBlocks((prev) => prev.filter((b) => b.id !== id));
+  };
+
+  const moveOverviewBlock = (id: string, direction: "up" | "down") => {
+    setFormOverviewBlocks((prev) => {
+      const idx = prev.findIndex((b) => b.id === id);
+      if (idx === -1) return prev;
+      if (direction === "up" && idx === 0) return prev;
+      if (direction === "down" && idx === prev.length - 1) return prev;
+      const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+      const updated = [...prev];
+      const temp = updated[idx];
+      updated[idx] = updated[targetIdx];
+      updated[targetIdx] = temp;
+      return updated;
+    });
+  };
+
   // Step-by-Step wizard navigation helpers
   const handleNextTab = (e?: React.MouseEvent) => {
     if (e) {
@@ -542,6 +600,8 @@ export default function AdminProductsPage() {
     } else if (activeTab === "colors") {
       setActiveTab("media");
     } else if (activeTab === "media") {
+      setActiveTab("overview");
+    } else if (activeTab === "overview") {
       setActiveTab("highlights");
     } else if (activeTab === "highlights") {
       setActiveTab("specs");
@@ -771,6 +831,9 @@ export default function AdminProductsPage() {
       has_colors: formHasColors,
       color: formHasColors ? (formColors[0]?.name || "") : "",
       colors: cleanColors,
+      overview_blocks: formOverviewBlocks.filter(
+        (b) => b.heading?.trim() || b.details?.trim() || b.media_url?.trim()
+      ),
       volume: formVolume.trim(),
       material: formMaterial.trim(),
       features: formFeatures.filter(Boolean),
@@ -1354,6 +1417,19 @@ export default function AdminProductsPage() {
 
               <button
                 type="button"
+                onClick={() => setActiveTab("overview")}
+                className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                  activeTab === "overview"
+                    ? "border-[#FF7A00] text-[#FF7A00]"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>5. Details & Overview ({formOverviewBlocks.length})</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setActiveTab("highlights")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   activeTab === "highlights"
@@ -1362,7 +1438,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>5. Highlights ({formFeatures.length})</span>
+                <span>6. Highlights ({formFeatures.length})</span>
               </button>
 
               <button
@@ -1375,7 +1451,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <ListPlus className="w-3.5 h-3.5" />
-                <span>6. Specs & Box</span>
+                <span>7. Specs & Box</span>
               </button>
             </div>
 
@@ -2463,7 +2539,341 @@ export default function AdminProductsPage() {
               )}
 
               {/* ========================================================
-                  TAB 5: KEY HIGHLIGHTS (FULLY EDITABLE & DELETABLE INDIVIDUAL POINTS)
+                  TAB 5: PRODUCT DETAILS & OVERVIEW (OPEN VISUAL STORY & GIF SHOWCASE)
+                 ======================================================== */}
+              {activeTab === "overview" && (
+                <div className="space-y-5">
+                  {/* Master Header Card */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="p-1 rounded-md bg-orange-100 text-[#FF7A00]">
+                          <FileText className="w-3.5 h-3.5" />
+                        </span>
+                        <h4 className="font-bold text-slate-800 text-xs sm:text-sm">
+                          Product Details & Overview (Open Landing Story)
+                        </h4>
+                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-orange-50 text-[#FF7A00] border border-orange-200">
+                          {formOverviewBlocks.length} {formOverviewBlocks.length === 1 ? "Section" : "Sections"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1 max-w-xl leading-relaxed">
+                        Create an open, high-converting product showcase. Add customized headings, detailed text copy, and demonstration photos or animated GIFs. You can also add standalone photos or GIFs without any headings or text.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => addOverviewBlock(false)}
+                        className="px-3 py-1.5 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Story Section</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addOverviewBlock(true)}
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                      >
+                        <ImageIcon className="w-3.5 h-3.5" />
+                        <span>Add Photo / GIF</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Empty State */}
+                  {formOverviewBlocks.length === 0 ? (
+                    <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                      <div className="w-12 h-12 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-3 border border-orange-100">
+                        <FileText className="w-6 h-6" />
+                      </div>
+                      <h5 className="text-xs sm:text-sm font-bold text-slate-800">
+                        No Visual Story Sections Added Yet
+                      </h5>
+                      <p className="text-[11px] text-slate-500 max-w-md mx-auto mt-1 leading-relaxed">
+                        Engage shoppers with a long-form product presentation: customized headings, detailed product copy, and photos or animated GIFs in sequence.
+                      </p>
+                      <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => addOverviewBlock(false)}
+                          className="px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>Add First Story Section</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => addOverviewBlock(true)}
+                          className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                        >
+                          <ImageIcon className="w-4 h-4 text-slate-500" />
+                          <span>Add Standalone Photo / GIF</span>
+                        </button>
+                        {formDescription.trim() && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormOverviewBlocks([
+                                {
+                                  id: `block-${Date.now()}`,
+                                  heading: formName ? `${formName} – Overview` : "Product Overview",
+                                  details: formDescription.trim(),
+                                  media_url: formImage || "",
+                                },
+                              ]);
+                            }}
+                            className="px-3.5 py-2 bg-orange-50 hover:bg-orange-100 text-[#FF7A00] rounded-xl text-xs font-semibold transition-colors"
+                          >
+                            Convert Basic Description to Story
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {formOverviewBlocks.map((block, idx) => (
+                        <div
+                          key={block.id || idx}
+                          className="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-4"
+                        >
+                          {/* Card Top Header */}
+                          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-slate-900 text-white text-[11px] font-black flex items-center justify-center">
+                                {idx + 1}
+                              </span>
+                              <span className="text-xs font-bold text-slate-800">
+                                Section #{idx + 1}
+                              </span>
+                              {block.heading && (
+                                <span className="text-[11px] font-semibold text-slate-500 truncate max-w-[200px] sm:max-w-xs">
+                                  — {block.heading}
+                                </span>
+                              )}
+                              {!block.heading && !block.details && block.media_url && (
+                                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 uppercase">
+                                  Photo / GIF Only
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                              {/* Reorder Buttons */}
+                              <button
+                                type="button"
+                                disabled={idx === 0}
+                                onClick={() => moveOverviewBlock(block.id, "up")}
+                                title="Move section up"
+                                className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-30 rounded-lg hover:bg-slate-100 transition-colors"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={idx === formOverviewBlocks.length - 1}
+                                onClick={() => moveOverviewBlock(block.id, "down")}
+                                title="Move section down"
+                                className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-30 rounded-lg hover:bg-slate-100 transition-colors"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeOverviewBlock(block.id)}
+                                title="Delete this section"
+                                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors ml-1"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* 1. Customized Heading (Optional) */}
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                              Customized Heading <span className="text-slate-400 font-normal">(Optional)</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={block.heading || ""}
+                              onChange={(e) =>
+                                updateOverviewBlock(block.id, "heading", e.target.value)
+                              }
+                              placeholder="e.g. Double-Ended Spray Fan – Portable Mist Cooling Fan for Instant Refreshment"
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                            />
+                            <p className="text-[10px] text-slate-400 mt-1">
+                              Bold title displayed prominently above the description details for this section.
+                            </p>
+                          </div>
+
+                          {/* 2. Details & Description (Optional) */}
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                              Details & Description <span className="text-slate-400 font-normal">(Optional)</span>
+                            </label>
+                            <textarea
+                              rows={3}
+                              value={block.details || ""}
+                              onChange={(e) =>
+                                updateOverviewBlock(block.id, "details", e.target.value)
+                              }
+                              placeholder="Beat the heat with this versatile spray fan... or bullet points like:&#10;• Mist + Fan Combo – Double cooling effect&#10;• Adjustable Spray – Control mist intensity"
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] leading-relaxed"
+                            />
+                            <p className="text-[10px] text-slate-400 mt-0.5">
+                              Enter paragraphs or bullet points. Linebreaks and bullet points are preserved on the storefront.
+                            </p>
+                          </div>
+
+                          {/* 3. Photo or Animated GIF Showcase (Optional) */}
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                              Photo or Animated GIF Showcase <span className="text-slate-400 font-normal">(Optional)</span>
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={block.media_url || ""}
+                                onChange={(e) =>
+                                  updateOverviewBlock(block.id, "media_url", e.target.value)
+                                }
+                                placeholder="Paste image or GIF URL (e.g. https://... or /products/fan.gif)"
+                                className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                              />
+                              <label
+                                className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 shrink-0"
+                                title="Upload Photo or GIF File from Computer"
+                              >
+                                <Upload className="w-3.5 h-3.5" />
+                                <span>Upload File</span>
+                                <input
+                                  type="file"
+                                  accept="image/*,video/*,.gif"
+                                  className="hidden"
+                                  onChange={(e) =>
+                                    handleFileUpload(e, (dataUrl) =>
+                                      updateOverviewBlock(block.id, "media_url", dataUrl)
+                                    )
+                                  }
+                                />
+                              </label>
+                            </div>
+
+                            {/* Media Preview Thumbnail / Container */}
+                            {block.media_url && (
+                              <div className="mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="w-16 h-16 rounded-lg overflow-hidden border border-slate-200 bg-white shrink-0 shadow-2xs">
+                                    <img
+                                      src={block.media_url}
+                                      alt="Preview"
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        (e.target as any).src =
+                                          "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
+                                      <span className="text-xs font-bold text-slate-800">
+                                        Photo / GIF Active
+                                      </span>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 truncate max-w-sm mt-0.5">
+                                      {block.media_url.substring(0, 60)}...
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => updateOverviewBlock(block.id, "media_url", "")}
+                                  className="px-2.5 py-1 text-xs text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors font-medium shrink-0"
+                                >
+                                  Remove Media
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Add Buttons Row */}
+                      <div className="flex items-center gap-2 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => addOverviewBlock(false)}
+                          className="px-4 py-2 bg-orange-50 hover:bg-orange-100 text-[#FF7A00] rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>+ Add Another Story Section</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => addOverviewBlock(true)}
+                          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                        >
+                          <ImageIcon className="w-3.5 h-3.5" />
+                          <span>+ Add Additional Photo or GIF</span>
+                        </button>
+                      </div>
+
+                      {/* Live Storefront Preview Card */}
+                      <div className="mt-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-orange-50/20 border border-slate-200/90 space-y-4">
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-[#FF7A00] animate-pulse" />
+                            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                              Live Storefront Story Preview
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-medium">
+                            How customers will experience this on the product page
+                          </span>
+                        </div>
+
+                        <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200/80 shadow-2xs space-y-5">
+                          {formOverviewBlocks.map((block, idx) => (
+                            <div key={idx} className="space-y-2.5">
+                              {block.heading && (
+                                <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
+                                  {block.heading}
+                                </h3>
+                              )}
+                              {block.details && (
+                                <div className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">
+                                  {block.details}
+                                </div>
+                              )}
+                              {block.media_url && (
+                                <div className="rounded-xl overflow-hidden border border-slate-200/80 bg-slate-50">
+                                  <img
+                                    src={block.media_url}
+                                    alt={block.heading || "Section Media"}
+                                    className="w-full max-h-72 object-contain mx-auto"
+                                    onError={(e) => {
+                                      (e.target as any).src =
+                                        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                                    }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ========================================================
+                  TAB 6: KEY HIGHLIGHTS (FULLY EDITABLE & DELETABLE INDIVIDUAL POINTS)
                  ======================================================== */}
               {activeTab === "highlights" && (
                 <div className="space-y-4">
@@ -2769,6 +3179,7 @@ export default function AdminProductsPage() {
                   {activeTab === "pricing" && "Pricing & Stock"}
                   {activeTab === "colors" && "Colors & Multi-Angle Photos"}
                   {activeTab === "media" && "Poster & Gallery"}
+                  {activeTab === "overview" && "Product Details & Overview"}
                   {activeTab === "highlights" && "Highlights"}
                   {activeTab === "specs" && "Specs & Box"}
                 </span>

@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS products (
     color TEXT,
     colors TEXT,
     has_colors INTEGER DEFAULT 0,
+    overview_blocks TEXT,
     material TEXT,
     badge TEXT,
     cost_price REAL DEFAULT 0,

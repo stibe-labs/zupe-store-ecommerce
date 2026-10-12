@@ -37,6 +37,7 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
 
   const parsedImages = parseJsonSafe(p.images, defaultFound?.images || []);
   const parsedColors = parseJsonSafe(p.colors, defaultFound?.colors || []);
+  const parsedOverviewBlocks = parseJsonSafe(p.overview_blocks, defaultFound?.overview_blocks || undefined);
   const parsedFeatures = parseJsonSafe(p.features, defaultFound?.features || undefined);
   const parsedSpecs = parseJsonSafe(p.specifications, defaultFound?.specifications || undefined);
   const parsedBox = parseJsonSafe(p.whats_in_box, defaultFound?.whats_in_box || undefined);
@@ -142,6 +143,7 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
     rating: realRating,
     review_count: realReviewCount,
     sold_count: p.sold_count ?? defaultFound?.sold_count ?? "1,250+ verified orders",
+    overview_blocks: Array.isArray(parsedOverviewBlocks) ? parsedOverviewBlocks : undefined,
     features: parsedFeatures,
     specifications: parsedSpecs,
     whats_in_box: parsedBox,
@@ -252,6 +254,7 @@ export async function POST(req: NextRequest) {
       color,
       has_colors,
       colors,
+      overview_blocks,
       material,
       badge,
       in_stock,
@@ -390,6 +393,7 @@ export async function POST(req: NextRequest) {
       has_colors: hasColorsVal,
       color: hasColorsVal ? (color !== undefined ? color : existingProd?.color || "") : (color || existingProd?.color || ""),
       colors: cleanRawColors.length > 0 ? cleanRawColors : (existingProd?.colors || []),
+      overview_blocks: overview_blocks !== undefined ? overview_blocks : existingProd?.overview_blocks || undefined,
       material: material !== undefined ? material : existingProd?.material || "",
       badge: badge !== undefined ? badge : existingProd?.badge || "",
       in_stock: inStockNum,
@@ -421,6 +425,7 @@ export async function POST(req: NextRequest) {
 
       const imagesJson = JSON.stringify(newProd.images || []);
       const colorsJson = JSON.stringify(newProd.colors || []);
+      const overviewBlocksJson = newProd.overview_blocks ? JSON.stringify(newProd.overview_blocks) : null;
       const featuresJson = newProd.features ? JSON.stringify(newProd.features) : null;
       const specsJson = newProd.specifications ? JSON.stringify(newProd.specifications) : null;
       const boxJson = newProd.whats_in_box ? JSON.stringify(newProd.whats_in_box) : null;
@@ -431,7 +436,7 @@ export async function POST(req: NextRequest) {
           `UPDATE products 
            SET slug = ?, name = ?, subtitle = ?, category = ?, subcategory = ?, tagline = ?, description = ?,
                price = ?, mrp = ?, offer_price = ?, cost_price = ?, stock_count = ?, volume = ?,
-               poster_image = ?, images = ?, color = ?, colors = ?, has_colors = ?, material = ?, badge = ?,
+               poster_image = ?, images = ?, color = ?, colors = ?, has_colors = ?, overview_blocks = ?, material = ?, badge = ?,
                in_stock = ?, rating = ?, review_count = ?, sold_count = ?, features = ?,
                specifications = ?, whats_in_box = ?, bundle_tiers = ?
            WHERE id = ?;`,
@@ -454,6 +459,7 @@ export async function POST(req: NextRequest) {
             newProd.color ?? null,
             colorsJson,
             newProd.has_colors ? 1 : 0,
+            overviewBlocksJson,
             newProd.material ?? null,
             newProd.badge ?? null,
             newProd.in_stock,
@@ -472,11 +478,11 @@ export async function POST(req: NextRequest) {
           `INSERT INTO products (
              id, slug, name, subtitle, category, subcategory, tagline, description,
              price, mrp, offer_price, cost_price, stock_count, volume,
-             poster_image, images, color, colors, has_colors, material, badge,
+             poster_image, images, color, colors, has_colors, overview_blocks, material, badge,
              in_stock, rating, review_count, sold_count, features,
              specifications, whats_in_box, bundle_tiers
            )
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
           [
             newProd.id,
             newProd.slug,
@@ -497,6 +503,7 @@ export async function POST(req: NextRequest) {
             newProd.color ?? null,
             colorsJson,
             newProd.has_colors ? 1 : 0,
+            overviewBlocksJson,
             newProd.material ?? null,
             newProd.badge ?? null,
             newProd.in_stock,
