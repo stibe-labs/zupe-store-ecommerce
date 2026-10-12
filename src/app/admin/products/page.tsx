@@ -407,27 +407,46 @@ export default function AdminProductsPage() {
           );
     setFormHasColors(hasColorsConfigured);
 
+    const isIron = prod.id === "mini-portable-steam-iron" || prod.slug?.includes("iron");
+    const posterImg = prod.poster_image?.trim() || "";
+    const cleanGalleryImages = (Array.isArray(prod.images) ? prod.images : []).filter((img) => {
+      if (!isIron && typeof img === "string" && (img.includes("steam-iron") || img.includes("/products/iron/"))) {
+        return false;
+      }
+      return Boolean(img);
+    });
+
     setFormColors(
       prod.colors && Array.isArray(prod.colors) && prod.colors.length > 0
-        ? JSON.parse(JSON.stringify(prod.colors))
+        ? JSON.parse(JSON.stringify(prod.colors)).map((c: any) => {
+            if (!isIron && c && typeof c === "object") {
+              const cImgs = Array.isArray(c.images)
+                ? c.images.filter((img: string) => typeof img === "string" && !img.includes("steam-iron") && !img.includes("/products/iron/"))
+                : [];
+              return {
+                ...c,
+                images: cImgs.length > 0 ? cImgs : (posterImg ? [posterImg] : []),
+              };
+            }
+            return c;
+          })
         : [
             {
               name: prod.color || "Standard",
               colorHex: "#3B82F6",
-              image: prod.poster_image || "",
-              images:
-                prod.images && prod.images.length > 0
-                  ? prod.images
-                  : prod.poster_image
-                  ? [prod.poster_image]
-                  : [],
+              image: posterImg || "",
+              images: posterImg ? [posterImg] : [],
             },
           ]
     );
 
-    setFormImage(prod.poster_image || "");
+    setFormImage(posterImg);
     setFormGalleryImages(
-      prod.images && Array.isArray(prod.images) ? [...prod.images] : []
+      cleanGalleryImages.length > 0
+        ? cleanGalleryImages
+        : posterImg
+        ? [posterImg]
+        : []
     );
     setNewGalleryInput("");
 
@@ -700,6 +719,44 @@ export default function AdminProductsPage() {
       formColors[0]?.images?.[0] ||
       "";
 
+    const isIron =
+      editingProduct?.id === "mini-portable-steam-iron" ||
+      editingProduct?.slug?.includes("iron") ||
+      generatedSlug.includes("iron");
+
+    const cleanGallery = formGalleryImages.filter((img) => {
+      if (!isIron && typeof img === "string" && (img.includes("steam-iron") || img.includes("/products/iron/"))) {
+        return false;
+      }
+      return Boolean(img);
+    });
+
+    const finalImages =
+      cleanGallery.length > 0
+        ? cleanGallery
+        : !formHasColors
+        ? (posterImg ? [posterImg] : [])
+        : formColors[0]?.images && formColors[0].images.length > 0
+        ? formColors[0].images.filter((img: string) => (!isIron ? (!img.includes("steam-iron") && !img.includes("/products/iron/")) : true))
+        : posterImg
+        ? [posterImg]
+        : [];
+
+    const cleanColors = formHasColors
+      ? formColors.map((c: any) => {
+          if (!isIron && c && typeof c === "object") {
+            const cImgs = Array.isArray(c.images)
+              ? c.images.filter((img: string) => typeof img === "string" && !img.includes("steam-iron") && !img.includes("/products/iron/"))
+              : [];
+            return {
+              ...c,
+              images: cImgs.length > 0 ? cImgs : (posterImg ? [posterImg] : []),
+            };
+          }
+          return c;
+        })
+      : [];
+
     const payload = {
       ...(editingProduct ? { id: editingProduct.id } : {}),
       slug: generatedSlug,
@@ -717,15 +774,10 @@ export default function AdminProductsPage() {
       stock_count: stockNum,
       in_stock: formInStock ? 1 : 0,
       poster_image: posterImg,
-      images:
-        formGalleryImages.length > 0
-          ? formGalleryImages
-          : formColors[0]?.images && formColors[0].images.length > 0
-          ? formColors[0].images
-          : [posterImg],
+      images: finalImages,
       has_colors: formHasColors,
       color: formHasColors ? (formColors[0]?.name || "") : "",
-      colors: formHasColors ? formColors : [],
+      colors: cleanColors,
       volume: formVolume.trim(),
       material: formMaterial.trim(),
       features: formFeatures.filter(Boolean),

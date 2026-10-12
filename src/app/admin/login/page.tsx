@@ -7,7 +7,7 @@ export default function AdminLoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/?auth=admin");
+    router.replace("/signin?redirect=/admin&notice=Admin%20authentication%20required");
   }, [router]);
 
   return null;

@@ -19,7 +19,7 @@ interface AuthContextType {
   authModalNotice: string | null;
   openAuthModal: (mode?: "login" | "signup", notice?: string) => void;
   closeAuthModal: () => void;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; user?: UserSession; redirect?: string; error?: string }>;
   register: (name: string, email: string, password: string, otp: string) => Promise<{ success: boolean; error?: string }>;
   sendOtp: (email: string, name?: string) => Promise<{ success: boolean; message?: string; emailSent?: boolean; otp?: string; error?: string }>;
   logout: () => void;
@@ -127,12 +127,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("zp_user_session", JSON.stringify(data.user));
       closeAuthModal();
 
-      if (data.redirect || data.user?.role === "admin") {
-        window.location.href = data.redirect || "/admin";
-        return { success: true };
-      }
-
-      return { success: true };
+      return {
+        success: true,
+        user: data.user,
+        redirect: data.redirect || (data.user?.role === "admin" ? "/admin" : undefined),
+      };
     } catch (err: any) {
       return { success: false, error: err.message || "Network error" };
     }

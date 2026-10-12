@@ -17,10 +17,15 @@ function SignInContent() {
   const urlNotice = searchParams.get("notice") || searchParams.get("msg");
   const modeParam = searchParams.get("mode") === "signup" ? "signup" : "login";
 
-  // If already logged in, redirect immediately
+  // If already logged in, redirect immediately to appropriate portal
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
-      router.replace(redirectUrl);
+      if (user.role === "admin") {
+        const dest = (redirectUrl && redirectUrl.startsWith("/admin")) ? redirectUrl : "/admin";
+        window.location.href = dest;
+      } else {
+        router.replace(redirectUrl);
+      }
     }
   }, [isAuthenticated, authLoading, user, redirectUrl, router]);
 

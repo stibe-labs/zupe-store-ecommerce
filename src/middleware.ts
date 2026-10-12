@@ -25,23 +25,26 @@ export async function middleware(req: NextRequest) {
   // -- 1. Protect Admin Portal Pages (/admin, /admin/*) --
   if (pathname.startsWith("/admin")) {
     if (pathname === "/admin/login") {
-      url.pathname = "/";
-      url.searchParams.set("auth", "admin");
+      url.pathname = "/signin";
+      url.searchParams.set("redirect", "/admin");
+      url.searchParams.set("notice", "Admin authentication required");
       return applySecurityHeaders(NextResponse.redirect(url));
     }
 
     // Check for valid Admin Session Token
     const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
     if (!adminToken) {
-      url.pathname = "/";
-      url.searchParams.set("auth", "admin");
+      url.pathname = "/signin";
+      url.searchParams.set("redirect", pathname + (url.search ? url.search : ""));
+      url.searchParams.set("notice", "Admin authentication required");
       return applySecurityHeaders(NextResponse.redirect(url));
     }
 
     const session = await verifyAdminSessionToken(adminToken);
     if (!session.valid) {
-      url.pathname = "/";
-      url.searchParams.set("auth", "admin");
+      url.pathname = "/signin";
+      url.searchParams.set("redirect", pathname + (url.search ? url.search : ""));
+      url.searchParams.set("notice", "Admin session expired. Please sign in again.");
       const res = NextResponse.redirect(url);
       res.cookies.delete(ADMIN_COOKIE_NAME);
       return applySecurityHeaders(res);

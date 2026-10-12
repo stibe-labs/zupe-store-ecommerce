@@ -80,8 +80,42 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
         parsedColors.length > 0 &&
         !(parsedColors.length === 1 && parsedColors[0].name?.toLowerCase() === "standard");
 
+  const isIronProduct = p.id === "mini-portable-steam-iron" || p.slug?.includes("iron");
+  const posterImg = p.poster_image?.trim() || defaultFound?.poster_image?.trim() || "";
+
+  const cleanParsedImages = Array.isArray(parsedImages)
+    ? parsedImages.filter((img: string) => {
+        if (!isIronProduct && typeof img === "string" && (img.includes("steam-iron") || img.includes("/products/iron/"))) {
+          return false;
+        }
+        return Boolean(img);
+      })
+    : [];
+
+  const finalImages =
+    posterImg
+      ? [posterImg, ...cleanParsedImages.filter((img: string) => img !== posterImg)]
+      : cleanParsedImages.length > 0
+      ? cleanParsedImages
+      : (defaultFound?.images || []);
+
+  const cleanParsedColors = Array.isArray(parsedColors)
+    ? parsedColors.map((c: any) => {
+        if (!isIronProduct && c && typeof c === "object") {
+          const cImages = Array.isArray(c.images)
+            ? c.images.filter((img: string) => typeof img === "string" && !img.includes("steam-iron") && !img.includes("/products/iron/"))
+            : [];
+          return {
+            ...c,
+            images: cImages.length > 0 ? cImages : (posterImg ? [posterImg] : []),
+          };
+        }
+        return c;
+      })
+    : [];
+
   const finalColors = hasColorsVal
-    ? (Array.isArray(parsedColors) && parsedColors.length > 0 ? parsedColors : (defaultFound?.colors || []))
+    ? (cleanParsedColors.length > 0 ? cleanParsedColors : (defaultFound?.colors || []))
     : [];
 
     return {
@@ -101,8 +135,8 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
       cost_price: costNum,
       stock_count: finalStock,
       volume: p.volume ?? defaultFound?.volume ?? "",
-      poster_image: p.poster_image || defaultFound?.poster_image || "",
-      images: Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages : (defaultFound?.images || []),
+      poster_image: posterImg,
+      images: finalImages,
       has_colors: hasColorsVal,
       color: hasColorsVal ? (p.color ?? defaultFound?.color ?? "") : "",
       colors: finalColors,
@@ -291,6 +325,54 @@ export async function POST(req: NextRequest) {
       existingProd?.slug ||
       (name ? name.toLowerCase().replace(/[^a-z0-9]+/g, "-") : `prod-${Date.now()}`);
 
+    const isIron = prodId === "mini-portable-steam-iron" || prodSlug?.includes("iron");
+    const rawPoster =
+      poster_image ||
+      existingProd?.poster_image ||
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+
+    const rawImagesList = images !== undefined
+      ? (Array.isArray(images) ? images : [images])
+      : existingProd?.images || [];
+
+    const cleanRawImages = rawImagesList.filter((img: string) => {
+      if (!isIron && typeof img === "string" && (img.includes("steam-iron") || img.includes("/products/iron/"))) {
+        return false;
+      }
+      return Boolean(img);
+    });
+
+    const finalRawImages =
+      rawPoster
+        ? [rawPoster, ...cleanRawImages.filter((img: string) => img !== rawPoster)]
+        : cleanRawImages.length > 0
+        ? cleanRawImages
+        : [];
+
+    const rawColorsList = colors !== undefined
+      ? (Array.isArray(colors) ? colors : [colors])
+      : existingProd?.colors || [];
+
+    const cleanRawColors = rawColorsList.map((c: any) => {
+      if (!isIron && c && typeof c === "object") {
+        const cImgs = Array.isArray(c.images)
+          ? c.images.filter((img: string) => typeof img === "string" && !img.includes("steam-iron") && !img.includes("/products/iron/"))
+          : [];
+        return {
+          ...c,
+          images: cImgs.length > 0 ? cImgs : (rawPoster ? [rawPoster] : []),
+        };
+      }
+      return c;
+    });
+
+    const hasColorsVal =
+      has_colors !== undefined
+        ? Boolean(has_colors)
+        : existingProd?.has_colors !== undefined
+        ? Boolean(existingProd.has_colors)
+        : Array.isArray(colors) && colors.length > 0 && !(colors.length === 1 && colors[0].name?.toLowerCase() === "standard");
+
     const newProd: Product = {
       ...(existingProd || {}),
       id: prodId,
@@ -307,31 +389,11 @@ export async function POST(req: NextRequest) {
       cost_price: costNum,
       stock_count: stockNum,
       volume: volume !== undefined ? volume : existingProd?.volume || "",
-      poster_image:
-        poster_image ||
-        existingProd?.poster_image ||
-        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop",
-      images:
-        images !== undefined
-          ? Array.isArray(images)
-            ? images
-            : [images]
-          : existingProd?.images || [],
-      has_colors:
-        has_colors !== undefined
-          ? Boolean(has_colors)
-          : existingProd?.has_colors !== undefined
-          ? Boolean(existingProd.has_colors)
-          : Array.isArray(colors) && colors.length > 0 && !(colors.length === 1 && colors[0].name?.toLowerCase() === "standard"),
-      color: has_colors === false ? "" : color !== undefined ? color : existingProd?.color || "",
-      colors:
-        has_colors === false
-          ? []
-          : colors !== undefined
-          ? Array.isArray(colors)
-            ? colors
-            : [colors]
-          : existingProd?.colors || [],
+      poster_image: rawPoster,
+      images: finalRawImages,
+      has_colors: hasColorsVal,
+      color: hasColorsVal ? (color !== undefined ? color : existingProd?.color || "") : "",
+      colors: hasColorsVal ? cleanRawColors : [],
       material: material !== undefined ? material : existingProd?.material || "",
       badge: badge !== undefined ? badge : existingProd?.badge || "",
       in_stock: inStockNum,

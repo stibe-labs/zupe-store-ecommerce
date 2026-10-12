@@ -112,12 +112,22 @@ export default function ProductDetailPage() {
       ? found.colors!.find((c) => c.name.toLowerCase() === initialColor.toLowerCase()) || found.colors![0]
       : null;
 
+    const poster = found.poster_image?.trim();
+    const isIron = found.id === "mini-portable-steam-iron" || found.slug?.includes("iron");
+    const cleanImages = Array.isArray(found.images)
+      ? found.images.filter((img) => {
+          if (!isIron && typeof img === "string" && (img.includes("steam-iron") || img.includes("/products/iron/"))) {
+            return false;
+          }
+          return Boolean(img);
+        })
+      : [];
+
     const defaultImg =
-      firstColorObj?.images?.[0] ||
-      firstColorObj?.image ||
-      (found.images && Array.isArray(found.images) && found.images.length > 0
-        ? found.images[0]
-        : found.poster_image || "");
+      (hasColors && (firstColorObj?.images?.[0] || firstColorObj?.image)) ||
+      poster ||
+      cleanImages[0] ||
+      "";
 
     setSelectedImage(defaultImg);
     setActiveImageIndex(0);
@@ -259,10 +269,26 @@ export default function ProductDetailPage() {
     if (product.has_colors !== false && activeColorVariant?.image) {
       return [activeColorVariant.image];
     }
-    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-      return product.images;
+
+    const poster = product.poster_image?.trim();
+    const isIron = product.id === "mini-portable-steam-iron" || product.slug?.includes("iron");
+    const baseImages = (Array.isArray(product.images) ? product.images : []).filter((img) => {
+      if (!isIron && typeof img === "string" && (img.includes("steam-iron") || img.includes("/products/iron/"))) {
+        return false;
+      }
+      return Boolean(img);
+    });
+
+    if (poster) {
+      const others = baseImages.filter((img) => img !== poster);
+      return [poster, ...others];
     }
-    return [product.poster_image || ""];
+
+    if (baseImages.length > 0) {
+      return baseImages;
+    }
+
+    return [];
   }, [product, activeColorVariant]);
 
   const safeActiveIndex = useMemo(() => {

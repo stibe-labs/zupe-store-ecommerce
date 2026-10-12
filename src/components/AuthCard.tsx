@@ -115,12 +115,18 @@ export function AuthCard({
         if (onSuccess) {
           onSuccess(res);
         }
+
+        const isAdmin = res.user?.role === "admin";
+        const adminTarget = (redirectUrl && redirectUrl.startsWith("/admin")) ? redirectUrl : (res.redirect || "/admin");
+        const finalDestination = isAdmin ? adminTarget : (redirectUrl || "/");
+
         if (isModal) {
           if (onClose) onClose();
+          if (isAdmin) {
+            window.location.href = adminTarget;
+          }
         } else {
-          setTimeout(() => {
-            window.location.href = redirectUrl || "/";
-          }, 350);
+          window.location.href = finalDestination;
         }
       }
     } else {

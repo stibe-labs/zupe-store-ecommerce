@@ -55,6 +55,23 @@ export async function POST(req: NextRequest) {
           path: "/",
         });
 
+        const userToken = await createUserSessionToken({
+          id: "superadmin",
+          name: adminCheck.name || "Zupe SuperAdmin",
+          email: adminCheck.email,
+          role: "admin",
+        });
+
+        res.cookies.set({
+          name: USER_COOKIE_NAME,
+          value: userToken,
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 7 * 24 * 60 * 60,
+          path: "/",
+        });
+
         return res;
       } else {
         return NextResponse.json(
