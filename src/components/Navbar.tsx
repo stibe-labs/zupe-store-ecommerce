@@ -173,7 +173,7 @@ function NavbarContent() {
           <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex items-center justify-center">
             <Link href="/" className="flex items-center justify-center" aria-label="Zupe Store">
               <Image
-                src="/zupe-label.png"
+                src="/zupe-label.webp"
                 alt="Zupestore"
                 width={120}
                 height={30}
@@ -218,7 +218,7 @@ function NavbarContent() {
           {/* Brand: Text Label only */}
           <Link href="/" className="flex items-center flex-shrink-0 group py-1" aria-label="Zupe Store">
             <Image
-              src="/zupe-label.png"
+              src="/zupe-label.webp"
               alt="Zupestore"
               width={145}
               height={38}
@@ -357,7 +357,7 @@ function NavbarContent() {
                 <div className="flex items-center gap-2.5">
                   <div className="relative w-8 h-8 flex items-center justify-center">
                     <Image
-                      src="/zupe-logo.png"
+                      src="/zupe-logo.webp"
                       alt="Zupe Store"
                       width={32}
                       height={32}
@@ -365,7 +365,7 @@ function NavbarContent() {
                     />
                   </div>
                   <Image
-                    src="/zupe-label.png"
+                    src="/zupe-label.webp"
                     alt="Zupestore"
                     width={110}
                     height={28}

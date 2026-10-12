@@ -307,7 +307,7 @@ function CheckoutContent() {
         currency: orderData.currency || "INR",
         name: "Zupe Store",
         description: `Payment for Order (${cart.length} item${cart.length === 1 ? "" : "s"})`,
-        image: "/zupe-logo.png",
+        image: "/zupe-logo.webp",
         order_id: orderData.orderId,
         prefill: {
           name: name.trim(),

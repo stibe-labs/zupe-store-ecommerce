@@ -40,7 +40,7 @@ export function LoadingScreen() {
             className="relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center select-none"
           >
             <Image
-              src="/zupe-logo.png"
+              src="/zupe-logo.webp"
               alt="Zupe Store"
               width={112}
               height={112}

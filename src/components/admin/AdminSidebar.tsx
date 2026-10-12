@@ -130,7 +130,7 @@ export default function AdminSidebar({
             <Link href="/admin" className="flex items-center gap-3 group">
               <div className="relative w-9 h-9 rounded-xl bg-white p-1 shadow-md flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden flex-shrink-0">
                 <Image
-                  src="/zupe-logo.png"
+                  src="/zupe-logo.webp"
                   alt="Zupe Store"
                   width={34}
                   height={34}

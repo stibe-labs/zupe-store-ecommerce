@@ -65,7 +65,7 @@ export function Footer() {
             <Link href="/" className="flex items-center gap-3 mb-4">
               <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-white p-0.5 shadow-md flex items-center justify-center">
                 <Image
-                  src="/zupe-logo.png"
+                  src="/zupe-logo.webp"
                   alt="Zupe Store"
                   width={40}
                   height={40}

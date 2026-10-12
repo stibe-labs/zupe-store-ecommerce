@@ -43,7 +43,7 @@ function SignInContent() {
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="relative w-9 h-9 flex items-center justify-center">
               <Image
-                src="/zupe-logo.png"
+                src="/zupe-logo.webp"
                 alt="Zupe Store"
                 width={36}
                 height={36}
@@ -51,7 +51,7 @@ function SignInContent() {
               />
             </div>
             <Image
-              src="/zupe-label.png"
+              src="/zupe-label.webp"
               alt="Zupestore"
               width={110}
               height={28}
