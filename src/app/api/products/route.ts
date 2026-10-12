@@ -71,15 +71,6 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
     : (stockOverride ? stockOverride.stock_count : baseStock);
   const finalInStock = finalStock <= 0 ? 0 : Number(p.in_stock ?? (stockOverride ? stockOverride.in_stock : 1));
 
-  const hasColorsVal =
-    p.has_colors !== undefined && p.has_colors !== null
-      ? Boolean(Number(p.has_colors))
-      : defaultFound?.has_colors !== undefined
-      ? Boolean(defaultFound.has_colors)
-      : Array.isArray(parsedColors) &&
-        parsedColors.length > 0 &&
-        !(parsedColors.length === 1 && parsedColors[0].name?.toLowerCase() === "standard");
-
   const isIronProduct = p.id === "mini-portable-steam-iron" || p.slug?.includes("iron");
   const posterImg = p.poster_image?.trim() || defaultFound?.poster_image?.trim() || "";
 
@@ -114,9 +105,14 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
       })
     : [];
 
-  const finalColors = hasColorsVal
-    ? (cleanParsedColors.length > 0 ? cleanParsedColors : (defaultFound?.colors || []))
-    : [];
+  const hasColorsVal =
+    p.has_colors !== undefined && p.has_colors !== null
+      ? Boolean(Number(p.has_colors))
+      : defaultFound?.has_colors !== undefined
+      ? Boolean(defaultFound.has_colors)
+      : Array.isArray(cleanParsedColors) && cleanParsedColors.length > 0;
+
+  const finalColors = cleanParsedColors.length > 0 ? cleanParsedColors : (defaultFound?.colors || []);
 
     return {
       ...(defaultFound || {}),
@@ -392,8 +388,8 @@ export async function POST(req: NextRequest) {
       poster_image: rawPoster,
       images: finalRawImages,
       has_colors: hasColorsVal,
-      color: hasColorsVal ? (color !== undefined ? color : existingProd?.color || "") : "",
-      colors: hasColorsVal ? cleanRawColors : [],
+      color: hasColorsVal ? (color !== undefined ? color : existingProd?.color || "") : (color || existingProd?.color || ""),
+      colors: cleanRawColors.length > 0 ? cleanRawColors : (existingProd?.colors || []),
       material: material !== undefined ? material : existingProd?.material || "",
       badge: badge !== undefined ? badge : existingProd?.badge || "",
       in_stock: inStockNum,
@@ -435,7 +431,7 @@ export async function POST(req: NextRequest) {
           `UPDATE products 
            SET slug = ?, name = ?, subtitle = ?, category = ?, subcategory = ?, tagline = ?, description = ?,
                price = ?, mrp = ?, offer_price = ?, cost_price = ?, stock_count = ?, volume = ?,
-               poster_image = ?, images = ?, color = ?, colors = ?, material = ?, badge = ?,
+               poster_image = ?, images = ?, color = ?, colors = ?, has_colors = ?, material = ?, badge = ?,
                in_stock = ?, rating = ?, review_count = ?, sold_count = ?, features = ?,
                specifications = ?, whats_in_box = ?, bundle_tiers = ?
            WHERE id = ?;`,
@@ -457,6 +453,7 @@ export async function POST(req: NextRequest) {
             imagesJson,
             newProd.color ?? null,
             colorsJson,
+            newProd.has_colors ? 1 : 0,
             newProd.material ?? null,
             newProd.badge ?? null,
             newProd.in_stock,
@@ -475,11 +472,11 @@ export async function POST(req: NextRequest) {
           `INSERT INTO products (
              id, slug, name, subtitle, category, subcategory, tagline, description,
              price, mrp, offer_price, cost_price, stock_count, volume,
-             poster_image, images, color, colors, material, badge,
+             poster_image, images, color, colors, has_colors, material, badge,
              in_stock, rating, review_count, sold_count, features,
              specifications, whats_in_box, bundle_tiers
            )
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
           [
             newProd.id,
             newProd.slug,
@@ -499,6 +496,7 @@ export async function POST(req: NextRequest) {
             imagesJson,
             newProd.color ?? null,
             colorsJson,
+            newProd.has_colors ? 1 : 0,
             newProd.material ?? null,
             newProd.badge ?? null,
             newProd.in_stock,

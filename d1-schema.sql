@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS products (
     images TEXT,
     color TEXT,
     colors TEXT,
+    has_colors INTEGER DEFAULT 0,
     material TEXT,
     badge TEXT,
     cost_price REAL DEFAULT 0,

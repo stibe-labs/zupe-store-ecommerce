@@ -675,11 +675,6 @@ export default function AdminProductsPage() {
       e.stopPropagation();
     }
 
-    // Safety guard: only allow creating or updating products when on the final specs tab
-    if (activeTab !== "specs") {
-      return;
-    }
-
     if (!formName.trim()) {
       setActiveTab("basic");
       setActionMessage({ text: "Product Name is required", type: "error" });
@@ -742,20 +737,18 @@ export default function AdminProductsPage() {
         ? [posterImg]
         : [];
 
-    const cleanColors = formHasColors
-      ? formColors.map((c: any) => {
-          if (!isIron && c && typeof c === "object") {
-            const cImgs = Array.isArray(c.images)
-              ? c.images.filter((img: string) => typeof img === "string" && !img.includes("steam-iron") && !img.includes("/products/iron/"))
-              : [];
-            return {
-              ...c,
-              images: cImgs.length > 0 ? cImgs : (posterImg ? [posterImg] : []),
-            };
-          }
-          return c;
-        })
-      : [];
+    const cleanColors = formColors.map((c: any) => {
+      if (!isIron && c && typeof c === "object") {
+        const cImgs = Array.isArray(c.images)
+          ? c.images.filter((img: string) => typeof img === "string" && !img.includes("steam-iron") && !img.includes("/products/iron/"))
+          : [];
+        return {
+          ...c,
+          images: cImgs.length > 0 ? cImgs : (posterImg ? [posterImg] : []),
+        };
+      }
+      return c;
+    });
 
     const payload = {
       ...(editingProduct ? { id: editingProduct.id } : {}),
@@ -1266,6 +1259,21 @@ export default function AdminProductsPage() {
               </div>
 
               <div className="flex items-center gap-2">
+                {editingProduct && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleSaveProduct(e)}
+                    disabled={isSubmitting}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 rounded-lg transition-all shadow-xs disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Check className="w-3.5 h-3.5" />
+                    )}
+                    <span>{isSubmitting ? "Saving..." : "Save"}</span>
+                  </button>
+                )}
                 {editingProduct && (
                   <a
                     href={`/products/${editingProduct.slug || editingProduct.id}`}
@@ -2766,7 +2774,29 @@ export default function AdminProductsPage() {
                 </span>
               </div>
 
-              <div>
+              <div className="flex items-center gap-2.5">
+                {editingProduct && activeTab !== "specs" && (
+                  <button
+                    key="btn-step-save-changes-early"
+                    type="button"
+                    onClick={(e) => handleSaveProduct(e)}
+                    disabled={isSubmitting}
+                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-emerald-600/25 flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Save Changes</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
                 {activeTab !== "specs" ? (
                   <button
                     key={`btn-step-${activeTab}`}

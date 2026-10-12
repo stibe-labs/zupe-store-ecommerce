@@ -100,12 +100,17 @@ export default function ProductDetailPage() {
   const applyProduct = (found: Product) => {
     setProduct(found);
     const hasColors =
-      found.has_colors !== false &&
-      found.colors &&
-      found.colors.length > 0 &&
-      !(found.has_colors !== true && found.colors.length === 1 && found.colors[0].name.toLowerCase() === "standard");
+      found.has_colors === true
+        ? Boolean(found.colors && found.colors.length > 0)
+        : found.has_colors === false
+        ? false
+        : Boolean(
+            found.colors &&
+            found.colors.length > 0 &&
+            !(found.colors.length === 1 && found.colors[0].name.toLowerCase() === "standard")
+          );
 
-    const initialColor = hasColors ? found.colors![0].name : "";
+    const initialColor = hasColors && found.colors && found.colors.length > 0 ? found.colors[0].name : "";
     setSelectedColor(initialColor);
 
     const firstColorObj = hasColors
@@ -311,11 +316,14 @@ export default function ProductDetailPage() {
   const availableColors = useMemo(() => {
     if (!product) return [];
     if (product.has_colors === false) return [];
-    if (product.colors && product.colors.length > 0) {
+    if (product.colors && Array.isArray(product.colors) && product.colors.length > 0) {
+      if (product.has_colors === true) {
+        return product.colors;
+      }
       if (
-        product.has_colors !== true &&
         product.colors.length === 1 &&
-        product.colors[0].name.toLowerCase() === "standard"
+        product.colors[0].name.toLowerCase() === "standard" &&
+        (!product.colors[0].images || product.colors[0].images.length <= 1)
       ) {
         return [];
       }
@@ -323,6 +331,18 @@ export default function ProductDetailPage() {
     }
     return [];
   }, [product]);
+
+  // Synchronize selectedColor with availableColors
+  useEffect(() => {
+    if (availableColors.length > 0) {
+      const match = availableColors.find(
+        (c) => c.name.toLowerCase() === selectedColor.toLowerCase()
+      );
+      if (!match) {
+        setSelectedColor(availableColors[0].name);
+      }
+    }
+  }, [availableColors, selectedColor]);
 
   // Product-specific feature bullet points
   const productHighlights = useMemo(() => {
