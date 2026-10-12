@@ -53,7 +53,7 @@ export default function ProductDetailPage() {
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [selectedColor, setSelectedColor] = useState<string>("Standard");
   const [quantity, setQuantity] = useState<number>(1);
-  const [selectedBundleTier, setSelectedBundleTier] = useState<1 | 2 | 3>(1);
+  const [selectedBundleTier, setSelectedBundleTier] = useState<number>(1);
   const [showStickyBar, setShowStickyBar] = useState<boolean>(false);
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
     details: true,
