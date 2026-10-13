@@ -39,6 +39,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
 import { UserAddress } from "@/lib/addressStore";
+import { deduplicateAddresses } from "@/lib/addressUtils";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -101,13 +102,17 @@ export default function AccountPage() {
   const loadAddresses = async () => {
     if (!user?.email) return;
 
-    // 1. Immediately read from local storage for 0ms instant display
+    // 1. Immediately read from local storage for 0ms instant display (deduplicating any legacy entries)
     try {
       const cached = localStorage.getItem(getCacheKey(user.email));
       if (cached) {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setAddresses(parsed);
+          const deduplicated = deduplicateAddresses<UserAddress>(parsed);
+          setAddresses(deduplicated);
+          try {
+            localStorage.setItem(getCacheKey(user.email), JSON.stringify(deduplicated));
+          } catch (e) {}
         }
       }
     } catch (e) {}
@@ -122,9 +127,10 @@ export default function AccountPage() {
 
       if (data.success && Array.isArray(data.addresses)) {
         if (data.addresses.length > 0) {
-          setAddresses(data.addresses);
+          const deduplicated = deduplicateAddresses<UserAddress>(data.addresses);
+          setAddresses(deduplicated);
           try {
-            localStorage.setItem(getCacheKey(user.email), JSON.stringify(data.addresses));
+            localStorage.setItem(getCacheKey(user.email), JSON.stringify(deduplicated));
           } catch (e) {}
         } else {
           // If server returned 0 but client has cached addresses, sync client cache to server!
@@ -133,11 +139,12 @@ export default function AccountPage() {
             if (cached) {
               const parsed = JSON.parse(cached);
               if (Array.isArray(parsed) && parsed.length > 0) {
-                setAddresses(parsed);
+                const deduplicated = deduplicateAddresses<UserAddress>(parsed);
+                setAddresses(deduplicated);
                 fetch("/api/user/addresses", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(parsed[0]),
+                  body: JSON.stringify(deduplicated[0]),
                 });
               }
             }
@@ -229,17 +236,12 @@ export default function AccountPage() {
       created_at: new Date().toISOString(),
     };
 
-    // Instant optimistic update in state & localStorage
-    let updatedList = [...addresses];
+    // Instant optimistic update in state & localStorage (cleanly deduplicated)
+    let otherList = addresses.filter((a) => a.id !== newAddr.id);
     if (newAddr.is_default) {
-      updatedList = updatedList.map((a) => ({ ...a, is_default: false }));
+      otherList = otherList.map((a) => ({ ...a, is_default: false }));
     }
-    const idx = updatedList.findIndex((a) => a.id === newAddr.id);
-    if (idx >= 0) {
-      updatedList[idx] = newAddr;
-    } else {
-      updatedList = [newAddr, ...updatedList];
-    }
+    const updatedList = deduplicateAddresses([newAddr, ...otherList]);
     setAddresses(updatedList);
     try {
       localStorage.setItem(getCacheKey(user.email), JSON.stringify(updatedList));

@@ -29,6 +29,7 @@ import { Footer } from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
+import { deduplicateAddresses, normalizeAddressKey } from "@/lib/addressUtils";
 
 function CheckoutContent() {
   const router = useRouter();
@@ -90,14 +91,19 @@ function CheckoutContent() {
 
     const cacheKey = `zp_user_addresses_${user.email.toLowerCase().trim()}`;
 
-    // 1. Instantly hydrate from localStorage for instantaneous 0ms display & fill
+    // 1. Instantly hydrate from localStorage for instantaneous 0ms display & fill (with automatic deduplication)
     try {
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setSavedAddresses(parsed);
-          const defaultAddr = parsed.find((a: any) => a.is_default) || parsed[0];
+          const deduplicated = deduplicateAddresses(parsed);
+          setSavedAddresses(deduplicated);
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(deduplicated));
+          } catch (e) {}
+
+          const defaultAddr = deduplicated.find((a: any) => a.is_default) || deduplicated[0];
           if (defaultAddr && !address) {
             setSelectedAddressId(defaultAddr.id);
             if (defaultAddr.recipient_name) setName(defaultAddr.recipient_name);
@@ -111,18 +117,20 @@ function CheckoutContent() {
       }
     } catch (e) {}
 
-    // 2. Fetch from server to sync latest
+    // 2. Fetch from server to sync latest and clean up any backend duplicates
     fetch(`/api/user/addresses?email=${encodeURIComponent(user.email)}&userId=${encodeURIComponent(user.id || "")}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.addresses) && data.addresses.length > 0) {
-          setSavedAddresses(data.addresses);
+        if (data.success && Array.isArray(data.addresses)) {
+          const deduplicated = deduplicateAddresses(data.addresses);
+          setSavedAddresses(deduplicated);
           try {
-            localStorage.setItem(cacheKey, JSON.stringify(data.addresses));
+            localStorage.setItem(cacheKey, JSON.stringify(deduplicated));
           } catch (e) {}
-          // If address fields are empty, auto-select default address
-          const defaultAddr = data.addresses.find((a: any) => a.is_default) || data.addresses[0];
-          if (defaultAddr && !address) {
+
+          // If address fields are empty or no address selected yet, auto-select default address
+          const defaultAddr = deduplicated.find((a: any) => a.is_default) || deduplicated[0];
+          if (defaultAddr && (!address || !selectedAddressId)) {
             setSelectedAddressId(defaultAddr.id);
             if (defaultAddr.recipient_name) setName(defaultAddr.recipient_name);
             if (defaultAddr.phone) setPhone(defaultAddr.phone);
@@ -156,12 +164,61 @@ function CheckoutContent() {
     setPostalCode("");
   };
 
+  const handleDeleteSavedAddress = async (e: React.MouseEvent, addrId: string) => {
+    e.stopPropagation();
+    if (!user?.email) return;
+    if (!confirm("Are you sure you want to delete this saved delivery address?")) return;
+
+    const remaining = savedAddresses.filter((a) => a.id !== addrId);
+    const cleaned = deduplicateAddresses(remaining);
+    setSavedAddresses(cleaned);
+
+    const cacheKey = `zp_user_addresses_${user.email.toLowerCase().trim()}`;
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify(cleaned));
+    } catch (err) {}
+
+    // If the deleted address was selected, select default or reset
+    if (selectedAddressId === addrId) {
+      if (cleaned.length > 0) {
+        handleSelectSavedAddress(cleaned[0]);
+      } else {
+        handleUseNewAddress();
+      }
+    }
+
+    try {
+      await fetch(
+        `/api/user/addresses?id=${encodeURIComponent(addrId)}&email=${encodeURIComponent(user.email)}`,
+        { method: "DELETE" }
+      );
+    } catch (err) {
+      console.warn("Failed to delete saved address:", err);
+    }
+  };
+
   const syncAddressAfterOrder = async () => {
     try {
       if (email.trim() && address.trim()) {
+        const userEmailNorm = email.toLowerCase().trim();
+        const cacheKey = `zp_user_addresses_${userEmailNorm}`;
+
+        // Check if an address with identical street & postal code already exists
+        const targetNormKey = normalizeAddressKey(address, postalCode);
+        const existingMatch = savedAddresses.find(
+          (a: any) =>
+            a.id === selectedAddressId ||
+            normalizeAddressKey(a.street, a.postal_code || a.postalCode) === targetNormKey
+        );
+
+        // If customer used an existing saved address without changing it, do not insert duplicate
+        if (existingMatch && !isUsingNewAddress) {
+          return;
+        }
+
         const newAddr = {
-          id: `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          user_email: email.trim(),
+          id: existingMatch ? existingMatch.id : `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          user_email: userEmailNorm,
           user_id: user?.id,
           recipient_name: name.trim(),
           phone: phone.trim(),
@@ -175,11 +232,9 @@ function CheckoutContent() {
           created_at: new Date().toISOString(),
         };
 
-        const cacheKey = `zp_user_addresses_${email.toLowerCase().trim()}`;
-        const existing = savedAddresses.filter(
-          (a: any) => a.street?.toLowerCase().trim() !== address.toLowerCase().trim()
-        );
-        const updated = [newAddr, ...existing];
+        const otherAddresses = savedAddresses.filter((a: any) => a.id !== newAddr.id);
+        const updated = deduplicateAddresses([newAddr, ...otherAddresses]);
+        setSavedAddresses(updated);
         try {
           localStorage.setItem(cacheKey, JSON.stringify(updated));
         } catch (e) {}
@@ -665,12 +720,22 @@ function CheckoutContent() {
                                 </span>
                               )}
                             </div>
-                            <div
-                              className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                                isSelected ? "border-[#FF7A00] bg-[#FF7A00] text-white" : "border-gray-300 bg-white"
-                              }`}
-                            >
-                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
+                              <button
+                                type="button"
+                                title="Delete address"
+                                onClick={(e) => handleDeleteSavedAddress(e, addr.id)}
+                                className="p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                              <div
+                                className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                                  isSelected ? "border-[#FF7A00] bg-[#FF7A00] text-white" : "border-gray-300 bg-white"
+                                }`}
+                              >
+                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </div>
                             </div>
                           </div>
 

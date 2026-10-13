@@ -54,6 +54,9 @@ export async function ensureAddressTable(): Promise<void> {
   }
 }
 
+export { normalizeAddressKey, deduplicateAddresses } from "@/lib/addressUtils";
+import { normalizeAddressKey } from "@/lib/addressUtils";
+
 export async function getUserAddresses(
   email: string,
   userId?: string
@@ -61,7 +64,9 @@ export async function getUserAddresses(
   const normEmail = (email || "").toLowerCase().trim();
   if (!normEmail) return [];
 
-  let addresses: UserAddress[] = inMemoryAddresses.get(normEmail) || [];
+  await ensureAddressTable();
+
+  let addresses: UserAddress[] = [];
 
   // Query D1 by verified email
   try {
@@ -71,21 +76,75 @@ export async function getUserAddresses(
     );
 
     if (rows && rows.length > 0) {
-      addresses = rows.map((r) => ({
-        id: r.id,
-        user_id: r.user_id,
-        user_email: r.user_email || normEmail,
-        recipient_name: r.recipient_name,
-        phone: r.phone || "",
-        street: r.street,
-        city: r.city,
-        state: r.state || "",
-        postal_code: r.postal_code,
-        country: r.country || "India",
-        is_default: Number(r.is_default) === 1,
-        tag: r.tag || "Home",
-        created_at: r.created_at || new Date().toISOString(),
-      }));
+      const seenKeys = new Map<string, UserAddress>();
+      const duplicateIdsToDelete: string[] = [];
+      let defaultFound = false;
+
+      for (const r of rows) {
+        const key = normalizeAddressKey(r.street, r.postal_code);
+        const isDef = Number(r.is_default) === 1;
+
+        if (seenKeys.has(key)) {
+          // This row is an exact physical duplicate of an already processed address
+          duplicateIdsToDelete.push(r.id);
+        } else {
+          // Exactly one address should retain is_default = true
+          let isFinalDefault = false;
+          if (isDef && !defaultFound) {
+            isFinalDefault = true;
+            defaultFound = true;
+          }
+
+          seenKeys.set(key, {
+            id: r.id,
+            user_id: r.user_id,
+            user_email: r.user_email || normEmail,
+            recipient_name: r.recipient_name,
+            phone: r.phone || "",
+            street: r.street,
+            city: r.city,
+            state: r.state || "",
+            postal_code: r.postal_code,
+            country: r.country || "India",
+            is_default: isFinalDefault,
+            tag: r.tag || "Home",
+            created_at: r.created_at || new Date().toISOString(),
+          });
+        }
+      }
+
+      addresses = Array.from(seenKeys.values());
+
+      // If no address was marked default but addresses exist, designate the first address as default
+      if (!defaultFound && addresses.length > 0) {
+        addresses[0].is_default = true;
+        try {
+          await executeD1Query(`UPDATE addresses SET is_default = 1 WHERE id = ?`, [addresses[0].id]);
+        } catch {}
+      }
+
+      // Purge redundant duplicate rows from D1 asynchronously
+      if (duplicateIdsToDelete.length > 0) {
+        try {
+          for (const dupId of duplicateIdsToDelete) {
+            await executeD1Query(`DELETE FROM addresses WHERE id = ?`, [dupId]);
+          }
+        } catch (delErr) {
+          console.warn("Failed to purge duplicate addresses from D1:", delErr);
+        }
+      }
+
+      // Normalize D1 so only the chosen default address has is_default = 1
+      const activeDefault = addresses.find((a) => a.is_default);
+      if (activeDefault) {
+        try {
+          await executeD1Query(
+            `UPDATE addresses SET is_default = 0 WHERE (LOWER(user_email) = ? OR user_id = ?) AND id != ?`,
+            [normEmail, userId || "", activeDefault.id]
+          );
+        } catch {}
+      }
+
       inMemoryAddresses.set(normEmail, addresses);
     }
   } catch (err) {
@@ -130,30 +189,47 @@ export async function saveUserAddress(address: UserAddress): Promise<UserAddress
   const normEmail = address.user_email.toLowerCase().trim();
   await ensureAddressTable();
 
-  let userList = inMemoryAddresses.get(normEmail) || [];
+  // Query D1 directly to get the current persisted state
+  let existingAddresses: any[] = [];
+  try {
+    existingAddresses = (await executeD1Query<any>(
+      `SELECT * FROM addresses WHERE LOWER(user_email) = ? OR user_id = ?`,
+      [normEmail, address.user_id || ""]
+    )) || [];
+  } catch (e) {}
 
-  if (address.is_default) {
-    userList = userList.map((a) => ({ ...a, is_default: false }));
+  const targetKey = normalizeAddressKey(address.street, address.postal_code);
+  const existingMatch = existingAddresses.find(
+    (a: any) =>
+      a.id === address.id ||
+      normalizeAddressKey(a.street, a.postal_code) === targetKey
+  );
+
+  // If an address with the same physical key already exists, reuse its ID to prevent duplicate records
+  if (existingMatch) {
+    address.id = existingMatch.id;
+  }
+
+  // Determine is_default properly
+  if (existingAddresses.length === 0) {
+    address.is_default = true;
+  } else if (address.is_default) {
+    // If making this address default, clear any other default in D1
     try {
       await executeD1Query(
         `UPDATE addresses SET is_default = 0 WHERE LOWER(user_email) = ? OR user_id = ?`,
         [normEmail, address.user_id || ""]
       );
     } catch {}
-  }
-
-  const existingIdx = userList.findIndex((a) => a.id === address.id);
-  if (existingIdx >= 0) {
-    userList[existingIdx] = address;
   } else {
-    // If it's the very first address, enforce default
-    if (userList.length === 0) {
+    // If not explicitly set to default, ensure it doesn't accidentally become default if other addresses exist
+    // However, if the existing match was already default and user didn't request a change, preserve it
+    if (existingMatch && Number(existingMatch.is_default) === 1) {
       address.is_default = true;
+    } else {
+      address.is_default = false;
     }
-    userList = [address, ...userList];
   }
-
-  inMemoryAddresses.set(normEmail, userList);
 
   // Sync to D1
   try {
@@ -180,6 +256,16 @@ export async function saveUserAddress(address: UserAddress): Promise<UserAddress
     console.warn("D1 address save error:", err);
   }
 
+  // Update inMemoryAddresses
+  const userList = inMemoryAddresses.get(normEmail) || [];
+  const idx = userList.findIndex((a) => a.id === address.id);
+  if (idx >= 0) {
+    userList[idx] = address;
+  } else {
+    userList.push(address);
+  }
+  inMemoryAddresses.set(normEmail, userList);
+
   return address;
 }
 
@@ -189,23 +275,24 @@ export async function deleteUserAddress(id: string, email: string): Promise<bool
   const removed = userList.find((a) => a.id === id);
   userList = userList.filter((a) => a.id !== id);
 
-  // If we deleted the default and there are other addresses, make the first one default
-  if (removed?.is_default && userList.length > 0) {
-    userList[0].is_default = true;
+  try {
+    await executeD1Query(`DELETE FROM addresses WHERE id = ?`, [id]);
+    
+    // If the deleted address was default, make the next existing address default in D1
+    const remaining = await executeD1Query<any>(
+      `SELECT * FROM addresses WHERE LOWER(user_email) = ? ORDER BY created_at DESC`,
+      [normEmail]
+    );
+    if (remaining && remaining.length > 0 && (removed?.is_default || !remaining.some((r: any) => Number(r.is_default) === 1))) {
+      await executeD1Query(`UPDATE addresses SET is_default = 1 WHERE id = ?`, [remaining[0].id]);
+      if (userList.length > 0) userList[0].is_default = true;
+    }
+  } catch (err) {
+    console.warn("D1 address delete error:", err);
   }
 
   inMemoryAddresses.set(normEmail, userList);
-
-  try {
-    await executeD1Query(`DELETE FROM addresses WHERE id = ?`, [id]);
-    if (removed?.is_default && userList.length > 0) {
-      await executeD1Query(`UPDATE addresses SET is_default = 1 WHERE id = ?`, [userList[0].id]);
-    }
-    return true;
-  } catch (err) {
-    console.warn("D1 address delete error:", err);
-    return true;
-  }
+  return true;
 }
 
 export async function setDefaultUserAddress(id: string, email: string): Promise<boolean> {
@@ -251,20 +338,16 @@ export async function syncAddressFromOrder(orderData: {
   }
 
   const existing = await getUserAddresses(email, orderData.user_id);
+  const targetKey = normalizeAddressKey(orderData.shipping_address, orderData.postal_code);
 
   // Check if identical address already exists
-  const isDuplicate = existing.some(
-    (a) =>
-      a.street.toLowerCase().trim() === orderData.shipping_address.toLowerCase().trim() &&
-      a.postal_code.trim() === orderData.postal_code.trim()
+  const existingMatch = existing.find(
+    (a) => normalizeAddressKey(a.street, a.postal_code) === targetKey
   );
 
-  if (isDuplicate) {
-    return existing.find(
-      (a) =>
-        a.street.toLowerCase().trim() === orderData.shipping_address.toLowerCase().trim() &&
-        a.postal_code.trim() === orderData.postal_code.trim()
-    ) || existing[0];
+  if (existingMatch) {
+    // Address already saved; do not create duplicate
+    return existingMatch;
   }
 
   // Parse state from city if combined (e.g. "Kochi, Kerala")
