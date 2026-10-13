@@ -447,13 +447,11 @@ export default function AdminProductsPage() {
     );
 
     setFormImage(posterImg);
-    setFormGalleryImages(
-      cleanGalleryImages.length > 0
-        ? cleanGalleryImages
-        : posterImg
-        ? [posterImg]
-        : []
-    );
+    const initialGallery = cleanGalleryImages.filter((img) => img !== posterImg);
+    if (posterImg) {
+      initialGallery.unshift(posterImg);
+    }
+    setFormGalleryImages(initialGallery);
     setNewGalleryInput("");
 
     if (prod.overview_blocks && Array.isArray(prod.overview_blocks) && prod.overview_blocks.length > 0) {
@@ -786,9 +784,14 @@ export default function AdminProductsPage() {
       return Boolean(img);
     });
 
+    const galleryWithPoster =
+      posterImg && !cleanGallery.includes(posterImg)
+        ? [posterImg, ...cleanGallery]
+        : cleanGallery;
+
     const finalImages =
-      cleanGallery.length > 0
-        ? cleanGallery
+      galleryWithPoster.length > 0
+        ? galleryWithPoster
         : !formHasColors
         ? (posterImg ? [posterImg] : [])
         : formColors[0]?.images && formColors[0].images.length > 0
@@ -2100,7 +2103,20 @@ export default function AdminProductsPage() {
                       <input
                         type="text"
                         value={formImage}
-                        onChange={(e) => setFormImage(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormImage(val);
+                          const trimmed = val.trim();
+                          if (trimmed && (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("/"))) {
+                            setFormGalleryImages((prev) => (prev.includes(trimmed) ? prev : [trimmed, ...prev]));
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const trimmed = e.target.value.trim();
+                          if (trimmed) {
+                            setFormGalleryImages((prev) => (prev.includes(trimmed) ? prev : [trimmed, ...prev]));
+                          }
+                        }}
                         placeholder="https://... or click Upload File"
                         className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                       />
@@ -2115,30 +2131,53 @@ export default function AdminProductsPage() {
                           accept="image/*"
                           className="hidden"
                           onChange={(e) =>
-                            handleFileUpload(e, (dataUrl) => setFormImage(dataUrl))
+                            handleFileUpload(e, (dataUrl) => {
+                              setFormImage(dataUrl);
+                              setFormGalleryImages((prev) => (prev.includes(dataUrl) ? prev : [dataUrl, ...prev]));
+                            })
                           }
                         />
                       </label>
                     </div>
 
                     {formImage && (
-                      <div className="mt-3 flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
-                        <img
-                          src={formImage}
-                          alt="Poster Preview"
-                          className="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0"
-                          onError={(e) => {
-                            (e.target as any).src =
-                              "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
-                          }}
-                        />
-                        <div>
-                          <span className="text-xs font-bold text-slate-800 block">
-                            Poster Image Preview
-                          </span>
-                          <span className="text-[11px] text-slate-500">
-                            Primary photo displayed on catalog product cards and search results.
-                          </span>
+                      <div className="mt-3 flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <img
+                            src={formImage}
+                            alt="Poster Preview"
+                            className="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0"
+                            onError={(e) => {
+                              (e.target as any).src =
+                                "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                            }}
+                          />
+                          <div className="min-w-0">
+                            <span className="text-xs font-bold text-slate-800 block">
+                              Poster Image Preview
+                            </span>
+                            <span className="text-[11px] text-slate-500 block truncate">
+                              Primary photo displayed on catalog product cards and search results.
+                            </span>
+                            {formGalleryImages.includes(formImage.trim()) ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 mt-0.5">
+                                ✓ Automatically added to product gallery images
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const trimmed = formImage.trim();
+                                  if (trimmed) {
+                                    setFormGalleryImages((prev) => [trimmed, ...prev.filter((x) => x !== trimmed)]);
+                                  }
+                                }}
+                                className="inline-flex items-center gap-1 text-[10px] font-bold text-[#FF7A00] hover:underline mt-0.5 cursor-pointer"
+                              >
+                                + Add to gallery images
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}
