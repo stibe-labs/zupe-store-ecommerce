@@ -44,8 +44,76 @@ export function ShoppableVideosSection({
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  const sectionRef = useRef<HTMLElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const activeVideoRef = useRef<HTMLVideoElement>(null);
+  const cardVideoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+  const [isSectionInView, setIsSectionInView] = useState(false);
+
+  // Observe when the Shoppable Videos section enters or leaves viewport
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        setIsSectionInView(entry.isIntersecting);
+      },
+      {
+        threshold: 0.1, // Trigger as soon as 10% of the section is visible
+        rootMargin: "60px 0px", // Preload slightly before scrolling directly into it
+      }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Automatically play all card videos with mute when section is in view, pause when out of view
+  useEffect(() => {
+    if (isSectionInView && activeModalVideoIndex === null) {
+      cardVideoRefs.current.forEach((video) => {
+        if (video) {
+          video.muted = true;
+          video.defaultMuted = true;
+          const promise = video.play();
+          if (promise !== undefined) {
+            promise.catch(() => {
+              // Muted autoplay is allowed across modern mobile & desktop browsers
+            });
+          }
+        }
+      });
+    } else {
+      cardVideoRefs.current.forEach((video) => {
+        if (video && !video.paused) {
+          video.pause();
+        }
+      });
+    }
+  }, [isSectionInView, activeModalVideoIndex, videos]);
+
+  // Pause carousel videos when page is hidden (e.g. user switches tabs)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        cardVideoRefs.current.forEach((video) => {
+          if (video && !video.paused) video.pause();
+        });
+      } else if (isSectionInView && activeModalVideoIndex === null) {
+        cardVideoRefs.current.forEach((video) => {
+          if (video) {
+            video.muted = true;
+            video.play().catch(() => {});
+          }
+        });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [isSectionInView, activeModalVideoIndex]);
 
   // Fetch videos for this product or all store videos if no product specified
   useEffect(() => {
@@ -127,6 +195,9 @@ export function ShoppableVideosSection({
   };
 
   const handleOpenReel = (idx: number) => {
+    cardVideoRefs.current.forEach((video) => {
+      if (video && !video.paused) video.pause();
+    });
     setActiveModalVideoIndex(idx);
     setIsPlaying(true);
     setProgress(0);
@@ -209,7 +280,10 @@ export function ShoppableVideosSection({
   const currentReel = activeModalVideoIndex !== null ? videos[activeModalVideoIndex] : null;
 
   return (
-    <section className={`w-full max-w-[1600px] mx-auto px-4 sm:px-6 ${showHeader ? "py-8 sm:py-12 border-t border-gray-100" : "py-5 sm:py-8"}`}>
+    <section
+      ref={sectionRef}
+      className={`w-full max-w-[1600px] mx-auto px-4 sm:px-6 ${showHeader ? "py-8 sm:py-12 border-t border-gray-100" : "py-5 sm:py-8"}`}
+    >
       {/* Section Header (Only rendered when showHeader is true) */}
       {showHeader && (
         <div className="flex items-center justify-between mb-5 sm:mb-6">
@@ -264,14 +338,45 @@ export function ShoppableVideosSection({
                 onClick={() => handleOpenReel(idx)}
                 className="group relative flex-shrink-0 w-[240px] sm:w-[280px] h-[390px] sm:h-[450px] rounded-[24px] sm:rounded-[28px] overflow-hidden bg-slate-900 shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer snap-start border border-gray-200/80 hover:border-[#FF7A00]/50"
               >
-                {/* Background Video or Poster */}
-                <div className="absolute inset-0 z-0">
-                  <img
-                    src={poster}
-                    alt={vid.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/40" />
+                {/* Background Video (Auto-plays muted when reached) or Poster Fallback */}
+                <div className="absolute inset-0 z-0 overflow-hidden bg-black">
+                  {vid.videoUrl ? (
+                    <video
+                      ref={(el) => {
+                        if (el) {
+                          el.muted = true;
+                          el.defaultMuted = true;
+                          cardVideoRefs.current.set(idx, el);
+                          if (isSectionInView && activeModalVideoIndex === null) {
+                            el.play().catch(() => {});
+                          }
+                        } else {
+                          cardVideoRefs.current.delete(idx);
+                        }
+                      }}
+                      src={vid.videoUrl}
+                      poster={poster}
+                      muted
+                      loop
+                      playsInline
+                      preload="auto"
+                      onLoadedData={(e) => {
+                        const target = e.currentTarget;
+                        target.muted = true;
+                        if (isSectionInView && activeModalVideoIndex === null) {
+                          target.play().catch(() => {});
+                        }
+                      }}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 pointer-events-none"
+                    />
+                  ) : (
+                    <img
+                      src={poster}
+                      alt={vid.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 pointer-events-none"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/40 pointer-events-none" />
                 </div>
 
                 {/* Top Badges */}
@@ -292,8 +397,8 @@ export function ShoppableVideosSection({
 
                 {/* Center Play Button Icon */}
                 <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-                  <div className="w-13 h-13 rounded-full bg-black/40 backdrop-blur-sm border border-white/30 text-white flex items-center justify-center group-hover:scale-115 group-hover:bg-[#FF7A00] transition-all duration-300 shadow-xl">
-                    <Play className="w-6 h-6 fill-white ml-0.5" />
+                  <div className="w-12 h-12 rounded-full bg-black/35 backdrop-blur-xs border border-white/30 text-white flex items-center justify-center group-hover:scale-115 group-hover:bg-[#FF7A00] transition-all duration-300 shadow-xl opacity-75 group-hover:opacity-100">
+                    <Play className="w-5 h-5 fill-white ml-0.5" />
                   </div>
                 </div>
 
