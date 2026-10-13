@@ -144,6 +144,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 1. Authoritative Stock Verification: strictly block out-of-stock purchases
+    const { validateOrderStock } = await import("@/lib/inventoryService");
+    const stockValidation = await validateOrderStock(items);
+    if (!stockValidation.valid) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: stockValidation.error || "One or more items in your cart are currently out of stock.",
+          outOfStockItems: stockValidation.outOfStockItems,
+        },
+        { status: 400 }
+      );
+    }
+
     const cleanPhone = (customer_phone || "").replace(/\D/g, "");
     const effectiveUserId = user_id || (cleanPhone ? `guest_${cleanPhone}` : `guest_${Date.now()}`);
 

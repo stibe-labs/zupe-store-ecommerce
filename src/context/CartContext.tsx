@@ -58,6 +58,9 @@ interface CartContextType {
   savings: number;
   freeShippingThreshold: number;
   freeShippingRemaining: number;
+  outOfStockItemIds: string[];
+  hasOutOfStockItems: boolean;
+  checkCartStock: () => Promise<string[]>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -67,8 +70,54 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [outOfStockItemIds, setOutOfStockItemIds] = useState<string[]>([]);
   const FREE_SHIPPING_THRESHOLD = 1499;
   const GUEST_CART_KEY = "zp_guest_cart";
+
+  const checkCartStock = async (): Promise<string[]> => {
+    if (cart.length === 0) {
+      setOutOfStockItemIds([]);
+      return [];
+    }
+    try {
+      const ids = cart.map((c) => c.id).join(",");
+      const res = await fetch(`/api/inventory/check?ids=${encodeURIComponent(ids)}&_t=${Date.now()}`, {
+        cache: "no-store",
+      });
+      const data = await res.json();
+      if (data.success && data.stock) {
+        const oos: string[] = [];
+        for (const it of cart) {
+          const itemStock = data.stock[it.id] || data.stock[it.id?.toLowerCase()];
+          if (itemStock && !itemStock.is_available) {
+            oos.push(it.id);
+          }
+        }
+        setOutOfStockItemIds(oos);
+        return oos;
+      }
+    } catch (e) {}
+    return [];
+  };
+
+  useEffect(() => {
+    if (cart.length === 0) {
+      setOutOfStockItemIds([]);
+      return;
+    }
+
+    checkCartStock();
+    const interval = setInterval(checkCartStock, 4000);
+    const onFocus = () => checkCartStock();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
+  }, [cart, isOpen]);
 
   useEffect(() => {
     let isMounted = true;
@@ -230,6 +279,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       overrideQuantity?: boolean;
     }
   ): boolean => {
+    if ((product as any).in_stock === 0 || ((product as any).stock_count !== undefined && (product as any).stock_count <= 0)) {
+      return false;
+    }
+
     const finalPrice = product.offer_price || product.price || 990;
     const finalMrp = product.mrp || Math.round((product.original_price || finalPrice) * 1.25);
     const finalImage = product.poster_image || product.image || "";
@@ -343,6 +396,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         savings,
         freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
         freeShippingRemaining,
+        outOfStockItemIds,
+        hasOutOfStockItems: outOfStockItemIds.length > 0,
+        checkCartStock,
       }}
     >
       {children}

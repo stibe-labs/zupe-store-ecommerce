@@ -56,11 +56,14 @@ export function NewArrivalsSection() {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {newArrivals.map((product) => {
           const isFavorited = isInWishlist(product.id);
+          const isOutOfStock = product.in_stock === 0 || (product.stock_count !== undefined && product.stock_count <= 0);
 
           return (
             <div
               key={product.id}
-              className="bg-white rounded-2xl border border-gray-100 p-3 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300 group"
+              className={`bg-white rounded-2xl border p-3 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300 group ${
+                isOutOfStock ? "border-red-100" : "border-gray-100"
+              }`}
             >
               <div>
                 {/* Product Image Container */}
@@ -71,9 +74,17 @@ export function NewArrivalsSection() {
                       alt={product.name}
                       fill
                       sizes="(max-width: 768px) 50vw, 20vw"
-                      className="object-cover object-bottom group-hover:scale-105 transition-transform duration-500"
+                      className={`object-cover object-bottom group-hover:scale-105 transition-transform duration-500 ${
+                        isOutOfStock ? "grayscale opacity-80" : ""
+                      }`}
                     />
                   </Link>
+
+                  {isOutOfStock && (
+                    <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-md bg-red-600 text-white text-[10px] font-black uppercase tracking-wider shadow-xs">
+                      Sold Out
+                    </div>
+                  )}
 
                   {/* Circular Wishlist Heart Button */}
                   <button
@@ -130,47 +141,57 @@ export function NewArrivalsSection() {
                 </div>
               </div>
 
-              {/* Dual Action Buttons: Buy now & Add to cart */}
-              <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mt-auto pt-1">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const addFn = addToCart || addItem;
-                    if (typeof addFn === "function") {
-                      addFn(product, 1);
-                    }
-                    if (!user) {
-                      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
-                      return;
-                    }
-                    router.push("/checkout");
-                  }}
-                  className="w-full py-2 px-1.5 sm:px-2 rounded-xl border border-gray-900 bg-white hover:bg-gray-900 hover:text-white active:scale-95 text-gray-900 text-xs sm:text-[13px] font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
-                >
-                  Buy now
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const addFn = addToCart || addItem;
-                    if (typeof addFn === "function") {
-                      addFn(product, 1);
-                    }
-                    if (!user) {
-                      openAuthModal("login", "Sign in required: Please log in to add items to your cart & checkout 🛍️");
-                      return;
-                    }
-                    router.push("/cart");
-                  }}
-                  className="w-full py-2 px-1.5 sm:px-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-xs sm:text-[13px] font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
-                >
-                  Add to cart
-                </button>
-              </div>
+              {/* Action Buttons: Dual buttons or Out of Stock label */}
+              {isOutOfStock ? (
+                <div className="mt-auto pt-1">
+                  <div className="w-full py-2 px-2 rounded-xl bg-gray-100 text-gray-400 text-xs font-extrabold text-center border border-gray-200 select-none uppercase tracking-wide">
+                    Out of Stock
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mt-auto pt-1">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const addFn = addToCart || addItem;
+                      if (typeof addFn === "function") {
+                        const added = addFn(product, 1);
+                        if (!added) return;
+                      }
+                      if (!user) {
+                        openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
+                        return;
+                      }
+                      router.push("/checkout");
+                    }}
+                    className="w-full py-2 px-1.5 sm:px-2 rounded-xl border border-gray-900 bg-white hover:bg-gray-900 hover:text-white active:scale-95 text-gray-900 text-xs sm:text-[13px] font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
+                  >
+                    Buy now
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const addFn = addToCart || addItem;
+                      if (typeof addFn === "function") {
+                        const added = addFn(product, 1);
+                        if (!added) return;
+                      }
+                      if (!user) {
+                        openAuthModal("login", "Sign in required: Please log in to add items to your cart & checkout 🛍️");
+                        return;
+                      }
+                      router.push("/cart");
+                    }}
+                    className="w-full py-2 px-1.5 sm:px-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-xs sm:text-[13px] font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
+                  >
+                    Add to cart
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}

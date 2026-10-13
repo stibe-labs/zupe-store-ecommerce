@@ -4,13 +4,29 @@ import { createRazorpayOrder, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { amount, receipt, notes } = body;
+    const { amount, receipt, notes, items } = body;
 
     if (!amount || typeof amount !== "number" || amount <= 0) {
       return NextResponse.json(
         { success: false, error: "Invalid order amount specified" },
         { status: 400 }
       );
+    }
+
+    // Verify stock availability if items provided
+    if (items && Array.isArray(items) && items.length > 0) {
+      const { validateOrderStock } = await import("@/lib/inventoryService");
+      const stockValidation = await validateOrderStock(items);
+      if (!stockValidation.valid) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: stockValidation.error || "One or more items in your cart are currently out of stock.",
+            outOfStockItems: stockValidation.outOfStockItems,
+          },
+          { status: 400 }
+        );
+      }
     }
 
     const order = await createRazorpayOrder({

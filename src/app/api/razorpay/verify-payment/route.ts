@@ -53,6 +53,21 @@ export async function POST(req: NextRequest) {
       user_id,
     } = order_payload;
 
+    if (items && Array.isArray(items) && items.length > 0) {
+      const { validateOrderStock } = await import("@/lib/inventoryService");
+      const stockValidation = await validateOrderStock(items);
+      if (!stockValidation.valid) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: stockValidation.error || "Payment received, but one or more items are currently out of stock.",
+            outOfStockItems: stockValidation.outOfStockItems,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     const cleanPhone = (customer_phone || "").replace(/\D/g, "");
     const effectiveUserId = user_id || (cleanPhone ? `guest_${cleanPhone}` : `guest_${Date.now()}`);
 

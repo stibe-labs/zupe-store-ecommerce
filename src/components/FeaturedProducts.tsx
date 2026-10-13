@@ -150,19 +150,27 @@ export function FeaturedProducts() {
                       </span>
                     )}
                   </div>
-                  <button
-                    onClick={() => {
-                      if (!user) {
-                        openAuthModal("login", "Sign in required: Please log in to add items to your cart & checkout 🛍️");
-                        return;
-                      }
-                      const success = addToCart(product);
-                      if (success) openCart();
-                    }}
-                    className="w-10 h-10 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] flex items-center justify-center transition-colors btn-press shadow-md shadow-[#FF7A00]/20"
-                  >
-                    <ShoppingBag className="w-4 h-4 text-white" />
-                  </button>
+                  {product.in_stock === 0 || (product.stock_count !== undefined && product.stock_count <= 0) ? (
+                    <span className="text-[11px] font-black text-red-600 bg-red-50 border border-red-200 px-2 py-1 rounded-lg uppercase tracking-tight">
+                      Out of Stock
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        if (!user) {
+                          openAuthModal("login", "Sign in required: Please log in to add items to your cart & checkout 🛍️");
+                          return;
+                        }
+                        const success = addToCart(product);
+                        if (success) openCart();
+                      }}
+                      className="w-10 h-10 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] flex items-center justify-center transition-colors btn-press shadow-md shadow-[#FF7A00]/20 cursor-pointer"
+                      title="Add to cart"
+                      aria-label="Add to cart"
+                    >
+                      <ShoppingBag className="w-4 h-4 text-white" />
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, Truck } from "lucide-react";
+import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, Truck, AlertCircle } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 
@@ -23,6 +23,8 @@ export function CartDrawer() {
     savings,
     freeShippingThreshold,
     freeShippingRemaining,
+    outOfStockItemIds,
+    hasOutOfStockItems,
   } = useCart();
 
   const shippingProgress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
@@ -126,27 +128,43 @@ export function CartDrawer() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {cart.map((item) => (
+                  {cart.map((item) => {
+                    const isOutOfStock =
+                      outOfStockItemIds.includes(item.id) ||
+                      outOfStockItemIds.includes(item.id?.toLowerCase());
+
+                    return (
                     <motion.div
                       key={item.id}
                       layout
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, x: 50 }}
-                      className="flex gap-4 p-3 rounded-2xl bg-gray-50/80 border border-gray-100"
+                      className={`flex gap-4 p-3 rounded-2xl border transition-colors ${
+                        isOutOfStock
+                          ? "bg-red-50/70 border-red-200 ring-1 ring-red-300"
+                          : "bg-gray-50/80 border-gray-100"
+                      }`}
                     >
                       <Link
                         href={`/products/${item.id}`}
                         onClick={closeCart}
-                        className="w-20 h-20 rounded-xl overflow-hidden bg-white flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+                        className="w-20 h-20 rounded-xl overflow-hidden bg-white flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity relative"
                       >
                         <Image
                           src={item.poster_image}
                           alt={item.name}
                           width={80}
                           height={80}
-                          className="w-full h-full object-cover"
+                          className={`w-full h-full object-cover ${isOutOfStock ? "grayscale opacity-75" : ""}`}
                         />
+                        {isOutOfStock && (
+                          <div className="absolute inset-0 bg-red-900/40 flex items-center justify-center p-1 text-center">
+                            <span className="text-[9px] font-black tracking-wider uppercase text-white bg-red-600 px-1.5 py-0.5 rounded shadow">
+                              Sold Out
+                            </span>
+                          </div>
+                        )}
                       </Link>
                       <div className="flex-1 min-w-0">
                         <Link
@@ -159,11 +177,15 @@ export function CartDrawer() {
                           </p>
                         </Link>
                         <p className="text-xs text-[#636E72] mt-0.5">{item.category}</p>
-                        {item.offer_label && (
+                        {isOutOfStock ? (
+                          <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-600 border border-red-200">
+                            ⚠️ Out of Stock
+                          </span>
+                        ) : item.offer_label ? (
                           <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-[#FF5722] border border-orange-200">
                             ✨ {item.offer_label}
                           </span>
-                        )}
+                        ) : null}
                         <div className="flex items-center gap-2 mt-2">
                           <span className="text-sm font-bold text-[#FF7A00]">
                             ₹{item.price.toLocaleString()}
@@ -201,7 +223,8 @@ export function CartDrawer() {
                         </div>
                       </div>
                     </motion.div>
-                  ))}
+                  );
+                })}
                 </div>
               )}
             </div>
@@ -221,9 +244,17 @@ export function CartDrawer() {
                     ₹{subtotal.toLocaleString()}
                   </span>
                 </div>
+                {hasOutOfStockItems && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-xs text-red-700 font-semibold">
+                    <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                    <span>Please remove out-of-stock items before checkout.</span>
+                  </div>
+                )}
                 <div className="flex flex-col gap-2">
                   <button
+                    disabled={hasOutOfStockItems}
                     onClick={() => {
+                      if (hasOutOfStockItems) return;
                       if (!user) {
                         closeCart();
                         openAuthModal("login", "Sign in required: Please log in or create an account to proceed to checkout 🔒");
@@ -232,10 +263,14 @@ export function CartDrawer() {
                       closeCart();
                       router.push("/checkout");
                     }}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#FF7A00] text-white font-semibold rounded-xl hover:bg-[#E66E00] transition-colors shadow-lg shadow-[#FF7A00]/25 text-sm cursor-pointer"
+                    className={`w-full flex items-center justify-center gap-2 py-3.5 text-white font-semibold rounded-xl transition-colors text-sm ${
+                      hasOutOfStockItems
+                        ? "bg-gray-400 cursor-not-allowed opacity-80 shadow-none"
+                        : "bg-[#FF7A00] hover:bg-[#E66E00] shadow-lg shadow-[#FF7A00]/25 cursor-pointer"
+                    }`}
                   >
-                    Proceed to Checkout
-                    <ArrowRight className="w-4 h-4" />
+                    {hasOutOfStockItems ? "⚠️ Remove Out of Stock Items" : "Proceed to Checkout"}
+                    {!hasOutOfStockItems && <ArrowRight className="w-4 h-4" />}
                   </button>
                 </div>
                 <button

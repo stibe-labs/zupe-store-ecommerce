@@ -4,7 +4,7 @@ import { Product } from "@/types/product";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { getProductReviewStatsMap, getProductReviewStats } from "@/lib/reviewStore";
 import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/adminAuth";
-import { getMemoryStockOverride } from "@/lib/inventoryService";
+import { getMemoryStockOverride, setMemoryStockOverride } from "@/lib/inventoryService";
 
 async function checkAdminAuth(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
@@ -70,7 +70,22 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
   const finalStock = stockOverride !== null && d1Stock !== null
     ? Math.min(d1Stock, stockOverride.stock_count)
     : (stockOverride ? stockOverride.stock_count : baseStock);
-  const finalInStock = finalStock <= 0 ? 0 : Number(p.in_stock ?? (stockOverride ? stockOverride.in_stock : 1));
+
+  const d1InStock = p.in_stock !== undefined && p.in_stock !== null ? Number(p.in_stock) : null;
+  let finalInStock = 1;
+  if (finalStock <= 0) {
+    finalInStock = 0;
+  } else if (stockOverride !== null && stockOverride.in_stock === 0) {
+    finalInStock = 0;
+  } else if (d1InStock !== null && d1InStock === 0) {
+    finalInStock = 0;
+  } else if (d1InStock !== null) {
+    finalInStock = d1InStock;
+  } else if (stockOverride !== null) {
+    finalInStock = stockOverride.in_stock;
+  } else if (defaultFound?.in_stock !== undefined) {
+    finalInStock = Number(defaultFound.in_stock);
+  }
 
   const isIronProduct = p.id === "mini-portable-steam-iron" || p.slug?.includes("iron");
   const posterImg = p.poster_image?.trim() || defaultFound?.poster_image?.trim() || "";
@@ -521,6 +536,12 @@ export async function POST(req: NextRequest) {
       console.warn("Could not save to D1:", d1Err);
     }
 
+    // Synchronize memory stock overrides immediately
+    setMemoryStockOverride(newProd.id, newProd.stock_count, newProd.in_stock);
+    if (newProd.slug) {
+      setMemoryStockOverride(newProd.slug, newProd.stock_count, newProd.in_stock);
+    }
+
     // Immediately update in-memory cache for ultra-fast synced responses
     const existingIndex = serverProductsCache.findIndex((p) => p.id === newProd.id || p.slug === newProd.slug);
     if (existingIndex >= 0) {
@@ -531,7 +552,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { success: true, product: newProd },
-      { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } }
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      }
     );
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 400 });

@@ -34,7 +34,17 @@ import { deduplicateAddresses, normalizeAddressKey } from "@/lib/addressUtils";
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { cart, subtotal, savings, clearCart, removeFromCart, freeShippingThreshold } = useCart();
+  const {
+    cart,
+    subtotal,
+    savings,
+    clearCart,
+    removeFromCart,
+    freeShippingThreshold,
+    outOfStockItemIds,
+    hasOutOfStockItems,
+    checkCartStock,
+  } = useCart();
   const { user, isLoading: authLoading, openAuthModal, updateUserProfile } = useAuth();
 
   const [name, setName] = useState(user?.name || "");
@@ -267,6 +277,14 @@ function CheckoutContent() {
     setErrorMessage("");
     setLoading(true);
 
+    // 0. Instant Pre-flight live stock verification
+    const freshOos = await checkCartStock();
+    if (freshOos.length > 0 || hasOutOfStockItems) {
+      setLoading(false);
+      setErrorMessage("One or more items in your cart are currently out of stock. Please remove them to proceed.");
+      return;
+    }
+
     // If Cash on Delivery is selected, process order directly
     if (paymentMethod === "cod") {
       try {
@@ -332,6 +350,12 @@ function CheckoutContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: grandTotal,
+          items: cart.map((c) => ({
+            product_id: c.id,
+            name: c.name,
+            price: c.price,
+            quantity: c.quantity,
+          })),
           notes: {
             customer_name: name,
             customer_email: email,
@@ -1031,6 +1055,19 @@ function CheckoutContent() {
                 </span>
               </div>
 
+              {/* Real-time Inventory Conflict Alert */}
+              {hasOutOfStockItems && (
+                <div className="p-3.5 rounded-2xl bg-red-50 border-2 border-red-200 text-red-900 text-xs flex items-start gap-2.5 shadow-sm">
+                  <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                  <div className="leading-snug">
+                    <p className="font-black text-red-700 uppercase tracking-wide text-[11px]">Stock Conflict Alert</p>
+                    <p className="text-red-700 mt-0.5 font-medium">
+                      One or more products below are currently <strong>out of stock</strong>. Remove them to place your order.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Buy More Save More Alert Banner if any bundle tier is in cart */}
               {cart.some((item) => item.bundle_tier && item.bundle_tier > 1) && (
                 <div className="p-3 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border border-orange-200/90 text-orange-950 text-xs font-semibold flex items-center gap-2.5 shadow-2xs">
@@ -1046,15 +1083,34 @@ function CheckoutContent() {
 
               {/* Cart Items Preview */}
               <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                {cart.map((item) => (
-                  <div key={item.id} className="flex items-center gap-2.5 py-1">
+                {cart.map((item) => {
+                  const isOutOfStock =
+                    outOfStockItemIds.includes(item.id) ||
+                    outOfStockItemIds.includes(item.id?.toLowerCase());
+
+                  return (
+                  <div
+                    key={item.id}
+                    className={`flex items-center gap-2.5 p-2 rounded-2xl border transition-colors ${
+                      isOutOfStock
+                        ? "bg-red-50/70 border-red-200 ring-1 ring-red-300"
+                        : "bg-transparent border-transparent"
+                    }`}
+                  >
                     <div className="relative w-12 h-12 rounded-xl bg-gray-50 overflow-hidden flex-shrink-0 border border-gray-100">
                       <Image
                         src={item.poster_image}
                         alt={item.name}
                         fill
-                        className="object-cover"
+                        className={`object-cover ${isOutOfStock ? "grayscale opacity-75" : ""}`}
                       />
+                      {isOutOfStock && (
+                        <div className="absolute inset-0 bg-red-900/50 flex items-center justify-center">
+                          <span className="text-[8px] font-black text-white uppercase bg-red-600 px-1 py-0.5 rounded">
+                            Sold Out
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-gray-900 truncate" title={item.name}>
@@ -1064,11 +1120,15 @@ function CheckoutContent() {
                         <span className="text-[11px] text-gray-500 font-medium">
                           Qty: <strong className="text-gray-800">{item.quantity}</strong> × ₹{item.price.toLocaleString()}
                         </span>
-                        {item.offer_label && (
+                        {isOutOfStock ? (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-black bg-red-100 text-red-600 border border-red-200">
+                            ⚠️ Out of Stock
+                          </span>
+                        ) : item.offer_label ? (
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-orange-100 text-[#FF5722] border border-orange-200">
                             ✨ {item.offer_label}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -1085,7 +1145,11 @@ function CheckoutContent() {
                       <button
                         type="button"
                         onClick={() => removeFromCart(item.id)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-[#E02B2B] hover:bg-rose-50 transition-colors cursor-pointer"
+                        className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                          isOutOfStock
+                            ? "text-red-600 bg-red-100 hover:bg-red-200 font-bold"
+                            : "text-gray-400 hover:text-[#E02B2B] hover:bg-rose-50"
+                        }`}
                         title={`Remove ${item.name} from order`}
                         aria-label={`Remove ${item.name} from order`}
                       >
@@ -1093,7 +1157,8 @@ function CheckoutContent() {
                       </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               <hr className="border-gray-100" />
@@ -1136,14 +1201,23 @@ function CheckoutContent() {
               {/* Action Button */}
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full py-4 px-6 rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-sm shadow-xl shadow-[#FF7A00]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer transform active:scale-95"
+                disabled={loading || hasOutOfStockItems || cart.length === 0}
+                className={`w-full py-4 px-6 rounded-2xl text-white font-semibold text-sm shadow-xl transition-all flex items-center justify-center gap-2 transform active:scale-95 ${
+                  hasOutOfStockItems || cart.length === 0
+                    ? "bg-gray-400 cursor-not-allowed opacity-80 shadow-none"
+                    : "bg-[#FF7A00] hover:bg-[#E66E00] shadow-[#FF7A00]/30 cursor-pointer"
+                }`}
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-5 h-5 animate-spin" />
                     <span>Processing Payment...</span>
                   </div>
+                ) : hasOutOfStockItems ? (
+                  <>
+                    <AlertCircle className="w-4 h-4 text-white" />
+                    <span>⚠️ Remove Out of Stock Items to Continue</span>
+                  </>
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />

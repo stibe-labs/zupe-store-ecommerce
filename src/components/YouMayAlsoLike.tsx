@@ -94,6 +94,11 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
     e.preventDefault();
     e.stopPropagation();
 
+    if (prod.in_stock === 0 || (prod.stock_count !== undefined && prod.stock_count <= 0)) {
+      if (onToast) onToast("Sorry, this item is currently out of stock!");
+      return;
+    }
+
     if (!user) {
       openAuthModal("login", "Sign in required: Please log in to add items to your cart 🛒");
       return;
@@ -101,7 +106,8 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
 
     const addFn = addToCart || addItem;
     if (typeof addFn === "function") {
-      addFn(prod, 1);
+      const added = addFn(prod, 1);
+      if (!added) return;
     }
     if (onToast) {
       onToast(`Added ${prod.name} to cart! 🛒`);
@@ -113,6 +119,11 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
     e.preventDefault();
     e.stopPropagation();
 
+    if (prod.in_stock === 0 || (prod.stock_count !== undefined && prod.stock_count <= 0)) {
+      if (onToast) onToast("Sorry, this item is currently out of stock!");
+      return;
+    }
+
     if (!user) {
       openAuthModal("login", "Sign in required: Please log in or create an account to proceed with purchase 🛍️");
       return;
@@ -120,7 +131,8 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
 
     const addFn = addToCart || addItem;
     if (typeof addFn === "function") {
-      addFn(prod, 1);
+      const added = addFn(prod, 1);
+      if (!added) return;
     }
     router.push("/checkout");
   };
@@ -270,23 +282,31 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
                 )}
               </div>
 
-              {/* Dual Action Buttons (Buy now & Add to cart) */}
-              <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mt-auto pt-2 border-t border-gray-50">
-                <button
-                  type="button"
-                  onClick={(e) => handleBuyNow(e, item)}
-                  className="w-full py-2 px-1 sm:px-2 rounded-xl border border-gray-900 bg-white hover:bg-gray-900 hover:text-white active:scale-95 text-gray-900 text-[11px] sm:text-xs font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
-                >
-                  Buy now
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => handleAddToCart(e, item)}
-                  className="w-full py-2 px-1 sm:px-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-[11px] sm:text-xs font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
-                >
-                  Add to cart
-                </button>
-              </div>
+              {/* Dual Action Buttons (Buy now & Add to cart) or Out of Stock */}
+              {item.in_stock === 0 || (item.stock_count !== undefined && item.stock_count <= 0) ? (
+                <div className="mt-auto pt-2 border-t border-gray-50">
+                  <div className="w-full py-2 px-2 rounded-xl bg-gray-100 text-gray-400 text-[11px] sm:text-xs font-black uppercase text-center border border-gray-200 select-none">
+                    Out of Stock
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mt-auto pt-2 border-t border-gray-50">
+                  <button
+                    type="button"
+                    onClick={(e) => handleBuyNow(e, item)}
+                    className="w-full py-2 px-1 sm:px-2 rounded-xl border border-gray-900 bg-white hover:bg-gray-900 hover:text-white active:scale-95 text-gray-900 text-[11px] sm:text-xs font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
+                  >
+                    Buy now
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => handleAddToCart(e, item)}
+                    className="w-full py-2 px-1 sm:px-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-[11px] sm:text-xs font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
+                  >
+                    Add to cart
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
