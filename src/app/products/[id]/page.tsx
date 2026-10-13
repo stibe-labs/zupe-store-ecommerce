@@ -41,6 +41,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { DeliveryEstimator } from "@/components/DeliveryEstimator";
+import { PaymentTrustBadges } from "@/components/PaymentTrustBadges";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -1233,6 +1234,9 @@ export default function ProductDetailPage() {
                   </>
                 )}
               </button>
+
+              {/* Accepted Payment Trust Badges (VISA, Apple Pay, G Pay, UPI, Mastercard) */}
+              <PaymentTrustBadges />
             </div>
 
             {/* ========================================================
