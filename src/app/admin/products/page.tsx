@@ -96,8 +96,8 @@ const PRODUCT_CATEGORIES_DATA = [
 const FORM_TABS_LIST = [
   "basic",
   "pricing",
-  "colors",
   "media",
+  "colors",
   "overview",
   "highlights",
   "specs",
@@ -596,10 +596,10 @@ export default function AdminProductsPage() {
         });
         return;
       }
-      setActiveTab("colors");
-    } else if (activeTab === "colors") {
       setActiveTab("media");
     } else if (activeTab === "media") {
+      setActiveTab("colors");
+    } else if (activeTab === "colors") {
       setActiveTab("overview");
     } else if (activeTab === "overview") {
       setActiveTab("highlights");
@@ -1391,19 +1391,6 @@ export default function AdminProductsPage() {
 
               <button
                 type="button"
-                onClick={() => setActiveTab("colors")}
-                className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                  activeTab === "colors"
-                    ? "border-[#FF7A00] text-[#FF7A00]"
-                    : "border-transparent text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                <Palette className="w-3.5 h-3.5" />
-                <span>3. Colors & Photos {formHasColors ? `(${formColors.length})` : "(Off)"}</span>
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setActiveTab("media")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   activeTab === "media"
@@ -1412,7 +1399,20 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <ImageIcon className="w-3.5 h-3.5" />
-                <span>4. Poster & Gallery</span>
+                <span>3. Poster & Gallery</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("colors")}
+                className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                  activeTab === "colors"
+                    ? "border-[#FF7A00] text-[#FF7A00]"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <Palette className="w-3.5 h-3.5" />
+                <span>4. Colors & Photos {formHasColors ? `(${formColors.length})` : "(Off)"}</span>
               </button>
 
               <button
@@ -2088,7 +2088,142 @@ export default function AdminProductsPage() {
               )}
 
               {/* ========================================================
-                  TAB 3: COLORS & MULTI-ANGLE PHOTOS (WITH FILE UPLOAD & URL)
+                  TAB 3: POSTER & GALLERY (WITH UPLOAD & PREVIEWS)
+                 ======================================================== */}
+              {activeTab === "media" && (
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      Primary Poster Image URL *
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={formImage}
+                        onChange={(e) => setFormImage(e.target.value)}
+                        placeholder="https://... or click Upload File"
+                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                      />
+                      <label
+                        className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 shrink-0"
+                        title="Upload Image File"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload File</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) =>
+                            handleFileUpload(e, (dataUrl) => setFormImage(dataUrl))
+                          }
+                        />
+                      </label>
+                    </div>
+
+                    {formImage && (
+                      <div className="mt-3 flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                        <img
+                          src={formImage}
+                          alt="Poster Preview"
+                          className="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0"
+                          onError={(e) => {
+                            (e.target as any).src =
+                              "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                          }}
+                        />
+                        <div>
+                          <span className="text-xs font-bold text-slate-800 block">
+                            Poster Image Preview
+                          </span>
+                          <span className="text-[11px] text-slate-500">
+                            Primary photo displayed on catalog product cards and search results.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-200">
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      General Product Gallery Images ({formGalleryImages.length} images)
+                    </label>
+                    <p className="text-[10px] text-slate-400 mb-2">
+                      Used when no color swatches are selected or as default photos in the product gallery carousel.
+                    </p>
+
+                    <div className="flex items-center gap-2 flex-wrap mb-3">
+                      {formGalleryImages.map((gImg, gIdx) => (
+                        <div
+                          key={gIdx}
+                          className="relative group w-16 h-16 rounded-xl overflow-hidden border border-slate-200 bg-white shrink-0 shadow-xs"
+                        >
+                          <img
+                            src={gImg}
+                            alt={`Gallery ${gIdx + 1}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as any).src =
+                                "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeGalleryImage(gIdx)}
+                            className="absolute inset-0 bg-rose-600/85 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                            title="Remove photo"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newGalleryInput}
+                        onChange={(e) => setNewGalleryInput(e.target.value)}
+                        placeholder="Paste image URL (e.g. /products/washer/washer-green-1.jpg)"
+                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addGalleryImage();
+                          }
+                        }}
+                      />
+                      <label
+                        className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1 shrink-0"
+                        title="Upload Gallery Photo"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) =>
+                            handleFileUpload(e, (dataUrl) =>
+                              setFormGalleryImages((prev) => [...prev, dataUrl])
+                            )
+                          }
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={addGalleryImage}
+                        className="px-4 py-2 bg-orange-50 hover:bg-orange-100 text-[#FF7A00] rounded-xl text-xs font-semibold shrink-0 transition-colors"
+                      >
+                        + Add Image
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================
+                  TAB 4: COLORS & MULTI-ANGLE PHOTOS (WITH FILE UPLOAD & URL)
                  ======================================================== */}
               {activeTab === "colors" && (
                 <div className="space-y-4">
@@ -2403,140 +2538,7 @@ export default function AdminProductsPage() {
             </div>
           )}
 
-              {/* ========================================================
-                  TAB 4: POSTER & GALLERY (WITH UPLOAD & PREVIEWS)
-                 ======================================================== */}
-              {activeTab === "media" && (
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      Primary Poster Image URL *
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={formImage}
-                        onChange={(e) => setFormImage(e.target.value)}
-                        placeholder="https://... or click Upload File"
-                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
-                      />
-                      <label
-                        className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 shrink-0"
-                        title="Upload Image File"
-                      >
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>Upload File</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) =>
-                            handleFileUpload(e, (dataUrl) => setFormImage(dataUrl))
-                          }
-                        />
-                      </label>
-                    </div>
 
-                    {formImage && (
-                      <div className="mt-3 flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
-                        <img
-                          src={formImage}
-                          alt="Poster Preview"
-                          className="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0"
-                          onError={(e) => {
-                            (e.target as any).src =
-                              "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
-                          }}
-                        />
-                        <div>
-                          <span className="text-xs font-bold text-slate-800 block">
-                            Poster Image Preview
-                          </span>
-                          <span className="text-[11px] text-slate-500">
-                            Primary photo displayed on catalog product cards and search results.
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-200">
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      General Product Gallery Images ({formGalleryImages.length} images)
-                    </label>
-                    <p className="text-[10px] text-slate-400 mb-2">
-                      Used when no color swatches are selected or as default photos in the product gallery carousel.
-                    </p>
-
-                    <div className="flex items-center gap-2 flex-wrap mb-3">
-                      {formGalleryImages.map((gImg, gIdx) => (
-                        <div
-                          key={gIdx}
-                          className="relative group w-16 h-16 rounded-xl overflow-hidden border border-slate-200 bg-white shrink-0 shadow-xs"
-                        >
-                          <img
-                            src={gImg}
-                            alt={`Gallery ${gIdx + 1}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as any).src =
-                                "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeGalleryImage(gIdx)}
-                            className="absolute inset-0 bg-rose-600/85 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                            title="Remove photo"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={newGalleryInput}
-                        onChange={(e) => setNewGalleryInput(e.target.value)}
-                        placeholder="Paste image URL (e.g. /products/washer/washer-green-1.jpg)"
-                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            addGalleryImage();
-                          }
-                        }}
-                      />
-                      <label
-                        className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1 shrink-0"
-                        title="Upload Gallery Photo"
-                      >
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>Upload</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) =>
-                            handleFileUpload(e, (dataUrl) =>
-                              setFormGalleryImages((prev) => [...prev, dataUrl])
-                            )
-                          }
-                        />
-                      </label>
-                      <button
-                        type="button"
-                        onClick={addGalleryImage}
-                        className="px-4 py-2 bg-orange-50 hover:bg-orange-100 text-[#FF7A00] rounded-xl text-xs font-semibold shrink-0 transition-colors"
-                      >
-                        + Add Image
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* ========================================================
                   TAB 5: PRODUCT DETAILS & OVERVIEW (OPEN VISUAL STORY & GIF SHOWCASE)
@@ -3177,8 +3179,8 @@ export default function AdminProductsPage() {
                 <span>
                   {activeTab === "basic" && "Basic Info"}
                   {activeTab === "pricing" && "Pricing & Stock"}
-                  {activeTab === "colors" && "Colors & Multi-Angle Photos"}
                   {activeTab === "media" && "Poster & Gallery"}
+                  {activeTab === "colors" && "Colors & Multi-Angle Photos"}
                   {activeTab === "overview" && "Product Details & Overview"}
                   {activeTab === "highlights" && "Highlights"}
                   {activeTab === "specs" && "Specs & Box"}
