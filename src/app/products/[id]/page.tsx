@@ -1162,7 +1162,7 @@ export default function ProductDetailPage() {
                   <div>
                     <p className="font-black text-red-700 uppercase tracking-wide text-[11px]">Currently Out of Stock</p>
                     <p className="text-red-700 mt-0.5 font-medium leading-relaxed">
-                      This product is currently out of stock and cannot be purchased. Stock updates in real-time.
+                      This product is currently out of stock and cannot be purchased at this time.
                     </p>
                   </div>
                 </div>

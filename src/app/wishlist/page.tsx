@@ -16,6 +16,9 @@ export default function WishlistPage() {
   const { user, isLoading: authLoading } = useAuth();
 
   const handleMoveToCart = (product: any) => {
+    if (product.in_stock === 0 || (product.stock_count !== undefined && product.stock_count <= 0)) {
+      return;
+    }
     const success = addToCart(product, 1);
     if (success) {
       removeFromWishlist(product.id);
@@ -169,14 +172,20 @@ export default function WishlistPage() {
                     </div>
                   </div>
 
-                  {/* Move to Bag Button */}
-                  <button
-                    onClick={() => handleMoveToCart(item)}
-                    className="w-full py-2 px-2.5 rounded-lg sm:rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <ShoppingBag className="w-3.5 h-3.5" />
-                    <span>Move to Bag</span>
-                  </button>
+                  {/* Move to Bag Button or Out of Stock */}
+                  {item.in_stock === 0 || (item.stock_count !== undefined && item.stock_count <= 0) ? (
+                    <div className="w-full py-2 px-2.5 rounded-lg sm:rounded-xl bg-gray-100 text-gray-400 text-xs sm:text-sm font-black text-center border border-gray-200 uppercase select-none">
+                      Out of Stock
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleMoveToCart(item)}
+                      className="w-full py-2 px-2.5 rounded-lg sm:rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                      <span>Move to Bag</span>
+                    </button>
+                  )}
                 </div>
               );
             })}

@@ -16,7 +16,7 @@ export function DealsSection() {
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
 
   useEffect(() => {
-    fetch("/api/products")
+    fetch(`/api/products?_t=${Date.now()}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         if (data.products && Array.isArray(data.products) && data.products.length > 0) {
@@ -34,6 +34,8 @@ export function DealsSection() {
   const handleAddToCart = (e: React.MouseEvent, product: typeof dealProducts[0]) => {
     e.preventDefault();
     e.stopPropagation();
+    const isOutOfStock = product.in_stock === 0 || (product.stock_count !== undefined && product.stock_count <= 0);
+    if (isOutOfStock) return;
     if (!user) {
       openAuthModal("login", "Sign in required: Please log in to add items to your cart 🛒");
       return;
@@ -48,6 +50,8 @@ export function DealsSection() {
   const handleBuyNow = (e: React.MouseEvent, product: typeof dealProducts[0]) => {
     e.preventDefault();
     e.stopPropagation();
+    const isOutOfStock = product.in_stock === 0 || (product.stock_count !== undefined && product.stock_count <= 0);
+    if (isOutOfStock) return;
     if (!user) {
       openAuthModal("login", "Sign in required: Please log in or create an account to proceed with purchase 🛍️");
       return;
@@ -83,8 +87,10 @@ export function DealsSection() {
 
       {/* 5 Product Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {dealProducts.map((product, idx) => (
-          <div
+        {dealProducts.map((product, idx) => {
+          const isOutOfStock = product.in_stock === 0 || (product.stock_count !== undefined && product.stock_count <= 0);
+          return (
+            <div
             key={product.id}
             className="bg-white rounded-2xl border border-gray-100 p-3 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300 group"
           >
@@ -148,25 +154,34 @@ export function DealsSection() {
               )}
             </div>
 
-            {/* Dual Action Buttons: Buy now & Add to cart */}
-            <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mt-auto pt-1">
-              <button
-                type="button"
-                onClick={(e) => handleBuyNow(e, product)}
-                className="w-full py-2 px-1.5 sm:px-2 rounded-xl border border-gray-900 bg-white hover:bg-gray-900 hover:text-white active:scale-95 text-gray-900 text-xs sm:text-[13px] font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
-              >
-                Buy now
-              </button>
-              <button
-                type="button"
-                onClick={(e) => handleAddToCart(e, product)}
-                className="w-full py-2 px-1.5 sm:px-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-xs sm:text-[13px] font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
-              >
-                Add to cart
-              </button>
-            </div>
+            {/* Dual Action Buttons or Out of Stock */}
+            {isOutOfStock ? (
+              <div className="mt-auto pt-1">
+                <div className="w-full py-2 px-2 rounded-xl bg-gray-100 text-gray-400 text-xs sm:text-[13px] font-extrabold text-center border border-gray-200 select-none uppercase tracking-wide">
+                  Out of Stock
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mt-auto pt-1">
+                <button
+                  type="button"
+                  onClick={(e) => handleBuyNow(e, product)}
+                  className="w-full py-2 px-1.5 sm:px-2 rounded-xl border border-gray-900 bg-white hover:bg-gray-900 hover:text-white active:scale-95 text-gray-900 text-xs sm:text-[13px] font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
+                >
+                  Buy now
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleAddToCart(e, product)}
+                  className="w-full py-2 px-1.5 sm:px-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-xs sm:text-[13px] font-bold transition-all shadow-xs flex items-center justify-center text-center cursor-pointer"
+                >
+                  Add to cart
+                </button>
+              </div>
+            )}
           </div>
-        ))}
+        );
+      })}
       </div>
     </section>
   );

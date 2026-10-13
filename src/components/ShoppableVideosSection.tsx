@@ -38,6 +38,7 @@ export function ShoppableVideosSection({
   const { addToCart, addItem } = useCart();
 
   const [videos, setVideos] = useState<ProductVideo[]>([]);
+  const [catalog, setCatalog] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeModalVideoIndex, setActiveModalVideoIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -142,6 +143,22 @@ export function ShoppableVideosSection({
     };
   }, [currentProduct]);
 
+  // Fetch live products to check inventory
+  useEffect(() => {
+    let isMounted = true;
+    fetch(`/api/products?_t=${Date.now()}`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (isMounted && d.products && Array.isArray(d.products)) {
+          setCatalog(d.products);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Lock body scroll when Reels modal player is open
   useEffect(() => {
     if (activeModalVideoIndex !== null) {
@@ -223,7 +240,18 @@ export function ShoppableVideosSection({
     setProgress(0);
   };
 
+  const currentReel = activeModalVideoIndex !== null ? videos[activeModalVideoIndex] : null;
+  const currentReelProduct = currentReel ? catalog.find(
+    (p) =>
+      (currentReel.productId && (p.id.toLowerCase() === currentReel.productId.toLowerCase() || p.slug.toLowerCase() === currentReel.productId.toLowerCase())) ||
+      (currentReel.productSlug && (p.slug.toLowerCase() === currentReel.productSlug.toLowerCase() || p.id.toLowerCase() === currentReel.productSlug.toLowerCase()))
+  ) || currentProduct : null;
+  const isCurrentReelOutOfStock = currentReelProduct
+    ? (currentReelProduct.in_stock === 0 || (currentReelProduct.stock_count !== undefined && currentReelProduct.stock_count <= 0))
+    : false;
+
   const handleBuyNowFromVideo = (vid: ProductVideo) => {
+    if (isCurrentReelOutOfStock) return;
     if (!user) {
       openAuthModal("login", "Sign in required: Please log in or create an account to proceed with purchase 🛍️");
       return;
@@ -247,6 +275,7 @@ export function ShoppableVideosSection({
   };
 
   const handleAddToCartFromVideo = (vid: ProductVideo) => {
+    if (isCurrentReelOutOfStock) return;
     if (!user) {
       openAuthModal("login", "Sign in required: Please log in to add items to your cart 🛒");
       return;
@@ -276,8 +305,6 @@ export function ShoppableVideosSection({
   if (!loading && (!videos || videos.length === 0)) {
     return null;
   }
-
-  const currentReel = activeModalVideoIndex !== null ? videos[activeModalVideoIndex] : null;
 
   return (
     <section
@@ -650,24 +677,30 @@ export function ShoppableVideosSection({
                     </div>
                   </div>
 
-                  {/* Action Buttons: BUY NOW & ADD TO CART */}
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => handleAddToCartFromVideo(currentReel)}
-                      className="w-full py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-black tracking-wide uppercase transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>ADD TO CART</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleBuyNowFromVideo(currentReel)}
-                      className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] text-white text-xs font-black tracking-wide uppercase transition-all shadow-md shadow-orange-500/30 active:scale-95 flex items-center justify-center text-center cursor-pointer"
-                    >
-                      <span>BUY NOW</span>
-                    </button>
-                  </div>
+                  {/* Action Buttons: BUY NOW & ADD TO CART or OUT OF STOCK */}
+                  {isCurrentReelOutOfStock ? (
+                    <div className="w-full py-2.5 px-3 rounded-xl bg-white/10 border border-white/20 text-gray-300 text-xs font-black uppercase text-center tracking-wider select-none">
+                      OUT OF STOCK
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => handleAddToCartFromVideo(currentReel)}
+                        className="w-full py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-black tracking-wide uppercase transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        <span>ADD TO CART</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleBuyNowFromVideo(currentReel)}
+                        className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] text-white text-xs font-black tracking-wide uppercase transition-all shadow-md shadow-orange-500/30 active:scale-95 flex items-center justify-center text-center cursor-pointer"
+                      >
+                        <span>BUY NOW</span>
+                      </button>
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="grid grid-cols-2 gap-2.5 pt-1">

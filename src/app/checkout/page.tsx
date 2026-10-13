@@ -1055,14 +1055,14 @@ function CheckoutContent() {
                 </span>
               </div>
 
-              {/* Real-time Inventory Conflict Alert */}
+              {/* Out of Stock Alert */}
               {hasOutOfStockItems && (
                 <div className="p-3.5 rounded-2xl bg-red-50 border-2 border-red-200 text-red-900 text-xs flex items-start gap-2.5 shadow-sm">
                   <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                   <div className="leading-snug">
-                    <p className="font-black text-red-700 uppercase tracking-wide text-[11px]">Stock Conflict Alert</p>
+                    <p className="font-black text-red-700 uppercase tracking-wide text-[11px]">Item Out of Stock</p>
                     <p className="text-red-700 mt-0.5 font-medium">
-                      One or more products below are currently <strong>out of stock</strong>. Remove them to place your order.
+                      One or more products in your cart are currently <strong>out of stock</strong>. Please remove them to place your order.
                     </p>
                   </div>
                 </div>
