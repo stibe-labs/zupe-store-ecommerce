@@ -301,33 +301,18 @@ export function ProductReviewsSection({
     <section id="reviews" className="w-full pt-12 pb-16 border-t border-gray-200 mt-14 bg-white/60">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-2 border border-emerald-200/80">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>100% Verified Buyer Feedback</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-display font-extrabold text-[#111111] tracking-tight">
-              Customer Reviews & Ratings
-            </h2>
+        <div className="mb-6">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-2 border border-emerald-200/80">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>100% Verified Buyer Feedback</span>
           </div>
-
-          <button
-            onClick={handleOpenWriteReview}
-            disabled={checkingEligibility}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#111111] text-white text-xs font-bold hover:bg-[#FF7A00] transition-all shadow-sm shrink-0 cursor-pointer disabled:opacity-60"
-          >
-            {checkingEligibility ? (
-              <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
-            ) : (
-              <Star className="w-4 h-4 fill-current text-amber-400" />
-            )}
-            <span>Write a Customer Review</span>
-          </button>
+          <h2 className="text-2xl sm:text-3xl font-display font-extrabold text-[#111111] tracking-tight">
+            Customer Reviews & Ratings
+          </h2>
         </div>
 
         {/* Rating Breakdown Summary Card */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-8 items-center mb-10">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-8 items-center mb-6">
           {/* Big Score Column */}
           <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left justify-center md:border-r md:border-gray-100 md:pr-8">
             <div className="flex items-baseline gap-2">
@@ -377,6 +362,22 @@ export function ProductReviewsSection({
               );
             })}
           </div>
+        </div>
+
+        {/* Write a Customer Review Button */}
+        <div className="flex justify-center sm:justify-end mb-8">
+          <button
+            onClick={handleOpenWriteReview}
+            disabled={checkingEligibility}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#111111] text-white text-xs sm:text-sm font-bold hover:bg-[#FF7A00] transition-all shadow-sm cursor-pointer disabled:opacity-60"
+          >
+            {checkingEligibility ? (
+              <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+            ) : (
+              <Star className="w-4 h-4 fill-current text-amber-400" />
+            )}
+            <span>Write a Customer Review</span>
+          </button>
         </div>
 
         {/* Customer Uploaded Photos Gallery (if any exist) */}
