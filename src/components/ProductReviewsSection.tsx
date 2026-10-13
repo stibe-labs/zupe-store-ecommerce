@@ -297,12 +297,6 @@ export function ProductReviewsSection({
     : (displayTotal > 0 ? fallbackRating : 0);
 
   // Live recommend percentage (synced with reviews rating >= 4)
-  const displayRecommendPct = hasLiveReviews
-    ? (typeof stats.recommendPercentage === "number" && stats.totalReviews > 0
-        ? stats.recommendPercentage
-        : Math.round((reviews.filter((r) => r.rating >= 4).length / (reviews.length || 1)) * 100))
-    : (displayTotal > 0 ? Math.min(99, Math.round((fallbackRating / 5) * 100)) : 0);
-
   return (
     <section id="reviews" className="w-full pt-12 pb-16 border-t border-gray-200 mt-14 bg-white/60">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
@@ -316,9 +310,6 @@ export function ProductReviewsSection({
             <h2 className="text-2xl sm:text-3xl font-display font-extrabold text-[#111111] tracking-tight">
               Customer Reviews & Ratings
             </h2>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              Real reviews and authentic pictures shared by verified Zupe Store buyers.
-            </p>
           </div>
 
           <button
@@ -360,19 +351,6 @@ export function ProductReviewsSection({
                 ? `Based on ${displayTotal.toLocaleString()} verified customer ${displayTotal === 1 ? "review" : "reviews"}`
                 : "Based on 0 verified customer reviews"}
             </span>
-
-            {/* Live Synced Recommendation badge */}
-            {displayTotal > 0 ? (
-              <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200/80">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>{displayRecommendPct}% of customers recommend this product</span>
-              </div>
-            ) : (
-              <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 text-[11px] font-semibold border border-amber-200/80">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <span>Be the first to review and recommend this product</span>
-              </div>
-            )}
           </div>
 
           {/* Progress Bars Column */}
@@ -403,18 +381,20 @@ export function ProductReviewsSection({
 
         {/* Customer Uploaded Photos Gallery (if any exist) */}
         {stats.customerPhotos.length > 0 && (
-          <div className="mb-10 p-6 rounded-3xl bg-white border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
+          <div className="mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 mb-3.5">
               <div className="flex items-center gap-2">
-                <Camera className="w-5 h-5 text-[#FF7A00]" />
-                <h3 className="text-base font-bold text-gray-900">
+                <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF7A00] shrink-0" />
+                <h3 className="text-sm sm:text-base font-bold text-gray-900">
                   Customer Photos & Unboxing ({stats.customerPhotos.length})
                 </h3>
               </div>
-              <span className="text-xs text-gray-500 font-medium">Click any photo to zoom & read review</span>
+              <span className="text-[11px] sm:text-xs text-gray-400 font-medium">
+                Click any photo to zoom & read review
+              </span>
             </div>
 
-            <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
+            <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto pb-2 scrollbar-none">
               {stats.customerPhotos.map((photoUrl, idx) => {
                 const matchingReview = reviews.find((r) => r.images?.includes(photoUrl));
                 return (
@@ -422,7 +402,7 @@ export function ProductReviewsSection({
                     key={idx}
                     type="button"
                     onClick={() => setLightboxData({ image: photoUrl, review: matchingReview })}
-                    className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-gray-200 group hover:ring-2 hover:ring-[#FF7A00] transition-all shadow-xs cursor-pointer"
+                    className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-gray-200 group hover:ring-2 hover:ring-[#FF7A00] transition-all shadow-xs cursor-pointer bg-white"
                   >
                     <Image
                       src={photoUrl}
@@ -441,12 +421,12 @@ export function ProductReviewsSection({
         )}
 
         {/* Filter and Sort Toolbar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-200 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-gray-200 mb-6">
           {/* Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs font-bold">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none w-full sm:w-auto -mx-0.5 px-0.5">
             <button
               onClick={() => setActiveFilter("all")}
-              className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer ${
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeFilter === "all"
                   ? "bg-[#111111] text-white shadow-xs"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -457,19 +437,19 @@ export function ProductReviewsSection({
             {stats.customerPhotos.length > 0 && (
               <button
                 onClick={() => setActiveFilter("photos")}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all cursor-pointer ${
+                className={`inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                   activeFilter === "photos"
                     ? "bg-[#FF7A00] text-white shadow-xs"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
-                <Camera className="w-3.5 h-3.5" />
+                <Camera className="w-3 h-3 shrink-0" />
                 <span>With Photos ({reviews.filter((r) => r.images && r.images.length > 0).length})</span>
               </button>
             )}
             <button
               onClick={() => setActiveFilter("5")}
-              className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer ${
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeFilter === "5"
                   ? "bg-[#111111] text-white shadow-xs"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -479,7 +459,7 @@ export function ProductReviewsSection({
             </button>
             <button
               onClick={() => setActiveFilter("4")}
-              className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer ${
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                 activeFilter === "4"
                   ? "bg-[#111111] text-white shadow-xs"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -490,13 +470,13 @@ export function ProductReviewsSection({
           </div>
 
           {/* Sort Selector */}
-          <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 self-end sm:self-auto">
+          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-500 self-end sm:self-auto shrink-0">
             <span>Sort by:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
               aria-label="Sort customer reviews"
-              className="bg-white border border-gray-200 rounded-xl px-2.5 py-1 text-xs font-bold text-gray-800 focus:outline-none focus:border-[#FF7A00] cursor-pointer"
+              className="bg-white border border-gray-200 rounded-lg sm:rounded-xl px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] sm:text-xs font-bold text-gray-800 focus:outline-none focus:border-[#FF7A00] cursor-pointer"
             >
               <option value="newest">Newest First</option>
               <option value="highest">Highest Rating</option>
