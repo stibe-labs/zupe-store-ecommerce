@@ -22,6 +22,7 @@ import {
   MapPin,
   Phone,
   Plus,
+  Trash2,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -32,7 +33,7 @@ import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { cart, subtotal, savings, clearCart, freeShippingThreshold } = useCart();
+  const { cart, subtotal, savings, clearCart, removeFromCart, freeShippingThreshold } = useCart();
   const { user, isLoading: authLoading, openAuthModal, updateUserProfile } = useAuth();
 
   const [name, setName] = useState(user?.name || "");
@@ -981,7 +982,7 @@ function CheckoutContent() {
               {/* Cart Items Preview */}
               <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                 {cart.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3">
+                  <div key={item.id} className="flex items-center gap-2.5 py-1">
                     <div className="relative w-12 h-12 rounded-xl bg-gray-50 overflow-hidden flex-shrink-0 border border-gray-100">
                       <Image
                         src={item.poster_image}
@@ -991,7 +992,7 @@ function CheckoutContent() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-gray-900 truncate">
+                      <p className="text-xs font-semibold text-gray-900 truncate" title={item.name}>
                         {item.name}
                       </p>
                       <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
@@ -1005,15 +1006,26 @@ function CheckoutContent() {
                         )}
                       </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <span className="text-xs font-bold text-gray-900 block">
-                        ₹{(item.price * item.quantity).toLocaleString()}
-                      </span>
-                      {item.original_price && item.original_price > item.price && (
-                        <span className="line-through text-[10px] text-gray-400 block -mt-0.5">
-                          ₹{(item.original_price * item.quantity).toLocaleString()}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="text-right">
+                        <span className="text-xs font-bold text-gray-900 block">
+                          ₹{(item.price * item.quantity).toLocaleString()}
                         </span>
-                      )}
+                        {item.original_price && item.original_price > item.price && (
+                          <span className="line-through text-[10px] text-gray-400 block -mt-0.5">
+                            ₹{(item.original_price * item.quantity).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFromCart(item.id)}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-[#E02B2B] hover:bg-rose-50 transition-colors cursor-pointer"
+                        title={`Remove ${item.name} from order`}
+                        aria-label={`Remove ${item.name} from order`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 stroke-[2]" />
+                      </button>
                     </div>
                   </div>
                 ))}
