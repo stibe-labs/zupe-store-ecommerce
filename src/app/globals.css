@@ -207,12 +207,51 @@ p, li, span:not([class*="tracking"]), label, td, th, blockquote {
   box-shadow: 0 20px 60px rgba(108, 92, 231, 0.15);
 }
 
-/* ─── Button Press Effect ─── */
-.btn-press {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+/* ─── Standard Universal Button Hover Lift & Clicking Effect ─── */
+button:not(:disabled):not([aria-disabled="true"]):not(.no-lift):not([data-no-lift]),
+[role="button"]:not([aria-disabled="true"]):not(.no-lift):not([data-no-lift]),
+input[type="button"]:not(:disabled),
+input[type="submit"]:not(:disabled),
+input[type="reset"]:not(:disabled),
+.btn-lift:not(:disabled):not([aria-disabled="true"]):not(.no-lift),
+.btn-press:not(:disabled):not([aria-disabled="true"]):not(.no-lift) {
+  cursor: pointer;
+  transition-property: transform, translate, scale, box-shadow, background-color, border-color, color, opacity;
+  transition-duration: 0.2s;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }
-.btn-press:active {
-  transform: scale(0.97);
+
+@media (hover: hover) and (pointer: fine) {
+  button:not(:disabled):not([aria-disabled="true"]):not(.no-lift):not([data-no-lift]):hover,
+  [role="button"]:not([aria-disabled="true"]):not(.no-lift):not([data-no-lift]):hover,
+  input[type="button"]:not(:disabled):hover,
+  input[type="submit"]:not(:disabled):hover,
+  input[type="reset"]:not(:disabled):hover,
+  .btn-lift:not(:disabled):not([aria-disabled="true"]):not(.no-lift):hover,
+  .btn-press:not(:disabled):not([aria-disabled="true"]):not(.no-lift):hover {
+    transform: translateY(-2px);
+  }
+}
+
+button:not(:disabled):not([aria-disabled="true"]):not(.no-lift):not([data-no-lift]):active,
+[role="button"]:not([aria-disabled="true"]):not(.no-lift):not([data-no-lift]):active,
+input[type="button"]:not(:disabled):active,
+input[type="submit"]:not(:disabled):active,
+input[type="reset"]:not(:disabled):active,
+.btn-lift:not(:disabled):not([aria-disabled="true"]):not(.no-lift):active,
+.btn-press:not(:disabled):not([aria-disabled="true"]):not(.no-lift):active {
+  transform: translateY(0.5px) scale(0.98);
+  transition-duration: 0.08s !important;
+}
+
+button:disabled,
+button[disabled],
+button[aria-disabled="true"],
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed !important;
+  transform: none !important;
+  pointer-events: auto;
 }
 
 /* ─── Gradient Mesh Background ─── */
