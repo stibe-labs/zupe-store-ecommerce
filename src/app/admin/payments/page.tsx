@@ -15,11 +15,13 @@ import {
   X,
   FileCheck,
 } from "lucide-react";
-import { RemittanceRecord } from "@/lib/erpStore";
+import { RemittanceRecord, ERPOrder } from "@/lib/erpStore";
 
 export default function AdminPaymentsPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"cod" | "prepaid">("cod");
   const [remittances, setRemittances] = useState<RemittanceRecord[]>([]);
+  const [prepaidOrders, setPrepaidOrders] = useState<ERPOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -28,6 +30,8 @@ export default function AdminPaymentsPage() {
     totalDeducted: 4910,
     totalRemitted: 35940,
     pendingCODRemittance: 84600,
+    totalPrepaidAmount: 18450,
+    prepaidOrdersCount: 12,
   });
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -46,6 +50,9 @@ export default function AdminPaymentsPage() {
       const data = await res.json();
       if (data.success) {
         setRemittances(data.remittances || []);
+        if (Array.isArray(data.prepaidOrders)) {
+          setPrepaidOrders(data.prepaidOrders);
+        }
         if (data.metrics) setMetrics(data.metrics);
       }
     } catch (err) {
@@ -126,135 +133,303 @@ export default function AdminPaymentsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                Payments & COD Courier Remittances
+                Payments & Settlement Ledger
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Reconcile cash collected by courier partners against bank deposits and track pending payouts.
+                Reconcile COD courier cash remittances and view real-time prepaid gateway settlements.
               </p>
             </div>
 
             <div className="flex items-center gap-2.5">
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25"
+              {activeTab === "cod" && (
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25"
+                >
+                  <Plus className="w-4 h-4 stroke-[2.5]" />
+                  <span>Record Remittance</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Navigation Tabs (COD vs Prepaid) */}
+          <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+            <button
+              onClick={() => setActiveTab("cod")}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                activeTab === "cod"
+                  ? "bg-[#FF7A00] text-white shadow-sm shadow-orange-500/20"
+                  : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <Building className="w-4 h-4" />
+              <span>COD Courier Remittances</span>
+              <span
+                className={`ml-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                  activeTab === "cod"
+                    ? "bg-white/20 text-white"
+                    : "bg-slate-100 text-slate-600"
+                }`}
               >
-                <Plus className="w-4 h-4 stroke-[2.5]" />
-                <span>Record Remittance</span>
-              </button>
-            </div>
+                {remittances.length} batches
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("prepaid")}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                activeTab === "prepaid"
+                  ? "bg-[#FF7A00] text-white shadow-sm shadow-orange-500/20"
+                  : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <CreditCard className="w-4 h-4" />
+              <span>Prepaid & Online Payments</span>
+              <span
+                className={`ml-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                  activeTab === "prepaid"
+                    ? "bg-white/20 text-white"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                {prepaidOrders.length} orders
+              </span>
+            </button>
           </div>
 
-          {/* 4 Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Total COD Collected
-              </p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">
-                ₹{metrics.totalCollected.toLocaleString("en-IN")}
-              </p>
-              <span className="text-xs text-slate-500 mt-1 block">Doorstep cash receipts</span>
-            </div>
+          {/* TAB 1: COD COURIER REMITTANCES */}
+          {activeTab === "cod" && (
+            <>
+              {/* 4 COD Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Total COD Collected
+                  </p>
+                  <p className="text-2xl font-bold text-slate-900 mt-1">
+                    ₹{metrics.totalCollected.toLocaleString("en-IN")}
+                  </p>
+                  <span className="text-xs text-slate-500 mt-1 block">Doorstep cash receipts</span>
+                </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Courier Charges Deducted
-              </p>
-              <p className="text-2xl font-bold text-rose-600 mt-1">
-                ₹{metrics.totalDeducted.toLocaleString("en-IN")}
-              </p>
-              <span className="text-xs text-slate-500 mt-1 block">Freight & COD processing fees</span>
-            </div>
+                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Courier Charges Deducted
+                  </p>
+                  <p className="text-2xl font-bold text-rose-600 mt-1">
+                    ₹{metrics.totalDeducted.toLocaleString("en-IN")}
+                  </p>
+                  <span className="text-xs text-slate-500 mt-1 block">Freight & COD processing fees</span>
+                </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Net Remitted to Bank
-              </p>
-              <p className="text-2xl font-bold text-emerald-600 mt-1">
-                ₹{metrics.totalRemitted.toLocaleString("en-IN")}
-              </p>
-              <span className="text-xs text-emerald-600 font-semibold mt-1 block">Settled via NEFT / RTGS</span>
-            </div>
+                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Net Remitted to Bank
+                  </p>
+                  <p className="text-2xl font-bold text-emerald-600 mt-1">
+                    ₹{metrics.totalRemitted.toLocaleString("en-IN")}
+                  </p>
+                  <span className="text-xs text-emerald-600 font-semibold mt-1 block">Settled via NEFT / RTGS</span>
+                </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Pending COD Remittance
-              </p>
-              <p className="text-2xl font-bold text-amber-600 mt-1">
-                ₹{metrics.pendingCODRemittance.toLocaleString("en-IN")}
-              </p>
-              <span className="text-xs text-amber-700 font-semibold mt-1 block">Courier payout pipeline</span>
-            </div>
-          </div>
+                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Pending COD Remittance
+                  </p>
+                  <p className="text-2xl font-bold text-amber-600 mt-1">
+                    ₹{metrics.pendingCODRemittance.toLocaleString("en-IN")}
+                  </p>
+                  <span className="text-xs text-amber-700 font-semibold mt-1 block">Courier payout pipeline</span>
+                </div>
+              </div>
 
-          {/* Remittance Batches Table */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 text-base">
-                Courier Remittance Settlements (CRN History)
-              </h3>
-            </div>
+              {/* Remittance Batches Table */}
+              <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                  <h3 className="font-bold text-slate-900 text-base">
+                    Courier Remittance Settlements (CRN History)
+                  </h3>
+                </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs sm:text-sm text-slate-700">
-                <thead className="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <tr>
-                    <th className="py-3.5 px-4 sm:px-6">Remittance Date</th>
-                    <th className="py-3.5 px-4">CRN ID</th>
-                    <th className="py-3.5 px-4">Courier Partner</th>
-                    <th className="py-3.5 px-4">Orders</th>
-                    <th className="py-3.5 px-4">COD Collected</th>
-                    <th className="py-3.5 px-4">Deductions</th>
-                    <th className="py-3.5 px-4">Net Deposited</th>
-                    <th className="py-3.5 px-4">Bank UTR Ref</th>
-                    <th className="py-3.5 px-4 text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-medium">
-                  {remittances.map((rem) => (
-                    <tr key={rem.id} className="hover:bg-slate-50/70">
-                      <td className="py-3.5 px-4 sm:px-6 font-mono text-slate-600 whitespace-nowrap">
-                        {rem.remittance_date}
-                      </td>
-                      <td className="py-3.5 px-4 font-mono font-bold text-[#FF7A00] whitespace-nowrap">
-                        {rem.crn_id}
-                      </td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-800 whitespace-nowrap">
-                        {rem.courier}
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-700 whitespace-nowrap">
-                        {rem.orders_count} pkgs
-                      </td>
-                      <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
-                        ₹{rem.total_cod_collected.toLocaleString("en-IN")}
-                      </td>
-                      <td className="py-3.5 px-4 text-rose-600 font-semibold whitespace-nowrap">
-                        -₹{rem.courier_charges_deducted.toLocaleString("en-IN")}
-                      </td>
-                      <td className="py-3.5 px-4 text-emerald-600 font-bold whitespace-nowrap">
-                        ₹{rem.net_remitted_amount.toLocaleString("en-IN")}
-                      </td>
-                      <td className="py-3.5 px-4 font-mono text-slate-500 whitespace-nowrap">
-                        {rem.bank_utr || "-"}
-                      </td>
-                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                            rem.status === "Remitted"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : "bg-amber-100 text-amber-700"
-                          }`}
-                        >
-                          {rem.status === "Remitted" ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
-                          {rem.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs sm:text-sm text-slate-700">
+                    <thead className="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      <tr>
+                        <th className="py-3.5 px-4 sm:px-6">Remittance Date</th>
+                        <th className="py-3.5 px-4">CRN ID</th>
+                        <th className="py-3.5 px-4">Courier Partner</th>
+                        <th className="py-3.5 px-4">Orders</th>
+                        <th className="py-3.5 px-4">COD Collected</th>
+                        <th className="py-3.5 px-4">Deductions</th>
+                        <th className="py-3.5 px-4">Net Deposited</th>
+                        <th className="py-3.5 px-4">Bank UTR Ref</th>
+                        <th className="py-3.5 px-4 text-right">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-medium">
+                      {remittances.map((rem) => (
+                        <tr key={rem.id} className="hover:bg-slate-50/70">
+                          <td className="py-3.5 px-4 sm:px-6 font-mono text-slate-600 whitespace-nowrap">
+                            {rem.remittance_date}
+                          </td>
+                          <td className="py-3.5 px-4 font-mono font-bold text-[#FF7A00] whitespace-nowrap">
+                            {rem.crn_id}
+                          </td>
+                          <td className="py-3.5 px-4 font-semibold text-slate-800 whitespace-nowrap">
+                            {rem.courier}
+                          </td>
+                          <td className="py-3.5 px-4 text-slate-700 whitespace-nowrap">
+                            {rem.orders_count} pkgs
+                          </td>
+                          <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
+                            ₹{rem.total_cod_collected.toLocaleString("en-IN")}
+                          </td>
+                          <td className="py-3.5 px-4 text-rose-600 font-semibold whitespace-nowrap">
+                            -₹{rem.courier_charges_deducted.toLocaleString("en-IN")}
+                          </td>
+                          <td className="py-3.5 px-4 text-emerald-600 font-bold whitespace-nowrap">
+                            ₹{rem.net_remitted_amount.toLocaleString("en-IN")}
+                          </td>
+                          <td className="py-3.5 px-4 font-mono text-slate-500 whitespace-nowrap">
+                            {rem.bank_utr || "-"}
+                          </td>
+                          <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                                rem.status === "Remitted"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : "bg-amber-100 text-amber-700"
+                              }`}
+                            >
+                              {rem.status === "Remitted" ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
+                              {rem.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* TAB 2: PREPAID & ONLINE PAYMENTS */}
+          {activeTab === "prepaid" && (
+            <>
+              {/* Prepaid KPI Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Total Online Collections
+                  </p>
+                  <p className="text-2xl font-bold text-emerald-600 mt-1">
+                    ₹{metrics.totalPrepaidAmount.toLocaleString("en-IN")}
+                  </p>
+                  <span className="text-xs text-slate-500 mt-1 block">Paid via Razorpay / UPI / Cards</span>
+                </div>
+
+                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Prepaid Orders Count
+                  </p>
+                  <p className="text-2xl font-bold text-slate-900 mt-1">
+                    {prepaidOrders.length}
+                  </p>
+                  <span className="text-xs text-emerald-600 font-medium mt-1 block">Zero RTO risk upfront</span>
+                </div>
+
+                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Gateway Settlement Status
+                  </p>
+                  <p className="text-2xl font-bold text-sky-700 mt-1">
+                    100% Settled
+                  </p>
+                  <span className="text-xs text-slate-500 mt-1 block">T+1 bank payout schedule</span>
+                </div>
+              </div>
+
+              {/* Prepaid Orders Table */}
+              <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                  <h3 className="font-bold text-slate-900 text-base">
+                    Prepaid Customer Transactions (Razorpay & Online)
+                  </h3>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Read-only payment verification ledger
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs sm:text-sm text-slate-700">
+                    <thead className="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      <tr>
+                        <th className="py-3.5 px-4 sm:px-6">Order ID</th>
+                        <th className="py-3.5 px-4">Payment Date</th>
+                        <th className="py-3.5 px-4">Customer</th>
+                        <th className="py-3.5 px-4">Gateway</th>
+                        <th className="py-3.5 px-4">Amount</th>
+                        <th className="py-3.5 px-4">Payment Status</th>
+                        <th className="py-3.5 px-4">Delivery Status</th>
+                        <th className="py-3.5 px-4 text-right">Settlement</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-medium">
+                      {prepaidOrders.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="py-8 text-center text-slate-400">
+                            No prepaid orders found in the database.
+                          </td>
+                        </tr>
+                      ) : (
+                        prepaidOrders.map((ord) => (
+                          <tr key={ord.id} className="hover:bg-slate-50/70">
+                            <td className="py-3.5 px-4 sm:px-6 font-bold text-[#FF7A00] whitespace-nowrap">
+                              {ord.shopify_order_id || ord.id}
+                            </td>
+                            <td className="py-3.5 px-4 font-mono text-slate-600 whitespace-nowrap">
+                              {ord.created_at?.split(" ")[0] || "Today"}
+                            </td>
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <p className="font-semibold text-slate-900">{ord.customer_name}</p>
+                              <p className="text-[11px] text-slate-400">{ord.customer_phone}</p>
+                            </td>
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <span className="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
+                                {ord.payment_method || "Razorpay / UPI"}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
+                              ₹{Number(ord.total_amount).toLocaleString("en-IN")}
+                            </td>
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                {ord.payment_status || "Completed"}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                                {ord.delivery_status || "In Transit"}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <FileCheck className="w-3.5 h-3.5" />
+                                Settled
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
         </main>
       </div>
 

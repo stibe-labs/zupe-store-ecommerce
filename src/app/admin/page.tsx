@@ -27,7 +27,13 @@ import { ERPOrder } from "@/lib/erpStore";
 
 export default function AdminDashboardPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [timeframe, setTimeframe] = useState<"today" | "weekly" | "monthly" | "yearly">("monthly");
+  const [timeframe, setTimeframe] = useState<"today" | "weekly" | "monthly" | "yearly" | "custom">("monthly");
+  const [customStartDate, setCustomStartDate] = useState(
+    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+  );
+  const [customEndDate, setCustomEndDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
@@ -58,8 +64,12 @@ export default function AdminDashboardPage() {
   const loadDashboardData = async () => {
     setIsRefreshing(true);
     try {
+      let statsUrl = `/api/admin/dashboard/stats?timeframe=${timeframe}`;
+      if (timeframe === "custom") {
+        statsUrl += `&startDate=${customStartDate}&endDate=${customEndDate}`;
+      }
       const [statsRes, ordersRes] = await Promise.all([
-        fetch(`/api/admin/dashboard/stats?timeframe=${timeframe}`),
+        fetch(statsUrl),
         fetch("/api/admin/orders"),
       ]);
       const statsData = await statsRes.json();
@@ -175,26 +185,55 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Timeframe Selector Pills */}
-          <div className="flex items-center gap-2">
-            {[
-              { id: "today", label: "Today" },
-              { id: "weekly", label: "This Week" },
-              { id: "monthly", label: "This Month" },
-              { id: "yearly", label: "This Year" },
-            ].map((p) => (
-              <button
-                key={p.id}
-                onClick={() => setTimeframe(p.id as any)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                  timeframe === p.id
-                    ? "bg-[#FF7A00] text-white shadow-sm shadow-orange-500/20"
-                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
+          {/* Timeframe Selector Pills & Custom Date Range */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              {[
+                { id: "today", label: "Today" },
+                { id: "weekly", label: "This Week" },
+                { id: "monthly", label: "This Month" },
+                { id: "yearly", label: "This Year" },
+                { id: "custom", label: "Custom Range" },
+              ].map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => setTimeframe(p.id as any)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                    timeframe === p.id
+                      ? "bg-[#FF7A00] text-white shadow-sm shadow-orange-500/20"
+                      : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            {timeframe === "custom" && (
+              <div className="flex flex-wrap items-center gap-2 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200/90 shadow-sm text-xs">
+                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                <span className="font-semibold text-slate-500">From:</span>
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium text-xs focus:outline-none focus:ring-1 focus:ring-[#FF7A00]"
+                />
+                <span className="font-semibold text-slate-500">To:</span>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium text-xs focus:outline-none focus:ring-1 focus:ring-[#FF7A00]"
+                />
+                <button
+                  onClick={loadDashboardData}
+                  className="px-3 py-1 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-lg font-semibold text-xs transition-all shadow-sm shadow-orange-500/20"
+                >
+                  Apply Filter
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Order Funnel KPI Cards (Module 1) */}

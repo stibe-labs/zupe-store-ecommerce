@@ -16,14 +16,20 @@ export async function GET(req: NextRequest) {
       .filter((o) => o.payment_method === "COD" && o.remittance_status === "Pending")
       .reduce((s, o) => s + Number(o.total_amount), 0);
 
+    const prepaidOrders = orders.filter((o) => o.payment_method !== "COD");
+    const totalPrepaidAmount = prepaidOrders.reduce((s, o) => s + Number(o.total_amount), 0);
+
     return NextResponse.json({
       success: true,
       remittances,
+      prepaidOrders,
       metrics: {
         totalCollected,
         totalDeducted,
         totalRemitted,
         pendingCODRemittance,
+        totalPrepaidAmount,
+        prepaidOrdersCount: prepaidOrders.length,
       },
     });
   } catch (err: any) {

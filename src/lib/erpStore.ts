@@ -1217,12 +1217,31 @@ export async function updateERPOrder(
 // ==========================================
 // 6. EXECUTIVE DASHBOARD KPI ENGINE
 // ==========================================
-export async function getDashboardKPIs(timeframe?: string) {
+export async function getDashboardKPIs(
+  timeframe?: string,
+  customRange?: { startDate?: string; endDate?: string }
+) {
   let orders = await getERPOrders();
   let expenses = await getExpenses();
   const suppliers = await getSuppliers();
 
-  if (timeframe && timeframe !== "all") {
+  if (timeframe === "custom" && (customRange?.startDate || customRange?.endDate)) {
+    const startMs = customRange.startDate
+      ? new Date(customRange.startDate + "T00:00:00").getTime()
+      : 0;
+    const endMs = customRange.endDate
+      ? new Date(customRange.endDate + "T23:59:59").getTime()
+      : Infinity;
+
+    const isInCustomRange = (dateStr?: string) => {
+      if (!dateStr) return false;
+      const t = new Date(dateStr.replace(" ", "T")).getTime();
+      return !isNaN(t) && t >= startMs && t <= endMs;
+    };
+
+    orders = orders.filter((o) => isInCustomRange(o.created_at));
+    expenses = expenses.filter((e) => isInCustomRange(e.date));
+  } else if (timeframe && timeframe !== "all") {
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
 
