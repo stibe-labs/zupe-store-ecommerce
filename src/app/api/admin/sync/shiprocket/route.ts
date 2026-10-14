@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getERPOrders } from "@/lib/erpStore";
-import { generateShiprocketAWB } from "@/lib/shiprocketService";
+import {
+  generateShiprocketAWB,
+  processShiprocketWebhook,
+  syncShiprocketTrackingForActiveOrders,
+} from "@/lib/shiprocketService";
 
 export async function GET(req: NextRequest) {
   try {
@@ -25,16 +29,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(result);
     }
 
-    // Default batch sync summary
-    const orders = await getERPOrders();
-    const activeShipments = orders.filter((o) => o.shiprocket_awb && !o.delivery_status.includes("Delivered"));
-
-    return NextResponse.json({
-      success: true,
-      message: `Shiprocket sync completed. Active shipments monitored: ${activeShipments.length}.`,
-      activeShipmentsCount: activeShipments.length,
-      timestamp: new Date().toISOString(),
-    });
+    // Run active tracking batch synchronization
+    const syncResult = await syncShiprocketTrackingForActiveOrders();
+    return NextResponse.json(syncResult);
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
@@ -49,7 +46,7 @@ export async function POST(req: NextRequest) {
       body = {};
     }
 
-    // 1. Generate AWB on-demand action
+    // 1. Generate AWB on-demand action from Admin Dashboard
     if (body.action === "generate_awb" && body.order_id) {
       const orders = await getERPOrders();
       const target = orders.find(
@@ -71,20 +68,19 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Shiprocket Tracking / NDR / RTO Webhook Receiver
-    if (body.awb || body.current_status) {
-      console.log("Shiprocket Webhook received:", body?.awb, body?.current_status);
-      return NextResponse.json({
-        success: true,
-        message: "Shiprocket tracking update processed",
-        awb: body?.awb,
+    if (body.awb || body.awb_code || body.current_status || body.order_id || body.shipment_id) {
+      const webhookResult = await processShiprocketWebhook(body);
+      return NextResponse.json(webhookResult, {
+        status: webhookResult.success ? 200 : 400,
       });
     }
 
     return NextResponse.json({
       success: true,
-      message: "Shiprocket sync endpoint active",
+      message: "Shiprocket webhook endpoint active and ready for events",
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+

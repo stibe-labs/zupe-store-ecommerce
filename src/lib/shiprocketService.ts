@@ -216,3 +216,417 @@ export async function generateShiprocketAWB(
     };
   }
 }
+
+/**
+ * Normalizes Shiprocket status strings and status codes to ERP delivery statuses
+ */
+export function mapShiprocketStatus(statusRaw?: string, statusId?: number | string): {
+  deliveryStatus: ERPOrder["delivery_status"];
+  orderStatus: string;
+  isRTO: boolean;
+  isDelivered: boolean;
+  isNDR: boolean;
+} {
+  const norm = (statusRaw || "").trim().toUpperCase();
+  const idNum = Number(statusId);
+
+  // 1. RTO Delivered / RTO Acknowledged
+  if (
+    idNum === 9 ||
+    norm.includes("RTO DELIVERED") ||
+    norm.includes("RTO RECEIVED") ||
+    norm.includes("RTO ACKNOWLEDGED") ||
+    norm.includes("RETURNED TO ORIGIN") ||
+    norm === "RTO COMPLETED"
+  ) {
+    return {
+      deliveryStatus: "RTO Delivered",
+      orderStatus: "Returned",
+      isRTO: true,
+      isDelivered: false,
+      isNDR: false,
+    };
+  }
+
+  // 2. RTO Initiated / RTO In Transit
+  if (
+    idNum === 8 ||
+    norm.includes("RTO INITIATED") ||
+    norm.includes("RTO IN TRANSIT") ||
+    norm.includes("RTO OFD") ||
+    norm.includes("RTO")
+  ) {
+    return {
+      deliveryStatus: "RTO In Transit",
+      orderStatus: "RTO",
+      isRTO: false,
+      isDelivered: false,
+      isNDR: false,
+    };
+  }
+
+  // 3. Delivered
+  if (
+    idNum === 7 ||
+    norm === "DELIVERED" ||
+    norm.includes("SUCCESSFULLY DELIVERED")
+  ) {
+    return {
+      deliveryStatus: "Delivered",
+      orderStatus: "Delivered",
+      isRTO: false,
+      isDelivered: true,
+      isNDR: false,
+    };
+  }
+
+  // 4. Out for Delivery
+  if (
+    idNum === 13 ||
+    norm.includes("OUT FOR DELIVERY") ||
+    norm.includes("OFD")
+  ) {
+    return {
+      deliveryStatus: "Out for Delivery",
+      orderStatus: "In Transit",
+      isRTO: false,
+      isDelivered: false,
+      isNDR: false,
+    };
+  }
+
+  // 5. NDR / Undelivered / Failed Delivery Attempt
+  if (
+    idNum === 19 ||
+    norm.includes("UNDELIVERED") ||
+    norm.includes("NDR") ||
+    norm.includes("DELIVERY FAILED") ||
+    norm.includes("CUSTOMER REFUSED") ||
+    norm.includes("UNAVAILABLE")
+  ) {
+    return {
+      deliveryStatus: "NDR",
+      orderStatus: "Processing",
+      isRTO: false,
+      isDelivered: false,
+      isNDR: true,
+    };
+  }
+
+  // 6. In Transit / Shipped / Picked Up
+  if (
+    idNum === 17 ||
+    idNum === 18 ||
+    norm.includes("IN TRANSIT") ||
+    norm.includes("SHIPPED") ||
+    norm.includes("PICKED UP") ||
+    norm.includes("REACHED AT DESTINATION")
+  ) {
+    return {
+      deliveryStatus: "In Transit",
+      orderStatus: "In Transit",
+      isRTO: false,
+      isDelivered: false,
+      isNDR: false,
+    };
+  }
+
+  // Default fallback
+  return {
+    deliveryStatus: "Processing",
+    orderStatus: "Processing",
+    isRTO: false,
+    isDelivered: false,
+    isNDR: false,
+  };
+}
+
+export interface ShiprocketWebhookResult {
+  success: boolean;
+  orderId?: string;
+  shopifyOrderId?: string;
+  awb?: string;
+  previousStatus?: string;
+  updatedStatus?: string;
+  rtoCreditTriggered?: boolean;
+  rtoCreditAmount?: number;
+  message: string;
+}
+
+/**
+ * Ingests live Shiprocket Webhook payload, updates order delivery lifecycle,
+ * and automatically issues double-entry RTO Supplier Credit if returned.
+ */
+export async function processShiprocketWebhook(payload: any): Promise<ShiprocketWebhookResult> {
+  const awb = (payload.awb || payload.awb_code || "").toString().trim();
+  const rawOrderId = (payload.order_id || payload.channel_order_id || "").toString().trim();
+  const shipmentId = payload.shipment_id;
+  const statusRaw = payload.current_status || payload.shipment_status || payload.status || "";
+  const statusId = payload.current_status_id || payload.shipment_status_id;
+  const courierName = payload.courier_name || payload.carrier_name;
+  const ndrReason = payload.ndr_remarks || payload.ndr_status || payload.failure_reason || (payload.scans?.[0]?.activity || "Non-delivery scan reported");
+
+  if (!awb && !rawOrderId && !shipmentId) {
+    return {
+      success: false,
+      message: "Webhook payload missing AWB, order ID, or shipment ID",
+    };
+  }
+
+  // Find target order
+  const { getERPOrders, updateERPOrder, addRTOCredit } = await import("@/lib/erpStore");
+  const allOrders = await getERPOrders();
+
+  let targetOrder = allOrders.find(
+    (o) =>
+      (awb && o.shiprocket_awb && o.shiprocket_awb.toLowerCase() === awb.toLowerCase()) ||
+      (rawOrderId && o.id.toLowerCase() === rawOrderId.toLowerCase()) ||
+      (rawOrderId && o.shopify_order_id.toLowerCase() === rawOrderId.toLowerCase()) ||
+      (rawOrderId && o.shopify_order_id.replace(/\D/g, "") === rawOrderId.replace(/\D/g, ""))
+  );
+
+  // If not found in memory, query D1 directly
+  if (!targetOrder && (awb || rawOrderId)) {
+    try {
+      const d1Res = await executeD1Query<ERPOrder>(
+        `SELECT * FROM orders 
+         WHERE shiprocket_awb = ? 
+            OR id = ? 
+            OR shopify_order_id = ? 
+            OR shopify_order_id = ? 
+         LIMIT 1`,
+        [awb, rawOrderId, rawOrderId, rawOrderId.startsWith("#") ? rawOrderId : `#${rawOrderId}`]
+      );
+      if (d1Res && d1Res.length > 0) {
+        targetOrder = d1Res[0];
+      }
+    } catch (e) {
+      console.warn("D1 query error in processShiprocketWebhook:", e);
+    }
+  }
+
+  if (!targetOrder) {
+    return {
+      success: false,
+      awb,
+      message: `No matching order found in ERP for AWB: ${awb || rawOrderId}`,
+    };
+  }
+
+  const previousStatus = targetOrder.delivery_status;
+  const mapped = mapShiprocketStatus(statusRaw, statusId);
+  const updates: Partial<ERPOrder> = {
+    delivery_status: mapped.deliveryStatus,
+    status: mapped.orderStatus,
+  };
+
+  if (courierName) {
+    updates.courier_partner = courierName;
+  }
+  if (awb && !targetOrder.shiprocket_awb) {
+    updates.shiprocket_awb = awb;
+  }
+
+  // Handle NDR
+  if (mapped.isNDR) {
+    updates.ndr_status = ndrReason;
+  } else if (mapped.isDelivered) {
+    updates.ndr_status = "Resolved (Delivered)";
+    // If COD, set remittance status to Pending
+    if (targetOrder.payment_method === "COD" && targetOrder.remittance_status !== "Remitted") {
+      updates.remittance_status = "Pending";
+    }
+  }
+
+  let rtoCreditTriggered = false;
+  let rtoCreditAmount = 0;
+
+  // Handle RTO Delivered & Supplier Credit Trigger
+  if (mapped.isRTO) {
+    updates.rto_status = "Returned to Supplier";
+
+    // Check if supplier credit was ALREADY issued for this order (prevent duplicate credit)
+    const alreadyCredited =
+      targetOrder.rto_status === "Supplier Credited" ||
+      targetOrder.rto_status?.includes("Credited");
+
+    if (!alreadyCredited) {
+      // Amount to credit back is the unit Product Cost (COGS)
+      const creditAmount =
+        targetOrder.product_cost && targetOrder.product_cost > 0
+          ? targetOrder.product_cost
+          : Math.round(targetOrder.total_amount * 0.42);
+
+      const supplierId = targetOrder.supplier_id || "sup-a";
+      const productName =
+        targetOrder.items?.[0]?.product_name || "Returned Dropship Product";
+
+      try {
+        await addRTOCredit({
+          supplier_id: supplierId,
+          order_id: targetOrder.shopify_order_id || targetOrder.id,
+          product_name: productName,
+          amount: creditAmount,
+          date: new Date().toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+          status: "Credited",
+          notes: `Shiprocket Webhook confirmed package return to supplier. Credited ₹${creditAmount} to supplier balance.`,
+        });
+
+        rtoCreditTriggered = true;
+        rtoCreditAmount = creditAmount;
+        updates.rto_status = "Supplier Credited";
+
+        // Recalculate net profit on RTO:
+        // Net profit = 0 (revenue lost) - forward freight - RTO charge - ad spend + supplier credit
+        const shipCost = targetOrder.shipping_cost || 75;
+        const rtoCharge = targetOrder.rto_shipping_charge || 65;
+        const adSpend = targetOrder.ad_spend_attributed || 0;
+        updates.net_profit = 0 - shipCost - rtoCharge - adSpend + creditAmount;
+      } catch (creditErr) {
+        console.warn("Failed to automatically add RTO credit:", creditErr);
+      }
+    }
+  }
+
+  // Persist order updates
+  await updateERPOrder(targetOrder.id, updates);
+
+  return {
+    success: true,
+    orderId: targetOrder.id,
+    shopifyOrderId: targetOrder.shopify_order_id,
+    awb: targetOrder.shiprocket_awb || awb,
+    previousStatus,
+    updatedStatus: mapped.deliveryStatus,
+    rtoCreditTriggered,
+    rtoCreditAmount,
+    message: `Updated order ${targetOrder.shopify_order_id} from ${previousStatus} to ${mapped.deliveryStatus}.${
+      rtoCreditTriggered ? ` Automatically credited ₹${rtoCreditAmount} to supplier.` : ""
+    }`,
+  };
+}
+
+/**
+ * Batch synchronizes active in-transit shipments using Shiprocket Live API or Simulation
+ */
+export async function syncShiprocketTrackingForActiveOrders(): Promise<{
+  success: boolean;
+  checkedCount: number;
+  updatedCount: number;
+  rtoCreditsTriggered: number;
+  message: string;
+  details: any[];
+}> {
+  const { getERPOrders, getSettings } = await import("@/lib/erpStore");
+  const orders = await getERPOrders();
+  const settings = await getSettings();
+  const token = (settings.shiprocket?.token || "").trim();
+
+  const isMock =
+    !token ||
+    token.includes("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...") ||
+    token.startsWith("sr_test_") ||
+    token.length < 30;
+
+  // Filter orders that have an AWB and are not yet in final terminal state
+  const activeOrders = orders.filter(
+    (o) =>
+      Boolean(o.shiprocket_awb) &&
+      o.delivery_status !== "Delivered" &&
+      o.delivery_status !== "RTO Delivered"
+  );
+
+  let updatedCount = 0;
+  let rtoCreditsTriggered = 0;
+  const details: any[] = [];
+
+  for (const ord of activeOrders) {
+    if (!ord.shiprocket_awb) continue;
+
+    if (!isMock) {
+      // Live Shiprocket Tracking API
+      try {
+        const trackUrl = `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${ord.shiprocket_awb}`;
+        const res = await fetch(trackUrl, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.ok) {
+          const trackData = await res.json();
+          const trackInfo = trackData?.tracking_data?.shipment_track?.[0] || trackData?.tracking_data;
+          if (trackInfo?.current_status) {
+            const webhookPayload = {
+              awb: ord.shiprocket_awb,
+              order_id: ord.id,
+              current_status: trackInfo.current_status,
+              current_status_id: trackInfo.current_status_id,
+              courier_name: trackInfo.courier_name || ord.courier_partner,
+              ndr_remarks: trackInfo.ndr_status,
+            };
+            const result = await processShiprocketWebhook(webhookPayload);
+            if (result.success) {
+              updatedCount++;
+              if (result.rtoCreditTriggered) rtoCreditsTriggered++;
+              details.push(result);
+            }
+          }
+        }
+      } catch (err: any) {
+        console.warn(`Live track error for AWB ${ord.shiprocket_awb}:`, err.message);
+      }
+    } else {
+      // Simulated natural progression for development / demo
+      // Orders in 'Processing' -> 'In Transit', 'In Transit' -> 'Out for Delivery' or 'Delivered'
+      let nextStatus = ord.delivery_status;
+      if (ord.delivery_status === "Processing") {
+        nextStatus = "In Transit";
+      } else if (ord.delivery_status === "In Transit") {
+        // Deterministically progress based on order number
+        const num = Number(ord.shopify_order_id.replace(/\D/g, "") || 0);
+        if (num % 5 === 0) {
+          nextStatus = "NDR";
+        } else if (num % 7 === 0) {
+          nextStatus = "RTO Delivered";
+        } else {
+          nextStatus = "Out for Delivery";
+        }
+      } else if (ord.delivery_status === "Out for Delivery") {
+        nextStatus = "Delivered";
+      }
+
+      if (nextStatus !== ord.delivery_status) {
+        const simPayload = {
+          awb: ord.shiprocket_awb,
+          order_id: ord.id,
+          current_status: nextStatus,
+          ndr_remarks: nextStatus === "NDR" ? "Customer phone unanswered at delivery" : undefined,
+        };
+        const result = await processShiprocketWebhook(simPayload);
+        if (result.success) {
+          updatedCount++;
+          if (result.rtoCreditTriggered) rtoCreditsTriggered++;
+          details.push(result);
+        }
+      }
+    }
+  }
+
+  return {
+    success: true,
+    checkedCount: activeOrders.length,
+    updatedCount,
+    rtoCreditsTriggered,
+    message: `Shiprocket sync check finished. ${activeOrders.length} active shipments checked, ${updatedCount} updated.${
+      rtoCreditsTriggered > 0 ? ` ${rtoCreditsTriggered} RTO supplier credits created.` : ""
+    }`,
+    details,
+  };
+}
+
