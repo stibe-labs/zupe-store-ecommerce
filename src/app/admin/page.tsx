@@ -22,8 +22,78 @@ import {
   ChevronRight,
   Calendar,
   Sparkles,
+  BarChart3,
+  Layers,
+  Activity,
+  Award,
 } from "lucide-react";
 import { ERPOrder } from "@/lib/erpStore";
+
+// ==========================================
+// SMOOTH NUMBER COUNT-UP INTRO ANIMATION
+// ==========================================
+function AnimatedCounter({
+  value,
+  prefix = "",
+  suffix = "",
+  decimals = 0,
+  isCurrency = false,
+  duration = 900,
+}: {
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+  isCurrency?: boolean;
+  duration?: number;
+}) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    let startTime: number | null = null;
+    let animId: number;
+    const startVal = 0;
+    const endVal = Number(value) || 0;
+
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Smooth ease-out exponential curve: 1 - 2^(-10 * progress)
+      const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      const current = startVal + (endVal - startVal) * ease;
+
+      setDisplayValue(current);
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(step);
+      } else {
+        setDisplayValue(endVal);
+      }
+    };
+
+    animId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animId);
+  }, [value, duration]);
+
+  const formatted = isCurrency
+    ? Math.round(displayValue).toLocaleString("en-IN")
+    : decimals > 0
+    ? displayValue.toFixed(decimals)
+    : Math.round(displayValue).toLocaleString("en-IN");
+
+  return <span>{prefix}{formatted}{suffix}</span>;
+}
+
+// Chart Point Interface
+interface ChartPoint {
+  label: string;
+  sales: number;
+  netProfit: number;
+  orders: number;
+  margin: number;
+}
 
 export default function AdminDashboardPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -37,26 +107,49 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
+  const [chartViewMode, setChartViewMode] = useState<"dual" | "margin">("dual");
+  const [hoveredPoint, setHoveredPoint] = useState<ChartPoint | null>(null);
 
-  const [kpis, setKpis] = useState({
-    totalOrders: 1248,
-    confirmedOrders: 1180,
-    shippedOrders: 142,
-    deliveredOrders: 980,
-    ndrOrders: 28,
-    rtoOrders: 64,
-    totalSales: 1485600,
-    productCosts: 580000,
-    shippingCosts: 118400,
-    rtoCharges: 21500,
-    adSpend: 284000,
-    otherExpenses: 65000,
-    grossProfit: 905600,
-    netProfit: 416700,
-    profitMargin: 28.1,
-    rtoPercentage: 5.1,
-    pendingCODRemittance: 84600,
-    totalRTOBalance: 7500,
+  const [kpis, setKpis] = useState<{
+    totalOrders: number;
+    confirmedOrders: number;
+    shippedOrders: number;
+    deliveredOrders: number;
+    ndrOrders: number;
+    rtoOrders: number;
+    totalSales: number;
+    productCosts: number;
+    shippingCosts: number;
+    rtoCharges: number;
+    adSpend: number;
+    otherExpenses: number;
+    grossProfit: number;
+    netProfit: number;
+    profitMargin: number;
+    rtoPercentage: number;
+    pendingCODRemittance: number;
+    totalRTOBalance: number;
+    chartData?: ChartPoint[];
+  }>({
+    totalOrders: 29,
+    confirmedOrders: 25,
+    shippedOrders: 4,
+    deliveredOrders: 6,
+    ndrOrders: 1,
+    rtoOrders: 3,
+    totalSales: 33512,
+    productCosts: 13974,
+    shippingCosts: 2260,
+    rtoCharges: 125,
+    adSpend: 4500,
+    otherExpenses: 9169,
+    grossProfit: 19538,
+    netProfit: 3484,
+    profitMargin: 10.4,
+    rtoPercentage: 10.3,
+    pendingCODRemittance: 7794,
+    totalRTOBalance: 8320,
+    chartData: [],
   });
 
   const [recentOrders, setRecentOrders] = useState<ERPOrder[]>([]);
@@ -121,6 +214,20 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Derive points for chart
+  const chartPoints: ChartPoint[] = (kpis.chartData && kpis.chartData.length > 0)
+    ? kpis.chartData
+    : [
+        { label: "Oct 01 - 05", sales: 8200, netProfit: 1420, orders: 7, margin: 17.3 },
+        { label: "Oct 06 - 10", sales: 11450, netProfit: 2180, orders: 10, margin: 19.0 },
+        { label: "Oct 11 - 15", sales: 9860, netProfit: 1790, orders: 8, margin: 18.2 },
+        { label: "Oct 16 - 20", sales: 4002, netProfit: 890, orders: 4, margin: 22.2 },
+      ];
+
+  const maxSalesVal = Math.max(...chartPoints.map((p) => p.sales), 1000);
+  const peakPoint = [...chartPoints].sort((a, b) => b.sales - a.sales)[0] || chartPoints[0];
+  const bestMarginPoint = [...chartPoints].sort((a, b) => b.margin - a.margin)[0] || chartPoints[0];
+
   return (
     <div className="min-h-screen bg-[#F4F6FA] text-slate-800 font-sans">
       <AdminSidebar
@@ -150,18 +257,18 @@ export default function AdminDashboardPage() {
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
                 Real-time Shopify orders, Shiprocket logistics tracking, COD remittance & double-entry supplier credit ledger.
               </p>
+              {syncStatus && (
+                <div className="mt-2 text-xs font-semibold text-[#FF7A00] flex items-center gap-1.5 animate-pulse">
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>{syncStatus}</span>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5">
-              {syncStatus && (
-                <div className="text-xs font-semibold px-3 py-1.5 bg-orange-50 text-[#FF7A00] rounded-xl border border-orange-200 animate-pulse">
-                  {syncStatus}
-                </div>
-              )}
-
               <button
                 onClick={triggerShopifySync}
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-50 hover:bg-orange-50 hover:border-orange-200 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 hover:text-[#FF7A00] transition-all"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm"
               >
                 <RefreshCw className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Sync Shopify</span>
@@ -169,18 +276,22 @@ export default function AdminDashboardPage() {
 
               <button
                 onClick={triggerShiprocketSync}
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-50 hover:bg-orange-50 hover:border-orange-200 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 hover:text-[#FF7A00] transition-all"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm"
               >
-                <Truck className="w-3.5 h-3.5 text-[#FF7A00]" />
+                <Truck className="w-3.5 h-3.5 text-orange-500" />
                 <span>Sync Shiprocket</span>
               </button>
 
               <Link
                 href="/admin/rto-refund-balance"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs sm:text-sm font-semibold shadow-sm shadow-orange-500/25 transition-all active:scale-[0.98]"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>RTO Balance (₹{kpis.totalRTOBalance.toLocaleString("en-IN")})</span>
+                <span>
+                  RTO Balance (
+                  <AnimatedCounter isCurrency value={kpis.totalRTOBalance} prefix="₹" />
+                  )
+                </span>
               </Link>
             </div>
           </div>
@@ -238,75 +349,81 @@ export default function AdminDashboardPage() {
 
           {/* Order Funnel KPI Cards (Module 1) */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm">
+            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm hover:border-orange-200 transition-all">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Total Orders
               </span>
               <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
-                {kpis.totalOrders}
+                <AnimatedCounter value={kpis.totalOrders} />
               </p>
               <span className="text-[11px] text-[#FF7A00] font-semibold flex items-center mt-1">
                 <ShoppingBag className="w-3 h-3 mr-1" /> 100% Volume
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm">
+            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm hover:border-emerald-200 transition-all">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Confirmed
               </span>
               <p className="text-xl sm:text-2xl font-bold text-emerald-600 mt-1">
-                {kpis.confirmedOrders}
+                <AnimatedCounter value={kpis.confirmedOrders} />
               </p>
               <span className="text-[11px] text-slate-500 font-medium mt-1 block">
                 Ready / Packed
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm">
+            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm hover:border-sky-200 transition-all">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Shipped
               </span>
               <p className="text-xl sm:text-2xl font-bold text-sky-700 mt-1">
-                {kpis.shippedOrders}
+                <AnimatedCounter value={kpis.shippedOrders} />
               </p>
               <span className="text-[11px] text-slate-500 font-medium mt-1 block">
                 In Courier Transit
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm">
+            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm hover:border-emerald-200 transition-all">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Delivered
               </span>
               <p className="text-xl sm:text-2xl font-bold text-emerald-700 mt-1">
-                {kpis.deliveredOrders}
+                <AnimatedCounter value={kpis.deliveredOrders} />
               </p>
               <span className="text-[11px] text-emerald-600 font-semibold flex items-center mt-1">
-                <CheckCircle2 className="w-3 h-3 mr-1" /> 78.5% Delivery
+                <CheckCircle2 className="w-3 h-3 mr-1" />
+                <AnimatedCounter
+                  value={kpis.totalOrders > 0 ? (kpis.deliveredOrders / kpis.totalOrders) * 100 : 0}
+                  decimals={1}
+                  suffix="% Delivery"
+                />
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm">
+            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm hover:border-amber-200 transition-all">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 NDR Orders
               </span>
               <p className="text-xl sm:text-2xl font-bold text-amber-600 mt-1">
-                {kpis.ndrOrders}
+                <AnimatedCounter value={kpis.ndrOrders} />
               </p>
               <span className="text-[11px] text-amber-700 font-semibold flex items-center mt-1">
                 <AlertTriangle className="w-3 h-3 mr-1" /> Action Required
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm">
+            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm hover:border-rose-200 transition-all">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 RTO Orders
               </span>
               <p className="text-xl sm:text-2xl font-bold text-rose-600 mt-1">
-                {kpis.rtoOrders}
+                <AnimatedCounter value={kpis.rtoOrders} />
               </p>
               <span className="text-[11px] text-rose-600 font-semibold flex items-center mt-1">
-                <RotateCcw className="w-3 h-3 mr-1" /> {kpis.rtoPercentage}% RTO Rate
+                <RotateCcw className="w-3 h-3 mr-1" />
+                <AnimatedCounter value={kpis.rtoPercentage} decimals={1} suffix="% RTO Rate" />
               </span>
             </div>
           </div>
@@ -314,7 +431,7 @@ export default function AdminDashboardPage() {
           {/* Financial Breakdown & True Profitability Engine */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {/* Total Sales */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:border-orange-300 transition-all">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Total Sales Revenue
@@ -324,7 +441,7 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2 tracking-tight">
-                ₹{kpis.totalSales.toLocaleString("en-IN")}
+                <AnimatedCounter isCurrency value={kpis.totalSales} prefix="₹" />
               </p>
               <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-500">
                 <span>Gross sales from all orders</span>
@@ -332,7 +449,7 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Gross Profit */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:border-emerald-300 transition-all">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Gross Profit (Sales - COGS)
@@ -342,15 +459,15 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-emerald-600 mt-2 tracking-tight">
-                ₹{kpis.grossProfit.toLocaleString("en-IN")}
+                <AnimatedCounter isCurrency value={kpis.grossProfit} prefix="₹" />
               </p>
               <p className="text-xs text-slate-500 mt-2">
-                COGS: ₹{kpis.productCosts.toLocaleString("en-IN")}
+                COGS: <AnimatedCounter isCurrency value={kpis.productCosts} prefix="₹" />
               </p>
             </div>
 
             {/* Net Profit */}
-            <div className="bg-white rounded-2xl p-5 border-2 border-emerald-500/30 bg-gradient-to-br from-white to-emerald-50/40 shadow-sm">
+            <div className="bg-white rounded-2xl p-5 border-2 border-emerald-500/30 bg-gradient-to-br from-white to-emerald-50/40 shadow-sm hover:border-emerald-500 transition-all">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider">
                   True Net Profit
@@ -360,18 +477,18 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
               <p className="text-2xl sm:text-3xl font-black text-emerald-700 mt-2 tracking-tight">
-                ₹{kpis.netProfit.toLocaleString("en-IN")}
+                <AnimatedCounter isCurrency value={kpis.netProfit} prefix="₹" />
               </p>
               <div className="flex items-center justify-between mt-2 text-xs">
                 <span className="font-bold text-emerald-800">
-                  {kpis.profitMargin}% Profit Margin
+                  <AnimatedCounter value={kpis.profitMargin} decimals={1} suffix="% Profit Margin" />
                 </span>
                 <span className="text-slate-500">After Ads & Logistics</span>
               </div>
             </div>
 
             {/* Pending COD Remittance */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:border-amber-300 transition-all">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Pending COD Remittance
@@ -381,7 +498,7 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-amber-600 mt-2 tracking-tight">
-                ₹{kpis.pendingCODRemittance.toLocaleString("en-IN")}
+                <AnimatedCounter isCurrency value={kpis.pendingCODRemittance} prefix="₹" />
               </p>
               <div className="flex items-center justify-between mt-2 text-xs">
                 <span className="text-slate-500">Held by couriers</span>
@@ -395,45 +512,288 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
+          {/* ========================================== */}
+          {/* ANIMATED BAR GRAPH: SALES & PROFIT VELOCITY */}
+          {/* ========================================== */}
+          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-sm space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-slate-900 text-base sm:text-lg tracking-tight">
+                    Sales Revenue & Net Profit Velocity
+                  </h3>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-50 text-[#FF7A00] border border-orange-200">
+                    <BarChart3 className="w-3.5 h-3.5" />
+                    Interactive BI
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Comparative performance analyzing gross customer inflow against net realized earnings.
+                </p>
+              </div>
+
+              {/* Chart Mode Controls & Legend */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 text-xs font-medium mr-2">
+                  <span className="flex items-center gap-1.5 text-slate-700">
+                    <span className="w-3 h-3 rounded-sm bg-gradient-to-t from-[#FF7A00] to-[#FFA742]" />
+                    <span>Gross Sales</span>
+                  </span>
+                  <span className="flex items-center gap-1.5 text-slate-700">
+                    <span className="w-3 h-3 rounded-sm bg-gradient-to-t from-[#10B981] to-[#34D399]" />
+                    <span>Net Profit</span>
+                  </span>
+                </div>
+
+                <div className="inline-flex p-0.5 bg-slate-100 rounded-xl text-xs font-semibold">
+                  <button
+                    onClick={() => setChartViewMode("dual")}
+                    className={`px-3 py-1 rounded-lg transition-all ${
+                      chartViewMode === "dual"
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-slate-500 hover:text-slate-900"
+                    }`}
+                  >
+                    Dual Bar
+                  </button>
+                  <button
+                    onClick={() => setChartViewMode("margin")}
+                    className={`px-3 py-1 rounded-lg transition-all ${
+                      chartViewMode === "margin"
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-slate-500 hover:text-slate-900"
+                    }`}
+                  >
+                    Margin %
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* The Visual Bar Chart Container */}
+            <div className="relative pt-6 pb-2">
+              {/* Background Horizontal Grid Lines */}
+              <div className="absolute inset-x-0 top-6 bottom-10 flex flex-col justify-between pointer-events-none opacity-40">
+                <div className="border-b border-dashed border-slate-200 w-full flex justify-end">
+                  <span className="text-[10px] text-slate-400 font-mono pr-1 -mt-2.5">
+                    ₹{maxSalesVal.toLocaleString("en-IN")}
+                  </span>
+                </div>
+                <div className="border-b border-dashed border-slate-200 w-full flex justify-end">
+                  <span className="text-[10px] text-slate-400 font-mono pr-1 -mt-2.5">
+                    ₹{Math.round(maxSalesVal * 0.75).toLocaleString("en-IN")}
+                  </span>
+                </div>
+                <div className="border-b border-dashed border-slate-200 w-full flex justify-end">
+                  <span className="text-[10px] text-slate-400 font-mono pr-1 -mt-2.5">
+                    ₹{Math.round(maxSalesVal * 0.5).toLocaleString("en-IN")}
+                  </span>
+                </div>
+                <div className="border-b border-dashed border-slate-200 w-full flex justify-end">
+                  <span className="text-[10px] text-slate-400 font-mono pr-1 -mt-2.5">
+                    ₹{Math.round(maxSalesVal * 0.25).toLocaleString("en-IN")}
+                  </span>
+                </div>
+                <div className="border-b border-slate-200 w-full flex justify-end">
+                  <span className="text-[10px] text-slate-400 font-mono pr-1 -mt-2.5">₹0</span>
+                </div>
+              </div>
+
+              {/* Bar Columns Container */}
+              <div className="relative z-10 flex items-end justify-around h-64 sm:h-72 px-4 sm:px-8 gap-3 sm:gap-6">
+                {chartPoints.map((pt, idx) => {
+                  const salesHeightPct = maxSalesVal > 0 ? Math.min(100, Math.round((pt.sales / maxSalesVal) * 100)) : 0;
+                  const profitHeightPct = maxSalesVal > 0 ? Math.min(100, Math.max(0, Math.round((pt.netProfit / maxSalesVal) * 100))) : 0;
+                  const marginHeightPct = Math.min(100, Math.max(0, Math.round(pt.margin * 3.2)));
+
+                  const isHovered = hoveredPoint?.label === pt.label;
+
+                  return (
+                    <div
+                      key={pt.label}
+                      onMouseEnter={() => setHoveredPoint(pt)}
+                      onMouseLeave={() => setHoveredPoint(null)}
+                      className="flex-1 max-w-[110px] flex flex-col items-center h-full justify-end group cursor-pointer relative"
+                    >
+                      {/* Floating Interactive Tooltip */}
+                      {isHovered && (
+                        <div className="absolute -top-24 z-30 bg-slate-900 text-white rounded-xl px-3.5 py-2.5 shadow-2xl text-xs w-48 pointer-events-none transform -translate-x-1/2 left-1/2 animate-in fade-in zoom-in-95 duration-150">
+                          <p className="font-bold text-slate-200 border-b border-slate-700/60 pb-1 mb-1.5 flex items-center justify-between">
+                            <span>{pt.label}</span>
+                            <span className="text-[10px] font-normal text-slate-400">{pt.orders} orders</span>
+                          </p>
+                          <div className="space-y-1">
+                            <div className="flex justify-between items-center text-slate-300">
+                              <span className="text-[11px] text-[#FFA742]">Sales:</span>
+                              <span className="font-bold text-white">₹{pt.sales.toLocaleString("en-IN")}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-slate-300">
+                              <span className="text-[11px] text-[#34D399]">Net Profit:</span>
+                              <span className="font-bold text-emerald-400">₹{pt.netProfit.toLocaleString("en-IN")}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-slate-300 border-t border-slate-800 pt-1">
+                              <span className="text-[11px] text-purple-300">Net Margin:</span>
+                              <span className="font-bold text-purple-300">{pt.margin}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Bar Visual Presentation */}
+                      {chartViewMode === "dual" ? (
+                        <div className="w-full flex items-end justify-center gap-1.5 sm:gap-2.5 h-[85%]">
+                          {/* Sales Bar */}
+                          <div
+                            className="w-1/2 rounded-t-lg bg-gradient-to-t from-[#FF7A00] to-[#FFA742] shadow-sm transition-all duration-700 ease-out group-hover:brightness-110 relative"
+                            style={{
+                              height: `${salesHeightPct}%`,
+                              minHeight: pt.sales > 0 ? "6px" : "0px",
+                              transitionDelay: `${idx * 60}ms`,
+                            }}
+                          >
+                            <span className="hidden sm:group-hover:block absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-[#FF7A00] whitespace-nowrap">
+                              ₹{pt.sales.toLocaleString("en-IN")}
+                            </span>
+                          </div>
+
+                          {/* Profit Bar */}
+                          <div
+                            className={`w-1/2 rounded-t-lg transition-all duration-700 ease-out group-hover:brightness-110 relative ${
+                              pt.netProfit >= 0
+                                ? "bg-gradient-to-t from-[#10B981] to-[#34D399]"
+                                : "bg-gradient-to-t from-rose-500 to-rose-400"
+                            }`}
+                            style={{
+                              height: `${profitHeightPct}%`,
+                              minHeight: pt.netProfit !== 0 ? "6px" : "0px",
+                              transitionDelay: `${idx * 60 + 30}ms`,
+                            }}
+                          >
+                            <span className="hidden sm:group-hover:block absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-emerald-600 whitespace-nowrap">
+                              ₹{pt.netProfit.toLocaleString("en-IN")}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Margin % Mode Bar */
+                        <div className="w-full flex items-end justify-center h-[85%]">
+                          <div
+                            className={`w-3/5 rounded-t-lg transition-all duration-700 ease-out group-hover:brightness-110 relative ${
+                              pt.margin >= 20
+                                ? "bg-gradient-to-t from-emerald-600 to-emerald-400"
+                                : pt.margin >= 10
+                                ? "bg-gradient-to-t from-[#FF7A00] to-[#FFA742]"
+                                : "bg-gradient-to-t from-rose-500 to-rose-400"
+                            }`}
+                            style={{
+                              height: `${marginHeightPct}%`,
+                              minHeight: "8px",
+                              transitionDelay: `${idx * 60}ms`,
+                            }}
+                          >
+                            <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-700 whitespace-nowrap">
+                              {pt.margin}%
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* X-Axis Interval Label */}
+                      <div className="w-full text-center pt-2.5 border-t border-slate-200">
+                        <span className="text-[11px] font-semibold text-slate-600 group-hover:text-[#FF7A00] transition-colors block truncate">
+                          {pt.label}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Quick Executive Insights Footer */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100 text-xs">
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-orange-50/60 border border-orange-100">
+                <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#FF7A00] flex items-center justify-center font-bold">
+                  <Award className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[11px] font-semibold">Peak Sales Interval</span>
+                  <span className="font-bold text-slate-900 block text-xs">
+                    {peakPoint.label} (₹{peakPoint.sales.toLocaleString("en-IN")})
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-50/60 border border-emerald-100">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[11px] font-semibold">Best Margin Efficiency</span>
+                  <span className="font-bold text-emerald-800 block text-xs">
+                    {bestMarginPoint.label} ({bestMarginPoint.margin}% Net)
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-purple-50/60 border border-purple-100">
+                <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                  <Activity className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[11px] font-semibold">Store Velocity</span>
+                  <span className="font-bold text-purple-900 block text-xs">
+                    <AnimatedCounter isCurrency value={kpis.totalSales} prefix="₹" /> Total Revenue
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Operational Expenses Breakdown Bar */}
           <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
             <h3 className="text-sm font-bold text-slate-900 mb-4">
-              Cost Structure Breakdown (₹{(kpis.productCosts + kpis.shippingCosts + kpis.rtoCharges + kpis.adSpend + kpis.otherExpenses).toLocaleString("en-IN")} Total Outflow)
+              Cost Structure Breakdown (
+              <AnimatedCounter
+                isCurrency
+                value={kpis.productCosts + kpis.shippingCosts + kpis.rtoCharges + kpis.adSpend + kpis.otherExpenses}
+                prefix="₹"
+              /> Total Outflow)
             </h3>
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
                 <span className="text-slate-500 block">Product Costs (COGS)</span>
                 <span className="text-base font-bold text-slate-900 block mt-0.5">
-                  ₹{kpis.productCosts.toLocaleString("en-IN")}
+                  <AnimatedCounter isCurrency value={kpis.productCosts} prefix="₹" />
                 </span>
               </div>
 
               <div className="p-3 bg-sky-50/60 rounded-xl border border-sky-100">
                 <span className="text-sky-700 block">Shiprocket Shipping</span>
                 <span className="text-base font-bold text-sky-900 block mt-0.5">
-                  ₹{kpis.shippingCosts.toLocaleString("en-IN")}
+                  <AnimatedCounter isCurrency value={kpis.shippingCosts} prefix="₹" />
                 </span>
               </div>
 
               <div className="p-3 bg-rose-50/60 rounded-xl border border-rose-100">
                 <span className="text-rose-700 block">RTO Reverse Charges</span>
                 <span className="text-base font-bold text-rose-900 block mt-0.5">
-                  ₹{kpis.rtoCharges.toLocaleString("en-IN")}
+                  <AnimatedCounter isCurrency value={kpis.rtoCharges} prefix="₹" />
                 </span>
               </div>
 
               <div className="p-3 bg-purple-50/60 rounded-xl border border-purple-100">
                 <span className="text-purple-700 block">Meta Ads Spend</span>
                 <span className="text-base font-bold text-purple-900 block mt-0.5">
-                  ₹{kpis.adSpend.toLocaleString("en-IN")}
+                  <AnimatedCounter isCurrency value={kpis.adSpend} prefix="₹" />
                 </span>
               </div>
 
               <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-100">
                 <span className="text-amber-700 block">Software & Other</span>
                 <span className="text-base font-bold text-amber-900 block mt-0.5">
-                  ₹{kpis.otherExpenses.toLocaleString("en-IN")}
+                  <AnimatedCounter isCurrency value={kpis.otherExpenses} prefix="₹" />
                 </span>
               </div>
             </div>
