@@ -230,12 +230,122 @@ export async function GET(req: NextRequest) {
     const totalNetProfit = plData.reduce((acc, r) => acc + r.netProfit, 0);
     const avgMargin = totalRevenue > 0 ? ((totalNetProfit / totalRevenue) * 100).toFixed(1) + "%" : "0.0%";
 
+    // 4. Compute Order-Wise Unit Economics Report
+    const orderWiseData = orders.map((ord) => {
+      const sellingPrice = Number(ord.total_amount) || 0;
+      const cogs = Number(ord.product_cost) || 0;
+      const shipping = Number(ord.shipping_cost) || 0;
+      const rtoShipping = Number(ord.rto_shipping_charge) || 0;
+      const adSpend = Number(ord.ad_spend_attributed) || 0;
+
+      const isRTO =
+        ord.delivery_status === "RTO Delivered" ||
+        ord.delivery_status === "RTO Initiated" ||
+        ord.delivery_status === "RTO In Transit" ||
+        ord.status === "Returned";
+      const isDelivered = ord.delivery_status === "Delivered";
+      const isCancelled = ord.status === "Cancelled";
+
+      let netProfit = 0;
+      if (isDelivered) {
+        netProfit = sellingPrice - cogs - shipping - adSpend;
+      } else if (isRTO) {
+        netProfit = 0 - shipping - rtoShipping - adSpend;
+      } else if (isCancelled) {
+        netProfit = 0;
+      } else {
+        netProfit = sellingPrice - cogs - shipping - adSpend;
+      }
+
+      const margin = sellingPrice > 0 ? ((netProfit / sellingPrice) * 100).toFixed(1) + "%" : "0.0%";
+
+      return {
+        id: ord.id,
+        orderId: ord.shopify_order_id || ord.id,
+        date: ord.created_at ? ord.created_at.split(" ")[0] : "2026-10-14",
+        customer: ord.customer_name,
+        customerPhone: ord.customer_phone || "-",
+        product: ord.items?.[0]?.product_name || "Store Item",
+        quantity: ord.items?.[0]?.quantity || 1,
+        paymentMethod: ord.payment_method || "COD",
+        sellingPrice,
+        cogs,
+        shipping,
+        rtoShipping,
+        adSpend,
+        netProfit,
+        margin,
+        deliveryStatus: ord.delivery_status || "Processing",
+        status: ord.status,
+      };
+    });
+
+    // 5. Compute Ad Spend & ROAS Report
+    const metaExpenses = expenses.filter((e) => e.category === "Meta Ads");
+    const totalAdSpend = metaExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+    const adMap = new Map<string, { date: string; spend: number; notes: string }>();
+    for (const exp of metaExpenses) {
+      const d = exp.date ? exp.date.split(" ")[0] : "2026-10-01";
+      if (!adMap.has(d)) {
+        adMap.set(d, { date: d, spend: 0, notes: exp.notes || "Meta Ads Campaign" });
+      }
+      const curr = adMap.get(d)!;
+      curr.spend += Number(exp.amount) || 0;
+      if (exp.notes && !curr.notes.includes(exp.notes)) {
+        curr.notes += `, ${exp.notes}`;
+      }
+    }
+
+    const allDates = new Set<string>();
+    adMap.forEach((_, d) => allDates.add(d));
+    orders.forEach((o) => {
+      if (o.created_at) allDates.add(o.created_at.split(" ")[0]);
+    });
+
+    const adSpendData = Array.from(allDates)
+      .sort((a, b) => b.localeCompare(a))
+      .map((dateStr) => {
+        const spend = adMap.get(dateStr)?.spend || 0;
+        const campaign = adMap.get(dateStr)?.notes || "Advantage+ Shopping";
+
+        const dateOrders = orders.filter((o) => (o.created_at || "").startsWith(dateStr));
+        const ordersCount = dateOrders.length;
+        const deliveredOrders = dateOrders.filter((o) => o.delivery_status === "Delivered");
+        const grossRev = dateOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+        const deliveredRev = deliveredOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+
+        const roas = spend > 0 ? (grossRev / spend).toFixed(2) + "x" : grossRev > 0 ? "Organic" : "0.00x";
+        const cpa = ordersCount > 0 && spend > 0 ? Math.round(spend / ordersCount) : 0;
+        const orderNetProfits = dateOrders.reduce((sum, o) => sum + (Number(o.net_profit) || 0), 0);
+
+        return {
+          date: dateStr,
+          campaign,
+          spend,
+          ordersCount,
+          deliveredCount: deliveredOrders.length,
+          revenue: grossRev,
+          deliveredRevenue: deliveredRev,
+          roas,
+          cpa,
+          netProfit: orderNetProfits - (ordersCount === 0 ? spend : 0),
+        };
+      })
+      .filter((r) => r.spend > 0 || r.ordersCount > 0);
+
+    const overallROAS = totalAdSpend > 0 ? (totalRevenue / totalAdSpend).toFixed(2) + "x" : "N/A";
+    const avgCPA = orders.length > 0 && totalAdSpend > 0 ? Math.round(totalAdSpend / orders.length) : 0;
+
     const summaryKPIs = {
       totalRevenue,
       totalNetProfit,
       totalOrdersCount: orders.length,
       avgMargin,
       totalRTOOrders: rtoOrders.length,
+      totalAdSpend,
+      overallROAS,
+      avgCPA,
     };
 
     const rtoDiagnostics = {
@@ -254,6 +364,8 @@ export async function GET(req: NextRequest) {
       plData,
       productData,
       rtoDiagnostics,
+      orderWiseData,
+      adSpendData,
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
