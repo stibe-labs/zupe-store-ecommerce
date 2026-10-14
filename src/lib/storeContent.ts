@@ -289,3 +289,94 @@ export async function saveCategories(categories: StoreCategory[]): Promise<Store
 
   return inMemoryCategories;
 }
+
+// ========================================================
+// PROMO DUAL BANNER CARDS (Homepage 2-Card Promo Grid)
+// ========================================================
+export interface PromoBannerCard {
+  id: "card-1" | "card-2";
+  title: string;
+  subtitle: string;
+  bgColor: string; // Hex color or CSS linear-gradient string
+  textColor: string; // Heading text color
+  subtitleColor: string; // Subtitle text color
+  ctaText: string; // Button text
+  ctaLink: string; // Redirect path or category URL
+  btnBgColor: string; // Button background color
+  btnTextColor: string; // Button text color
+  image1: string; // Main image URL or base64 Data URL
+  image2?: string; // Optional secondary collage image (Card 1)
+}
+
+export const DEFAULT_PROMO_BANNERS: PromoBannerCard[] = [
+  {
+    id: "card-1",
+    title: "Upgrade Your\nEveryday Essentials",
+    subtitle: "Smart products for a smarter lifestyle.",
+    bgColor: "#F9EFE7",
+    textColor: "#1A1A1A",
+    subtitleColor: "#4B5563",
+    ctaText: "Explore Now",
+    ctaLink: "/products?category=Tech+%26+Gadgets",
+    btnBgColor: "#1A1A1A",
+    btnTextColor: "#FFFFFF",
+    image1: "/products/thermal-printer.jpg",
+    image2: "/products/popcorn-maker.jpg",
+  },
+  {
+    id: "card-2",
+    title: "Auto Essentials",
+    subtitle: "Drive in Style\nand Comfort.",
+    bgColor: "#1F2329",
+    textColor: "#FFFFFF",
+    subtitleColor: "#9CA3AF",
+    ctaText: "Shop Now",
+    ctaLink: "/products?category=Auto+Essentials",
+    btnBgColor: "#FFFFFF",
+    btnTextColor: "#111111",
+    image1: "/products/helicopter-perfume.jpg",
+  },
+];
+
+let inMemoryPromoBanners: PromoBannerCard[] = [...DEFAULT_PROMO_BANNERS];
+
+export async function getPromoBanners(): Promise<PromoBannerCard[]> {
+  try {
+    const rows = await executeD1Query<{ provider: string; config_data: string; is_active: number }>(
+      "SELECT config_data FROM integrations_config WHERE provider = ?",
+      ["promo_banners"]
+    );
+    if (rows && rows.length > 0 && rows[0].config_data) {
+      const parsed = JSON.parse(rows[0].config_data);
+      if (Array.isArray(parsed) && parsed.length === 2) {
+        inMemoryPromoBanners = parsed;
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to fetch promo_banners from D1:", err);
+  }
+
+  return inMemoryPromoBanners;
+}
+
+export async function savePromoBanners(banners: PromoBannerCard[]): Promise<PromoBannerCard[]> {
+  inMemoryPromoBanners = banners;
+
+  try {
+    const jsonStr = JSON.stringify(banners);
+    await executeD1Query(
+      `INSERT INTO integrations_config (provider, config_data, is_active, last_synced_at, updated_at)
+       VALUES (?, ?, 1, datetime('now'), datetime('now'))
+       ON CONFLICT(provider) DO UPDATE SET 
+         config_data = excluded.config_data,
+         is_active = excluded.is_active,
+         updated_at = excluded.updated_at`,
+      ["promo_banners", jsonStr]
+    );
+  } catch (err) {
+    console.warn("Failed to persist promo_banners to D1:", err);
+  }
+
+  return inMemoryPromoBanners;
+}
+

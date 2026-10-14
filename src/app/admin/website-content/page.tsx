@@ -49,6 +49,7 @@ import {
 } from "lucide-react";
 import { HeroBannerSlide, StoreCategory } from "@/lib/storeContent";
 import { getSubcategoriesForCategory } from "@/data/zupeProducts";
+import { PromoCardsCustomizer } from "@/components/admin/PromoCardsCustomizer";
 
 const IMAGE_PRESETS = [
   { label: "Water Ripple Lamp", url: "/products/hero-banner.jpg" },
@@ -96,7 +97,7 @@ const CATEGORY_COLORS = [
 
 export default function WebsiteContentPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"banners" | "categories">("banners");
+  const [activeTab, setActiveTab] = useState<"banners" | "categories" | "promo_cards">("banners");
 
   const [banners, setBanners] = useState<HeroBannerSlide[]>([]);
   const [categories, setCategories] = useState<StoreCategory[]>([]);
@@ -624,6 +625,21 @@ export default function WebsiteContentPage() {
             </button>
 
             <button
+              onClick={() => setActiveTab("promo_cards")}
+              className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+                activeTab === "promo_cards"
+                  ? "border-[#FF7A00] text-[#FF7A00]"
+                  : "border-transparent text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <Layers className="w-4 h-4" />
+              <span>Promo Dual Cards</span>
+              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-orange-100 text-[#FF7A00] font-extrabold">
+                2 Cards
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveTab("categories")}
               className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                 activeTab === "categories"
@@ -1076,6 +1092,16 @@ export default function WebsiteContentPage() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* ========================================================
+              TAB 3: PROMO DUAL CARDS (HOMEPAGE 2-CARD GRID)
+             ======================================================== */}
+          {activeTab === "promo_cards" && (
+            <PromoCardsCustomizer
+              categories={categories}
+              showToast={showToast}
+            />
           )}
         </main>
       </div>
