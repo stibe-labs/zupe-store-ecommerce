@@ -887,6 +887,18 @@ export async function getERPOrders(filters?: {
   return res;
 }
 
+export function registerERPOrderInMemory(order: ERPOrder) {
+  const normShopifyId = (order.shopify_order_id || "").toLowerCase();
+  const idx = inMemoryERPOrders.findIndex(
+    (o) => o.id === order.id || (normShopifyId && o.shopify_order_id.toLowerCase() === normShopifyId)
+  );
+  if (idx >= 0) {
+    inMemoryERPOrders[idx] = { ...inMemoryERPOrders[idx], ...order };
+  } else {
+    inMemoryERPOrders.unshift(order);
+  }
+}
+
 export async function getOrderById(orderId: string): Promise<ERPOrder | null> {
   const normId = orderId.trim();
   const found = inMemoryERPOrders.find(

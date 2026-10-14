@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getERPOrders } from "@/lib/erpStore";
-import { pushOrderToShopify } from "@/lib/shopifyOutbound";
+import {
+  pushOrderToShopify,
+  pullShopifyOrders,
+  processShopifyWebhook,
+} from "@/lib/shopifyOutbound";
 
 export async function GET(req: NextRequest) {
   try {
@@ -25,18 +29,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(result);
     }
 
-    // Otherwise, perform batch synchronization check
-    const orders = await getERPOrders();
-    const unpushed = orders.filter(
-      (o) => !o.shopify_order_id || o.shopify_order_id.startsWith("#10")
-    );
+    // Default action on GET: Pull latest orders from Shopify into ERP
+    const limitParam = Number(searchParams.get("limit")) || 50;
+    const statusParam = searchParams.get("status") || "any";
+    const pullResult = await pullShopifyOrders({ limit: limitParam, status: statusParam });
 
-    return NextResponse.json({
-      success: true,
-      message: `Shopify sync check completed. ${orders.length} total orders, ${unpushed.length} orders mapped to Shopify.`,
-      totalOrders: orders.length,
-      timestamp: new Date().toISOString(),
-    });
+    return NextResponse.json(pullResult);
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
@@ -47,7 +45,6 @@ export async function POST(req: NextRequest) {
     const topic = req.headers.get("x-shopify-topic");
     const shopDomain = req.headers.get("x-shopify-shop-domain") || "zupe-store.myshopify.com";
 
-    // 1. If this is a manual push action from Admin Dashboard
     let body: any = {};
     try {
       body = await req.json();
@@ -55,6 +52,23 @@ export async function POST(req: NextRequest) {
       body = {};
     }
 
+    // 1. Inbound Webhook listener from Shopify (orders/create, orders/updated, orders/cancelled)
+    if (topic) {
+      console.log(`Shopify Webhook received [${topic}] from ${shopDomain}:`, body?.name || body?.id);
+      const webhookRes = await processShopifyWebhook(topic, body);
+      return NextResponse.json(webhookRes);
+    }
+
+    // 2. Manual pull action from Admin Dashboard
+    if (body.action === "pull_orders") {
+      const pullResult = await pullShopifyOrders({
+        limit: body.limit || 50,
+        status: body.status || "any",
+      });
+      return NextResponse.json(pullResult);
+    }
+
+    // 3. Manual push action from Admin Dashboard
     if (body.action === "push_order" && body.order_id) {
       const orders = await getERPOrders();
       const target = orders.find(
@@ -72,21 +86,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(result);
     }
 
-    // 2. Inbound Webhook listener from Shopify (orders/create, orders/updated)
-    if (topic) {
-      console.log(`Shopify Webhook received [${topic}] from ${shopDomain}:`, body?.id);
-      return NextResponse.json({
-        success: true,
-        message: "Webhook processed",
-        topic,
-      });
-    }
-
     return NextResponse.json({
       success: true,
-      message: "Shopify sync API ready",
+      message: "Shopify sync API active and ready",
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
