@@ -428,323 +428,298 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Financial Breakdown & True Profitability Engine */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {/* Total Sales */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:border-orange-300 transition-all">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Total Sales Revenue
-                </span>
-                <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center">
-                  <DollarSign className="w-4 h-4 stroke-[2.5]" />
+          {/* Financial Intelligence: 2x2 KPI Cards (Left) + Compact Animated Bar Graph (Right) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
+            {/* LEFT SIDE: 2x2 Primary Financial KPI Cards (col-span-5) */}
+            <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+              {/* Card 1: Total Sales Revenue */}
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm hover:border-orange-300 transition-all flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Total Sales Revenue
+                  </span>
+                  <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center">
+                    <DollarSign className="w-4 h-4 stroke-[2.5]" />
+                  </div>
+                </div>
+                <div className="my-2">
+                  <p className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                    <AnimatedCounter isCurrency value={kpis.totalSales} prefix="₹" />
+                  </p>
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  <span>Gross sales from all orders</span>
                 </div>
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2 tracking-tight">
-                <AnimatedCounter isCurrency value={kpis.totalSales} prefix="₹" />
-              </p>
-              <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-500">
-                <span>Gross sales from all orders</span>
+
+              {/* Card 2: Gross Profit */}
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm hover:border-emerald-300 transition-all flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Gross Profit (Sales - COGS)
+                  </span>
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 stroke-[2.5]" />
+                  </div>
+                </div>
+                <div className="my-2">
+                  <p className="text-xl sm:text-2xl font-bold text-emerald-600 tracking-tight">
+                    <AnimatedCounter isCurrency value={kpis.grossProfit} prefix="₹" />
+                  </p>
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  <span>COGS: <AnimatedCounter isCurrency value={kpis.productCosts} prefix="₹" /></span>
+                </div>
+              </div>
+
+              {/* Card 3: True Net Profit */}
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border-2 border-emerald-500/30 bg-gradient-to-br from-white to-emerald-50/40 shadow-sm hover:border-emerald-500 transition-all flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-emerald-900 uppercase tracking-wider">
+                    True Net Profit
+                  </span>
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-sm">
+                    <Sparkles className="w-4 h-4 stroke-[2.5]" />
+                  </div>
+                </div>
+                <div className="my-2">
+                  <p className="text-xl sm:text-2xl font-black text-emerald-700 tracking-tight">
+                    <AnimatedCounter isCurrency value={kpis.netProfit} prefix="₹" />
+                  </p>
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-bold text-emerald-800">
+                    <AnimatedCounter value={kpis.profitMargin} decimals={1} suffix="% Profit Margin" />
+                  </span>
+                  <span className="text-slate-500">After Ads & Logistics</span>
+                </div>
+              </div>
+
+              {/* Card 4: Pending COD Remittance */}
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm hover:border-amber-300 transition-all flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Pending COD Remittance
+                  </span>
+                  <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <CreditCard className="w-4 h-4 stroke-[2.5]" />
+                  </div>
+                </div>
+                <div className="my-2">
+                  <p className="text-xl sm:text-2xl font-bold text-amber-600 tracking-tight">
+                    <AnimatedCounter isCurrency value={kpis.pendingCODRemittance} prefix="₹" />
+                  </p>
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500">Held by couriers</span>
+                  <Link
+                    href="/admin/payments"
+                    className="text-[#FF7A00] font-semibold hover:underline"
+                  >
+                    Reconcile →
+                  </Link>
+                </div>
               </div>
             </div>
 
-            {/* Gross Profit */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:border-emerald-300 transition-all">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Gross Profit (Sales - COGS)
-                </span>
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <TrendingUp className="w-4 h-4 stroke-[2.5]" />
+            {/* RIGHT SIDE: Compact Animated Bar Graph (col-span-7) */}
+            <div className="lg:col-span-7 bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-3">
+              {/* Graph Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-bold text-slate-900 text-sm sm:text-base tracking-tight">
+                      Sales & Profit Velocity
+                    </h3>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-[#FF7A00] border border-orange-200">
+                      <BarChart3 className="w-3 h-3" />
+                      Live BI
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Gross revenue vs. net retained earnings
+                  </p>
                 </div>
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold text-emerald-600 mt-2 tracking-tight">
-                <AnimatedCounter isCurrency value={kpis.grossProfit} prefix="₹" />
-              </p>
-              <p className="text-xs text-slate-500 mt-2">
-                COGS: <AnimatedCounter isCurrency value={kpis.productCosts} prefix="₹" />
-              </p>
-            </div>
 
-            {/* Net Profit */}
-            <div className="bg-white rounded-2xl p-5 border-2 border-emerald-500/30 bg-gradient-to-br from-white to-emerald-50/40 shadow-sm hover:border-emerald-500 transition-all">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider">
-                  True Net Profit
-                </span>
-                <div className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-sm">
-                  <Sparkles className="w-4 h-4 stroke-[2.5]" />
-                </div>
-              </div>
-              <p className="text-2xl sm:text-3xl font-black text-emerald-700 mt-2 tracking-tight">
-                <AnimatedCounter isCurrency value={kpis.netProfit} prefix="₹" />
-              </p>
-              <div className="flex items-center justify-between mt-2 text-xs">
-                <span className="font-bold text-emerald-800">
-                  <AnimatedCounter value={kpis.profitMargin} decimals={1} suffix="% Profit Margin" />
-                </span>
-                <span className="text-slate-500">After Ads & Logistics</span>
-              </div>
-            </div>
-
-            {/* Pending COD Remittance */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:border-amber-300 transition-all">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Pending COD Remittance
-                </span>
-                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                  <CreditCard className="w-4 h-4 stroke-[2.5]" />
-                </div>
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold text-amber-600 mt-2 tracking-tight">
-                <AnimatedCounter isCurrency value={kpis.pendingCODRemittance} prefix="₹" />
-              </p>
-              <div className="flex items-center justify-between mt-2 text-xs">
-                <span className="text-slate-500">Held by couriers</span>
-                <Link
-                  href="/admin/payments"
-                  className="text-[#FF7A00] font-semibold hover:underline"
-                >
-                  Reconcile →
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* ========================================== */}
-          {/* ANIMATED BAR GRAPH: SALES & PROFIT VELOCITY */}
-          {/* ========================================== */}
-          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-sm space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-              <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-slate-900 text-base sm:text-lg tracking-tight">
-                    Sales Revenue & Net Profit Velocity
-                  </h3>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-50 text-[#FF7A00] border border-orange-200">
-                    <BarChart3 className="w-3.5 h-3.5" />
-                    Interactive BI
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Comparative performance analyzing gross customer inflow against net realized earnings.
-                </p>
-              </div>
+                  <div className="flex items-center gap-2.5 text-[11px] font-medium mr-1">
+                    <span className="flex items-center gap-1 text-slate-700">
+                      <span className="w-2.5 h-2.5 rounded-sm bg-gradient-to-t from-[#FF7A00] to-[#FFA742]" />
+                      <span>Sales</span>
+                    </span>
+                    <span className="flex items-center gap-1 text-slate-700">
+                      <span className="w-2.5 h-2.5 rounded-sm bg-gradient-to-t from-[#10B981] to-[#34D399]" />
+                      <span>Profit</span>
+                    </span>
+                  </div>
 
-              {/* Chart Mode Controls & Legend */}
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-3 text-xs font-medium mr-2">
-                  <span className="flex items-center gap-1.5 text-slate-700">
-                    <span className="w-3 h-3 rounded-sm bg-gradient-to-t from-[#FF7A00] to-[#FFA742]" />
-                    <span>Gross Sales</span>
-                  </span>
-                  <span className="flex items-center gap-1.5 text-slate-700">
-                    <span className="w-3 h-3 rounded-sm bg-gradient-to-t from-[#10B981] to-[#34D399]" />
-                    <span>Net Profit</span>
-                  </span>
-                </div>
-
-                <div className="inline-flex p-0.5 bg-slate-100 rounded-xl text-xs font-semibold">
-                  <button
-                    onClick={() => setChartViewMode("dual")}
-                    className={`px-3 py-1 rounded-lg transition-all ${
-                      chartViewMode === "dual"
-                        ? "bg-white text-slate-900 shadow-sm"
-                        : "text-slate-500 hover:text-slate-900"
-                    }`}
-                  >
-                    Dual Bar
-                  </button>
-                  <button
-                    onClick={() => setChartViewMode("margin")}
-                    className={`px-3 py-1 rounded-lg transition-all ${
-                      chartViewMode === "margin"
-                        ? "bg-white text-slate-900 shadow-sm"
-                        : "text-slate-500 hover:text-slate-900"
-                    }`}
-                  >
-                    Margin %
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* The Visual Bar Chart Container */}
-            <div className="relative pt-6 pb-2">
-              {/* Background Horizontal Grid Lines */}
-              <div className="absolute inset-x-0 top-6 bottom-10 flex flex-col justify-between pointer-events-none opacity-40">
-                <div className="border-b border-dashed border-slate-200 w-full flex justify-end">
-                  <span className="text-[10px] text-slate-400 font-mono pr-1 -mt-2.5">
-                    ₹{maxSalesVal.toLocaleString("en-IN")}
-                  </span>
-                </div>
-                <div className="border-b border-dashed border-slate-200 w-full flex justify-end">
-                  <span className="text-[10px] text-slate-400 font-mono pr-1 -mt-2.5">
-                    ₹{Math.round(maxSalesVal * 0.75).toLocaleString("en-IN")}
-                  </span>
-                </div>
-                <div className="border-b border-dashed border-slate-200 w-full flex justify-end">
-                  <span className="text-[10px] text-slate-400 font-mono pr-1 -mt-2.5">
-                    ₹{Math.round(maxSalesVal * 0.5).toLocaleString("en-IN")}
-                  </span>
-                </div>
-                <div className="border-b border-dashed border-slate-200 w-full flex justify-end">
-                  <span className="text-[10px] text-slate-400 font-mono pr-1 -mt-2.5">
-                    ₹{Math.round(maxSalesVal * 0.25).toLocaleString("en-IN")}
-                  </span>
-                </div>
-                <div className="border-b border-slate-200 w-full flex justify-end">
-                  <span className="text-[10px] text-slate-400 font-mono pr-1 -mt-2.5">₹0</span>
-                </div>
-              </div>
-
-              {/* Bar Columns Container */}
-              <div className="relative z-10 flex items-end justify-around h-64 sm:h-72 px-4 sm:px-8 gap-3 sm:gap-6">
-                {chartPoints.map((pt, idx) => {
-                  const salesHeightPct = maxSalesVal > 0 ? Math.min(100, Math.round((pt.sales / maxSalesVal) * 100)) : 0;
-                  const profitHeightPct = maxSalesVal > 0 ? Math.min(100, Math.max(0, Math.round((pt.netProfit / maxSalesVal) * 100))) : 0;
-                  const marginHeightPct = Math.min(100, Math.max(0, Math.round(pt.margin * 3.2)));
-
-                  const isHovered = hoveredPoint?.label === pt.label;
-
-                  return (
-                    <div
-                      key={pt.label}
-                      onMouseEnter={() => setHoveredPoint(pt)}
-                      onMouseLeave={() => setHoveredPoint(null)}
-                      className="flex-1 max-w-[110px] flex flex-col items-center h-full justify-end group cursor-pointer relative"
+                  <div className="inline-flex p-0.5 bg-slate-100 rounded-lg text-[11px] font-semibold">
+                    <button
+                      onClick={() => setChartViewMode("dual")}
+                      className={`px-2.5 py-0.5 rounded-md transition-all ${
+                        chartViewMode === "dual"
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-slate-500 hover:text-slate-900"
+                      }`}
                     >
-                      {/* Floating Interactive Tooltip */}
-                      {isHovered && (
-                        <div className="absolute -top-24 z-30 bg-slate-900 text-white rounded-xl px-3.5 py-2.5 shadow-2xl text-xs w-48 pointer-events-none transform -translate-x-1/2 left-1/2 animate-in fade-in zoom-in-95 duration-150">
-                          <p className="font-bold text-slate-200 border-b border-slate-700/60 pb-1 mb-1.5 flex items-center justify-between">
-                            <span>{pt.label}</span>
-                            <span className="text-[10px] font-normal text-slate-400">{pt.orders} orders</span>
-                          </p>
-                          <div className="space-y-1">
-                            <div className="flex justify-between items-center text-slate-300">
-                              <span className="text-[11px] text-[#FFA742]">Sales:</span>
-                              <span className="font-bold text-white">₹{pt.sales.toLocaleString("en-IN")}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-slate-300">
-                              <span className="text-[11px] text-[#34D399]">Net Profit:</span>
-                              <span className="font-bold text-emerald-400">₹{pt.netProfit.toLocaleString("en-IN")}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-slate-300 border-t border-slate-800 pt-1">
-                              <span className="text-[11px] text-purple-300">Net Margin:</span>
-                              <span className="font-bold text-purple-300">{pt.margin}%</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                      Dual Bar
+                    </button>
+                    <button
+                      onClick={() => setChartViewMode("margin")}
+                      className={`px-2.5 py-0.5 rounded-md transition-all ${
+                        chartViewMode === "margin"
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-slate-500 hover:text-slate-900"
+                      }`}
+                    >
+                      Margin %
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-                      {/* Bar Visual Presentation */}
-                      {chartViewMode === "dual" ? (
-                        <div className="w-full flex items-end justify-center gap-1.5 sm:gap-2.5 h-[85%]">
-                          {/* Sales Bar */}
-                          <div
-                            className="w-1/2 rounded-t-lg bg-gradient-to-t from-[#FF7A00] to-[#FFA742] shadow-sm transition-all duration-700 ease-out group-hover:brightness-110 relative"
-                            style={{
-                              height: `${salesHeightPct}%`,
-                              minHeight: pt.sales > 0 ? "6px" : "0px",
-                              transitionDelay: `${idx * 60}ms`,
-                            }}
-                          >
-                            <span className="hidden sm:group-hover:block absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-[#FF7A00] whitespace-nowrap">
-                              ₹{pt.sales.toLocaleString("en-IN")}
-                            </span>
-                          </div>
+              {/* The Compact Visual Bar Chart Container */}
+              <div className="relative pt-3 pb-1">
+                {/* Background Horizontal Grid Lines */}
+                <div className="absolute inset-x-0 top-3 bottom-7 flex flex-col justify-between pointer-events-none opacity-40">
+                  <div className="border-b border-dashed border-slate-200 w-full flex justify-end">
+                    <span className="text-[9px] text-slate-400 font-mono pr-1 -mt-2">
+                      ₹{maxSalesVal.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  <div className="border-b border-dashed border-slate-200 w-full flex justify-end">
+                    <span className="text-[9px] text-slate-400 font-mono pr-1 -mt-2">
+                      ₹{Math.round(maxSalesVal * 0.5).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  <div className="border-b border-slate-200 w-full flex justify-end">
+                    <span className="text-[9px] text-slate-400 font-mono pr-1 -mt-2">₹0</span>
+                  </div>
+                </div>
 
-                          {/* Profit Bar */}
-                          <div
-                            className={`w-1/2 rounded-t-lg transition-all duration-700 ease-out group-hover:brightness-110 relative ${
-                              pt.netProfit >= 0
-                                ? "bg-gradient-to-t from-[#10B981] to-[#34D399]"
-                                : "bg-gradient-to-t from-rose-500 to-rose-400"
-                            }`}
-                            style={{
-                              height: `${profitHeightPct}%`,
-                              minHeight: pt.netProfit !== 0 ? "6px" : "0px",
-                              transitionDelay: `${idx * 60 + 30}ms`,
-                            }}
-                          >
-                            <span className="hidden sm:group-hover:block absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-emerald-600 whitespace-nowrap">
-                              ₹{pt.netProfit.toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        /* Margin % Mode Bar */
-                        <div className="w-full flex items-end justify-center h-[85%]">
-                          <div
-                            className={`w-3/5 rounded-t-lg transition-all duration-700 ease-out group-hover:brightness-110 relative ${
-                              pt.margin >= 20
-                                ? "bg-gradient-to-t from-emerald-600 to-emerald-400"
-                                : pt.margin >= 10
-                                ? "bg-gradient-to-t from-[#FF7A00] to-[#FFA742]"
-                                : "bg-gradient-to-t from-rose-500 to-rose-400"
-                            }`}
-                            style={{
-                              height: `${marginHeightPct}%`,
-                              minHeight: "8px",
-                              transitionDelay: `${idx * 60}ms`,
-                            }}
-                          >
-                            <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-700 whitespace-nowrap">
-                              {pt.margin}%
-                            </span>
-                          </div>
-                        </div>
-                      )}
+                {/* Bar Columns Container */}
+                <div className="relative z-10 flex items-end justify-around h-36 sm:h-40 px-2 sm:px-4 gap-2 sm:gap-3">
+                  {chartPoints.map((pt, idx) => {
+                    const salesHeightPct = maxSalesVal > 0 ? Math.min(100, Math.round((pt.sales / maxSalesVal) * 100)) : 0;
+                    const profitHeightPct = maxSalesVal > 0 ? Math.min(100, Math.max(0, Math.round((pt.netProfit / maxSalesVal) * 100))) : 0;
+                    const marginHeightPct = Math.min(100, Math.max(0, Math.round(pt.margin * 3.2)));
 
-                      {/* X-Axis Interval Label */}
-                      <div className="w-full text-center pt-2.5 border-t border-slate-200">
-                        <span className="text-[11px] font-semibold text-slate-600 group-hover:text-[#FF7A00] transition-colors block truncate">
-                          {pt.label}
-                        </span>
+                    const isHovered = hoveredPoint?.label === pt.label;
+
+                    return (
+                      <div
+                        key={pt.label}
+                        onMouseEnter={() => setHoveredPoint(pt)}
+                        onMouseLeave={() => setHoveredPoint(null)}
+                        className="flex-1 max-w-[85px] flex flex-col items-center h-full justify-end group cursor-pointer relative"
+                      >
+                        {/* Floating Tooltip */}
+                        {isHovered && (
+                          <div className="absolute -top-20 z-30 bg-slate-900 text-white rounded-xl px-3 py-2 shadow-2xl text-[11px] w-40 pointer-events-none transform -translate-x-1/2 left-1/2 animate-in fade-in zoom-in-95 duration-150">
+                            <p className="font-bold text-slate-200 border-b border-slate-700/60 pb-1 mb-1 flex items-center justify-between text-[10px]">
+                              <span>{pt.label}</span>
+                              <span className="text-slate-400">{pt.orders} orders</span>
+                            </p>
+                            <div className="space-y-0.5">
+                              <div className="flex justify-between items-center text-slate-300">
+                                <span className="text-[#FFA742]">Sales:</span>
+                                <span className="font-bold text-white">₹{pt.sales.toLocaleString("en-IN")}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-slate-300">
+                                <span className="text-[#34D399]">Profit:</span>
+                                <span className="font-bold text-emerald-400">₹{pt.netProfit.toLocaleString("en-IN")}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-slate-300 border-t border-slate-800 pt-0.5">
+                                <span className="text-purple-300">Margin:</span>
+                                <span className="font-bold text-purple-300">{pt.margin}%</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Bar Visuals */}
+                        {chartViewMode === "dual" ? (
+                          <div className="w-full flex items-end justify-center gap-1 sm:gap-1.5 h-[85%]">
+                            {/* Sales Bar */}
+                            <div
+                              className="w-1/2 rounded-t bg-gradient-to-t from-[#FF7A00] to-[#FFA742] shadow-sm transition-all duration-700 ease-out group-hover:brightness-110 relative"
+                              style={{
+                                height: `${salesHeightPct}%`,
+                                minHeight: pt.sales > 0 ? "5px" : "0px",
+                                transitionDelay: `${idx * 45}ms`,
+                              }}
+                            />
+
+                            {/* Profit Bar */}
+                            <div
+                              className={`w-1/2 rounded-t transition-all duration-700 ease-out group-hover:brightness-110 relative ${
+                                pt.netProfit >= 0
+                                  ? "bg-gradient-to-t from-[#10B981] to-[#34D399]"
+                                  : "bg-gradient-to-t from-rose-500 to-rose-400"
+                              }`}
+                              style={{
+                                height: `${profitHeightPct}%`,
+                                minHeight: pt.netProfit !== 0 ? "5px" : "0px",
+                                transitionDelay: `${idx * 45 + 20}ms`,
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          /* Margin % Mode Bar */
+                          <div className="w-full flex items-end justify-center h-[85%]">
+                            <div
+                              className={`w-1/2 rounded-t transition-all duration-700 ease-out group-hover:brightness-110 relative ${
+                                pt.margin >= 20
+                                  ? "bg-gradient-to-t from-emerald-600 to-emerald-400"
+                                  : pt.margin >= 10
+                                  ? "bg-gradient-to-t from-[#FF7A00] to-[#FFA742]"
+                                  : "bg-gradient-to-t from-rose-500 to-rose-400"
+                              }`}
+                              style={{
+                                height: `${marginHeightPct}%`,
+                                minHeight: "6px",
+                                transitionDelay: `${idx * 45}ms`,
+                              }}
+                            >
+                              <span className="hidden sm:group-hover:block absolute -top-4 left-1/2 -translate-x-1/2 text-[9px] font-bold text-slate-700 whitespace-nowrap">
+                                {pt.margin}%
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* X-Axis Interval Label */}
+                        <div className="w-full text-center pt-1.5 border-t border-slate-200">
+                          <span className="text-[10px] font-semibold text-slate-600 group-hover:text-[#FF7A00] transition-colors block truncate">
+                            {pt.label}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Quick Executive Insights Footer */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100 text-xs">
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-orange-50/60 border border-orange-100">
-                <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#FF7A00] flex items-center justify-center font-bold">
-                  <Award className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="text-slate-500 block text-[11px] font-semibold">Peak Sales Interval</span>
-                  <span className="font-bold text-slate-900 block text-xs">
-                    {peakPoint.label} (₹{peakPoint.sales.toLocaleString("en-IN")})
-                  </span>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-50/60 border border-emerald-100">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                  <TrendingUp className="w-4 h-4" />
+              {/* Compact Quick Executive Insights Footer */}
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-[11px]">
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-orange-50/70 border border-orange-100">
+                  <Award className="w-3.5 h-3.5 text-[#FF7A00] shrink-0" />
+                  <div className="truncate">
+                    <span className="text-slate-500 block text-[10px]">Peak Interval:</span>
+                    <span className="font-bold text-slate-900 block truncate">
+                      {peakPoint.label} (₹{peakPoint.sales.toLocaleString("en-IN")})
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-slate-500 block text-[11px] font-semibold">Best Margin Efficiency</span>
-                  <span className="font-bold text-emerald-800 block text-xs">
-                    {bestMarginPoint.label} ({bestMarginPoint.margin}% Net)
-                  </span>
-                </div>
-              </div>
 
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-purple-50/60 border border-purple-100">
-                <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
-                  <Activity className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="text-slate-500 block text-[11px] font-semibold">Store Velocity</span>
-                  <span className="font-bold text-purple-900 block text-xs">
-                    <AnimatedCounter isCurrency value={kpis.totalSales} prefix="₹" /> Total Revenue
-                  </span>
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-emerald-50/70 border border-emerald-100">
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                  <div className="truncate">
+                    <span className="text-slate-500 block text-[10px]">Best Margin:</span>
+                    <span className="font-bold text-emerald-800 block truncate">
+                      {bestMarginPoint.label} ({bestMarginPoint.margin}%)
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
