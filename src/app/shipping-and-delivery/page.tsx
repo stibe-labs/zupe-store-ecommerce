@@ -14,6 +14,10 @@ import {
   ShieldCheck,
   Video,
   FileText,
+  Search,
+  ArrowRight,
+  ExternalLink,
+  PackageSearch,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -31,7 +35,7 @@ export default function ShippingAndDeliveryPage() {
 
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14 w-full">
         {/* Navigation Breadcrumb */}
-        <div className="mb-8">
+        <div className="mb-6">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#FF7A00] transition-colors mb-4 font-medium"
@@ -56,6 +60,28 @@ export default function ShippingAndDeliveryPage() {
           <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm text-sm sm:text-base text-gray-600 leading-relaxed">
             At <strong className="text-gray-900">Zupe Store</strong>, we ensure every order is handled with care — from packaging to doorstep delivery. All our products are <strong className="text-gray-900">handpicked, quality-checked, and shipped directly from our fulfillment centers</strong> to ensure a smooth and reliable experience for our customers.
           </div>
+        </div>
+
+        {/* Quick Order Tracking Action Banner */}
+        <div className="bg-gradient-to-r from-orange-500 via-[#FF7A00] to-amber-500 rounded-2xl p-4 sm:p-5 text-white shadow-md shadow-orange-500/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0 text-white">
+              <PackageSearch className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base sm:text-lg text-white">Looking to track your order?</h3>
+              <p className="text-xs sm:text-sm text-white/90">
+                Redirect to our live tracking portal using your Order ID (#1054) or Mobile Number.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/order-tracking"
+            className="inline-flex items-center justify-center gap-2 bg-white text-[#FF7A00] hover:bg-orange-50 font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm flex-shrink-0 active:scale-[0.98]"
+          >
+            <span>Track Your Order</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
 
         {/* Quick Highlights Cards */}
@@ -131,7 +157,7 @@ export default function ShippingAndDeliveryPage() {
             </ul>
           </section>
 
-          {/* 4. Tracking Information */}
+          {/* 4. Tracking Information with Redirect Option */}
           <section className="space-y-3">
             <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg border-b border-gray-100 pb-2">
               <Package className="w-5 h-5 text-[#FF7A00]" />
@@ -140,6 +166,28 @@ export default function ShippingAndDeliveryPage() {
             <p>
               After dispatch, you&apos;ll receive a <strong className="text-gray-900">tracking link</strong> via email or SMS. Tracking updates generally take <strong className="text-gray-900">24-48 hours</strong> to become active after shipment. You can use this link to follow your package until it&apos;s delivered safely to your doorstep.
             </p>
+            
+            {/* Inline Redirect to Order Tracking */}
+            <div className="bg-orange-50/70 border border-orange-200/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-3">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#FF7A00]/10 text-[#FF7A00] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Search className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-gray-900">Live Order Tracking Portal</h4>
+                  <p className="text-xs text-gray-600 mt-0.5">
+                    Redirect to our order tracking system for real-time Delhivery &amp; courier status checkpoints.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/order-tracking"
+                className="inline-flex items-center justify-center gap-2 bg-[#FF7A00] hover:bg-[#e06b00] text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm flex-shrink-0 active:scale-[0.98]"
+              >
+                <span>Go to Order Tracking</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </section>
 
           {/* 5. Multiple Shipments */}
