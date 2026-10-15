@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Phone,
@@ -16,7 +15,6 @@ import {
   Sparkles,
   X,
   RotateCcw,
-  ShieldAlert,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -368,20 +366,6 @@ export function AuthCard({
             </button>
           </form>
         )}
-
-        {/* Admin Login Portal Link */}
-        <div className="mt-6 pt-5 border-t border-gray-100 text-center">
-          <p className="text-xs text-gray-500">
-            Store staff or administrator?{" "}
-            <Link
-              href="/admin/login"
-              className="font-bold text-gray-900 hover:text-[#FF7A00] inline-flex items-center gap-1 transition-colors"
-            >
-              <ShieldAlert className="w-3 h-3 text-[#FF7A00]" />
-              <span>Admin Login Portal</span>
-            </Link>
-          </p>
-        </div>
       </div>
 
       {/* Value Badges (Shown when showBadges is true, e.g. on full page) */}
