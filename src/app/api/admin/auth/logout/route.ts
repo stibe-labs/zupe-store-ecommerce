@@ -25,3 +25,21 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export async function GET(req: NextRequest) {
+  const url = req.nextUrl.clone();
+  url.pathname = "/admin/login";
+  url.search = "";
+
+  const response = NextResponse.redirect(url);
+  response.cookies.set({
+    name: ADMIN_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 0,
+    path: "/",
+  });
+
+  return response;
+}
