@@ -139,6 +139,7 @@ export default function WebsiteContentPage() {
     slug: "",
     icon: "Tag",
     customIcon: "",
+    iconSize: 85,
     bgColor: "bg-[#FEEBEA]",
     iconColor: "text-[#E0533C]",
     showInNavbar: true,
@@ -351,6 +352,7 @@ export default function WebsiteContentPage() {
       slug: "",
       icon: "Tag",
       customIcon: "",
+      iconSize: 85,
       bgColor: "bg-[#FEEBEA]",
       iconColor: "text-[#E0533C]",
       showInNavbar: true,
@@ -375,6 +377,7 @@ export default function WebsiteContentPage() {
       slug: c.slug,
       icon: c.icon || "Tag",
       customIcon: c.customIcon || "",
+      iconSize: typeof c.iconSize === "number" ? c.iconSize : 85,
       bgColor: c.bgColor || "bg-[#FEEBEA]",
       iconColor: c.iconColor || "text-[#E0533C]",
       showInNavbar: c.showInNavbar !== false,
@@ -904,7 +907,7 @@ export default function WebsiteContentPage() {
                             <td className="py-3.5 px-4">
                               <div className="flex items-center gap-2.5">
                                 <div
-                                  className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs overflow-hidden ${
+                                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs overflow-hidden shadow-xs shrink-0 ${
                                     cat.bgColor || "bg-orange-50"
                                   } ${cat.iconColor || "text-[#FF7A00]"}`}
                                 >
@@ -913,7 +916,11 @@ export default function WebsiteContentPage() {
                                     <img
                                       src={cat.customIcon}
                                       alt={cat.name}
-                                      className="w-5 h-5 object-contain rounded-full"
+                                      style={{
+                                        width: `${cat.iconSize || 85}%`,
+                                        height: `${cat.iconSize || 85}%`,
+                                      }}
+                                      className="object-contain"
                                     />
                                   ) : (
                                     (() => {
@@ -1624,7 +1631,11 @@ export default function WebsiteContentPage() {
                       <img
                         src={categoryForm.customIcon}
                         alt="Preview"
-                        className="w-7 h-7 object-contain"
+                        style={{
+                          width: `${categoryForm.iconSize || 85}%`,
+                          height: `${categoryForm.iconSize || 85}%`,
+                        }}
+                        className="object-contain transition-all"
                       />
                     ) : (
                       (() => {
@@ -1648,7 +1659,7 @@ export default function WebsiteContentPage() {
                     </div>
                     <span className="text-[11px] text-slate-500 font-medium">
                       {categoryForm.customIcon
-                        ? "Custom uploaded icon active"
+                        ? `Custom uploaded icon active (${categoryForm.iconSize || 85}% size)`
                         : `Preset icon: ${categoryForm.icon}`}
                     </span>
                   </div>
@@ -1656,7 +1667,7 @@ export default function WebsiteContentPage() {
                     <button
                       type="button"
                       onClick={() => setCategoryForm({ ...categoryForm, customIcon: "" })}
-                      className="px-2 py-1 text-[11px] font-bold text-red-600 hover:bg-red-50 rounded-lg border border-red-200"
+                      className="px-2 py-1 text-[11px] font-bold text-red-600 hover:bg-red-50 rounded-lg border border-red-200 cursor-pointer"
                     >
                       Clear
                     </button>
@@ -1737,8 +1748,65 @@ export default function WebsiteContentPage() {
                       </label>
                     </div>
 
+                    {/* Icon Scale / Size Controls */}
+                    {categoryForm.customIcon && (
+                      <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-2 mt-2 shadow-xs">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                            <span>Adjust Icon Size:</span>
+                            <span className="px-1.5 py-0.5 rounded bg-orange-100 text-[#FF7A00] font-mono font-extrabold text-[11px]">
+                              {categoryForm.iconSize || 85}%
+                            </span>
+                          </span>
+                          <div className="flex items-center gap-1">
+                            {[
+                              { label: "Compact", value: 65 },
+                              { label: "Medium", value: 75 },
+                              { label: "Large (Rec.)", value: 85 },
+                              { label: "Max Fill", value: 95 },
+                            ].map((sizeOpt) => (
+                              <button
+                                key={sizeOpt.value}
+                                type="button"
+                                onClick={() =>
+                                  setCategoryForm({ ...categoryForm, iconSize: sizeOpt.value })
+                                }
+                                className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                  (categoryForm.iconSize || 85) === sizeOpt.value
+                                    ? "bg-[#FF7A00] text-white shadow-xs"
+                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                }`}
+                              >
+                                {sizeOpt.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Interactive Range Slider */}
+                        <div className="flex items-center gap-2 pt-0.5">
+                          <span className="text-[10px] text-slate-400 font-bold shrink-0">50%</span>
+                          <input
+                            type="range"
+                            min="50"
+                            max="100"
+                            step="5"
+                            value={categoryForm.iconSize || 85}
+                            onChange={(e) =>
+                              setCategoryForm({
+                                ...categoryForm,
+                                iconSize: Number(e.target.value),
+                              })
+                            }
+                            className="flex-1 accent-[#FF7A00] cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none"
+                          />
+                          <span className="text-[10px] text-slate-400 font-bold shrink-0">100%</span>
+                        </div>
+                      </div>
+                    )}
+
                     <p className="text-[10px] text-slate-500 leading-relaxed">
-                      💡 Tip: Use a transparent PNG or SVG icon for best visual results inside the circular pill background.
+                      💡 Tip: Use a transparent PNG, WebP or SVG icon for best visual results inside the circular pill background.
                     </p>
                   </div>
                 )}

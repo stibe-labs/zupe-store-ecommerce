@@ -22,6 +22,7 @@ export interface StoreCategory {
   slug: string;
   icon?: string; // Preset icon name (e.g. Armchair, Headphones)
   customIcon?: string; // Custom uploaded icon URL / Data URL
+  iconSize?: number; // Custom icon scale percentage (50 to 100, default 85)
   bgColor?: string;
   iconColor?: string;
   showInNavbar?: boolean;

@@ -133,7 +133,11 @@ export function CategoryPills() {
                 <img
                   src={c.customIcon}
                   alt={c.name}
-                  className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded-full"
+                  style={{
+                    width: `${c.iconSize || 85}%`,
+                    height: `${c.iconSize || 85}%`,
+                  }}
+                  className="object-contain transition-transform duration-300"
                 />
               ) : (
                 ICON_MAP[c.icon] || getIconForCategory(c.name)
