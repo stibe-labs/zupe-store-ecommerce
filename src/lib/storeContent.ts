@@ -16,13 +16,16 @@ export interface HeroBannerSlide {
   order?: number;
 }
 
+export type CategoryIconShape = "round" | "square";
+
 export interface StoreCategory {
   id: string;
   name: string;
   slug: string;
-  icon?: string; // Preset icon name (e.g. Armchair, Headphones)
+  icon?: string; // Preset icon name (e.g. Armchair, Headphones, LayoutGrid)
   customIcon?: string; // Custom uploaded icon URL / Data URL
   iconSize?: number; // Custom icon scale percentage (50 to 100, default 85)
+  iconShape?: CategoryIconShape; // "round" (default circle) or "square" (edge curved square)
   bgColor?: string;
   iconColor?: string;
   showInNavbar?: boolean;
@@ -76,6 +79,22 @@ export const DEFAULT_HERO_BANNERS: HeroBannerSlide[] = [
 ];
 
 export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
+  {
+    id: "all",
+    name: "All Categories",
+    slug: "all",
+    icon: "LayoutGrid",
+    bgColor: "bg-[#EEF2FF]",
+    iconColor: "text-[#3B82F6]",
+    showInNavbar: false,
+    showInPills: true,
+    showInCollections: false,
+    order: 0,
+    active: true,
+    iconShape: "round",
+    iconSize: 85,
+    subcategories: [],
+  },
   {
     id: "tech-gadgets",
     name: "Tech & Gadgets",
@@ -257,6 +276,29 @@ export async function getCategories(includeInactive = false): Promise<StoreCateg
     if (rows && rows.length > 0 && rows[0].config_data) {
       const parsed = JSON.parse(rows[0].config_data);
       if (Array.isArray(parsed) && parsed.length > 0) {
+        // Ensure "All Categories" category exists so it is customizable in admin
+        const hasAll = parsed.some(
+          (c: any) => c.id === "all" || (c.name && c.name.toLowerCase() === "all categories")
+        );
+        if (!hasAll) {
+          const allCat: StoreCategory = {
+            id: "all",
+            name: "All Categories",
+            slug: "all",
+            icon: "LayoutGrid",
+            bgColor: "bg-[#EEF2FF]",
+            iconColor: "text-[#3B82F6]",
+            showInNavbar: false,
+            showInPills: true,
+            showInCollections: false,
+            order: 0,
+            active: true,
+            iconShape: "round",
+            iconSize: 85,
+            subcategories: [],
+          };
+          parsed.unshift(allCat);
+        }
         inMemoryCategories = parsed;
       }
     }

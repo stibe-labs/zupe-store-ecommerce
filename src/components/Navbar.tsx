@@ -49,7 +49,13 @@ function NavbarContent() {
       .then((data) => {
         if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
           const activeNavCats = data.categories
-            .filter((c: any) => c.active !== false && c.showInNavbar !== false)
+            .filter(
+              (c: any) =>
+                c.active !== false &&
+                c.showInNavbar !== false &&
+                c.id !== "all" &&
+                c.name?.toLowerCase() !== "all categories"
+            )
             .map((c: any) => ({
               label: c.name,
               href: `/products?category=${encodeURIComponent(c.slug || c.name)}`,

@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
       icon,
       customIcon,
       iconSize,
+      iconShape,
       bgColor,
       iconColor,
       showInNavbar,
@@ -75,6 +76,7 @@ export async function POST(req: NextRequest) {
       icon: icon || "Tag",
       customIcon: customIcon ? customIcon.trim() : undefined,
       iconSize: typeof iconSize === "number" ? Math.min(100, Math.max(50, iconSize)) : 85,
+      iconShape: iconShape === "square" ? "square" : "round",
       bgColor: bgColor || "bg-orange-50",
       iconColor: iconColor || "text-[#FF7A00]",
       showInNavbar: showInNavbar !== false,
@@ -103,7 +105,19 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { id, updates, reorder } = body;
+
+    // Action 1: Bulk update all icons shape ("round" or "square")
+    if (body.action === "update_all_shapes" && (body.iconShape === "round" || body.iconShape === "square")) {
+      const current = await getCategories(true);
+      const updated = current.map((c) => ({
+        ...c,
+        iconShape: body.iconShape as "round" | "square",
+      }));
+      const saved = await saveCategories(updated);
+      return NextResponse.json({ success: true, categories: saved });
+    }
+
+    const { id, updates, reorder, applyShapeToAll } = body;
 
     if (reorder && Array.isArray(reorder)) {
       const sanitized = reorder.map((cat: any) => ({
@@ -131,6 +145,19 @@ export async function PUT(req: NextRequest) {
       updates.subcategories = Array.from(
         new Set(updates.subcategories.map((s: any) => String(s).trim()).filter(Boolean))
       );
+    }
+
+    // If applyShapeToAll is true, apply the selected shape to ALL categories
+    if (applyShapeToAll && (updates.iconShape === "round" || updates.iconShape === "square")) {
+      const targetShape = updates.iconShape;
+      const updatedList = current.map((c) => {
+        if (c.id === id) {
+          return { ...c, ...updates, iconShape: targetShape };
+        }
+        return { ...c, iconShape: targetShape };
+      });
+      const saved = await saveCategories(updatedList);
+      return NextResponse.json({ success: true, category: saved.find((c) => c.id === id), categories: saved });
     }
 
     current[index] = { ...current[index], ...updates };
@@ -162,6 +189,16 @@ export async function DELETE(req: NextRequest) {
 
     if (!id) {
       return NextResponse.json({ success: false, error: "Category ID is required" }, { status: 400 });
+    }
+
+    if (id === "all") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "The primary 'All Categories' pill cannot be deleted. You can hide it by toggling 'Active' or 'In Home Pills'.",
+        },
+        { status: 400 }
+      );
     }
 
     const current = await getCategories(true);

@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { TopBar } from "@/components/TopBar";
 import { Navbar } from "@/components/Navbar";
@@ -11,8 +9,13 @@ import { PromoBanners } from "@/components/PromoBanners";
 import { NewArrivalsSection } from "@/components/NewArrivalsSection";
 import { ShoppableVideosSection } from "@/components/ShoppableVideosSection";
 import { Footer } from "@/components/Footer";
+import { getCategories } from "@/lib/storeContent";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const initialCategories = await getCategories();
+
   return (
     <main className="min-h-screen bg-[#F3F4F6] text-[#111111] selection:bg-[#FF7A00] selection:text-white">
       {/* 1. Top Announcement Bar (Black) */}
@@ -21,8 +24,8 @@ export default function Home() {
       {/* 2. Main Navigation Bar (White with Logo, Search, Account, Wishlist, Cart & Sub-nav) */}
       <Navbar />
 
-      {/* 3. Circular Pastel Category Pills (9 categories - Now positioned above banner) */}
-      <CategoryPills />
+      {/* 3. Circular / Curved Square Pastel Category Pills (Positioned above banner, with SSR hydration to eliminate icon flash) */}
+      <CategoryPills initialCategories={initialCategories} />
 
       {/* 4. Hero Banner Carousel (Slim direct poster) */}
       <HeroSection />

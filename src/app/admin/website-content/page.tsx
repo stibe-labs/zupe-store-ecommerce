@@ -46,6 +46,7 @@ import {
   Heart,
   Gift,
   Gamepad2,
+  LayoutGrid,
 } from "lucide-react";
 import { HeroBannerSlide, StoreCategory } from "@/lib/storeContent";
 import { getSubcategoriesForCategory } from "@/data/zupeProducts";
@@ -74,6 +75,7 @@ const MOBILE_IMAGE_PRESETS = [
 ];
 
 const CATEGORY_ICON_PRESETS = [
+  { name: "LayoutGrid", label: "All / Grid", Icon: LayoutGrid },
   { name: "Armchair", label: "Furniture / Home", Icon: Armchair },
   { name: "Headphones", label: "Gadgets / Audio", Icon: Headphones },
   { name: "Sparkles", label: "Beauty / Care", Icon: Sparkles },
@@ -133,6 +135,7 @@ export default function WebsiteContentPage() {
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<StoreCategory | null>(null);
   const [categoryIconTab, setCategoryIconTab] = useState<"presets" | "custom">("presets");
+  const [applyShapeToAll, setApplyShapeToAll] = useState(false);
   const [newSubcategoryInput, setNewSubcategoryInput] = useState("");
   const [categoryForm, setCategoryForm] = useState({
     name: "",
@@ -140,6 +143,7 @@ export default function WebsiteContentPage() {
     icon: "Tag",
     customIcon: "",
     iconSize: 85,
+    iconShape: "round" as "round" | "square",
     bgColor: "bg-[#FEEBEA]",
     iconColor: "text-[#E0533C]",
     showInNavbar: true,
@@ -347,12 +351,14 @@ export default function WebsiteContentPage() {
   const handleOpenAddCategory = () => {
     setEditingCategory(null);
     setCategoryIconTab("presets");
+    setApplyShapeToAll(false);
     setCategoryForm({
       name: "",
       slug: "",
       icon: "Tag",
       customIcon: "",
       iconSize: 85,
+      iconShape: "round",
       bgColor: "bg-[#FEEBEA]",
       iconColor: "text-[#E0533C]",
       showInNavbar: true,
@@ -368,6 +374,7 @@ export default function WebsiteContentPage() {
   const handleOpenEditCategory = (c: StoreCategory) => {
     setEditingCategory(c);
     setCategoryIconTab(c.customIcon ? "custom" : "presets");
+    setApplyShapeToAll(false);
     const existingSubs = Array.isArray(c.subcategories) && c.subcategories.length > 0
       ? [...c.subcategories]
       : getSubcategoriesForCategory(c.name) || [];
@@ -378,6 +385,7 @@ export default function WebsiteContentPage() {
       icon: c.icon || "Tag",
       customIcon: c.customIcon || "",
       iconSize: typeof c.iconSize === "number" ? c.iconSize : 85,
+      iconShape: c.iconShape || "round",
       bgColor: c.bgColor || "bg-[#FEEBEA]",
       iconColor: c.iconColor || "text-[#E0533C]",
       showInNavbar: c.showInNavbar !== false,
@@ -388,6 +396,40 @@ export default function WebsiteContentPage() {
     });
     setNewSubcategoryInput("");
     setCategoryModalOpen(true);
+  };
+
+  const handleApplyShapeToAll = async (shape: "round" | "square") => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/content/categories", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_all_shapes",
+          iconShape: shape,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.categories) {
+        setCategories(data.categories);
+        setCategoryForm((prev) => ({ ...prev, iconShape: shape }));
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("zupe_categories_updated", { detail: { categories: data.categories } })
+          );
+        }
+        showToast(
+          "success",
+          `All category icons set to ${shape === "square" ? "Curved Square" : "Round Circle"}!`
+        );
+      } else {
+        showToast("error", data.error || "Failed to update shapes");
+      }
+    } catch (err: any) {
+      showToast("error", err.message || "Network error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleAddSubcategory = () => {
@@ -437,6 +479,7 @@ export default function WebsiteContentPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             id: editingCategory.id,
+            applyShapeToAll,
             updates: {
               ...categoryForm,
               slug: categoryForm.slug.trim() || categoryForm.name.trim(),
@@ -447,7 +490,17 @@ export default function WebsiteContentPage() {
         if (data.success && data.categories) {
           setCategories(data.categories);
           setCategoryModalOpen(false);
-          showToast("success", "Category updated successfully!");
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("zupe_categories_updated", { detail: { categories: data.categories } })
+            );
+          }
+          showToast(
+            "success",
+            applyShapeToAll
+              ? `Category updated & all icons set to ${categoryForm.iconShape === "square" ? "Curved Square" : "Round"}!`
+              : "Category updated successfully!"
+          );
         } else {
           showToast("error", data.error || "Failed to update category");
         }
@@ -464,6 +517,11 @@ export default function WebsiteContentPage() {
         if (data.success && data.categories) {
           setCategories(data.categories);
           setCategoryModalOpen(false);
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("zupe_categories_updated", { detail: { categories: data.categories } })
+            );
+          }
           showToast("success", `Category "${categoryForm.name}" created!`);
         } else {
           showToast("error", data.error || "Failed to create category");
@@ -851,7 +909,7 @@ export default function WebsiteContentPage() {
              ======================================================== */}
           {activeTab === "categories" && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h2 className="text-base font-bold text-slate-900">
                     Store Categories ({categories.filter((c) => c.active !== false).length} Active)
@@ -860,14 +918,47 @@ export default function WebsiteContentPage() {
                     Updates here sync across Navbar, Home Category Pills, Search modal, and Product add/edit dropdowns.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleOpenAddCategory}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FF7A00] text-white text-xs font-bold hover:bg-[#E66E00] transition-all shadow-sm cursor-pointer"
-                >
-                  <Plus className="w-4 h-4 stroke-[2.5]" />
-                  <span>Add New Category</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  {/* Global Shape Switcher */}
+                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <span className="text-[11px] font-bold text-slate-500 px-1.5 hidden md:inline">Shape:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyShapeToAll("round")}
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        categories.length > 0 && categories.every((c) => c.iconShape !== "square")
+                          ? "bg-white text-slate-900 shadow-xs border border-slate-200"
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                      title="Set all category icons to Round (Circle)"
+                    >
+                      <div className="w-3.5 h-3.5 rounded-full border-2 border-current" />
+                      <span>Round</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyShapeToAll("square")}
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        categories.length > 0 && categories.every((c) => c.iconShape === "square")
+                          ? "bg-white text-slate-900 shadow-xs border border-slate-200"
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                      title="Set all category icons to Edge Curved Square"
+                    >
+                      <div className="w-3.5 h-3.5 rounded-md border-2 border-current" />
+                      <span>Curved Square</span>
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleOpenAddCategory}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FF7A00] text-white text-xs font-bold hover:bg-[#E66E00] transition-all shadow-sm cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 stroke-[2.5]" />
+                    <span>Add New Category</span>
+                  </button>
+                </div>
               </div>
 
               {loading ? (
@@ -901,166 +992,188 @@ export default function WebsiteContentPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
-                        {categories.map((cat) => (
-                          <tr key={cat.id} className="hover:bg-slate-50/70 transition-colors">
-                            {/* Name + Icon preview */}
-                            <td className="py-3.5 px-4">
-                              <div className="flex items-center gap-2.5">
-                                <div
-                                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs overflow-hidden shadow-xs shrink-0 ${
-                                    cat.bgColor || "bg-orange-50"
-                                  } ${cat.iconColor || "text-[#FF7A00]"}`}
-                                >
-                                  {cat.customIcon ? (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img
-                                      src={cat.customIcon}
-                                      alt={cat.name}
-                                      style={{
-                                        width: `${cat.iconSize || 85}%`,
-                                        height: `${cat.iconSize || 85}%`,
-                                      }}
-                                      className="object-contain"
-                                    />
-                                  ) : (
-                                    (() => {
-                                      const match = CATEGORY_ICON_PRESETS.find((p) => p.name === cat.icon);
-                                      if (match) {
-                                        const IconComp = match.Icon;
-                                        return <IconComp className="w-4 h-4" />;
-                                      }
-                                      return <Tag className="w-4 h-4" />;
-                                    })()
-                                  )}
-                                </div>
-                                <div>
-                                  <span className="font-bold text-slate-900 block">{cat.name}</span>
-                                  <span className="text-[10px] text-slate-400 font-mono">
-                                    {cat.customIcon ? "Custom Icon • " : ""}ID: {cat.id}
-                                  </span>
-                                  {/* Subcategories preview tags */}
-                                  <div className="flex flex-wrap items-center gap-1 mt-1.5 max-w-sm">
-                                    {(() => {
-                                      const subs = Array.isArray(cat.subcategories) && cat.subcategories.length > 0
-                                        ? cat.subcategories
-                                        : getSubcategoriesForCategory(cat.name);
-                                      if (subs.length === 0) {
+                        {categories.map((cat) => {
+                          const isAll = cat.id === "all" || cat.name.toLowerCase() === "all categories";
+                          const isSquare = cat.iconShape === "square";
+                          const shapeClass = isSquare ? "rounded-xl" : "rounded-full";
+
+                          return (
+                            <tr key={cat.id} className={`hover:bg-slate-50/70 transition-colors ${isAll ? "bg-blue-50/20" : ""}`}>
+                              {/* Name + Icon preview */}
+                              <td className="py-3.5 px-4">
+                                <div className="flex items-center gap-2.5">
+                                  <div
+                                    className={`w-10 h-10 ${shapeClass} flex items-center justify-center font-bold text-xs overflow-hidden shadow-xs shrink-0 ${
+                                      cat.bgColor || (isAll ? "bg-[#EEF2FF]" : "bg-orange-50")
+                                    } ${cat.iconColor || (isAll ? "text-[#3B82F6]" : "text-[#FF7A00]")}`}
+                                  >
+                                    {cat.customIcon ? (
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img
+                                        src={cat.customIcon}
+                                        alt={cat.name}
+                                        style={{
+                                          width: `${cat.iconSize || 85}%`,
+                                          height: `${cat.iconSize || 85}%`,
+                                        }}
+                                        className="object-contain"
+                                      />
+                                    ) : (
+                                      (() => {
+                                        const match = CATEGORY_ICON_PRESETS.find((p) => p.name === cat.icon);
+                                        if (match) {
+                                          const IconComp = match.Icon;
+                                          return <IconComp className="w-4 h-4" />;
+                                        }
+                                        return isAll ? <LayoutGrid className="w-4 h-4" /> : <Tag className="w-4 h-4" />;
+                                      })()
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className="font-bold text-slate-900">{cat.name}</span>
+                                      {isAll && (
+                                        <span className="px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-800 font-extrabold text-[10px]">
+                                          Primary Home Pill
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-[10px] text-slate-400 font-mono">
+                                      {cat.customIcon ? "Custom Icon • " : ""}Shape: {isSquare ? "Curved Square" : "Round"} • ID: {cat.id}
+                                    </span>
+                                    {/* Subcategories preview tags */}
+                                    <div className="flex flex-wrap items-center gap-1 mt-1.5 max-w-sm">
+                                      {(() => {
+                                        const subs = Array.isArray(cat.subcategories) && cat.subcategories.length > 0
+                                          ? cat.subcategories
+                                          : getSubcategoriesForCategory(cat.name);
+                                        if (subs.length === 0) {
+                                          return (
+                                            <span className="text-[10px] text-slate-400 italic">
+                                              {isAll ? "All Store Products" : "No subcategories"}
+                                            </span>
+                                          );
+                                        }
                                         return (
-                                          <span className="text-[10px] text-slate-400 italic">
-                                            No subcategories
-                                          </span>
+                                          <>
+                                            {subs.slice(0, 3).map((sub) => (
+                                              <span
+                                                key={sub}
+                                                className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium"
+                                              >
+                                                {sub}
+                                              </span>
+                                            ))}
+                                            {subs.length > 3 && (
+                                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-orange-50 text-[#FF7A00] text-[10px] font-bold">
+                                                +{subs.length - 3} more
+                                              </span>
+                                            )}
+                                          </>
                                         );
-                                      }
-                                      return (
-                                        <>
-                                          {subs.slice(0, 3).map((sub) => (
-                                            <span
-                                              key={sub}
-                                              className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium"
-                                            >
-                                              {sub}
-                                            </span>
-                                          ))}
-                                          {subs.length > 3 && (
-                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-orange-50 text-[#FF7A00] text-[10px] font-bold">
-                                              +{subs.length - 3} more
-                                            </span>
-                                          )}
-                                        </>
-                                      );
-                                    })()}
+                                      })()}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            </td>
+                              </td>
 
-                            {/* Slug */}
-                            <td className="py-3.5 px-4 font-mono text-xs text-slate-600">
-                              /products?category={encodeURIComponent(cat.slug || cat.name)}
-                            </td>
+                              {/* Slug */}
+                              <td className="py-3.5 px-4 font-mono text-xs text-slate-600">
+                                {isAll ? "/products" : `/products?category=${encodeURIComponent(cat.slug || cat.name)}`}
+                              </td>
 
-                            {/* In Navbar toggle */}
-                            <td className="py-3.5 px-4 text-center">
-                              <button
-                                type="button"
-                                onClick={() => handleToggleCategoryField(cat, "showInNavbar")}
-                                className={`px-2 py-0.5 rounded-full text-[11px] font-bold cursor-pointer transition-colors ${
-                                  cat.showInNavbar !== false
-                                    ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                    : "bg-slate-100 text-slate-400"
-                                }`}
-                              >
-                                {cat.showInNavbar !== false ? "Visible" : "Hidden"}
-                              </button>
-                            </td>
-
-                            {/* In Home Pills toggle */}
-                            <td className="py-3.5 px-4 text-center">
-                              <button
-                                type="button"
-                                onClick={() => handleToggleCategoryField(cat, "showInPills")}
-                                className={`px-2 py-0.5 rounded-full text-[11px] font-bold cursor-pointer transition-colors ${
-                                  cat.showInPills !== false
-                                    ? "bg-purple-50 text-purple-700 border border-purple-200"
-                                    : "bg-slate-100 text-slate-400"
-                                }`}
-                              >
-                                {cat.showInPills !== false ? "Visible" : "Hidden"}
-                              </button>
-                            </td>
-
-                            {/* Active status */}
-                            <td className="py-3.5 px-4 text-center">
-                              <button
-                                type="button"
-                                onClick={() => handleToggleCategoryField(cat, "active")}
-                                className={`px-2 py-0.5 rounded-full text-[11px] font-bold cursor-pointer transition-colors ${
-                                  cat.active !== false
-                                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                    : "bg-slate-200 text-slate-600"
-                                }`}
-                              >
-                                {cat.active !== false ? "Active" : "Disabled"}
-                              </button>
-                            </td>
-
-                            {/* Actions */}
-                            <td className="py-3.5 px-4 text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                <Link
-                                  href={`/products?category=${encodeURIComponent(cat.slug || cat.name)}`}
-                                  target="_blank"
-                                  className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-                                  title="View on store"
-                                >
-                                  <ExternalLink className="w-4 h-4" />
-                                </Link>
+                              {/* In Navbar toggle */}
+                              <td className="py-3.5 px-4 text-center">
                                 <button
                                   type="button"
-                                  onClick={() => handleOpenEditCategory(cat)}
-                                  className="p-1.5 text-slate-500 hover:text-[#FF7A00] hover:bg-orange-50 rounded-lg transition-colors cursor-pointer"
-                                  title="Edit category"
+                                  onClick={() => handleToggleCategoryField(cat, "showInNavbar")}
+                                  className={`px-2 py-0.5 rounded-full text-[11px] font-bold cursor-pointer transition-colors ${
+                                    cat.showInNavbar !== false
+                                      ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                      : "bg-slate-100 text-slate-400"
+                                  }`}
                                 >
-                                  <Edit2 className="w-4 h-4" />
+                                  {cat.showInNavbar !== false ? "Visible" : "Hidden"}
                                 </button>
+                              </td>
+
+                              {/* In Home Pills toggle */}
+                              <td className="py-3.5 px-4 text-center">
                                 <button
                                   type="button"
-                                  onClick={() =>
-                                    setDeleteConfirm({
-                                      type: "category",
-                                      id: cat.id,
-                                      title: cat.name,
-                                    })
-                                  }
-                                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                                  title="Delete category"
+                                  onClick={() => handleToggleCategoryField(cat, "showInPills")}
+                                  className={`px-2 py-0.5 rounded-full text-[11px] font-bold cursor-pointer transition-colors ${
+                                    cat.showInPills !== false
+                                      ? "bg-purple-50 text-purple-700 border border-purple-200"
+                                      : "bg-slate-100 text-slate-400"
+                                  }`}
                                 >
-                                  <Trash2 className="w-4 h-4" />
+                                  {cat.showInPills !== false ? "Visible" : "Hidden"}
                                 </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+
+                              {/* Active status */}
+                              <td className="py-3.5 px-4 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleCategoryField(cat, "active")}
+                                  className={`px-2 py-0.5 rounded-full text-[11px] font-bold cursor-pointer transition-colors ${
+                                    cat.active !== false
+                                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                      : "bg-slate-200 text-slate-600"
+                                  }`}
+                                >
+                                  {cat.active !== false ? "Active" : "Disabled"}
+                                </button>
+                              </td>
+
+                              {/* Actions */}
+                              <td className="py-3.5 px-4 text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  <Link
+                                    href={isAll ? "/products" : `/products?category=${encodeURIComponent(cat.slug || cat.name)}`}
+                                    target="_blank"
+                                    className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                                    title="View on store"
+                                  >
+                                    <ExternalLink className="w-4 h-4" />
+                                  </Link>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenEditCategory(cat)}
+                                    className="p-1.5 text-slate-500 hover:text-[#FF7A00] hover:bg-orange-50 rounded-lg transition-colors cursor-pointer"
+                                    title="Edit category"
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                  {isAll ? (
+                                    <span
+                                      className="p-1.5 text-slate-300 cursor-not-allowed rounded-lg"
+                                      title="Primary Storefront Category (cannot delete, toggle Active to hide)"
+                                    >
+                                      <Trash2 className="w-4 h-4 opacity-30" />
+                                    </span>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setDeleteConfirm({
+                                          type: "category",
+                                          id: cat.id,
+                                          title: cat.name,
+                                        })
+                                      }
+                                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                      title="Delete category"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -1621,10 +1734,12 @@ export default function WebsiteContentPage() {
                   </div>
                 </div>
 
-                {/* Live Circular Pill Preview */}
+                {/* Live Pill Preview (Round vs Edge Curved Square) */}
                 <div className="mb-3 p-3 bg-slate-50/80 rounded-2xl border border-slate-200 flex items-center gap-3.5">
                   <div
-                    className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xs shrink-0 transition-all overflow-hidden ${categoryForm.bgColor} ${categoryForm.iconColor}`}
+                    className={`w-14 h-14 ${
+                      categoryForm.iconShape === "square" ? "rounded-2xl" : "rounded-full"
+                    } flex items-center justify-center shadow-xs shrink-0 transition-all overflow-hidden ${categoryForm.bgColor} ${categoryForm.iconColor}`}
                   >
                     {categoryForm.customIcon ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -1652,7 +1767,7 @@ export default function WebsiteContentPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                      Live Storefront Pill Preview
+                      Live Storefront Pill Preview ({categoryForm.iconShape === "square" ? "Curved Square" : "Round Circle"})
                     </span>
                     <div className="text-xs font-bold text-slate-800 truncate">
                       {categoryForm.name || "Category Label"}
@@ -1810,6 +1925,72 @@ export default function WebsiteContentPage() {
                     </p>
                   </div>
                 )}
+              </div>
+
+              {/* Icon Shape Selector (Round vs Edge Curved Square) */}
+              <div className="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800">
+                      Icon Shape
+                    </label>
+                    <p className="text-[10px] text-slate-500">
+                      Choose Round circle or Edge curved square for the storefront pill.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-extrabold text-[#FF7A00] bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
+                    {categoryForm.iconShape === "square" ? "Curved Square" : "Round"}
+                  </span>
+                </div>
+
+                {/* The 2 Shape Buttons */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setCategoryForm({ ...categoryForm, iconShape: "round" })}
+                    className={`p-3 rounded-xl border flex items-center justify-center gap-2.5 text-xs font-bold transition-all cursor-pointer ${
+                      categoryForm.iconShape !== "square"
+                        ? "border-[#FF7A00] bg-white text-[#FF7A00] shadow-xs ring-2 ring-[#FF7A00]/20"
+                        : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
+                    }`}
+                  >
+                    <div className="w-5 h-5 rounded-full border-2 border-current shrink-0" />
+                    <span>Round (Circle)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setCategoryForm({ ...categoryForm, iconShape: "square" })}
+                    className={`p-3 rounded-xl border flex items-center justify-center gap-2.5 text-xs font-bold transition-all cursor-pointer ${
+                      categoryForm.iconShape === "square"
+                        ? "border-[#FF7A00] bg-white text-[#FF7A00] shadow-xs ring-2 ring-[#FF7A00]/20"
+                        : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
+                    }`}
+                  >
+                    <div className="w-5 h-5 rounded-md border-2 border-current shrink-0" />
+                    <span>Edge Curved Square</span>
+                  </button>
+                </div>
+
+                {/* Option to change all icons shape */}
+                <div className="pt-2 border-t border-slate-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={applyShapeToAll}
+                      onChange={(e) => setApplyShapeToAll(e.target.checked)}
+                      className="w-4 h-4 rounded text-[#FF7A00] focus:ring-[#FF7A00]"
+                    />
+                    <span>Apply this shape to all category icons</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyShapeToAll(categoryForm.iconShape || "round")}
+                    className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold text-slate-700 bg-white hover:bg-orange-50 hover:text-[#FF7A00] border border-slate-200 transition-all cursor-pointer shadow-2xs"
+                  >
+                    <span>Apply shape to all now</span>
+                  </button>
+                </div>
               </div>
 
               {/* Color Theme Selector */}
