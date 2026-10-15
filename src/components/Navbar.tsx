@@ -153,9 +153,9 @@ function NavbarContent() {
   return (
     <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
       {/* Main Header Row */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-1.5 sm:py-2">
         {/* Mobile View Header */}
-        <div className="flex sm:hidden items-center justify-between relative min-h-[48px]">
+        <div className="flex sm:hidden items-center justify-between relative min-h-[46px]">
           {/* Left: Hamburger Menu + Search Button */}
           <div className="flex items-center gap-2">
             <button
@@ -181,9 +181,9 @@ function NavbarContent() {
               <Image
                 src="/zupe-label.webp"
                 alt="Zupestore"
-                width={160}
-                height={44}
-                className="h-8 sm:h-9 w-auto object-contain"
+                width={150}
+                height={40}
+                className="h-7.5 sm:h-8 w-auto object-contain"
                 priority
               />
             </Link>
@@ -222,13 +222,13 @@ function NavbarContent() {
         {/* Desktop View Header */}
         <div className="hidden sm:flex items-center justify-between gap-4 lg:gap-8">
           {/* Brand: Text Label only */}
-          <Link href="/" className="flex items-center flex-shrink-0 group py-1" aria-label="Zupe Store">
+          <Link href="/" className="flex items-center flex-shrink-0 group" aria-label="Zupe Store">
             <Image
               src="/zupe-label.webp"
               alt="Zupestore"
-              width={195}
-              height={52}
-              className="h-10 sm:h-11 lg:h-12 w-auto object-contain transition-opacity group-hover:opacity-90"
+              width={175}
+              height={46}
+              className="h-8.5 sm:h-9 lg:h-9.5 w-auto object-contain transition-opacity group-hover:opacity-90"
               priority
             />
           </Link>
@@ -244,7 +244,7 @@ function NavbarContent() {
                 type="text"
                 readOnly
                 placeholder="Search products, lamps, gadgets, collections..."
-                className="w-full pl-11 pr-24 py-2.5 rounded-full border border-gray-200 bg-[#FAFAFA] text-sm text-[#111111] placeholder:text-gray-400 cursor-pointer group-hover:border-[#FF7A00]/50 group-hover:bg-white transition-all shadow-inner select-none"
+                className="w-full pl-11 pr-24 py-2 rounded-full border border-gray-200 bg-[#FAFAFA] text-sm text-[#111111] placeholder:text-gray-400 cursor-pointer group-hover:border-[#FF7A00]/50 group-hover:bg-white transition-all shadow-inner select-none"
               />
               <span className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 rounded-full bg-orange-50 text-[#FF7A00] text-xs font-bold border border-[#FF7A00]/20 flex items-center gap-1 group-hover:bg-[#FF7A00] group-hover:text-white transition-all">
                 <span>Search</span>
@@ -258,7 +258,7 @@ function NavbarContent() {
             {/* Account (Redirects directly to /account like mobile view) */}
             <button
               onClick={handleAccountClick}
-              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors py-1 group/account cursor-pointer"
+              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors py-0.5 group/account cursor-pointer"
               aria-label="Account"
             >
               <div className="relative p-1 rounded-full group-hover/account:bg-orange-50 transition-colors">
@@ -272,7 +272,7 @@ function NavbarContent() {
             {/* Wishlist */}
             <Link
               href="/wishlist"
-              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors relative py-1 group/wishlist"
+              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors relative py-0.5 group/wishlist"
             >
               <div className="relative p-1 rounded-full group-hover/wishlist:bg-rose-50 transition-colors">
                 <Heart className="w-5 h-5 text-gray-700 group-hover/wishlist:text-[#FF3B30] group-hover/wishlist:fill-[#FF3B30]/20 anim-heart-hover transition-colors" />
@@ -288,7 +288,7 @@ function NavbarContent() {
             {/* Cart */}
             <button
               onClick={openCart}
-              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors relative py-1 group/cart cursor-pointer"
+              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors relative py-0.5 group/cart cursor-pointer"
               aria-label="View Cart"
             >
               <div className="relative p-1 rounded-full group-hover/cart:bg-orange-50 transition-colors">
@@ -312,7 +312,7 @@ function NavbarContent() {
             {/* All Categories Dropdown button */}
             <Link
               href="/products"
-              className={`flex items-center gap-2 py-3 px-3 font-bold transition-colors border-r border-gray-100 mr-4 text-[13.5px] ${
+              className={`flex items-center gap-2 py-2 px-3 font-bold transition-colors border-r border-gray-100 mr-4 text-[13.5px] ${
                 pathname === "/products" &&
                 !searchParams?.get("filter") &&
                 (!searchParams?.get("category") || searchParams?.get("category") === "All")
@@ -325,14 +325,14 @@ function NavbarContent() {
             </Link>
 
             {/* Navigation Links */}
-            <div className="flex items-center gap-6 lg:gap-7 overflow-x-auto scrollbar-none py-1">
+            <div className="flex items-center gap-6 lg:gap-7 overflow-x-auto scrollbar-none">
               {navCategories.map((item) => {
                 const active = isItemActive(item.href);
                 return (
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`py-3 whitespace-nowrap transition-colors relative text-[13.5px] ${
+                    className={`py-2 whitespace-nowrap transition-colors relative text-[13.5px] ${
                       active
                         ? "text-[#FF7A00] font-bold"
                         : "text-gray-700 hover:text-[#FF7A00] font-medium"
@@ -426,7 +426,7 @@ export function Navbar() {
   return (
     <React.Suspense
       fallback={
-        <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm h-16 sm:h-[105px]" />
+        <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm h-14 sm:h-[82px]" />
       }
     >
       <NavbarContent />
