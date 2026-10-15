@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Set secure HTTP-only cookie
+    // Set secure HTTP-only admin cookie
     response.cookies.set({
       name: ADMIN_COOKIE_NAME,
       value: token,
@@ -43,6 +43,25 @@ export async function POST(req: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: "/",
+    });
+
+    // Also set customer session token for seamless preview
+    const { createUserSessionToken, USER_COOKIE_NAME } = await import("@/lib/userAuth");
+    const userToken = await createUserSessionToken({
+      id: "superadmin",
+      name: verification.name || "Zupe SuperAdmin",
+      email: verification.email,
+      role: "admin",
+    });
+
+    response.cookies.set({
+      name: USER_COOKIE_NAME,
+      value: userToken,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60,
       path: "/",
     });
 

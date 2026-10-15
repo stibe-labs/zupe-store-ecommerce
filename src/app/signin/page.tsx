@@ -17,12 +17,16 @@ function SignInContent() {
   const urlNotice = searchParams.get("notice") || searchParams.get("msg");
   const modeParam = searchParams.get("mode") === "signup" ? "signup" : "login";
 
-  // If already logged in, redirect immediately to appropriate portal
+  // If user is trying to reach admin portal, route to dedicated admin login
   useEffect(() => {
+    if (redirectUrl && redirectUrl.startsWith("/admin")) {
+      router.replace(`/admin/login?redirect=${encodeURIComponent(redirectUrl)}`);
+      return;
+    }
+
     if (!authLoading && isAuthenticated && user) {
       if (user.role === "admin") {
-        const dest = (redirectUrl && redirectUrl.startsWith("/admin")) ? redirectUrl : "/admin";
-        window.location.href = dest;
+        window.location.href = "/admin";
       } else {
         router.replace(redirectUrl);
       }

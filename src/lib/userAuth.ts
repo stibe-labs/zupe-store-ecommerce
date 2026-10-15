@@ -10,7 +10,8 @@ const USER_SECRET =
 
 export interface CustomerSessionPayload {
   id: string;
-  email: string;
+  email?: string;
+  phone?: string;
   name: string;
   role: string;
   exp: number;
@@ -22,13 +23,15 @@ export interface CustomerSessionPayload {
  */
 export async function createUserSessionToken(user: {
   id: string;
-  email: string;
+  email?: string;
+  phone?: string;
   name: string;
   role?: string;
 }): Promise<string> {
   const payload: CustomerSessionPayload = {
     id: user.id,
-    email: user.email.toLowerCase().trim(),
+    email: (user.email || "").toLowerCase().trim(),
+    phone: user.phone || "",
     name: user.name,
     role: user.role || "customer",
     exp: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days

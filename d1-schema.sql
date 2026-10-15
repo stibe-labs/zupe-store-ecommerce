@@ -6,11 +6,13 @@
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
+    email TEXT UNIQUE,
+    password_hash TEXT DEFAULT '',
     phone TEXT,
+    role TEXT DEFAULT 'customer',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
 
 -- 2. Products Catalog
 CREATE TABLE IF NOT EXISTS products (

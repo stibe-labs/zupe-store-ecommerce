@@ -441,43 +441,37 @@ export default function AccountPage() {
                   </span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-gray-300 flex items-center gap-2 truncate">
-                  <Mail className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                  <span className="truncate">{user.email}</span>
-                </p>
+                {user.phone ? (
+                  <p className="text-xs sm:text-sm text-gray-200 flex items-center gap-2 truncate">
+                    <Phone className="w-3.5 h-3.5 text-[#25D366] flex-shrink-0" />
+                    <span className="font-semibold">{user.phone}</span>
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                      WhatsApp Verified
+                    </span>
+                  </p>
+                ) : user.email ? (
+                  <p className="text-xs sm:text-sm text-gray-300 flex items-center gap-2 truncate">
+                    <Mail className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                    <span className="truncate">{user.email}</span>
+                  </p>
+                ) : null}
 
-                {/* Phone & Edit Profile Actions */}
+                {user.email && !user.email.includes("@customer.zupestore.com") && (
+                  <p className="text-xs text-gray-400 flex items-center gap-2 truncate mt-0.5">
+                    <Mail className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                    <span className="truncate">{user.email}</span>
+                  </p>
+                )}
+
+                {/* Profile Actions */}
                 <div className="flex flex-wrap items-center gap-2 mt-2">
-                  {user.phone ? (
-                    <div className="flex items-center gap-1.5 text-xs text-gray-200 bg-white/10 px-2.5 py-1 rounded-lg border border-white/10">
-                      <Phone className="w-3 h-3 text-[#FF7A00]" />
-                      <span>{user.phone}</span>
-                      <button
-                        type="button"
-                        onClick={handleOpenProfileModal}
-                        className="ml-1 text-[11px] text-[#FF7A00] hover:underline cursor-pointer font-semibold"
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleOpenProfileModal}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#FF7A00]/20 hover:bg-[#FF7A00]/30 text-[#FF7A00] text-xs font-semibold border border-[#FF7A00]/30 transition-colors cursor-pointer"
-                    >
-                      <Phone className="w-3 h-3" />
-                      <span>+ Add Phone Number</span>
-                    </button>
-                  )}
-
                   <button
                     type="button"
                     onClick={handleOpenProfileModal}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-xs font-medium border border-white/5 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-gray-200 hover:text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
                   >
-                    <Edit2 className="w-3 h-3" />
-                    <span>Edit Profile</span>
+                    <Edit2 className="w-3 h-3 text-[#FF7A00]" />
+                    <span>Edit Profile Details</span>
                   </button>
                 </div>
               </div>

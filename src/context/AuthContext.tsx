@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 export interface UserSession {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   phone?: string;
   role?: string;
 }
@@ -19,6 +19,8 @@ interface AuthContextType {
   authModalNotice: string | null;
   openAuthModal: (mode?: "login" | "signup", notice?: string) => void;
   closeAuthModal: () => void;
+  sendWhatsAppOtp: (phone: string) => Promise<{ success: boolean; message?: string; codeSent?: boolean; otp?: string; error?: string }>;
+  loginWithWhatsApp: (phone: string, otp: string, name?: string) => Promise<{ success: boolean; user?: UserSession; isNew?: boolean; error?: string }>;
   login: (email: string, password: string) => Promise<{ success: boolean; user?: UserSession; redirect?: string; error?: string }>;
   register: (name: string, email: string, password: string, otp: string) => Promise<{ success: boolean; error?: string }>;
   sendOtp: (email: string, name?: string) => Promise<{ success: boolean; message?: string; emailSent?: boolean; otp?: string; error?: string }>;
@@ -92,6 +94,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const url = new URL(window.location.href);
       url.searchParams.delete("auth");
       window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+    }
+  };
+
+  const sendWhatsAppOtp = async (phone: string) => {
+    try {
+      const res = await fetch("/api/auth/whatsapp/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { success: false, error: data.error || "Failed to send WhatsApp code" };
+      }
+      return {
+        success: true,
+        message: data.message,
+        codeSent: data.codeSent,
+        otp: data.otp,
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message || "Network error" };
+    }
+  };
+
+  const loginWithWhatsApp = async (phone: string, otp: string, name?: string) => {
+    try {
+      const res = await fetch("/api/auth/whatsapp/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, otp, name }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { success: false, error: data.error || "Verification failed" };
+      }
+      setUser(data.user);
+      localStorage.setItem("zp_user_session", JSON.stringify(data.user));
+      closeAuthModal();
+      return {
+        success: true,
+        user: data.user,
+        isNew: data.isNew,
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message || "Network error" };
     }
   };
 
@@ -210,6 +258,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         authModalNotice,
         openAuthModal,
         closeAuthModal,
+        sendWhatsAppOtp,
+        loginWithWhatsApp,
         login,
         register,
         sendOtp,
