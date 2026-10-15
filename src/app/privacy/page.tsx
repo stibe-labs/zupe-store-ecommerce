@@ -137,8 +137,8 @@ export default function PrivacyPolicyPage() {
         <div className="space-y-2">
           <p>
             We retain your Order Information for our records unless and until you request us to delete it. You may request data removal at any time by contacting{" "}
-            <a href="mailto:support@zupestore.in" className="text-[#FF7A00] font-semibold underline">
-              support@zupestore.in
+            <a href="mailto:zupestoreonline@gmail.com" className="text-[#FF7A00] font-semibold underline">
+              zupestoreonline@gmail.com
             </a>.
           </p>
         </div>
@@ -225,18 +225,18 @@ export default function PrivacyPolicyPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <a
-              href="mailto:support@zupestore.in"
+              href="mailto:zupestoreonline@gmail.com"
               className="inline-flex items-center gap-2 bg-[#FF7A00] hover:bg-[#e06b00] text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-all shadow-sm"
             >
               <Mail className="w-4 h-4" />
-              support@zupestore.in
+              zupestoreonline@gmail.com
             </a>
             <a
-              href="tel:+919744122854"
+              href="tel:+919744122853"
               className="inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 text-sm font-medium px-4 py-2.5 rounded-xl transition-all shadow-sm"
             >
               <Phone className="w-4 h-4 text-[#FF7A00]" />
-              +91 97441 22854
+              +91 97441 22853
             </a>
           </div>
         </div>

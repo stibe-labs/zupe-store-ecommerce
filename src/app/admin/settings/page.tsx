@@ -32,8 +32,8 @@ export default function AdminSettingsPage() {
 
   // Store Profile
   const [storeName, setStoreName] = useState("Zupe Store India");
-  const [supportEmail, setSupportEmail] = useState("support@zupestore.in");
-  const [supportPhone, setSupportPhone] = useState("+91 98765 43210");
+  const [supportEmail, setSupportEmail] = useState("zupestoreonline@gmail.com");
+  const [supportPhone, setSupportPhone] = useState("+91 97441 22853");
   const [currency, setCurrency] = useState("INR (₹)");
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("499");
   const [standardShippingFee, setStandardShippingFee] = useState("49");
@@ -67,8 +67,8 @@ export default function AdminSettingsPage() {
         const s: ERPIntegrationsSettings = data.settings;
         if (s.storeProfile) {
           setStoreName(s.storeProfile.storeName || "Zupe Store India");
-          setSupportEmail(s.storeProfile.supportEmail || "support@zupestore.in");
-          setSupportPhone(s.storeProfile.supportPhone || "+91 98765 43210");
+          setSupportEmail(s.storeProfile.supportEmail || "zupestoreonline@gmail.com");
+          setSupportPhone(s.storeProfile.supportPhone || "+91 97441 22853");
           setCurrency(s.storeProfile.currency || "INR (₹)");
           setFreeShippingThreshold(String(s.storeProfile.freeShippingThreshold ?? 499));
           setStandardShippingFee(String(s.storeProfile.standardShippingFee ?? 49));

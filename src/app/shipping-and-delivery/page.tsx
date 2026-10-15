@@ -231,7 +231,7 @@ export default function ShippingAndDeliveryPage() {
               <h2>Damaged, Missing, or Lost Orders</h2>
             </div>
             <p>
-              All parcels are securely packed and checked before dispatch. In the rare case that your order arrives damaged, incomplete, or appears lost in transit, please contact us within <strong className="text-gray-900">24 hours of delivery</strong> at <strong className="text-gray-900">support@zupestore.in</strong>.
+              All parcels are securely packed and checked before dispatch. In the rare case that your order arrives damaged, incomplete, or appears lost in transit, please contact us within <strong className="text-gray-900">24 hours of delivery</strong> at <strong className="text-gray-900">zupestoreonline@gmail.com</strong>.
             </p>
             <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 text-amber-950 flex items-start gap-3">
               <Video className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -277,13 +277,13 @@ export default function ShippingAndDeliveryPage() {
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <a
-                href="mailto:support@zupestore.in"
+                href="mailto:zupestoreonline@gmail.com"
                 className="inline-flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-950 font-semibold px-4 py-2 rounded-xl hover:bg-orange-100 transition-colors"
               >
-                📧 support@zupestore.in
+                📧 zupestoreonline@gmail.com
               </a>
               <a
-                href="https://wa.me/919744122854?text=Hi%20Zupe%20Store%2C%20I%20have%20an%20inquiry%20about%20shipping"
+                href="https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20have%20an%20inquiry%20about%20shipping"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-950 font-semibold px-4 py-2 rounded-xl hover:bg-emerald-100 transition-colors"

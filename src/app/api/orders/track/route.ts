@@ -120,10 +120,10 @@ export async function GET(req: NextRequest) {
           "Ensure you entered the 10-digit mobile number used during checkout.",
           "Newly placed orders may take up to 10-15 minutes to reflect in courier tracking systems.",
         ],
-        support_whatsapp: `https://wa.me/919744122854?text=${encodeURIComponent(
+        support_whatsapp: `https://wa.me/919744122853?text=${encodeURIComponent(
           `Hi Zupe Store, I need help tracking my order with query "${query}".`
         )}`,
-        support_phone: "+91 97441 22854",
+        support_phone: "+91 97441 22853",
       },
       { status: 404 }
     );

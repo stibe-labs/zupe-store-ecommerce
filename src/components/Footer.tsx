@@ -15,8 +15,8 @@ const SHOP_LINKS = [
 const SUPPORT_LINKS = [
   { label: "About Us", href: "/about" },
   { label: "Track Order", href: "/order-tracking" },
-  { label: "WhatsApp Support", href: "https://wa.me/919744122854?text=Hi%20Zupe%20Store%2C%20I%20have%20an%20inquiry" },
-  { label: "Contact Us", href: "mailto:support@zupestore.in" },
+  { label: "WhatsApp Support", href: "https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20have%20an%20inquiry" },
+  { label: "Contact Us", href: "mailto:zupestoreonline@gmail.com" },
 ];
 
 const LEGAL_LINKS = [
@@ -89,7 +89,7 @@ export function Footer() {
               {[
                 { icon: Instagram, href: "https://instagram.com" },
                 { icon: Twitter, href: "https://twitter.com" },
-                { icon: Mail, href: "mailto:support@zupestore.in" },
+                { icon: Mail, href: "mailto:zupestoreonline@gmail.com" },
               ].map((social, i) => (
                 <a
                   key={i}
@@ -174,11 +174,11 @@ export function Footer() {
               India
             </span>
             <a
-              href="tel:+919744122854"
+              href="tel:+919744122853"
               className="flex items-center gap-1 hover:text-[#FF7A00] transition-colors"
             >
               <Phone className="w-3 h-3 text-[#FF7A00]" />
-              +91 97441 22854
+              +91 97441 22853
             </a>
           </div>
         </div>

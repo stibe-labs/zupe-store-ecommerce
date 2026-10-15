@@ -28,9 +28,12 @@ export function TopBar() {
         {/* Right Support Contact */}
         <div className="flex items-center gap-1.5 whitespace-nowrap ml-4">
           <Headphones className="w-3.5 h-3.5 text-white" />
-          <span>
-            Need Help? <strong className="text-white font-medium">+91 98765 43210</strong>
-          </span>
+          <a
+            href="tel:+919744122853"
+            className="hover:text-white transition-colors"
+          >
+            Need Help? <strong className="text-white font-medium">+91 97441 22853</strong>
+          </a>
         </div>
       </div>
     </div>

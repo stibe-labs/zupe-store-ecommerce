@@ -98,7 +98,7 @@ export default function TermsAndConditionsPage() {
           </p>
           <ul className="list-disc list-inside space-y-1.5 pl-2 text-gray-700">
             <li>Refunds or replacements are only accepted if a clear <strong className="text-gray-900">unboxing video</strong> is provided as proof, recorded at the time of opening the package.</li>
-            <li>The issue must be reported to <strong className="text-gray-900">support@zupestore.in</strong> within <strong className="text-gray-900">24 hours of delivery</strong>.</li>
+            <li>The issue must be reported to <strong className="text-gray-900">zupestoreonline@gmail.com</strong> within <strong className="text-gray-900">24 hours of delivery</strong>.</li>
             <li>Once reviewed and verified, our team will process the replacement or refund accordingly.</li>
             <li>Products cannot be returned for reasons such as change of mind, size preferences, or personal choice.</li>
           </ul>
@@ -168,13 +168,13 @@ export default function TermsAndConditionsPage() {
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <a
-              href="mailto:support@zupestore.in"
+              href="mailto:zupestoreonline@gmail.com"
               className="inline-flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-950 font-semibold px-4 py-2 rounded-xl hover:bg-orange-100 transition-colors"
             >
-              📧 support@zupestore.in
+              📧 zupestoreonline@gmail.com
             </a>
             <a
-              href="https://wa.me/919744122854?text=Hi%20Zupe%20Store%2C%20I%20have%20a%20question%20about%20your%20terms"
+              href="https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20have%20a%20question%20about%20your%20terms"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-950 font-semibold px-4 py-2 rounded-xl hover:bg-emerald-100 transition-colors"

@@ -1767,7 +1767,23 @@ export default function ProductDetailPage() {
                         🛡️ <strong>Zero-Hassle Replacement:</strong> If your product arrives damaged or defective, we provide an immediate 1-click replacement within 7 days of delivery.
                       </p>
                       <p>
-                        📞 <strong>Direct Support:</strong> Contact our WhatsApp support at +91 98765 43210 or email support@zupestore.in for instant assistance.
+                        📞 <strong>Direct Support:</strong> Contact our WhatsApp support at{" "}
+                        <a
+                          href="https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20have%20an%20inquiry%20about%20a%20product"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#FF7A00] font-semibold hover:underline"
+                        >
+                          +91 97441 22853
+                        </a>{" "}
+                        or email{" "}
+                        <a
+                          href="mailto:zupestoreonline@gmail.com"
+                          className="text-[#FF7A00] font-semibold hover:underline"
+                        >
+                          zupestoreonline@gmail.com
+                        </a>{" "}
+                        for instant assistance.
                       </p>
                     </motion.div>
                   )}

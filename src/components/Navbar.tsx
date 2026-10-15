@@ -405,7 +405,15 @@ function NavbarContent() {
             </div>
 
             <div className="pt-4 border-t border-gray-100 text-xs text-gray-500">
-              <p>Need Help? +91 98765 43210</p>
+              <p>
+                Need Help?{" "}
+                <a
+                  href="tel:+919744122853"
+                  className="font-semibold text-gray-800 hover:text-[#FF7A00] transition-colors"
+                >
+                  +91 97441 22853
+                </a>
+              </p>
             </div>
           </div>
         </div>

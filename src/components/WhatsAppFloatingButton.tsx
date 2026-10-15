@@ -12,7 +12,7 @@ export function WhatsAppFloatingButton() {
     return null;
   }
 
-  const phoneNumber = "919744122854";
+  const phoneNumber = "919744122853";
   const defaultMessage = encodeURIComponent("Hi Zupe Store, I have an inquiry about your products!");
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${defaultMessage}`;
 

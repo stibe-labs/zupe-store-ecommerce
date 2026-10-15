@@ -1481,8 +1481,8 @@ export interface ERPIntegrationsSettings {
 let inMemorySettings: ERPIntegrationsSettings = {
   storeProfile: {
     storeName: "Zupe Store India",
-    supportEmail: "support@zupestore.in",
-    supportPhone: "+91 98765 43210",
+    supportEmail: "zupestoreonline@gmail.com",
+    supportPhone: "+91 97441 22853",
     currency: "INR (₹)",
     freeShippingThreshold: 499,
     standardShippingFee: 49,

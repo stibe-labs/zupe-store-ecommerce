@@ -851,7 +851,7 @@ function OrderTrackingContent() {
 
                     <div className="space-y-2">
                       <a
-                        href={`https://wa.me/919744122854?text=${encodeURIComponent(
+                        href={`https://wa.me/919744122853?text=${encodeURIComponent(
                           `Hi Zupe Store, I need updates on my Order ${
                             selectedOrder.shopify_order_id || selectedOrder.id
                           }`
@@ -864,11 +864,11 @@ function OrderTrackingContent() {
                         <span>Chat on WhatsApp</span>
                       </a>
                       <a
-                        href="tel:+919744122854"
+                        href="tel:+919744122853"
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
                       >
                         <Phone className="w-4 h-4" />
-                        <span>Call +91 97441 22854</span>
+                        <span>Call +91 97441 22853</span>
                       </a>
                     </div>
                   </div>
