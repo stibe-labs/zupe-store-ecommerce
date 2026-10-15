@@ -20,8 +20,10 @@ const SUPPORT_LINKS = [
 ];
 
 const LEGAL_LINKS = [
+  { label: "Return & Refund Policy", href: "/return" },
+  { label: "Shipping & Delivery", href: "/shipping-and-delivery" },
   { label: "Privacy Policy", href: "/privacy" },
-  { label: "Terms of Service", href: "/terms" },
+  { label: "Terms & Conditions", href: "/terms-and-conditions" },
 ];
 
 function FooterLink({ link }: { link: { label: string; href: string } }) {
