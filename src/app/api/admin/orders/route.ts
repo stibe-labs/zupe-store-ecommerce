@@ -6,11 +6,13 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const delivery_status = searchParams.get("delivery_status") || undefined;
     const payment_method = searchParams.get("payment_method") || undefined;
+    const courier_partner = searchParams.get("courier_partner") || undefined;
     const search = searchParams.get("search") || undefined;
 
     const orders = await getERPOrders({
       delivery_status,
       payment_method,
+      courier_partner,
       search,
     });
 

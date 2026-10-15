@@ -695,6 +695,25 @@ export default function RTORefundBalancePage() {
               </select>
 
               <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSupplierFilter("all");
+                  setStatusFilter("all");
+                }}
+                disabled={searchQuery.trim() === "" && supplierFilter === "all" && statusFilter === "all"}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                  searchQuery.trim() !== "" || supplierFilter !== "all" || statusFilter !== "all"
+                    ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer shadow-xs"
+                    : "bg-slate-100 text-slate-400 border border-slate-200/60 cursor-not-allowed opacity-60"
+                }`}
+                title="Reset all filters"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Filters</span>
+              </button>
+
+              <button
                 onClick={handleExportCSV}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all"
               >

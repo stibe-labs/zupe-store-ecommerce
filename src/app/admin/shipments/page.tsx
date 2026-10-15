@@ -23,6 +23,7 @@ export default function AdminShipmentsPage() {
   const [orders, setOrders] = useState<ERPOrder[]>([]);
   const [search, setSearch] = useState("");
   const [courierFilter, setCourierFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isGeneratingAWB, setIsGeneratingAWB] = useState<string | null>(null);
@@ -173,14 +174,43 @@ export default function AdminShipmentsPage() {
     }
   };
 
+  const isFiltered = search.trim() !== "" || courierFilter !== "all" || statusFilter !== "all";
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setCourierFilter("all");
+    setStatusFilter("all");
+  };
+
   const filtered = orders.filter((o) => {
     if (courierFilter !== "all" && o.courier_partner !== courierFilter) return false;
+    if (statusFilter !== "all") {
+      if (statusFilter === "NDR") {
+        const isNdr =
+          o.delivery_status === "NDR" ||
+          o.status === "NDR" ||
+          (Boolean(o.ndr_status) && o.ndr_status !== "None" && o.ndr_status !== "-");
+        if (!isNdr) return false;
+      } else if (statusFilter === "RTO Delivered" || statusFilter === "RTO") {
+        const isRto =
+          o.delivery_status?.toLowerCase().includes("rto") ||
+          o.status?.toLowerCase().includes("rto") ||
+          (Boolean(o.rto_status) && o.rto_status !== "None" && o.rto_status !== "-");
+        if (!isRto) return false;
+      } else {
+        if (o.delivery_status !== statusFilter && o.status !== statusFilter) {
+          return false;
+        }
+      }
+    }
     if (search.trim()) {
       const s = search.toLowerCase();
       return (
         o.shopify_order_id.toLowerCase().includes(s) ||
         o.customer_name.toLowerCase().includes(s) ||
-        (o.shiprocket_awb && o.shiprocket_awb.toLowerCase().includes(s))
+        (o.customer_phone && o.customer_phone.toLowerCase().includes(s)) ||
+        (o.shiprocket_awb && o.shiprocket_awb.toLowerCase().includes(s)) ||
+        (o.shipping_address && o.shipping_address.toLowerCase().includes(s))
       );
     }
     return true;
@@ -235,7 +265,21 @@ export default function AdminShipmentsPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-2.5 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
+              >
+                <option value="all">All Delivery Statuses</option>
+                <option value="NDR">⚠️ NDR Shipments</option>
+                <option value="In Transit">In Transit</option>
+                <option value="Out for Delivery">Out for Delivery</option>
+                <option value="Delivered">Delivered</option>
+                <option value="RTO Delivered">RTO Delivered</option>
+                <option value="Processing">Processing</option>
+              </select>
+
               <select
                 value={courierFilter}
                 onChange={(e) => setCourierFilter(e.target.value)}
@@ -247,6 +291,21 @@ export default function AdminShipmentsPage() {
                 <option value="Xpressbees">Xpressbees</option>
                 <option value="Shadowfax">Shadowfax</option>
               </select>
+
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                disabled={!isFiltered}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                  isFiltered
+                    ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer shadow-xs"
+                    : "bg-slate-100 text-slate-400 border border-slate-200/60 cursor-not-allowed opacity-60"
+                }`}
+                title="Reset all filters"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Filters</span>
+              </button>
             </div>
           </div>
 
@@ -268,7 +327,32 @@ export default function AdminShipmentsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
-                  {filtered.map((item) => (
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="py-12 text-center text-slate-500">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <AlertTriangle className="w-7 h-7 text-slate-300" />
+                          <p className="font-semibold text-slate-800 text-sm">
+                            No shipments match the selected filters
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            Try switching delivery status, courier partner, or clearing search keywords.
+                          </p>
+                          {isFiltered && (
+                            <button
+                              type="button"
+                              onClick={handleResetFilters}
+                              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold rounded-xl shadow-xs transition-all"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Reset Filters</span>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/70">
                       <td className="py-3.5 px-5 font-mono font-bold text-[#FF7A00] whitespace-nowrap">
                         {item.shiprocket_awb || "AWB-PENDING"}
@@ -356,7 +440,7 @@ export default function AdminShipmentsPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  )))}
                 </tbody>
               </table>
             </div>

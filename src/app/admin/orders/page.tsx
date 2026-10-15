@@ -37,7 +37,21 @@ function AdminOrdersContent() {
   const [search, setSearch] = useState(urlSearch);
   const [statusFilter, setStatusFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
+  const [courierFilter, setCourierFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<ERPOrder | null>(null);
+
+  const isFiltered =
+    search.trim() !== "" ||
+    statusFilter !== "all" ||
+    paymentFilter !== "all" ||
+    courierFilter !== "all";
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setPaymentFilter("all");
+    setCourierFilter("all");
+  };
 
   // Edit order modal form state
   const [editDeliveryStatus, setEditDeliveryStatus] = useState<string>("Processing");
@@ -283,6 +297,7 @@ function AdminOrdersContent() {
       const url = new URL("/api/admin/orders", window.location.origin);
       if (statusFilter !== "all") url.searchParams.set("delivery_status", statusFilter);
       if (paymentFilter !== "all") url.searchParams.set("payment_method", paymentFilter);
+      if (courierFilter !== "all") url.searchParams.set("courier_partner", courierFilter);
       if (search.trim()) url.searchParams.set("search", search.trim());
 
       const res = await fetch(url.toString());
@@ -300,7 +315,7 @@ function AdminOrdersContent() {
 
   useEffect(() => {
     fetchOrders();
-  }, [statusFilter, paymentFilter, search]);
+  }, [statusFilter, paymentFilter, courierFilter, search]);
 
   const handleExportCSV = () => {
     const headers = [
@@ -416,26 +431,53 @@ function AdminOrdersContent() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none"
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
               >
                 <option value="all">All Delivery Statuses</option>
                 <option value="Delivered">Delivered</option>
                 <option value="In Transit">In Transit</option>
                 <option value="Out for Delivery">Out for Delivery</option>
-                <option value="NDR">NDR (Non-Delivery)</option>
+                <option value="NDR">⚠️ NDR (Non-Delivery)</option>
                 <option value="RTO Delivered">RTO Delivered</option>
                 <option value="Processing">Processing</option>
               </select>
 
               <select
+                value={courierFilter}
+                onChange={(e) => setCourierFilter(e.target.value)}
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+              >
+                <option value="all">All Courier Partners</option>
+                <option value="Delhivery">Delhivery</option>
+                <option value="Bluedart">Bluedart</option>
+                <option value="Xpressbees">Xpressbees</option>
+                <option value="Shadowfax">Shadowfax</option>
+              </select>
+
+              <select
                 value={paymentFilter}
                 onChange={(e) => setPaymentFilter(e.target.value)}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none"
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
               >
                 <option value="all">All Payment Methods</option>
                 <option value="COD">Cash on Delivery (COD)</option>
-                <option value="Prepaid">Prepaid</option>
+                <option value="Prepaid">Prepaid / UPI</option>
               </select>
+
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                disabled={!isFiltered}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                  isFiltered
+                    ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer shadow-xs"
+                    : "bg-slate-100 text-slate-400 border border-slate-200/60 cursor-not-allowed opacity-60"
+                }`}
+                title="Reset all filters"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Filters</span>
+              </button>
             </div>
           </div>
 
@@ -460,8 +502,26 @@ function AdminOrdersContent() {
                 <tbody className="divide-y divide-slate-100 font-medium">
                   {orders.length === 0 ? (
                     <tr>
-                      <td colSpan={10} className="py-8 text-center text-slate-400">
-                        No orders found matching filters.
+                      <td colSpan={10} className="py-12 text-center text-slate-500">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <AlertTriangle className="w-7 h-7 text-slate-300" />
+                          <p className="font-semibold text-slate-800 text-sm">
+                            No orders match your filter criteria
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            Try changing the delivery status, courier, payment method, or clearing the search box.
+                          </p>
+                          {isFiltered && (
+                            <button
+                              type="button"
+                              onClick={handleResetFilters}
+                              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold rounded-xl shadow-xs transition-all"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Reset Filters</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ) : (

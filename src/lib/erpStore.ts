@@ -820,6 +820,7 @@ export async function addRemittance(payload: {
 export async function getERPOrders(filters?: {
   delivery_status?: string;
   payment_method?: string;
+  courier_partner?: string;
   search?: string;
 }): Promise<ERPOrder[]> {
   try {
@@ -827,12 +828,26 @@ export async function getERPOrders(filters?: {
     const params: any[] = [];
 
     if (filters?.delivery_status && filters.delivery_status !== "all") {
-      sql += " AND delivery_status = ?";
-      params.push(filters.delivery_status);
+      if (filters.delivery_status === "NDR") {
+        sql += " AND (delivery_status = 'NDR' OR status = 'NDR' OR (ndr_status IS NOT NULL AND ndr_status != 'None' AND ndr_status != '-'))";
+      } else if (filters.delivery_status === "RTO Delivered" || filters.delivery_status === "RTO") {
+        sql += " AND (delivery_status LIKE '%RTO%' OR status LIKE '%RTO%' OR (rto_status IS NOT NULL AND rto_status != 'None' AND rto_status != '-'))";
+      } else {
+        sql += " AND (delivery_status = ? OR status = ?)";
+        params.push(filters.delivery_status, filters.delivery_status);
+      }
     }
     if (filters?.payment_method && filters.payment_method !== "all") {
-      sql += " AND payment_method = ?";
-      params.push(filters.payment_method);
+      if (filters.payment_method === "Prepaid") {
+        sql += " AND (payment_method = 'Prepaid' OR payment_method LIKE '%UPI%' OR payment_method = 'Credit Card' OR payment_method = 'Online')";
+      } else {
+        sql += " AND payment_method = ?";
+        params.push(filters.payment_method);
+      }
+    }
+    if (filters?.courier_partner && filters.courier_partner !== "all") {
+      sql += " AND courier_partner = ?";
+      params.push(filters.courier_partner);
     }
     if (filters?.search && filters.search.trim()) {
       sql += " AND (id LIKE ? OR shopify_order_id LIKE ? OR customer_name LIKE ? OR shiprocket_awb LIKE ? OR customer_phone LIKE ?)";
@@ -868,10 +883,35 @@ export async function getERPOrders(filters?: {
 
   let res = [...inMemoryERPOrders];
   if (filters?.delivery_status && filters.delivery_status !== "all") {
-    res = res.filter((o) => o.delivery_status === filters.delivery_status);
+    if (filters.delivery_status === "NDR") {
+      res = res.filter(
+        (o) =>
+          o.delivery_status === "NDR" ||
+          o.status === "NDR" ||
+          (Boolean(o.ndr_status) && o.ndr_status !== "None" && o.ndr_status !== "-")
+      );
+    } else if (filters.delivery_status === "RTO Delivered" || filters.delivery_status === "RTO") {
+      res = res.filter(
+        (o) =>
+          o.delivery_status?.toLowerCase().includes("rto") ||
+          o.status?.toLowerCase().includes("rto") ||
+          (Boolean(o.rto_status) && o.rto_status !== "None" && o.rto_status !== "-")
+      );
+    } else {
+      res = res.filter(
+        (o) => o.delivery_status === filters.delivery_status || o.status === filters.delivery_status
+      );
+    }
   }
   if (filters?.payment_method && filters.payment_method !== "all") {
-    res = res.filter((o) => o.payment_method === filters.payment_method);
+    if (filters.payment_method === "Prepaid") {
+      res = res.filter((o) => o.payment_method !== "COD");
+    } else {
+      res = res.filter((o) => o.payment_method === filters.payment_method);
+    }
+  }
+  if (filters?.courier_partner && filters.courier_partner !== "all") {
+    res = res.filter((o) => o.courier_partner === filters.courier_partner);
   }
   if (filters?.search && filters.search.trim()) {
     const s = filters.search.toLowerCase();

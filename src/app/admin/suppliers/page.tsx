@@ -29,6 +29,7 @@ export default function AdminSuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [balanceFilter, setBalanceFilter] = useState("all");
   const [refreshing, setRefreshing] = useState(false);
 
   // Modals
@@ -166,7 +167,17 @@ export default function AdminSuppliersPage() {
     }
   };
 
+  const isFiltered = searchQuery.trim() !== "" || balanceFilter !== "all";
+
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setBalanceFilter("all");
+  };
+
   const filteredSuppliers = suppliers.filter((s) => {
+    if (balanceFilter === "has_credit" && (s.available_rto_balance || 0) <= 0) return false;
+    if (balanceFilter === "zero_credit" && (s.available_rto_balance || 0) > 0) return false;
+    if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return (
       s.name.toLowerCase().includes(q) ||
@@ -307,23 +318,52 @@ export default function AdminSuppliersPage() {
           </div>
 
           {/* Search Filter Bar */}
-          <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3">
-            <Search className="w-4 h-4 text-slate-400 ml-1.5" />
-            <input
-              type="text"
-              placeholder="Search suppliers by name, code, contact person, or phone..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-slate-400 text-slate-800"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="text-xs font-semibold text-slate-400 hover:text-slate-600 px-2 py-1"
+          <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3 w-full sm:w-96">
+              <Search className="w-4 h-4 text-slate-400 ml-1.5" />
+              <input
+                type="text"
+                placeholder="Search suppliers by name, code, contact person, or phone..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-slate-400 text-slate-800"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="text-xs font-semibold text-slate-400 hover:text-slate-600 px-2 py-1"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <select
+                value={balanceFilter}
+                onChange={(e) => setBalanceFilter(e.target.value)}
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 font-medium focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
               >
-                Clear
+                <option value="all">All Balance Status</option>
+                <option value="has_credit">Has Available Credit</option>
+                <option value="zero_credit">Zero Balance (₹0)</option>
+              </select>
+
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                disabled={!isFiltered}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
+                  isFiltered
+                    ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer shadow-xs"
+                    : "bg-slate-100 text-slate-400 border border-slate-200/60 cursor-not-allowed opacity-60"
+                }`}
+                title="Reset all filters"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Filters</span>
               </button>
-            )}
+            </div>
           </div>
 
           {/* Supplier Grid */}

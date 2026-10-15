@@ -18,6 +18,7 @@ import {
   Trash2,
   CheckCircle2,
   AlertTriangle,
+  RotateCcw,
   RefreshCw,
   ExternalLink,
   Palette,
@@ -122,6 +123,16 @@ export default function AdminProductsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [stockFilter, setStockFilter] = useState("all");
+
+  const isFiltered =
+    search.trim() !== "" || categoryFilter !== "all" || stockFilter !== "all";
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setCategoryFilter("all");
+    setStockFilter("all");
+  };
 
   // Modals state
   const [showModal, setShowModal] = useState(false);
@@ -902,6 +913,8 @@ export default function AdminProductsPage() {
   // Filtered products
   const filtered = products.filter((p) => {
     if (categoryFilter !== "all" && p.category !== categoryFilter) return false;
+    if (stockFilter === "in_stock" && p.in_stock !== 1) return false;
+    if (stockFilter === "out_of_stock" && p.in_stock === 1) return false;
     if (search.trim()) {
       const s = search.toLowerCase();
       return (
@@ -1025,19 +1038,55 @@ export default function AdminProductsPage() {
           </div>
 
           {/* Search & Category Filter Toolbar */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
-            <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search by title, category, or slug..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
-              />
+          <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm flex flex-col lg:flex-row gap-3 items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full lg:w-auto">
+              <div className="relative w-full sm:w-72">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search by title, category, or slug..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full hover:bg-slate-200/60"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <select
+                value={stockFilter}
+                onChange={(e) => setStockFilter(e.target.value)}
+                className="w-full sm:w-auto px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 font-medium focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
+              >
+                <option value="all">All Stock Status</option>
+                <option value="in_stock">In Stock Only</option>
+                <option value="out_of_stock">Out of Stock Only</option>
+              </select>
+
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                disabled={!isFiltered}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
+                  isFiltered
+                    ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer shadow-xs"
+                    : "bg-slate-100 text-slate-400 border border-slate-200/60 cursor-not-allowed opacity-60"
+                }`}
+                title="Reset all filters"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Filters</span>
+              </button>
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+            <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto pb-1 sm:pb-0">
               <button
                 onClick={() => setCategoryFilter("all")}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
@@ -1082,8 +1131,26 @@ export default function AdminProductsPage() {
                 <tbody className="divide-y divide-slate-100">
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="text-center py-12 text-slate-400">
-                        No products match your search or filter.
+                      <td colSpan={7} className="text-center py-12 text-slate-500">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <AlertTriangle className="w-7 h-7 text-slate-300" />
+                          <p className="font-semibold text-slate-800 text-sm">
+                            No products match your search or filter
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            Try changing category, stock status, or clearing the search query.
+                          </p>
+                          {isFiltered && (
+                            <button
+                              type="button"
+                              onClick={handleResetFilters}
+                              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold rounded-xl shadow-xs transition-all"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Reset Filters</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ) : (

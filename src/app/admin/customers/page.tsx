@@ -20,6 +20,7 @@ import {
   ExternalLink,
   ChevronRight,
   ShieldAlert,
+  RotateCcw,
 } from "lucide-react";
 
 interface CustomerProfile {
@@ -59,6 +60,13 @@ export default function AdminCustomersPage() {
   const [search, setSearch] = useState("");
   const [segmentFilter, setSegmentFilter] = useState("all");
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerProfile | null>(null);
+
+  const isFiltered = search.trim() !== "" || segmentFilter !== "all";
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setSegmentFilter("all");
+  };
 
   const fetchCustomers = async () => {
     setIsRefreshing(true);
@@ -260,11 +268,11 @@ export default function AdminCustomersPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-2.5 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
               <select
                 value={segmentFilter}
                 onChange={(e) => setSegmentFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 font-medium"
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 font-medium focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
               >
                 <option value="all">All Segments</option>
                 <option value="repeat">Repeat Buyers (2+ orders)</option>
@@ -272,6 +280,21 @@ export default function AdminCustomersPage() {
                 <option value="clean">Clean (0% RTO)</option>
                 <option value="rto_risk">RTO Risk (≥25% RTO)</option>
               </select>
+
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                disabled={!isFiltered}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                  isFiltered
+                    ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer shadow-xs"
+                    : "bg-slate-100 text-slate-400 border border-slate-200/60 cursor-not-allowed opacity-60"
+                }`}
+                title="Reset all filters"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Filters</span>
+              </button>
             </div>
           </div>
 
@@ -294,7 +317,25 @@ export default function AdminCustomersPage() {
                   {filtered.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="py-12 text-center text-slate-500">
-                        No customers found matching your criteria.
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <AlertTriangle className="w-7 h-7 text-slate-300" />
+                          <p className="font-semibold text-slate-800 text-sm">
+                            No customers found matching your criteria
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            Try switching segment filters or clearing your search term.
+                          </p>
+                          {isFiltered && (
+                            <button
+                              type="button"
+                              onClick={handleResetFilters}
+                              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold rounded-xl shadow-xs transition-all"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Reset Filters</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ) : (
