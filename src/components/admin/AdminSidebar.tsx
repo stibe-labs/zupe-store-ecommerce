@@ -143,9 +143,9 @@ export default function AdminSidebar({
                   <Image
                     src="/zupe-label-white.png"
                     alt="Zupestore"
-                    width={96}
-                    height={24}
-                    className="h-5 w-auto object-contain"
+                    width={115}
+                    height={28}
+                    className="h-6 w-auto object-contain"
                     priority
                   />
                 </div>

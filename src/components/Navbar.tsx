@@ -181,9 +181,9 @@ function NavbarContent() {
               <Image
                 src="/zupe-label.webp"
                 alt="Zupestore"
-                width={120}
-                height={30}
-                className="h-6 sm:h-7 w-auto object-contain"
+                width={160}
+                height={44}
+                className="h-8 sm:h-9 w-auto object-contain"
                 priority
               />
             </Link>
@@ -226,9 +226,9 @@ function NavbarContent() {
             <Image
               src="/zupe-label.webp"
               alt="Zupestore"
-              width={145}
-              height={38}
-              className="h-8 sm:h-9 w-auto object-contain transition-opacity group-hover:opacity-90"
+              width={195}
+              height={52}
+              className="h-10 sm:h-11 lg:h-12 w-auto object-contain transition-opacity group-hover:opacity-90"
               priority
             />
           </Link>
@@ -373,9 +373,9 @@ function NavbarContent() {
                   <Image
                     src="/zupe-label.webp"
                     alt="Zupestore"
-                    width={110}
-                    height={28}
-                    className="h-6 w-auto object-contain"
+                    width={130}
+                    height={34}
+                    className="h-7 sm:h-8 w-auto object-contain"
                   />
                 </div>
                 <button onClick={() => setMobileMenuOpen(false)}>
