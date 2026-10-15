@@ -150,7 +150,7 @@ export function CategoryPills() {
   }, []);
 
   return (
-    <section className="max-w-[1600px] mx-auto px-4 sm:px-6 py-4">
+    <section className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-3 pb-1 sm:pt-4 sm:pb-2">
       <div className="flex items-center justify-between gap-3 sm:gap-4 overflow-x-auto scrollbar-none py-2 px-1">
         {categoryItems.map((cat) => (
           <Link

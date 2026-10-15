@@ -21,11 +21,11 @@ export default function Home() {
       {/* 2. Main Navigation Bar (White with Logo, Search, Account, Wishlist, Cart & Sub-nav) */}
       <Navbar />
 
-      {/* 3. Hero Banner ("Innovative Products for Modern Living", ripple lamp visual, CTA) */}
-      <HeroSection />
-
-      {/* 4. Circular Pastel Category Pills (9 categories) */}
+      {/* 3. Circular Pastel Category Pills (9 categories - Now positioned above banner) */}
       <CategoryPills />
+
+      {/* 4. Hero Banner Carousel (Slim direct poster) */}
+      <HeroSection />
 
       {/* 5. 4-Column White Trust Guarantee Bar */}
       <TrustBar />

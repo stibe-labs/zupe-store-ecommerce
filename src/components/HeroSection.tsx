@@ -102,7 +102,7 @@ export function HeroSection() {
   };
 
   return (
-    <section className="w-full max-w-[1520px] mx-auto px-3 sm:px-6 pt-2 pb-2 sm:pt-3 sm:pb-3 select-none">
+    <section className="w-full max-w-[1520px] mx-auto px-3 sm:px-6 pt-1 pb-2 sm:pt-1.5 sm:pb-3 select-none">
       {/* Slim Poster Banner Card */}
       <div
         className="relative w-full aspect-[2.35/1] sm:aspect-[2.9/1] md:aspect-[3.4/1] lg:aspect-[3.8/1] max-h-[300px] min-h-[140px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-shadow bg-slate-100 group"

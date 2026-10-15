@@ -252,13 +252,13 @@ function NavbarContent() {
             {/* Account (Redirects directly to /account like mobile view) */}
             <button
               onClick={handleAccountClick}
-              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors py-1 group/account cursor-pointer"
+              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors py-1 group/account cursor-pointer"
               aria-label="Account"
             >
               <div className="relative p-1 rounded-full group-hover/account:bg-orange-50 transition-colors">
                 <User className="w-5 h-5 text-gray-700 group-hover/account:text-[#FF7A00] anim-user-hover transition-colors" />
               </div>
-              <span className="hidden md:inline">
+              <span className="hidden md:inline text-sm font-semibold">
                 {isAuthenticated ? (user?.name?.split(" ")[0] || "Account") : "Account"}
               </span>
             </button>
@@ -266,12 +266,12 @@ function NavbarContent() {
             {/* Wishlist */}
             <Link
               href="/wishlist"
-              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors relative py-1 group/wishlist"
+              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors relative py-1 group/wishlist"
             >
               <div className="relative p-1 rounded-full group-hover/wishlist:bg-rose-50 transition-colors">
                 <Heart className="w-5 h-5 text-gray-700 group-hover/wishlist:text-[#FF3B30] group-hover/wishlist:fill-[#FF3B30]/20 anim-heart-hover transition-colors" />
               </div>
-              <span className="hidden md:inline">Wishlist</span>
+              <span className="hidden md:inline text-sm font-semibold">Wishlist</span>
               {totalWishlistItems > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center transition-transform group-hover/wishlist:scale-110 shadow-xs">
                   {totalWishlistItems}
@@ -282,7 +282,7 @@ function NavbarContent() {
             {/* Cart */}
             <button
               onClick={openCart}
-              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors relative py-1 group/cart cursor-pointer"
+              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors relative py-1 group/cart cursor-pointer"
               aria-label="View Cart"
             >
               <div className="relative p-1 rounded-full group-hover/cart:bg-orange-50 transition-colors">
@@ -293,7 +293,7 @@ function NavbarContent() {
                   </span>
                 )}
               </div>
-              <span className="hidden md:inline font-bold">Cart</span>
+              <span className="hidden md:inline text-sm font-bold">Cart</span>
             </button>
           </div>
         </div>
@@ -302,11 +302,11 @@ function NavbarContent() {
       {/* Secondary Category Sub-Nav Row */}
       <div className="border-t border-gray-100 hidden sm:block bg-white">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between text-xs font-semibold">
+          <div className="flex items-center justify-between text-[13.5px] font-semibold">
             {/* All Categories Dropdown button */}
             <Link
               href="/products"
-              className={`flex items-center gap-2 py-3 px-3 font-bold transition-colors border-r border-gray-100 mr-4 ${
+              className={`flex items-center gap-2 py-3 px-3 font-bold transition-colors border-r border-gray-100 mr-4 text-[13.5px] ${
                 pathname === "/products" &&
                 !searchParams?.get("filter") &&
                 (!searchParams?.get("category") || searchParams?.get("category") === "All")
@@ -319,14 +319,14 @@ function NavbarContent() {
             </Link>
 
             {/* Navigation Links */}
-            <div className="flex items-center gap-6 overflow-x-auto scrollbar-none py-1">
+            <div className="flex items-center gap-6 lg:gap-7 overflow-x-auto scrollbar-none py-1">
               {navCategories.map((item) => {
                 const active = isItemActive(item.href);
                 return (
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`py-3 whitespace-nowrap transition-colors relative ${
+                    className={`py-3 whitespace-nowrap transition-colors relative text-[13.5px] ${
                       active
                         ? "text-[#FF7A00] font-bold"
                         : "text-gray-700 hover:text-[#FF7A00] font-medium"
