@@ -3,11 +3,11 @@ import { executeD1Query } from "@/lib/d1";
 
 export interface HeroBannerSlide {
   id: string;
-  badge: string;
-  titleLine1: string;
-  titleLine2: string;
-  description: string;
-  ctaText: string;
+  badge?: string;
+  titleLine1?: string;
+  titleLine2?: string;
+  description?: string;
+  ctaText?: string;
   ctaLink: string;
   image: string; // Desktop view photo (16:9 / landscape)
   mobileImage?: string; // Mobile view photo (4:5 / 1:1 portrait)
@@ -34,41 +34,41 @@ export interface StoreCategory {
 
 export const DEFAULT_HERO_BANNERS: HeroBannerSlide[] = [
   {
-    id: "ripple-lamp",
-    badge: "SMART SOLUTIONS FOR A BETTER LIFE",
-    titleLine1: "Innovative Products",
-    titleLine2: "Modern Living.",
-    description: "Discover unique and useful products that make your life easier, smarter and more fun.",
-    ctaText: "Shop Now",
-    ctaLink: "/products/dynamic-water-ripple-night-light",
-    image: "/products/hero-banner.jpg",
-    taglineRight: "Small Products Big Happiness ♡",
+    id: "mega-sale-banner",
+    badge: "ZUPE EXCLUSIVE",
+    titleLine1: "Mega Sale - Up to 60% Off",
+    titleLine2: "Free Shipping Across India",
+    description: "Shop top trending modern decor, electronics, and lifestyle products with instant discounts.",
+    ctaText: "Shop Sale",
+    ctaLink: "/products",
+    image: "/banners/banner-mega-sale.jpg",
+    taglineRight: "Best Prices Everyday ♡",
     active: true,
     order: 1,
   },
   {
-    id: "car-accessories",
-    badge: "PREMIUM LIFESTYLE ESSENTIALS",
-    titleLine1: "Auto Essentials",
-    titleLine2: "Style & Comfort.",
-    description: "Upgrade your driving experience with solar powered diffusing fragrances and smart organizers.",
-    ctaText: "Explore Now",
-    ctaLink: "/products?category=Auto+Essentials",
-    image: "/products/helicopter-perfume.jpg",
-    taglineRight: "Drive In Luxury ♡",
+    id: "tech-gadgets-banner",
+    badge: "NEXT-GEN TECH",
+    titleLine1: "Smart Tech & Gadgets",
+    titleLine2: "Special Deals from ₹299",
+    description: "High-performance portable audio, emergency power, and innovative gadgets.",
+    ctaText: "Explore Tech",
+    ctaLink: "/products?category=Tech+%26+Gadgets",
+    image: "/banners/banner-tech-gadgets.jpg",
+    taglineRight: "Pure Sound & Power ♡",
     active: true,
     order: 2,
   },
   {
-    id: "smart-gadgets",
-    badge: "CUTTING-EDGE EVERYDAY TECH",
-    titleLine1: "Smart Tech Gadgets",
-    titleLine2: "Everyday Ease.",
-    description: "High-performance portable audio and emergency power to keep your routine charged and effortless.",
-    ctaText: "Discover Tech",
-    ctaLink: "/products/tf20-multipurpose-powerbank-with-airpods",
-    image: "/products/powerbank-earbuds.jpg",
-    taglineRight: "Pure Sound & Power ♡",
+    id: "auto-home-banner",
+    badge: "LIFESTYLE ESSENTIALS",
+    titleLine1: "Auto & Home Essentials",
+    titleLine2: "Up to 50% Off | Free COD",
+    description: "Solar powered car fragrances, crystal ambient lamps, and modern comfort items.",
+    ctaText: "Discover More",
+    ctaLink: "/products?category=Home+Essentials",
+    image: "/banners/banner-auto-home.jpg",
+    taglineRight: "Drive In Luxury ♡",
     active: true,
     order: 3,
   },

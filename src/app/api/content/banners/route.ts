@@ -39,22 +39,22 @@ export async function POST(req: NextRequest) {
 
     const { badge, titleLine1, titleLine2, description, ctaText, ctaLink, image, mobileImage, taglineRight, active } = body;
 
-    if (!titleLine1 || !image) {
-      return NextResponse.json({ success: false, error: "Title and Image are required" }, { status: 400 });
+    if (!image) {
+      return NextResponse.json({ success: false, error: "Banner image is required" }, { status: 400 });
     }
 
     const currentBanners = await getBanners(true);
     const newBanner: HeroBannerSlide = {
       id: "banner-" + Date.now().toString(36) + "-" + Math.random().toString(36).substring(2, 6),
-      badge: badge || "SPECIAL COLLECTION",
-      titleLine1: titleLine1.trim(),
+      badge: badge || "PROMO",
+      titleLine1: (titleLine1 || "Promo Banner").trim(),
       titleLine2: (titleLine2 || "").trim(),
       description: (description || "").trim(),
-      ctaText: (ctaText || "Explore Now").trim(),
+      ctaText: (ctaText || "Shop Now").trim(),
       ctaLink: (ctaLink || "/products").trim(),
       image: image.trim(),
       mobileImage: mobileImage ? mobileImage.trim() : undefined,
-      taglineRight: taglineRight || "Exclusive Offers ♡",
+      taglineRight: taglineRight || "",
       active: active !== false,
       order: currentBanners.length + 1,
     };

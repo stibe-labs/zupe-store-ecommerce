@@ -1,17 +1,20 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronLeft, ChevronRight, Truck, Banknote, RotateCcw, Heart } from "lucide-react";
-
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DEFAULT_HERO_BANNERS, HeroBannerSlide } from "@/lib/storeContent";
 
 export function HeroSection() {
   const [slides, setSlides] = useState<HeroBannerSlide[]>(DEFAULT_HERO_BANNERS);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [[currentSlide, direction], setSlide] = useState<[number, number]>([0, 1]);
   const [isPaused, setIsPaused] = useState(false);
+
+  // Touch swipe tracking
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
 
   useEffect(() => {
     fetch("/api/content/banners")
@@ -24,189 +27,185 @@ export function HeroSection() {
       .catch((err) => console.warn("Failed to fetch dynamic hero banners:", err));
   }, []);
 
-  // Auto-advance slides every 5 seconds (5000ms) with pause on hover
+  const totalSlides = slides.length;
+
+  const paginate = useCallback(
+    (newDirection: number) => {
+      if (totalSlides <= 1) return;
+      setSlide(([prevSlide]) => {
+        const nextIndex = (prevSlide + newDirection + totalSlides) % totalSlides;
+        return [nextIndex, newDirection];
+      });
+    },
+    [totalSlides]
+  );
+
+  // Auto-advance slides every 3 seconds (3000ms) with pause on hover
   useEffect(() => {
-    if (isPaused || slides.length <= 1) return;
+    if (isPaused || totalSlides <= 1) return;
 
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    const timer = setInterval(() => {
+      paginate(1);
+    }, 3000);
 
-    return () => clearInterval(interval);
-  }, [isPaused, slides.length]);
+    return () => clearInterval(timer);
+  }, [isPaused, totalSlides, paginate]);
 
-  const safeSlideIndex = slides.length > 0 ? currentSlide % slides.length : 0;
-  const slide = slides[safeSlideIndex] || DEFAULT_HERO_BANNERS[0];
+  const activeIndex = totalSlides > 0 ? currentSlide % totalSlides : 0;
+  const slide = slides[activeIndex] || DEFAULT_HERO_BANNERS[0];
 
-  const handlePrev = () => {
-    setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+  // Touch handlers for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsPaused(true);
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = null;
   };
 
-  const handleNext = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    setIsPaused(false);
+    if (touchStartX.current !== null && touchEndX.current !== null) {
+      const diff = touchStartX.current - touchEndX.current;
+      const minSwipeDistance = 40;
+      if (diff > minSwipeDistance) {
+        // Swiped Left -> show next card from right
+        paginate(1);
+      } else if (diff < -minSwipeDistance) {
+        // Swiped Right -> show previous card from left
+        paginate(-1);
+      }
+    }
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
+  const goToSlide = (targetIndex: number) => {
+    if (targetIndex === activeIndex) return;
+    const dir = targetIndex > activeIndex ? 1 : -1;
+    setSlide([targetIndex, dir]);
+  };
+
+  // Horizontal slide animation variants
+  const slideVariants = {
+    enter: (dir: number) => ({
+      x: dir >= 0 ? "100%" : "-100%",
+    }),
+    center: {
+      x: "0%",
+    },
+    exit: (dir: number) => ({
+      x: dir >= 0 ? "-100%" : "100%",
+    }),
   };
 
   return (
-    <section className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-3 pb-2 sm:pt-4 sm:pb-3">
+    <section className="w-full max-w-[1520px] mx-auto px-3 sm:px-6 pt-2 pb-2 sm:pt-3 sm:pb-3 select-none">
+      {/* Slim Poster Banner Card */}
       <div
-        className="relative rounded-3xl overflow-hidden bg-[#18130E] text-white shadow-xl min-h-[440px] sm:min-h-[480px] lg:min-h-[500px] flex items-center select-none"
+        className="relative w-full aspect-[2.35/1] sm:aspect-[2.9/1] md:aspect-[3.4/1] lg:aspect-[3.8/1] max-h-[300px] min-h-[140px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-shadow bg-slate-100 group"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
-        {/* Background Visual with Ambient Glow and Cross-fade */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={slide.id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className="absolute inset-0 z-0"
-          >
-            {/* Desktop View Banner (Landscape 16:9) */}
-            <Image
-              src={slide.image}
-              alt={slide.titleLine1}
-              fill
-              priority
-              className={`object-cover object-right sm:object-center opacity-85 ${
-                slide.mobileImage ? "hidden sm:block" : "block"
-              }`}
-            />
-
-            {/* Mobile View Banner (Portrait / Mobile optimized ratio) */}
-            {slide.mobileImage && (
-              <Image
-                src={slide.mobileImage}
-                alt={slide.titleLine1}
-                fill
-                priority
-                className="object-cover object-center opacity-90 block sm:hidden"
-              />
-            )}
-            {/* Subtle gradient vignette to keep text readable on the left */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#140F0A] via-[#140F0A]/85 sm:via-[#140F0A]/70 to-transparent w-full sm:w-2/3 z-10" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-10" />
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Hero Content */}
-        <div className="relative z-20 w-full px-6 sm:px-12 lg:px-16 py-10 flex flex-col justify-between h-full">
-          <AnimatePresence mode="wait">
+        {/* Animated Horizontal Sliding Track */}
+        <div className="relative w-full h-full overflow-hidden">
+          <AnimatePresence initial={false} custom={direction}>
             <motion.div
-              key={slide.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.45, ease: "easeOut" }}
-              className="max-w-xl"
+              key={slide.id || activeIndex}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "tween", ease: [0.25, 1, 0.5, 1], duration: 0.65 },
+              }}
+              className="absolute inset-0 w-full h-full"
             >
-              {/* Eyebrow */}
-              <p className="text-[11px] sm:text-xs font-bold tracking-[0.2em] text-[#C4B5A5] uppercase mb-3">
-                {slide.badge}
-              </p>
+              <Link
+                href={slide.ctaLink || "/products"}
+                className="relative block w-full h-full cursor-pointer overflow-hidden"
+                aria-label={slide.titleLine1 || "Promo Banner"}
+              >
+                {/* Desktop View Poster */}
+                <Image
+                  src={slide.image}
+                  alt={slide.titleLine1 || "Banner Poster"}
+                  fill
+                  priority={activeIndex === 0}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1520px"
+                  className={`object-cover object-center w-full h-full transition-transform duration-700 ease-out group-hover:scale-[1.01] ${
+                    slide.mobileImage ? "hidden sm:block" : "block"
+                  }`}
+                />
 
-              {/* Main Headline */}
-              <h1 className="text-3xl sm:text-5xl lg:text-[56px] font-display font-extrabold text-white leading-[1.12] tracking-tight mb-4">
-                {slide.titleLine1} <br />
-                <span className="text-white">for </span>
-                <span className="text-[#FF7A00]">{slide.titleLine2}</span>
-              </h1>
-
-              {/* Description */}
-              <p className="text-sm sm:text-base text-gray-300 font-normal leading-relaxed max-w-md mb-7">
-                {slide.description}
-              </p>
-
-              {/* Action Button */}
-              <div className="mb-8">
-                <Link
-                  href={slide.ctaLink}
-                  className="relative inline-flex items-center gap-2.5 px-7 py-3 rounded-full font-bold text-sm overflow-hidden group shadow-lg shadow-black/30 hover:shadow-[0_12px_30px_-4px_rgba(255, 122, 0,0.55),0_0_16px_rgba(255,122,69,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 select-none cursor-pointer"
-                >
-                  {/* Default White Background */}
-                  <span className="absolute inset-0 bg-white transition-opacity duration-300 ease-out group-hover:opacity-0" />
-
-                  {/* Animated Color-Changing Gradient Overlay on Hover */}
-                  <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out anim-shopnow-gradient" />
-
-                  {/* Shimmer Light Sweep on Hover */}
-                  <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none" />
-
-                  {/* Button Content */}
-                  <span className="relative z-10 flex items-center gap-2.5 text-[#111111] group-hover:text-white transition-colors duration-300">
-                    <span className="font-extrabold tracking-wide">{slide.ctaText}</span>
-                    <ArrowRight className="w-4 h-4 transition-all duration-300 group-hover:translate-x-1.5 group-hover:scale-110" />
-                  </span>
-                </Link>
-              </div>
-
-              {/* Trust Badges Row */}
-              <div className="flex flex-wrap items-center gap-5 sm:gap-7 text-xs font-medium text-gray-200">
-                <div className="flex items-center gap-2">
-                  <Truck className="w-4 h-4 text-white" />
-                  <span>Free Shipping</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Banknote className="w-4 h-4 text-white" />
-                  <span>COD Available</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RotateCcw className="w-4 h-4 text-white" />
-                  <span>Easy Returns</span>
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Right Cursive floating badge */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={slide.id + "-badge"}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.4 }}
-              className="hidden lg:block absolute right-14 top-14 text-right z-20 pointer-events-none"
-            >
-              <p className="font-serif italic text-amber-100/90 text-xl tracking-wide drop-shadow-md leading-tight">
-                {slide.taglineRight}
-              </p>
+                {/* Mobile View Poster (if custom mobile ratio provided) */}
+                {slide.mobileImage && (
+                  <Image
+                    src={slide.mobileImage}
+                    alt={slide.titleLine1 || "Mobile Banner Poster"}
+                    fill
+                    priority={activeIndex === 0}
+                    sizes="100vw"
+                    className="object-cover object-center w-full h-full block sm:hidden"
+                  />
+                )}
+              </Link>
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Carousel Prev/Next Buttons */}
-        <button
-          onClick={handlePrev}
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all z-20 backdrop-blur-sm shadow-md hover:scale-105 active:scale-95"
-          aria-label="Previous slide"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
+        {/* Carousel Prev/Next Chevron Buttons (Desktop Hover) */}
+        {totalSlides > 1 && (
+          <>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                paginate(-1);
+              }}
+              className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-white/85 hover:bg-white text-slate-800 items-center justify-center z-20 backdrop-blur-md shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="w-5 h-5 text-slate-800" />
+            </button>
 
-        <button
-          onClick={handleNext}
-          className="absolute right-3.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all z-20 backdrop-blur-sm shadow-md hover:scale-105 active:scale-95"
-          aria-label="Next slide"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                paginate(1);
+              }}
+              className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-white/85 hover:bg-white text-slate-800 items-center justify-center z-20 backdrop-blur-md shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="w-5 h-5 text-slate-800" />
+            </button>
+          </>
+        )}
+      </div>
 
-        {/* Carousel Pagination Dots */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2.5 z-20">
+      {/* Outpickz-Style Carousel Pagination Indicator (Dots / Pills) */}
+      {totalSlides > 1 && (
+        <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-2 sm:mt-2.5">
           {slides.map((_, idx) => (
             <button
               key={idx}
-              onClick={() => setCurrentSlide(idx)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                currentSlide === idx ? "w-7 bg-white shadow-sm" : "w-2 bg-white/40 hover:bg-white/70"
+              onClick={() => goToSlide(idx)}
+              className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                activeIndex === idx
+                  ? "w-6 sm:w-7 bg-slate-900 shadow-xs"
+                  : "w-2 sm:w-2.5 bg-slate-300 hover:bg-slate-400"
               }`}
               aria-label={`Go to slide ${idx + 1}`}
             />
           ))}
         </div>
-      </div>
+      )}
     </section>
   );
 }
+
