@@ -65,6 +65,23 @@ const BUMP_PRODUCTS = [
   },
 ];
 
+function cleanPhoneDigits(raw: string): string {
+  if (!raw) return "";
+  let trimmed = raw.trim();
+  if (trimmed.startsWith("+91")) {
+    trimmed = trimmed.slice(3);
+  } else if (trimmed.startsWith("+")) {
+    trimmed = trimmed.replace(/^\+\d{1,3}/, "");
+  }
+  let digits = trimmed.replace(/\D/g, "");
+  if (digits.startsWith("91") && digits.length > 10) {
+    digits = digits.slice(2);
+  } else if (digits.startsWith("0") && digits.length > 10) {
+    digits = digits.slice(1);
+  }
+  return digits.slice(0, 10);
+}
+
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -83,9 +100,10 @@ function CheckoutContent() {
   const { user, isLoading: authLoading, updateUserProfile } = useAuth();
 
   // Contact & Delivery state
-  const [phone, setPhone] = useState(user?.phone || "");
-  const [name, setName] = useState(user?.name || "");
-  const [email, setEmail] = useState(user?.email || "");
+  const [phone, setPhone] = useState(() => cleanPhoneDigits(user?.phone || ""));
+  const [name, setName] = useState(() => (user?.name && !user.name.startsWith("Customer ") ? user.name : ""));
+  // Customer must type their real email address manually
+  const [email, setEmail] = useState("");
   const [marketingConsent, setMarketingConsent] = useState(true);
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
@@ -158,14 +176,17 @@ function CheckoutContent() {
     else if (methodParam === "cod") setPaymentMethod("cod");
   }, [searchParams]);
 
-  // Populate user data if logged in
+  // Populate user data if logged in (phone and real name only - never synthetic email)
   useEffect(() => {
     if (user) {
-      if (!name && user.name) setName(user.name);
-      if (!email && user.email) setEmail(user.email);
-      if (!phone && user.phone) setPhone(user.phone);
+      if (!name && user.name && !user.name.startsWith("Customer ")) {
+        setName(user.name);
+      }
+      if (!phone && user.phone) {
+        setPhone(cleanPhoneDigits(user.phone));
+      }
     }
-  }, [user, name, email, phone]);
+  }, [user, name, phone]);
 
   // Hydrate saved addresses
   useEffect(() => {
@@ -182,8 +203,10 @@ function CheckoutContent() {
           const defaultAddr = deduplicated.find((a: any) => a.is_default) || deduplicated[0];
           if (defaultAddr && !address) {
             setSelectedAddressId(defaultAddr.id);
-            if (defaultAddr.recipient_name) setName(defaultAddr.recipient_name);
-            if (defaultAddr.phone) setPhone(defaultAddr.phone);
+            if (defaultAddr.recipient_name && !defaultAddr.recipient_name.startsWith("Customer ")) {
+              setName(defaultAddr.recipient_name);
+            }
+            if (defaultAddr.phone) setPhone(cleanPhoneDigits(defaultAddr.phone));
             setAddress(defaultAddr.street || "");
             setCity(defaultAddr.city || "");
             setState(defaultAddr.state || "");
@@ -206,8 +229,10 @@ function CheckoutContent() {
           const defaultAddr = deduplicated.find((a: any) => a.is_default) || deduplicated[0];
           if (defaultAddr && (!address || !selectedAddressId)) {
             setSelectedAddressId(defaultAddr.id);
-            if (defaultAddr.recipient_name) setName(defaultAddr.recipient_name);
-            if (defaultAddr.phone) setPhone(defaultAddr.phone);
+            if (defaultAddr.recipient_name && !defaultAddr.recipient_name.startsWith("Customer ")) {
+              setName(defaultAddr.recipient_name);
+            }
+            if (defaultAddr.phone) setPhone(cleanPhoneDigits(defaultAddr.phone));
             setAddress(defaultAddr.street || "");
             setCity(defaultAddr.city || "");
             setState(defaultAddr.state || "");
@@ -248,8 +273,10 @@ function CheckoutContent() {
   const handleSelectSavedAddress = (addr: any) => {
     setSelectedAddressId(addr.id);
     setIsUsingNewAddress(false);
-    if (addr.recipient_name) setName(addr.recipient_name);
-    if (addr.phone) setPhone(addr.phone);
+    if (addr.recipient_name && !addr.recipient_name.startsWith("Customer ")) {
+      setName(addr.recipient_name);
+    }
+    if (addr.phone) setPhone(cleanPhoneDigits(addr.phone));
     setAddress(addr.street || "");
     setCity(addr.city || "");
     setState(addr.state || "");
@@ -442,7 +469,7 @@ function CheckoutContent() {
         const orderPayload = {
           customer_name: name.trim(),
           customer_email: email.trim(),
-          customer_phone: phone.trim(),
+          customer_phone: phone.trim().startsWith("+91") ? phone.trim() : `+91 ${phone.trim()}`,
           shipping_address: address.trim(),
           city: state ? `${city.trim()}, ${state.trim()}` : city.trim(),
           postal_code: postalCode.trim(),
@@ -547,7 +574,7 @@ function CheckoutContent() {
           shipping_address: `${address.trim()}, ${city.trim()} - ${postalCode.trim()}`,
         },
         theme: {
-          color: "#00875A", // Matching the clean green theme
+          color: "#FF7A00",
           backdrop_color: "rgba(17, 17, 17, 0.7)",
         },
         modal: {
@@ -569,7 +596,7 @@ function CheckoutContent() {
                 order_payload: {
                   customer_name: name.trim(),
                   customer_email: email.trim(),
-                  customer_phone: phone.trim(),
+                  customer_phone: phone.trim().startsWith("+91") ? phone.trim() : `+91 ${phone.trim()}`,
                   shipping_address: address.trim(),
                   city: state ? `${city.trim()}, ${state.trim()}` : city.trim(),
                   postal_code: postalCode.trim(),
@@ -649,11 +676,11 @@ function CheckoutContent() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", damping: 15 }}
-            className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#EAF8F2] flex items-center justify-center text-[#00875A] shadow-lg shadow-[#00875A]/15"
+            className="w-20 h-20 mx-auto mb-6 rounded-full bg-orange-50 flex items-center justify-center text-[#FF7A00] shadow-lg shadow-[#FF7A00]/15"
           >
             <CheckCircle2 className="w-10 h-10" />
           </motion.div>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EAF8F2] text-[#00875A] mb-2 border border-[#BFE8D6]">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-[#FF7A00] mb-2 border border-orange-200">
             Order Placed Successfully
           </span>
           <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
@@ -698,14 +725,14 @@ function CheckoutContent() {
             </div>
             <div className="flex justify-between items-center pt-2 text-sm">
               <span className="font-bold text-gray-900">Total Paid:</span>
-              <span className="font-extrabold text-[#00875A] text-lg">₹{(confirmedTotal || grandTotal).toLocaleString()}</span>
+              <span className="font-extrabold text-[#FF7A00] text-lg">₹{(confirmedTotal || grandTotal).toLocaleString()}</span>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
               href={`/order-tracking?query=${encodeURIComponent(confirmedOrderId)}`}
-              className="flex-1 py-3.5 px-6 rounded-xl bg-[#00875A] text-white font-semibold text-sm hover:bg-[#00704A] transition-colors flex items-center justify-center gap-2 shadow-xs"
+              className="flex-1 py-3.5 px-6 rounded-xl bg-[#FF7A00] text-white font-semibold text-sm hover:bg-[#E66E00] transition-colors flex items-center justify-center gap-2 shadow-xs"
             >
               <Truck className="w-4 h-4" />
               <span>Track Order</span>
@@ -746,14 +773,14 @@ function CheckoutContent() {
         </header>
 
         <main className="max-w-md mx-auto py-24 px-4 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-50 flex items-center justify-center text-[#00875A]">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-50 flex items-center justify-center text-[#FF7A00]">
             <ShoppingBag className="w-8 h-8" />
           </div>
           <h2 className="text-2xl font-bold font-display text-gray-900 mb-2">Your Bag is Empty</h2>
           <p className="text-sm text-gray-500 mb-6">You don&apos;t have any products ready for checkout yet.</p>
           <Link
             href="/products"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#00875A] hover:bg-[#00704A] text-white font-semibold text-sm shadow-xs transition-colors"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-sm shadow-xs transition-colors"
           >
             Browse Trending Products
           </Link>
@@ -768,7 +795,7 @@ function CheckoutContent() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900 antialiased">
-      {/* 1. TOP TRUST HEADER (Matches Reference Exactly) */}
+      {/* 1. TOP TRUST HEADER (Clean Zupe Store Branding) */}
       <header className="border-b border-gray-100 bg-white py-3 sm:py-3.5">
         <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
           {/* Logo */}
@@ -783,53 +810,24 @@ function CheckoutContent() {
             />
           </Link>
 
-          {/* Social Proof & Trust Badges */}
-          <div className="flex flex-col items-center sm:items-end">
-            <div className="flex items-center gap-2">
-              {/* Overlapping customer avatars */}
-              <div className="flex -space-x-1.5 items-center">
-                <div className="w-6 h-6 rounded-full overflow-hidden border border-white shadow-2xs relative">
-                  <Image src="/avatars/arjun.jpg" alt="Customer" fill className="object-cover" />
-                </div>
-                <div className="w-6 h-6 rounded-full overflow-hidden border border-white shadow-2xs relative">
-                  <Image src="/avatars/sneha.jpg" alt="Customer" fill className="object-cover" />
-                </div>
-                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-bold flex items-center justify-center border border-white shadow-2xs">
-                  5L+
-                </div>
-              </div>
-
-              {/* 5 Stars */}
-              <div className="flex items-center text-amber-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-
-              <span className="font-extrabold text-xs sm:text-sm text-gray-900 tracking-tight">
-                Loved by Over 5 Lakh Happy Customers
-              </span>
-            </div>
-
-            {/* Badges Row */}
-            <div className="flex items-center gap-3 sm:gap-4 text-[11px] text-gray-500 font-medium mt-1">
-              <span className="flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-gray-600" /> Premium Quality
-              </span>
-              <span className="text-gray-300">•</span>
-              <span className="flex items-center gap-1">
-                <Truck className="w-3.5 h-3.5 text-gray-600" /> Fast Shipping
-              </span>
-              <span className="text-gray-300">•</span>
-              <span className="flex items-center gap-1">
-                <Lock className="w-3.5 h-3.5 text-gray-600" /> Secure Checkout
-              </span>
-            </div>
+          {/* Genuine Trust Badges */}
+          <div className="flex items-center gap-3 sm:gap-5 text-xs text-gray-600 font-medium">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-[#FF7A00]" /> Premium Quality
+            </span>
+            <span className="text-gray-300">•</span>
+            <span className="flex items-center gap-1.5">
+              <Truck className="w-4 h-4 text-[#FF7A00]" /> Fast Shipping
+            </span>
+            <span className="text-gray-300">•</span>
+            <span className="flex items-center gap-1.5">
+              <Lock className="w-4 h-4 text-[#FF7A00]" /> 100% Secure Checkout
+            </span>
           </div>
         </div>
       </header>
 
-      {/* 2. MOBILE COLLAPSIBLE ORDER SUMMARY ACCORDION (Matches Reference Mobile View) */}
+      {/* 2. MOBILE COLLAPSIBLE ORDER SUMMARY ACCORDION */}
       <div className="lg:hidden border-b border-gray-200 bg-[#F4F4F5]">
         <button
           type="button"
@@ -878,7 +876,7 @@ function CheckoutContent() {
                           fill
                           className="object-cover rounded-xl"
                         />
-                        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-black text-white text-[10px] font-bold flex items-center justify-center">
+                        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#111111] text-white text-[10px] font-bold flex items-center justify-center">
                           {item.quantity}
                         </div>
                       </div>
@@ -910,7 +908,7 @@ function CheckoutContent() {
                   placeholder="Promo code"
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
-                  className="flex-1 px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-medium uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+                  className="flex-1 px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-medium uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-[#FF7A00] focus:border-[#FF7A00]"
                 />
                 <button
                   type="submit"
@@ -920,7 +918,7 @@ function CheckoutContent() {
                 </button>
               </form>
               {promoApplied && (
-                <p className="text-[11px] text-[#00875A] font-semibold flex items-center gap-1">
+                <p className="text-[11px] text-[#FF7A00] font-semibold flex items-center gap-1">
                   <Check className="w-3.5 h-3.5" /> Promo code applied! Saved ₹{promoDiscount.toLocaleString()}
                 </p>
               )}
@@ -943,7 +941,7 @@ function CheckoutContent() {
                     <span>Shipping</span>
                     <p className="text-[10px] text-gray-400">Arrives in 3-6 days</p>
                   </div>
-                  <span className="font-bold text-[#00875A]">Free</span>
+                  <span className="font-bold text-[#FF7A00]">Free</span>
                 </div>
                 <div className="flex justify-between items-baseline pt-2 border-t border-gray-100">
                   <span className="font-bold text-sm text-gray-900">Total</span>
@@ -962,7 +960,7 @@ function CheckoutContent() {
 
               {/* You're paying less pill */}
               {totalMrpSavings > 0 && (
-                <div className="py-2 px-3 rounded-lg bg-[#EAF8F2] border border-[#BFE8D6] text-[#00875A] font-bold text-[11px] flex items-center justify-center gap-1.5 uppercase tracking-wide">
+                <div className="py-2.5 px-3 rounded-lg bg-[#FFF7ED] border border-[#FFEDD5] text-[#FF7A00] font-bold text-[11px] flex items-center justify-center gap-1.5 uppercase tracking-wide">
                   <Tag className="w-3.5 h-3.5" />
                   <span>YOU&apos;RE PAYING ₹{totalMrpSavings.toLocaleString()} LESS THAN MRP</span>
                 </div>
@@ -984,15 +982,15 @@ function CheckoutContent() {
         <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* LEFT COLUMN: URGENCY BANNER + STEP 1 + STEP 2 */}
           <div className="lg:col-span-7 space-y-6 sm:space-y-7">
-            {/* Urgency Countdown Banner (Matches Reference) */}
-            <div className="p-3.5 sm:p-4 rounded-2xl bg-[#EAF8F2] border border-[#BFE8D6] flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#D1F2E2] text-[#00875A] flex items-center justify-center shrink-0">
+            {/* Urgency Countdown Banner (Zupe Orange Theme) */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-[#FFF7ED] border border-[#FFEDD5] flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#FFEDD5] text-[#FF7A00] flex items-center justify-center shrink-0">
                 <Sparkles className="w-4 h-4" />
               </div>
               <p className="text-xs sm:text-sm text-gray-800 leading-snug">
                 <span className="font-bold text-gray-900">Special limited-time discount applied!</span>{" "}
                 Don&apos;t miss out:{" "}
-                <span className="font-mono font-extrabold text-[#00875A] text-sm sm:text-base">
+                <span className="font-mono font-extrabold text-[#FF7A00] text-sm sm:text-base">
                   {formatTimer(timeLeft)}
                 </span>
               </p>
@@ -1001,7 +999,7 @@ function CheckoutContent() {
             {/* STEP 1: CONTACT DETAILS */}
             <div className="space-y-3.5">
               <div className="flex items-center gap-2.5">
-                <span className="w-6 h-6 rounded-full bg-black text-white text-xs font-bold flex items-center justify-center">
+                <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center">
                   1
                 </span>
                 <h2 className="text-lg sm:text-xl font-bold font-display text-gray-900">
@@ -1018,15 +1016,16 @@ function CheckoutContent() {
                 <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
                   Mobile Number *
                 </label>
-                <div className="flex rounded-xl border border-gray-200 overflow-hidden focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all bg-white">
+                <div className="flex rounded-xl border border-gray-200 overflow-hidden focus-within:border-[#FF7A00] focus-within:ring-1 focus-within:ring-[#FF7A00] transition-all bg-white">
                   <div className="px-3.5 bg-gray-50 border-r border-gray-200 text-gray-700 font-semibold text-xs flex items-center select-none">
                     IN +91
                   </div>
                   <input
                     type="tel"
                     required
+                    maxLength={10}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    onChange={(e) => setPhone(cleanPhoneDigits(e.target.value))}
                     placeholder="Enter mobile number"
                     className="w-full px-4 py-3 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none"
                   />
@@ -1045,7 +1044,7 @@ function CheckoutContent() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <span className="w-6 h-6 rounded-full bg-black text-white text-xs font-bold flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center">
                     2
                   </span>
                   <h2 className="text-lg sm:text-xl font-bold font-display text-gray-900">
@@ -1057,7 +1056,7 @@ function CheckoutContent() {
                   <button
                     type="button"
                     onClick={handleUseNewAddress}
-                    className="text-xs font-bold text-[#00875A] hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-xs font-bold text-[#FF7A00] hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>{isUsingNewAddress ? "Entering New Address" : "Use New Address"}</span>
@@ -1069,7 +1068,7 @@ function CheckoutContent() {
               {savedAddresses.length > 0 && !isUsingNewAddress && (
                 <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-200/80 space-y-2.5">
                   <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#00875A]" />
+                    <MapPin className="w-3.5 h-3.5 text-[#FF7A00]" />
                     Saved Addresses ({savedAddresses.length})
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1081,7 +1080,7 @@ function CheckoutContent() {
                           onClick={() => handleSelectSavedAddress(addr)}
                           className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
                             isSelected
-                              ? "border-[#00875A] bg-emerald-50/40 ring-1 ring-[#00875A]"
+                              ? "border-[#FF7A00] bg-orange-50/50 ring-1 ring-[#FF7A00]"
                               : "border-gray-200 bg-white hover:border-gray-300"
                           }`}
                         >
@@ -1116,7 +1115,7 @@ function CheckoutContent() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Rahul Sharma"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all bg-white"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white"
                 />
               </div>
 
@@ -1131,7 +1130,7 @@ function CheckoutContent() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all bg-white"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white"
                 />
               </div>
 
@@ -1141,7 +1140,7 @@ function CheckoutContent() {
                   type="checkbox"
                   checked={marketingConsent}
                   onChange={(e) => setMarketingConsent(e.target.checked)}
-                  className="mt-0.5 rounded border-gray-300 text-[#00875A] focus:ring-[#00875A] w-4 h-4 cursor-pointer"
+                  className="mt-0.5 rounded border-gray-300 text-[#FF7A00] focus:ring-[#FF7A00] w-4 h-4 cursor-pointer"
                 />
                 <span>
                   Keep me in the loop — shipping updates on WhatsApp and the occasional deal by email. You can opt out anytime.
@@ -1159,7 +1158,7 @@ function CheckoutContent() {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="House No, Street, Landmark"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all bg-white resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white resize-none"
                 />
               </div>
 
@@ -1171,10 +1170,10 @@ function CheckoutContent() {
                       Pincode (Auto-detects area) *
                     </label>
                     {pincodeLoading && (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#00875A]" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FF7A00]" />
                     )}
                     {pincodeDetected && (
-                      <span className="text-[10px] text-[#00875A] font-bold flex items-center gap-0.5">
+                      <span className="text-[10px] text-[#FF7A00] font-bold flex items-center gap-0.5">
                         <Check className="w-3 h-3" /> Area found
                       </span>
                     )}
@@ -1186,7 +1185,7 @@ function CheckoutContent() {
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     placeholder="400001"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all bg-white"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white"
                   />
                 </div>
 
@@ -1200,7 +1199,7 @@ function CheckoutContent() {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="Mumbai"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all bg-white"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white"
                   />
                 </div>
               </div>
@@ -1216,7 +1215,7 @@ function CheckoutContent() {
                   value={state}
                   onChange={(e) => setState(e.target.value)}
                   placeholder="Maharashtra"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all bg-white"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white"
                 />
               </div>
 
@@ -1232,12 +1231,12 @@ function CheckoutContent() {
                     onClick={() => setPaymentMethod("upi")}
                     className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
                       paymentMethod === "upi"
-                        ? "border-[#00875A] bg-[#EAF8F2]/60 ring-1 ring-[#00875A]"
+                        ? "border-[#FF7A00] bg-[#FFF7ED]/80 ring-1 ring-[#FF7A00]"
                         : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#00875A] flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center shrink-0">
                         <QrCode className="w-4 h-4" />
                       </div>
                       <div>
@@ -1245,7 +1244,7 @@ function CheckoutContent() {
                         <p className="text-[10px] text-gray-500">GPay, PhonePe, Paytm, BHIM</p>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                    <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-orange-100 text-[#FF7A00]">
                       Fastest
                     </span>
                   </div>
@@ -1255,7 +1254,7 @@ function CheckoutContent() {
                     onClick={() => setPaymentMethod("card")}
                     className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
                       paymentMethod === "card"
-                        ? "border-[#00875A] bg-[#EAF8F2]/60 ring-1 ring-[#00875A]"
+                        ? "border-[#FF7A00] bg-[#FFF7ED]/80 ring-1 ring-[#FF7A00]"
                         : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                   >
@@ -1275,7 +1274,7 @@ function CheckoutContent() {
                     onClick={() => setPaymentMethod("netbanking")}
                     className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
                       paymentMethod === "netbanking"
-                        ? "border-[#00875A] bg-[#EAF8F2]/60 ring-1 ring-[#00875A]"
+                        ? "border-[#FF7A00] bg-[#FFF7ED]/80 ring-1 ring-[#FF7A00]"
                         : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                   >
@@ -1295,7 +1294,7 @@ function CheckoutContent() {
                     onClick={() => setPaymentMethod("cod")}
                     className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
                       paymentMethod === "cod"
-                        ? "border-[#00875A] bg-[#EAF8F2]/60 ring-1 ring-[#00875A]"
+                        ? "border-[#FF7A00] bg-[#FFF7ED]/80 ring-1 ring-[#FF7A00]"
                         : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                   >
@@ -1312,15 +1311,15 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              {/* ACTION BUTTON (Matches Reference Big Green Button) */}
+              {/* ACTION BUTTON (Zupe Vibrant Theme) */}
               <div className="pt-2">
                 <button
                   type="submit"
                   disabled={loading || hasOutOfStockItems}
-                  className={`w-full py-4 px-6 rounded-xl text-white font-bold text-base shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  className={`w-full py-4 px-6 rounded-xl text-white font-bold text-base shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     loading || hasOutOfStockItems
                       ? "bg-gray-400 cursor-not-allowed opacity-80"
-                      : "bg-[#00875A] hover:bg-[#00704A] active:scale-[0.99]"
+                      : "bg-[#FF7A00] hover:bg-[#E66E00] shadow-[#FF7A00]/25 active:scale-[0.99]"
                   }`}
                 >
                   {loading ? (
@@ -1352,7 +1351,7 @@ function CheckoutContent() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: DESKTOP ORDER SUMMARY (Matches Reference Layout) */}
+          {/* RIGHT COLUMN: DESKTOP ORDER SUMMARY */}
           <div className="hidden lg:block lg:col-span-5">
             <div className="sticky top-6 p-6 rounded-2xl bg-white border border-gray-100 shadow-xs space-y-5">
               <h3 className="font-bold font-display text-lg text-gray-900">
@@ -1373,7 +1372,7 @@ function CheckoutContent() {
                           className="object-cover rounded-xl"
                         />
                         {/* Black circle quantity badge on top-right */}
-                        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-black text-white text-[10px] font-bold flex items-center justify-center">
+                        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#111111] text-white text-[10px] font-bold flex items-center justify-center">
                           {item.quantity}
                         </div>
                       </div>
@@ -1417,7 +1416,7 @@ function CheckoutContent() {
                     <span>Shipping</span>
                     <p className="text-[10px] text-gray-400">Arrives in 3-6 days</p>
                   </div>
-                  <span className="font-bold text-[#00875A]">Free</span>
+                  <span className="font-bold text-[#FF7A00]">Free</span>
                 </div>
               </div>
 
@@ -1428,7 +1427,7 @@ function CheckoutContent() {
                   placeholder="Promo code"
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
-                  className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+                  className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-[#FF7A00] focus:border-[#FF7A00]"
                 />
                 <button
                   type="submit"
@@ -1438,15 +1437,15 @@ function CheckoutContent() {
                 </button>
               </form>
               {promoApplied && (
-                <p className="text-[11px] text-[#00875A] font-semibold flex items-center gap-1">
+                <p className="text-[11px] text-[#FF7A00] font-semibold flex items-center gap-1">
                   <Check className="w-3.5 h-3.5" /> Promo code applied! Saved ₹{promoDiscount.toLocaleString()}
                 </p>
               )}
               {promoError && <p className="text-[11px] text-red-500">{promoError}</p>}
 
-              {/* Savings Highlight Pill (Matches Reference) */}
+              {/* Savings Highlight Pill (Zupe Theme) */}
               {totalMrpSavings > 0 && (
-                <div className="py-2.5 px-3 rounded-xl bg-[#EAF8F2] border border-[#BFE8D6] text-[#00875A] font-bold text-xs flex items-center justify-center gap-1.5 uppercase tracking-wide">
+                <div className="py-2.5 px-3 rounded-xl bg-[#FFF7ED] border border-[#FFEDD5] text-[#FF7A00] font-bold text-xs flex items-center justify-center gap-1.5 uppercase tracking-wide">
                   <Tag className="w-3.5 h-3.5" />
                   <span>YOU&apos;RE PAYING ₹{totalMrpSavings.toLocaleString()} LESS THAN MRP</span>
                 </div>
@@ -1464,7 +1463,7 @@ function CheckoutContent() {
               {availableUpsells.length > 0 && (
                 <div className="pt-4 border-t border-gray-100 space-y-3">
                   <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-700 uppercase tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5 text-[#00875A]" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />
                     <span>You Might Also Like</span>
                   </div>
 
@@ -1499,7 +1498,7 @@ function CheckoutContent() {
                         <button
                           type="button"
                           onClick={() => addToCart(item, 1)}
-                          className="px-3 py-1.5 rounded-lg bg-black text-white text-xs font-bold hover:bg-gray-800 transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
+                          className="px-3 py-1.5 rounded-lg bg-black text-white text-xs font-bold hover:bg-[#FF7A00] transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" />
                           <span>Add</span>
@@ -1528,7 +1527,7 @@ export default function CheckoutPage() {
       fallback={
         <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
-            <div className="w-8 h-8 border-3 border-[#00875A] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <div className="w-8 h-8 border-3 border-[#FF7A00] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="text-xs font-semibold text-gray-500">Loading checkout...</p>
           </div>
         </div>
