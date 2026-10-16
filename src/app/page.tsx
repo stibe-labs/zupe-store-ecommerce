@@ -7,7 +7,8 @@ import { TrustBar } from "@/components/TrustBar";
 import { DealsSection } from "@/components/DealsSection";
 import { PromoBanners } from "@/components/PromoBanners";
 import { NewArrivalsSection } from "@/components/NewArrivalsSection";
-import { ShoppableVideosSection } from "@/components/ShoppableVideosSection";
+import { TopPickzSection } from "@/components/TopPickzSection";
+import { CreatorsReelsSection } from "@/components/CreatorsReelsSection";
 import { Footer } from "@/components/Footer";
 import { getCategories, getBanners } from "@/lib/storeContent";
 
@@ -33,23 +34,27 @@ export default async function Home() {
       {/* 4. Hero Banner Carousel (Slim direct poster with SSR hydration to eliminate banner flash) */}
       <HeroSection initialBanners={initialBanners} />
 
-      {/* 5. 4-Column White Trust Guarantee Bar */}
+      {/* 5. Top Pickz (Pastel container with automatic 1-by-1 card moving carousel, 2s pause) */}
+      <TopPickzSection />
+
+      {/* 6. From our creators (Automatic moving creator video reels with always-muted autoplay & reel modal) */}
+      <CreatorsReelsSection />
+
+      {/* 7. 4-Column White Trust Guarantee Bar */}
       <TrustBar />
 
-      {/* 6. Today's Best Deals ⚡ (5 cards with % off badges and Add to Cart) */}
+      {/* 8. Today's Best Deals ⚡ (5 cards with % off badges and Add to Cart) */}
       <DealsSection />
 
-      {/* 7. Dual Promotional Banners (Everyday Essentials & Car Accessories) */}
+      {/* 9. Dual Promotional Banners (Everyday Essentials & Car Accessories) */}
       <PromoBanners />
 
-      {/* 8. New Arrivals (5 cards with floating wishlist hearts) */}
+      {/* 10. New Arrivals (5 cards with floating wishlist hearts) */}
       <NewArrivalsSection />
 
-      {/* 9. Shoppable Video Reels (Before Footer, videos & attached products only) */}
-      <ShoppableVideosSection showHeader={false} />
-
-      {/* 10. Modern E-commerce Footer */}
+      {/* 11. Modern E-commerce Footer */}
       <Footer />
     </main>
   );
 }
+
