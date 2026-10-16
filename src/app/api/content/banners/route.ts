@@ -60,6 +60,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Banner image is required" }, { status: 400 });
     }
 
+    let finalImage = image.trim();
+    let finalMobileImage = mobileImage ? mobileImage.trim() : undefined;
+
+    if (finalImage.startsWith("data:")) {
+      try {
+        const { uploadBase64Media } = await import("@/lib/r2");
+        finalImage = await uploadBase64Media(finalImage, "images");
+      } catch (e) {
+        console.warn("R2 upload error for banner image:", e);
+      }
+    }
+
+    if (finalMobileImage && finalMobileImage.startsWith("data:")) {
+      try {
+        const { uploadBase64Media } = await import("@/lib/r2");
+        finalMobileImage = await uploadBase64Media(finalMobileImage, "images");
+      } catch (e) {
+        console.warn("R2 upload error for mobile banner image:", e);
+      }
+    }
+
     const currentBanners = await getBanners(true);
     const newBanner: HeroBannerSlide = {
       id: "banner-" + Date.now().toString(36) + "-" + Math.random().toString(36).substring(2, 6),
@@ -69,8 +90,8 @@ export async function POST(req: NextRequest) {
       description: (description || "").trim(),
       ctaText: (ctaText || "Shop Now").trim(),
       ctaLink: ctaLink !== undefined && ctaLink !== null ? ctaLink.trim() : "/products",
-      image: image.trim(),
-      mobileImage: mobileImage ? mobileImage.trim() : undefined,
+      image: finalImage,
+      mobileImage: finalMobileImage,
       imageScale: typeof imageScale === "number" ? imageScale : 100,
       imagePosition: imagePosition || "center",
       imageFit: imageFit || "cover",
@@ -117,6 +138,23 @@ export async function PUT(req: NextRequest) {
 
     if (index === -1) {
       return NextResponse.json({ success: false, error: "Banner not found" }, { status: 404 });
+    }
+
+    if (updates.image && updates.image.startsWith("data:")) {
+      try {
+        const { uploadBase64Media } = await import("@/lib/r2");
+        updates.image = await uploadBase64Media(updates.image, "images");
+      } catch (e) {
+        console.warn("R2 upload error for updated banner image:", e);
+      }
+    }
+    if (updates.mobileImage && updates.mobileImage.startsWith("data:")) {
+      try {
+        const { uploadBase64Media } = await import("@/lib/r2");
+        updates.mobileImage = await uploadBase64Media(updates.mobileImage, "images");
+      } catch (e) {
+        console.warn("R2 upload error for updated mobile banner image:", e);
+      }
     }
 
     currentBanners[index] = { ...currentBanners[index], ...updates };

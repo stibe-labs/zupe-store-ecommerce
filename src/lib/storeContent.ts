@@ -239,32 +239,7 @@ export async function getBanners(includeInactive = false): Promise<HeroBannerSli
     if (rows && rows.length > 0 && rows[0].config_data) {
       const parsed = JSON.parse(rows[0].config_data);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        let needsPersistence = false;
-        const sanitized = parsed.map((b: HeroBannerSlide, idx: number) => {
-          let img = b.image;
-          let mImg = b.mobileImage;
-          if (img && img.startsWith("data:") && img.length > 500) {
-            needsPersistence = true;
-            if (b.id?.includes("tech") || idx === 1) img = "/banners/banner-tech-gadgets.jpg";
-            else if (b.id?.includes("auto") || b.id?.includes("home") || idx === 2) img = "/banners/banner-auto-home.jpg";
-            else img = "/banners/banner-mega-sale.jpg";
-          }
-          if (mImg && mImg.startsWith("data:") && mImg.length > 500) {
-            needsPersistence = true;
-            mImg = img;
-          }
-          return { ...b, image: img, mobileImage: mImg };
-        });
-
-        inMemoryBanners = sanitized;
-
-        // Asynchronously clean up D1 storage so huge base64 is replaced with lightweight static URLs
-        if (needsPersistence) {
-          executeD1Query(
-            `UPDATE integrations_config SET config_data = ?, updated_at = datetime('now') WHERE provider = ?`,
-            [JSON.stringify(sanitized), "hero_banners"]
-          ).catch(() => {});
-        }
+        inMemoryBanners = parsed;
       }
     }
   } catch (err) {
@@ -278,25 +253,10 @@ export async function getBanners(includeInactive = false): Promise<HeroBannerSli
 }
 
 export async function saveBanners(banners: HeroBannerSlide[]): Promise<HeroBannerSlide[]> {
-  // Sanitize any huge base64 payloads to keep worker CPU and memory minimal
-  const sanitized = banners.map((b: HeroBannerSlide, idx: number) => {
-    let img = b.image;
-    let mImg = b.mobileImage;
-    if (img && img.startsWith("data:") && img.length > 500) {
-      if (b.id?.includes("tech") || idx === 1) img = "/banners/banner-tech-gadgets.jpg";
-      else if (b.id?.includes("auto") || b.id?.includes("home") || idx === 2) img = "/banners/banner-auto-home.jpg";
-      else img = "/banners/banner-mega-sale.jpg";
-    }
-    if (mImg && mImg.startsWith("data:") && mImg.length > 500) {
-      mImg = img;
-    }
-    return { ...b, image: img, mobileImage: mImg };
-  });
-
-  inMemoryBanners = sanitized;
+  inMemoryBanners = banners;
 
   try {
-    const jsonStr = JSON.stringify(sanitized);
+    const jsonStr = JSON.stringify(banners);
     await executeD1Query(
       `INSERT INTO integrations_config (provider, config_data, is_active, last_synced_at, updated_at)
        VALUES (?, ?, 1, datetime('now'), datetime('now'))

@@ -138,6 +138,8 @@ export default function WebsiteContentPage() {
     taglineRight: "Drive In Luxury ♡",
     active: true,
   });
+  const [uploadingPoster, setUploadingPoster] = useState(false);
+  const [uploadingMobile, setUploadingMobile] = useState(false);
 
   // Category Modal state
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
@@ -217,22 +219,59 @@ export default function WebsiteContentPage() {
     setTimeout(() => setMessage(null), 4000);
   };
 
-  // File upload helper for direct image uploads (converts file to base64 Data URL)
-  const handleFileUpload = (
+  // File upload helper: shows instant local preview and uploads to Cloudflare R2 bucket
+  const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    onSuccess: (dataUrl: string) => void
+    field: "image" | "mobileImage"
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (field === "image") setUploadingPoster(true);
+    else setUploadingMobile(true);
+
+    // 1. Immediately read as dataURL for instant local preview
     const reader = new FileReader();
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
       if (dataUrl) {
-        onSuccess(dataUrl);
+        if (field === "image") {
+          setBannerForm((prev) => ({ ...prev, image: dataUrl }));
+        } else {
+          setBannerForm((prev) => ({ ...prev, mobileImage: dataUrl }));
+        }
       }
     };
     reader.readAsDataURL(file);
-    e.target.value = "";
+
+    // 2. Upload file directly to Cloudflare R2 bucket via /api/admin/upload
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "images");
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        if (field === "image") {
+          setBannerForm((prev) => ({ ...prev, image: data.url }));
+        } else {
+          setBannerForm((prev) => ({ ...prev, mobileImage: data.url }));
+        }
+        showToast("success", "Banner uploaded to cloud storage successfully!");
+      } else {
+        console.warn("Cloud upload response error:", data.error);
+      }
+    } catch (err: any) {
+      console.warn("Direct cloud upload failed, base64 fallback active:", err);
+    } finally {
+      if (field === "image") setUploadingPoster(false);
+      else setUploadingMobile(false);
+      e.target.value = "";
+    }
   };
 
   // --- Banner Actions ---
@@ -1467,13 +1506,23 @@ export default function WebsiteContentPage() {
                     className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   />
                   <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-black text-white text-xs font-bold transition-all shadow-xs shrink-0">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Upload Poster</span>
+                    {uploadingPoster ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#FF7A00]" />
+                        <span>Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload Poster</span>
+                      </>
+                    )}
                     <input
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => handleFileUpload(e, (dataUrl) => setBannerForm({ ...bannerForm, image: dataUrl }))}
+                      disabled={uploadingPoster}
+                      onChange={(e) => handleFileUpload(e, "image")}
                     />
                   </label>
                 </div>
@@ -1647,13 +1696,23 @@ export default function WebsiteContentPage() {
                     className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   />
                   <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs shrink-0">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Upload Mobile</span>
+                    {uploadingMobile ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload Mobile</span>
+                      </>
+                    )}
                     <input
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => handleFileUpload(e, (dataUrl) => setBannerForm({ ...bannerForm, mobileImage: dataUrl }))}
+                      disabled={uploadingMobile}
+                      onChange={(e) => handleFileUpload(e, "mobileImage")}
                     />
                   </label>
                   {bannerForm.mobileImage && (
@@ -1911,10 +1970,16 @@ export default function WebsiteContentPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={saving}
+                  disabled={saving || uploadingPoster || uploadingMobile}
                   className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#FF7A00] hover:bg-[#E66E00] disabled:opacity-50"
                 >
-                  {saving ? "Saving..." : editingBanner ? "Save Changes" : "Publish Banner"}
+                  {uploadingPoster || uploadingMobile
+                    ? "Uploading image to cloud..."
+                    : saving
+                    ? "Saving..."
+                    : editingBanner
+                    ? "Save Changes"
+                    : "Publish Banner"}
                 </button>
               </div>
             </form>

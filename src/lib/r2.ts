@@ -126,18 +126,21 @@ export async function uploadMedia(
 
   // 3. Fallback for Node.js local development (writes to public/uploads)
   try {
-    const fs = await import("fs");
-    const path = await import("path");
-    const uploadsDir = path.join(process.cwd(), "public", "uploads", folder);
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    if (typeof process !== "undefined" && process.versions?.node) {
+      const nodeRequire = eval("require");
+      const fs = nodeRequire("fs");
+      const path = nodeRequire("path");
+      const uploadsDir = path.join(process.cwd(), "public", "uploads", folder);
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      const localFilePath = path.join(uploadsDir, path.basename(key));
+      const buf = Buffer.isBuffer(fileBuffer)
+        ? fileBuffer
+        : Buffer.from(fileBuffer as ArrayBuffer);
+      fs.writeFileSync(localFilePath, buf);
+      return `/uploads/${folder}/${path.basename(key)}`;
     }
-    const localFilePath = path.join(uploadsDir, path.basename(key));
-    const buf = Buffer.isBuffer(fileBuffer)
-      ? fileBuffer
-      : Buffer.from(fileBuffer as ArrayBuffer);
-    fs.writeFileSync(localFilePath, buf);
-    return `/uploads/${folder}/${path.basename(key)}`;
   } catch {
     // If running in an edge environment without fs
   }
