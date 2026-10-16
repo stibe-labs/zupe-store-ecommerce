@@ -20,7 +20,10 @@ export const revalidate = 0;
 export async function GET() {
   try {
     const collections = await getShowcaseCollections();
-    return NextResponse.json({ success: true, collections });
+    return NextResponse.json(
+      { success: true, collections },
+      { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=120" } }
+    );
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

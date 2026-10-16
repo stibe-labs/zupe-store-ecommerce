@@ -33,6 +33,7 @@ import {
 } from "@/data/zupeProducts";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
+import { getClientProducts, getClientShowcase } from "@/lib/productsClientCache";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 
@@ -103,21 +104,19 @@ function ProductsContent() {
     };
   }, []);
 
-  // Fetch updated catalog and showcase collections from API
+  // Fetch updated catalog and showcase collections from deduplicated cache
   useEffect(() => {
     async function loadCatalogAndShowcase() {
       try {
-        const [prodRes, showcaseRes] = await Promise.all([
-          fetch("/api/products"),
-          fetch("/api/content/showcase"),
+        const [productsList, showcaseData] = await Promise.all([
+          getClientProducts(),
+          getClientShowcase(),
         ]);
-        const prodData = await prodRes.json();
-        if (prodData.success && Array.isArray(prodData.products) && prodData.products.length > 0) {
-          setProducts(prodData.products);
+        if (Array.isArray(productsList) && productsList.length > 0) {
+          setProducts(productsList);
         }
-        const showcaseData = await showcaseRes.json();
-        if (showcaseData.success && showcaseData.collections) {
-          setShowcaseCollections(showcaseData.collections);
+        if (showcaseData) {
+          setShowcaseCollections(showcaseData);
         }
       } catch (err) {
         console.warn("Could not fetch fresh products or showcase collections:", err);

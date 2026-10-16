@@ -178,29 +178,28 @@ export async function GET(req: NextRequest) {
 
     // Single product query by ID or Slug
     if (id || slug) {
-      const query = id
-        ? "SELECT * FROM products WHERE id = ? LIMIT 1;"
-        : "SELECT * FROM products WHERE slug = ? LIMIT 1;";
-      const param = id || slug;
+      const p1 = (id || slug || "").trim();
+      const p2 = (slug || id || "").trim();
+      const query = "SELECT * FROM products WHERE id = ? OR slug = ? OR id = ? OR slug = ? LIMIT 1;";
 
-      const d1Results = await executeD1Query<Product>(query, [param]);
+      const d1Results = await executeD1Query<Product>(query, [p1, p1, p2, p2]);
       if (d1Results && d1Results.length > 0) {
         const formatted = formatDbProduct(d1Results[0], reviewStatsMap);
         return NextResponse.json(
           { success: true, product: formatted, source: "d1" },
-          { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } }
+          { headers: { "Cache-Control": "public, max-age=15, stale-while-revalidate=60" } }
         );
       }
 
       // In-memory fallback
       const found =
-        serverProductsCache.find((p) => p.id === param || p.slug === param) ||
-        DEFAULT_PRODUCTS.find((p) => p.id === param || p.slug === param);
+        serverProductsCache.find((p) => p.id === p1 || p.slug === p1 || p.id === p2 || p.slug === p2) ||
+        DEFAULT_PRODUCTS.find((p) => p.id === p1 || p.slug === p1 || p.id === p2 || p.slug === p2);
       if (found) {
         const formatted = formatDbProduct(found, reviewStatsMap);
         return NextResponse.json(
           { success: true, product: formatted, source: "cache" },
-          { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } }
+          { headers: { "Cache-Control": "public, max-age=15, stale-while-revalidate=60" } }
         );
       }
 
@@ -217,7 +216,7 @@ export async function GET(req: NextRequest) {
 
       return NextResponse.json(
         { success: true, source: "cloudflare-d1", products: formatted },
-        { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } }
+        { headers: { "Cache-Control": "public, max-age=15, stale-while-revalidate=60" } }
       );
     }
   } catch (err) {
@@ -234,7 +233,7 @@ export async function GET(req: NextRequest) {
       source: "zupe-catalog",
       products: synchronizedList,
     },
-    { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } }
+    { headers: { "Cache-Control": "public, max-age=15, stale-while-revalidate=60" } }
   );
 }
 

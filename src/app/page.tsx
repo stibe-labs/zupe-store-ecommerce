@@ -10,15 +10,16 @@ import { NewArrivalsSection } from "@/components/NewArrivalsSection";
 import { TopPickzSection } from "@/components/TopPickzSection";
 import { CreatorsReelsSection } from "@/components/CreatorsReelsSection";
 import { Footer } from "@/components/Footer";
-import { getCategories, getBanners, getShowcaseCollections } from "@/lib/storeContent";
+import { getCategories, getBanners, getShowcaseCollections, getPromoBanners } from "@/lib/storeContent";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [initialCategories, initialBanners, initialShowcase] = await Promise.all([
+  const [initialCategories, initialBanners, initialShowcase, initialPromoBanners] = await Promise.all([
     getCategories(),
     getBanners(),
     getShowcaseCollections(),
+    getPromoBanners(),
   ]);
 
   return (
@@ -48,7 +49,7 @@ export default async function Home() {
       <DealsSection initialProductIds={initialShowcase.todayDealsProductIds} />
 
       {/* 9. Dual Promotional Banners (Everyday Essentials & Car Accessories) */}
-      <PromoBanners />
+      <PromoBanners banners={initialPromoBanners} />
 
       {/* 10. New Arrivals (cards with floating wishlist hearts) */}
       <NewArrivalsSection initialProductIds={initialShowcase.newArrivalsProductIds} />

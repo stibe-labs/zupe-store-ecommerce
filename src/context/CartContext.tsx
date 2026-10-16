@@ -106,17 +106,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    checkCartStock();
-    const interval = setInterval(checkCartStock, 4000);
-    const onFocus = () => checkCartStock();
-    window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", onFocus);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onFocus);
-    };
+    if (isOpen) {
+      checkCartStock();
+      const interval = setInterval(checkCartStock, 6000);
+      return () => clearInterval(interval);
+    } else {
+      const onFocus = () => {
+        if (document.visibilityState === "visible") {
+          checkCartStock();
+        }
+      };
+      window.addEventListener("focus", onFocus);
+      return () => window.removeEventListener("focus", onFocus);
+    }
   }, [cart, isOpen]);
 
   useEffect(() => {

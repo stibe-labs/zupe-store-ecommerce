@@ -14,7 +14,10 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const all = searchParams.get("all") === "true";
     const banners = await getBanners(all);
-    return NextResponse.json({ success: true, banners });
+    return NextResponse.json(
+      { success: true, banners },
+      { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=120" } }
+    );
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

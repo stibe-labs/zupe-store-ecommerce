@@ -38,6 +38,12 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico?v=20261008-6" sizes="any" />
         <link rel="icon" href="/favicon.png?v=20261008-6" type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261008-6" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        />
       </head>
       <body
         className="antialiased font-sans bg-[#F3F4F6] text-[#0F172A]"

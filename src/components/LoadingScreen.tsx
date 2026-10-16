@@ -5,16 +5,29 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function LoadingScreen() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        if (sessionStorage.getItem("zp_splash_shown")) {
+          return false;
+        }
+      } catch (e) {}
+    }
+    return true;
+  });
 
   useEffect(() => {
-    // Show splash for 1.4 seconds on initial load
+    if (!loading) return;
+    try {
+      sessionStorage.setItem("zp_splash_shown", "1");
+    } catch (e) {}
+
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 1400);
+    }, 900);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [loading]);
 
   return (
     <AnimatePresence>

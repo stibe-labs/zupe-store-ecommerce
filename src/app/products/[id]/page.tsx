@@ -166,53 +166,26 @@ export default function ProductDetailPage() {
         );
       };
 
-      // 1. Fetch fresh live product by ID from API
-      try {
-        const res = await fetch(`/api/products?id=${encodeURIComponent(normSlug || normId)}&_t=${Date.now()}`);
-        const data = await res.json();
-        if (isMounted && data.success && data.product) {
-          applyProduct(data.product);
-          setLoadingProduct(false);
-          return;
-        }
-      } catch (e) {
-        // continue
-      }
-
-      // 2. Fetch fresh live product by Slug from API
-      try {
-        const res = await fetch(`/api/products?slug=${encodeURIComponent(normSlug || normId)}&_t=${Date.now()}`);
-        const data = await res.json();
-        if (isMounted && data.success && data.product) {
-          applyProduct(data.product);
-          setLoadingProduct(false);
-          return;
-        }
-      } catch (e) {
-        // continue
-      }
-
-      // 3. Fallback to full catalog API
-      try {
-        const res = await fetch(`/api/products?_t=${Date.now()}`);
-        const data = await res.json();
-        if (isMounted && data.products) {
-          const apiFound = data.products.find(matchesProduct);
-          if (apiFound) {
-            applyProduct(apiFound);
-            setLoadingProduct(false);
-            return;
-          }
-        }
-      } catch (e) {
-        // continue
-      }
-
-      // 4. Fallback to DEFAULT_PRODUCTS
+      // 1. Instant fallback to cached / default product for 0ms initial render
       const staticFound = DEFAULT_PRODUCTS.find(matchesProduct);
-      if (isMounted && staticFound) {
+      if (staticFound && isMounted) {
         applyProduct(staticFound);
+        setLoadingProduct(false);
       }
+
+      // 2. Fetch fresh live product from API (matches both ID and slug)
+      try {
+        const res = await fetch(`/api/products?id=${encodeURIComponent(normSlug || normId)}&slug=${encodeURIComponent(normSlug || normId)}`);
+        const data = await res.json();
+        if (isMounted && data.success && data.product) {
+          applyProduct(data.product);
+          setLoadingProduct(false);
+          return;
+        }
+      } catch (e) {
+        // continue
+      }
+
       if (isMounted) {
         setLoadingProduct(false);
       }

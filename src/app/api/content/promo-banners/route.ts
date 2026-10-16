@@ -17,7 +17,10 @@ async function checkAdminAuth(req: NextRequest): Promise<boolean> {
 export async function GET() {
   try {
     const banners = await getPromoBanners();
-    return NextResponse.json({ success: true, banners });
+    return NextResponse.json(
+      { success: true, banners },
+      { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=120" } }
+    );
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

@@ -9,6 +9,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { getClientProducts, getClientShowcase } from "@/lib/productsClientCache";
 
 interface NewArrivalsSectionProps {
   initialProductIds?: string[];
@@ -24,21 +25,15 @@ export function NewArrivalsSection({ initialProductIds }: NewArrivalsSectionProp
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/products").then((r) => r.json()),
-      !initialProductIds
-        ? fetch("/api/content/showcase").then((r) => r.json())
-        : Promise.resolve(null),
+      getClientProducts(),
+      !initialProductIds ? getClientShowcase() : Promise.resolve(null),
     ])
-      .then(([prodData, showcaseData]) => {
-        if (
-          prodData?.products &&
-          Array.isArray(prodData.products) &&
-          prodData.products.length > 0
-        ) {
-          setProducts(prodData.products);
+      .then(([productsList, showcaseCollections]) => {
+        if (Array.isArray(productsList) && productsList.length > 0) {
+          setProducts(productsList);
         }
-        if (showcaseData?.collections?.newArrivalsProductIds) {
-          setCuratedIds(showcaseData.collections.newArrivalsProductIds);
+        if (showcaseCollections?.newArrivalsProductIds) {
+          setCuratedIds(showcaseCollections.newArrivalsProductIds);
         }
       })
       .catch(() => {});

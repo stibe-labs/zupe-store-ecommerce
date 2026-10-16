@@ -181,26 +181,61 @@ export function CreatorsReelsSection() {
     return () => window.removeEventListener("resize", measureStepWidth);
   }, [measureStepWidth]);
 
-  // Ensure ALL card videos always play muted
+  // Track if creators section is visible on screen using IntersectionObserver
+  const [isSectionVisible, setIsSectionVisible] = useState(false);
+
   useEffect(() => {
-    cardVideoRefs.current.forEach((video) => {
-      if (video) {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsSectionVisible(entry.isIntersecting);
+      },
+      { rootMargin: "250px 0px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Ensure only VISIBLE videos play muted; pause off-screen videos to save 75% GPU/CPU
+  useEffect(() => {
+    if (!isSectionVisible) {
+      cardVideoRefs.current.forEach((video) => {
+        if (video && !video.paused) {
+          video.pause();
+        }
+      });
+      return;
+    }
+
+    const startIdx = currentIndex;
+    const endIdx = currentIndex + 7;
+
+    cardVideoRefs.current.forEach((video, idx) => {
+      if (!video) return;
+      const isVisible = idx >= startIdx && idx <= endIdx;
+      if (isVisible) {
         video.muted = true;
         video.defaultMuted = true;
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {});
+        if (video.paused) {
+          video.play().catch(() => {});
+        }
+      } else {
+        if (!video.paused) {
+          video.pause();
         }
       }
     });
-  }, [videos, currentIndex]);
+  }, [isSectionVisible, videos, currentIndex]);
 
   // Automatic moving behavior:
   // 1. Stays 2 seconds (2000ms pause)
   // 2. Smoothly shifts left by 1 card over 650ms
   // 3. Repeats moving behavior
   useEffect(() => {
-    if (isPaused || modalVideoIndex !== null || totalItems <= 1) return;
+    if (isPaused || modalVideoIndex !== null || totalItems <= 1 || !isSectionVisible) return;
 
     const interval = setInterval(() => {
       setIsTransitioning(true);
@@ -208,7 +243,7 @@ export function CreatorsReelsSection() {
     }, 2650); // 2000ms stay + 650ms animation
 
     return () => clearInterval(interval);
-  }, [isPaused, modalVideoIndex, totalItems]);
+  }, [isPaused, modalVideoIndex, totalItems, isSectionVisible]);
 
   // Seamless infinite wrap-around when first set finishes
   const handleTransitionEnd = () => {
@@ -394,7 +429,7 @@ export function CreatorsReelsSection() {
                   muted
                   loop
                   playsInline
-                  preload="auto"
+                  preload="metadata"
                   className="w-full h-full object-cover pointer-events-none group-hover:scale-105 transition-transform duration-700"
                 />
 

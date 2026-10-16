@@ -8,6 +8,7 @@ import { Star, ArrowRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { getClientProducts, getClientShowcase } from "@/lib/productsClientCache";
 
 interface DealsSectionProps {
   initialProductIds?: string[];
@@ -22,21 +23,15 @@ export function DealsSection({ initialProductIds }: DealsSectionProps = {}) {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/products").then((r) => r.json()),
-      !initialProductIds
-        ? fetch("/api/content/showcase").then((r) => r.json())
-        : Promise.resolve(null),
+      getClientProducts(),
+      !initialProductIds ? getClientShowcase() : Promise.resolve(null),
     ])
-      .then(([prodData, showcaseData]) => {
-        if (
-          prodData?.products &&
-          Array.isArray(prodData.products) &&
-          prodData.products.length > 0
-        ) {
-          setProducts(prodData.products);
+      .then(([productsList, showcaseCollections]) => {
+        if (Array.isArray(productsList) && productsList.length > 0) {
+          setProducts(productsList);
         }
-        if (showcaseData?.collections?.todayDealsProductIds) {
-          setCuratedIds(showcaseData.collections.todayDealsProductIds);
+        if (showcaseCollections?.todayDealsProductIds) {
+          setCuratedIds(showcaseCollections.todayDealsProductIds);
         }
       })
       .catch(() => {});

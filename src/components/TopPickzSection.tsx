@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Flame } from "lucide-react";
 import { Product } from "@/types/product";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { getClientProducts, getClientShowcase } from "@/lib/productsClientCache";
 
 interface TopPickzSectionProps {
   initialProducts?: Product[];
@@ -35,21 +36,18 @@ export function TopPickzSection({
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
-  // Fetch latest products and showcase collections from API
+  // Fetch latest products and showcase collections from deduplicated cache
   useEffect(() => {
     Promise.all([
-      fetch("/api/products").then((res) => res.json()),
-      !initialProductIds
-        ? fetch("/api/content/showcase").then((res) => res.json())
-        : Promise.resolve(null),
+      getClientProducts(),
+      !initialProductIds ? getClientShowcase() : Promise.resolve(null),
     ])
-      .then(([productsData, showcaseData]) => {
-        const fetched = Array.isArray(productsData) ? productsData : productsData?.products;
-        if (Array.isArray(fetched) && fetched.length > 0) {
-          setProducts(fetched);
+      .then(([productsList, showcaseCollections]) => {
+        if (Array.isArray(productsList) && productsList.length > 0) {
+          setProducts(productsList);
         }
-        if (showcaseData?.collections?.topPickzProductIds) {
-          setCuratedIds(showcaseData.collections.topPickzProductIds);
+        if (showcaseCollections?.topPickzProductIds) {
+          setCuratedIds(showcaseCollections.topPickzProductIds);
         }
       })
       .catch(() => {});
@@ -87,12 +85,30 @@ export function TopPickzSection({
     return () => window.removeEventListener("resize", measureStepWidth);
   }, [measureStepWidth]);
 
+  // Track if Top Pickz is visible in viewport to prevent background CPU cycles
+  const [isSectionVisible, setIsSectionVisible] = useState(true);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsSectionVisible(entry.isIntersecting);
+      },
+      { rootMargin: "150px 0px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   // Step-by-step automatic animation:
   // 1. Stays 2 seconds (2000ms pause)
   // 2. Smoothly shifts left by 1 card over 650ms
   // 3. Repeats seamlessly
   useEffect(() => {
-    if (isPaused || totalItems <= 1) return;
+    if (isPaused || totalItems <= 1 || !isSectionVisible) return;
 
     const interval = setInterval(() => {
       setIsTransitioning(true);
@@ -100,7 +116,7 @@ export function TopPickzSection({
     }, 2650); // 2000ms stay + 650ms animation
 
     return () => clearInterval(interval);
-  }, [isPaused, totalItems]);
+  }, [isPaused, totalItems, isSectionVisible]);
 
   // Seamless infinite reset when first set has scrolled completely
   const handleTransitionEnd = () => {

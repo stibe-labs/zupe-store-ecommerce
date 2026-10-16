@@ -22,10 +22,12 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
       return;
     }
 
+    const isTouch = typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0);
+
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: isTouch ? 0.6 : 0.85,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      touchMultiplier: 2,
+      touchMultiplier: isTouch ? 1 : 1.5,
       prevent: (node: HTMLElement) => {
         // Prevent Lenis from intercepting scroll whenever node or any ancestor is inside a modal or has data-lenis-prevent
         return Boolean(
@@ -44,8 +46,7 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
       const isLocked =
         document.body.style.overflow === "hidden" ||
         document.documentElement.style.overflow === "hidden" ||
-        document.body.classList.contains("modal-open") ||
-        document.querySelector(".fixed.inset-0") !== null;
+        document.body.classList.contains("modal-open");
 
       if (isLocked) {
         lenis.stop();
@@ -54,12 +55,11 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
       }
     };
 
+    // Only observe body attributes (classes & styles) without choking the main thread with childList & subtree
     const observer = new MutationObserver(checkModalState);
     observer.observe(document.body, {
       attributes: true,
       attributeFilter: ["style", "class"],
-      childList: true,
-      subtree: true,
     });
 
     let rafId: number;
