@@ -18,7 +18,7 @@ export function NewArrivalsSection() {
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
 
   useEffect(() => {
-    fetch(`/api/products?_t=${Date.now()}`, { cache: "no-store" })
+    fetch("/api/products")
       .then((r) => r.json())
       .then((data) => {
         if (data.products && Array.isArray(data.products) && data.products.length > 0) {

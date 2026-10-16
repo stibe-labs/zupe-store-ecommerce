@@ -31,7 +31,7 @@ export function TopPickzSection({ initialProducts }: TopPickzSectionProps = {}) 
 
   // Fetch latest products from API if available
   useEffect(() => {
-    fetch(`/api/products?_t=${Date.now()}`, { cache: "no-store" })
+    fetch("/api/products")
       .then((res) => res.json())
       .then((data) => {
         const fetched = Array.isArray(data) ? data : data?.products;
