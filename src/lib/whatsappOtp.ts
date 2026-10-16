@@ -130,6 +130,61 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
 
   try {
     const url = `https://graph.facebook.com/v21.0/${phoneId}/messages`;
+    const templateName = process.env.WHATSAPP_TEMPLATE_NAME || "zupe_login_otp";
+    const templateLang = process.env.WHATSAPP_TEMPLATE_LANG || "en";
+
+    // 1. Try sending via official WhatsApp Authentication / Utility Template first
+    // Templates can reach ANY user immediately without requiring them to text "hi" first.
+    try {
+      const templatePayload = {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: digits,
+        type: "template",
+        template: {
+          name: templateName,
+          language: { code: templateLang },
+          components: [
+            {
+              type: "body",
+              parameters: [{ type: "text", text: otp }],
+            },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [{ type: "text", text: otp }],
+            },
+          ],
+        },
+      };
+
+      const templateRes = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(templatePayload),
+      });
+
+      const templateData = (await templateRes.json()) as any;
+
+      if (templateRes.ok && templateData.messages && templateData.messages.length > 0) {
+        return {
+          success: true,
+          codeSent: true,
+          messageId: templateData.messages[0].id,
+          message: `Verification code sent to WhatsApp on ${display}!`,
+        };
+      }
+
+      console.warn("Template send did not succeed, falling back to direct message:", templateData?.error?.message);
+    } catch (tmplErr) {
+      console.warn("Template attempt error, attempting text message:", tmplErr);
+    }
+
+    // 2. Fallback: Direct text message
     const messageBody = `🛍️ *Zupe Store Verification Code*\n\nYour one-time login code is: *${otp}*\n\nUse this code to access your Zupe Store account. Valid for 10 minutes.\n\n_For your safety, never share this code with anyone._`;
 
     const response = await fetch(url, {
@@ -162,7 +217,7 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
       };
     }
 
-    console.warn("WhatsApp Cloud API response not OK:", data);
+    console.warn("WhatsApp Cloud API text fallback response not OK:", data);
 
     // If Meta returned an error, don't completely lock out user in development/testing
     const metaError = data?.error?.message || data?.error?.error_data?.details || "Failed to deliver WhatsApp message";
