@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Verify OTP
-    const verification = verifyWhatsAppOTP(phone, otp);
+    const verification = await verifyWhatsAppOTP(phone, otp);
     if (!verification.valid) {
       return NextResponse.json(
         { success: false, error: verification.message },

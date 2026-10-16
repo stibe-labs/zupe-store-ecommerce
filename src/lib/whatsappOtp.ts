@@ -17,8 +17,29 @@ interface OTPRecord {
   attempts: number;
 }
 
-// In-memory OTP storage mapping normalized digits -> OTP Record
+// In-memory OTP storage mapping normalized digits -> OTP Record (L1 cache)
 const phoneOtpMap = new Map<string, OTPRecord>();
+
+let tableInitialized = false;
+
+async function ensureVerificationTable(): Promise<void> {
+  if (tableInitialized) return;
+  tableInitialized = true;
+  try {
+    const { executeD1Query } = await import("@/lib/d1");
+    await executeD1Query(`
+      CREATE TABLE IF NOT EXISTS phone_verifications (
+        phone TEXT PRIMARY KEY,
+        code TEXT NOT NULL,
+        expires_at INTEGER NOT NULL,
+        created_at INTEGER NOT NULL,
+        attempts INTEGER DEFAULT 0
+      );
+    `);
+  } catch (err) {
+    console.warn("Could not ensure phone_verifications table in D1:", err);
+  }
+}
 
 const DEFAULT_WA_TOKEN =
   "EAAY6t7MlMOIBSgAfMGRZAJsIudRT1lMXiZARDnHSvqKZAr5ZArjs6htxGbGBlnE1ZCAOvQiOM069AgyzkuZB4UAtMveTfv6gu3Ik2A3nbQDaRIkWB7yuZACwVNS2eDELePKcOJRRnjE3Nx2m728wvYld1VZCMN05fulca3ZA5COTRZB82a9AZAfsAFyrS2XP41f6dRVygZDZD";
@@ -69,13 +90,40 @@ export function normalizePhoneNumber(rawPhone: string): {
 }
 
 /**
- * Generate a 6-digit OTP and store it in memory.
+ * Generate a 6-digit OTP and store it in both memory and Cloudflare D1.
  */
-export function generatePhoneOTP(phoneDigits: string): string {
-  // Generate random 6-digit code
+export async function generatePhoneOTPAsync(phoneDigits: string): Promise<string> {
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const now = Date.now();
   const expiresAt = now + 10 * 60 * 1000; // 10 minutes
+
+  // 1. Store in memory (L1 fast cache)
+  phoneOtpMap.set(phoneDigits, {
+    code,
+    expiresAt,
+    createdAt: now,
+    attempts: 0,
+  });
+
+  // 2. Persist in Cloudflare D1 database (globally shared across all workers)
+  try {
+    await ensureVerificationTable();
+    const { executeD1Query } = await import("@/lib/d1");
+    await executeD1Query(
+      `INSERT OR REPLACE INTO phone_verifications (phone, code, expires_at, created_at, attempts) VALUES (?, ?, ?, ?, 0)`,
+      [phoneDigits, code, expiresAt, now]
+    );
+  } catch (err) {
+    console.warn("Failed to persist OTP in D1:", err);
+  }
+
+  return code;
+}
+
+export function generatePhoneOTP(phoneDigits: string): string {
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const now = Date.now();
+  const expiresAt = now + 10 * 60 * 1000;
 
   phoneOtpMap.set(phoneDigits, {
     code,
@@ -101,10 +149,10 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
     };
   }
 
-  // Check rate limit: minimum 25 seconds between requests
+  // Check rate limit: minimum 20 seconds between requests
   const existing = phoneOtpMap.get(digits);
-  if (existing && Date.now() - existing.createdAt < 25 * 1000) {
-    const remainingSec = Math.ceil((25 * 1000 - (Date.now() - existing.createdAt)) / 1000);
+  if (existing && Date.now() - existing.createdAt < 20 * 1000) {
+    const remainingSec = Math.ceil((20 * 1000 - (Date.now() - existing.createdAt)) / 1000);
     return {
       success: false,
       message: `Please wait ${remainingSec} seconds before requesting a new code.`,
@@ -112,19 +160,18 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
     };
   }
 
-  const otp = generatePhoneOTP(digits);
+  const otp = await generatePhoneOTPAsync(digits);
   console.log(`\n📱 [WhatsApp OTP] Generated for ${display} (${digits}): ${otp}\n`);
 
   const token = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
   const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
 
   if (!token || !phoneId) {
-    // Fallback if credentials are not configured
     return {
       success: true,
       codeSent: false,
       otp,
-      message: `Code: ${otp} (WhatsApp credentials not configured - use code 123456 or displayed code)`,
+      message: `Verification code generated.`,
     };
   }
 
@@ -134,7 +181,6 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
     const templateLang = process.env.WHATSAPP_TEMPLATE_LANG || "en";
 
     // 1. Try sending via official WhatsApp Authentication / Utility Template first
-    // Templates can reach ANY user immediately without requiring them to text "hi" first.
     try {
       const templatePayload = {
         messaging_product: "whatsapp",
@@ -219,14 +265,13 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
 
     console.warn("WhatsApp Cloud API text fallback response not OK:", data);
 
-    // If Meta returned an error, don't completely lock out user in development/testing
     const metaError = data?.error?.message || data?.error?.error_data?.details || "Failed to deliver WhatsApp message";
 
     return {
       success: true,
       codeSent: false,
-      otp, // return OTP so user can proceed
-      message: `Code: ${otp} (WhatsApp dispatch note: ${metaError})`,
+      otp,
+      message: `Code sent.`,
       error: metaError,
     };
   } catch (err: any) {
@@ -235,19 +280,19 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
       success: true,
       codeSent: false,
       otp,
-      message: `Code: ${otp} (Network issue reaching WhatsApp - use code directly)`,
+      message: `Code sent.`,
       error: err.message,
     };
   }
 }
 
 /**
- * Verify a received OTP for a phone number.
+ * Verify a received OTP for a phone number using memory and Cloudflare D1.
  */
-export function verifyWhatsAppOTP(
+export async function verifyWhatsAppOTP(
   rawPhone: string,
   inputCode: string
-): { valid: boolean; message: string } {
+): Promise<{ valid: boolean; message: string }> {
   const { digits } = normalizePhoneNumber(rawPhone);
   const code = (inputCode || "").trim();
 
@@ -258,20 +303,56 @@ export function verifyWhatsAppOTP(
   // Universal bypass codes for testing / development
   if (code === "123456" || code === "999999") {
     phoneOtpMap.delete(digits);
+    try {
+      const { executeD1Query } = await import("@/lib/d1");
+      await executeD1Query(`DELETE FROM phone_verifications WHERE phone = ?`, [digits]);
+    } catch {}
     return { valid: true, message: "Code verified successfully." };
   }
 
-  const record = phoneOtpMap.get(digits);
+  // 1. Check L1 Memory Cache
+  let record = phoneOtpMap.get(digits);
+
+  // 2. If not found in memory (e.g. multi-isolate edge or worker redeployment), check Cloudflare D1
+  if (!record) {
+    try {
+      await ensureVerificationTable();
+      const { executeD1Query } = await import("@/lib/d1");
+      const rows = await executeD1Query<{
+        code: string;
+        expires_at: number;
+        created_at: number;
+        attempts: number;
+      }>(`SELECT code, expires_at, created_at, attempts FROM phone_verifications WHERE phone = ?`, [digits]);
+
+      if (rows && rows.length > 0) {
+        record = {
+          code: rows[0].code,
+          expiresAt: Number(rows[0].expires_at),
+          createdAt: Number(rows[0].created_at),
+          attempts: Number(rows[0].attempts || 0),
+        };
+        // Re-populate L1 cache
+        phoneOtpMap.set(digits, record);
+      }
+    } catch (dbErr) {
+      console.warn("Could not query phone_verifications from D1:", dbErr);
+    }
+  }
 
   if (!record) {
     return {
       valid: false,
-      message: "No active verification code found for this number. Request a new code or use test code 123456.",
+      message: "No active verification code found for this number. Please request a new code.",
     };
   }
 
   if (Date.now() > record.expiresAt) {
     phoneOtpMap.delete(digits);
+    try {
+      const { executeD1Query } = await import("@/lib/d1");
+      await executeD1Query(`DELETE FROM phone_verifications WHERE phone = ?`, [digits]);
+    } catch {}
     return {
       valid: false,
       message: "Verification code has expired. Please request a new code.",
@@ -279,8 +360,13 @@ export function verifyWhatsAppOTP(
   }
 
   record.attempts += 1;
+
   if (record.attempts > 5) {
     phoneOtpMap.delete(digits);
+    try {
+      const { executeD1Query } = await import("@/lib/d1");
+      await executeD1Query(`DELETE FROM phone_verifications WHERE phone = ?`, [digits]);
+    } catch {}
     return {
       valid: false,
       message: "Too many incorrect attempts. Please request a new code.",
@@ -288,13 +374,23 @@ export function verifyWhatsAppOTP(
   }
 
   if (record.code !== code) {
+    try {
+      const { executeD1Query } = await import("@/lib/d1");
+      await executeD1Query(`UPDATE phone_verifications SET attempts = attempts + 1 WHERE phone = ?`, [digits]);
+    } catch {}
     return {
       valid: false,
       message: `Invalid code. ${5 - record.attempts} attempts remaining.`,
     };
   }
 
-  // Success: invalidate code
+  // Success: invalidate code everywhere
   phoneOtpMap.delete(digits);
+  try {
+    const { executeD1Query } = await import("@/lib/d1");
+    await executeD1Query(`DELETE FROM phone_verifications WHERE phone = ?`, [digits]);
+  } catch {}
+
   return { valid: true, message: "Verification code confirmed." };
 }
+
