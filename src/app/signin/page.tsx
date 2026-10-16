@@ -77,14 +77,14 @@ function SignInContent() {
             initialMode={modeParam}
             notice={urlNotice}
             redirectUrl={redirectUrl}
-            showBadges={true}
+            showBadges={false}
           />
         </div>
       </main>
 
       {/* Footer */}
       <footer className="w-full py-4 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-        © {new Date().getFullYear()} Zupe Store. Modern Decor & Everyday Essentials.
+        © {new Date().getFullYear()} Zupe Store
       </footer>
     </div>
   );
