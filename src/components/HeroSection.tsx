@@ -7,8 +7,28 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DEFAULT_HERO_BANNERS, HeroBannerSlide } from "@/lib/storeContent";
 
-export function HeroSection() {
-  const [slides, setSlides] = useState<HeroBannerSlide[]>(DEFAULT_HERO_BANNERS);
+interface HeroSectionProps {
+  initialBanners?: HeroBannerSlide[];
+}
+
+export function HeroSection({ initialBanners }: HeroSectionProps = {}) {
+  const [slides, setSlides] = useState<HeroBannerSlide[]>(() => {
+    if (initialBanners && initialBanners.length > 0) {
+      return initialBanners;
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("zp_hero_banners_cache");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch (e) {}
+    }
+    return DEFAULT_HERO_BANNERS;
+  });
   const [[currentSlide, direction], setSlide] = useState<[number, number]>([0, 1]);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -16,12 +36,25 @@ export function HeroSection() {
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
+  // Keep state synchronized with server-passed initialBanners and persist to cache
+  useEffect(() => {
+    if (initialBanners && initialBanners.length > 0) {
+      setSlides(initialBanners);
+      try {
+        localStorage.setItem("zp_hero_banners_cache", JSON.stringify(initialBanners));
+      } catch (e) {}
+    }
+  }, [initialBanners]);
+
   useEffect(() => {
     fetch("/api/content/banners")
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.banners) && data.banners.length > 0) {
           setSlides(data.banners);
+          try {
+            localStorage.setItem("zp_hero_banners_cache", JSON.stringify(data.banners));
+          } catch (e) {}
         }
       })
       .catch((err) => console.warn("Failed to fetch dynamic hero banners:", err));

@@ -9,12 +9,15 @@ import { PromoBanners } from "@/components/PromoBanners";
 import { NewArrivalsSection } from "@/components/NewArrivalsSection";
 import { ShoppableVideosSection } from "@/components/ShoppableVideosSection";
 import { Footer } from "@/components/Footer";
-import { getCategories } from "@/lib/storeContent";
+import { getCategories, getBanners } from "@/lib/storeContent";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const initialCategories = await getCategories();
+  const [initialCategories, initialBanners] = await Promise.all([
+    getCategories(),
+    getBanners(),
+  ]);
 
   return (
     <main className="min-h-screen bg-[#F3F4F6] text-[#111111] selection:bg-[#FF7A00] selection:text-white">
@@ -27,8 +30,8 @@ export default async function Home() {
       {/* 3. Circular / Curved Square Pastel Category Pills (Positioned above banner, with SSR hydration to eliminate icon flash) */}
       <CategoryPills initialCategories={initialCategories} />
 
-      {/* 4. Hero Banner Carousel (Slim direct poster) */}
-      <HeroSection />
+      {/* 4. Hero Banner Carousel (Slim direct poster with SSR hydration to eliminate banner flash) */}
+      <HeroSection initialBanners={initialBanners} />
 
       {/* 5. 4-Column White Trust Guarantee Bar */}
       <TrustBar />
