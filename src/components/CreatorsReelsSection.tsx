@@ -337,7 +337,7 @@ export function CreatorsReelsSection() {
     <section className="w-full max-w-[1520px] mx-auto px-3 sm:px-6 my-3 sm:my-5 select-none">
       {/* Section Heading matching Outpickz reference */}
       <div className="flex items-center justify-between mb-2.5 sm:mb-3.5 px-0.5">
-        <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-800 tracking-tight flex items-center gap-1.5">
+        <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#0F172A] tracking-tight flex items-center gap-2">
           From our creators
         </h2>
       </div>
@@ -361,7 +361,7 @@ export function CreatorsReelsSection() {
               ? "transform 0.65s cubic-bezier(0.25, 1, 0.5, 1)"
               : "none",
           }}
-          className="flex items-stretch gap-3 sm:gap-4 will-change-transform"
+          className="flex items-stretch gap-2.5 sm:gap-3.5 md:gap-4 will-change-transform"
         >
           {extendedVideos.map((video, idx) => {
             const poster =
@@ -374,7 +374,7 @@ export function CreatorsReelsSection() {
                 key={`${video.id}-${idx}`}
                 ref={idx === 0 ? firstCardRef : undefined}
                 onClick={() => handleOpenReel(idx)}
-                className="w-[130px] min-w-[130px] sm:w-[155px] sm:min-w-[155px] md:w-[175px] md:min-w-[175px] aspect-[9/15] sm:aspect-[9/15.5] flex-shrink-0 rounded-2xl sm:rounded-3xl overflow-hidden relative shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer bg-slate-950 group border border-slate-200/60 hover:border-[#FF7A00]/50 hover:-translate-y-0.5"
+                className="w-[155px] min-w-[155px] sm:w-[175px] sm:min-w-[175px] md:w-[200px] md:min-w-[200px] lg:w-[225px] lg:min-w-[225px] xl:w-[240px] xl:min-w-[240px] aspect-[9/15.5] flex-shrink-0 rounded-2xl sm:rounded-3xl overflow-hidden relative shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer bg-slate-950 group border border-slate-200/60 hover:border-[#FF7A00]/50 hover:-translate-y-0.5"
               >
                 {/* Background Video (Muted Autoplay Always) */}
                 <video

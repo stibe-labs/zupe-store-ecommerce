@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Flame } from "lucide-react";
 import { Product } from "@/types/product";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
@@ -132,9 +133,9 @@ export function TopPickzSection({ initialProducts }: TopPickzSectionProps = {}) 
 
   return (
     <section className="w-full max-w-[1520px] mx-auto px-3 sm:px-6 my-2 sm:my-3 select-none">
-      {/* Light Mint / Cyan Pastel Container matching Outpickz reference */}
+      {/* Zupe Warm Amber/Orange Accent Container matching Brand Palette (#FF7A00, #FFC107, #0F172A, #FFFFFF) */}
       <div
-        className="w-full bg-gradient-to-r from-[#EBF9F7] via-[#E4F7F4] to-[#DBF2EE] border border-[#CEEFEA] rounded-[22px] sm:rounded-3xl p-3 sm:p-4 md:p-5 overflow-hidden shadow-xs"
+        className="w-full bg-gradient-to-r from-[#FFF7ED] via-[#FFF9F3] to-[#FEF3C7]/40 border border-[#FED7AA]/70 rounded-[22px] sm:rounded-3xl p-3 sm:p-4 md:p-5 overflow-hidden shadow-xs"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
@@ -142,13 +143,16 @@ export function TopPickzSection({ initialProducts }: TopPickzSectionProps = {}) 
         onTouchEnd={handleTouchEnd}
       >
         {/* Section Heading */}
-        <div className="flex items-center justify-between mb-2.5 sm:mb-3 px-0.5">
-          <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-800 tracking-tight flex items-center gap-1.5">
-            Top Pickz
+        <div className="flex items-center justify-between mb-2.5 sm:mb-3.5 px-0.5">
+          <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#0F172A] tracking-tight flex items-center gap-1.5">
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[#FF7A00]/10 flex items-center justify-center">
+              <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FF7A00] fill-[#FF7A00]" />
+            </span>
+            <span>Top Pickz</span>
           </h2>
           <Link
             href="/products"
-            className="text-xs sm:text-sm font-semibold text-[#FF7A00] hover:text-[#E06A00] transition-colors"
+            className="text-xs sm:text-sm font-bold text-[#FF7A00] hover:text-[#E06A00] transition-colors"
           >
             View All →
           </Link>
@@ -179,33 +183,33 @@ export function TopPickzSection({ initialProducts }: TopPickzSectionProps = {}) 
                 <div
                   key={`${product.id}-${idx}`}
                   ref={idx === 0 ? firstCardRef : undefined}
-                  className="w-[115px] min-w-[115px] sm:w-[135px] sm:min-w-[135px] md:w-[150px] md:min-w-[150px] flex-shrink-0"
+                  className="w-[115px] min-w-[115px] sm:w-[155px] sm:min-w-[155px] md:w-[185px] md:min-w-[185px] lg:w-[215px] lg:min-w-[215px] xl:w-[225px] xl:min-w-[225px] flex-shrink-0"
                 >
                   <Link
                     href={`/products/${product.slug || product.id}`}
-                    className="group block w-full h-full bg-white rounded-2xl p-2 sm:p-2.5 shadow-xs hover:shadow-md transition-all duration-200 border border-slate-100/80 hover:border-slate-200 hover:-translate-y-0.5"
+                    className="group block w-full h-full bg-white rounded-2xl p-2 sm:p-3 shadow-xs hover:shadow-md transition-all duration-200 border border-[#FED7AA]/40 hover:border-[#FF7A00]/50 hover:-translate-y-0.5"
                   >
                     {/* Square Product Image */}
-                    <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-50 mb-1.5">
+                    <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-50 mb-1.5 sm:mb-2">
                       <Image
                         src={imageSrc}
                         alt={product.name || "Product"}
                         fill
-                        sizes="(max-width: 640px) 115px, 150px"
+                        sizes="(max-width: 640px) 115px, (max-width: 1024px) 185px, 225px"
                         className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
 
                     {/* Single Line Truncated Title */}
                     <p
-                      className="text-[11px] sm:text-xs md:text-[13px] font-medium text-slate-800 truncate block leading-snug"
+                      className="text-[11px] sm:text-xs md:text-sm font-semibold text-[#0F172A] truncate block leading-snug"
                       title={product.name}
                     >
                       {product.name}
                     </p>
 
-                    {/* Bold Black Price */}
-                    <p className="text-xs sm:text-sm font-bold text-slate-900 mt-0.5 sm:mt-1">
+                    {/* Bold Price */}
+                    <p className="text-xs sm:text-sm md:text-base font-extrabold text-[#0F172A] mt-0.5 sm:mt-1">
                       ₹{formattedPrice}
                     </p>
                   </Link>
