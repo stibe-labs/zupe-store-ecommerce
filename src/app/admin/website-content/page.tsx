@@ -47,6 +47,8 @@ import {
   Gift,
   Gamepad2,
   LayoutGrid,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { HeroBannerSlide, StoreCategory } from "@/lib/storeContent";
 import { getSubcategoriesForCategory } from "@/data/zupeProducts";
@@ -127,6 +129,12 @@ export default function WebsiteContentPage() {
     ctaLink: "/products",
     image: "/products/hero-banner.jpg",
     mobileImage: "",
+    imageScale: 100,
+    imagePosition: "center",
+    imageFit: "cover" as "cover" | "contain",
+    mobileImageScale: 100,
+    mobileImagePosition: "center",
+    mobileImageFit: "cover" as "cover" | "contain",
     taglineRight: "Drive In Luxury ♡",
     active: true,
   });
@@ -240,6 +248,12 @@ export default function WebsiteContentPage() {
       ctaLink: "/products",
       image: "/banners/banner-mega-sale.jpg",
       mobileImage: "",
+      imageScale: 100,
+      imagePosition: "center",
+      imageFit: "cover",
+      mobileImageScale: 100,
+      mobileImagePosition: "center",
+      mobileImageFit: "cover",
       taglineRight: "",
       active: true,
     });
@@ -255,9 +269,15 @@ export default function WebsiteContentPage() {
       titleLine2: b.titleLine2,
       description: b.description,
       ctaText: b.ctaText,
-      ctaLink: b.ctaLink,
+      ctaLink: b.ctaLink ?? "/products",
       image: b.image,
       mobileImage: b.mobileImage || "",
+      imageScale: typeof b.imageScale === "number" ? b.imageScale : 100,
+      imagePosition: b.imagePosition || "center",
+      imageFit: b.imageFit || "cover",
+      mobileImageScale: typeof b.mobileImageScale === "number" ? b.mobileImageScale : 100,
+      mobileImagePosition: b.mobileImagePosition || "center",
+      mobileImageFit: b.mobileImageFit || "cover",
       taglineRight: b.taglineRight || "",
       active: b.active !== false,
     });
@@ -823,7 +843,18 @@ export default function WebsiteContentPage() {
                             src={cardMode === "mobile" && slide.mobileImage ? slide.mobileImage : slide.image}
                             alt={slide.titleLine1 || "Banner Poster"}
                             fill
-                            className="object-cover object-center transition-transform duration-500 group-hover/preview:scale-[1.01]"
+                            style={{
+                              transform: `scale(${((cardMode === "mobile" && slide.mobileImage ? slide.mobileImageScale : slide.imageScale) || 100) / 100})`,
+                              transformOrigin:
+                                ((cardMode === "mobile" && slide.mobileImage ? slide.mobileImagePosition : slide.imagePosition) === "top"
+                                  ? "top center"
+                                  : (cardMode === "mobile" && slide.mobileImage ? slide.mobileImagePosition : slide.imagePosition) === "bottom"
+                                  ? "bottom center"
+                                  : "center center"),
+                              objectFit: (cardMode === "mobile" && slide.mobileImage ? slide.mobileImageFit : slide.imageFit) || "cover",
+                              objectPosition: (cardMode === "mobile" && slide.mobileImage ? slide.mobileImagePosition : slide.imagePosition) || "center",
+                            }}
+                            className="transition-transform duration-500 ease-out"
                           />
 
                           {/* Banner Label & Status Pill */}
@@ -831,15 +862,19 @@ export default function WebsiteContentPage() {
                             <span className="px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md text-white text-[11px] font-bold shadow-sm">
                               {slide.titleLine1 || "Promo Poster"}
                             </span>
-                            <span className="px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-semibold shadow-xs">
-                              Slim Poster (No Overlay)
-                            </span>
+                            {(slide.imageScale && slide.imageScale !== 100) && (
+                              <span className="px-2 py-0.5 rounded-md bg-orange-500 text-white text-[9px] font-extrabold shadow-xs">
+                                {slide.imageScale}% Zoom
+                              </span>
+                            )}
                           </div>
 
                           {/* Link Pill */}
                           <div className="absolute bottom-3 left-3 z-10">
                             <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-white/90 text-[10px] font-mono">
-                              🔗 {slide.ctaLink || "/products"}
+                              {slide.ctaLink && slide.ctaLink.trim() !== "" && slide.ctaLink.trim() !== "#"
+                                ? `🔗 ${slide.ctaLink}`
+                                : "🔒 Display Only (No Link)"}
                             </span>
                           </div>
 
@@ -1288,7 +1323,18 @@ export default function WebsiteContentPage() {
                           src={bannerForm.image || "/banners/banner-mega-sale.jpg"}
                           alt={bannerForm.titleLine1 || "Preview"}
                           fill
-                          className="object-cover object-center"
+                          style={{
+                            transform: `scale(${(bannerForm.imageScale || 100) / 100})`,
+                            transformOrigin:
+                              bannerForm.imagePosition === "top"
+                                ? "top center"
+                                : bannerForm.imagePosition === "bottom"
+                                ? "bottom center"
+                                : "center center",
+                            objectFit: bannerForm.imageFit || "cover",
+                            objectPosition: bannerForm.imagePosition || "center",
+                          }}
+                          className="transition-transform duration-200"
                         />
 
                         {/* Chevron controls simulation */}
@@ -1345,7 +1391,18 @@ export default function WebsiteContentPage() {
                               src={bannerForm.mobileImage || bannerForm.image || "/banners/banner-mega-sale.jpg"}
                               alt={bannerForm.titleLine1 || "Preview"}
                               fill
-                              className="object-cover object-center"
+                              style={{
+                                transform: `scale(${((bannerForm.mobileImage ? bannerForm.mobileImageScale : bannerForm.imageScale) || 100) / 100})`,
+                                transformOrigin:
+                                  (bannerForm.mobileImage ? bannerForm.mobileImagePosition : bannerForm.imagePosition) === "top"
+                                    ? "top center"
+                                    : (bannerForm.mobileImage ? bannerForm.mobileImagePosition : bannerForm.imagePosition) === "bottom"
+                                    ? "bottom center"
+                                    : "center center",
+                                objectFit: (bannerForm.mobileImage ? bannerForm.mobileImageFit : bannerForm.imageFit) || "cover",
+                                objectPosition: (bannerForm.mobileImage ? bannerForm.mobileImagePosition : bannerForm.imagePosition) || "center",
+                              }}
+                              className="transition-transform duration-200"
                             />
                           </div>
 
@@ -1433,6 +1490,139 @@ export default function WebsiteContentPage() {
                     </button>
                   ))}
                 </div>
+
+                {/* Desktop Poster Framing & Zoom Adjuster Slider */}
+                <div className="mt-2.5 p-3 bg-white rounded-xl border border-slate-200/90 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Sliders className="w-3.5 h-3.5 text-[#FF7A00]" />
+                      <span className="text-[11px] font-bold text-slate-800">
+                        Desktop Poster Framing & Zoom Adjuster
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-md bg-orange-50 border border-orange-200 text-[#FF7A00] font-mono text-[10px] font-extrabold">
+                        {bannerForm.imageScale}% Zoom
+                      </span>
+                      {bannerForm.imageScale !== 100 && (
+                        <button
+                          type="button"
+                          onClick={() => setBannerForm({ ...bannerForm, imageScale: 100 })}
+                          className="text-[10px] font-bold text-slate-500 hover:text-slate-800 underline cursor-pointer"
+                        >
+                          Reset
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Zoom In / Zoom Out Slider */}
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setBannerForm({ ...bannerForm, imageScale: Math.max(50, (bannerForm.imageScale || 100) - 5) })}
+                      className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors shrink-0"
+                      title="Zoom Out (-5%)"
+                    >
+                      <ZoomOut className="w-3.5 h-3.5" />
+                    </button>
+                    <div className="flex-1 relative flex items-center">
+                      <input
+                        type="range"
+                        min={50}
+                        max={200}
+                        step={1}
+                        value={bannerForm.imageScale || 100}
+                        onChange={(e) => setBannerForm({ ...bannerForm, imageScale: Number(e.target.value) })}
+                        className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#FF7A00]"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setBannerForm({ ...bannerForm, imageScale: Math.min(200, (bannerForm.imageScale || 100) + 5) })}
+                      className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors shrink-0"
+                      title="Zoom In (+5%)"
+                    >
+                      <ZoomIn className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Preset zoom shortcuts */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    <span className="text-[10px] font-semibold text-slate-400">Presets:</span>
+                    {[
+                      { label: "Fit Whole", scale: 100, fit: "contain" as const },
+                      { label: "100% (Default)", scale: 100, fit: "cover" as const },
+                      { label: "115% Zoom", scale: 115, fit: "cover" as const },
+                      { label: "130% Zoom", scale: 130, fit: "cover" as const },
+                      { label: "150% Fill", scale: 150, fit: "cover" as const },
+                    ].map((p) => (
+                      <button
+                        key={p.label}
+                        type="button"
+                        onClick={() => setBannerForm({ ...bannerForm, imageScale: p.scale, imageFit: p.fit })}
+                        className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors cursor-pointer ${
+                          bannerForm.imageScale === p.scale && bannerForm.imageFit === p.fit
+                            ? "bg-[#FF7A00] text-white"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Fit Mode and Alignment Options */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-slate-100 text-[10px]">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-slate-500">Fit Mode:</span>
+                      <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => setBannerForm({ ...bannerForm, imageFit: "cover" })}
+                          className={`px-2 py-0.5 rounded font-bold transition-all cursor-pointer ${
+                            bannerForm.imageFit === "cover"
+                              ? "bg-white text-slate-900 shadow-xs"
+                              : "text-slate-500 hover:text-slate-800"
+                          }`}
+                        >
+                          Fill Frame (Cover)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBannerForm({ ...bannerForm, imageFit: "contain" })}
+                          className={`px-2 py-0.5 rounded font-bold transition-all cursor-pointer ${
+                            bannerForm.imageFit === "contain"
+                              ? "bg-white text-slate-900 shadow-xs"
+                              : "text-slate-500 hover:text-slate-800"
+                          }`}
+                        >
+                          Fit Whole (Contain)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-slate-500">Vertical Focus:</span>
+                      <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                        {(["top", "center", "bottom"] as const).map((pos) => (
+                          <button
+                            key={pos}
+                            type="button"
+                            onClick={() => setBannerForm({ ...bannerForm, imagePosition: pos })}
+                            className={`px-2 py-0.5 rounded font-bold capitalize transition-all cursor-pointer ${
+                              bannerForm.imagePosition === pos
+                                ? "bg-white text-slate-900 shadow-xs"
+                                : "text-slate-500 hover:text-slate-800"
+                            }`}
+                          >
+                            {pos}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Photo 2: Mobile View Poster (Optional) */}
@@ -1493,24 +1683,190 @@ export default function WebsiteContentPage() {
                   </div>
                   <span className="italic text-slate-400">If blank, desktop poster is used</span>
                 </div>
+
+                {/* Mobile Poster Framing & Zoom Adjuster Slider */}
+                <div className="mt-2.5 p-3 bg-white rounded-xl border border-slate-200/90 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Sliders className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-[11px] font-bold text-slate-800">
+                        Mobile Poster Framing & Zoom Adjuster
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono text-[10px] font-extrabold">
+                        {bannerForm.mobileImageScale}% Zoom
+                      </span>
+                      {bannerForm.mobileImageScale !== 100 && (
+                        <button
+                          type="button"
+                          onClick={() => setBannerForm({ ...bannerForm, mobileImageScale: 100 })}
+                          className="text-[10px] font-bold text-slate-500 hover:text-slate-800 underline cursor-pointer"
+                        >
+                          Reset
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Zoom In / Zoom Out Slider */}
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setBannerForm({ ...bannerForm, mobileImageScale: Math.max(50, (bannerForm.mobileImageScale || 100) - 5) })}
+                      className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors shrink-0"
+                      title="Zoom Out (-5%)"
+                    >
+                      <ZoomOut className="w-3.5 h-3.5" />
+                    </button>
+                    <div className="flex-1 relative flex items-center">
+                      <input
+                        type="range"
+                        min={50}
+                        max={200}
+                        step={1}
+                        value={bannerForm.mobileImageScale || 100}
+                        onChange={(e) => setBannerForm({ ...bannerForm, mobileImageScale: Number(e.target.value) })}
+                        className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setBannerForm({ ...bannerForm, mobileImageScale: Math.min(200, (bannerForm.mobileImageScale || 100) + 5) })}
+                      className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors shrink-0"
+                      title="Zoom In (+5%)"
+                    >
+                      <ZoomIn className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Preset zoom shortcuts */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    <span className="text-[10px] font-semibold text-slate-400">Presets:</span>
+                    {[
+                      { label: "Fit Whole", scale: 100, fit: "contain" as const },
+                      { label: "100% (Default)", scale: 100, fit: "cover" as const },
+                      { label: "115% Zoom", scale: 115, fit: "cover" as const },
+                      { label: "130% Zoom", scale: 130, fit: "cover" as const },
+                      { label: "150% Fill", scale: 150, fit: "cover" as const },
+                    ].map((p) => (
+                      <button
+                        key={p.label}
+                        type="button"
+                        onClick={() => setBannerForm({ ...bannerForm, mobileImageScale: p.scale, mobileImageFit: p.fit })}
+                        className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors cursor-pointer ${
+                          bannerForm.mobileImageScale === p.scale && bannerForm.mobileImageFit === p.fit
+                            ? "bg-emerald-600 text-white"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Fit Mode and Alignment Options */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-slate-100 text-[10px]">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-slate-500">Fit Mode:</span>
+                      <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => setBannerForm({ ...bannerForm, mobileImageFit: "cover" })}
+                          className={`px-2 py-0.5 rounded font-bold transition-all cursor-pointer ${
+                            bannerForm.mobileImageFit === "cover"
+                              ? "bg-white text-slate-900 shadow-xs"
+                              : "text-slate-500 hover:text-slate-800"
+                          }`}
+                        >
+                          Fill Frame (Cover)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBannerForm({ ...bannerForm, mobileImageFit: "contain" })}
+                          className={`px-2 py-0.5 rounded font-bold transition-all cursor-pointer ${
+                            bannerForm.mobileImageFit === "contain"
+                              ? "bg-white text-slate-900 shadow-xs"
+                              : "text-slate-500 hover:text-slate-800"
+                          }`}
+                        >
+                          Fit Whole (Contain)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-slate-500">Vertical Focus:</span>
+                      <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                        {(["top", "center", "bottom"] as const).map((pos) => (
+                          <button
+                            key={pos}
+                            type="button"
+                            onClick={() => setBannerForm({ ...bannerForm, mobileImagePosition: pos })}
+                            className={`px-2 py-0.5 rounded font-bold capitalize transition-all cursor-pointer ${
+                              bannerForm.mobileImagePosition === pos
+                                ? "bg-white text-slate-900 shadow-xs"
+                                : "text-slate-500 hover:text-slate-800"
+                            }`}
+                          >
+                            {pos}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Destination Link & Banner Label */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Destination Click Link *
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-slate-700">
+                      Destination Click Link (Optional)
+                    </label>
+                    <span className="text-[10px] text-slate-400">Tapping banner opens URL</span>
+                  </div>
                   <input
                     type="text"
-                    required
                     value={bannerForm.ctaLink}
                     onChange={(e) => setBannerForm({ ...bannerForm, ctaLink: e.target.value })}
-                    placeholder="e.g. /products or /products?category=Tech+%26+Gadgets"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#FF7A00]"
+                    placeholder="e.g. /products or leave empty if non-clickable"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#FF7A00]"
                   />
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    <span className="text-[10px] font-bold text-slate-400 self-center">Presets:</span>
+                    <button
+                      type="button"
+                      onClick={() => setBannerForm({ ...bannerForm, ctaLink: "/products" })}
+                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-50 hover:text-[#FF7A00] text-[10px] text-slate-600 transition-colors"
+                    >
+                      /products
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBannerForm({ ...bannerForm, ctaLink: "/products?category=Tech+%26+Gadgets" })}
+                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-50 hover:text-[#FF7A00] text-[10px] text-slate-600 transition-colors"
+                    >
+                      Tech & Gadgets
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBannerForm({ ...bannerForm, ctaLink: "/products?category=Home+Essentials" })}
+                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-50 hover:text-[#FF7A00] text-[10px] text-slate-600 transition-colors"
+                    >
+                      Home Essentials
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBannerForm({ ...bannerForm, ctaLink: "" })}
+                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-[10px] text-slate-600 transition-colors"
+                    >
+                      Non-Clickable (Empty)
+                    </button>
+                  </div>
                   <p className="text-[10px] text-slate-400 mt-1">
-                    Clicking anywhere on the banner poster takes the user here.
+                    Shoppers who click/tap the banner image will navigate here. Leave empty if you want it to be display-only.
                   </p>
                 </div>
 
@@ -1523,7 +1879,7 @@ export default function WebsiteContentPage() {
                     value={bannerForm.titleLine1}
                     onChange={(e) => setBannerForm({ ...bannerForm, titleLine1: e.target.value })}
                     placeholder="e.g. Mega Sale Banner 2026"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:border-[#FF7A00]"
                   />
                   <p className="text-[10px] text-slate-400 mt-1">
                     Used as the accessible label and admin identifier.

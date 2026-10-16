@@ -8,9 +8,15 @@ export interface HeroBannerSlide {
   titleLine2?: string;
   description?: string;
   ctaText?: string;
-  ctaLink: string;
+  ctaLink?: string; // Optional: destination URL when tapping banner
   image: string; // Desktop view photo (16:9 / landscape)
   mobileImage?: string; // Mobile view photo (4:5 / 1:1 portrait)
+  imageScale?: number; // Desktop zoom level in % (50 to 200, default 100)
+  imagePosition?: string; // CSS object-position (e.g. "center", "top", "bottom")
+  imageFit?: "cover" | "contain"; // "cover" to fill frame or "contain" to show full image
+  mobileImageScale?: number; // Mobile zoom level in % (50 to 200, default 100)
+  mobileImagePosition?: string; // CSS object-position for mobile
+  mobileImageFit?: "cover" | "contain"; // "cover" to fill frame or "contain"
   taglineRight?: string;
   active: boolean;
   order?: number;

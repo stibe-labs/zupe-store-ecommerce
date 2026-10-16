@@ -160,35 +160,110 @@ export function HeroSection({ initialBanners }: HeroSectionProps = {}) {
               }}
               className="absolute inset-0 w-full h-full"
             >
-              <Link
-                href={slide.ctaLink || "/products"}
-                className="relative block w-full h-full cursor-pointer overflow-hidden"
-                aria-label={slide.titleLine1 || "Promo Banner"}
-              >
-                {/* Desktop View Poster */}
-                <Image
-                  src={slide.image}
-                  alt={slide.titleLine1 || "Banner Poster"}
-                  fill
-                  priority={activeIndex === 0}
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1520px"
-                  className={`object-cover object-center w-full h-full transition-transform duration-700 ease-out group-hover:scale-[1.01] ${
-                    slide.mobileImage ? "hidden sm:block" : "block"
-                  }`}
-                />
-
-                {/* Mobile View Poster (if custom mobile ratio provided) */}
-                {slide.mobileImage && (
+              {slide.ctaLink && slide.ctaLink.trim() !== "" && slide.ctaLink.trim() !== "#" ? (
+                <Link
+                  href={slide.ctaLink}
+                  className="relative block w-full h-full cursor-pointer overflow-hidden"
+                  aria-label={slide.titleLine1 || "Promo Banner"}
+                >
+                  {/* Desktop View Poster */}
                   <Image
-                    src={slide.mobileImage}
-                    alt={slide.titleLine1 || "Mobile Banner Poster"}
+                    src={slide.image}
+                    alt={slide.titleLine1 || "Banner Poster"}
                     fill
                     priority={activeIndex === 0}
-                    sizes="100vw"
-                    className="object-cover object-center w-full h-full block sm:hidden"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1520px"
+                    style={{
+                      transform: `scale(${(slide.imageScale || 100) / 100})`,
+                      transformOrigin:
+                        slide.imagePosition === "top"
+                          ? "top center"
+                          : slide.imagePosition === "bottom"
+                          ? "bottom center"
+                          : "center center",
+                      objectFit: slide.imageFit || "cover",
+                      objectPosition: slide.imagePosition || "center",
+                    }}
+                    className={`w-full h-full transition-transform duration-500 ease-out ${
+                      slide.mobileImage ? "hidden sm:block" : "block"
+                    }`}
                   />
-                )}
-              </Link>
+
+                  {/* Mobile View Poster (if custom mobile ratio provided) */}
+                  {slide.mobileImage && (
+                    <Image
+                      src={slide.mobileImage}
+                      alt={slide.titleLine1 || "Mobile Banner Poster"}
+                      fill
+                      priority={activeIndex === 0}
+                      sizes="100vw"
+                      style={{
+                        transform: `scale(${((slide.mobileImageScale || slide.imageScale) || 100) / 100})`,
+                        transformOrigin:
+                          (slide.mobileImagePosition || slide.imagePosition) === "top"
+                            ? "top center"
+                            : (slide.mobileImagePosition || slide.imagePosition) === "bottom"
+                            ? "bottom center"
+                            : "center center",
+                        objectFit: slide.mobileImageFit || slide.imageFit || "cover",
+                        objectPosition: slide.mobileImagePosition || slide.imagePosition || "center",
+                      }}
+                      className="w-full h-full block sm:hidden transition-transform duration-500 ease-out"
+                    />
+                  )}
+                </Link>
+              ) : (
+                <div
+                  className="relative block w-full h-full select-none overflow-hidden"
+                  aria-label={slide.titleLine1 || "Promo Banner"}
+                >
+                  {/* Desktop View Poster */}
+                  <Image
+                    src={slide.image}
+                    alt={slide.titleLine1 || "Banner Poster"}
+                    fill
+                    priority={activeIndex === 0}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1520px"
+                    style={{
+                      transform: `scale(${(slide.imageScale || 100) / 100})`,
+                      transformOrigin:
+                        slide.imagePosition === "top"
+                          ? "top center"
+                          : slide.imagePosition === "bottom"
+                          ? "bottom center"
+                          : "center center",
+                      objectFit: slide.imageFit || "cover",
+                      objectPosition: slide.imagePosition || "center",
+                    }}
+                    className={`w-full h-full transition-transform duration-500 ease-out ${
+                      slide.mobileImage ? "hidden sm:block" : "block"
+                    }`}
+                  />
+
+                  {/* Mobile View Poster (if custom mobile ratio provided) */}
+                  {slide.mobileImage && (
+                    <Image
+                      src={slide.mobileImage}
+                      alt={slide.titleLine1 || "Mobile Banner Poster"}
+                      fill
+                      priority={activeIndex === 0}
+                      sizes="100vw"
+                      style={{
+                        transform: `scale(${((slide.mobileImageScale || slide.imageScale) || 100) / 100})`,
+                        transformOrigin:
+                          (slide.mobileImagePosition || slide.imagePosition) === "top"
+                            ? "top center"
+                            : (slide.mobileImagePosition || slide.imagePosition) === "bottom"
+                            ? "bottom center"
+                            : "center center",
+                        objectFit: slide.mobileImageFit || slide.imageFit || "cover",
+                        objectPosition: slide.mobileImagePosition || slide.imagePosition || "center",
+                      }}
+                      className="w-full h-full block sm:hidden transition-transform duration-500 ease-out"
+                    />
+                  )}
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>

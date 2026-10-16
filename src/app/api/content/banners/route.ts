@@ -37,7 +37,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, banners: reset });
     }
 
-    const { badge, titleLine1, titleLine2, description, ctaText, ctaLink, image, mobileImage, taglineRight, active } = body;
+    const {
+      badge,
+      titleLine1,
+      titleLine2,
+      description,
+      ctaText,
+      ctaLink,
+      image,
+      mobileImage,
+      imageScale,
+      imagePosition,
+      imageFit,
+      mobileImageScale,
+      mobileImagePosition,
+      mobileImageFit,
+      taglineRight,
+      active,
+    } = body;
 
     if (!image) {
       return NextResponse.json({ success: false, error: "Banner image is required" }, { status: 400 });
@@ -51,9 +68,15 @@ export async function POST(req: NextRequest) {
       titleLine2: (titleLine2 || "").trim(),
       description: (description || "").trim(),
       ctaText: (ctaText || "Shop Now").trim(),
-      ctaLink: (ctaLink || "/products").trim(),
+      ctaLink: ctaLink !== undefined && ctaLink !== null ? ctaLink.trim() : "/products",
       image: image.trim(),
       mobileImage: mobileImage ? mobileImage.trim() : undefined,
+      imageScale: typeof imageScale === "number" ? imageScale : 100,
+      imagePosition: imagePosition || "center",
+      imageFit: imageFit || "cover",
+      mobileImageScale: typeof mobileImageScale === "number" ? mobileImageScale : 100,
+      mobileImagePosition: mobileImagePosition || "center",
+      mobileImageFit: mobileImageFit || "cover",
       taglineRight: taglineRight || "",
       active: active !== false,
       order: currentBanners.length + 1,
