@@ -893,9 +893,20 @@ function CheckoutContent() {
                           <span>₹{item.price.toLocaleString()} × {item.quantity}</span>
                         </div>
                       </div>
-                      <span className="font-bold text-xs text-gray-900">
-                        ₹{(item.price * item.quantity).toLocaleString()}
-                      </span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="font-bold text-xs text-gray-900">
+                          ₹{(item.price * item.quantity).toLocaleString()}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(item.id)}
+                          title="Remove item"
+                          className="p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                          aria-label={`Remove ${item.name} from cart`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -1348,6 +1359,40 @@ function CheckoutContent() {
                 <ShieldCheck className="w-3.5 h-3.5 text-gray-500" />
                 <span>256-Bit Bank Grade SSL Encrypted · 100% Purchase Protection</span>
               </div>
+
+              {/* Policy Redirection Links (like reference) */}
+              <div className="pt-4 border-t border-gray-100 mt-2">
+                <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-gray-500 font-medium">
+                  <Link
+                    href="/return"
+                    target="_blank"
+                    className="hover:text-gray-900 transition-colors underline-offset-2 hover:underline"
+                  >
+                    Return &amp; Refund Policy
+                  </Link>
+                  <Link
+                    href="/shipping-and-delivery"
+                    target="_blank"
+                    className="hover:text-gray-900 transition-colors underline-offset-2 hover:underline"
+                  >
+                    Shipping &amp; Delivery
+                  </Link>
+                  <Link
+                    href="/privacy"
+                    target="_blank"
+                    className="hover:text-gray-900 transition-colors underline-offset-2 hover:underline"
+                  >
+                    Privacy Policy
+                  </Link>
+                  <Link
+                    href="/terms-and-conditions"
+                    target="_blank"
+                    className="hover:text-gray-900 transition-colors underline-offset-2 hover:underline"
+                  >
+                    Terms &amp; Conditions
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1391,9 +1436,20 @@ function CheckoutContent() {
                         </div>
                       </div>
 
-                      <span className="font-bold text-sm text-gray-900">
-                        ₹{(item.price * item.quantity).toLocaleString()}
-                      </span>
+                      <div className="flex items-center gap-2.5 shrink-0">
+                        <span className="font-bold text-sm text-gray-900">
+                          ₹{(item.price * item.quantity).toLocaleString()}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(item.id)}
+                          title="Remove item"
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                          aria-label={`Remove ${item.name} from cart`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
