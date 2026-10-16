@@ -5,7 +5,14 @@ import { getOrders, OrderRecord } from "@/lib/orderStore";
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const query = (searchParams.get("query") || searchParams.get("id") || searchParams.get("awb") || "").trim();
+    const query = (
+      searchParams.get("query") ||
+      searchParams.get("orderId") ||
+      searchParams.get("order_id") ||
+      searchParams.get("id") ||
+      searchParams.get("awb") ||
+      ""
+    ).trim();
 
     if (!query) {
       return NextResponse.json(
@@ -45,6 +52,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         success: true,
         source: "erp",
+        order: matchedErp[0],
         orders: matchedErp,
       });
     }
@@ -107,6 +115,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         success: true,
         source: "storefront",
+        order: mappedOrders[0],
         orders: mappedOrders,
       });
     }
