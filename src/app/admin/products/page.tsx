@@ -323,7 +323,7 @@ export default function AdminProductsPage() {
     setFormSlug("");
     setFormCategory("Home & Living");
     setFormSubcategory("Home Comfort & Utility");
-    setFormBadge("New");
+    setFormBadge("");
     setFormTagline("");
     setFormDescription("");
 
@@ -1607,7 +1607,7 @@ export default function AdminProductsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-bold text-slate-700 mb-1">
                         Category *
@@ -1662,23 +1662,6 @@ export default function AdminProductsPage() {
                             {sub}
                           </option>
                         ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                        Badge / Label
-                      </label>
-                      <select
-                        value={formBadge}
-                        onChange={(e) => setFormBadge(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
-                      >
-                        <option value="">No Badge</option>
-                        <option value="Sale">Sale (e.g. Red/Orange Badge)</option>
-                        <option value="Trending">Trending</option>
-                        <option value="New">New</option>
-                        <option value="Limited">Limited Edition</option>
                       </select>
                     </div>
                   </div>

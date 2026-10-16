@@ -10,14 +10,15 @@ import { NewArrivalsSection } from "@/components/NewArrivalsSection";
 import { TopPickzSection } from "@/components/TopPickzSection";
 import { CreatorsReelsSection } from "@/components/CreatorsReelsSection";
 import { Footer } from "@/components/Footer";
-import { getCategories, getBanners } from "@/lib/storeContent";
+import { getCategories, getBanners, getShowcaseCollections } from "@/lib/storeContent";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [initialCategories, initialBanners] = await Promise.all([
+  const [initialCategories, initialBanners, initialShowcase] = await Promise.all([
     getCategories(),
     getBanners(),
+    getShowcaseCollections(),
   ]);
 
   return (
@@ -35,7 +36,7 @@ export default async function Home() {
       <HeroSection initialBanners={initialBanners} />
 
       {/* 5. Top Pickz (Pastel container with automatic 1-by-1 card moving carousel, 2s pause) */}
-      <TopPickzSection />
+      <TopPickzSection initialProductIds={initialShowcase.topPickzProductIds} />
 
       {/* 6. From our creators (Automatic moving creator video reels with always-muted autoplay & reel modal) */}
       <CreatorsReelsSection />
@@ -43,14 +44,14 @@ export default async function Home() {
       {/* 7. 4-Column White Trust Guarantee Bar */}
       <TrustBar />
 
-      {/* 8. Today's Best Deals ⚡ (5 cards with % off badges and Add to Cart) */}
-      <DealsSection />
+      {/* 8. Today's Best Deals ⚡ (cards with % off badges and Add to Cart) */}
+      <DealsSection initialProductIds={initialShowcase.todayDealsProductIds} />
 
       {/* 9. Dual Promotional Banners (Everyday Essentials & Car Accessories) */}
       <PromoBanners />
 
-      {/* 10. New Arrivals (5 cards with floating wishlist hearts) */}
-      <NewArrivalsSection />
+      {/* 10. New Arrivals (cards with floating wishlist hearts) */}
+      <NewArrivalsSection initialProductIds={initialShowcase.newArrivalsProductIds} />
 
       {/* 11. Modern E-commerce Footer */}
       <Footer />

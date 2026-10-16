@@ -73,6 +73,12 @@ function ProductsContent() {
   const [maxPrice, setMaxPrice] = useState<number>(6000);
   const [onlyInStock, setOnlyInStock] = useState(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [showcaseCollections, setShowcaseCollections] = useState<{
+    topPickzProductIds?: string[];
+    newArrivalsProductIds?: string[];
+    bestSellersProductIds?: string[];
+    todayDealsProductIds?: string[];
+  } | null>(null);
 
   const { addToCart, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -97,20 +103,27 @@ function ProductsContent() {
     };
   }, []);
 
-  // Fetch updated catalog if available from API
+  // Fetch updated catalog and showcase collections from API
   useEffect(() => {
-    async function fetchProducts() {
+    async function loadCatalogAndShowcase() {
       try {
-        const res = await fetch("/api/products");
-        const data = await res.json();
-        if (data.success && Array.isArray(data.products) && data.products.length > 0) {
-          setProducts(data.products);
+        const [prodRes, showcaseRes] = await Promise.all([
+          fetch("/api/products"),
+          fetch("/api/content/showcase"),
+        ]);
+        const prodData = await prodRes.json();
+        if (prodData.success && Array.isArray(prodData.products) && prodData.products.length > 0) {
+          setProducts(prodData.products);
+        }
+        const showcaseData = await showcaseRes.json();
+        if (showcaseData.success && showcaseData.collections) {
+          setShowcaseCollections(showcaseData.collections);
         }
       } catch (err) {
-        console.warn("Could not fetch fresh products:", err);
+        console.warn("Could not fetch fresh products or showcase collections:", err);
       }
     }
-    fetchProducts();
+    loadCatalogAndShowcase();
   }, []);
 
   // Synchronize state whenever URL query params change
@@ -157,38 +170,62 @@ function ProductsContent() {
       .filter((product) => {
         // Active Filter (New Arrivals, Best Sellers, Offers / Deals)
         if (filterLower === "new") {
-          const isMarkedNew =
-            product.badge?.toLowerCase() === "new" ||
-            (product as any).is_new === true;
-          const isNewArrivalItem =
-            [
-              "mini-thermal-printer",
-              "tf20-multipurpose-powerbank",
-              "helicopter-car-perfume",
-              "instant-water-heater-faucet",
-              "mini-hot-air-popcorn-maker",
-            ].includes(product.id) ||
-            [
-              "mini-thermal-printer",
-              "tf20-multipurpose-powerbank",
-              "helicopter-car-perfume",
-              "instant-water-heater-faucet",
-              "mini-hot-air-popcorn-maker",
-            ].includes(product.slug || "");
-          if (!isMarkedNew && !isNewArrivalItem) return false;
+          const curatedNew = showcaseCollections?.newArrivalsProductIds;
+          if (Array.isArray(curatedNew) && curatedNew.length > 0) {
+            const matchesCurated =
+              curatedNew.includes(product.id) ||
+              curatedNew.includes(product.slug || "");
+            if (!matchesCurated) return false;
+          } else {
+            const isMarkedNew =
+              product.badge?.toLowerCase() === "new" ||
+              (product as any).is_new === true;
+            const isNewArrivalItem =
+              [
+                "mini-thermal-printer",
+                "tf20-multipurpose-powerbank",
+                "helicopter-car-perfume",
+                "instant-water-heater-faucet",
+                "mini-hot-air-popcorn-maker",
+              ].includes(product.id) ||
+              [
+                "mini-thermal-printer",
+                "tf20-multipurpose-powerbank",
+                "helicopter-car-perfume",
+                "instant-water-heater-faucet",
+                "mini-hot-air-popcorn-maker",
+              ].includes(product.slug || "");
+            if (!isMarkedNew && !isNewArrivalItem) return false;
+          }
         } else if (filterLower === "best") {
-          const isTrendingOrBest =
-            product.badge?.toLowerCase() === "trending" ||
-            product.badge?.toLowerCase() === "bestseller" ||
-            (product.rating && product.rating >= 4.7) ||
-            (product.review_count && product.review_count >= 200);
-          if (!isTrendingOrBest) return false;
+          const curatedBest = showcaseCollections?.bestSellersProductIds;
+          if (Array.isArray(curatedBest) && curatedBest.length > 0) {
+            const matchesCurated =
+              curatedBest.includes(product.id) ||
+              curatedBest.includes(product.slug || "");
+            if (!matchesCurated) return false;
+          } else {
+            const isTrendingOrBest =
+              product.badge?.toLowerCase() === "trending" ||
+              product.badge?.toLowerCase() === "bestseller" ||
+              (product.rating && product.rating >= 4.7) ||
+              (product.review_count && product.review_count >= 200);
+            if (!isTrendingOrBest) return false;
+          }
         } else if (filterLower === "offers" || filterLower === "deals") {
-          const isSale =
-            product.badge?.toLowerCase() === "sale" ||
-            (product.mrp && product.price && product.mrp > product.price) ||
-            (product.mrp && product.offer_price && product.mrp > product.offer_price);
-          if (!isSale) return false;
+          const curatedDeals = showcaseCollections?.todayDealsProductIds;
+          if (Array.isArray(curatedDeals) && curatedDeals.length > 0) {
+            const matchesCurated =
+              curatedDeals.includes(product.id) ||
+              curatedDeals.includes(product.slug || "");
+            if (!matchesCurated) return false;
+          } else {
+            const isSale =
+              product.badge?.toLowerCase() === "sale" ||
+              (product.mrp && product.price && product.mrp > product.price) ||
+              (product.mrp && product.offer_price && product.mrp > product.offer_price);
+            if (!isSale) return false;
+          }
         }
 
         // Category filter
@@ -220,9 +257,30 @@ function ProductsContent() {
         if (sortBy === "price-asc") return a.price - b.price;
         if (sortBy === "price-desc") return b.price - a.price;
         if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
+
+        // Curated order preservation for showcase filters
+        if (filterLower === "new" && showcaseCollections?.newArrivalsProductIds?.length) {
+          const list = showcaseCollections.newArrivalsProductIds;
+          const idxA = list.indexOf(a.id) !== -1 ? list.indexOf(a.id) : list.indexOf(a.slug || "");
+          const idxB = list.indexOf(b.id) !== -1 ? list.indexOf(b.id) : list.indexOf(b.slug || "");
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        }
+        if (filterLower === "best" && showcaseCollections?.bestSellersProductIds?.length) {
+          const list = showcaseCollections.bestSellersProductIds;
+          const idxA = list.indexOf(a.id) !== -1 ? list.indexOf(a.id) : list.indexOf(a.slug || "");
+          const idxB = list.indexOf(b.id) !== -1 ? list.indexOf(b.id) : list.indexOf(b.slug || "");
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        }
+        if ((filterLower === "deals" || filterLower === "offers") && showcaseCollections?.todayDealsProductIds?.length) {
+          const list = showcaseCollections.todayDealsProductIds;
+          const idxA = list.indexOf(a.id) !== -1 ? list.indexOf(a.id) : list.indexOf(a.slug || "");
+          const idxB = list.indexOf(b.id) !== -1 ? list.indexOf(b.id) : list.indexOf(b.slug || "");
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        }
+
         return 0; // featured / default
       });
-  }, [products, activeFilter, selectedCategory, selectedSubcategory, searchQuery, sortBy, maxPrice, onlyInStock]);
+  }, [products, activeFilter, selectedCategory, selectedSubcategory, searchQuery, sortBy, maxPrice, onlyInStock, showcaseCollections]);
 
   const handleCategorySelect = (cat: string) => {
     setSelectedCategory(cat);

@@ -10,26 +10,50 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
-export function NewArrivalsSection() {
+interface NewArrivalsSectionProps {
+  initialProductIds?: string[];
+}
+
+export function NewArrivalsSection({ initialProductIds }: NewArrivalsSectionProps = {}) {
   const router = useRouter();
   const { user, openAuthModal } = useAuth();
   const { addToCart, addItem } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
+  const [curatedIds, setCuratedIds] = useState<string[]>(initialProductIds || []);
 
   useEffect(() => {
-    fetch("/api/products")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
-          setProducts(data.products);
+    Promise.all([
+      fetch("/api/products").then((r) => r.json()),
+      !initialProductIds
+        ? fetch("/api/content/showcase").then((r) => r.json())
+        : Promise.resolve(null),
+    ])
+      .then(([prodData, showcaseData]) => {
+        if (
+          prodData?.products &&
+          Array.isArray(prodData.products) &&
+          prodData.products.length > 0
+        ) {
+          setProducts(prodData.products);
+        }
+        if (showcaseData?.collections?.newArrivalsProductIds) {
+          setCuratedIds(showcaseData.collections.newArrivalsProductIds);
         }
       })
       .catch(() => {});
-  }, []);
+  }, [initialProductIds]);
 
-  // The last 5 products are the New Arrivals
-  const newArrivals = products.slice(5, 10);
+  // Order products according to curatedIds, or fallback to default
+  const newArrivals = React.useMemo(() => {
+    if (curatedIds && curatedIds.length > 0) {
+      const mapped = curatedIds
+        .map((id) => products.find((p) => p.id === id || p.slug === id))
+        .filter(Boolean) as typeof products;
+      if (mapped.length > 0) return mapped;
+    }
+    return products.slice(5, 10);
+  }, [curatedIds, products]);
 
   return (
     <section className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6">

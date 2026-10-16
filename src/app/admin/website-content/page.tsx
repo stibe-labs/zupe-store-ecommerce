@@ -53,6 +53,7 @@ import {
 import { HeroBannerSlide, StoreCategory } from "@/lib/storeContent";
 import { getSubcategoriesForCategory } from "@/data/zupeProducts";
 import { PromoCardsCustomizer } from "@/components/admin/PromoCardsCustomizer";
+import { ShowcaseCollectionsCustomizer } from "@/components/admin/ShowcaseCollectionsCustomizer";
 
 const IMAGE_PRESETS = [
   { label: "🔥 Mega Sale Poster", url: "/banners/banner-mega-sale.jpg" },
@@ -107,7 +108,7 @@ const CATEGORY_COLORS = [
 
 export default function WebsiteContentPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"banners" | "categories" | "promo_cards">("banners");
+  const [activeTab, setActiveTab] = useState<"banners" | "categories" | "promo_cards" | "showcase">("banners");
 
   const [banners, setBanners] = useState<HeroBannerSlide[]>([]);
   const [categories, setCategories] = useState<StoreCategory[]>([]);
@@ -779,6 +780,21 @@ export default function WebsiteContentPage() {
                 {categories.length}
               </span>
             </button>
+
+            <button
+              onClick={() => setActiveTab("showcase")}
+              className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+                activeTab === "showcase"
+                  ? "border-[#FF7A00] text-[#FF7A00]"
+                  : "border-transparent text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Showcase Collections</span>
+              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-purple-100 text-purple-700 font-extrabold">
+                4 Sections
+              </span>
+            </button>
           </div>
 
           {/* ========================================================
@@ -1262,6 +1278,15 @@ export default function WebsiteContentPage() {
           {activeTab === "promo_cards" && (
             <PromoCardsCustomizer
               categories={categories}
+              showToast={showToast}
+            />
+          )}
+
+          {/* ========================================================
+              TAB 4: SHOWCASE COLLECTIONS (TOP PICKZ, NEW ARRIVALS, BEST SELLERS, DEALS)
+             ======================================================== */}
+          {activeTab === "showcase" && (
+            <ShowcaseCollectionsCustomizer
               showToast={showToast}
             />
           )}

@@ -429,3 +429,111 @@ export async function savePromoBanners(banners: PromoBannerCard[]): Promise<Prom
   return inMemoryPromoBanners;
 }
 
+// ========================================================
+// SHOWCASE COLLECTIONS (Top Pickz, New Arrivals, Best Sellers, Today's Deals)
+// ========================================================
+export interface ShowcaseCollectionsConfig {
+  topPickzProductIds: string[];
+  newArrivalsProductIds: string[];
+  bestSellersProductIds: string[];
+  todayDealsProductIds: string[];
+}
+
+export const DEFAULT_SHOWCASE_COLLECTIONS: ShowcaseCollectionsConfig = {
+  topPickzProductIds: [
+    "water-ripple-lamp",
+    "mini-portable-steam-iron",
+    "menstrual-heating-pad",
+    "portable-mesh-nebulizer",
+    "foldable-mini-washer",
+    "mini-thermal-printer",
+    "helicopter-car-perfume",
+    "instant-water-heater-faucet",
+    "tf20-multipurpose-powerbank",
+    "mini-hot-air-popcorn-maker",
+  ],
+  newArrivalsProductIds: [
+    "mini-thermal-printer",
+    "helicopter-car-perfume",
+    "instant-water-heater-faucet",
+    "tf20-multipurpose-powerbank",
+    "mini-hot-air-popcorn-maker",
+  ],
+  bestSellersProductIds: [
+    "water-ripple-lamp",
+    "mini-portable-steam-iron",
+    "menstrual-heating-pad",
+    "tf20-multipurpose-powerbank",
+    "helicopter-car-perfume",
+  ],
+  todayDealsProductIds: [
+    "water-ripple-lamp",
+    "mini-portable-steam-iron",
+    "menstrual-heating-pad",
+    "portable-mesh-nebulizer",
+    "foldable-mini-washer",
+  ],
+};
+
+let inMemoryShowcase: ShowcaseCollectionsConfig = { ...DEFAULT_SHOWCASE_COLLECTIONS };
+
+export async function getShowcaseCollections(): Promise<ShowcaseCollectionsConfig> {
+  try {
+    const rows = await executeD1Query<{ provider: string; config_data: string; is_active: number }>(
+      "SELECT config_data FROM integrations_config WHERE provider = ?",
+      ["showcase_collections"]
+    );
+    if (rows && rows.length > 0 && rows[0].config_data) {
+      const parsed = JSON.parse(rows[0].config_data);
+      if (parsed && typeof parsed === "object") {
+        inMemoryShowcase = {
+          topPickzProductIds: Array.isArray(parsed.topPickzProductIds)
+            ? parsed.topPickzProductIds
+            : DEFAULT_SHOWCASE_COLLECTIONS.topPickzProductIds,
+          newArrivalsProductIds: Array.isArray(parsed.newArrivalsProductIds)
+            ? parsed.newArrivalsProductIds
+            : DEFAULT_SHOWCASE_COLLECTIONS.newArrivalsProductIds,
+          bestSellersProductIds: Array.isArray(parsed.bestSellersProductIds)
+            ? parsed.bestSellersProductIds
+            : DEFAULT_SHOWCASE_COLLECTIONS.bestSellersProductIds,
+          todayDealsProductIds: Array.isArray(parsed.todayDealsProductIds)
+            ? parsed.todayDealsProductIds
+            : DEFAULT_SHOWCASE_COLLECTIONS.todayDealsProductIds,
+        };
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to fetch showcase_collections from D1:", err);
+  }
+
+  return inMemoryShowcase;
+}
+
+export async function saveShowcaseCollections(
+  config: ShowcaseCollectionsConfig
+): Promise<ShowcaseCollectionsConfig> {
+  inMemoryShowcase = {
+    topPickzProductIds: Array.isArray(config.topPickzProductIds) ? config.topPickzProductIds : [],
+    newArrivalsProductIds: Array.isArray(config.newArrivalsProductIds) ? config.newArrivalsProductIds : [],
+    bestSellersProductIds: Array.isArray(config.bestSellersProductIds) ? config.bestSellersProductIds : [],
+    todayDealsProductIds: Array.isArray(config.todayDealsProductIds) ? config.todayDealsProductIds : [],
+  };
+
+  try {
+    const jsonStr = JSON.stringify(inMemoryShowcase);
+    await executeD1Query(
+      `INSERT INTO integrations_config (provider, config_data, is_active, last_synced_at, updated_at)
+       VALUES (?, ?, 1, datetime('now'), datetime('now'))
+       ON CONFLICT(provider) DO UPDATE SET 
+         config_data = excluded.config_data,
+         is_active = excluded.is_active,
+         updated_at = excluded.updated_at`,
+      ["showcase_collections", jsonStr]
+    );
+  } catch (err) {
+    console.warn("Failed to persist showcase_collections to D1:", err);
+  }
+
+  return inMemoryShowcase;
+}
+

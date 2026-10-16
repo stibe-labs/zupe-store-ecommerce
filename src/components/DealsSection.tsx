@@ -9,25 +9,49 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
-export function DealsSection() {
+interface DealsSectionProps {
+  initialProductIds?: string[];
+}
+
+export function DealsSection({ initialProductIds }: DealsSectionProps = {}) {
   const router = useRouter();
   const { user, openAuthModal } = useAuth();
   const { addToCart, addItem } = useCart();
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
+  const [curatedIds, setCuratedIds] = useState<string[]>(initialProductIds || []);
 
   useEffect(() => {
-    fetch("/api/products")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
-          setProducts(data.products);
+    Promise.all([
+      fetch("/api/products").then((r) => r.json()),
+      !initialProductIds
+        ? fetch("/api/content/showcase").then((r) => r.json())
+        : Promise.resolve(null),
+    ])
+      .then(([prodData, showcaseData]) => {
+        if (
+          prodData?.products &&
+          Array.isArray(prodData.products) &&
+          prodData.products.length > 0
+        ) {
+          setProducts(prodData.products);
+        }
+        if (showcaseData?.collections?.todayDealsProductIds) {
+          setCuratedIds(showcaseData.collections.todayDealsProductIds);
         }
       })
       .catch(() => {});
-  }, []);
+  }, [initialProductIds]);
 
-  // The first 5 products correspond to Today's Best Deals
-  const dealProducts = products.slice(0, 5);
+  // The curated products correspond to Today's Best Deals
+  const dealProducts = React.useMemo(() => {
+    if (curatedIds && curatedIds.length > 0) {
+      const mapped = curatedIds
+        .map((id) => products.find((p) => p.id === id || p.slug === id))
+        .filter(Boolean) as typeof products;
+      if (mapped.length > 0) return mapped;
+    }
+    return products.slice(0, 5);
+  }, [curatedIds, products]);
 
   const discounts = ["-40%", "-35%", "-30%", "-45%", "-33%"];
 

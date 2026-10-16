@@ -9,13 +9,18 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 interface TopPickzSectionProps {
   initialProducts?: Product[];
+  initialProductIds?: string[];
 }
 
-export function TopPickzSection({ initialProducts }: TopPickzSectionProps = {}) {
+export function TopPickzSection({
+  initialProducts,
+  initialProductIds,
+}: TopPickzSectionProps = {}) {
   const [products, setProducts] = useState<Product[]>(() => {
     if (initialProducts && initialProducts.length > 0) return initialProducts;
     return DEFAULT_PRODUCTS;
   });
+  const [curatedIds, setCuratedIds] = useState<string[]>(initialProductIds || []);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(true);
@@ -30,21 +35,37 @@ export function TopPickzSection({ initialProducts }: TopPickzSectionProps = {}) 
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
-  // Fetch latest products from API if available
+  // Fetch latest products and showcase collections from API
   useEffect(() => {
-    fetch("/api/products")
-      .then((res) => res.json())
-      .then((data) => {
-        const fetched = Array.isArray(data) ? data : data?.products;
+    Promise.all([
+      fetch("/api/products").then((res) => res.json()),
+      !initialProductIds
+        ? fetch("/api/content/showcase").then((res) => res.json())
+        : Promise.resolve(null),
+    ])
+      .then(([productsData, showcaseData]) => {
+        const fetched = Array.isArray(productsData) ? productsData : productsData?.products;
         if (Array.isArray(fetched) && fetched.length > 0) {
           setProducts(fetched);
         }
+        if (showcaseData?.collections?.topPickzProductIds) {
+          setCuratedIds(showcaseData.collections.topPickzProductIds);
+        }
       })
       .catch(() => {});
-  }, []);
+  }, [initialProductIds]);
 
-  // Filter or prioritize top products
-  const displayProducts = products.slice(0, 10);
+  // Filter or prioritize top products based on curated IDs
+  const displayProducts = React.useMemo(() => {
+    if (curatedIds && curatedIds.length > 0) {
+      const mapped = curatedIds
+        .map((id) => products.find((p) => p.id === id || p.slug === id))
+        .filter(Boolean) as Product[];
+      if (mapped.length > 0) return mapped;
+    }
+    return products.slice(0, 10);
+  }, [curatedIds, products]);
+
   const totalItems = displayProducts.length;
 
   // Triplicate array to guarantee continuous, infinite wrap-around
