@@ -34,6 +34,8 @@ import {
   FileText,
   ArrowUp,
   ArrowDown,
+  GripVertical,
+  Move,
 } from "lucide-react";
 import { Product, ProductColorVariant, BuyMoreSaveMoreConfig, BuyMoreSaveMoreTier, ProductOverviewBlock } from "@/types/product";
 import { DEFAULT_PRODUCTS, getSubcategoriesForCategory } from "@/data/zupeProducts";
@@ -229,6 +231,10 @@ export default function AdminProductsPage() {
   const [formImage, setFormImage] = useState("");
   const [formGalleryImages, setFormGalleryImages] = useState<string[]>([]);
   const [newGalleryInput, setNewGalleryInput] = useState("");
+  const [draggedGalleryIdx, setDraggedGalleryIdx] = useState<number | null>(null);
+  const [dragOverGalleryIdx, setDragOverGalleryIdx] = useState<number | null>(null);
+  const [draggedAngleKey, setDraggedAngleKey] = useState<string | null>(null);
+  const [dragOverAngleKey, setDragOverAngleKey] = useState<string | null>(null);
 
   // Tab 5: Product Details & Overview (Dynamic Long-Form Visual Story Blocks)
   const [formOverviewBlocks, setFormOverviewBlocks] = useState<ProductOverviewBlock[]>([]);
@@ -736,6 +742,32 @@ export default function AdminProductsPage() {
 
   const removeGalleryImage = (idx: number) => {
     setFormGalleryImages((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const reorderGalleryImage = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
+    setFormGalleryImages((prev) => {
+      const updated = [...prev];
+      const [moved] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, moved);
+      return updated;
+    });
+  };
+
+  const reorderAnglePhoto = (colorIndex: number, fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
+    setFormColors((prev) =>
+      prev.map((c, i) => {
+        if (i !== colorIndex) return c;
+        const currentImgs = Array.isArray(c.images) ? [...c.images] : [];
+        const [moved] = currentImgs.splice(fromIndex, 1);
+        currentImgs.splice(toIndex, 0, moved);
+        return {
+          ...c,
+          images: currentImgs,
+        };
+      })
+    );
   };
 
   const handleSaveProduct = async (e?: React.FormEvent | React.MouseEvent) => {
@@ -2234,38 +2266,141 @@ export default function AdminProductsPage() {
                   </div>
 
                   <div className="pt-3 border-t border-slate-200">
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      General Product Gallery Images ({formGalleryImages.length} images)
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[11px] font-bold text-slate-700">
+                        General Product Gallery Images ({formGalleryImages.length} images)
+                      </label>
+                      {formGalleryImages.length > 1 && (
+                        <span className="text-[10px] text-amber-600 font-semibold flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                          <Move className="w-2.5 h-2.5" />
+                          Click & slide to reorder photos
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[10px] text-slate-400 mb-2">
-                      Used when no color swatches are selected or as default photos in the product gallery carousel.
+                      Used when no color swatches are selected or as default photos. Click & drag/slide photos to change their sequence.
                     </p>
 
-                    <div className="flex items-center gap-2 flex-wrap mb-3">
-                      {formGalleryImages.map((gImg, gIdx) => (
-                        <div
-                          key={gIdx}
-                          className="relative group w-16 h-16 rounded-xl overflow-hidden border border-slate-200 bg-white shrink-0 shadow-xs"
-                        >
-                          <img
-                            src={gImg}
-                            alt={`Gallery ${gIdx + 1}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as any).src =
-                                "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeGalleryImage(gIdx)}
-                            className="absolute inset-0 bg-rose-600/85 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                            title="Remove photo"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
+                    <div className="flex items-center gap-3 flex-wrap mb-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200 min-h-[88px]">
+                      {formGalleryImages.length === 0 ? (
+                        <p className="text-xs text-slate-400 italic px-2 py-3">
+                          No gallery images added yet. Upload or paste a URL below.
+                        </p>
+                      ) : (
+                        formGalleryImages.map((gImg, gIdx) => {
+                          const isDragging = draggedGalleryIdx === gIdx;
+                          const isDragOver = dragOverGalleryIdx === gIdx;
+
+                          return (
+                            <div
+                              key={gIdx}
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggedGalleryIdx(gIdx);
+                                e.dataTransfer.setData("text/plain", `${gIdx}`);
+                                e.dataTransfer.effectAllowed = "move";
+                              }}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                e.dataTransfer.dropEffect = "move";
+                                if (dragOverGalleryIdx !== gIdx) setDragOverGalleryIdx(gIdx);
+                              }}
+                              onDragLeave={() => {
+                                if (dragOverGalleryIdx === gIdx) setDragOverGalleryIdx(null);
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                if (draggedGalleryIdx !== null && draggedGalleryIdx !== gIdx) {
+                                  reorderGalleryImage(draggedGalleryIdx, gIdx);
+                                }
+                                setDraggedGalleryIdx(null);
+                                setDragOverGalleryIdx(null);
+                              }}
+                              onDragEnd={() => {
+                                setDraggedGalleryIdx(null);
+                                setDragOverGalleryIdx(null);
+                              }}
+                              className={`relative group w-20 h-20 rounded-xl overflow-visible border bg-white shrink-0 shadow-xs cursor-grab active:cursor-grabbing transition-all select-none ${
+                                isDragging
+                                  ? "opacity-30 scale-90 border-dashed border-[#FF7A00]"
+                                  : isDragOver
+                                  ? "ring-2 ring-[#FF7A00] ring-offset-2 scale-105 border-[#FF7A00]"
+                                  : "border-slate-200 hover:border-[#FF7A00]/60 hover:shadow-md"
+                              }`}
+                              title="Click & drag to move order position"
+                            >
+                              {/* Inner Image Container */}
+                              <div className="w-full h-full rounded-xl overflow-hidden relative">
+                                <img
+                                  src={gImg}
+                                  alt={`Gallery ${gIdx + 1}`}
+                                  className="w-full h-full object-cover pointer-events-none"
+                                  onError={(e) => {
+                                    (e.target as any).src =
+                                      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                                  }}
+                                />
+
+                                {/* Sequence Number Badge */}
+                                <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md bg-black/75 text-[9px] font-bold text-white backdrop-blur-xs select-none">
+                                  #{gIdx + 1}
+                                </span>
+
+                                {/* Drag Grip Indicator Overlay on Hover */}
+                                <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
+                                  <GripVertical className="w-4 h-4 text-white drop-shadow-md" />
+                                </div>
+
+                                {/* Arrow Step Reorder Controls (Hover) */}
+                                <div className="absolute inset-x-1 bottom-1 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                  {gIdx > 0 ? (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        reorderGalleryImage(gIdx, gIdx - 1);
+                                      }}
+                                      className="w-4 h-4 bg-black/80 hover:bg-[#FF7A00] text-white rounded flex items-center justify-center shadow-xs transition-colors cursor-pointer"
+                                      title="Move earlier"
+                                    >
+                                      <ChevronLeft className="w-3 h-3" />
+                                    </button>
+                                  ) : (
+                                    <span />
+                                  )}
+
+                                  {gIdx < formGalleryImages.length - 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        reorderGalleryImage(gIdx, gIdx + 1);
+                                      }}
+                                      className="w-4 h-4 bg-black/80 hover:bg-[#FF7A00] text-white rounded flex items-center justify-center shadow-xs transition-colors cursor-pointer"
+                                      title="Move later"
+                                    >
+                                      <ChevronRight className="w-3 h-3" />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Small Individual Corner Remove Icon */}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeGalleryImage(gIdx);
+                                }}
+                                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110 z-20 cursor-pointer"
+                                title="Remove this photo"
+                              >
+                                <X className="w-3 h-3 stroke-[3]" />
+                              </button>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -2537,35 +2672,128 @@ export default function AdminProductsPage() {
 
                           {/* Angle Photos for this Color */}
                           <div className="pt-2 border-t border-slate-200/80">
-                            <label className="block text-[10px] font-bold text-slate-600 mb-1.5">
-                              Different Angle Photos for this Color ({colorItem.images?.length || 0} photos)
-                            </label>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="block text-[10px] font-bold text-slate-600">
+                                Different Angle Photos for this Color ({colorItem.images?.length || 0} photos)
+                              </label>
+                              {(colorItem.images?.length || 0) > 1 && (
+                                <span className="text-[9px] text-amber-600 font-semibold flex items-center gap-1 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">
+                                  <Move className="w-2.5 h-2.5" />
+                                  Drag to reorder
+                                </span>
+                              )}
+                            </div>
 
-                            <div className="flex items-center gap-2 flex-wrap mb-2">
-                              {colorItem.images?.map((angleImg, aIdx) => (
-                                <div
-                                  key={aIdx}
-                                  className="relative group w-14 h-14 rounded-lg overflow-hidden border border-slate-200 bg-white shrink-0 shadow-xs"
-                                >
-                                  <img
-                                    src={angleImg}
-                                    alt={`Angle ${aIdx + 1}`}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      (e.target as any).src =
-                                        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                            <div className="flex items-center gap-2.5 flex-wrap mb-2 p-1.5 bg-slate-50 rounded-xl border border-slate-200 min-h-[68px]">
+                              {colorItem.images?.map((angleImg, aIdx) => {
+                                const angleKey = `${cIdx}-${aIdx}`;
+                                const isDragging = draggedAngleKey === angleKey;
+                                const isDragOver = dragOverAngleKey === angleKey;
+
+                                return (
+                                  <div
+                                    key={aIdx}
+                                    draggable
+                                    onDragStart={(e) => {
+                                      setDraggedAngleKey(angleKey);
+                                      e.dataTransfer.setData("text/plain", `${aIdx}`);
+                                      e.dataTransfer.effectAllowed = "move";
                                     }}
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => removeAnglePhotoFromColor(cIdx, aIdx)}
-                                    className="absolute inset-0 bg-rose-600/85 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                                    title="Delete this angle photo"
+                                    onDragOver={(e) => {
+                                      e.preventDefault();
+                                      e.dataTransfer.dropEffect = "move";
+                                      if (dragOverAngleKey !== angleKey) setDragOverAngleKey(angleKey);
+                                    }}
+                                    onDragLeave={() => {
+                                      if (dragOverAngleKey === angleKey) setDragOverAngleKey(null);
+                                    }}
+                                    onDrop={(e) => {
+                                      e.preventDefault();
+                                      if (draggedAngleKey && draggedAngleKey.startsWith(`${cIdx}-`)) {
+                                        const fromAIdx = parseInt(draggedAngleKey.split("-")[1], 10);
+                                        if (fromAIdx !== aIdx) {
+                                          reorderAnglePhoto(cIdx, fromAIdx, aIdx);
+                                        }
+                                      }
+                                      setDraggedAngleKey(null);
+                                      setDragOverAngleKey(null);
+                                    }}
+                                    onDragEnd={() => {
+                                      setDraggedAngleKey(null);
+                                      setDragOverAngleKey(null);
+                                    }}
+                                    className={`relative group w-16 h-16 rounded-xl overflow-visible border bg-white shrink-0 shadow-xs cursor-grab active:cursor-grabbing transition-all select-none ${
+                                      isDragging
+                                        ? "opacity-30 scale-90 border-dashed border-[#FF7A00]"
+                                        : isDragOver
+                                        ? "ring-2 ring-[#FF7A00] ring-offset-2 scale-105 border-[#FF7A00]"
+                                        : "border-slate-200 hover:border-[#FF7A00]/60 hover:shadow-md"
+                                    }`}
+                                    title="Click & drag to reorder"
                                   >
-                                    <X className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              ))}
+                                    <div className="w-full h-full rounded-xl overflow-hidden relative">
+                                      <img
+                                        src={angleImg}
+                                        alt={`Angle ${aIdx + 1}`}
+                                        className="w-full h-full object-cover pointer-events-none"
+                                        onError={(e) => {
+                                          (e.target as any).src =
+                                            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                                        }}
+                                      />
+                                      {/* Sequence Badge */}
+                                      <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md bg-black/75 text-[9px] font-bold text-white backdrop-blur-xs select-none">
+                                        #{aIdx + 1}
+                                      </span>
+
+                                      {/* Hover Arrow Reorder Controls */}
+                                      <div className="absolute inset-x-0.5 bottom-1 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                        {aIdx > 0 ? (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              reorderAnglePhoto(cIdx, aIdx, aIdx - 1);
+                                            }}
+                                            className="w-3.5 h-3.5 bg-black/80 hover:bg-[#FF7A00] text-white rounded flex items-center justify-center shadow-xs transition-colors cursor-pointer"
+                                            title="Move Left"
+                                          >
+                                            <ChevronLeft className="w-2.5 h-2.5" />
+                                          </button>
+                                        ) : (
+                                          <span />
+                                        )}
+                                        {aIdx < (colorItem.images?.length || 0) - 1 && (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              reorderAnglePhoto(cIdx, aIdx, aIdx + 1);
+                                            }}
+                                            className="w-3.5 h-3.5 bg-black/80 hover:bg-[#FF7A00] text-white rounded flex items-center justify-center shadow-xs transition-colors cursor-pointer"
+                                            title="Move Right"
+                                          >
+                                            <ChevronRight className="w-2.5 h-2.5" />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Small Individual Corner Remove Icon */}
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeAnglePhotoFromColor(cIdx, aIdx);
+                                      }}
+                                      className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110 z-20 cursor-pointer"
+                                      title="Remove photo"
+                                    >
+                                      <X className="w-3 h-3 stroke-[3]" />
+                                    </button>
+                                  </div>
+                                );
+                              })}
                             </div>
 
                             {/* Add Angle Photo input row */}
