@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCategories, saveCategories, StoreCategory, DEFAULT_STORE_CATEGORIES } from "@/lib/storeContent";
 import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/adminAuth";
+import { uploadBase64Media } from "@/lib/r2";
 
 async function checkAdminAuth(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
@@ -72,12 +73,22 @@ export async function POST(req: NextRequest) {
       ? Array.from(new Set(subcategories.map((s: any) => String(s).trim()).filter(Boolean)))
       : [];
 
+    let resolvedCustomIcon = customIcon ? customIcon.trim() : undefined;
+    if (resolvedCustomIcon && resolvedCustomIcon.startsWith("data:")) {
+      try {
+        resolvedCustomIcon = await uploadBase64Media(resolvedCustomIcon, "images");
+      } catch (uploadErr) {
+        console.warn("Failed to upload category icon to R2, stripping base64 to protect Worker CPU:", uploadErr);
+        resolvedCustomIcon = undefined;
+      }
+    }
+
     const newCategory: StoreCategory = {
       id: "cat-" + Date.now().toString(36) + "-" + Math.random().toString(36).substring(2, 6),
       name: trimmedName,
       slug: (slug && slug.trim()) || trimmedName,
       icon: icon || "Tag",
-      customIcon: customIcon ? customIcon.trim() : undefined,
+      customIcon: resolvedCustomIcon,
       iconSize: typeof iconSize === "number" ? Math.min(100, Math.max(50, iconSize)) : 85,
       iconShape: iconShape === "square" ? "square" : "round",
       bgColor: bgColor || "bg-orange-50",
@@ -125,6 +136,7 @@ export async function PUT(req: NextRequest) {
     if (reorder && Array.isArray(reorder)) {
       const sanitized = reorder.map((cat: any) => ({
         ...cat,
+        customIcon: cat.customIcon?.startsWith("data:") ? undefined : cat.customIcon,
         subcategories: Array.isArray(cat.subcategories)
           ? Array.from(new Set(cat.subcategories.map((s: any) => String(s).trim()).filter(Boolean)))
           : [],
@@ -142,6 +154,15 @@ export async function PUT(req: NextRequest) {
 
     if (index === -1) {
       return NextResponse.json({ success: false, error: "Category not found" }, { status: 404 });
+    }
+
+    if (updates.customIcon && typeof updates.customIcon === "string" && updates.customIcon.startsWith("data:")) {
+      try {
+        updates.customIcon = await uploadBase64Media(updates.customIcon, "images");
+      } catch (uploadErr) {
+        console.warn("Failed to upload updated category icon to R2, reverting:", uploadErr);
+        delete updates.customIcon;
+      }
     }
 
     if (updates.subcategories && Array.isArray(updates.subcategories)) {

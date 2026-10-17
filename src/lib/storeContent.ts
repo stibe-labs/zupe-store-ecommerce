@@ -321,7 +321,14 @@ export async function getCategories(includeInactive = false): Promise<StoreCateg
             };
             parsed.unshift(allCat);
           }
-          inMemoryCategories = parsed;
+          // Strip giant base64 data URLs to prevent burning Worker CPU time (Cloudflare 10ms limit)
+          const sanitized = parsed.map((c: any) => ({
+            ...c,
+            customIcon: typeof c.customIcon === "string" && c.customIcon.startsWith("data:")
+              ? undefined
+              : c.customIcon,
+          }));
+          inMemoryCategories = sanitized;
         }
       }
       categoriesCachedAt = Date.now();

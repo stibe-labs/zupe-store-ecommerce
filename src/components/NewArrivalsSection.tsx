@@ -39,13 +39,13 @@ export function NewArrivalsSection({ initialProductIds }: NewArrivalsSectionProp
       .catch(() => {});
   }, [initialProductIds]);
 
-  // Order products according to curatedIds, or fallback to default
+  // Order products according to curatedIds (max 10 for clean 2-row 5-column homepage grid), or fallback to default
   const newArrivals = React.useMemo(() => {
     if (curatedIds && curatedIds.length > 0) {
       const mapped = curatedIds
         .map((id) => products.find((p) => p.id === id || p.slug === id))
         .filter(Boolean) as typeof products;
-      if (mapped.length > 0) return mapped;
+      if (mapped.length > 0) return mapped.slice(0, 10);
     }
     return products.slice(5, 10);
   }, [curatedIds, products]);
