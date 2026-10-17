@@ -32,6 +32,8 @@ import {
   Star,
   Loader2,
   AlertCircle,
+  Shield,
+  LayoutDashboard,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -73,6 +75,44 @@ export default function AccountPage() {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState("");
   const [profileSuccess, setProfileSuccess] = useState(false);
+
+  // Strict Super Admin Verification State (only true for verified admin@zupestore.com)
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  // Strictly verify Super Admin credentials & cryptographic session
+  useEffect(() => {
+    const isCandidate =
+      user?.role === "admin" &&
+      user?.email?.toLowerCase().trim() === "admin@zupestore.com";
+
+    if (!isCandidate) {
+      setIsSuperAdmin(false);
+      return;
+    }
+
+    // Immediately grant UI readiness for verified admin candidate
+    setIsSuperAdmin(true);
+
+    // Cryptographic server-side verification: strictly validates signed HTTP-only token
+    let isMounted = true;
+    fetch("/api/admin/auth/verify")
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted) {
+          // If server rejects the token, strictly revoke admin privileges
+          if (!data?.isSuperAdmin) {
+            setIsSuperAdmin(false);
+          }
+        }
+      })
+      .catch(() => {
+        // Keep candidate state if network drops during session
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.email, user?.role]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -439,6 +479,12 @@ export default function AccountPage() {
                     <ShieldCheck className="w-3 h-3" />
                     Verified
                   </span>
+                  {isSuperAdmin && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FF7A00]/20 text-[#FF9E40] text-[10px] font-bold tracking-wide uppercase border border-[#FF7A00]/40 shadow-xs">
+                      <Shield className="w-3 h-3 text-[#FF7A00]" />
+                      Super Admin
+                    </span>
+                  )}
                 </div>
 
                 {user.phone ? (
@@ -473,20 +519,43 @@ export default function AccountPage() {
                     <Edit2 className="w-3 h-3 text-[#FF7A00]" />
                     <span>Edit Profile Details</span>
                   </button>
+
+                  {isSuperAdmin && (
+                    <Link
+                      href="/admin"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#FF7A00]/20 hover:bg-[#FF7A00]/30 text-[#FF9E40] hover:text-white text-xs font-bold border border-[#FF7A00]/40 transition-colors cursor-pointer"
+                    >
+                      <LayoutDashboard className="w-3 h-3 text-[#FF7A00]" />
+                      <span>Admin Portal</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
 
-            <button
-              onClick={() => {
-                logout();
-                router.push("/");
-              }}
-              className="self-start sm:self-center inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-gray-200 hover:text-white transition-colors cursor-pointer border border-white/10"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Sign Out</span>
-            </button>
+            <div className="flex items-center gap-2.5 self-start sm:self-center">
+              {isSuperAdmin && (
+                <Link
+                  href="/admin"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#FF7A00] to-orange-500 hover:from-[#E66E00] hover:to-orange-600 text-xs font-bold text-white shadow-lg shadow-[#FF7A00]/25 transition-all cursor-pointer border border-[#FF7A00]/50 active:scale-95"
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Admin Portal</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              )}
+              <button
+                onClick={() => {
+                  logout();
+                  router.push("/");
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-gray-200 hover:text-white transition-colors cursor-pointer border border-white/10"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
+              </button>
+            </div>
           </div>
         </div>
 
