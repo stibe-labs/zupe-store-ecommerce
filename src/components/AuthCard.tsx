@@ -40,19 +40,17 @@ export function AuthCard({
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [otp, setOtp] = useState("");
-  const [resendCountdown, setResendCountdown] = useState(0); // 30s resend cooldown
   const [expiryCountdown, setExpiryCountdown] = useState(180); // 3 minutes = 180s real validity
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Timers: 30s resend cooldown + 3-minute code expiry countdown
+  // Timer: 3-minute code expiry countdown
   useEffect(() => {
     if (step !== "otp") return;
 
     const interval = setInterval(() => {
-      setResendCountdown((prev) => (prev > 0 ? prev - 1 : 0));
       setExpiryCountdown((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
 
@@ -109,7 +107,6 @@ export function AuthCard({
 
     if (res.success) {
       setStep("otp");
-      setResendCountdown(30); // 30s resend cooldown
       setExpiryCountdown(180); // 3 minutes = 180s live countdown
       if (res.otp) {
         setOtp(res.otp);
@@ -263,13 +260,8 @@ export function AuthCard({
                     placeholder="Enter 10-digit number"
                     value={phone}
                     onChange={handlePhoneChange}
-                    className="w-full pl-10 pr-14 py-3 rounded-xl border border-gray-200 text-sm font-semibold tracking-wide text-gray-900 bg-white placeholder:text-gray-400 placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold tracking-wide text-gray-900 bg-white placeholder:text-gray-400 placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
                   />
-                  <span className={`absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] font-mono font-bold select-none ${
-                    phone.length === 10 ? "text-emerald-600" : "text-gray-400"
-                  }`}>
-                    {phone.length}/10
-                  </span>
                 </div>
               </div>
             </div>
@@ -317,22 +309,9 @@ export function AuthCard({
 
             {/* OTP Input */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Verification Code
-                </label>
-                <button
-                  type="button"
-                  onClick={() => handleSendOtp()}
-                  disabled={loading || resendCountdown > 0}
-                  className="text-xs font-bold text-[#FF7A00] hover:underline disabled:text-gray-400 cursor-pointer flex items-center gap-1"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>
-                    {resendCountdown > 0 ? `Resend in ${resendCountdown}s` : "Resend code"}
-                  </span>
-                </button>
-              </div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                Verification Code
+              </label>
 
               <input
                 type="text"
@@ -347,26 +326,32 @@ export function AuthCard({
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-center text-xl font-mono tracking-[0.4em] font-bold text-gray-900 bg-white placeholder:text-gray-300 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
               />
 
-              {/* 3-Minute Real Code Expiration Live Timer */}
-              <div className="flex items-center justify-between text-xs px-1 pt-2">
-                <div className="flex items-center gap-1.5 font-medium">
-                  <Clock className={`w-3.5 h-3.5 ${expiryCountdown > 30 ? "text-emerald-600" : "text-amber-500"}`} />
-                  {expiryCountdown > 0 ? (
-                    <span className="text-gray-600">
+              {/* 3-Minute Code Expiration Countdown -> Revealed Resend Code Button after 3 minutes */}
+              <div className="flex items-center justify-between text-xs px-1 pt-2 min-h-[28px]">
+                {expiryCountdown > 0 ? (
+                  <div className="flex items-center gap-1.5 font-medium text-gray-600">
+                    <Clock className={`w-3.5 h-3.5 ${expiryCountdown > 30 ? "text-emerald-600" : "text-amber-500"}`} />
+                    <span>
                       Code valid for:{" "}
                       <strong className="text-gray-900 font-mono font-bold">
                         {formatTime(expiryCountdown)}
                       </strong>
                     </span>
-                  ) : (
-                    <span className="text-red-600 font-bold">
-                      Code expired. Please tap Resend code.
-                    </span>
-                  )}
-                </div>
-                <span className="text-[11px] text-gray-500 font-medium bg-gray-100 px-2 py-0.5 rounded-md">
-                  3 min validity
-                </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-red-600 font-bold">Code expired</span>
+                    <button
+                      type="button"
+                      onClick={() => handleSendOtp()}
+                      disabled={loading}
+                      className="text-xs font-bold text-[#FF7A00] hover:text-[#E66E00] hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Resend code</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 

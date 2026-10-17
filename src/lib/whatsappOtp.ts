@@ -254,7 +254,11 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
             };
           }
 
-          // If template does not exist, no need to retry button variations for this language
+          if (templateData?.error) {
+            console.warn(`[WhatsApp OTP] Template '${templateName}' (${lang}) attempt info:`, templateData.error.message || templateData.error);
+          }
+
+          // If template does not exist in this language, no need to retry button variations for it
           if (templateData?.error?.code === 132001) {
             break;
           }
