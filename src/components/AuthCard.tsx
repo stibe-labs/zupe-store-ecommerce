@@ -11,6 +11,7 @@ import {
   Loader2,
   X,
   RotateCcw,
+  MessageCircle,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -324,6 +325,19 @@ export function AuthCard({
                 </>
               )}
             </button>
+
+            {/* Quick helper if user has not yet interacted with WhatsApp number */}
+            <div className="pt-2 text-center">
+              <a
+                href="https://wa.me/919778137954?text=Hi"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:text-emerald-800 font-semibold bg-emerald-50 hover:bg-emerald-100/80 px-3 py-1.5 rounded-full transition-all"
+              >
+                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Didn&apos;t get code? Tap to send &ldquo;Hi&rdquo; on WhatsApp</span>
+              </a>
+            </div>
           </form>
         )}
       </div>

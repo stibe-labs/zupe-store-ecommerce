@@ -95,7 +95,7 @@ export function normalizePhoneNumber(rawPhone: string): {
 export async function generatePhoneOTPAsync(phoneDigits: string): Promise<string> {
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const now = Date.now();
-  const expiresAt = now + 10 * 60 * 1000; // 10 minutes
+  const expiresAt = now + 3 * 60 * 1000; // 3 minutes (180 seconds)
 
   // 1. Store in memory (L1 fast cache)
   phoneOtpMap.set(phoneDigits, {
@@ -123,7 +123,7 @@ export async function generatePhoneOTPAsync(phoneDigits: string): Promise<string
 export function generatePhoneOTP(phoneDigits: string): string {
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const now = Date.now();
-  const expiresAt = now + 10 * 60 * 1000;
+  const expiresAt = now + 3 * 60 * 1000; // 3 minutes
 
   phoneOtpMap.set(phoneDigits, {
     code,
@@ -178,60 +178,84 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
   try {
     const url = `https://graph.facebook.com/v21.0/${phoneId}/messages`;
     const templateName = process.env.WHATSAPP_TEMPLATE_NAME || "zupe_login_otp";
-    const templateLang = process.env.WHATSAPP_TEMPLATE_LANG || "en";
+    const configuredLang = process.env.WHATSAPP_TEMPLATE_LANG || "en";
+    const languageCandidates = [configuredLang, configuredLang === "en" ? "en_US" : "en"];
 
-    // 1. Try sending via official WhatsApp Authentication / Utility Template first
-    try {
-      const templatePayload = {
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: digits,
-        type: "template",
-        template: {
-          name: templateName,
-          language: { code: templateLang },
-          components: [
-            {
-              type: "body",
-              parameters: [{ type: "text", text: otp }],
+    // 1. Try sending via official WhatsApp Approved Message Template (Authentication or Utility)
+    // WhatsApp templates can initiate chats outside the 24-hour customer service window.
+    for (const lang of Array.from(new Set(languageCandidates))) {
+      // Variations to test:
+      // a) Authentication template with copy-code button
+      // b) Authentication template with URL button
+      // c) Simple template with only body parameter (common for Utility templates)
+      const variations = [
+        [
+          { type: "body", parameters: [{ type: "text", text: otp }] },
+          { type: "button", sub_type: "url", index: "0", parameters: [{ type: "text", text: otp }] },
+        ],
+        [
+          { type: "body", parameters: [{ type: "text", text: otp }] },
+          { type: "button", sub_type: "copy_code", index: "0", parameters: [{ type: "text", text: otp }] },
+        ],
+        [
+          { type: "body", parameters: [{ type: "text", text: otp }] },
+        ],
+      ];
+
+      let templateSent = false;
+
+      for (const components of variations) {
+        try {
+          const templatePayload = {
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to: digits,
+            type: "template",
+            template: {
+              name: templateName,
+              language: { code: lang },
+              components,
             },
-            {
-              type: "button",
-              sub_type: "url",
-              index: "0",
-              parameters: [{ type: "text", text: otp }],
+          };
+
+          const templateRes = await fetch(url, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
-          ],
-        },
-      };
+            body: JSON.stringify(templatePayload),
+          });
 
-      const templateRes = await fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(templatePayload),
-      });
+          const templateData = (await templateRes.json()) as any;
 
-      const templateData = (await templateRes.json()) as any;
+          if (templateRes.ok && templateData.messages && templateData.messages.length > 0) {
+            console.log(`✅ [WhatsApp OTP] Template '${templateName}' (${lang}) delivered successfully.`);
+            return {
+              success: true,
+              codeSent: true,
+              messageId: templateData.messages[0].id,
+              message: `Verification code sent to WhatsApp on ${display}!`,
+            };
+          }
 
-      if (templateRes.ok && templateData.messages && templateData.messages.length > 0) {
-        return {
-          success: true,
-          codeSent: true,
-          messageId: templateData.messages[0].id,
-          message: `Verification code sent to WhatsApp on ${display}!`,
-        };
+          // If template does not exist, no need to retry button variations for this language
+          if (templateData?.error?.code === 132001) {
+            break;
+          }
+        } catch (tmplErr) {
+          console.warn("Template attempt error:", tmplErr);
+        }
       }
-
-      console.warn("Template send did not succeed, falling back to direct message:", templateData?.error?.message);
-    } catch (tmplErr) {
-      console.warn("Template attempt error, attempting text message:", tmplErr);
     }
 
+    console.warn(
+      `⚠️ [WhatsApp OTP] Template '${templateName}' not found or rejected by Meta. Falling back to direct text message.\n` +
+      `Note: Meta only delivers direct text messages if the recipient has sent a message to the business in the last 24 hours.`
+    );
+
     // 2. Fallback: Direct text message
-    const messageBody = `🛍️ *Zupe Store Verification Code*\n\nYour one-time login code is: *${otp}*\n\nUse this code to access your Zupe Store account. Valid for 10 minutes.\n\n_For your safety, never share this code with anyone._`;
+    const messageBody = `🛍️ *Zupe Store Verification Code*\n\nYour one-time login code is: *${otp}*\n\nUse this code to access your Zupe Store account. Valid for 3 minutes.\n\n_For your safety, never share this code with anyone._`;
 
     const response = await fetch(url, {
       method: "POST",

@@ -19,10 +19,19 @@ function SignInContent() {
 
   // If authenticated customer, redirect to return URL
   useEffect(() => {
-    if (!authLoading && isAuthenticated && user && user.role !== "admin") {
-      router.replace(redirectUrl && !redirectUrl.startsWith("/admin") ? redirectUrl : "/");
+    // If there is an explicit notice requiring login (e.g. redirected from /account or middleware),
+    // do NOT auto-redirect! The user must complete sign-in.
+    if (urlNotice) {
+      return;
     }
-  }, [isAuthenticated, authLoading, user, redirectUrl, router]);
+
+    if (!authLoading && isAuthenticated && user && user.role !== "admin") {
+      const target = redirectUrl && !redirectUrl.startsWith("/admin") && redirectUrl !== "/signin" && redirectUrl !== "/login"
+        ? redirectUrl
+        : "/";
+      router.replace(target);
+    }
+  }, [isAuthenticated, authLoading, user, redirectUrl, router, urlNotice]);
 
   if (authLoading) {
     return (

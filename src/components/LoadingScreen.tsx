@@ -2,9 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function LoadingScreen() {
+  const pathname = usePathname();
+
+  // Never block auth pages or admin pages with a splash screen
+  const isExcludedRoute =
+    pathname === "/signin" || pathname === "/login" || pathname?.startsWith("/admin");
+
   const [loading, setLoading] = useState(() => {
     if (typeof window !== "undefined") {
       try {
@@ -13,10 +20,15 @@ export function LoadingScreen() {
         }
       } catch (e) {}
     }
-    return true;
+    return !isExcludedRoute;
   });
 
   useEffect(() => {
+    if (isExcludedRoute) {
+      setLoading(false);
+      return;
+    }
+
     if (!loading) return;
     try {
       sessionStorage.setItem("zp_splash_shown", "1");
@@ -24,10 +36,20 @@ export function LoadingScreen() {
 
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 900);
+    }, 700);
 
-    return () => clearTimeout(timer);
-  }, [loading]);
+    // Hard fallback safety: guarantee dismissal after 1.2s under any circumstances
+    const fallbackTimer = setTimeout(() => {
+      setLoading(false);
+    }, 1200);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(fallbackTimer);
+    };
+  }, [loading, isExcludedRoute]);
+
+  if (isExcludedRoute) return null;
 
   return (
     <AnimatePresence>

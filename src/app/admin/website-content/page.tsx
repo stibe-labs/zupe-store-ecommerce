@@ -223,20 +223,25 @@ export default function WebsiteContentPage() {
   // File upload helper: shows instant local preview and uploads to Cloudflare R2 bucket
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    field: "image" | "mobileImage"
+    field: "image" | "mobileImage" | ((url: string) => void)
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (field === "image") setUploadingPoster(true);
-    else setUploadingMobile(true);
+    const isCallback = typeof field === "function";
+    if (!isCallback) {
+      if (field === "image") setUploadingPoster(true);
+      else setUploadingMobile(true);
+    }
 
     // 1. Immediately read as dataURL for instant local preview
     const reader = new FileReader();
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
       if (dataUrl) {
-        if (field === "image") {
+        if (isCallback) {
+          field(dataUrl);
+        } else if (field === "image") {
           setBannerForm((prev) => ({ ...prev, image: dataUrl }));
         } else {
           setBannerForm((prev) => ({ ...prev, mobileImage: dataUrl }));
@@ -257,20 +262,24 @@ export default function WebsiteContentPage() {
       });
       const data = await res.json();
       if (data.success && data.url) {
-        if (field === "image") {
+        if (isCallback) {
+          field(data.url);
+        } else if (field === "image") {
           setBannerForm((prev) => ({ ...prev, image: data.url }));
         } else {
           setBannerForm((prev) => ({ ...prev, mobileImage: data.url }));
         }
-        showToast("success", "Banner uploaded to cloud storage successfully!");
+        showToast("success", "Uploaded to cloud storage successfully!");
       } else {
         console.warn("Cloud upload response error:", data.error);
       }
     } catch (err: any) {
       console.warn("Direct cloud upload failed, base64 fallback active:", err);
     } finally {
-      if (field === "image") setUploadingPoster(false);
-      else setUploadingMobile(false);
+      if (!isCallback) {
+        if (field === "image") setUploadingPoster(false);
+        else setUploadingMobile(false);
+      }
       e.target.value = "";
     }
   };
