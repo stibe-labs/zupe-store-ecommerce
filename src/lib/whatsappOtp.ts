@@ -65,28 +65,43 @@ export function normalizePhoneNumber(rawPhone: string): {
   }
 
   // Strip all non-digit characters except leading plus
-  let cleaned = rawPhone.trim().replace(/[^\d+]/g, "");
-
+  const cleaned = rawPhone.trim().replace(/[^\d+]/g, "");
   let digits = cleaned.replace(/\+/g, "");
 
-  // If 10 digits (common Indian mobile number), prepend 91
-  if (digits.length === 10) {
-    digits = "91" + digits;
-  } else if (digits.length === 11 && digits.startsWith("0")) {
-    digits = "91" + digits.slice(1);
+  // If 11 digits starting with 0 (e.g. 09746301360), strip leading 0
+  if (digits.length === 11 && digits.startsWith("0")) {
+    digits = digits.slice(1);
+  }
+  // If 12 digits starting with 91 (e.g. 919746301360), strip 91
+  else if (digits.length === 12 && digits.startsWith("91")) {
+    digits = digits.slice(2);
   }
 
-  const isValid = digits.length >= 10 && digits.length <= 15;
-  const e164 = "+" + digits;
+  // Validate standard Indian mobile number: strictly 10 digits starting with 6, 7, 8, or 9
+  const isIndianMobile = digits.length === 10 && /^[6-9]\d{9}$/.test(digits);
 
-  // Pretty display for Indian numbers (+91 XXXXX XXXXX)
-  let display = e164;
-  if (digits.startsWith("91") && digits.length === 12) {
-    const main = digits.slice(2);
-    display = `+91 ${main.slice(0, 5)} ${main.slice(5)}`;
+  if (isIndianMobile) {
+    const fullDigits = "91" + digits;
+    const display = `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
+    return {
+      digits: fullDigits,
+      e164: "+" + fullDigits,
+      display,
+      isValid: true,
+    };
   }
 
-  return { digits, e164, display, isValid };
+  // If international number explicitly provided with '+' and 11-15 digits
+  if (cleaned.startsWith("+") && digits.length >= 10 && digits.length <= 15) {
+    return {
+      digits,
+      e164: "+" + digits,
+      display: "+" + digits,
+      isValid: true,
+    };
+  }
+
+  return { digits, e164: "+" + digits, display: rawPhone, isValid: false };
 }
 
 /**

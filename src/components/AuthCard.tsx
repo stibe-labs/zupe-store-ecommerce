@@ -12,6 +12,7 @@ import {
   X,
   RotateCcw,
   MessageCircle,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -39,24 +40,51 @@ export function AuthCard({
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [otp, setOtp] = useState("");
-  const [countdown, setCountdown] = useState(0);
+  const [resendCountdown, setResendCountdown] = useState(0); // 30s resend cooldown
+  const [expiryCountdown, setExpiryCountdown] = useState(180); // 3 minutes = 180s real validity
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Countdown timer for OTP resend
+  // Timers: 30s resend cooldown + 3-minute code expiry countdown
   useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [countdown]);
+    if (step !== "otp") return;
 
-  // Clean and format phone number input
+    const interval = setInterval(() => {
+      setResendCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+      setExpiryCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [step]);
+
+  // Format seconds to mm:ss (e.g. 180s -> 03:00)
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  // Clean and format phone number input: strictly 10 digits
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/[^\d\s+-]/g, "");
+    let val = e.target.value.replace(/\D/g, ""); // only digits
+
+    // If pasted with country code 91 (e.g. 919746301360)
+    if (val.startsWith("91") && val.length > 10) {
+      val = val.slice(2);
+    }
+    // If user enters leading 0 (e.g. 09746301360)
+    if (val.startsWith("0")) {
+      val = val.replace(/^0+/, "");
+    }
+    // Limit strictly to 10 digits
+    if (val.length > 10) {
+      val = val.slice(0, 10);
+    }
+
     setPhone(val);
+    if (error) setError(null);
   };
 
   // Step 1: Send OTP
@@ -65,19 +93,24 @@ export function AuthCard({
     setError(null);
     setSuccess(null);
 
-    const raw = phone.replace(/[^\d]/g, "");
-    if (raw.length < 10) {
+    const raw = phone.replace(/\D/g, "");
+    if (raw.length !== 10) {
       setError("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+    if (!/^[6-9]\d{9}$/.test(raw)) {
+      setError("Please enter a valid Indian mobile number starting with 6, 7, 8, or 9.");
       return;
     }
 
     setLoading(true);
-    const res = await sendWhatsAppOtp(phone);
+    const res = await sendWhatsAppOtp(raw);
     setLoading(false);
 
     if (res.success) {
       setStep("otp");
-      setCountdown(45);
+      setResendCountdown(30); // 30s resend cooldown
+      setExpiryCountdown(180); // 3 minutes = 180s live countdown
       if (res.otp) {
         setOtp(res.otp);
       }
@@ -93,8 +126,13 @@ export function AuthCard({
     setError(null);
     setSuccess(null);
 
-    if (!otp.trim()) {
-      setError("Please enter the 6-digit verification code.");
+    if (expiryCountdown <= 0) {
+      setError("Verification code has expired (3 minutes passed). Please tap Resend code.");
+      return;
+    }
+
+    if (!otp.trim() || otp.trim().length < 6) {
+      setError("Please enter the complete 6-digit verification code.");
       return;
     }
 
@@ -168,8 +206,8 @@ export function AuthCard({
           </h2>
           <p className="text-xs sm:text-sm text-gray-500 mt-1.5">
             {step === "phone"
-              ? "Enter your mobile number to sign in or create an account"
-              : `Enter the 6-digit code sent to ${phone}`}
+              ? "Enter your 10-digit mobile number to sign in or create an account"
+              : `Enter the 6-digit code sent to +91 ${phone.length === 10 ? phone.slice(0, 5) + " " + phone.slice(5) : phone}`}
           </p>
         </div>
 
@@ -200,9 +238,14 @@ export function AuthCard({
         {step === "phone" && (
           <form onSubmit={handleSendOtp} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                Mobile Number
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  Mobile Number
+                </label>
+                <span className="text-[11px] font-semibold text-gray-400">
+                  10-digit mobile number
+                </span>
+              </div>
               <div className="flex gap-2">
                 <div className="inline-flex items-center gap-1.5 px-3 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-semibold select-none flex-shrink-0">
                   <span className="text-base">🇮🇳</span>
@@ -212,20 +255,28 @@ export function AuthCard({
                   <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={10}
                     required
                     autoFocus
                     placeholder="Enter 10-digit number"
                     value={phone}
                     onChange={handlePhoneChange}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
+                    className="w-full pl-10 pr-14 py-3 rounded-xl border border-gray-200 text-sm font-semibold tracking-wide text-gray-900 bg-white placeholder:text-gray-400 placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
                   />
+                  <span className={`absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] font-mono font-bold select-none ${
+                    phone.length === 10 ? "text-emerald-600" : "text-gray-400"
+                  }`}>
+                    {phone.length}/10
+                  </span>
                 </div>
               </div>
             </div>
 
             <button
               type="submit"
-              disabled={loading || !phone.trim()}
+              disabled={loading || phone.length !== 10}
               className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-sm shadow-lg shadow-[#FF7A00]/25 transition-all flex items-center justify-center gap-2.5 disabled:opacity-50 cursor-pointer active:scale-[0.99]"
             >
               {loading ? (
@@ -247,7 +298,9 @@ export function AuthCard({
             <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-200 text-xs">
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-[#FF7A00]" />
-                <span className="font-semibold text-gray-800">{phone}</span>
+                <span className="font-bold text-gray-800">
+                  +91 {phone.length === 10 ? `${phone.slice(0, 5)} ${phone.slice(5)}` : phone}
+                </span>
               </div>
               <button
                 type="button"
@@ -271,18 +324,20 @@ export function AuthCard({
                 <button
                   type="button"
                   onClick={() => handleSendOtp()}
-                  disabled={loading || countdown > 0}
+                  disabled={loading || resendCountdown > 0}
                   className="text-xs font-bold text-[#FF7A00] hover:underline disabled:text-gray-400 cursor-pointer flex items-center gap-1"
                 >
                   <RotateCcw className="w-3 h-3" />
                   <span>
-                    {countdown > 0 ? `Resend in ${countdown}s` : "Resend code"}
+                    {resendCountdown > 0 ? `Resend in ${resendCountdown}s` : "Resend code"}
                   </span>
                 </button>
               </div>
 
               <input
                 type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 required
                 autoFocus
                 maxLength={6}
@@ -291,6 +346,28 @@ export function AuthCard({
                 onChange={(e) => setOtp(e.target.value.replace(/[^\d]/g, ""))}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-center text-xl font-mono tracking-[0.4em] font-bold text-gray-900 bg-white placeholder:text-gray-300 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
               />
+
+              {/* 3-Minute Real Code Expiration Live Timer */}
+              <div className="flex items-center justify-between text-xs px-1 pt-2">
+                <div className="flex items-center gap-1.5 font-medium">
+                  <Clock className={`w-3.5 h-3.5 ${expiryCountdown > 30 ? "text-emerald-600" : "text-amber-500"}`} />
+                  {expiryCountdown > 0 ? (
+                    <span className="text-gray-600">
+                      Code valid for:{" "}
+                      <strong className="text-gray-900 font-mono font-bold">
+                        {formatTime(expiryCountdown)}
+                      </strong>
+                    </span>
+                  ) : (
+                    <span className="text-red-600 font-bold">
+                      Code expired. Please tap Resend code.
+                    </span>
+                  )}
+                </div>
+                <span className="text-[11px] text-gray-500 font-medium bg-gray-100 px-2 py-0.5 rounded-md">
+                  3 min validity
+                </span>
+              </div>
             </div>
 
             {/* Optional Full Name (for new customer personalization) */}
@@ -313,7 +390,7 @@ export function AuthCard({
             {/* Submit CTA */}
             <button
               type="submit"
-              disabled={loading || otp.length < 4}
+              disabled={loading || otp.length < 6 || expiryCountdown <= 0}
               className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-sm shadow-lg shadow-[#FF7A00]/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer active:scale-[0.99]"
             >
               {loading ? (
