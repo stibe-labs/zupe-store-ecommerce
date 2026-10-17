@@ -501,7 +501,17 @@ export async function markReviewHelpful(reviewId: string): Promise<number> {
 /**
  * Get aggregated review stats (count & average rating) for all products
  */
+// TTL cache for review stats map — expensive D1 GROUP BY query
+let reviewStatsCachedAt = 0;
+const REVIEW_STATS_TTL_MS = 60_000; // 60 seconds
+let cachedStatsMap: Map<string, { count: number; rating: number }> | null = null;
+
 export async function getProductReviewStatsMap(): Promise<Map<string, { count: number; rating: number }>> {
+  const now = Date.now();
+  if (cachedStatsMap && now - reviewStatsCachedAt < REVIEW_STATS_TTL_MS) {
+    return cachedStatsMap;
+  }
+
   const statsMap = new Map<string, { count: number; sum: number; rating: number }>();
 
   // 1. Accumulate from memory fallback
@@ -540,6 +550,10 @@ export async function getProductReviewStatsMap(): Promise<Map<string, { count: n
   statsMap.forEach((val, key) => {
     finalMap.set(key, { count: val.count, rating: val.rating });
   });
+
+  // Cache the result
+  cachedStatsMap = finalMap;
+  reviewStatsCachedAt = Date.now();
 
   return finalMap;
 }

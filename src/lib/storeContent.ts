@@ -230,20 +230,33 @@ export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
 let inMemoryBanners: HeroBannerSlide[] = [...DEFAULT_HERO_BANNERS];
 let inMemoryCategories: StoreCategory[] = [...DEFAULT_STORE_CATEGORIES];
 
+// Short-lived TTL caches (30s) to avoid hitting D1 on every SSR request.
+// Cloudflare Workers are stateless across requests but within one warm instance
+// these prevent duplicate queries that burn CPU time and trigger Error 1102.
+const TTL_MS = 30_000; // 30 seconds
+let bannersCachedAt = 0;
+let categoriesCachedAt = 0;
+let promoBannersCachedAt = 0;
+let showcaseCachedAt = 0;
+
 export async function getBanners(includeInactive = false): Promise<HeroBannerSlide[]> {
-  try {
-    const rows = await executeD1Query<{ provider: string; config_data: string; is_active: number }>(
-      "SELECT config_data FROM integrations_config WHERE provider = ?",
-      ["hero_banners"]
-    );
-    if (rows && rows.length > 0 && rows[0].config_data) {
-      const parsed = JSON.parse(rows[0].config_data);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        inMemoryBanners = parsed;
+  const now = Date.now();
+  if (now - bannersCachedAt > TTL_MS) {
+    try {
+      const rows = await executeD1Query<{ provider: string; config_data: string; is_active: number }>(
+        "SELECT config_data FROM integrations_config WHERE provider = ?",
+        ["hero_banners"]
+      );
+      if (rows && rows.length > 0 && rows[0].config_data) {
+        const parsed = JSON.parse(rows[0].config_data);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          inMemoryBanners = parsed;
+        }
       }
+      bannersCachedAt = Date.now();
+    } catch (err) {
+      console.warn("Failed to fetch hero_banners from D1:", err);
     }
-  } catch (err) {
-    console.warn("Failed to fetch hero_banners from D1:", err);
   }
 
   if (includeInactive) {
@@ -254,6 +267,7 @@ export async function getBanners(includeInactive = false): Promise<HeroBannerSli
 
 export async function saveBanners(banners: HeroBannerSlide[]): Promise<HeroBannerSlide[]> {
   inMemoryBanners = banners;
+  bannersCachedAt = Date.now(); // mark cache fresh after save
 
   try {
     const jsonStr = JSON.stringify(banners);
@@ -274,42 +288,46 @@ export async function saveBanners(banners: HeroBannerSlide[]): Promise<HeroBanne
 }
 
 export async function getCategories(includeInactive = false): Promise<StoreCategory[]> {
-  try {
-    const rows = await executeD1Query<{ provider: string; config_data: string; is_active: number }>(
-      "SELECT config_data FROM integrations_config WHERE provider = ?",
-      ["store_categories"]
-    );
-    if (rows && rows.length > 0 && rows[0].config_data) {
-      const parsed = JSON.parse(rows[0].config_data);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        // Ensure "All Categories" category exists so it is customizable in admin
-        const hasAll = parsed.some(
-          (c: any) => c.id === "all" || (c.name && c.name.toLowerCase() === "all categories")
-        );
-        if (!hasAll) {
-          const allCat: StoreCategory = {
-            id: "all",
-            name: "All Categories",
-            slug: "all",
-            icon: "LayoutGrid",
-            bgColor: "bg-[#EEF2FF]",
-            iconColor: "text-[#3B82F6]",
-            showInNavbar: false,
-            showInPills: true,
-            showInCollections: false,
-            order: 0,
-            active: true,
-            iconShape: "round",
-            iconSize: 85,
-            subcategories: [],
-          };
-          parsed.unshift(allCat);
+  const now = Date.now();
+  if (now - categoriesCachedAt > TTL_MS) {
+    try {
+      const rows = await executeD1Query<{ provider: string; config_data: string; is_active: number }>(
+        "SELECT config_data FROM integrations_config WHERE provider = ?",
+        ["store_categories"]
+      );
+      if (rows && rows.length > 0 && rows[0].config_data) {
+        const parsed = JSON.parse(rows[0].config_data);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Ensure "All Categories" category exists so it is customizable in admin
+          const hasAll = parsed.some(
+            (c: any) => c.id === "all" || (c.name && c.name.toLowerCase() === "all categories")
+          );
+          if (!hasAll) {
+            const allCat: StoreCategory = {
+              id: "all",
+              name: "All Categories",
+              slug: "all",
+              icon: "LayoutGrid",
+              bgColor: "bg-[#EEF2FF]",
+              iconColor: "text-[#3B82F6]",
+              showInNavbar: false,
+              showInPills: true,
+              showInCollections: false,
+              order: 0,
+              active: true,
+              iconShape: "round",
+              iconSize: 85,
+              subcategories: [],
+            };
+            parsed.unshift(allCat);
+          }
+          inMemoryCategories = parsed;
         }
-        inMemoryCategories = parsed;
       }
+      categoriesCachedAt = Date.now();
+    } catch (err) {
+      console.warn("Failed to fetch store_categories from D1:", err);
     }
-  } catch (err) {
-    console.warn("Failed to fetch store_categories from D1:", err);
   }
 
   if (includeInactive) {
@@ -320,6 +338,7 @@ export async function getCategories(includeInactive = false): Promise<StoreCateg
 
 export async function saveCategories(categories: StoreCategory[]): Promise<StoreCategory[]> {
   inMemoryCategories = categories;
+  categoriesCachedAt = Date.now(); // mark cache fresh after save
 
   try {
     const jsonStr = JSON.stringify(categories);
@@ -390,19 +409,28 @@ export const DEFAULT_PROMO_BANNERS: PromoBannerCard[] = [
 let inMemoryPromoBanners: PromoBannerCard[] = [...DEFAULT_PROMO_BANNERS];
 
 export async function getPromoBanners(): Promise<PromoBannerCard[]> {
-  try {
-    const rows = await executeD1Query<{ provider: string; config_data: string; is_active: number }>(
-      "SELECT config_data FROM integrations_config WHERE provider = ?",
-      ["promo_banners"]
-    );
-    if (rows && rows.length > 0 && rows[0].config_data) {
-      const parsed = JSON.parse(rows[0].config_data);
-      if (Array.isArray(parsed) && parsed.length === 2) {
-        inMemoryPromoBanners = parsed;
+  const now = Date.now();
+  if (now - promoBannersCachedAt > TTL_MS) {
+    try {
+      const rows = await executeD1Query<{ provider: string; config_data: string; is_active: number }>(
+        "SELECT config_data FROM integrations_config WHERE provider = ?",
+        ["promo_banners"]
+      );
+      if (rows && rows.length > 0 && rows[0].config_data) {
+        const parsed = JSON.parse(rows[0].config_data);
+        if (Array.isArray(parsed) && parsed.length === 2) {
+          // Strip base64 images to prevent giant payloads burning Worker CPU
+          inMemoryPromoBanners = parsed.map((card: PromoBannerCard) => ({
+            ...card,
+            image1: card.image1?.startsWith("data:") ? DEFAULT_PROMO_BANNERS.find(d => d.id === card.id)?.image1 ?? card.image1 : card.image1,
+            image2: card.image2?.startsWith("data:") ? DEFAULT_PROMO_BANNERS.find(d => d.id === card.id)?.image2 ?? card.image2 : card.image2,
+          }));
+        }
       }
+      promoBannersCachedAt = Date.now();
+    } catch (err) {
+      console.warn("Failed to fetch promo_banners from D1:", err);
     }
-  } catch (err) {
-    console.warn("Failed to fetch promo_banners from D1:", err);
   }
 
   return inMemoryPromoBanners;
@@ -410,6 +438,7 @@ export async function getPromoBanners(): Promise<PromoBannerCard[]> {
 
 export async function savePromoBanners(banners: PromoBannerCard[]): Promise<PromoBannerCard[]> {
   inMemoryPromoBanners = banners;
+  promoBannersCachedAt = Date.now(); // mark cache fresh after save
 
   try {
     const jsonStr = JSON.stringify(banners);
@@ -478,32 +507,36 @@ export const DEFAULT_SHOWCASE_COLLECTIONS: ShowcaseCollectionsConfig = {
 let inMemoryShowcase: ShowcaseCollectionsConfig = { ...DEFAULT_SHOWCASE_COLLECTIONS };
 
 export async function getShowcaseCollections(): Promise<ShowcaseCollectionsConfig> {
-  try {
-    const rows = await executeD1Query<{ provider: string; config_data: string; is_active: number }>(
-      "SELECT config_data FROM integrations_config WHERE provider = ?",
-      ["showcase_collections"]
-    );
-    if (rows && rows.length > 0 && rows[0].config_data) {
-      const parsed = JSON.parse(rows[0].config_data);
-      if (parsed && typeof parsed === "object") {
-        inMemoryShowcase = {
-          topPickzProductIds: Array.isArray(parsed.topPickzProductIds)
-            ? parsed.topPickzProductIds
-            : DEFAULT_SHOWCASE_COLLECTIONS.topPickzProductIds,
-          newArrivalsProductIds: Array.isArray(parsed.newArrivalsProductIds)
-            ? parsed.newArrivalsProductIds
-            : DEFAULT_SHOWCASE_COLLECTIONS.newArrivalsProductIds,
-          bestSellersProductIds: Array.isArray(parsed.bestSellersProductIds)
-            ? parsed.bestSellersProductIds
-            : DEFAULT_SHOWCASE_COLLECTIONS.bestSellersProductIds,
-          todayDealsProductIds: Array.isArray(parsed.todayDealsProductIds)
-            ? parsed.todayDealsProductIds
-            : DEFAULT_SHOWCASE_COLLECTIONS.todayDealsProductIds,
-        };
+  const now = Date.now();
+  if (now - showcaseCachedAt > TTL_MS) {
+    try {
+      const rows = await executeD1Query<{ provider: string; config_data: string; is_active: number }>(
+        "SELECT config_data FROM integrations_config WHERE provider = ?",
+        ["showcase_collections"]
+      );
+      if (rows && rows.length > 0 && rows[0].config_data) {
+        const parsed = JSON.parse(rows[0].config_data);
+        if (parsed && typeof parsed === "object") {
+          inMemoryShowcase = {
+            topPickzProductIds: Array.isArray(parsed.topPickzProductIds)
+              ? parsed.topPickzProductIds
+              : DEFAULT_SHOWCASE_COLLECTIONS.topPickzProductIds,
+            newArrivalsProductIds: Array.isArray(parsed.newArrivalsProductIds)
+              ? parsed.newArrivalsProductIds
+              : DEFAULT_SHOWCASE_COLLECTIONS.newArrivalsProductIds,
+            bestSellersProductIds: Array.isArray(parsed.bestSellersProductIds)
+              ? parsed.bestSellersProductIds
+              : DEFAULT_SHOWCASE_COLLECTIONS.bestSellersProductIds,
+            todayDealsProductIds: Array.isArray(parsed.todayDealsProductIds)
+              ? parsed.todayDealsProductIds
+              : DEFAULT_SHOWCASE_COLLECTIONS.todayDealsProductIds,
+          };
+        }
       }
+      showcaseCachedAt = Date.now();
+    } catch (err) {
+      console.warn("Failed to fetch showcase_collections from D1:", err);
     }
-  } catch (err) {
-    console.warn("Failed to fetch showcase_collections from D1:", err);
   }
 
   return inMemoryShowcase;
@@ -512,6 +545,7 @@ export async function getShowcaseCollections(): Promise<ShowcaseCollectionsConfi
 export async function saveShowcaseCollections(
   config: ShowcaseCollectionsConfig
 ): Promise<ShowcaseCollectionsConfig> {
+  showcaseCachedAt = Date.now(); // mark cache fresh after save
   inMemoryShowcase = {
     topPickzProductIds: Array.isArray(config.topPickzProductIds) ? config.topPickzProductIds : [],
     newArrivalsProductIds: Array.isArray(config.newArrivalsProductIds) ? config.newArrivalsProductIds : [],

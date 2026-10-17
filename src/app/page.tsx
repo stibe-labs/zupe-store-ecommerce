@@ -12,7 +12,11 @@ import { CreatorsReelsSection } from "@/components/CreatorsReelsSection";
 import { Footer } from "@/components/Footer";
 import { getCategories, getBanners, getShowcaseCollections, getPromoBanners } from "@/lib/storeContent";
 
-export const dynamic = "force-dynamic";
+// Cache homepage SSR for 30 seconds at the edge to avoid burning Worker CPU
+// on every request — the primary cause of Error 1102 under traffic bursts.
+// Content (banners, categories, showcases) have their own 30s in-process cache,
+// so data will be at most 30s stale, which is acceptable for a homepage.
+export const revalidate = 30;
 
 export default async function Home() {
   const [initialCategories, initialBanners, initialShowcase, initialPromoBanners] = await Promise.all([
