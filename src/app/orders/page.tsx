@@ -41,10 +41,17 @@ function OrdersPageContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (cancelPromptParam) {
+    if (cancelPromptParam && orders.length > 0) {
+      const targetOrd = orders.find((o) => o.id === cancelPromptParam);
+      if (targetOrd && targetOrd.whatsapp_confirm_status !== "pending_whatsapp") {
+        setCancelPromptId(null);
+      } else {
+        setCancelPromptId(cancelPromptParam);
+      }
+    } else if (cancelPromptParam) {
       setCancelPromptId(cancelPromptParam);
     }
-  }, [cancelPromptParam]);
+  }, [cancelPromptParam, orders]);
 
   // Review & Rating Modal State
   const [reviewModalItem, setReviewModalItem] = useState<{

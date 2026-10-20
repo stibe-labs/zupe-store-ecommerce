@@ -31,6 +31,12 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
+      if ((ord as any).whatsapp_confirm_status === "confirmed") {
+        return NextResponse.json(
+          { success: false, error: "This order has already been confirmed and is being processed for dispatch." },
+          { status: 400 }
+        );
+      }
     }
 
     const result = await cancelWhatsAppOrder(orderId, {
