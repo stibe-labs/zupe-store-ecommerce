@@ -117,122 +117,91 @@ async function sendPreConfirmViaTemplate(
   cancelUrl: string,
   verificationToken: string
 ): Promise<boolean> {
+  // The zupe_order_verify template has:
+  // - Body with 4 variables: {{1}}=name, {{2}}=orderId, {{3}}=amount, {{4}}=paymentMethod
+  // - Button 0 (Confirm Order): Dynamic URL ending with {{1}} 
+  //   Base URL: https://zupe-store.stibelabs.workers.dev/api/orders/whatsapp-confirm?
+  //   We append: token=xxx&orderId=yyy
+  // - Button 1 (Cancel Order): Dynamic URL ending with {{1}}
+  //   Base URL: https://zupe-store.stibelabs.workers.dev/orders?
+  //   We append: cancelPrompt=orderId
+
+  const confirmSuffix = `token=${encodeURIComponent(verificationToken)}&orderId=${encodeURIComponent(orderId)}`;
+  const cancelSuffix = `cancelPrompt=${encodeURIComponent(orderId)}`;
+
   const languageCandidates = ["en", "en_US"];
 
   for (const lang of languageCandidates) {
-    const variations = [
-      // Variation A: Body params + 2 Dynamic URL Buttons
-      [
-        {
-          type: "body",
-          parameters: [
-            { type: "text", text: firstName },
-            { type: "text", text: orderId },
-            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
-            { type: "text", text: paymentMethodLabel },
-          ],
-        },
-        {
-          type: "button",
-          sub_type: "url",
-          index: "0",
-          parameters: [{ type: "text", text: `${encodeURIComponent(verificationToken)}&orderId=${encodeURIComponent(orderId)}` }],
-        },
-        {
-          type: "button",
-          sub_type: "url",
-          index: "1",
-          parameters: [{ type: "text", text: encodeURIComponent(orderId) }],
-        },
-      ],
-      // Variation A2: Button 0 with token, Button 1 with orderId
-      [
-        {
-          type: "body",
-          parameters: [
-            { type: "text", text: firstName },
-            { type: "text", text: orderId },
-            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
-            { type: "text", text: paymentMethodLabel },
-          ],
-        },
-        {
-          type: "button",
-          sub_type: "url",
-          index: "0",
-          parameters: [{ type: "text", text: encodeURIComponent(verificationToken) }],
-        },
-        {
-          type: "button",
-          sub_type: "url",
-          index: "1",
-          parameters: [{ type: "text", text: encodeURIComponent(orderId) }],
-        },
-      ],
-      // Variation B: Body params including URLs in body text
-      [
-        {
-          type: "body",
-          parameters: [
-            { type: "text", text: firstName },
-            { type: "text", text: orderId },
-            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
-            { type: "text", text: paymentMethodLabel },
-            { type: "text", text: confirmUrl },
-            { type: "text", text: cancelUrl },
-          ],
-        },
-      ],
-      // Variation C: Simple 4 body parameters
-      [
-        {
-          type: "body",
-          parameters: [
-            { type: "text", text: firstName },
-            { type: "text", text: orderId },
-            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
-            { type: "text", text: paymentMethodLabel },
-          ],
-        },
-      ],
-    ];
-
-    for (const components of variations) {
-      try {
-        const res = await fetch(apiUrl, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            messaging_product: "whatsapp",
-            recipient_type: "individual",
-            to,
-            type: "template",
-            template: {
-              name: TEMPLATE_VERIFY,
-              language: { code: lang },
-              components,
+    try {
+      const payload = {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to,
+        type: "template",
+        template: {
+          name: TEMPLATE_VERIFY,
+          language: { code: lang },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: firstName },
+                { type: "text", text: orderId },
+                { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
+                { type: "text", text: paymentMethodLabel },
+              ],
             },
-          }),
-        });
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [{ type: "text", text: confirmSuffix }],
+            },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "1",
+              parameters: [{ type: "text", text: cancelSuffix }],
+            },
+          ],
+        },
+      };
 
-        const data = (await res.json()) as any;
-        if (res.ok && data.messages?.length > 0) {
-          console.log(`✅ [WA Pre-Confirm] Template '${TEMPLATE_VERIFY}' (${lang}) sent to`, to);
-          return true;
-        }
+      console.log(`[WA Pre-Confirm] Sending template '${TEMPLATE_VERIFY}' (${lang}) to ${to} with payload:`, JSON.stringify(payload));
 
-        console.warn(`[WA Pre-Confirm] Template variation rejected:`, data?.error?.message || data?.error || data);
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-        // If template doesn't exist under this language, stop trying variations for it
-        if (data?.error?.code === 132001) {
-          break;
-        }
-      } catch (err) {
-        console.warn(`[WA Pre-Confirm] Template variation fetch error:`, err);
+      const data = (await res.json()) as any;
+      
+      if (res.ok && data.messages?.length > 0) {
+        console.log(`✅ [WA Pre-Confirm] Template '${TEMPLATE_VERIFY}' (${lang}) sent successfully to ${to}, messageId: ${data.messages[0].id}`);
+        return true;
       }
+
+      const errCode = data?.error?.code;
+      const errMsg = data?.error?.message || JSON.stringify(data?.error || data);
+      console.warn(`[WA Pre-Confirm] Template (${lang}) rejected: [${errCode}] ${errMsg}`);
+
+      // If template doesn't exist under this language, try next language
+      if (errCode === 132001) {
+        continue;
+      }
+
+      // If it's a parameter mismatch, log details and try next language
+      if (errCode === 131008) {
+        console.warn(`[WA Pre-Confirm] Parameter mismatch for (${lang}). Full error:`, JSON.stringify(data));
+        continue;
+      }
+
+    } catch (err) {
+      console.warn(`[WA Pre-Confirm] Template (${lang}) fetch error:`, err);
     }
   }
 
