@@ -11,12 +11,14 @@ export async function GET(req: NextRequest) {
     const payment_method = searchParams.get("payment_method") || undefined;
     const courier_partner = searchParams.get("courier_partner") || undefined;
     const search = searchParams.get("search") || undefined;
+    const whatsapp_status = searchParams.get("whatsapp_status") || undefined;
 
     const orders = await getERPOrders({
       delivery_status,
       payment_method,
       courier_partner,
       search,
+      whatsapp_status,
     });
 
     return NextResponse.json({ success: true, orders });

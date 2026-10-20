@@ -80,11 +80,14 @@ export interface ERPOrder {
   shipping_address: string;
   shiprocket_awb?: string;
   courier_partner?: string;
-  delivery_status: "Processing" | "In Transit" | "Out for Delivery" | "Delivered" | "NDR" | "RTO Initiated" | "RTO In Transit" | "RTO Delivered";
+  delivery_status: "Processing" | "In Transit" | "Out for Delivery" | "Delivered" | "NDR" | "RTO Initiated" | "RTO In Transit" | "RTO Delivered" | "Cancelled";
   ndr_status: string;
   rto_status: string;
   remittance_status: "Pending" | "Remitted" | "Settled" | "N/A";
   supplier_id?: string;
+  whatsapp_confirm_status?: string;
+  whatsapp_confirm_token?: string;
+  whatsapp_token_used?: boolean;
   created_at: string;
   items?: { product_name: string; quantity: number; unit_price: number }[];
 }
@@ -824,13 +827,21 @@ export async function getERPOrders(filters?: {
   payment_method?: string;
   courier_partner?: string;
   search?: string;
+  whatsapp_status?: string;
 }): Promise<ERPOrder[]> {
   try {
     let sql = "SELECT * FROM orders WHERE 1=1";
     const params: any[] = [];
 
+    if (filters?.whatsapp_status && filters.whatsapp_status !== "all") {
+      sql += " AND whatsapp_confirm_status = ?";
+      params.push(filters.whatsapp_status);
+    }
+
     if (filters?.delivery_status && filters.delivery_status !== "all") {
-      if (filters.delivery_status === "NDR") {
+      if (filters.delivery_status === "Pending WhatsApp") {
+        sql += " AND whatsapp_confirm_status = 'pending_whatsapp'";
+      } else if (filters.delivery_status === "NDR") {
         sql += " AND (delivery_status = 'NDR' OR status = 'NDR' OR (ndr_status IS NOT NULL AND ndr_status != 'None' AND ndr_status != '-'))";
       } else if (filters.delivery_status === "RTO Delivered" || filters.delivery_status === "RTO") {
         sql += " AND (delivery_status LIKE '%RTO%' OR status LIKE '%RTO%' OR (rto_status IS NOT NULL AND rto_status != 'None' AND rto_status != '-'))";
@@ -937,8 +948,13 @@ export async function getERPOrders(filters?: {
   }
 
   let res = [...inMemoryERPOrders];
+  if (filters?.whatsapp_status && filters.whatsapp_status !== "all") {
+    res = res.filter((o) => o.whatsapp_confirm_status === filters.whatsapp_status);
+  }
   if (filters?.delivery_status && filters.delivery_status !== "all") {
-    if (filters.delivery_status === "NDR") {
+    if (filters.delivery_status === "Pending WhatsApp") {
+      res = res.filter((o) => o.whatsapp_confirm_status === "pending_whatsapp");
+    } else if (filters.delivery_status === "NDR") {
       res = res.filter(
         (o) =>
           o.delivery_status === "NDR" ||
@@ -1068,6 +1084,9 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
     rto_status: orderData.rto_status || "None",
     remittance_status: (orderData.remittance_status as any) || (paymentMethod === "COD" ? "Pending" : "Settled"),
     supplier_id: orderData.supplier_id || "sup-a",
+    whatsapp_confirm_status: orderData.whatsapp_confirm_status || "pending_whatsapp",
+    whatsapp_confirm_token: orderData.whatsapp_confirm_token || "",
+    whatsapp_token_used: orderData.whatsapp_token_used || false,
     created_at: orderData.created_at || new Date().toISOString().replace("T", " ").substring(0, 19),
     items: orderData.items || [],
   };
@@ -1291,6 +1310,14 @@ export async function updateERPOrder(
     if (updates.ad_spend_attributed !== undefined) {
       fieldsToUpdate.push("ad_spend_attributed = ?");
       values.push(updates.ad_spend_attributed);
+    }
+    if (updates.whatsapp_confirm_status !== undefined) {
+      fieldsToUpdate.push("whatsapp_confirm_status = ?");
+      values.push(updates.whatsapp_confirm_status);
+    }
+    if (updates.whatsapp_token_used !== undefined) {
+      fieldsToUpdate.push("whatsapp_token_used = ?");
+      values.push(updates.whatsapp_token_used ? 1 : 0);
     }
 
     if (fieldsToUpdate.length > 0) {

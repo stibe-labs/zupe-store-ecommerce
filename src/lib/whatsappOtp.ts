@@ -210,6 +210,10 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
         ],
         [
           { type: "body", parameters: [{ type: "text", text: otp }] },
+          { type: "button", sub_type: "copy_code", index: "0", parameters: [{ type: "coupon_code", coupon_code: otp }] },
+        ],
+        [
+          { type: "body", parameters: [{ type: "text", text: otp }] },
           { type: "button", sub_type: "copy_code", index: "0", parameters: [{ type: "text", text: otp }] },
         ],
         [

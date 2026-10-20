@@ -12,6 +12,7 @@ const STORE_BASE_URL = "https://zupe-store.stibelabs.workers.dev";
 // Template names - must match exactly what you created in Meta Business Manager
 const TEMPLATE_PREPAID = "zupe_order_prepaid";
 const TEMPLATE_COD = "zupe_order_cod";
+const TEMPLATE_VERIFY = "zupe_order_verify";
 const TEMPLATE_LANG = "en";
 
 export interface OrderConfirmationParams {
@@ -21,6 +22,195 @@ export interface OrderConfirmationParams {
   totalAmount: number;
   paymentMethod: "cod" | "prepaid";
   items: Array<{ name: string; quantity: number; price: number }>;
+}
+
+export interface OrderPreConfirmationParams {
+  customerName: string;
+  customerPhone: string;
+  orderId: string;
+  totalAmount: number;
+  paymentMethod: "cod" | "prepaid";
+  items: Array<{ name: string; quantity: number; price: number }>;
+  token: string;
+}
+
+/**
+ * Sends initial interactive verification WhatsApp message with Confirm and Cancel links.
+ * Tries the official Meta Utility template 'zupe_order_verify' first (delivers to all customers).
+ * Falls back to direct text message if template is not yet approved in Meta Business Manager.
+ */
+export async function sendOrderPreConfirmationWhatsApp(
+  params: OrderPreConfirmationParams
+): Promise<boolean> {
+  const { customerName, customerPhone, orderId, totalAmount, paymentMethod, items, token } = params;
+
+  const { digits, isValid } = normalizePhoneNumber(customerPhone);
+  if (!isValid) {
+    console.warn("[WA Pre-Confirm] Invalid phone, skipping:", customerPhone);
+    return false;
+  }
+
+  // Meta API does not permit sending messages from the business account to its own number
+  if (digits === "919778137954" || digits === "9778137954") {
+    console.warn("⚠️ [WA Pre-Confirm] Recipient phone is the business's own WhatsApp number. Meta requires testing with an external customer mobile number.");
+  }
+
+  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+
+  const firstName = customerName.split(" ")[0] || customerName;
+  const itemLines = items
+    .slice(0, 3)
+    .map((it) => `  • ${it.name} (x${it.quantity})`)
+    .join("\n");
+  const more = items.length > 3 ? `\n  • ...and ${items.length - 3} more` : "";
+
+  const confirmUrl = `${STORE_BASE_URL}/api/orders/whatsapp-confirm?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
+  const cancelUrl = `${STORE_BASE_URL}/api/orders/whatsapp-cancel?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
+  const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
+
+  // 1. Try approved Meta Utility template (works for ALL new customers outside 24h window)
+  const templateSent = await sendPreConfirmViaTemplate(
+    apiUrl,
+    apiToken,
+    digits,
+    firstName,
+    orderId,
+    totalAmount,
+    paymentMethodLabel,
+    confirmUrl,
+    cancelUrl,
+    token
+  );
+
+  if (templateSent) {
+    return true;
+  }
+
+  // 2. Fallback: formatted direct text message (delivers within 24h customer care window)
+  const message =
+    `*Order Verification — Zupe Store* 🛍️\n\n` +
+    `Hi ${firstName}! Thank you for placing your order with Zupe Store.\n\n` +
+    `📦 *Order ID:* ${orderId}\n` +
+    `📋 *Items:*\n${itemLines}${more}\n\n` +
+    `💰 *Amount:* Rs ${totalAmount.toLocaleString("en-IN")} (${paymentMethodLabel})\n\n` +
+    `Please confirm or cancel your order below:\n\n` +
+    `✅ *CONFIRM ORDER:*\n${confirmUrl}\n\n` +
+    `❌ *CANCEL ORDER:*\n${cancelUrl}\n\n` +
+    `⚠️ _Please click *Confirm Order* so we can pack and dispatch your shipment._\n\n` +
+    `Zupe Store Team`;
+
+  await sendWhatsAppTextMessage(apiUrl, apiToken, digits, message);
+  return true;
+}
+
+async function sendPreConfirmViaTemplate(
+  apiUrl: string,
+  token: string,
+  to: string,
+  firstName: string,
+  orderId: string,
+  totalAmount: number,
+  paymentMethodLabel: string,
+  confirmUrl: string,
+  cancelUrl: string,
+  verificationToken: string
+): Promise<boolean> {
+  const languageCandidates = ["en", "en_US"];
+
+  for (const lang of languageCandidates) {
+    const variations = [
+      // Variation A: Body params + 2 Dynamic URL Buttons
+      [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: firstName },
+            { type: "text", text: orderId },
+            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
+            { type: "text", text: paymentMethodLabel },
+          ],
+        },
+        {
+          type: "button",
+          sub_type: "url",
+          index: "0",
+          parameters: [{ type: "text", text: `${encodeURIComponent(verificationToken)}&orderId=${encodeURIComponent(orderId)}` }],
+        },
+        {
+          type: "button",
+          sub_type: "url",
+          index: "1",
+          parameters: [{ type: "text", text: `${encodeURIComponent(verificationToken)}&orderId=${encodeURIComponent(orderId)}` }],
+        },
+      ],
+      // Variation B: Body params including URLs in body text
+      [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: firstName },
+            { type: "text", text: orderId },
+            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
+            { type: "text", text: paymentMethodLabel },
+            { type: "text", text: confirmUrl },
+            { type: "text", text: cancelUrl },
+          ],
+        },
+      ],
+      // Variation C: Simple 4 body parameters
+      [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: firstName },
+            { type: "text", text: orderId },
+            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
+            { type: "text", text: paymentMethodLabel },
+          ],
+        },
+      ],
+    ];
+
+    for (const components of variations) {
+      try {
+        const res = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to,
+            type: "template",
+            template: {
+              name: TEMPLATE_VERIFY,
+              language: { code: lang },
+              components,
+            },
+          }),
+        });
+
+        const data = (await res.json()) as any;
+        if (res.ok && data.messages?.length > 0) {
+          console.log(`✅ [WA Pre-Confirm] Template '${TEMPLATE_VERIFY}' (${lang}) sent to`, to);
+          return true;
+        }
+
+        // If template doesn't exist under this language, stop trying variations for it
+        if (data?.error?.code === 132001) {
+          break;
+        }
+      } catch {
+        // Continue
+      }
+    }
+  }
+
+  return false;
 }
 
 export async function sendOrderConfirmationWhatsApp(

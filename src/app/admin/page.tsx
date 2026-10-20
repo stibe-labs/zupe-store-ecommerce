@@ -26,6 +26,7 @@ import {
   Layers,
   Activity,
   Award,
+  Clock,
 } from "lucide-react";
 import { ERPOrder } from "@/lib/erpStore";
 
@@ -353,6 +354,37 @@ export default function AdminDashboardPage() {
               </div>
             )}
           </div>
+
+          {/* Awaiting WhatsApp Confirmation Alert Banner */}
+          {recentOrders.some((o) => o.whatsapp_confirm_status === "pending_whatsapp") && (
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-2xl border border-amber-200/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 text-amber-800 flex items-center justify-center shrink-0">
+                  <Clock className="w-5 h-5 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-amber-950 flex items-center gap-2">
+                    <span>
+                      {recentOrders.filter((o) => o.whatsapp_confirm_status === "pending_whatsapp").length} Order(s) Awaiting WhatsApp Confirmation
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200 text-amber-900">
+                      Pending Action
+                    </span>
+                  </h3>
+                  <p className="text-xs text-amber-800 mt-0.5">
+                    Customers received the WhatsApp verification message. Pack & dispatch unlocks once customers tap "Confirm Order" or when you manually verify.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/admin/orders"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 self-start sm:self-center cursor-pointer"
+              >
+                <span>View Pending Orders</span>
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+          )}
 
           {/* Order Funnel KPI Cards (Module 1) */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
@@ -842,29 +874,37 @@ export default function AdminDashboardPage() {
                         <p className="text-[11px] text-slate-500 font-mono">{ord.shiprocket_awb || "AWB Pending"}</p>
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        {ord.delivery_status === "Delivered" && (
+                        {ord.whatsapp_confirm_status === "pending_whatsapp" ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 animate-pulse">
+                            <Clock className="w-3 h-3 text-amber-600" /> Awaiting WA
+                          </span>
+                        ) : (ord.whatsapp_confirm_status === "cancelled" || ord.delivery_status === "Cancelled" || ord.status === "Cancelled") ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-600" /> Cancelled
+                          </span>
+                        ) : ord.delivery_status === "Delivered" ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" /> Delivered
                           </span>
-                        )}
-                        {ord.delivery_status === "In Transit" && (
+                        ) : ord.delivery_status === "In Transit" ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700">
                             <span className="w-1.5 h-1.5 rounded-full bg-sky-600" /> In Transit
                           </span>
-                        )}
-                        {ord.delivery_status === "NDR" && (
+                        ) : ord.delivery_status === "NDR" ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-600" /> NDR (Action)
                           </span>
-                        )}
-                        {ord.delivery_status === "RTO Delivered" && (
+                        ) : ord.delivery_status === "RTO Delivered" ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">
                             <span className="w-1.5 h-1.5 rounded-full bg-rose-600" /> RTO Delivered
                           </span>
-                        )}
-                        {ord.delivery_status === "Out for Delivery" && (
+                        ) : ord.delivery_status === "Out for Delivery" ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
                             <span className="w-1.5 h-1.5 rounded-full bg-purple-600" /> Out for Delivery
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-500" /> Processing
                           </span>
                         )}
                       </td>

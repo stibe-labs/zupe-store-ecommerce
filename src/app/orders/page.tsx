@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Package,
   Truck,
@@ -18,14 +19,23 @@ import {
   Sparkles,
   HelpCircle,
   ShieldCheck,
+  AlertTriangle,
+  XCircle,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/context/AuthContext";
 import { OrderRecord, OrderItem } from "@/lib/orderStore";
 
-export default function OrdersPage() {
+function OrdersPageContent() {
   const { user, isAuthenticated, openAuthModal } = useAuth();
+  const searchParams = useSearchParams();
+  const confirmedOrderId = searchParams.get("confirmed");
+  const cancelledOrderId = searchParams.get("cancelled");
+  const noticeCode = searchParams.get("notice");
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [cancelPromptId, setCancelPromptId] = useState<string | null>(null);
+  const [cancelSuccessMsg, setCancelSuccessMsg] = useState<string | null>(null);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -77,8 +87,20 @@ export default function OrdersPage() {
 
     async function fetchOrders() {
       try {
-        const query = user?.email ? `?email=${encodeURIComponent(user.email)}` : "";
-        const res = await fetch(`/api/orders${query}`, { cache: "no-store" });
+        const params = new URLSearchParams();
+        if (user?.email) params.set("email", user.email);
+        if (user?.phone) params.set("phone", user.phone);
+
+        // Also check if user recently placed an order as guest / phone
+        try {
+          const lastPhone = localStorage.getItem("zupe_last_cod_phone");
+          if (lastPhone && !params.has("phone")) {
+            params.set("phone", lastPhone);
+          }
+        } catch {}
+
+        const queryString = params.toString() ? `?${params.toString()}` : "";
+        const res = await fetch(`/api/orders${queryString}`, { cache: "no-store" });
         const data = await res.json();
         if (data.success && Array.isArray(data.orders)) {
           setOrders(data.orders);
@@ -174,7 +196,56 @@ export default function OrdersPage() {
     }
   };
 
-  const getStatusBadge = (status: OrderRecord["order_status"]) => {
+  const handleCancelOrder = async (orderId: string) => {
+    setCancellingOrderId(orderId);
+    try {
+      const res = await fetch("/api/orders/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === orderId
+              ? {
+                  ...o,
+                  order_status: "cancelled",
+                  whatsapp_confirm_status: "cancelled",
+                }
+              : o
+          )
+        );
+        setCancelSuccessMsg(`Order #${orderId} was successfully cancelled.`);
+        setCancelPromptId(null);
+      } else {
+        alert(data.error || "Failed to cancel order.");
+      }
+    } catch (e: any) {
+      alert(e.message || "Network error while cancelling order.");
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
+
+  const getStatusBadge = (status: OrderRecord["order_status"], waStatus?: string) => {
+    if (waStatus === "cancelled" || status === "cancelled") {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+          <XCircle className="w-3.5 h-3.5" /> Cancelled
+        </span>
+      );
+    }
+
+    if (waStatus === "pending_whatsapp") {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 animate-pulse">
+          <Clock className="w-3.5 h-3.5 text-amber-600" /> Awaiting WhatsApp
+        </span>
+      );
+    }
+
     switch (status) {
       case "delivered":
         return (
@@ -223,6 +294,64 @@ export default function OrdersPage() {
           )}
         </div>
 
+        {/* Banner: Order Confirmed via WhatsApp Link */}
+        {confirmedOrderId && (
+          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-start gap-3 shadow-xs">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-bold text-sm">🎉 Order Confirmed via WhatsApp!</p>
+              <p className="text-xs text-emerald-700 mt-0.5">
+                Thank you! Your order <strong>#{confirmedOrderId}</strong> has been confirmed. We have dispatched our full confirmation message with tracking and discount details to your WhatsApp, and your package is being prepared for dispatch.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Banner: Order Cancelled via WhatsApp Link */}
+        {cancelledOrderId && (
+          <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 flex items-start gap-3 shadow-xs">
+            <XCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-bold text-sm">Order Cancelled as Requested</p>
+              <p className="text-xs text-rose-700 mt-0.5">
+                Order <strong>#{cancelledOrderId}</strong> has been cancelled. All reserved items have been restocked, and no further charges or dispatch will occur.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Banner: Notice / Link Already Processed */}
+        {noticeCode === "already_processed" && (
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3 shadow-xs">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-bold text-sm">Notice: Verification Link Already Used</p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                This WhatsApp action link was already processed. The status of your order below reflects the recorded decision.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Banner: Direct cancellation success message */}
+        {cancelSuccessMsg && (
+          <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 flex items-start justify-between gap-3 shadow-xs">
+            <div className="flex items-start gap-3">
+              <XCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-sm">Order Cancelled</p>
+                <p className="text-xs text-rose-700 mt-0.5">{cancelSuccessMsg}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setCancelSuccessMsg(null)}
+              className="text-rose-400 hover:text-rose-700 p-1 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {loading ? (
           <div className="py-20 text-center text-sm text-gray-500">
             Loading your orders...
@@ -251,6 +380,10 @@ export default function OrdersPage() {
               const isDelivered =
                 (ord.order_status || "").toLowerCase() === "delivered" ||
                 ((ord as any).delivery_status || "").toLowerCase() === "delivered";
+
+              const isShipped =
+                ["shipped", "in transit", "out for delivery"].includes((ord.order_status || "").toLowerCase()) ||
+                ["shipped", "in transit", "out for delivery"].includes(((ord as any).delivery_status || "").toLowerCase());
 
               // Safely extract items whether array or string
               let rawItems: any[] = [];
@@ -342,7 +475,7 @@ export default function OrdersPage() {
                       ) : null}
                     </div>
                     <div className="flex items-center gap-2.5 flex-wrap">
-                      {getStatusBadge(isDelivered ? "delivered" : ord.order_status)}
+                      {getStatusBadge(isDelivered ? "delivered" : ord.order_status, ord.whatsapp_confirm_status)}
 
                       {/* Payment Mode Pill */}
                       {isPaid ? (
@@ -358,7 +491,7 @@ export default function OrdersPage() {
                       )}
 
                       {/* COD Pay Online & Save Rs 30 Button */}
-                      {isCod && (
+                      {isCod && ord.order_status !== "cancelled" && (
                         <Link
                           href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(ord.id)}`}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold bg-[#FF7A00] hover:bg-[#E66E00] text-white shadow-xs transition-all cursor-pointer animate-pulse"
@@ -368,13 +501,16 @@ export default function OrdersPage() {
                         </Link>
                       )}
 
-                      <Link
-                        href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-orange-50 text-[#FF7A00] hover:bg-[#FF7A00] hover:text-white border border-[#FF7A00]/20 transition-all cursor-pointer"
-                      >
-                        <Truck className="w-3.5 h-3.5" />
-                        <span>Track Package</span>
-                      </Link>
+                      {ord.order_status !== "cancelled" && (
+                        <Link
+                          href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-orange-50 text-[#FF7A00] hover:bg-[#FF7A00] hover:text-white border border-[#FF7A00]/20 transition-all cursor-pointer"
+                        >
+                          <Truck className="w-3.5 h-3.5" />
+                          <span>Track Package</span>
+                        </Link>
+                      )}
+
                       {isDelivered && (
                         <button
                           type="button"
@@ -387,6 +523,99 @@ export default function OrdersPage() {
                       )}
                     </div>
                   </div>
+
+                  {/* WhatsApp Verification Alert Banner on Card */}
+                  {ord.whatsapp_confirm_status === "pending_whatsapp" && (
+                    <div className="mb-6 p-4 rounded-2xl bg-amber-50/90 border border-amber-200 text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                      <div className="flex items-start sm:items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-amber-100 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0">
+                          <AlertTriangle className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-extrabold text-amber-900">
+                              Please confirm your order in WhatsApp
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/70 text-amber-800">
+                              Awaiting Confirmation
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-amber-800 mt-0.5">
+                            We sent a message to <strong>{ord.customer_phone || "your WhatsApp"}</strong> with Confirm and Cancel buttons. Please tap <strong>Confirm Order</strong> in WhatsApp to dispatch your package.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        {cancelPromptId === ord.id ? (
+                          <div className="flex items-center gap-2 bg-white/90 p-1.5 px-2.5 rounded-xl border border-rose-200">
+                            <span className="text-[11px] text-rose-700 font-bold">Are you sure?</span>
+                            <button
+                              type="button"
+                              onClick={() => handleCancelOrder(ord.id)}
+                              disabled={cancellingOrderId === ord.id}
+                              className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer"
+                            >
+                              {cancellingOrderId === ord.id ? "Cancelling..." : "Yes, Cancel"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setCancelPromptId(null)}
+                              className="px-2 py-1 rounded-lg text-[11px] font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                            >
+                              No
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setCancelPromptId(ord.id)}
+                            className="px-3 py-1.5 rounded-full text-xs font-bold text-rose-700 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:border-rose-600 transition-all cursor-pointer"
+                          >
+                            Cancel Order
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Direct customer cancellation banner for processing orders that are not pending WhatsApp */}
+                  {ord.whatsapp_confirm_status !== "pending_whatsapp" &&
+                    ord.whatsapp_confirm_status !== "cancelled" &&
+                    ord.order_status !== "cancelled" &&
+                    !isDelivered &&
+                    !isShipped && (
+                      <div className="mb-4 flex items-center justify-end">
+                        {cancelPromptId === ord.id ? (
+                          <div className="flex items-center gap-2 bg-rose-50/80 p-1.5 px-3 rounded-xl border border-rose-200">
+                            <span className="text-xs text-rose-800 font-bold">Cancel this order?</span>
+                            <button
+                              type="button"
+                              onClick={() => handleCancelOrder(ord.id)}
+                              disabled={cancellingOrderId === ord.id}
+                              className="px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer"
+                            >
+                              {cancellingOrderId === ord.id ? "Cancelling..." : "Confirm Cancel"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setCancelPromptId(null)}
+                              className="px-2 py-1 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                            >
+                              Keep Order
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setCancelPromptId(ord.id)}
+                            className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline cursor-pointer"
+                          >
+                            Need to cancel? Click here
+                          </button>
+                        )}
+                      </div>
+                    )}
 
                   {/* Items list */}
                   <div className="space-y-4">
@@ -832,5 +1061,23 @@ export default function OrdersPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function OrdersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#F3F4F6] text-[#111111]">
+          <Navbar />
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-24 pb-16 text-center text-sm text-gray-500">
+            Loading your orders...
+          </div>
+          <Footer />
+        </div>
+      }
+    >
+      <OrdersPageContent />
+    </Suspense>
   );
 }

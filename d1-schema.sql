@@ -76,6 +76,9 @@ CREATE TABLE IF NOT EXISTS orders (
     payment_status TEXT DEFAULT 'Completed',
     shipping_address TEXT NOT NULL,
     tracking_number TEXT,
+    whatsapp_confirm_status TEXT DEFAULT 'pending_whatsapp',
+    whatsapp_confirm_token TEXT,
+    whatsapp_token_used INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id)
 );

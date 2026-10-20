@@ -181,6 +181,23 @@ function AdminOrdersContent() {
     }
   };
 
+  const handleManualWAConfirm = async () => {
+    if (!selectedOrder) return;
+    try {
+      const res = await fetch(`/api/orders/whatsapp-confirm?orderId=${encodeURIComponent(selectedOrder.id)}`);
+      const updated = {
+        ...selectedOrder,
+        whatsapp_confirm_status: "confirmed",
+        whatsapp_token_used: true,
+      };
+      setSelectedOrder(updated);
+      setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
+      showToast("success", `Order #${selectedOrder.shopify_order_id || selectedOrder.id} manually verified!`);
+    } catch (e: any) {
+      showToast("error", e.message || "Manual confirmation failed");
+    }
+  };
+
   const handleGenerateAWB = async () => {
     if (!selectedOrder) return;
     setIsGeneratingAWB(true);
@@ -441,12 +458,14 @@ function AdminOrdersContent() {
                 className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
               >
                 <option value="all">All Delivery Statuses</option>
-                <option value="Delivered">Delivered</option>
+                <option value="Pending WhatsApp">⏳ Awaiting WhatsApp Confirmation</option>
+                <option value="Processing">Processing</option>
                 <option value="In Transit">In Transit</option>
                 <option value="Out for Delivery">Out for Delivery</option>
+                <option value="Delivered">Delivered</option>
                 <option value="NDR">⚠️ NDR (Non-Delivery)</option>
                 <option value="RTO Delivered">RTO Delivered</option>
-                <option value="Processing">Processing</option>
+                <option value="Cancelled">❌ Cancelled</option>
               </select>
 
               <select
@@ -599,29 +618,43 @@ function AdminOrdersContent() {
                           </span>
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          {ord.delivery_status === "Delivered" && (
+                          {ord.whatsapp_confirm_status === "pending_whatsapp" ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300 animate-pulse">
+                              <Clock className="w-3.5 h-3.5 text-amber-600" /> Awaiting WA
+                            </span>
+                          ) : (ord.whatsapp_confirm_status === "cancelled" || ord.delivery_status === "Cancelled" || ord.status === "Cancelled") ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
+                              <X className="w-3.5 h-3.5" /> Cancelled
+                            </span>
+                          ) : ord.delivery_status === "Delivered" ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">
                               <CheckCircle2 className="w-3.5 h-3.5" /> Delivered
                             </span>
-                          )}
-                          {ord.delivery_status === "In Transit" && (
+                          ) : ord.delivery_status === "In Transit" ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-700">
                               <Truck className="w-3.5 h-3.5" /> In Transit
                             </span>
-                          )}
-                          {ord.delivery_status === "NDR" && (
+                          ) : ord.delivery_status === "NDR" ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">
                               <AlertTriangle className="w-3.5 h-3.5" /> NDR
                             </span>
-                          )}
-                          {ord.delivery_status === "RTO Delivered" && (
+                          ) : ord.delivery_status === "RTO Delivered" ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">
                               <RotateCcw className="w-3.5 h-3.5" /> RTO
                             </span>
-                          )}
-                          {ord.delivery_status === "Out for Delivery" && (
+                          ) : ord.delivery_status === "Out for Delivery" ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-700">
                               <Clock className="w-3.5 h-3.5" /> Out for Delivery
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">
+                              <Clock className="w-3.5 h-3.5 text-slate-500" /> Processing
+                            </span>
+                          )}
+
+                          {ord.whatsapp_confirm_status === "confirmed" && (
+                            <span className="block text-[10px] text-emerald-600 font-bold mt-0.5">
+                              ✓ WA Confirmed
                             </span>
                           )}
                         </td>
@@ -808,6 +841,76 @@ function AdminOrdersContent() {
                   </div>
                 );
               })()}
+
+              {/* WhatsApp Order Verification Status Card */}
+              <div
+                className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 ${
+                  selectedOrder.whatsapp_confirm_status === "pending_whatsapp"
+                    ? "bg-amber-50/70 border-amber-200"
+                    : selectedOrder.whatsapp_confirm_status === "cancelled"
+                    ? "bg-rose-50/70 border-rose-200"
+                    : "bg-emerald-50/70 border-emerald-200"
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                      selectedOrder.whatsapp_confirm_status === "pending_whatsapp"
+                        ? "bg-amber-100 text-amber-700"
+                        : selectedOrder.whatsapp_confirm_status === "cancelled"
+                        ? "bg-rose-100 text-rose-700"
+                        : "bg-emerald-100 text-emerald-700"
+                    }`}
+                  >
+                    {selectedOrder.whatsapp_confirm_status === "pending_whatsapp" ? (
+                      <Clock className="w-4 h-4 stroke-[2.2]" />
+                    ) : selectedOrder.whatsapp_confirm_status === "cancelled" ? (
+                      <X className="w-4 h-4 stroke-[2.2]" />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4 stroke-[2.2]" />
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                        WhatsApp Status:
+                      </span>
+                      {selectedOrder.whatsapp_confirm_status === "pending_whatsapp" ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-200 text-amber-900 animate-pulse">
+                          Awaiting Customer Confirmation
+                        </span>
+                      ) : selectedOrder.whatsapp_confirm_status === "cancelled" ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-200 text-rose-900">
+                          Cancelled via WhatsApp
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-200 text-emerald-900">
+                          Verified & Confirmed
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {selectedOrder.whatsapp_confirm_status === "pending_whatsapp"
+                        ? `Verification prompt sent to ${selectedOrder.customer_phone || "customer"}. Customer must tap Confirm.`
+                        : selectedOrder.whatsapp_confirm_status === "cancelled"
+                        ? "Customer tapped Cancel Order in WhatsApp."
+                        : "Customer confirmed order via interactive WhatsApp message."}
+                    </p>
+                  </div>
+                </div>
+
+                {selectedOrder.whatsapp_confirm_status === "pending_whatsapp" && (
+                  <button
+                    type="button"
+                    onClick={handleManualWAConfirm}
+                    className="px-3 py-1.5 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 shrink-0 cursor-pointer"
+                    title="Manually verify if customer confirmed over phone or chat"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Manual Verify</span>
+                  </button>
+                )}
+              </div>
 
               {/* Shopify Sync Card */}
               <div className="bg-emerald-50/60 p-3.5 rounded-xl border border-emerald-200/80 flex items-center justify-between gap-3">

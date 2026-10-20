@@ -9,36 +9,37 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const requestedEmail = searchParams.get("email")?.toLowerCase().trim();
+    const requestedPhone = searchParams.get("phone")?.replace(/\D/g, "");
 
     // Authenticate caller (Admin or Customer)
     const auth = await getAuthenticatedUser(req);
 
-    let targetEmail: string | undefined;
+    let targetEmail: string | undefined = requestedEmail || undefined;
+    let targetPhone: string | undefined = requestedPhone || undefined;
+    let targetUserId: string | undefined;
 
     if (auth.isAdmin) {
-      // Admin can view all orders or filter by specific email
+      // Admin can view all orders or filter by specific email/phone
       targetEmail = requestedEmail || undefined;
+      targetPhone = requestedPhone || undefined;
     } else if (auth.authenticated && auth.user) {
-      // Authenticated customer can ONLY view their own orders
-      targetEmail = auth.user.email;
-      if (requestedEmail && requestedEmail !== auth.user.email) {
-        return NextResponse.json(
-          { success: false, error: "Forbidden: Cannot access orders of another account" },
-          { status: 403 }
-        );
-      }
+      // Authenticated customer can view their own orders
+      targetEmail = auth.user.email || requestedEmail || undefined;
+      targetPhone = (auth.user.phone ? auth.user.phone.replace(/\D/g, "") : "") || requestedPhone || undefined;
+      targetUserId = auth.user.id;
     } else {
-      // Unauthenticated caller must provide an email (e.g. guest order lookup), but NEVER gets all orders
-      if (!requestedEmail) {
+      // Unauthenticated caller must provide an email or phone (e.g. guest order lookup)
+      if (!requestedEmail && !requestedPhone) {
         return NextResponse.json(
-          { success: false, error: "Authentication required to view order history" },
+          { success: false, error: "Authentication or phone/email required to view order history" },
           { status: 401 }
         );
       }
       targetEmail = requestedEmail;
+      targetPhone = requestedPhone;
     }
 
-    const storefrontOrders = getOrders(targetEmail || undefined);
+    const storefrontOrders = getOrders(targetEmail, targetPhone, targetUserId);
 
     let combinedOrders = [...storefrontOrders];
 
@@ -46,12 +47,19 @@ export async function GET(req: NextRequest) {
       const erpOrders = await getERPOrders();
 
       const matchedErp = erpOrders.filter((o) => {
-        if (!targetEmail) return true;
-        const qLower = targetEmail.toLowerCase().trim();
-        const oEmail = (o.guest_email || "").toLowerCase().trim();
+        if (!targetEmail && !targetPhone && !targetUserId) return true;
+        const oEmail = (o.guest_email || (o as any).customer_email || "").toLowerCase().trim();
         const oPhone = (o.customer_phone || "").replace(/\D/g, "");
-        const searchPhone = targetEmail.replace(/\D/g, "");
-        return oEmail === qLower || (searchPhone.length >= 7 && oPhone.includes(searchPhone));
+        const oUserId = (o as any).user_id;
+
+        if (targetUserId && oUserId && oUserId === targetUserId) return true;
+        if (targetEmail && oEmail && oEmail === targetEmail) return true;
+        if (targetPhone && oPhone) {
+          const searchLast10 = targetPhone.slice(-10);
+          const orderLast10 = oPhone.slice(-10);
+          if (searchLast10 && orderLast10 && searchLast10 === orderLast10) return true;
+        }
+        return false;
       });
 
       const erpIds = new Set(matchedErp.map((o) => o.id));
@@ -128,7 +136,14 @@ export async function GET(req: NextRequest) {
           postal_code: "",
           payment_method: o.payment_method,
           payment_status: isPaid ? "paid" : "pending",
-          order_status: isDelivered ? "delivered" : isShipped ? "shipped" : "processing",
+          order_status: (o.delivery_status === "Cancelled" || o.status === "Cancelled")
+            ? "cancelled"
+            : isDelivered
+            ? "delivered"
+            : isShipped
+            ? "shipped"
+            : "processing",
+          whatsapp_confirm_status: (o.whatsapp_confirm_status as any) || "confirmed",
           items,
           created_at: o.created_at,
         };
@@ -228,6 +243,7 @@ export async function POST(req: NextRequest) {
     }
 
     const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const confirmToken = `tok_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`;
     const isCod =
       (payment_method || "").toLowerCase().includes("cash on delivery") ||
       (payment_method || "").toLowerCase() === "cod";
@@ -246,6 +262,9 @@ export async function POST(req: NextRequest) {
       payment_method: payment_method || (isCod ? "Cash on Delivery" : "Prepaid"),
       payment_status: isCod ? "pending" : "paid",
       order_status: "processing",
+      whatsapp_confirm_status: "pending_whatsapp",
+      whatsapp_confirm_token: confirmToken,
+      whatsapp_token_used: false,
       items,
       created_at: new Date().toISOString(),
     };
@@ -268,23 +287,24 @@ export async function POST(req: NextRequest) {
       console.warn("Auto-sync address from order failed:", syncErr);
     }
 
-    // Send WhatsApp order confirmation (non-blocking, fire-and-forget)
+    // Send WhatsApp interactive pre-confirmation (Confirm/Cancel buttons)
     try {
-      const { sendOrderConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
-      sendOrderConfirmationWhatsApp({
+      const { sendOrderPreConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+      sendOrderPreConfirmationWhatsApp({
         customerName: customer_name,
         customerPhone: customer_phone || "",
         orderId,
         totalAmount: Number(total_amount),
         paymentMethod: isCod ? "cod" : "prepaid",
+        token: confirmToken,
         items: (items || []).map((it: any) => ({
           name: it.name,
           quantity: Number(it.quantity || 1),
           price: Number(it.price || 0),
         })),
-      }).catch((e) => console.warn("WA order confirm error:", e));
+      }).catch((e) => console.warn("WA order pre-confirm error:", e));
     } catch (waErr) {
-      console.warn("Failed to dispatch WA order confirmation:", waErr);
+      console.warn("Failed to dispatch WA order pre-confirmation:", waErr);
     }
 
     return NextResponse.json({ success: true, order: newOrder });

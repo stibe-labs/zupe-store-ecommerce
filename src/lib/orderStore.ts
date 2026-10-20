@@ -1,5 +1,5 @@
 import { executeD1Query } from "@/lib/d1";
-import { createERPOrder, updateERPOrder, getERPOrders } from "@/lib/erpStore";
+import { createERPOrder, updateERPOrder, getERPOrders, getOrderById } from "@/lib/erpStore";
 import { decrementInventory, restockInventory } from "@/lib/inventoryService";
 
 export interface OrderItem {
@@ -24,6 +24,9 @@ export interface OrderRecord {
   payment_method: string;
   payment_status: "pending" | "paid" | "failed";
   order_status: "processing" | "shipped" | "delivered" | "cancelled";
+  whatsapp_confirm_status?: "pending_whatsapp" | "confirmed" | "cancelled";
+  whatsapp_confirm_token?: string;
+  whatsapp_token_used?: boolean;
   items: OrderItem[];
   created_at: string;
 }
@@ -56,7 +59,21 @@ let inMemoryOrders: OrderRecord[] = [
   },
 ];
 
+let schemaUpdated = false;
+async function ensureOrderSchema(): Promise<void> {
+  if (schemaUpdated) return;
+  schemaUpdated = true;
+  try {
+    await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_confirm_status TEXT DEFAULT 'pending_whatsapp'`).catch(() => {});
+    await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_confirm_token TEXT`).catch(() => {});
+    await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_token_used INTEGER DEFAULT 0`).catch(() => {});
+  } catch (err) {
+    // Non-fatal if columns already exist or D1 offline
+  }
+}
+
 export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
+  await ensureOrderSchema();
   inMemoryOrders = [order, ...inMemoryOrders];
 
   // 1. Synchronize to ERP Engine immediately so it appears on Admin Dashboard & Orders
@@ -72,6 +89,9 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
       payment_status: order.payment_status === "paid" ? "Completed" : "Pending",
       status: "Processing",
       delivery_status: "Processing",
+      whatsapp_confirm_status: order.whatsapp_confirm_status || "pending_whatsapp",
+      whatsapp_confirm_token: order.whatsapp_confirm_token || "",
+      whatsapp_token_used: order.whatsapp_token_used || false,
       items: order.items.map((it) => ({
         product_name: it.name,
         quantity: it.quantity,
@@ -115,10 +135,31 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
   return order;
 }
 
-export function getOrders(userEmail?: string): OrderRecord[] {
-  if (!userEmail) return inMemoryOrders;
-  const normalized = userEmail.toLowerCase().trim();
-  return inMemoryOrders.filter((o) => o.customer_email.toLowerCase() === normalized);
+export function getOrders(userEmail?: string, userPhone?: string, userId?: string): OrderRecord[] {
+  if (!userEmail && !userPhone && !userId) return inMemoryOrders;
+  const normEmail = (userEmail || "").toLowerCase().trim();
+  const normPhone = (userPhone || "").replace(/\D/g, "");
+  const last10Phone = normPhone.slice(-10);
+
+  return inMemoryOrders.filter((o) => {
+    if (userId && o.user_id === userId) return true;
+    if (normEmail && o.customer_email.toLowerCase().trim() === normEmail) return true;
+    if (last10Phone) {
+      const oPhoneLast10 = (o.customer_phone || "").replace(/\D/g, "").slice(-10);
+      if (oPhoneLast10 && oPhoneLast10 === last10Phone) return true;
+    }
+    return false;
+  });
+}
+
+export function getStorefrontOrderById(orderId: string): OrderRecord | null {
+  const norm = (orderId || "").trim().toLowerCase();
+  return inMemoryOrders.find((o) => o.id.toLowerCase() === norm) || null;
+}
+
+export function getOrderByToken(token: string): OrderRecord | null {
+  if (!token) return null;
+  return inMemoryOrders.find((o) => o.whatsapp_confirm_token === token) || null;
 }
 
 export function updateStorefrontOrder(orderId: string, updates: Partial<OrderRecord>): void {
@@ -169,4 +210,157 @@ export async function updateOrderStatus(orderId: string, status: OrderRecord["or
   }
 
   return true;
+}
+
+/**
+ * Confirms an order via WhatsApp interactive confirmation link.
+ * Prevents multiple clicks via one-time token security.
+ */
+export async function confirmWhatsAppOrder(token: string, orderId: string): Promise<{
+  success: boolean;
+  message: string;
+  order?: OrderRecord;
+  alreadyUsed?: boolean;
+}> {
+  const normId = (orderId || "").trim();
+  const ord = inMemoryOrders.find(
+    (o) => o.id === normId || (token && o.whatsapp_confirm_token === token)
+  );
+
+  // If token was already marked used or order confirmed in memory
+  if (ord) {
+    if (ord.whatsapp_token_used || ord.whatsapp_confirm_status === "confirmed") {
+      return {
+        success: true,
+        alreadyUsed: true,
+        message: "Order was already confirmed previously.",
+        order: ord,
+      };
+    }
+
+    if (ord.whatsapp_confirm_status === "cancelled") {
+      return {
+        success: false,
+        alreadyUsed: true,
+        message: "This order was cancelled and cannot be confirmed.",
+        order: ord,
+      };
+    }
+
+    ord.whatsapp_confirm_status = "confirmed";
+    ord.whatsapp_token_used = true;
+    ord.order_status = "processing";
+  } else {
+    // Check in ERP store / D1
+    const erpOrd = await getOrderById(normId);
+    if (erpOrd) {
+      if (erpOrd.whatsapp_token_used || erpOrd.whatsapp_confirm_status === "confirmed") {
+        return {
+          success: true,
+          alreadyUsed: true,
+          message: "Order was already confirmed previously.",
+        };
+      }
+      if (erpOrd.whatsapp_confirm_status === "cancelled") {
+        return {
+          success: false,
+          alreadyUsed: true,
+          message: "This order was cancelled and cannot be confirmed.",
+        };
+      }
+    }
+  }
+
+  // Update ERP & D1 stores
+  try {
+    await updateERPOrder(normId, {
+      whatsapp_confirm_status: "confirmed",
+      whatsapp_token_used: true,
+      status: "Processing",
+    });
+  } catch (e) {
+    console.warn("ERP update on WhatsApp confirm error:", e);
+  }
+
+  return {
+    success: true,
+    message: "Order confirmed successfully!",
+    order: ord,
+  };
+}
+
+/**
+ * Cancels an order via WhatsApp cancellation link or direct customer cancellation.
+ * Prevents multiple clicks via token check, and automatically restocks inventory.
+ */
+export async function cancelWhatsAppOrder(
+  tokenOrOrderId: string,
+  opts?: { isDirectCustomerCancel?: boolean; reason?: string }
+): Promise<{
+  success: boolean;
+  message: string;
+  order?: OrderRecord;
+  alreadyUsed?: boolean;
+}> {
+  const norm = (tokenOrOrderId || "").trim();
+  const ord = inMemoryOrders.find(
+    (o) => o.id === norm || o.whatsapp_confirm_token === norm
+  );
+
+  if (ord) {
+    if (!opts?.isDirectCustomerCancel && (ord.whatsapp_token_used || ord.whatsapp_confirm_status === "cancelled")) {
+      return {
+        success: true,
+        alreadyUsed: true,
+        message: "This request has already been processed.",
+        order: ord,
+      };
+    }
+
+    ord.whatsapp_confirm_status = "cancelled";
+    ord.whatsapp_token_used = true;
+    ord.order_status = "cancelled";
+
+    // Restock inventory
+    if (ord.items && ord.items.length > 0) {
+      try {
+        await restockInventory(
+          ord.items.map((it) => ({
+            product_id: it.product_id,
+            name: it.name,
+            quantity: it.quantity,
+          }))
+        );
+      } catch (restockErr) {
+        console.warn("Restock error on WhatsApp cancel:", restockErr);
+      }
+    }
+  } else {
+    const erpOrd = await getOrderById(norm);
+    if (erpOrd && !opts?.isDirectCustomerCancel && (erpOrd.whatsapp_token_used || erpOrd.whatsapp_confirm_status === "cancelled")) {
+      return {
+        success: true,
+        alreadyUsed: true,
+        message: "This request has already been processed.",
+      };
+    }
+  }
+
+  const targetId = ord?.id || norm;
+  try {
+    await updateERPOrder(targetId, {
+      delivery_status: "Cancelled" as any,
+      status: "Cancelled",
+      whatsapp_confirm_status: "cancelled",
+      whatsapp_token_used: true,
+    });
+  } catch (e) {
+    console.warn("ERP cancel update error:", e);
+  }
+
+  return {
+    success: true,
+    message: "Order cancelled successfully.",
+    order: ord,
+  };
 }

@@ -169,6 +169,7 @@ export async function POST(req: NextRequest) {
     }
 
     const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const confirmToken = `tok_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`;
     const newOrder: OrderRecord = {
       id: orderId,
       user_id: effectiveUserId,
@@ -183,6 +184,9 @@ export async function POST(req: NextRequest) {
       payment_method: payment_method || "Online Payment",
       payment_status: "paid",
       order_status: "processing",
+      whatsapp_confirm_status: "pending_whatsapp",
+      whatsapp_confirm_token: confirmToken,
+      whatsapp_token_used: false,
       items: items || [],
       created_at: new Date().toISOString(),
     };
@@ -209,23 +213,24 @@ export async function POST(req: NextRequest) {
       console.warn("Auto-sync address from online order failed:", syncErr);
     }
 
-    // Send WhatsApp order confirmation for prepaid (non-blocking)
+    // Send WhatsApp interactive pre-confirmation for prepaid (non-blocking)
     try {
-      const { sendOrderConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
-      sendOrderConfirmationWhatsApp({
+      const { sendOrderPreConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+      sendOrderPreConfirmationWhatsApp({
         customerName: customer_name || "Customer",
         customerPhone: customer_phone || "",
         orderId,
         totalAmount: Number(total_amount),
         paymentMethod: "prepaid",
+        token: confirmToken,
         items: (items || []).map((it: any) => ({
           name: it.name,
           quantity: Number(it.quantity || 1),
           price: Number(it.price || 0),
         })),
-      }).catch((e) => console.warn("WA order confirm error:", e));
+      }).catch((e) => console.warn("WA order pre-confirm error:", e));
     } catch (waErr) {
-      console.warn("Failed to dispatch WA order confirmation:", waErr);
+      console.warn("Failed to dispatch WA order pre-confirmation:", waErr);
     }
 
     return NextResponse.json({
