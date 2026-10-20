@@ -95,7 +95,7 @@ export async function sendOrderPreConfirmationWhatsApp(
     `📦 *Order ID:* ${orderId}\n` +
     `📋 *Items:*\n${itemLines}${more}\n\n` +
     `💰 *Amount:* Rs ${totalAmount.toLocaleString("en-IN")} (${paymentMethodLabel})\n\n` +
-    `Please confirm or cancel your order below:\n\n` +
+    `Please confirm your order below so we can pack and dispatch your shipment:\n\n` +
     `✅ *CONFIRM ORDER:*\n${confirmUrl}\n\n` +
     `❌ *CANCEL ORDER:*\n${cancelUrl}\n\n` +
     `⚠️ _Please click *Confirm Order* so we can pack and dispatch your shipment._\n\n` +
