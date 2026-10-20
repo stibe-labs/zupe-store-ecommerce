@@ -78,7 +78,7 @@ export default function OrdersPage() {
     async function fetchOrders() {
       try {
         const query = user?.email ? `?email=${encodeURIComponent(user.email)}` : "";
-        const res = await fetch(`/api/orders${query}`);
+        const res = await fetch(`/api/orders${query}`, { cache: "no-store" });
         const data = await res.json();
         if (data.success && Array.isArray(data.orders)) {
           setOrders(data.orders);
@@ -277,6 +277,34 @@ export default function OrdersPage() {
                 ];
               }
 
+              const isPaid =
+                ord.payment_status === "paid" ||
+                Boolean(ord.payment_method && ord.payment_method.toLowerCase().includes("prepaid"));
+
+              const isCod =
+                !isPaid &&
+                (Boolean(ord.payment_method?.toLowerCase().includes("cash on delivery")) ||
+                 Boolean(ord.payment_method?.toUpperCase() === "COD"));
+
+              const productSubtotal = rawItems.reduce(
+                (sum: number, it: any) => sum + (Number(it.price || it.unit_price) || 0) * (Number(it.quantity) || 1),
+                0
+              );
+
+              // Authoritative total amount:
+              // For Cash on Delivery orders: product amount + 49 (matching checkout order summary)
+              // When switched to prepaid: reflects the online prepaid amount
+              let displayedTotal = Number(ord.total_amount) || 0;
+              if (isCod) {
+                if (productSubtotal > 0 && displayedTotal <= productSubtotal) {
+                  displayedTotal = productSubtotal + 49;
+                } else if (displayedTotal <= 0 && productSubtotal > 0) {
+                  displayedTotal = productSubtotal + 49;
+                }
+              } else if (isPaid && displayedTotal <= 0 && productSubtotal > 0) {
+                displayedTotal = productSubtotal;
+              }
+
               return (
                 <div
                   key={ord.id}
@@ -301,11 +329,45 @@ export default function OrdersPage() {
                     <div>
                       <span className="text-[10px] text-gray-400 uppercase font-semibold block">Total Amount</span>
                       <span className="text-sm font-bold text-[#FF7A00]">
-                        ₹{ord.total_amount.toLocaleString()}
+                        ₹{displayedTotal.toLocaleString()}
                       </span>
+                      {isCod ? (
+                        <span className="text-[10px] text-gray-500 font-medium block">
+                          (₹{productSubtotal.toLocaleString()} + ₹49 COD)
+                        </span>
+                      ) : isPaid ? (
+                        <span className="text-[10px] text-emerald-600 font-semibold block">
+                          Prepaid Online
+                        </span>
+                      ) : null}
                     </div>
                     <div className="flex items-center gap-2.5 flex-wrap">
                       {getStatusBadge(isDelivered ? "delivered" : ord.order_status)}
+
+                      {/* Payment Mode Pill */}
+                      {isPaid ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Prepaid (Paid)</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>Cash on Delivery</span>
+                        </span>
+                      )}
+
+                      {/* COD Pay Online & Save Rs 30 Button */}
+                      {isCod && (
+                        <Link
+                          href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(ord.id)}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold bg-[#FF7A00] hover:bg-[#E66E00] text-white shadow-xs transition-all cursor-pointer animate-pulse"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Pay Online (Save ₹30)</span>
+                        </Link>
+                      )}
+
                       <Link
                         href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-orange-50 text-[#FF7A00] hover:bg-[#FF7A00] hover:text-white border border-[#FF7A00]/20 transition-all cursor-pointer"
@@ -332,6 +394,9 @@ export default function OrdersPage() {
                       const itemKey = `${ord.id}_${it.product_id || it.name}`;
                       const hasReviewed = reviewedItems[itemKey];
                       const productTargetLink = `/products/${encodeURIComponent(it.product_id || it.name)}`;
+                      const itemUnitPrice = Number(it.price || it.unit_price) || (productSubtotal > 0 ? 0 : Math.max(0, displayedTotal - (isCod ? 49 : 0)));
+                      const itemQty = Number(it.quantity || 1);
+                      const itemTotal = itemUnitPrice * itemQty;
 
                       return (
                         <div
@@ -364,7 +429,7 @@ export default function OrdersPage() {
                                 {it.name}
                               </Link>
                               <p className="text-xs text-gray-500 mt-0.5">
-                                Qty: {it.quantity || 1} × ₹{(it.price || ord.total_amount).toLocaleString()}
+                                Qty: {itemQty} × ₹{itemUnitPrice.toLocaleString()}
                               </p>
 
                               {/* Review & Rating Trigger on Delivered Product */}
@@ -405,7 +470,7 @@ export default function OrdersPage() {
 
                           <div className="sm:text-right shrink-0">
                             <span className="font-extrabold text-sm text-gray-900 block">
-                              ₹{((it.price || ord.total_amount) * (it.quantity || 1)).toLocaleString()}
+                              ₹{itemTotal.toLocaleString()}
                             </span>
                           </div>
                         </div>
@@ -413,13 +478,44 @@ export default function OrdersPage() {
                     })}
                   </div>
 
+                  {/* Order Summary Breakdown matching Checkout */}
+                  <div className="mt-4 pt-3 border-t border-dashed border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-gray-600 gap-2 bg-gray-50/70 px-4 py-3 rounded-2xl">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-gray-500">
+                      <span>Items Subtotal: <strong className="text-gray-900">₹{productSubtotal.toLocaleString()}</strong></span>
+                      <span>•</span>
+                      {isCod ? (
+                        <span className="text-amber-700 font-semibold">
+                          COD Delivery Fee: <strong>+₹49</strong>
+                        </span>
+                      ) : (
+                        <span className="text-emerald-700 font-semibold">
+                          Delivery: <strong>FREE (Saved ₹49)</strong>
+                        </span>
+                      )}
+                      {ord.discount_amount && ord.discount_amount > 0 ? (
+                        <>
+                          <span>•</span>
+                          <span className="text-emerald-600 font-semibold">
+                            Prepaid Discount: <strong>-₹{ord.discount_amount}</strong>
+                          </span>
+                        </>
+                      ) : null}
+                    </div>
+                    <div className="text-left sm:text-right font-bold text-gray-900">
+                      {isCod ? "Payable on Delivery:" : "Total Paid:"}{" "}
+                      <span className={`text-sm font-extrabold ${isPaid ? "text-emerald-700" : "text-[#FF7A00]"}`}>
+                        ₹{displayedTotal.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
                   {/* Shipping address footer */}
-                  <div className="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between text-xs text-gray-500 gap-2">
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex flex-col sm:flex-row justify-between text-xs text-gray-500 gap-2">
                     <span>
                       Ship to: {ord.shipping_address}
                       {ord.city ? `, ${ord.city}` : ""}
                     </span>
-                    <span>Payment: {ord.payment_method}</span>
+                    <span>Payment: {isPaid ? "Prepaid (Paid Online)" : (ord.payment_method || "Cash on Delivery")}</span>
                   </div>
                 </div>
               );

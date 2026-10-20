@@ -121,6 +121,13 @@ export function getOrders(userEmail?: string): OrderRecord[] {
   return inMemoryOrders.filter((o) => o.customer_email.toLowerCase() === normalized);
 }
 
+export function updateStorefrontOrder(orderId: string, updates: Partial<OrderRecord>): void {
+  const ord = inMemoryOrders.find((o) => o.id === orderId);
+  if (ord) {
+    Object.assign(ord, updates);
+  }
+}
+
 export async function updateOrderStatus(orderId: string, status: OrderRecord["order_status"]): Promise<boolean> {
   const ord = inMemoryOrders.find((o) => o.id === orderId);
   if (ord) {

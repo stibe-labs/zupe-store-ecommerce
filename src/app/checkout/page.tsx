@@ -27,6 +27,7 @@ import {
   Tag,
   Check,
   ShoppingBag,
+  Search,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -112,8 +113,8 @@ function CheckoutContent() {
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [pincodeDetected, setPincodeDetected] = useState(false);
 
-  // Payment method state
-  const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "netbanking" | "cod">("upi");
+  // Payment method state ("prepaid" or "cod")
+  const [paymentMethod, setPaymentMethod] = useState<"prepaid" | "cod">("prepaid");
 
   // Promo code state
   const [promoCode, setPromoCode] = useState("");
@@ -153,6 +154,167 @@ function CheckoutContent() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // COD to Prepaid Switch Mode state
+  const isCodSwitchMode =
+    searchParams.get("switch") === "cod" ||
+    Boolean(searchParams.get("switch_order"));
+
+  const [switchQuery, setSwitchQuery] = useState(() => {
+    return (
+      searchParams.get("orderId") ||
+      searchParams.get("order_id") ||
+      searchParams.get("query") ||
+      searchParams.get("switch_order") ||
+      ""
+    );
+  });
+  const [switchOrder, setSwitchOrder] = useState<any | null>(null);
+  const [switchLoading, setSwitchLoading] = useState(false);
+  const [switchPaying, setSwitchPaying] = useState(false);
+  const [switchError, setSwitchError] = useState("");
+  const [switchSuccess, setSwitchSuccess] = useState(false);
+  const [switchSuccessOrderId, setSwitchSuccessOrderId] = useState("");
+  const [switchSuccessAmount, setSwitchSuccessAmount] = useState(0);
+
+  const lookupCodOrder = async (term: string) => {
+    const trimmed = term.trim();
+    if (!trimmed) {
+      setSwitchError("Please enter your Order ID or phone number.");
+      return;
+    }
+    setSwitchLoading(true);
+    setSwitchError("");
+    try {
+      const res = await fetch(`/api/orders/switch-to-prepaid?query=${encodeURIComponent(trimmed)}`);
+      const data = await res.json();
+      if (data.success && data.order) {
+        setSwitchOrder(data.order);
+      } else {
+        setSwitchError(data.error || "No pending Cash on Delivery order found. Please check your Order ID.");
+      }
+    } catch (err: any) {
+      setSwitchError("Network error. Unable to fetch order details.");
+    } finally {
+      setSwitchLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isCodSwitchMode) return;
+    let initialTerm = switchQuery;
+    if (!initialTerm && typeof window !== "undefined") {
+      initialTerm =
+        localStorage.getItem("zupe_last_cod_order_id") ||
+        localStorage.getItem("zupe_last_cod_phone") ||
+        "";
+      if (initialTerm) {
+        setSwitchQuery(initialTerm);
+      }
+    }
+    if (initialTerm) {
+      lookupCodOrder(initialTerm);
+    }
+  }, [isCodSwitchMode]);
+
+  const handlePayForCodOrder = async () => {
+    if (!switchOrder) return;
+    setSwitchPaying(true);
+    setSwitchError("");
+
+    try {
+      const isScriptLoaded = await loadRazorpayScript();
+      if (!isScriptLoaded) {
+        setSwitchPaying(false);
+        setSwitchError("Could not load secure payment gateway. Please check your internet connection.");
+        return;
+      }
+
+      const res = await fetch("/api/orders/switch-to-prepaid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: switchOrder.id }),
+      });
+      const data = await res.json();
+
+      if (!data.success || !data.razorpay_order_id) {
+        setSwitchPaying(false);
+        setSwitchError(data.error || "Failed to initialize payment. Please try again.");
+        return;
+      }
+
+      const payableAmount = data.amount;
+
+      const options = {
+        key: data.key_id || RAZORPAY_KEY_ID,
+        amount: Math.round(payableAmount * 100),
+        currency: "INR",
+        name: "Zupe Store",
+        description: `Order ${switchOrder.display_id || switchOrder.id} - Switch to Prepaid (Save ₹30)`,
+        image: "/zupe-logo.webp",
+        order_id: data.razorpay_order_id,
+        prefill: {
+          name: switchOrder.customer_name || "",
+          email: switchOrder.customer_email || "",
+          contact: (switchOrder.customer_phone || "").replace(/\D/g, "").slice(-10),
+          method: "upi",
+        },
+        theme: {
+          color: "#FF7A00",
+          backdrop_color: "rgba(17, 17, 17, 0.7)",
+        },
+        modal: {
+          ondismiss: function () {
+            setSwitchPaying(false);
+          },
+        },
+        handler: async function (response: any) {
+          try {
+            setSwitchPaying(true);
+            const verifyRes = await fetch("/api/razorpay/verify-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                order_payload: {
+                  is_cod_switch: true,
+                  existing_order_id: switchOrder.id,
+                  discounted_amount: payableAmount,
+                  customer_name: switchOrder.customer_name,
+                  customer_phone: switchOrder.customer_phone,
+                  items: switchOrder.items,
+                },
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            setSwitchPaying(false);
+            if (verifyData.success) {
+              setSwitchSuccess(true);
+              setSwitchSuccessOrderId(switchOrder.id);
+              setSwitchSuccessAmount(payableAmount);
+            } else {
+              setSwitchError(verifyData.error || "Payment verification failed. Please contact support.");
+            }
+          } catch (vErr: any) {
+            setSwitchPaying(false);
+            setSwitchError("Network error while verifying payment.");
+          }
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on("payment.failed", function (failResp: any) {
+        setSwitchPaying(false);
+        setSwitchError(failResp?.error?.description || "Payment failed. Please try again.");
+      });
+      rzp.open();
+    } catch (err: any) {
+      setSwitchPaying(false);
+      setSwitchError(err.message || "An unexpected error occurred.");
+    }
+  };
+
   // Pre-load product from URL if cart is empty (e.g. ?productId=... or ?slug=...)
   useEffect(() => {
     const paramId = searchParams.get("productId") || searchParams.get("id");
@@ -170,10 +332,11 @@ function CheckoutContent() {
   // Handle URL pre-selected payment method
   useEffect(() => {
     const methodParam = searchParams.get("method")?.toLowerCase();
-    if (methodParam === "upi") setPaymentMethod("upi");
-    else if (methodParam === "card") setPaymentMethod("card");
-    else if (methodParam === "netbanking" || methodParam === "bank") setPaymentMethod("netbanking");
-    else if (methodParam === "cod") setPaymentMethod("cod");
+    if (methodParam === "cod") {
+      setPaymentMethod("cod");
+    } else {
+      setPaymentMethod("prepaid");
+    }
   }, [searchParams]);
 
   // Populate user data if logged in (phone and real name only - never synthetic email)
@@ -347,7 +510,8 @@ function CheckoutContent() {
   };
 
   // Shipping calculation (Free over threshold or included)
-  const shippingFee = 0; // Reference store offers Free Shipping: "Free - Arrives in 3-6 days"
+  // COD adds ₹49 shipping; Prepaid is free
+  const shippingFee = paymentMethod === "cod" ? 49 : 0;
   const totalItemCount = cart.reduce((sum, it) => sum + it.quantity, 0);
 
   // Total calculations
@@ -502,6 +666,10 @@ function CheckoutContent() {
           setConfirmedPaymentId("");
           setOrderComplete(true);
           clearCart();
+          try {
+            localStorage.setItem("zupe_last_cod_order_id", data.order.id);
+            localStorage.setItem("zupe_last_cod_phone", phone.trim());
+          } catch {}
         } else {
           setErrorMessage(data.error || "Failed to process order. Please try again.");
         }
@@ -549,12 +717,7 @@ function CheckoutContent() {
         return;
       }
 
-      const methodLabel =
-        paymentMethod === "upi"
-          ? "UPI"
-          : paymentMethod === "netbanking"
-          ? "Net Banking"
-          : "Credit / Debit Card";
+      const methodLabel = "Prepaid (Online)";
 
       const options = {
         key: orderData.keyId || RAZORPAY_KEY_ID,
@@ -568,7 +731,7 @@ function CheckoutContent() {
           name: name.trim(),
           email: email.trim(),
           contact: phone.trim(),
-          method: paymentMethod === "netbanking" ? "netbanking" : paymentMethod === "card" ? "card" : "upi",
+          method: "upi",
         },
         notes: {
           shipping_address: `${address.trim()}, ${city.trim()} - ${postalCode.trim()}`,
@@ -651,6 +814,304 @@ function CheckoutContent() {
     }
   };
 
+  // ========================================================
+  // COD TO PREPAID SWITCH VIEW (TRIGGERED FROM WHATSAPP / TRACKING)
+  // ========================================================
+  if (isCodSwitchMode) {
+    if (switchSuccess) {
+      return (
+        <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
+          <header className="py-4 border-b border-gray-100 bg-white">
+            <div className="max-w-4xl mx-auto px-4 flex items-center justify-center">
+              <Link href="/" className="inline-block">
+                <Image
+                  src="/zupe-logo.webp"
+                  alt="Zupe Store"
+                  width={120}
+                  height={38}
+                  className="h-9 w-auto object-contain"
+                  priority
+                />
+              </Link>
+            </div>
+          </header>
+
+          <main className="max-w-lg mx-auto py-12 px-4 text-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", damping: 15 }}
+              className="w-20 h-20 mx-auto mb-6 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-lg shadow-emerald-500/15"
+            >
+              <CheckCircle2 className="w-10 h-10" />
+            </motion.div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 mb-2 border border-emerald-200">
+              ✓ Switched to Prepaid &amp; Saved ₹30
+            </span>
+            <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
+              Payment Successful!
+            </h1>
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+              Your order is now <strong>Prepaid &amp; Confirmed</strong>. You saved ₹30 and your package has been moved to <strong>Priority Express Dispatch</strong>.
+            </p>
+
+            <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-xs mb-8 text-left space-y-3 text-xs text-gray-600">
+              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                <span className="text-gray-500">Order ID:</span>
+                <span className="font-mono font-bold text-gray-900 text-sm">{switchSuccessOrderId}</span>
+              </div>
+              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                <span className="text-gray-500">Payment Mode:</span>
+                <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                  Prepaid (Paid Online)
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                <span className="text-gray-500">Prepaid Discount:</span>
+                <span className="font-bold text-emerald-600">-₹30 Applied</span>
+              </div>
+              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                <span className="text-gray-500">Shipping:</span>
+                <span className="font-bold text-[#FF7A00]">FREE (Saved ₹49)</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 text-sm">
+                <span className="font-bold text-gray-900">Total Paid:</span>
+                <span className="font-extrabold text-[#FF7A00] text-lg">₹{switchSuccessAmount.toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                href={`/order-tracking?query=${encodeURIComponent(switchSuccessOrderId)}`}
+                className="flex-1 py-3.5 px-6 rounded-xl bg-[#FF7A00] text-white font-semibold text-sm hover:bg-[#E66E00] transition-colors flex items-center justify-center gap-2 shadow-xs"
+              >
+                <Truck className="w-4 h-4" />
+                <span>Track Order</span>
+              </Link>
+              <Link
+                href="/orders"
+                className="flex-1 py-3.5 px-6 rounded-xl bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center"
+              >
+                View My Orders
+              </Link>
+            </div>
+          </main>
+
+          <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
+            © 2026 Zupe Store
+          </footer>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
+        <header className="py-4 border-b border-gray-100 bg-white">
+          <div className="max-w-4xl mx-auto px-4 flex items-center justify-between">
+            <Link href="/" className="inline-block">
+              <Image
+                src="/zupe-logo.webp"
+                alt="Zupe Store"
+                width={120}
+                height={38}
+                className="h-9 w-auto object-contain"
+                priority
+              />
+            </Link>
+            <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-semibold bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
+              <ShieldCheck className="w-4 h-4" />
+              <span>100% Secure Checkout</span>
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-xl mx-auto py-8 px-4 w-full">
+          {/* Header Banner */}
+          <div className="bg-gradient-to-r from-orange-500 via-[#FF7A00] to-amber-500 rounded-3xl p-6 text-white text-center shadow-lg shadow-[#FF7A00]/20 mb-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 translate-x-4 -translate-y-4 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-white text-[#FF7A00] uppercase tracking-wide mb-3 shadow-xs">
+              ⚡ Instant ₹30 Discount Offer
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight">
+              Switch to Prepaid &amp; Save ₹30!
+            </h1>
+            <p className="text-xs sm:text-sm text-orange-100 mt-2 max-w-md mx-auto leading-relaxed">
+              Pay online now via UPI, Google Pay, PhonePe, Cards, or Net Banking. Waive cash charges and get priority express dispatch.
+            </p>
+          </div>
+
+          {switchError && (
+            <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold">{switchError}</p>
+                <p className="text-xs text-rose-600 mt-0.5">Please check your Order ID or phone number below.</p>
+              </div>
+            </div>
+          )}
+
+          {switchLoading && (
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center">
+              <Loader2 className="w-8 h-8 text-[#FF7A00] animate-spin mx-auto mb-3" />
+              <p className="text-sm font-semibold text-gray-700">Looking up your order details...</p>
+            </div>
+          )}
+
+          {!switchLoading && switchOrder ? (
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/90 shadow-sm space-y-6">
+              {/* Order Info */}
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Order Reference</span>
+                  <span className="font-mono font-bold text-base text-gray-900">
+                    {switchOrder.display_id || switchOrder.id}
+                  </span>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                  Current: Cash on Delivery
+                </span>
+              </div>
+
+              {/* Customer summary */}
+              <div className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100 text-xs text-gray-600 space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Customer:</span>
+                  <span className="font-semibold text-gray-900">{switchOrder.customer_name}</span>
+                </div>
+                {switchOrder.customer_phone && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Phone:</span>
+                    <span className="font-mono text-gray-900">{switchOrder.customer_phone}</span>
+                  </div>
+                )}
+                {switchOrder.shipping_address && (
+                  <div className="flex justify-between items-start pt-1">
+                    <span className="text-gray-400">Delivery To:</span>
+                    <span className="text-right max-w-[240px] text-gray-800">{switchOrder.shipping_address}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Price Breakdown with Rs 30 discount */}
+              <div className="space-y-2.5 pt-2 text-xs sm:text-sm">
+                <div className="flex justify-between text-gray-600">
+                  <span>COD Order Total:</span>
+                  <span className="line-through text-gray-400">₹{Number(switchOrder.total_amount).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-emerald-600 font-bold">
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Prepaid Switch Discount:</span>
+                  </span>
+                  <span>-₹30</span>
+                </div>
+                <div className="pt-3 border-t border-gray-200 flex justify-between items-center text-base sm:text-lg">
+                  <span className="font-bold text-gray-900">Final Amount to Pay:</span>
+                  <div className="text-right">
+                    <span className="font-extrabold text-[#FF7A00] text-xl">
+                      ₹{Math.max(0, Number(switchOrder.total_amount) - 30).toLocaleString()}
+                    </span>
+                    <span className="block text-[10px] text-emerald-600 font-bold">You Save ₹30 Instantly</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pay Now Button */}
+              <button
+                type="button"
+                onClick={handlePayForCodOrder}
+                disabled={switchPaying}
+                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-orange-500 via-[#FF7A00] to-orange-600 hover:from-[#e06900] hover:to-[#d06000] text-white font-extrabold text-base shadow-lg shadow-[#FF7A00]/30 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+              >
+                {switchPaying ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Launching Secure Payment...</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-5 h-5" />
+                    <span>Pay ₹{Math.max(0, Number(switchOrder.total_amount) - 30).toLocaleString()} Online Now →</span>
+                  </>
+                )}
+              </button>
+
+              {/* Security info */}
+              <div className="pt-2 text-center text-[11px] text-gray-400 space-y-1">
+                <p>🔒 256-bit Bank Grade SSL Encrypted • Powered by Razorpay</p>
+                <p>Supports UPI (GPay, PhonePe, Paytm), All Major Debit &amp; Credit Cards, Net Banking</p>
+              </div>
+
+              {/* Option to look up another order */}
+              <div className="pt-3 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSwitchOrder(null);
+                    setSwitchQuery("");
+                  }}
+                  className="text-xs text-gray-500 hover:text-gray-800 underline"
+                >
+                  Switch a different order
+                </button>
+              </div>
+            </div>
+          ) : !switchLoading ? (
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/90 shadow-sm space-y-5">
+              <div className="text-center">
+                <ShoppingBag className="w-10 h-10 text-[#FF7A00] mx-auto mb-2" />
+                <h3 className="font-bold text-gray-900 text-base">Find Your Cash on Delivery Order</h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter your Order ID (e.g. ord_...) or 10-digit mobile number to claim your ₹30 instant discount.
+                </p>
+              </div>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  lookupCodOrder(switchQuery);
+                }}
+                className="space-y-3"
+              >
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                    Order ID or Mobile Number
+                  </label>
+                  <input
+                    type="text"
+                    value={switchQuery}
+                    onChange={(e) => setSwitchQuery(e.target.value)}
+                    placeholder="e.g. ord_177374... or 9876543210"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={switchLoading || !switchQuery.trim()}
+                  className="w-full py-3.5 px-6 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-sm transition-all shadow-md shadow-[#FF7A00]/25 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Find Order &amp; Claim ₹30 Discount</span>
+                </button>
+              </form>
+
+              <div className="text-center pt-2">
+                <Link href="/" className="text-xs text-gray-500 hover:text-gray-800">
+                  ← Back to Store
+                </Link>
+              </div>
+            </div>
+          ) : null}
+        </main>
+
+        <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
+          © 2026 Zupe Store
+        </footer>
+      </div>
+    );
+  }
+
   // Order Confirmed View
   if (orderComplete) {
     return (
@@ -704,13 +1165,7 @@ function CheckoutContent() {
             <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
               <span className="text-gray-500">Payment Mode:</span>
               <span className="font-semibold text-gray-900">
-                {paymentMethod === "upi"
-                  ? "UPI Instant"
-                  : paymentMethod === "netbanking"
-                  ? "Net Banking"
-                  : paymentMethod === "card"
-                  ? "Credit / Debit Card"
-                  : "Cash on Delivery"}
+                {paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid (Online)"}
               </span>
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
@@ -952,7 +1407,11 @@ function CheckoutContent() {
                     <span>Shipping</span>
                     <p className="text-[10px] text-gray-400">Arrives in 3-6 days</p>
                   </div>
-                  <span className="font-bold text-[#FF7A00]">Free</span>
+                  {paymentMethod === "cod" ? (
+                    <span className="font-bold text-amber-600">+₹49</span>
+                  ) : (
+                    <span className="font-bold text-[#FF7A00]">Free</span>
+                  )}
                 </div>
                 <div className="flex justify-between items-baseline pt-2 border-t border-gray-100">
                   <span className="font-bold text-sm text-gray-900">Total</span>
@@ -1237,78 +1696,68 @@ function CheckoutContent() {
                 </label>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* UPI */}
+                  {/* Order With Prepaid (highlighted / recommended) */}
                   <div
-                    onClick={() => setPaymentMethod("upi")}
-                    className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
-                      paymentMethod === "upi"
-                        ? "border-[#FF7A00] bg-[#FFF7ED]/80 ring-1 ring-[#FF7A00]"
-                        : "border-gray-200 bg-white hover:border-gray-300"
+                    onClick={() => setPaymentMethod("prepaid")}
+                    className={`relative p-3.5 pt-5 rounded-xl border-2 cursor-pointer transition-all ${
+                      paymentMethod === "prepaid"
+                        ? "border-[#FF7A00] bg-[#FFF7ED]/80 ring-1 ring-[#FF7A00] shadow-md shadow-[#FF7A00]/10"
+                        : "border-gray-200 bg-white hover:border-[#FF7A00]/50"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center shrink-0">
-                        <QrCode className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-gray-900">UPI Instant</p>
-                        <p className="text-[10px] text-gray-500">GPay, PhonePe, Paytm, BHIM</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-orange-100 text-[#FF7A00]">
-                      Fastest
+                    {/* Recommended badge with glow animation */}
+                    <span
+                      style={{
+                        animation: "recommendGlow 1.8s ease-in-out infinite",
+                      }}
+                      className="absolute -top-2.5 left-3 px-2 py-0.5 rounded-full bg-[#FF7A00] text-white text-[9px] font-extrabold uppercase tracking-wider shadow-sm"
+                    >
+                      ★ Recommended
                     </span>
-                  </div>
-
-                  {/* Cards */}
-                  <div
-                    onClick={() => setPaymentMethod("card")}
-                    className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
-                      paymentMethod === "card"
-                        ? "border-[#FF7A00] bg-[#FFF7ED]/80 ring-1 ring-[#FF7A00]"
-                        : "border-gray-200 bg-white hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                        <CreditCard className="w-4 h-4" />
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center shrink-0">
+                          <QrCode className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-gray-900">Order With Prepaid</p>
+                          <p className="text-[10px] text-gray-500">UPI · Cards · Net Banking</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs font-bold text-gray-900">Credit / Debit Card</p>
-                        <p className="text-[10px] text-gray-500">Visa, Mastercard, RuPay</p>
-                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-green-100 text-green-700 shrink-0">
+                        Free Shipping
+                      </span>
                     </div>
-                  </div>
-
-                  {/* Net Banking */}
-                  <div
-                    onClick={() => setPaymentMethod("netbanking")}
-                    className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
-                      paymentMethod === "netbanking"
-                        ? "border-[#FF7A00] bg-[#FFF7ED]/80 ring-1 ring-[#FF7A00]"
-                        : "border-gray-200 bg-white hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-                        <Building2 className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-gray-900">Net Banking</p>
-                        <p className="text-[10px] text-gray-500">All Major Indian Banks</p>
-                      </div>
-                    </div>
+                    {/* 3 benefit points */}
+                    <ul className="mt-2.5 ml-10 space-y-0.5">
+                      <li className="flex items-center gap-1.5 text-[10px] text-gray-600">
+                        <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
+                        Secure Payment
+                      </li>
+                      <li className="flex items-center gap-1.5 text-[10px] text-gray-600">
+                        <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
+                        Instant Confirmation
+                      </li>
+                      <li className="flex items-center gap-1.5 text-[10px] text-gray-600">
+                        <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
+                        Faster Processing
+                      </li>
+                    </ul>
                   </div>
 
                   {/* Cash on Delivery */}
                   <div
                     onClick={() => setPaymentMethod("cod")}
-                    className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
+                    className={`relative p-3.5 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${
                       paymentMethod === "cod"
-                        ? "border-[#FF7A00] bg-[#FFF7ED]/80 ring-1 ring-[#FF7A00]"
-                        : "border-gray-200 bg-white hover:border-gray-300"
+                        ? "border-gray-400 bg-gray-50 ring-1 ring-gray-400"
+                        : "border-gray-200 bg-white hover:border-gray-400"
                     }`}
                   >
+                    {/* Extra Charges Apply badge */}
+                    <span className="absolute -top-2.5 left-3 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-extrabold uppercase tracking-wider shadow-sm">
+                      Extra Charges Apply
+                    </span>
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
                         <Truck className="w-4 h-4" />
@@ -1318,6 +1767,9 @@ function CheckoutContent() {
                         <p className="text-[10px] text-gray-500">Pay cash/UPI at doorstep</p>
                       </div>
                     </div>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 shrink-0">
+                      +₹49
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1472,7 +1924,11 @@ function CheckoutContent() {
                     <span>Shipping</span>
                     <p className="text-[10px] text-gray-400">Arrives in 3-6 days</p>
                   </div>
-                  <span className="font-bold text-[#FF7A00]">Free</span>
+                  {paymentMethod === "cod" ? (
+                    <span className="font-bold text-amber-600">+₹49</span>
+                  ) : (
+                    <span className="font-bold text-[#FF7A00]">Free</span>
+                  )}
                 </div>
               </div>
 

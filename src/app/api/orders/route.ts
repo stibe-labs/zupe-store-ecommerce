@@ -3,6 +3,8 @@ import { createOrder, getOrders, updateOrderStatus, OrderRecord } from "@/lib/or
 import { getERPOrders } from "@/lib/erpStore";
 import { getAuthenticatedUser } from "@/lib/userAuth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -42,10 +44,8 @@ export async function GET(req: NextRequest) {
 
     try {
       const erpOrders = await getERPOrders();
-      const existingIds = new Set(storefrontOrders.map((o) => o.id));
 
       const matchedErp = erpOrders.filter((o) => {
-        if (existingIds.has(o.id)) return false;
         if (!targetEmail) return true;
         const qLower = targetEmail.toLowerCase().trim();
         const oEmail = (o.guest_email || "").toLowerCase().trim();
@@ -53,6 +53,8 @@ export async function GET(req: NextRequest) {
         const searchPhone = targetEmail.replace(/\D/g, "");
         return oEmail === qLower || (searchPhone.length >= 7 && oPhone.includes(searchPhone));
       });
+
+      const erpIds = new Set(matchedErp.map((o) => o.id));
 
       const mappedErp: OrderRecord[] = matchedErp.map((o) => {
         let rawItems = o.items;
@@ -88,24 +90,76 @@ export async function GET(req: NextRequest) {
           ["in transit", "out for delivery", "shipped"].includes((o.delivery_status || "").toLowerCase()) ||
           (o.status || "").toLowerCase() === "shipped";
 
+        const isPaid =
+          o.payment_status === "Completed" ||
+          o.payment_status === "Settled" ||
+          o.payment_status === "paid" ||
+          o.payment_method === "Prepaid";
+
+        const isCod =
+          !isPaid &&
+          ((o.payment_method || "").toLowerCase().includes("cash on delivery") ||
+           (o.payment_method || "").toUpperCase() === "COD");
+
+        const productSubtotal = items.reduce(
+          (sum: number, it: any) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1),
+          0
+        );
+
+        let finalTotal = Number(o.total_amount) || 0;
+        if (isCod) {
+          // Cash on Delivery orders show product amount + 49 as shown in checkout order summary
+          if (productSubtotal > 0 && finalTotal <= productSubtotal) {
+            finalTotal = productSubtotal + 49;
+          } else if (finalTotal <= 0 && productSubtotal > 0) {
+            finalTotal = productSubtotal + 49;
+          }
+        }
+
         return {
           id: o.id,
           customer_name: o.customer_name,
           customer_email: o.guest_email || "",
           customer_phone: o.customer_phone,
-          total_amount: o.total_amount,
+          total_amount: finalTotal,
+          discount_amount: (o as any).discount_amount || 0,
           shipping_address: o.shipping_address,
           city: "",
           postal_code: "",
           payment_method: o.payment_method,
-          payment_status: o.payment_status === "Completed" || o.payment_status === "Settled" ? "paid" : "pending",
+          payment_status: isPaid ? "paid" : "pending",
           order_status: isDelivered ? "delivered" : isShipped ? "shipped" : "processing",
           items,
           created_at: o.created_at,
         };
       });
 
-      combinedOrders = [...storefrontOrders, ...mappedErp];
+      const memoryRemaining = storefrontOrders
+        .filter((so) => !erpIds.has(so.id))
+        .map((so) => {
+          const isPaid =
+            so.payment_status === "paid" ||
+            (so.payment_method && so.payment_method.toLowerCase().includes("prepaid"));
+          const isCod =
+            !isPaid &&
+            ((so.payment_method || "").toLowerCase().includes("cash on delivery") ||
+             (so.payment_method || "").toUpperCase() === "COD");
+          const pSubtotal = (so.items || []).reduce(
+            (sum: number, it: any) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1),
+            0
+          );
+          let finalTotal = Number(so.total_amount) || 0;
+          if (isCod && pSubtotal > 0 && finalTotal <= pSubtotal) {
+            finalTotal = pSubtotal + 49;
+          }
+          return {
+            ...so,
+            total_amount: finalTotal,
+            payment_status: isPaid ? ("paid" as const) : ("pending" as const),
+          };
+        });
+
+      combinedOrders = [...mappedErp, ...memoryRemaining];
     } catch (e) {
       console.warn("Failed to merge ERP orders in /api/orders GET:", e);
     }
@@ -214,7 +268,27 @@ export async function POST(req: NextRequest) {
       console.warn("Auto-sync address from order failed:", syncErr);
     }
 
+    // Send WhatsApp order confirmation (non-blocking, fire-and-forget)
+    try {
+      const { sendOrderConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+      sendOrderConfirmationWhatsApp({
+        customerName: customer_name,
+        customerPhone: customer_phone || "",
+        orderId,
+        totalAmount: Number(total_amount),
+        paymentMethod: "cod",
+        items: (items || []).map((it: any) => ({
+          name: it.name,
+          quantity: Number(it.quantity || 1),
+          price: Number(it.price || 0),
+        })),
+      }).catch((e) => console.warn("WA order confirm error:", e));
+    } catch (waErr) {
+      console.warn("Failed to dispatch WA order confirmation:", waErr);
+    }
+
     return NextResponse.json({ success: true, order: newOrder });
+
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

@@ -39,6 +39,85 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Handle switching an existing Cash on Delivery order to Prepaid
+    if (order_payload.is_cod_switch && order_payload.existing_order_id) {
+      const existingOrderId = order_payload.existing_order_id;
+      const { updateERPOrder, getOrderById } = await import("@/lib/erpStore");
+      const existingOrder = await getOrderById(existingOrderId);
+
+      const discountedAmount = Number(
+        order_payload.discounted_amount ||
+          (existingOrder ? Math.max(0, existingOrder.total_amount - 30) : 0)
+      );
+
+      // 1. Update in ERP Store (handles memory + D1 update)
+      await updateERPOrder(existingOrderId, {
+        payment_method: "Prepaid",
+        payment_status: "Completed",
+        total_amount: discountedAmount,
+        shipping_cost: 0,
+        remittance_status: "Settled",
+      });
+
+      // 2. Direct authoritative D1 update
+      try {
+        const { executeD1Query } = await import("@/lib/d1");
+        await executeD1Query(
+          `UPDATE orders
+           SET payment_method = 'Prepaid',
+               payment_status = 'paid',
+               total_amount = ?,
+               discount_amount = COALESCE(discount_amount, 0) + 30,
+               shipping_cost = 0,
+               remittance_status = 'Settled'
+           WHERE id = ? OR shopify_order_id = ?`,
+          [discountedAmount, existingOrderId, existingOrderId]
+        );
+      } catch (d1Err) {
+        console.warn("D1 update order switch error:", d1Err);
+      }
+
+      // 2b. Synchronize local memory store
+      try {
+        const { updateStorefrontOrder } = await import("@/lib/orderStore");
+        updateStorefrontOrder(existingOrderId, {
+          payment_method: "Prepaid",
+          payment_status: "paid",
+          total_amount: discountedAmount,
+        });
+      } catch {}
+
+      // 3. Dispatch WhatsApp confirmation (prepaid template)
+      try {
+        const { sendOrderConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+        const custName = existingOrder?.customer_name || order_payload.customer_name || "Customer";
+        const custPhone = existingOrder?.customer_phone || order_payload.customer_phone || "";
+        const orderItems = existingOrder?.items || order_payload.items || [];
+        sendOrderConfirmationWhatsApp({
+          customerName: custName,
+          customerPhone: custPhone,
+          orderId: existingOrder?.shopify_order_id || existingOrderId,
+          totalAmount: discountedAmount,
+          paymentMethod: "prepaid",
+          items: orderItems.map((it: any) => ({
+            name: it.product_name || it.name,
+            quantity: Number(it.quantity || 1),
+            price: Number(it.unit_price || it.price || 0),
+          })),
+        }).catch((e) => console.warn("WA prepaid confirm error:", e));
+      } catch (waErr) {
+        console.warn("WA switch confirm dispatch error:", waErr);
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: "Order successfully converted to Prepaid!",
+        orderId: existingOrderId,
+        totalAmount: discountedAmount,
+        paymentId: razorpay_payment_id,
+      });
+    }
+
     const {
       customer_name,
       customer_email,
@@ -124,11 +203,31 @@ export async function POST(req: NextRequest) {
       console.warn("Auto-sync address from online order failed:", syncErr);
     }
 
+    // Send WhatsApp order confirmation for prepaid (non-blocking)
+    try {
+      const { sendOrderConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+      sendOrderConfirmationWhatsApp({
+        customerName: customer_name || "Customer",
+        customerPhone: customer_phone || "",
+        orderId,
+        totalAmount: Number(total_amount),
+        paymentMethod: "prepaid",
+        items: (items || []).map((it: any) => ({
+          name: it.name,
+          quantity: Number(it.quantity || 1),
+          price: Number(it.price || 0),
+        })),
+      }).catch((e) => console.warn("WA order confirm error:", e));
+    } catch (waErr) {
+      console.warn("Failed to dispatch WA order confirmation:", waErr);
+    }
+
     return NextResponse.json({
       success: true,
       order: newOrder,
       paymentId: razorpay_payment_id,
     });
+
   } catch (err: any) {
     console.error("Error in verify-payment:", err);
     return NextResponse.json(

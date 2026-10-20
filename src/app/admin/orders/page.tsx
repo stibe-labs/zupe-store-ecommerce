@@ -560,13 +560,20 @@ function AdminOrdersContent() {
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           <span
-                            className={`inline-flex px-2 py-0.5 rounded text-[11px] font-bold ${
-                              ord.payment_method === "COD"
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold ${
+                              ord.payment_method === "COD" || (ord.payment_method && ord.payment_method.toLowerCase().includes("cash on delivery"))
                                 ? "bg-amber-50 text-amber-700 border border-amber-200"
-                                : "bg-orange-50 text-[#FF7A00] border border-orange-200"
+                                : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                             }`}
                           >
                             {ord.payment_method}
+                          </span>
+                          <span className="block text-[10px] font-semibold mt-0.5 text-slate-500">
+                            {ord.payment_status === "Completed" || ord.payment_status === "paid" ? (
+                              <span className="text-emerald-600 font-bold">✓ Paid</span>
+                            ) : (
+                              <span className="text-amber-600 font-medium">Pending</span>
+                            )}
                           </span>
                         </td>
                         <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">

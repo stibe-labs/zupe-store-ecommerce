@@ -1181,9 +1181,21 @@ export async function updateERPOrder(
       fieldsToUpdate.push("tracking_number = ?");
       values.push(updates.shiprocket_awb);
     }
+    if (updates.payment_method !== undefined) {
+      fieldsToUpdate.push("payment_method = ?");
+      values.push(updates.payment_method);
+    }
     if (updates.payment_status !== undefined) {
       fieldsToUpdate.push("payment_status = ?");
       values.push(updates.payment_status);
+    }
+    if (updates.total_amount !== undefined) {
+      fieldsToUpdate.push("total_amount = ?");
+      values.push(updates.total_amount);
+    }
+    if (updates.shipping_cost !== undefined) {
+      fieldsToUpdate.push("shipping_cost = ?");
+      values.push(updates.shipping_cost);
     }
     if (updates.remittance_status !== undefined) {
       fieldsToUpdate.push("remittance_status = ?");
