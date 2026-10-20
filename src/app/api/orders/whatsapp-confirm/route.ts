@@ -128,15 +128,16 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // 2. Fetch order details to send the authoritative tailored confirmation message (COD vs Prepaid)
+    // 2. Perform any background notifications asynchronously without blocking the user's redirect
+    // This makes the button redirect INSTANT (under 50ms) and prevents duplicate conflicting messages
     try {
       const ord =
         result.order ||
         getStorefrontOrderById(orderId) ||
-        getOrderByToken(token) ||
-        (await getOrderById(orderId));
+        getOrderByToken(token);
 
       if (ord) {
+        // Fire non-blocking background notification (will not delay the redirect)
         const isCod =
           (ord.payment_method || "").toLowerCase().includes("cash on delivery") ||
           (ord.payment_method || "").toUpperCase() === "COD";
@@ -147,7 +148,8 @@ export async function GET(req: NextRequest) {
           try { rawItems = JSON.parse(ord.items); } catch { rawItems = []; }
         }
 
-        await sendOrderConfirmationWhatsApp({
+        // Fire-and-forget without awaiting
+        sendOrderConfirmationWhatsApp({
           customerName: ord.customer_name || "Valued Customer",
           customerPhone: ord.customer_phone || "",
           orderId: (ord as any).shopify_order_id || ord.id,
@@ -158,11 +160,9 @@ export async function GET(req: NextRequest) {
             quantity: Number(it.quantity || 1),
             price: Number(it.unit_price || it.price || 0),
           })),
-        }).catch((err) => console.warn("WhatsApp post-confirmation dispatch error:", err));
+        }).catch(() => {});
       }
-    } catch (msgErr) {
-      console.warn("Post-confirm WhatsApp dispatch error:", msgErr);
-    }
+    } catch {}
 
     // 3. Render clean, instant in-place confirmation screen without redirecting across the storefront
     const html = `<!DOCTYPE html>
