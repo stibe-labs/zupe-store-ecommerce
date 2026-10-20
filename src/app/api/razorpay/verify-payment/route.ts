@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
         const custName = existingOrder?.customer_name || order_payload.customer_name || "Customer";
         const custPhone = existingOrder?.customer_phone || order_payload.customer_phone || "";
         const orderItems = existingOrder?.items || order_payload.items || [];
-        sendOrderConfirmationWhatsApp({
+        await sendOrderConfirmationWhatsApp({
           customerName: custName,
           customerPhone: custPhone,
           orderId: existingOrder?.shopify_order_id || existingOrderId,
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
             quantity: Number(it.quantity || 1),
             price: Number(it.unit_price || it.price || 0),
           })),
-        }).catch((e) => console.warn("WA prepaid confirm error:", e));
+        });
       } catch (waErr) {
         console.warn("WA switch confirm dispatch error:", waErr);
       }
@@ -213,10 +213,10 @@ export async function POST(req: NextRequest) {
       console.warn("Auto-sync address from online order failed:", syncErr);
     }
 
-    // Send WhatsApp interactive pre-confirmation for prepaid (non-blocking)
+    // Send WhatsApp interactive pre-confirmation for prepaid
     try {
       const { sendOrderPreConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
-      sendOrderPreConfirmationWhatsApp({
+      const waSent = await sendOrderPreConfirmationWhatsApp({
         customerName: customer_name || "Customer",
         customerPhone: customer_phone || "",
         orderId,
@@ -228,7 +228,8 @@ export async function POST(req: NextRequest) {
           quantity: Number(it.quantity || 1),
           price: Number(it.price || 0),
         })),
-      }).catch((e) => console.warn("WA order pre-confirm error:", e));
+      });
+      console.log(`[Verify Payment] WhatsApp pre-confirmation dispatched for ${orderId}: ${waSent}`);
     } catch (waErr) {
       console.warn("Failed to dispatch WA order pre-confirmation:", waErr);
     }

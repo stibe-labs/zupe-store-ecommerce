@@ -290,7 +290,7 @@ export async function POST(req: NextRequest) {
     // Send WhatsApp interactive pre-confirmation (Confirm/Cancel buttons)
     try {
       const { sendOrderPreConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
-      sendOrderPreConfirmationWhatsApp({
+      const waSent = await sendOrderPreConfirmationWhatsApp({
         customerName: customer_name,
         customerPhone: customer_phone || "",
         orderId,
@@ -302,7 +302,8 @@ export async function POST(req: NextRequest) {
           quantity: Number(it.quantity || 1),
           price: Number(it.price || 0),
         })),
-      }).catch((e) => console.warn("WA order pre-confirm error:", e));
+      });
+      console.log(`[Orders Route] WhatsApp pre-confirmation dispatched for ${orderId}: ${waSent}`);
     } catch (waErr) {
       console.warn("Failed to dispatch WA order pre-confirmation:", waErr);
     }

@@ -1106,8 +1106,9 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
         total_amount, subtotal, shipping_cost, status, payment_method,
         payment_status, shipping_address, tracking_number, shiprocket_awb,
         courier_partner, delivery_status, ndr_status, rto_status, remittance_status,
-        supplier_id, product_cost, rto_shipping_charge, ad_spend_attributed, net_profit, created_at, items
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        supplier_id, product_cost, rto_shipping_charge, ad_spend_attributed, net_profit, created_at, items,
+        whatsapp_confirm_status, whatsapp_confirm_token, whatsapp_token_used
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         newOrder.id,
         newOrder.shopify_order_id,
@@ -1135,6 +1136,9 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
         newOrder.net_profit,
         newOrder.created_at,
         JSON.stringify(newOrder.items || []),
+        newOrder.whatsapp_confirm_status || "pending_whatsapp",
+        newOrder.whatsapp_confirm_token || null,
+        newOrder.whatsapp_token_used ? 1 : 0,
       ]
     );
   } catch (err) {

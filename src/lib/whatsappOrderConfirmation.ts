@@ -224,12 +224,14 @@ async function sendPreConfirmViaTemplate(
           return true;
         }
 
+        console.warn(`[WA Pre-Confirm] Template variation rejected:`, data?.error?.message || data?.error || data);
+
         // If template doesn't exist under this language, stop trying variations for it
         if (data?.error?.code === 132001) {
           break;
         }
-      } catch {
-        // Continue
+      } catch (err) {
+        console.warn(`[WA Pre-Confirm] Template variation fetch error:`, err);
       }
     }
   }

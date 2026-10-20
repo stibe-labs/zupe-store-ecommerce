@@ -105,29 +105,25 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
     console.warn("Failed to sync storefront order to ERP:", err);
   }
 
-  // 2. Persist to D1 if available
+  // 2. Persist/update user_id and verification tokens in D1 if available
   try {
     await executeD1Query(
-      `INSERT INTO orders (id, user_id, total_amount, discount_amount, payment_method, payment_status, status, order_status, shipping_address, customer_email, customer_phone, items, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `UPDATE orders 
+       SET user_id = ?, 
+           whatsapp_confirm_status = ?, 
+           whatsapp_confirm_token = ?, 
+           whatsapp_token_used = ?
+       WHERE id = ?`,
       [
-        order.id,
         order.user_id || null,
-        order.total_amount,
-        order.discount_amount || 0,
-        order.payment_method,
-        order.payment_status,
-        order.order_status,
-        order.order_status,
-        `${order.shipping_address}, ${order.city} ${order.postal_code}`,
-        order.customer_email,
-        order.customer_phone || null,
-        JSON.stringify(order.items || []),
-        order.created_at,
+        order.whatsapp_confirm_status || "pending_whatsapp",
+        order.whatsapp_confirm_token || null,
+        order.whatsapp_token_used ? 1 : 0,
+        order.id,
       ]
     );
   } catch (err) {
-    console.warn("D1 createOrder warning:", err);
+    console.warn("D1 createOrder token update warning:", err);
   }
 
   // (Note: Inventory decrement is cleanly handled once inside createERPOrder)
