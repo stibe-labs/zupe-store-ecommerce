@@ -162,8 +162,8 @@ export default function AdminDashboardPage() {
         statsUrl += `&startDate=${customStartDate}&endDate=${customEndDate}`;
       }
       const [statsRes, ordersRes] = await Promise.all([
-        fetch(statsUrl),
-        fetch("/api/admin/orders"),
+        fetch(statsUrl, { cache: "no-store" }),
+        fetch("/api/admin/orders", { cache: "no-store" }),
       ]);
       const statsData = await statsRes.json();
       const ordersData = await ordersRes.json();
@@ -184,7 +184,14 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     loadDashboardData();
-  }, [timeframe]);
+    const interval = setInterval(loadDashboardData, 15000);
+    const onFocus = () => loadDashboardData();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [timeframe, customStartDate, customEndDate]);
 
   const triggerShopifySync = async () => {
     setSyncStatus("Syncing Shopify orders...");
@@ -821,10 +828,10 @@ export default function AdminDashboardPage() {
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex px-2 py-0.5 rounded text-[11px] font-bold ${
-                            ord.payment_method === "COD"
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold ${
+                            ord.payment_method === "COD" || (ord.payment_method && ord.payment_method.toLowerCase().includes("cash"))
                               ? "bg-amber-50 text-amber-700 border border-amber-200"
-                              : "bg-orange-50 text-[#FF7A00] border border-orange-200"
+                              : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                           }`}
                         >
                           {ord.payment_method}

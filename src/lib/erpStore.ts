@@ -67,6 +67,8 @@ export interface ERPOrder {
   customer_phone?: string;
   guest_email?: string;
   total_amount: number;
+  subtotal?: number;
+  discount_amount?: number;
   product_cost: number;
   shipping_cost: number;
   rto_shipping_charge: number;
@@ -840,6 +842,8 @@ export async function getERPOrders(filters?: {
     if (filters?.payment_method && filters.payment_method !== "all") {
       if (filters.payment_method === "Prepaid") {
         sql += " AND (payment_method = 'Prepaid' OR payment_method LIKE '%UPI%' OR payment_method = 'Credit Card' OR payment_method = 'Online')";
+      } else if (filters.payment_method === "COD" || filters.payment_method.toLowerCase().includes("cash")) {
+        sql += " AND (payment_method = 'COD' OR payment_method LIKE '%Cash on Delivery%')";
       } else {
         sql += " AND payment_method = ?";
         params.push(filters.payment_method);
@@ -1213,6 +1217,30 @@ export async function updateERPOrder(
       fieldsToUpdate.push("supplier_id = ?");
       values.push(updates.supplier_id);
     }
+    if (targetOrder && targetOrder.net_profit !== undefined) {
+      fieldsToUpdate.push("net_profit = ?");
+      values.push(targetOrder.net_profit);
+    }
+    if (updates.discount_amount !== undefined) {
+      fieldsToUpdate.push("discount_amount = ?");
+      values.push(updates.discount_amount);
+    }
+    if (updates.subtotal !== undefined) {
+      fieldsToUpdate.push("subtotal = ?");
+      values.push(updates.subtotal);
+    }
+    if (updates.product_cost !== undefined) {
+      fieldsToUpdate.push("product_cost = ?");
+      values.push(updates.product_cost);
+    }
+    if (updates.rto_shipping_charge !== undefined) {
+      fieldsToUpdate.push("rto_shipping_charge = ?");
+      values.push(updates.rto_shipping_charge);
+    }
+    if (updates.ad_spend_attributed !== undefined) {
+      fieldsToUpdate.push("ad_spend_attributed = ?");
+      values.push(updates.ad_spend_attributed);
+    }
 
     if (fieldsToUpdate.length > 0) {
       values.push(normId, normId);
@@ -1347,9 +1375,13 @@ export async function getDashboardKPIs(
   const profitMargin = totalSales > 0 ? (netProfit / totalSales) * 100 : 0;
   const rtoPercentage = totalOrders > 0 ? (rtoOrders / totalOrders) * 100 : 0;
 
-  // Pending COD calculation: orders where payment_method = COD, delivered or in-transit, but remittance_status = Pending
+  // Pending COD calculation: orders where payment_method is COD or Cash on Delivery, and remittance_status is Pending or not settled
   const pendingCODRemittance = orders
-    .filter((o) => o.payment_method === "COD" && o.remittance_status === "Pending")
+    .filter(
+      (o) =>
+        (o.payment_method === "COD" || (o.payment_method || "").toLowerCase().includes("cash")) &&
+        (o.remittance_status === "Pending" || !o.remittance_status)
+    )
     .reduce((sum, o) => sum + Number(o.total_amount), 0);
 
   // Supplier RTO Balance total

@@ -300,7 +300,7 @@ function AdminOrdersContent() {
       if (courierFilter !== "all") url.searchParams.set("courier_partner", courierFilter);
       if (search.trim()) url.searchParams.set("search", search.trim());
 
-      const res = await fetch(url.toString());
+      const res = await fetch(url.toString(), { cache: "no-store" });
       const data = await res.json();
       if (data.success && Array.isArray(data.orders)) {
         setOrders(data.orders);
@@ -315,6 +315,13 @@ function AdminOrdersContent() {
 
   useEffect(() => {
     fetchOrders();
+    const interval = setInterval(fetchOrders, 15000);
+    const onFocus = () => fetchOrders();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+    };
   }, [statusFilter, paymentFilter, courierFilter, search]);
 
   const handleExportCSV = () => {

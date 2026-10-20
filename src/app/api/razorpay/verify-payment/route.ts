@@ -50,6 +50,11 @@ export async function POST(req: NextRequest) {
           (existingOrder ? Math.max(0, existingOrder.total_amount - 30) : 0)
       );
 
+      const prodCost = Number(existingOrder?.product_cost || 0);
+      const rtoCharge = Number(existingOrder?.rto_shipping_charge || 0);
+      const adSpend = Number(existingOrder?.ad_spend_attributed || 0);
+      const newNetProfit = discountedAmount - prodCost - 0 - rtoCharge - adSpend;
+
       // 1. Update in ERP Store (handles memory + D1 update)
       await updateERPOrder(existingOrderId, {
         payment_method: "Prepaid",
@@ -65,13 +70,14 @@ export async function POST(req: NextRequest) {
         await executeD1Query(
           `UPDATE orders
            SET payment_method = 'Prepaid',
-               payment_status = 'paid',
+               payment_status = 'Completed',
                total_amount = ?,
                discount_amount = COALESCE(discount_amount, 0) + 30,
                shipping_cost = 0,
-               remittance_status = 'Settled'
+               remittance_status = 'Settled',
+               net_profit = ?
            WHERE id = ? OR shopify_order_id = ?`,
-          [discountedAmount, existingOrderId, existingOrderId]
+          [discountedAmount, newNetProfit, existingOrderId, existingOrderId]
         );
       } catch (d1Err) {
         console.warn("D1 update order switch error:", d1Err);
