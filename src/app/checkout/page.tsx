@@ -20,6 +20,7 @@ import {
   AlertCircle,
   Sparkles,
   MapPin,
+  LocateFixed,
   Phone,
   Plus,
   Trash2,
@@ -112,6 +113,9 @@ function CheckoutContent() {
   const [postalCode, setPostalCode] = useState("");
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [pincodeDetected, setPincodeDetected] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationSuccessMsg, setLocationSuccessMsg] = useState<string | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   // Payment method state ("prepaid" or "cod")
   const [paymentMethod, setPaymentMethod] = useState<"prepaid" | "cod">("prepaid");
@@ -453,6 +457,79 @@ function CheckoutContent() {
     setCity("");
     setState("");
     setPostalCode("");
+  };
+
+  const handleFetchCurrentLocation = () => {
+    setLocationError(null);
+    setLocationSuccessMsg(null);
+
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser. Please enter your address manually.");
+      return;
+    }
+
+    setLocationLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const res = await fetch(`/api/location/reverse-geocode?lat=${lat}&lng=${lng}`);
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            setIsUsingNewAddress(true);
+            setSelectedAddressId(null);
+
+            if (data.street) {
+              setAddress(data.street);
+            } else if (data.formatted_address) {
+              setAddress(data.formatted_address);
+            }
+
+            if (data.city) setCity(data.city);
+            if (data.state) setState(data.state);
+
+            if (data.pincode && data.pincode.length === 6) {
+              setPostalCode(data.pincode);
+              setPincodeDetected(true);
+            }
+
+            const locationLabel = [data.street || data.city, data.city, data.pincode]
+              .filter(Boolean)
+              .slice(0, 2)
+              .join(", ");
+
+            setLocationSuccessMsg(`Location detected: ${locationLabel || "Address filled"}`);
+            setTimeout(() => setLocationSuccessMsg(null), 6000);
+          } else {
+            setLocationError(data.error || "Unable to determine address from current GPS coordinates.");
+          }
+        } catch (err: any) {
+          setLocationError("Network error while looking up location details.");
+        } finally {
+          setLocationLoading(false);
+        }
+      },
+      (err) => {
+        setLocationLoading(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setLocationError("Location permission denied. Please allow location access in your browser or enter your address manually.");
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          setLocationError("GPS location signal unavailable. Please enter your address manually.");
+        } else if (err.code === err.TIMEOUT) {
+          setLocationError("Location request timed out. Please try again.");
+        } else {
+          setLocationError("Unable to fetch current location.");
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 30000,
+      }
+    );
   };
 
   const handleDeleteSavedAddress = async (e: React.MouseEvent, addrId: string) => {
@@ -1512,7 +1589,7 @@ function CheckoutContent() {
 
             {/* STEP 2: DELIVERY DETAILS */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2.5">
                 <div className="flex items-center gap-2.5">
                   <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center">
                     2
@@ -1522,17 +1599,73 @@ function CheckoutContent() {
                   </h2>
                 </div>
 
-                {savedAddresses.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Auto-Fetch Current Location Button */}
                   <button
                     type="button"
-                    onClick={handleUseNewAddress}
-                    className="text-xs font-bold text-[#FF7A00] hover:underline flex items-center gap-1 cursor-pointer"
+                    onClick={handleFetchCurrentLocation}
+                    disabled={locationLoading}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-[#FF7A00] bg-orange-50 hover:bg-orange-100 border border-[#FF7A00]/30 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                    title="Auto-fetch address using GPS current location"
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>{isUsingNewAddress ? "Entering New Address" : "Use New Address"}</span>
+                    {locationLoading ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FF7A00]" />
+                        <span>Detecting Location...</span>
+                      </>
+                    ) : (
+                      <>
+                        <LocateFixed className="w-3.5 h-3.5 text-[#FF7A00]" />
+                        <span>Use Current Location</span>
+                      </>
+                    )}
                   </button>
-                )}
+
+                  {savedAddresses.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleUseNewAddress}
+                      className="text-xs font-bold text-[#FF7A00] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>{isUsingNewAddress ? "Entering New Address" : "Use New Address"}</span>
+                    </button>
+                  )}
+                </div>
               </div>
+
+              {/* Location Status Feedback Banner */}
+              {locationSuccessMsg && (
+                <div className="flex items-center justify-between gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold animate-in fade-in duration-200">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{locationSuccessMsg}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLocationSuccessMsg(null)}
+                    className="text-xs text-emerald-700 hover:text-emerald-900 font-bold p-0.5 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {locationError && (
+                <div className="flex items-center justify-between gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-medium animate-in fade-in duration-200">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                    <span>{locationError}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLocationError(null)}
+                    className="text-xs text-rose-700 hover:text-rose-900 font-bold p-0.5 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
 
               {/* Saved Delivery Addresses Selection Cards if user has previous addresses */}
               {savedAddresses.length > 0 && !isUsingNewAddress && (
@@ -1619,9 +1752,24 @@ function CheckoutContent() {
 
               {/* Complete Address */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                  Complete Address *
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
+                    Complete Address *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleFetchCurrentLocation}
+                    disabled={locationLoading}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#FF7A00] hover:text-[#E66E00] hover:underline cursor-pointer disabled:opacity-50"
+                  >
+                    {locationLoading ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <LocateFixed className="w-3 h-3" />
+                    )}
+                    <span>{locationLoading ? "Detecting GPS..." : "Auto-fill with GPS"}</span>
+                  </button>
+                </div>
                 <textarea
                   required
                   rows={3}
