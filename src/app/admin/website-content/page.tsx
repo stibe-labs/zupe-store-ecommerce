@@ -667,7 +667,7 @@ export default function WebsiteContentPage() {
   };
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] text-slate-800 font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#F4F6FA] text-slate-800 font-sans overflow-hidden">
       {/* Sidebar */}
       <AdminSidebar
         mobileOpen={mobileSidebarOpen}
