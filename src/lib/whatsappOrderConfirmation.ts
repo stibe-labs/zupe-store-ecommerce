@@ -142,7 +142,31 @@ async function sendPreConfirmViaTemplate(
           type: "button",
           sub_type: "url",
           index: "1",
-          parameters: [{ type: "text", text: `${encodeURIComponent(verificationToken)}&orderId=${encodeURIComponent(orderId)}` }],
+          parameters: [{ type: "text", text: encodeURIComponent(orderId) }],
+        },
+      ],
+      // Variation A2: Button 0 with token, Button 1 with orderId
+      [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: firstName },
+            { type: "text", text: orderId },
+            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
+            { type: "text", text: paymentMethodLabel },
+          ],
+        },
+        {
+          type: "button",
+          sub_type: "url",
+          index: "0",
+          parameters: [{ type: "text", text: encodeURIComponent(verificationToken) }],
+        },
+        {
+          type: "button",
+          sub_type: "url",
+          index: "1",
+          parameters: [{ type: "text", text: encodeURIComponent(orderId) }],
         },
       ],
       // Variation B: Body params including URLs in body text

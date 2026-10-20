@@ -13,18 +13,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL("/orders?error=missing_credentials", req.url));
     }
 
-    // Cancel order and restock inventory
-    const result = await cancelWhatsAppOrder(token || orderId);
-
-    if (result.alreadyUsed) {
-      return NextResponse.redirect(
-        new URL(`/orders?notice=already_processed&orderId=${encodeURIComponent(orderId)}`, req.url)
-      );
-    }
-
-    // Redirect to orders page with cancelled confirmation notice
+    // Redirect to orders page with cancellation dialog open for this order
     return NextResponse.redirect(
-      new URL(`/orders?cancelled=${encodeURIComponent(orderId)}`, req.url)
+      new URL(`/orders?cancelPrompt=${encodeURIComponent(orderId)}`, req.url)
     );
   } catch (err: any) {
     console.error("WhatsApp cancel route error:", err);

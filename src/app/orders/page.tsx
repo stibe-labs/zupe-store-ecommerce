@@ -32,12 +32,19 @@ function OrdersPageContent() {
   const searchParams = useSearchParams();
   const confirmedOrderId = searchParams.get("confirmed");
   const cancelledOrderId = searchParams.get("cancelled");
+  const cancelPromptParam = searchParams.get("cancelPrompt") || searchParams.get("cancel");
   const noticeCode = searchParams.get("notice");
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [cancelPromptId, setCancelPromptId] = useState<string | null>(null);
   const [cancelSuccessMsg, setCancelSuccessMsg] = useState<string | null>(null);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (cancelPromptParam) {
+      setCancelPromptId(cancelPromptParam);
+    }
+  }, [cancelPromptParam]);
 
   // Review & Rating Modal State
   const [reviewModalItem, setReviewModalItem] = useState<{
