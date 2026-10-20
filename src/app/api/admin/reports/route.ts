@@ -366,6 +366,8 @@ export async function GET(req: NextRequest) {
       rtoDiagnostics,
       orderWiseData,
       adSpendData,
+      rawOrders: orders,
+      rawExpenses: expenses,
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

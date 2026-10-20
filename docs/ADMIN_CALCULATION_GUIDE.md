@@ -1,123 +1,202 @@
-# Zupe Store — Admin Financial & Operations Calculation Guide
-
-This document explains the mathematical formulas, underlying database tables, and business logic used to calculate every metric and card across the **Zupe Store Dropship ERP Admin Dashboard**.
-
----
-
-## 1. Executive Summary: Core Financial Equation
-
-The system follows double-entry dropshipping accounting:
-
-```
-┌────────────────────────────────────────────────────────┐
-│                   TOTAL SALES REVENUE                  │  ₹33,512
-└───────────────────────────┬────────────────────────────┘
-                            │  Minus Product Cost (COGS)
-                            ▼
-┌────────────────────────────────────────────────────────┐
-│                      GROSS PROFIT                      │  ₹19,538
-└───────────────────────────┬────────────────────────────┘
-                            │  Minus Forward Courier Freight   (₹2,260)
-                            │  Minus Reverse RTO Freight       (₹125)
-                            │  Minus Meta Ads Ad Spend         (₹4,500)
-                            │  Minus Overhead Operating Costs  (₹9,169)
-                            ▼
-┌────────────────────────────────────────────────────────┐
-│               TRUE CUMULATIVE NET PROFIT               │  ₹3,484
-│               (Realized Net Margin: 10.4%)             │
-└────────────────────────────────────────────────────────┘
-```
+# Zupe Store — Business Intelligence & Financial Calculation Guide
+**Audience:** Zupe Store Administrator / Store Owners & Management  
+**System Module:** `/admin/reports` (Business Intelligence & Executive Analytics)  
+**Version:** 2.0 (Live ERP & Attribution Sync)
 
 ---
 
-## 2. Page-by-Page Metric Calculations
+## 📌 Executive Overview
 
-### A. Business Intelligence & Reports (`/admin/reports`)
-
-| Card / Metric | Displayed Value | Mathematical Formula | Underlying Database Tables & Fields |
-| :--- | :--- | :--- | :--- |
-| **Total Gross Revenue** | **₹33,512** | $\sum \text{orders.total\_amount}$ | `orders.total_amount`<br>Includes all Shopify & online checkout orders. |
-| **Cumulative Net Profit** | **₹3,484** | $\text{Gross Revenue} - \text{COGS} - \text{Shipping} - \text{RTO} - \text{Ads} - \text{Overhead}$ | • `orders.total_amount`<br>• `orders.product_cost`<br>• `orders.shipping_cost`<br>• `orders.rto_shipping_charge`<br>• `expenses.amount` |
-| **Net Profit Margin** | **10.4%** | $\frac{\text{Cumulative Net Profit}}{\text{Total Gross Revenue}} \times 100$ | $\frac{₹3,484}{₹33,512} \times 100 = \mathbf{10.4\%}$ |
-| **Meta Ads ROAS** | **7.45x** | $\frac{\text{Total Gross Revenue}}{\text{Meta Ads Spend}}$ | $\frac{₹33,512}{₹4,500} = \mathbf{7.45x}$<br>Attributed from `expenses` where `category = 'Meta Ads'`. |
-| **Orders Audited** | **29 orders** (3 RTO) | $\text{COUNT(orders)}$ & $\text{COUNT(RTO)}$ | Count of all orders (29) and count where delivery status is `RTO Delivered` or `RTO Initiated` (3). |
-
-#### Monthly P&L Breakdown Table:
-1. **October 2026**:
-   - Gross Sales: **₹31,314**
-   - COGS: **₹13,094**
-   - Forward Shipping: **₹2,095**
-   - RTO Reverse Charges: **₹65**
-   - Meta Ad Spend: **₹4,500**
-   - Overhead Expenses: **₹5,249**
-   - **Net Profit**: $31,314 - 13,094 - 2,095 - 65 - 4,500 - 5,249 = \mathbf{₹6,311}$ (**20.2% margin**)
-2. **September 2026**:
-   - Gross Sales: **₹2,198**
-   - COGS: **₹880**
-   - Shipping: **₹165**
-   - RTO: **₹60**
-   - Overheads: **₹3,920**
-   - **Net Profit**: $2,198 - 880 - 165 - 60 - 3,920 = \mathbf{-₹2,827}$
-3. **Cumulative Total**:
-   - $\text{Total Net Profit} = ₹6,311 + (-₹2,827) = \mathbf{₹3,484}$ (Exact match).
+The **Business Intelligence & Reports** dashboard in the Zupe Store Admin Panel is engineered to provide complete financial transparency for Indian D2C e-commerce operations. It tracks both top-line cash flow and true bottom-line profitability by accounting for:
+- Sourcing Costs (COGS)
+- Forward 3PL Logistics (Shiprocket, Delhivery, Bluedart, etc.)
+- Doorstep Return to Origin (RTO) Reverse Freight
+- Paid Digital Customer Acquisition (Meta Advantage+ Shopping Campaigns)
+- General Operational Overheads
+- Realized COD Cash Remittances & Supplier RTO Credit Recovery
 
 ---
 
-### B. Executive Main Dashboard (`/admin`)
+## 📅 Date Range Filtering System
 
-#### Order Pipeline Cards:
-| Card | Number | Calculation Logic |
-| :--- | :--- | :--- |
-| **Total Orders** | **29** | Total orders recorded in ERP. |
-| **Confirmed** | **26** | Orders where `status != 'Cancelled'` and `status != 'Returned'`. |
-| **Shipped** | **2** | Orders where `delivery_status` is `In Transit` or `Out for Delivery`. |
-| **Delivered** | **11** | Orders successfully delivered to customer doorstep ($11/29 = 37.9\%$). |
-| **NDR Orders** | **1** | Shipments where courier reported Non-Delivery (e.g. customer unreachable). |
-| **RTO Orders** | **3** | Orders marked as Return-To-Origin ($3/29 = 10.3\%$). |
+The reports dashboard includes an instant, dynamic date range filter toolbar located immediately below the main header:
 
-#### Financial Cards:
-| Card | Value | Calculation Formula & Explanation |
-| :--- | :--- | :--- |
-| **Total Sales Revenue** | **₹33,512** | Sum of selling price of all 29 orders. |
-| **Gross Profit (Sales - COGS)** | **₹19,538** | $\text{Total Sales (₹33,512)} - \text{Product COGS (₹13,974)} = \mathbf{₹19,538}$.<br>Shows margin before ad-spend and shipping fees. |
-| **True Net Profit** | **₹3,484** | Final retained earnings after subtracting logistics freight, reverse RTO fees, Meta ads, and operational expenses. |
-| **Pending COD Remittance** | **₹7,794** | $\sum \text{orders.total\_amount}$ where `payment_method = 'COD'` and `remittance_status = 'Pending'`.<br>**What it means:** Cash collected by Delhivery/BlueDart couriers from customers that has not yet been deposited into your bank account. |
+| Filter Option | Range Calculated | Primary Use Case |
+|---|---|---|
+| **Today** | Current calendar day (`YYYY-MM-DD` 00:00 to 23:59) | Monitor intraday order velocity, daily ad spend, and live profitability. |
+| **This Week** | Rolling 7-day window (Today minus 6 days through Today) | Detect weekly volume trends and optimize weekend advertising budgets. |
+| **Monthly** | First day of current month through the last day of the month | Standard accounting period reconciliation for monthly P&L reporting. |
+| **Custom Range** | User-selected **From Date** and **To Date** pickers | Quarterly reviews, festival season audits (e.g. Diwali sale), or specific marketing campaign runs. |
+
+> **Dynamic Recalculation:** Changing the date filter immediately recalculates the top Executive KPI Cards and filters data across **all 5 report sections simultaneously**.
 
 ---
 
-### C. RTO Refund Balance & Supplier Credit (`/admin/rto-refund-balance`)
+## 1. Monthly Profit & Loss Statement (P&L)
 
-This module tracks supplier refunds when customers return orders (RTO):
+### 🎯 Purpose
+Provides a macro-level overview of total store profitability by subtracting all direct and indirect expenses from total gross customer sales.
 
-| Card | Value | Calculation Formula & Meaning |
-| :--- | :--- | :--- |
-| **Total RTO Credits Added** | **₹26,470** | $\sum \text{suppliers.total\_credits\_added}$.<br>Total monetary value of returned products refunded/credited by suppliers across 48 orders. |
-| **Total Credits Used** | **₹18,150** | $\sum \text{suppliers.total\_credits\_used}$.<br>Amount of supplier credit deducted to pay for new inventory/purchase orders. |
-| **Available RTO Balance** | **₹8,320** | $\text{Credits Added (₹26,470)} - \text{Credits Used (₹18,150)} = \mathbf{₹8,320}$.<br>**Real Asset:** Money currently sitting with suppliers that you can use to fulfill new orders without paying cash. |
-| **Pending Supplier Credits** | **₹2,800** | Value of 6 returned packages currently in transit back to supplier warehouse awaiting supplier confirmation. |
+### 📐 Calculation Formulas
+
+$$\text{Net Profit} = \text{Gross Sales} - \text{COGS} - \text{Forward Shipping} - \text{RTO Reverse Charges} - \text{Ad Spend} - \text{Overheads}$$
+
+$$\text{Net Margin \%} = \left(\frac{\text{Net Profit}}{\text{Gross Sales}}\right) \times 100$$
+
+### 🔍 Field Breakdown
+1. **Gross Sales / Revenue:**
+   - **Source:** Orders Database (`total_amount`).
+   - **Definition:** The total monetary value of customer orders received (Prepaid + Cash on Delivery). Voided and cancelled orders are excluded.
+2. **COGS (Cost of Goods Sold):**
+   - **Source:** Product Wholesale Cost (`product_cost`).
+   - **Definition:** The wholesale purchase price paid to suppliers for the items fulfilled in these orders.
+3. **Forward Shipping Cost:**
+   - **Source:** Courier Logistics Ledger (`shipping_cost`).
+   - **Definition:** Outbound courier freight charged to deliver the package to the customer's delivery pin code.
+4. **RTO Reverse Logistics Charges:**
+   - **Source:** Reverse Freight Billing (`rto_shipping_charge`).
+   - **Definition:** Surcharge levied by 3PL couriers when a package fails delivery after repeated attempts and is shipped back to the seller or supplier warehouse.
+5. **Ad Spend:**
+   - **Source:** Expenses Module (`category: "Meta Ads"`).
+   - **Definition:** Total marketing budget spent on Meta (Facebook/Instagram) Ads or Google Ads during the specified period.
+6. **Operating Overheads:**
+   - **Source:** Expenses Module (`category != "Meta Ads"`).
+   - **Definition:** Fixed and recurring operating expenses such as packaging materials (custom mailers, bubble pouches), Shopify app subscriptions, domain/hosting, and customer support.
+
+### 💡 Example Calculation
+- **Gross Sales:** ₹47,025
+- **COGS:** ₹19,725
+- **Forward Shipping:** ₹3,070
+- **RTO Reverse Freight:** ₹65
+- **Meta Ad Spend:** ₹4,500
+- **Overheads:** ₹5,249
+- **Calculation:**
+  $$\text{Net Profit} = 47,025 - 19,725 - 3,070 - 65 - 4,500 - 5,249 = \mathbf{₹14,416}$$
+- **Net Margin:**
+  $$\text{Net Margin} = \left(\frac{14,416}{47,025}\right) \times 100 = \mathbf{30.7\%}$$
 
 ---
 
-### D. Customer Intelligence & LTV (`/admin/customers`)
+## 2. Order-Wise Unit Economics
 
-| Card | Value | Calculation Formula |
-| :--- | :--- | :--- |
-| **Total Unique Customers** | **19** | $\text{COUNT(DISTINCT phone/email)}$ across all store checkouts. |
-| **Repeat Buyer Rate** | **21.1%** | $\frac{\text{Customers with 2+ orders (4)}}{\text{Total Unique Customers (19)}} \times 100 = \mathbf{21.1\%}$. |
-| **Average Customer LTV** | **₹1,764** | $\frac{\text{Total Spend of all customers (₹33,512)}}{\text{Total Unique Customers (19)}} = \mathbf{₹1,764}$. |
-| **Doorstep Reliability** | **16 / 19** | 16 out of 19 customers have **0% RTO rate** (they accept all packages they order). |
+### 🎯 Purpose
+Drills down into individual orders as standalone micro-transactions to reveal exactly how fulfillment outcomes (Delivered vs. RTO vs. Cancelled) affect order-level profit.
+
+### 📐 Fulfillment Scenarios
+
+#### Scenario A: Delivered Order (Successful Sale)
+When an order is successfully handed to the customer and paid for:
+$$\text{Net Profit} = \text{Selling Price} - \text{COGS} - \text{Forward Shipping} - \text{Attributed Ad Spend}$$
+
+*Example:*
+- Selling Price: ₹1,299
+- Product COGS: ₹520
+- Forward Shipping: ₹85
+- Attributed Ad Spend: ₹190
+- **Net Profit:** $1,299 - 520 - 85 - 190 = \mathbf{+₹504}$ (38.8% margin)
+
+#### Scenario B: RTO Order (Doorstep Rejection / Non-Delivery)
+When a customer rejects a Cash on Delivery (COD) parcel or is unreachable after multiple attempts:
+- Customer pays ₹0 (Gross Revenue = ₹0).
+- The physical item is returned to supplier inventory, and the wholesale cost is credited back to your **RTO Supplier Credit Balance** (so product COGS is recovered).
+- However, your store pays both forward shipping and reverse freight, plus the marketing cost spent to acquire the click.
+
+$$\text{Net Profit} = 0 - \text{Forward Shipping} - \text{Reverse RTO Freight} - \text{Attributed Ad Spend} \quad (\text{Direct Loss})$$
+
+*Example:*
+- Forward Shipping: ₹85
+- Reverse RTO Freight: ₹65
+- Attributed Ad Spend: ₹180
+- **Net Profit:** $0 - 85 - 65 - 180 = \mathbf{-₹330}$ (Direct Loss)
+
+#### Scenario C: Cancelled Order (Before Dispatch)
+$$\text{Net Profit} = \mathbf{₹0}$$
+No courier or supplier charges are incurred.
+
+### 📐 Attributed Ad Spend (CPA Allocation)
+$$\text{Attributed Ad Spend per Order} = \frac{\text{Total Ad Spend on Order Date}}{\text{Total Orders Placed on that Date}}$$
+*If ₹4,500 was spent on ads on Oct 1st and 30 orders were placed, each order carries ₹150 in marketing attribution.*
 
 ---
 
-## 3. Order-Level Unit Economics Formula
+## 3. Ad Spend & ROAS (Return On Ad Spend)
 
-When auditing an individual order in the ERP (e.g. `#1067`):
+### 🎯 Purpose
+Audits the direct financial efficiency of digital paid advertising campaigns to ensure your marketing spend delivers real profit rather than unprofitable volume.
 
-$$\text{Net Order Profit} = \begin{cases} 
-\text{Selling Price} - \text{COGS} - \text{Shipping} - \text{Ad Spend} & \text{if Delivered} \\
-0 - \text{Forward Shipping} - \text{Reverse RTO Fee} - \text{Ad Spend} & \text{if RTO Returned} \\
-0 & \text{if Cancelled before dispatch}
-\end{cases}$$
+### 📐 Key Formulas
 
-> [!NOTE]
-> If an order goes RTO, the customer does not pay (₹0 revenue), but you incur both **Forward Freight** (e.g. ₹75) and **Reverse Freight** (e.g. ₹65) plus the **Attributed Meta Ad Spend**. When the supplier refunds the product cost, it is credited to your **RTO Refund Balance**, preventing product loss.
+$$\text{ROAS (Return On Ad Spend)} = \frac{\text{Gross Revenue}}{\text{Ad Spend}}$$
+
+$$\text{CPA (Cost Per Acquisition)} = \frac{\text{Ad Spend}}{\text{Total Orders Count}}$$
+
+$$\text{Realized Net Profit from Ads} = \text{Delivered Revenue} - \text{Delivered COGS} - \text{Shipping} - \text{Ad Spend}$$
+
+### 🔍 Placed Gross Revenue vs. Delivered Revenue
+- **Gross Sales:** The initial value of all orders generated by ads.
+- **Delivered Revenue:** Cash collected from orders that passed doorstep verification and were delivered.
+> **Admin Rule of Thumb:** In Indian D2C e-commerce, never scale ad campaigns based solely on initial ROAS. Always track **Delivered ROAS** to ensure COD orders are converting to bank remittances.
+
+### 📊 Benchmark Targets
+- **ROAS > 4.0x:** Highly scalable and profitable.
+- **ROAS 2.5x - 4.0x:** Healthy baseline covering COGS and shipping.
+- **ROAS < 2.0x:** Danger zone; ad creatives, landing pages, or pricing need revision.
+
+---
+
+## 4. Product Margins & Unit Economics
+
+### 🎯 Purpose
+Analyzes which products generate the largest share of store profit and identifies products with high return rates that erode margins.
+
+### 📐 Formulas
+
+$$\text{Product Net Profit} = \text{Gross Revenue} - \text{Supplier COGS} - \text{Logistics Allocations}$$
+
+$$\text{RTO Doorstep Failure Rate \%} = \left(\frac{\text{Number of RTO / Returned Orders}}{\text{Total Orders for this SKU}}\right) \times 100$$
+
+### 🚦 Actionable RTO Thresholds
+- **🟢 Below 8%:** Optimal. Low returns, strong customer satisfaction.
+- **🟡 8% - 12%:** Acceptable for COD-heavy segments; monitor customer address quality.
+- **🔴 Above 12%:** High Risk. Excessive RTO fees will drain profits.
+  - *Recommended Action:* Enable automated WhatsApp/call confirmation before dispatching COD orders for this SKU, or offer a ₹50-₹100 discount for Prepaid orders.
+
+---
+
+## 5. RTO Diagnostics & Courier Logistics
+
+### 🎯 Purpose
+Audits 3PL shipping carriers (Delhivery, Bluedart, Shadowfax, Xpressbees) to optimize delivery success rates and safeguard supplier credit recoveries.
+
+### 📐 Formulas
+
+$$\text{Delivery Success Rate \%} = \left(\frac{\text{Delivered Shipments}}{\text{Total Dispatched Shipments}}\right) \times 100$$
+
+$$\text{Return Reason Share \%} = \left(\frac{\text{Count of Specific Reason}}{\text{Total RTO Incidents}}\right) \times 100$$
+
+$$\text{RTO Credit Recovery Rate \%} = \left(\frac{\text{Approved Supplier RTO Credits}}{\text{Total Value of Returned Parcels}}\right) \times 100$$
+
+### 🛡️ Why the RTO Ledger Protects Your Profit
+When a customer refuses a parcel at doorstep delivery, Zupe Store automatically logs the package into the **RTO Refund Balance** ledger. 
+- The supplier restocks the product upon receiving the reverse package.
+- The wholesale amount is credited to your store's **Supplier RTO Balance**.
+- You can apply this balance as an instant discount on your next wholesale purchase order.
+- **Result:** You never absorb the cost of unsold returned inventory.
+
+---
+
+## 📋 Summary Table for Admin Quick-Reference
+
+| Metric | Short Formula | Ideal Target |
+|---|---|---|
+| **Net Profit** | `Sales - COGS - Shipping - RTO - Ads - Overheads` | > 20% of Gross Sales |
+| **Net Margin** | `(Net Profit ÷ Gross Sales) × 100` | 20% - 35% |
+| **Blended ROAS** | `Gross Revenue ÷ Meta Ad Spend` | > 3.5x |
+| **CPA** | `Ad Spend ÷ Total Orders` | < 15% of AOV |
+| **Courier Success Rate** | `(Delivered ÷ Dispatched) × 100` | > 85% |
+| **SKU RTO Rate** | `(RTO Orders ÷ Total Product Orders) × 100` | < 10% |
+| **RTO Recovery** | `(Approved Credits ÷ Return Value) × 100` | > 95% |
+
+---
+
+*Document compiled for Zupe Store Live Production ERP & Business Intelligence.*
