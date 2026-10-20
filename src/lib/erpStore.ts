@@ -863,8 +863,52 @@ export async function getERPOrders(filters?: {
     const rows = await executeD1Query<ERPOrder>(sql, params);
     if (rows && rows.length > 0) {
       const d1Ids = new Set(rows.map((r) => r.id));
-      const memoryOnly = inMemoryERPOrders.filter((m) => !d1Ids.has(m.id));
-      const combined = [...memoryOnly, ...rows].map((row) => {
+      let memoryOnly = inMemoryERPOrders.filter((m) => !d1Ids.has(m.id));
+
+      if (filters?.delivery_status && filters.delivery_status !== "all") {
+        if (filters.delivery_status === "NDR") {
+          memoryOnly = memoryOnly.filter(
+            (o) =>
+              o.delivery_status === "NDR" ||
+              o.status === "NDR" ||
+              (Boolean(o.ndr_status) && o.ndr_status !== "None" && o.ndr_status !== "-")
+          );
+        } else if (filters.delivery_status === "RTO Delivered" || filters.delivery_status === "RTO") {
+          memoryOnly = memoryOnly.filter(
+            (o) =>
+              o.delivery_status?.toLowerCase().includes("rto") ||
+              o.status?.toLowerCase().includes("rto") ||
+              (Boolean(o.rto_status) && o.rto_status !== "None" && o.rto_status !== "-")
+          );
+        } else {
+          memoryOnly = memoryOnly.filter(
+            (o) => o.delivery_status === filters.delivery_status || o.status === filters.delivery_status
+          );
+        }
+      }
+      if (filters?.payment_method && filters.payment_method !== "all") {
+        if (filters.payment_method === "Prepaid") {
+          memoryOnly = memoryOnly.filter((o) => o.payment_method !== "COD");
+        } else {
+          memoryOnly = memoryOnly.filter((o) => o.payment_method === filters.payment_method);
+        }
+      }
+      if (filters?.courier_partner && filters.courier_partner !== "all") {
+        memoryOnly = memoryOnly.filter((o) => o.courier_partner === filters.courier_partner);
+      }
+      if (filters?.search && filters.search.trim()) {
+        const s = filters.search.toLowerCase();
+        memoryOnly = memoryOnly.filter(
+          (o) =>
+            o.id.toLowerCase().includes(s) ||
+            o.shopify_order_id.toLowerCase().includes(s) ||
+            o.customer_name.toLowerCase().includes(s) ||
+            (o.customer_phone && o.customer_phone.toLowerCase().includes(s)) ||
+            (o.shiprocket_awb && o.shiprocket_awb.toLowerCase().includes(s))
+        );
+      }
+
+      const combined = [...rows, ...memoryOnly].map((row) => {
         let items = row.items;
         if (typeof items === "string") {
           try {
@@ -879,6 +923,13 @@ export async function getERPOrders(filters?: {
         }
         return { ...row, items: Array.isArray(items) ? items : [] };
       });
+
+      combined.sort((a, b) => {
+        const timeA = new Date((a.created_at || "").replace(" ", "T")).getTime() || 0;
+        const timeB = new Date((b.created_at || "").replace(" ", "T")).getTime() || 0;
+        return timeB - timeA;
+      });
+
       return combined;
     }
   } catch (err) {
