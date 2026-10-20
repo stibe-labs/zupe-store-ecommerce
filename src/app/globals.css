@@ -869,6 +869,47 @@ body[style*="overflow: hidden"] {
   border-color: rgba(99, 102, 241, 0.38) !important;
 }
 
+[data-admin-theme="dark"] :not(aside):not(aside *) [class*="bg-sky-50"] {
+  background-color: rgba(14, 165, 233, 0.14) !important;
+  color: #38BDF8 !important;
+  border-color: rgba(14, 165, 233, 0.28) !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) [class*="bg-sky-100"] {
+  background-color: rgba(14, 165, 233, 0.22) !important;
+  color: #38BDF8 !important;
+  border-color: rgba(14, 165, 233, 0.38) !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) [class*="text-sky-900"],
+[data-admin-theme="dark"] :not(aside):not(aside *) [class*="text-sky-800"],
+[data-admin-theme="dark"] :not(aside):not(aside *) [class*="text-sky-700"] {
+  color: #38BDF8 !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) [class*="text-emerald-900"] {
+  color: #34D399 !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) [class*="text-rose-900"] {
+  color: #FB7185 !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) [class*="text-purple-900"] {
+  color: #C084FC !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) [class*="text-amber-900"] {
+  color: #FBBF24 !important;
+}
+
+/* Neutralize white gradient overlays in cards (e.g. True Net Profit card) */
+[data-admin-theme="dark"] :not(aside):not(aside *) [class*="from-white"] {
+  --tw-gradient-from: #141D2F !important;
+  background-image: none !important;
+  background-color: #141D2F !important;
+}
+
 
 
 
