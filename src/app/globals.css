@@ -562,5 +562,198 @@ body[style*="overflow: hidden"] {
   will-change: transform, opacity;
 }
 
+/* ==========================================================================
+   ADMIN DASHBOARD THEME SYSTEM (LIGHT / DARK SWITCHER)
+   Exclusively applies to Admin Panel [data-admin-theme] and #admin-root.
+   The Sidebar stays in its fixed #0F172A color in both themes.
+   The live storefront is completely unaffected.
+   ========================================================================== */
+
+/* ─── Light Theme (Default) ─── */
+[data-admin-theme="light"] {
+  --admin-canvas: #F4F6FA;
+  --admin-header: #FFFFFF;
+  --admin-card: #FFFFFF;
+  --admin-card-inner: #F8FAFC;
+  --admin-well: #F1F5F9;
+  --admin-border: #E2E8F0;
+  --admin-text-primary: #0F172A;
+  --admin-text-body: #334155;
+  --admin-text-secondary: #64748B;
+  --admin-text-muted: #94A3B8;
+}
+
+/* ─── Dark Theme (Optimized to Sidebar #0F172A) ─── */
+[data-admin-theme="dark"] {
+  --admin-canvas: #0B0F19;
+  --admin-header: #0F172A;
+  --admin-card: #141D2F;
+  --admin-card-inner: #0F172A;
+  --admin-well: #182234;
+  --admin-border: rgba(255, 255, 255, 0.08);
+  --admin-border-subtle: rgba(255, 255, 255, 0.05);
+  --admin-text-primary: #F8FAFC;
+  --admin-text-body: #E2E8F0;
+  --admin-text-secondary: #CBD5E1;
+  --admin-text-muted: #94A3B8;
+}
+
+/* Base Canvas & Background in Dark Mode (Excluding the Sidebar) */
+[data-admin-theme="dark"] #admin-root,
+[data-admin-theme="dark"] div:not(aside):not(aside *).min-h-screen,
+[data-admin-theme="dark"] .bg-\[\#F4F6FA\] {
+  background-color: #0B0F19 !important;
+  color: #E2E8F0;
+}
+
+/* Admin Top Header in Dark Mode */
+[data-admin-theme="dark"] header:not(aside *) {
+  background-color: #0F172A !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* All Admin Cards, Widgets, and Sections */
+[data-admin-theme="dark"] :not(aside):not(aside *) > .bg-white,
+[data-admin-theme="dark"] div.bg-white:not(aside):not(aside *),
+[data-admin-theme="dark"] section.bg-white:not(aside):not(aside *),
+[data-admin-theme="dark"] main .bg-white:not(aside):not(aside *) {
+  background-color: #141D2F !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #E2E8F0;
+}
+
+/* Wells, Inset Containers, & Subtle Boxes */
+[data-admin-theme="dark"] :not(aside):not(aside *) .bg-slate-50,
+[data-admin-theme="dark"] div.bg-slate-50:not(aside):not(aside *) {
+  background-color: #0F172A !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) .bg-slate-100 {
+  background-color: #182234 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #CBD5E1 !important;
+}
+
+/* Typography Hierarchy in Dark Mode */
+[data-admin-theme="dark"] :not(aside):not(aside *) .text-slate-900,
+[data-admin-theme="dark"] :not(aside):not(aside *) h1.text-slate-900,
+[data-admin-theme="dark"] :not(aside):not(aside *) h2.text-slate-900,
+[data-admin-theme="dark"] :not(aside):not(aside *) h3.text-slate-900,
+[data-admin-theme="dark"] :not(aside):not(aside *) h4.text-slate-900 {
+  color: #F8FAFC !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) .text-slate-800 {
+  color: #E2E8F0 !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) .text-slate-700 {
+  color: #CBD5E1 !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) .text-slate-600,
+[data-admin-theme="dark"] :not(aside):not(aside *) .text-slate-500 {
+  color: #94A3B8 !important;
+}
+
+/* Tables in Dark Mode */
+[data-admin-theme="dark"] :not(aside):not(aside *) table thead {
+  background-color: #0F172A !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) table thead th {
+  color: #94A3B8 !important;
+  background-color: #0F172A !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) table tbody tr {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Form Controls & Inputs */
+[data-admin-theme="dark"] :not(aside):not(aside *) input[type="text"],
+[data-admin-theme="dark"] :not(aside):not(aside *) input[type="search"],
+[data-admin-theme="dark"] :not(aside):not(aside *) input[type="number"],
+[data-admin-theme="dark"] :not(aside):not(aside *) input[type="date"],
+[data-admin-theme="dark"] :not(aside):not(aside *) select,
+[data-admin-theme="dark"] :not(aside):not(aside *) textarea {
+  background-color: #0F172A !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #F8FAFC !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) input::placeholder,
+[data-admin-theme="dark"] :not(aside):not(aside *) textarea::placeholder {
+  color: #64748B !important;
+}
+
+/* Borders across Dark Admin */
+[data-admin-theme="dark"] :not(aside):not(aside *) .border-slate-200,
+[data-admin-theme="dark"] :not(aside):not(aside *) .border-slate-200\/90,
+[data-admin-theme="dark"] :not(aside):not(aside *) .border-slate-200\/80,
+[data-admin-theme="dark"] :not(aside):not(aside *) .border-slate-200\/70,
+[data-admin-theme="dark"] :not(aside):not(aside *) .border-slate-100 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) .divide-slate-100 > * + * {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Dropdown Menus & Popovers */
+[data-admin-theme="dark"] :not(aside):not(aside *) .shadow-xl,
+[data-admin-theme="dark"] :not(aside):not(aside *) .shadow-2xl {
+  background-color: #141D2F !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* High Contrast Colored Status Badges in Dark Mode */
+[data-admin-theme="dark"] :not(aside):not(aside *) .bg-emerald-50,
+[data-admin-theme="dark"] :not(aside):not(aside *) .bg-emerald-100 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #34D399 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) .bg-rose-50,
+[data-admin-theme="dark"] :not(aside):not(aside *) .bg-rose-100 {
+  background-color: rgba(244, 63, 94, 0.15) !important;
+  color: #FB7185 !important;
+  border-color: rgba(244, 63, 94, 0.3) !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) .bg-amber-50,
+[data-admin-theme="dark"] :not(aside):not(aside *) .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #FBBF24 !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) .bg-purple-50,
+[data-admin-theme="dark"] :not(aside):not(aside *) .bg-purple-100 {
+  background-color: rgba(168, 85, 247, 0.15) !important;
+  color: #C084FC !important;
+  border-color: rgba(168, 85, 247, 0.3) !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) .bg-orange-50 {
+  background-color: rgba(255, 122, 0, 0.15) !important;
+  color: #FF7A00 !important;
+  border-color: rgba(255, 122, 0, 0.3) !important;
+}
+
+[data-admin-theme="dark"] :not(aside):not(aside *) .bg-indigo-50 {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: #818CF8 !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
 
 

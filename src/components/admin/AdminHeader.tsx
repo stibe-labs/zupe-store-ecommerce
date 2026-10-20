@@ -17,7 +17,10 @@ import {
   ShoppingBag,
   CheckCircle2,
   Truck,
+  Sun,
+  Moon,
 } from "lucide-react";
+import { useAdminTheme } from "@/context/AdminThemeContext";
 
 interface AdminHeaderProps {
   onOpenMobile?: () => void;
@@ -41,6 +44,7 @@ export default function AdminHeader({
   isRefreshing = false,
 }: AdminHeaderProps) {
   const router = useRouter();
+  const { theme, toggleTheme } = useAdminTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRange, setSelectedRange] = useState("This Month");
   const [showRangeDropdown, setShowRangeDropdown] = useState(false);
@@ -169,6 +173,31 @@ export default function AdminHeader({
           <span>Live Storefront</span>
           <ExternalLink className="w-3.5 h-3.5" />
         </Link>
+
+        {/* Option A: Animated Theme Pill Toggle */}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          aria-label={theme === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"}
+          title={theme === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"}
+          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all duration-200 select-none cursor-pointer ${
+            theme === "dark"
+              ? "bg-[#182234] border-white/15 text-amber-300 hover:bg-[#1E293B] hover:border-amber-400/40 shadow-sm"
+              : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 shadow-sm"
+          }`}
+        >
+          {theme === "dark" ? (
+            <>
+              <Sun className="w-3.5 h-3.5 text-amber-400 animate-in spin-in-90 duration-200" />
+              <span className="hidden sm:inline">Light Mode</span>
+            </>
+          ) : (
+            <>
+              <Moon className="w-3.5 h-3.5 text-slate-500 animate-in spin-in-90 duration-200" />
+              <span className="hidden sm:inline">Dark Mode</span>
+            </>
+          )}
+        </button>
 
         {/* Date Range Selector Dropdown */}
         <div className="relative" ref={rangeRef}>
@@ -308,6 +337,22 @@ export default function AdminHeader({
               >
                 P&L Reports
               </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  toggleTheme();
+                  setShowAdminUserDropdown(false);
+                }}
+                className="w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-slate-700 hover:text-[#FF7A00] hover:bg-orange-50/60 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  {theme === "dark" ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-slate-500" />}
+                  Theme
+                </span>
+                <span className="text-[11px] font-bold text-[#FF7A00] uppercase">
+                  {theme}
+                </span>
+              </button>
               <button
                 onClick={async () => {
                   await fetch("/api/admin/auth/logout", { method: "POST" });
