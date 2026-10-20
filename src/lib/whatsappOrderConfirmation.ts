@@ -70,9 +70,9 @@ export async function sendOrderPreConfirmationWhatsApp(
   const cancelUrl = `${STORE_BASE_URL}/api/orders/whatsapp-cancel?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
-  // 1. Try approved Meta Utility template (works for new customers outside 24h window)
+  // 1. Try approved Meta Utility template with buttons (only 1 single message)
   try {
-    await sendPreConfirmViaTemplate(
+    const templateSent = await sendPreConfirmViaTemplate(
       apiUrl,
       apiToken,
       digits,
@@ -84,12 +84,16 @@ export async function sendOrderPreConfirmationWhatsApp(
       cancelUrl,
       token
     );
+
+    if (templateSent) {
+      console.log(`✅ [WA Pre-Confirm] Official template with buttons sent to ${digits}`);
+      return true;
+    }
   } catch (tplErr) {
     console.warn("[WA Pre-Confirm] Template send error:", tplErr);
   }
 
-  // 2. ALWAYS dispatch the formatted direct WhatsApp message with interactive links
-  // This guarantees immediate delivery in WhatsApp if the customer has engaged or has a 24h window open
+  // 2. Fallback ONLY if template was not sent
   const message =
     `*Order Verification — Zupe Store* 🛍️\n\n` +
     `Hi ${firstName}! Thank you for placing your order with Zupe Store.\n\n` +
