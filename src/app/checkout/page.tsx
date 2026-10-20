@@ -1210,24 +1210,69 @@ function CheckoutContent() {
         </header>
 
         <main className="max-w-lg mx-auto py-12 px-4 text-center">
+          {/* Visual Status Icon */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", damping: 15 }}
-            className="w-20 h-20 mx-auto mb-6 rounded-full bg-orange-50 flex items-center justify-center text-[#FF7A00] shadow-lg shadow-[#FF7A00]/15"
+            className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center shadow-lg ${
+              paymentMethod === "cod"
+                ? "bg-orange-50 text-[#FF7A00] shadow-[#FF7A00]/15"
+                : "bg-emerald-50 text-emerald-600 shadow-emerald-500/15"
+            }`}
           >
             <CheckCircle2 className="w-10 h-10" />
           </motion.div>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-[#FF7A00] mb-2 border border-orange-200">
-            Order Placed Successfully
-          </span>
+
+          {/* Status Badge */}
+          {paymentMethod === "cod" ? (
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 mb-2 border border-amber-200">
+              Cash on Delivery • Order Placed
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 mb-2 border border-emerald-200">
+              ✓ Payment Received &amp; Order Confirmed
+            </span>
+          )}
+
           <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
-            Thank you, {name || "Shopper"}!
+            {paymentMethod === "cod"
+              ? `Thank you, ${name || "Shopper"}!`
+              : `Payment Successful, ${name || "Shopper"}!`}
           </h1>
-          <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-            Your order has been confirmed and we are preparing it for shipment. We&apos;ll send live tracking updates to <strong>+91 {phone}</strong>.
+
+          <p className="text-sm text-gray-500 mb-6 leading-relaxed max-w-md mx-auto">
+            {paymentMethod === "cod"
+              ? `Your Cash on Delivery order has been placed. Please keep cash ready when the courier delivers your parcel. Live updates sent to +91 ${(phone || "").replace(/^\+91\s*/, "")}.`
+              : `Your online payment has been verified and your order is in Priority Express Dispatch. Live updates sent to +91 ${(phone || "").replace(/^\+91\s*/, "")}.`}
           </p>
 
+          {/* COD Switch to Prepaid Instant Discount Promo Banner */}
+          {paymentMethod === "cod" && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-orange-500/10 via-[#FF7A00]/10 to-amber-500/10 border border-[#FF7A00]/30 text-left mb-6 relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FF7A00] text-white uppercase tracking-wider mb-1">
+                    ⚡ Save ₹30 Instantly
+                  </span>
+                  <h4 className="text-sm font-bold text-gray-900">
+                    Switch to Prepaid &amp; Pay Only ₹{Math.max(0, (confirmedTotal || grandTotal) - 30).toLocaleString()}
+                  </h4>
+                  <p className="text-xs text-gray-600 mt-0.5">
+                    Pay online now via UPI, Cards, or Net Banking to waive cash charges and get Priority Express Dispatch.
+                  </p>
+                </div>
+                <Link
+                  href={`/checkout?method=prepaid&switch=cod&order_id=${encodeURIComponent(confirmedOrderId)}&phone=${encodeURIComponent(phone)}`}
+                  className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold transition-all shadow-sm shrink-0 whitespace-nowrap text-center"
+                >
+                  Pay Online &amp; Save ₹30 →
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Order Summary Details Card */}
           <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-xs mb-8 text-left space-y-3 text-xs text-gray-600">
             <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
               <span className="text-gray-500">Order ID:</span>
@@ -1242,7 +1287,7 @@ function CheckoutContent() {
             <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
               <span className="text-gray-500">Payment Mode:</span>
               <span className="font-semibold text-gray-900">
-                {paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid (Online)"}
+                {paymentMethod === "cod" ? "Cash on Delivery (COD)" : "Prepaid (Online via UPI/Cards)"}
               </span>
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
@@ -1256,8 +1301,17 @@ function CheckoutContent() {
               </span>
             </div>
             <div className="flex justify-between items-center pt-2 text-sm">
-              <span className="font-bold text-gray-900">Total Paid:</span>
-              <span className="font-extrabold text-[#FF7A00] text-lg">₹{(confirmedTotal || grandTotal).toLocaleString()}</span>
+              <span className="font-bold text-gray-900">
+                {paymentMethod === "cod" ? "Total Payable on Delivery:" : "Total Paid Online:"}
+              </span>
+              <div className="text-right">
+                <span className="font-extrabold text-[#FF7A00] text-lg block">
+                  ₹{(confirmedTotal || grandTotal).toLocaleString()}
+                </span>
+                <span className={`text-[10px] font-bold block ${paymentMethod === "cod" ? "text-amber-600" : "text-emerald-600"}`}>
+                  {paymentMethod === "cod" ? "Pay in cash to courier" : "✓ Paid Online"}
+                </span>
+              </div>
             </div>
           </div>
 

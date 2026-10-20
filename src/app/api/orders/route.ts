@@ -276,7 +276,7 @@ export async function POST(req: NextRequest) {
         customerPhone: customer_phone || "",
         orderId,
         totalAmount: Number(total_amount),
-        paymentMethod: "cod",
+        paymentMethod: isCod ? "cod" : "prepaid",
         items: (items || []).map((it: any) => ({
           name: it.name,
           quantity: Number(it.quantity || 1),
