@@ -36,6 +36,7 @@ import {
   ArrowDown,
   GripVertical,
   Move,
+  Truck,
 } from "lucide-react";
 import { Product, ProductColorVariant, BuyMoreSaveMoreConfig, BuyMoreSaveMoreTier, ProductOverviewBlock } from "@/types/product";
 import { DEFAULT_PRODUCTS, getSubcategoriesForCategory } from "@/data/zupeProducts";
@@ -3474,6 +3475,17 @@ export default function AdminProductsPage() {
                         </span>
                       </div>
                       <p className="text-[10px] text-gray-400 -mt-1">Inclusive of all taxes &amp; free shipping</p>
+
+                      {/* Mock Delivery by Date Banner with Animated Truck */}
+                      <div className="mt-2 p-2 rounded-xl bg-gray-100/90 flex items-center gap-2">
+                        <div className="animate-truck-bounce text-[#FF7A00] shrink-0">
+                          <Truck className="w-4 h-4" />
+                        </div>
+                        <p className="text-[11px] text-gray-800 tracking-tight">
+                          <span>Delivery by </span>
+                          <strong className="font-bold text-gray-950">25 Oct - 27 Oct</strong>
+                        </p>
+                      </div>
                     </div>
                   </div>
 

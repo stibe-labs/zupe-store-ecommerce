@@ -462,6 +462,29 @@ export default function ProductDetailPage() {
     return productPoints.map((text) => ({ icon: "✨", text }));
   }, [productPoints]);
 
+  // Dynamic Estimated Delivery Date Range (e.g. today is 20 Oct -> "25 Oct - 27 Oct")
+  const [deliveryDateRange, setDeliveryDateRange] = useState<string>("25 Oct - 27 Oct");
+
+  useEffect(() => {
+    try {
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const now = new Date();
+      const start = new Date(now);
+      start.setDate(now.getDate() + 5);
+      const end = new Date(now);
+      end.setDate(now.getDate() + 7);
+
+      const startDay = start.getDate();
+      const startMonth = months[start.getMonth()];
+      const endDay = end.getDate();
+      const endMonth = months[end.getMonth()];
+
+      setDeliveryDateRange(`${startDay} ${startMonth} - ${endDay} ${endMonth}`);
+    } catch (e) {
+      // Fallback safe default
+    }
+  }, []);
+
   const handleSelectImage = (img: string, idx: number) => {
     setSelectedImage(img);
     setActiveImageIndex(idx);
@@ -1168,6 +1191,51 @@ export default function ProductDetailPage() {
               )}
             </div>
             <p className="text-[12px] text-gray-400 -mt-0.5">Inclusive of all taxes & free shipping</p>
+
+            {/* Delivery by Date Banner with Animated Moving Truck */}
+            <div className="mt-3.5 p-3 sm:py-3.5 sm:px-4.5 rounded-[16px] bg-[#F3F4F6] flex items-center gap-2.5 sm:gap-3">
+              <div className="relative flex items-center justify-center shrink-0">
+                {/* Wind motion speed dashes behind truck */}
+                <div className="flex flex-col gap-[3px] items-end mr-0.5 select-none pointer-events-none">
+                  <span className="h-[2px] rounded-full bg-[#FF7A00] animate-truck-dash-1" style={{ width: "8px" }} />
+                  <span className="h-[2px] rounded-full bg-[#FF7A00]/80 animate-truck-dash-2" style={{ width: "12px" }} />
+                  <span className="h-[2px] rounded-full bg-[#FF7A00]/60 animate-truck-dash-1" style={{ width: "6px", animationDelay: "0.35s" }} />
+                </div>
+
+                {/* Driving truck with engine / suspension vibration bounce */}
+                <div className="animate-truck-bounce inline-flex items-center">
+                  <svg
+                    className="w-[22px] h-[22px] text-[#FF7A00]"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    {/* Cargo Box */}
+                    <path d="M1.5 4.5A1.5 1.5 0 0 1 3 3h10.5A1.5 1.5 0 0 1 15 4.5V14a2 2 0 0 1-2 2H3.5a2 2 0 0 1-2-2V4.5z" />
+                    {/* White speed stripe on cargo box */}
+                    <path d="M4 8.5h6M3.5 11h4" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+                    {/* Truck Cab */}
+                    <path d="M15 6h3.2a2 2 0 0 1 1.6.8l2.7 3.6c.3.4.5.9.5 1.4V14a2 2 0 0 1-2 2h-6V6z" />
+                    {/* Windshield */}
+                    <path d="M16 8h2.8l1.8 2.5a1 1 0 0 1 .1.5V12H16V8z" fill="#ffffff" opacity="0.9" />
+                    {/* Headlight beam */}
+                    <circle cx="22" cy="14" r="0.8" fill="#FEF08A" />
+                    {/* Wheels */}
+                    <circle cx="6" cy="17" r="2.8" fill="#374151" />
+                    <circle cx="6" cy="17" r="1.3" fill="#F3F4F6" />
+                    <circle cx="6" cy="17" r="0.6" fill="#1F2937" />
+                    <circle cx="18" cy="17" r="2.8" fill="#374151" />
+                    <circle cx="18" cy="17" r="1.3" fill="#F3F4F6" />
+                    <circle cx="18" cy="17" r="0.6" fill="#1F2937" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Delivery text */}
+              <p className="text-[13px] sm:text-[14px] text-gray-800 tracking-tight">
+                <span>Delivery by </span>
+                <strong className="font-bold text-gray-950">{deliveryDateRange || "25 Oct - 27 Oct"}</strong>
+              </p>
+            </div>
 
             {/* Action Buttons: ADD TO CART & BUY NOW (matching reference design) */}
             <div className="mt-4 space-y-2.5">
