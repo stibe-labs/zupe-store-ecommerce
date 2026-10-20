@@ -1132,18 +1132,18 @@ export default function ProductDetailPage() {
               );
             })()}
 
-            {/* 4 Key Highlight Points: 2 points in 1 row, total 2 rows (in mobile view and desktop view both follow this) */}
+            {/* 4 Key Highlight Points: 2 points in 1 row, total 2 rows (normal text with tick mark, no badge outline, full text in mobile & desktop) */}
             {productPoints.length > 0 && (
-              <div className="mt-3.5 mb-1.5 grid grid-cols-2 gap-2">
+              <div className="mt-3 mb-2 grid grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-2">
                 {productPoints.slice(0, 4).map((pt, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-gray-50/90 border border-gray-200/80 text-[11px] sm:text-[12px] font-semibold text-gray-800 min-w-0 shadow-2xs"
+                    className="flex items-start gap-1.5 min-w-0"
                   >
-                    <div className="w-4 h-4 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center shrink-0">
+                    <div className="w-4 h-4 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/70 flex items-center justify-center shrink-0 mt-0.5">
                       <Check className="w-2.5 h-2.5 text-emerald-600 stroke-[3]" />
                     </div>
-                    <span className="truncate leading-tight" title={pt}>
+                    <span className="text-[12px] sm:text-[12.5px] font-medium text-gray-800 leading-snug">
                       {pt}
                     </span>
                   </div>

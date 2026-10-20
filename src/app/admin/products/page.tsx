@@ -3443,16 +3443,16 @@ export default function AdminProductsPage() {
                       </div>
 
                       {/* The 2x2 Points Grid */}
-                      <div className="grid grid-cols-2 gap-2 my-1">
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-2 my-2">
                         {[0, 1, 2, 3].map((sIdx) => (
                           <div
                             key={sIdx}
-                            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-gray-50/90 border border-gray-200/80 text-[11px] font-semibold text-gray-800 min-w-0"
+                            className="flex items-start gap-1.5 min-w-0"
                           >
-                            <div className="w-4 h-4 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center shrink-0">
+                            <div className="w-4 h-4 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/70 flex items-center justify-center shrink-0 mt-0.5">
                               <Check className="w-2.5 h-2.5 text-emerald-600 stroke-[3]" />
                             </div>
-                            <span className="truncate leading-tight">
+                            <span className="text-[11px] sm:text-[12px] font-medium text-gray-800 leading-snug">
                               {formFeatures[sIdx] || `Point ${sIdx + 1} (empty)`}
                             </span>
                           </div>
