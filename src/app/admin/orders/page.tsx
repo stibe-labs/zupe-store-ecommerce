@@ -488,6 +488,7 @@ function AdminOrdersContent() {
                 <option value="all">All Payment Methods</option>
                 <option value="COD">Cash on Delivery (COD)</option>
                 <option value="Prepaid">Prepaid / UPI</option>
+                <option value="Refunded">Refunded (Razorpay)</option>
               </select>
 
               <button
@@ -594,8 +595,12 @@ function AdminOrdersContent() {
                           >
                             {ord.payment_method}
                           </span>
-                          <span className="block text-[10px] font-semibold mt-0.5 text-slate-500">
-                            {ord.payment_status === "Completed" || ord.payment_status === "paid" ? (
+                          <span className="block text-[10px] font-semibold mt-0.5">
+                            {ord.payment_status?.toLowerCase() === "refunded" ? (
+                              <span className="inline-flex items-center gap-1 text-purple-700 font-extrabold bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
+                                <RotateCcw className="w-3 h-3" /> Refunded
+                              </span>
+                            ) : ord.payment_status === "Completed" || ord.payment_status === "paid" ? (
                               <span className="text-emerald-600 font-bold">✓ Paid</span>
                             ) : (
                               <span className="text-amber-600 font-medium">Pending</span>
@@ -842,6 +847,33 @@ function AdminOrdersContent() {
                 );
               })()}
 
+              {/* Razorpay Refund Status Card */}
+              {(selectedOrder.payment_status?.toLowerCase() === "refunded" ||
+                (selectedOrder.delivery_status === "Cancelled" &&
+                  (selectedOrder.payment_method?.toLowerCase().includes("prepaid") ||
+                   selectedOrder.payment_method?.toLowerCase().includes("online")))) && (
+                <div className="bg-purple-50/80 p-3.5 rounded-xl border border-purple-200 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+                      <RotateCcw className="w-4 h-4 stroke-[2.2]" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                          Payment Refund:
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-200 text-purple-900">
+                          Refunded (₹{selectedOrder.total_amount}) via Razorpay
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Automated refund initiated to customer original payment source. Order cancelled before dispatch.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* WhatsApp Order Verification Status Card */}
               <div
                 className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 ${
@@ -1030,6 +1062,22 @@ function AdminOrdersContent() {
                       <option value="Remitted">Remitted</option>
                       <option value="Settled">Settled</option>
                       <option value="N/A">N/A (Prepaid)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                      Payment Status
+                    </label>
+                    <select
+                      value={editPaymentStatus}
+                      onChange={(e) => setEditPaymentStatus(e.target.value)}
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Completed">Completed / Paid</option>
+                      <option value="Refunded">Refunded (Razorpay / Instant)</option>
+                      <option value="Failed">Failed</option>
                     </select>
                   </div>
                 </div>

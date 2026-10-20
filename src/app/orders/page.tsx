@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   AlertTriangle,
   XCircle,
+  RotateCcw,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -227,11 +228,14 @@ function OrdersPageContent() {
                   ...o,
                   order_status: "cancelled",
                   whatsapp_confirm_status: "cancelled",
+                  payment_status: data.refund ? ("refunded" as any) : o.payment_status,
                 }
               : o
           )
         );
-        setCancelSuccessMsg(`Order #${orderId} was successfully cancelled.`);
+        setCancelSuccessMsg(
+          data.message || `Order #${orderId} was successfully cancelled.`
+        );
         setCancelPromptId(null);
       } else {
         alert(data.error || "Failed to cancel order.");
@@ -424,12 +428,18 @@ function OrdersPageContent() {
                 ];
               }
 
+              const isRefunded =
+                ord.payment_status === "refunded" ||
+                (ord as any).payment_status === "Refunded";
+
               const isPaid =
-                ord.payment_status === "paid" ||
-                Boolean(ord.payment_method && ord.payment_method.toLowerCase().includes("prepaid"));
+                !isRefunded &&
+                (ord.payment_status === "paid" ||
+                 Boolean(ord.payment_method && ord.payment_method.toLowerCase().includes("prepaid")));
 
               const isCod =
                 !isPaid &&
+                !isRefunded &&
                 (Boolean(ord.payment_method?.toLowerCase().includes("cash on delivery")) ||
                  Boolean(ord.payment_method?.toUpperCase() === "COD"));
 
@@ -448,7 +458,7 @@ function OrdersPageContent() {
                 } else if (displayedTotal <= 0 && productSubtotal > 0) {
                   displayedTotal = productSubtotal + 49;
                 }
-              } else if (isPaid && displayedTotal <= 0 && productSubtotal > 0) {
+              } else if ((isPaid || isRefunded) && displayedTotal <= 0 && productSubtotal > 0) {
                 displayedTotal = productSubtotal;
               }
 
@@ -478,7 +488,11 @@ function OrdersPageContent() {
                       <span className="text-sm font-bold text-[#FF7A00]">
                         ₹{displayedTotal.toLocaleString()}
                       </span>
-                      {isCod ? (
+                      {isRefunded ? (
+                        <span className="text-[10px] text-purple-600 font-semibold block">
+                          Refunded to Source
+                        </span>
+                      ) : isCod ? (
                         <span className="text-[10px] text-gray-500 font-medium block">
                           (₹{productSubtotal.toLocaleString()} + ₹49 COD)
                         </span>
@@ -492,7 +506,12 @@ function OrdersPageContent() {
                       {getStatusBadge(isDelivered ? "delivered" : ord.order_status, ord.whatsapp_confirm_status)}
 
                       {/* Payment Mode Pill */}
-                      {isPaid ? (
+                      {isRefunded ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Refund Initiated</span>
+                        </span>
+                      ) : isPaid ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>Prepaid (Paid)</span>
@@ -537,6 +556,28 @@ function OrdersPageContent() {
                       )}
                     </div>
                   </div>
+
+                  {/* Automated Refund Alert Banner on Card */}
+                  {isRefunded && (
+                    <div className="mb-6 p-4 rounded-2xl bg-purple-50 border border-purple-200 text-purple-950 flex items-start gap-3 shadow-xs">
+                      <div className="w-9 h-9 rounded-full bg-purple-100 border border-purple-200 text-purple-700 flex items-center justify-center shrink-0">
+                        <RotateCcw className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-extrabold text-purple-900">
+                            Automated Refund Initiated (₹{displayedTotal.toLocaleString()})
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-200 text-purple-900">
+                            Razorpay Instant
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-purple-800 mt-0.5">
+                          Your order was cancelled before dispatch. The full payment of <strong>₹{displayedTotal.toLocaleString()}</strong> has been initiated back to your original payment method (UPI / Card). Expected credit within 2 to 4 hours for UPI or 2 to 4 business days for Cards.
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* WhatsApp Verification Alert Banner on Card */}
                   {ord.whatsapp_confirm_status === "pending_whatsapp" && (

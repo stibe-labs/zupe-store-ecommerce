@@ -100,6 +100,62 @@ export function verifyRazorpaySignature({
   }
 }
 
+export interface RazorpayRefundResponse {
+  id: string;
+  entity: string;
+  amount: number;
+  currency: string;
+  payment_id: string;
+  notes?: Record<string, string>;
+  receipt?: string;
+  status: string;
+  speed_processed?: string;
+  speed_requested?: string;
+  created_at: number;
+}
+
+/**
+ * Initiates an automated refund on Razorpay for a payment ID.
+ * Returns the refund details including the unique refund ID (e.g. rfnd_xxx).
+ */
+export async function refundRazorpayPayment({
+  paymentId,
+  amount,
+  notes = {},
+}: {
+  paymentId: string;
+  amount?: number; // In Rupees; if not provided, full payment amount is refunded
+  notes?: Record<string, string>;
+}): Promise<RazorpayRefundResponse> {
+  const authHeader = `Basic ${Buffer.from(
+    `${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`
+  ).toString("base64")}`;
+
+  const bodyPayload: any = { notes };
+  if (amount !== undefined && amount > 0) {
+    bodyPayload.amount = Math.round(amount * 100); // Razorpay requires paise
+  }
+
+  const response = await fetch(`https://api.razorpay.com/v1/payments/${paymentId}/refund`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: authHeader,
+    },
+    body: JSON.stringify(bodyPayload),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error?.description || `Razorpay refund failed with status ${response.status}`
+    );
+  }
+
+  return data as RazorpayRefundResponse;
+}
+
 /**
  * Dynamically loads the Razorpay checkout.js script on client side.
  */

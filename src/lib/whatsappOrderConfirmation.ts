@@ -406,3 +406,50 @@ async function sendWhatsAppTextMessage(
     console.warn("[WA Order Confirm] Text error:", err);
   }
 }
+
+export interface OrderCancellationRefundParams {
+  customerName: string;
+  customerPhone: string;
+  orderId: string;
+  refundAmount?: number;
+  refundId?: string;
+  isPrepaid: boolean;
+}
+
+export async function sendOrderCancellationRefundWhatsApp(
+  params: OrderCancellationRefundParams
+): Promise<boolean> {
+  const { customerName, customerPhone, orderId, refundAmount, refundId, isPrepaid } = params;
+
+  const { digits, isValid } = normalizePhoneNumber(customerPhone);
+  if (!isValid) return false;
+
+  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+
+  const firstName = customerName.split(" ")[0] || customerName;
+
+  let body = "";
+  if (isPrepaid && refundAmount) {
+    body =
+      `🛍️ *Zupe Store — Order Cancelled & Refund Initiated*\n\n` +
+      `Hi ${firstName}! Your order *#${orderId}* has been successfully cancelled.\n\n` +
+      `💰 *Refund Amount:* Rs ${refundAmount.toLocaleString("en-IN")}\n` +
+      `💳 *Refund Reference:* ${refundId || "Initiated via Razorpay"}\n` +
+      `⚡ *Payment Source:* Released back to your original payment method (UPI / Card / Netbanking)\n\n` +
+      `⏱️ *Expected Credit Timeline:*\n` +
+      `• UPI (GPay / PhonePe / Paytm): Within 2 to 4 hours\n` +
+      `• Debit / Credit Card: 2 to 4 business days\n\n` +
+      `Thank you for shopping with Zupe Store!`;
+  } else {
+    body =
+      `🛍️ *Zupe Store — Order Cancelled*\n\n` +
+      `Hi ${firstName}! Your Cash on Delivery order *#${orderId}* has been successfully cancelled.\n\n` +
+      `No amount was charged. If you need any assistance or want to re-order, we are here to help.\n\n` +
+      `Thank you,\nZupe Store Team`;
+  }
+
+  await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
+  return true;
+}

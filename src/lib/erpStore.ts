@@ -855,6 +855,8 @@ export async function getERPOrders(filters?: {
         sql += " AND (payment_method = 'Prepaid' OR payment_method LIKE '%UPI%' OR payment_method = 'Credit Card' OR payment_method = 'Online')";
       } else if (filters.payment_method === "COD" || filters.payment_method.toLowerCase().includes("cash")) {
         sql += " AND (payment_method = 'COD' OR payment_method LIKE '%Cash on Delivery%')";
+      } else if (filters.payment_method === "Refunded") {
+        sql += " AND (payment_status = 'Refunded' OR payment_status = 'refunded')";
       } else {
         sql += " AND payment_method = ?";
         params.push(filters.payment_method);
@@ -900,6 +902,8 @@ export async function getERPOrders(filters?: {
       if (filters?.payment_method && filters.payment_method !== "all") {
         if (filters.payment_method === "Prepaid") {
           memoryOnly = memoryOnly.filter((o) => o.payment_method !== "COD");
+        } else if (filters.payment_method === "Refunded") {
+          memoryOnly = memoryOnly.filter((o) => o.payment_status?.toLowerCase() === "refunded");
         } else {
           memoryOnly = memoryOnly.filter((o) => o.payment_method === filters.payment_method);
         }
@@ -977,6 +981,8 @@ export async function getERPOrders(filters?: {
   if (filters?.payment_method && filters.payment_method !== "all") {
     if (filters.payment_method === "Prepaid") {
       res = res.filter((o) => o.payment_method !== "COD");
+    } else if (filters.payment_method === "Refunded") {
+      res = res.filter((o) => o.payment_status?.toLowerCase() === "refunded");
     } else {
       res = res.filter((o) => o.payment_method === filters.payment_method);
     }
