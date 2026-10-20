@@ -364,79 +364,103 @@ export default function ProductDetailPage() {
     }
   }, [availableColors, selectedColor]);
 
-  // Product-specific feature bullet points
-  const productHighlights = useMemo(() => {
+  // 4 Key Highlight Points between Reviews & Price (2 in 1 row, total 2 rows on mobile & desktop)
+  const productPoints = useMemo<string[]>(() => {
     if (!product) return [];
+
+    // 1. If admin configured features for this product, use them
     if (product.features && Array.isArray(product.features) && product.features.length > 0) {
-      return product.features.map((feat: any) => {
-        if (typeof feat === "string") {
-          return { icon: "✨", text: feat };
-        }
-        return { icon: feat.icon || "✨", text: feat.text || String(feat) };
-      });
+      const clean = product.features
+        .map((f: any) => (typeof f === "string" ? f : f?.text || String(f)))
+        .map((s: string) => s.replace(/^[✨🔥💆‍♀️🌸🔋⚡👔✈️🛡️💧🖨️📱📝🌀🧺📦⏱️💨🤫👶🎒✓•-]\s*/u, "").trim())
+        .filter(Boolean);
+      if (clean.length >= 4) {
+        return clean.slice(0, 4);
+      }
+      if (clean.length > 0) {
+        const fallbacks = [
+          "Premium Quality Build",
+          "Fast Doorstep Delivery",
+          "Cash on Delivery Available",
+          "7-Day Easy Replacement",
+        ];
+        return [...clean, ...fallbacks.filter((fb) => !clean.includes(fb))].slice(0, 4);
+      }
     }
-    if (isRippleLamp) {
+
+    // 2. Product-specific curated defaults (clean 4 points)
+    const idLower = (product.id || "").toLowerCase();
+    const slugLower = (product.slug || "").toLowerCase();
+
+    if (idLower.includes("heating-pad") || slugLower.includes("heating-pad")) {
       return [
-        { icon: "✨", text: "Creates a calming ocean water ripple effect on walls & ceilings" },
-        { icon: "🏠", text: "Perfect ambient lighting for bedroom, study, or living room" },
-        { icon: "🎨", text: "16 RGB colors + wireless remote control + touch switch" },
-        { icon: "🪷", text: "Enhances mood, relaxation, and deep sleep" },
-        { icon: "🎁", text: "Ideal luxury gift in premium packaging" },
+        "3 Fast Heat Modes (45-65°C)",
+        "4 Vibration Massage Modes",
+        "Skin-Friendly Plush Velvet",
+        "Wireless USB Rechargeable",
       ];
     }
-    if (product.id === "mini-portable-steam-iron" || product.slug?.includes("iron")) {
+    if (idLower.includes("ripple") || slugLower.includes("ripple")) {
       return [
-        { icon: "⚡", text: "Rapid 30-second quick heat-up technology" },
-        { icon: "👔", text: "Dual wet & dry ironing modes for all delicate and heavy fabrics" },
-        { icon: "✈️", text: "Compact 180° foldable handle designed for travel & suitcase storage" },
-        { icon: "🛡️", text: "Ceramic titanium non-stick soleplate protects garments from burns" },
-        { icon: "💧", text: "Integrated 50ml leak-proof micro water reservoir with steam boost" },
+        "Dynamic Water Wave Ripple",
+        "16 RGB Colors + Remote",
+        "Ambient Bedside Lighting",
+        "Touch & Wireless Control",
       ];
     }
-    if (product.id === "menstrual-heating-pad" || product.slug?.includes("heating-pad")) {
+    if (idLower.includes("iron") || slugLower.includes("iron")) {
       return [
-        { icon: "🔥", text: "3 Intelligent heat settings (45°C - 65°C) warming in 3 seconds" },
-        { icon: "💆‍♀️", text: "4 Multi-frequency soothing acoustic vibration massage modes" },
-        { icon: "🌸", text: "Ultra-soft skin-friendly plush velvet contact backing" },
-        { icon: "🔋", text: "High-capacity wireless rechargeable battery for portable relief" },
-        { icon: "🎀", text: "Elastic adjustable waistband fits comfortably on waist and abdomen" },
+        "30s Rapid Heat-Up",
+        "Dual Wet & Dry Ironing",
+        "180° Foldable Travel Body",
+        "Anti-Burn Ceramic Plate",
       ];
     }
-    if (product.id === "mesh-nebulizer" || product.slug?.includes("nebulizer")) {
+    if (idLower.includes("helicopter") || slugLower.includes("helicopter")) {
       return [
-        { icon: "💨", text: "Ultra-fine <5µm atomized mist for rapid bronchial absorption" },
-        { icon: "🤫", text: "Whisper-quiet <25dB silent operation for sleeping babies" },
-        { icon: "🔋", text: "Dual power: USB cable or AA batteries for emergency portability" },
-        { icon: "👶", text: "Includes child mask, adult mask, and inhalation mouthpiece" },
-        { icon: "🎒", text: "Palm-sized ergonomic body weighs only 90 grams" },
+        "Solar Auto-Rotating Propeller",
+        "360° All-Around Fragrance",
+        "Natural Plant Essential Oils",
+        "No Battery or Wire Needed",
       ];
     }
-    if (product.id === "mini-washing-machine" || product.slug?.includes("washing-machine")) {
+    if (idLower.includes("nebulizer") || slugLower.includes("nebulizer")) {
       return [
-        { icon: "🌀", text: "Powerful forward and reverse ultrasonic wave motor" },
-        { icon: "🧺", text: "Generous 8L capacity for delicates, socks, baby clothes, and towels" },
-        { icon: "📦", text: "Collapsible accordion design compresses down to 4 inches" },
-        { icon: "💧", text: "Includes dedicated detachable spin-dry drain basket" },
-        { icon: "⏱️", text: "3 Smart wash timer settings (3min, 5min, 10min) with 1 touch" },
+        "Ultra-Fine <5µm Cool Mist",
+        "Silent <25dB Quiet Operation",
+        "Child & Adult Masks Included",
+        "Dual Battery / USB Power",
       ];
     }
-    if (product.id === "mini-printer" || product.slug?.includes("printer")) {
+    if (idLower.includes("washing") || slugLower.includes("washer")) {
       return [
-        { icon: "🖨️", text: "Zero ink or toner required — prints cleanly via thermal technology" },
-        { icon: "📱", text: "Instant Bluetooth connectivity with iOS & Android companion app" },
-        { icon: "📝", text: "Print study flashcards, shopping lists, labels, and retro photos" },
-        { icon: "🔋", text: "Built-in 1000mAh rechargeable battery prints up to 10 paper rolls" },
-        { icon: "🎒", text: "Pocket-sized body slips easily into backpacks and handbags" },
+        "Forward/Reverse Sonic Wash",
+        "8L Capacity + Drain Basket",
+        "Collapsible Foldable Body",
+        "3 Smart Timer Programs",
       ];
     }
+    if (idLower.includes("printer") || slugLower.includes("printer")) {
+      return [
+        "Zero Ink Thermal Printing",
+        "Instant Bluetooth Mobile App",
+        "1000mAh Rechargeable Battery",
+        "Prints Labels, Notes & Photos",
+      ];
+    }
+
     return [
-      { icon: "✨", text: product.tagline || product.subtitle || "Premium quality build and materials" },
-      { icon: "📦", text: product.volume || "Verified authentic Zupe Store original product" },
-      { icon: "🚚", text: "Fast doorstep courier dispatch with Cash on Delivery available" },
-      { icon: "🔄", text: "7-day replacement guarantee & hassle-free returns" },
-      { icon: "⭐", text: `${product.rating ? product.rating.toFixed(1) : "4.8"} out of 5 stars customer satisfaction` },
+      product.tagline || "Premium Quality & Build",
+      product.volume || "Verified Authentic Design",
+      "Doorstep Express Courier",
+      "7-Day Easy Replacement",
     ];
-  }, [product, isRippleLamp]);
+  }, [product]);
+
+  // Derived highlights for "Why You'll Love This" card
+  const productHighlights = useMemo(() => {
+    return productPoints.map((text) => ({ icon: "✨", text }));
+  }, [productPoints]);
 
   const handleSelectImage = (img: string, idx: number) => {
     setSelectedImage(img);
@@ -1107,6 +1131,25 @@ export default function ProductDetailPage() {
                 </a>
               );
             })()}
+
+            {/* 4 Key Highlight Points: 2 points in 1 row, total 2 rows (in mobile view and desktop view both follow this) */}
+            {productPoints.length > 0 && (
+              <div className="mt-3.5 mb-1.5 grid grid-cols-2 gap-2">
+                {productPoints.slice(0, 4).map((pt, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-gray-50/90 border border-gray-200/80 text-[11px] sm:text-[12px] font-semibold text-gray-800 min-w-0 shadow-2xs"
+                  >
+                    <div className="w-4 h-4 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center shrink-0">
+                      <Check className="w-2.5 h-2.5 text-emerald-600 stroke-[3]" />
+                    </div>
+                    <span className="truncate leading-tight" title={pt}>
+                      {pt}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Price & Discount Row */}
             <div className="mt-3 flex items-baseline gap-2.5">

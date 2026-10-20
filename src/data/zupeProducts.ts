@@ -94,11 +94,10 @@ export const DEFAULT_PRODUCTS: Product[] = [
       },
     ],
     features: [
-      "Creates a calming water ripple effect",
-      "Perfect for bedroom, study or living room",
-      "Multiple color options",
-      "Enhances mood and relaxation",
-      "Great for gifting",
+      "Dynamic Water Wave Ripple",
+      "16 RGB Colors + Remote",
+      "Ambient Bedside Lighting",
+      "Touch & Wireless Control",
     ],
     specifications: {
       "Dimensions": "12 cm × 12 cm × 13 cm",
@@ -232,6 +231,12 @@ export const DEFAULT_PRODUCTS: Product[] = [
     rating: 4.7,
     review_count: 189,
     badge: "Sale",
+    features: [
+      "30s Rapid Heat-Up",
+      "Dual Wet & Dry Ironing",
+      "180° Foldable Travel Body",
+      "Anti-Burn Ceramic Plate",
+    ],
   },
   {
     id: "menstrual-heating-pad",
@@ -289,6 +294,12 @@ export const DEFAULT_PRODUCTS: Product[] = [
     rating: 5.0,
     review_count: 2,
     badge: "Sale",
+    features: [
+      "3 Fast Heat Modes (45-65°C)",
+      "4 Vibration Massage Modes",
+      "Skin-Friendly Plush Velvet",
+      "Wireless USB Rechargeable",
+    ],
   },
   {
     id: "portable-mesh-nebulizer",
@@ -346,6 +357,12 @@ export const DEFAULT_PRODUCTS: Product[] = [
     rating: 4.8,
     review_count: 154,
     badge: "Sale",
+    features: [
+      "Ultra-Fine <5µm Cool Mist",
+      "Silent <25dB Quiet Operation",
+      "Child & Adult Masks Included",
+      "Dual Battery / USB Power",
+    ],
   },
   {
     id: "foldable-mini-washer",
@@ -405,6 +422,12 @@ export const DEFAULT_PRODUCTS: Product[] = [
     rating: 4.7,
     review_count: 218,
     badge: "Sale",
+    features: [
+      "Forward/Reverse Sonic Wash",
+      "8L Capacity + Drain Basket",
+      "Collapsible Foldable Body",
+      "3 Smart Timer Programs",
+    ],
   },
 
   // --- New Arrivals ---
@@ -465,6 +488,12 @@ export const DEFAULT_PRODUCTS: Product[] = [
     rating: 4.7,
     review_count: 167,
     badge: "New",
+    features: [
+      "Zero Ink Thermal Printing",
+      "Instant Bluetooth Mobile App",
+      "1000mAh Rechargeable Battery",
+      "Prints Labels, Notes & Photos",
+    ],
   },
   {
     id: "helicopter-car-perfume",
@@ -522,6 +551,12 @@ export const DEFAULT_PRODUCTS: Product[] = [
     rating: 4.6,
     review_count: 310,
     badge: "Trending",
+    features: [
+      "Solar Auto-Rotating Propeller",
+      "360° All-Around Fragrance",
+      "Natural Plant Essential Oils",
+      "No Battery or Wire Needed",
+    ],
   },
   {
     id: "instant-water-heater-faucet",

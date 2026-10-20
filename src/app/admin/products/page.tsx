@@ -356,9 +356,10 @@ export default function AdminProductsPage() {
     setFormOverviewBlocks([]);
 
     setFormFeatures([
-      "Premium quality design and build materials",
-      "Ergonomic travel-friendly form factor",
-      "Intelligent safety protection & fast operation",
+      "Premium Quality Build & Finish",
+      "Fast & Intuitive Operation",
+      "Ergonomic Compact Design",
+      "Verified Authentic Zupe Original",
     ]);
     setNewFeatureInput("");
 
@@ -486,9 +487,71 @@ export default function AdminProductsPage() {
       setFormOverviewBlocks([]);
     }
 
-    setFormFeatures(
-      prod.features && Array.isArray(prod.features) ? [...prod.features] : []
-    );
+    let initialFeatures: string[] = [];
+    if (prod.features && Array.isArray(prod.features) && prod.features.length > 0) {
+      initialFeatures = [...prod.features];
+    } else {
+      const idL = (prod.id || "").toLowerCase();
+      const slugL = (prod.slug || "").toLowerCase();
+      if (idL.includes("heating-pad") || slugL.includes("heating-pad")) {
+        initialFeatures = [
+          "3 Fast Heat Modes (45-65°C)",
+          "4 Vibration Massage Modes",
+          "Skin-Friendly Plush Velvet",
+          "Wireless USB Rechargeable",
+        ];
+      } else if (idL.includes("ripple") || slugL.includes("ripple")) {
+        initialFeatures = [
+          "Dynamic Water Wave Ripple",
+          "16 RGB Colors + Remote",
+          "Ambient Bedside Lighting",
+          "Touch & Wireless Control",
+        ];
+      } else if (idL.includes("iron") || slugL.includes("iron")) {
+        initialFeatures = [
+          "30s Rapid Heat-Up",
+          "Dual Wet & Dry Ironing",
+          "180° Foldable Travel Body",
+          "Anti-Burn Ceramic Plate",
+        ];
+      } else if (idL.includes("helicopter") || slugL.includes("helicopter")) {
+        initialFeatures = [
+          "Solar Auto-Rotating Propeller",
+          "360° All-Around Fragrance",
+          "Natural Plant Essential Oils",
+          "No Battery or Wire Needed",
+        ];
+      } else if (idL.includes("nebulizer") || slugL.includes("nebulizer")) {
+        initialFeatures = [
+          "Ultra-Fine <5µm Cool Mist",
+          "Silent <25dB Quiet Operation",
+          "Child & Adult Masks Included",
+          "Dual Battery / USB Power",
+        ];
+      } else if (idL.includes("washing") || slugL.includes("washer")) {
+        initialFeatures = [
+          "Forward/Reverse Sonic Wash",
+          "8L Capacity + Drain Basket",
+          "Collapsible Foldable Body",
+          "3 Smart Timer Programs",
+        ];
+      } else if (idL.includes("printer") || slugL.includes("printer")) {
+        initialFeatures = [
+          "Zero Ink Thermal Printing",
+          "Instant Bluetooth Mobile App",
+          "1000mAh Rechargeable Battery",
+          "Prints Labels, Notes & Photos",
+        ];
+      } else {
+        initialFeatures = [
+          prod.tagline || "Premium Quality Build & Finish",
+          prod.volume || "Fast & Intuitive Operation",
+          "Ergonomic Compact Design",
+          "Verified Authentic Zupe Original",
+        ];
+      }
+    }
+    setFormFeatures(initialFeatures);
     setNewFeatureInput("");
 
     setFormVolume(prod.volume || "");
@@ -679,9 +742,29 @@ export default function AdminProductsPage() {
     );
   };
 
-  // Feature (Highlights) manipulation helpers - Fully editable
+  // Feature (Highlights / 4 Key Points) manipulation helpers - Fully editable
   const updateFeature = (idx: number, val: string) => {
     setFormFeatures((prev) => prev.map((f, i) => (i === idx ? val : f)));
+  };
+
+  const updateFeatureSlot = (slotIdx: number, val: string) => {
+    setFormFeatures((prev) => {
+      const copy = [...prev];
+      while (copy.length <= slotIdx) {
+        copy.push("");
+      }
+      copy[slotIdx] = val;
+      return copy;
+    });
+  };
+
+  const applyPresetPoints = (pts: string[]) => {
+    setFormFeatures([...pts]);
+    setActionMessage({
+      type: "success",
+      text: "4 Key Highlight Points preset loaded successfully!",
+    });
+    setTimeout(() => setActionMessage(null), 3000);
   };
 
   const addFeature = () => {
@@ -1540,7 +1623,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>6. Highlights ({formFeatures.length})</span>
+                <span>6. 4 Key Points ({formFeatures.length})</span>
               </button>
 
               <button
@@ -1709,6 +1792,62 @@ export default function AdminProductsPage() {
                       placeholder="e.g. Soothing warmth & multi-frequency massage"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                     />
+                  </div>
+
+                  {/* 4 Feature Points (Reviews ↔ Price 2x2 Grid) */}
+                  <div className="p-4 rounded-xl bg-orange-50/50 border border-orange-200/70 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="p-1 rounded-md bg-orange-100 text-[#FF7A00]">
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        </span>
+                        <div>
+                          <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+                            4 Key Highlight Points (Between Reviews &amp; Price)
+                          </span>
+                          <span className="text-[10px] text-slate-500">
+                            Displayed on storefront in a 2x2 grid (2 points per row) on both mobile &amp; desktop.
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("highlights")}
+                        className="text-[11px] font-bold text-[#FF7A00] hover:underline shrink-0 cursor-pointer"
+                      >
+                        Advanced Preview →
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                      {[0, 1, 2, 3].map((slotIdx) => (
+                        <div key={slotIdx} className="relative">
+                          <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                            Point {slotIdx + 1} {slotIdx < 2 ? "(Row 1)" : "(Row 2)"}
+                          </label>
+                          <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus-within:ring-2 focus-within:ring-[#FF7A00]/20 focus-within:border-[#FF7A00]">
+                            <div className="w-3.5 h-3.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center shrink-0">
+                              <Check className="w-2.5 h-2.5 stroke-[3]" />
+                            </div>
+                            <input
+                              type="text"
+                              value={formFeatures[slotIdx] || ""}
+                              onChange={(e) => updateFeatureSlot(slotIdx, e.target.value)}
+                              placeholder={
+                                slotIdx === 0
+                                  ? "e.g. 3 Fast Heat Modes (45-65°C)"
+                                  : slotIdx === 1
+                                  ? "e.g. 4 Vibration Massage Modes"
+                                  : slotIdx === 2
+                                  ? "e.g. Skin-Friendly Plush Velvet"
+                                  : "e.g. Wireless USB Rechargeable"
+                              }
+                              className="w-full text-xs text-slate-800 bg-transparent focus:outline-none font-medium"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <div>
@@ -3192,48 +3331,252 @@ export default function AdminProductsPage() {
               )}
 
               {/* ========================================================
-                  TAB 6: KEY HIGHLIGHTS (FULLY EDITABLE & DELETABLE INDIVIDUAL POINTS)
+                  TAB 6: 4 KEY POINTS (REVIEWS ↔ PRICE 2x2 STOREFRONT GRID)
                  ======================================================== */}
               {activeTab === "highlights" && (
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-bold text-slate-800 text-xs sm:text-sm">
-                      Key Highlights ("Why You'll Love This ❤️" Card)
-                    </h4>
-                    <p className="text-[11px] text-slate-500">
-                      Edit any existing bullet point directly, delete unwanted ones, or add brand new points below.
-                    </p>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    {formFeatures.map((feat, fIdx) => (
-                      <div
-                        key={fIdx}
-                        className="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-slate-200 shadow-xs hover:border-slate-300 transition-colors"
-                      >
-                        <span className="text-base select-none shrink-0">✨</span>
-                        <input
-                          type="text"
-                          value={feat}
-                          onChange={(e) => updateFeature(fIdx, e.target.value)}
-                          placeholder="Edit this highlight bullet..."
-                          className="flex-1 px-2 py-1 bg-slate-50/50 border border-transparent rounded-lg text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-[#FF7A00] focus:outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeFeature(fIdx)}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors shrink-0"
-                          title="Delete this highlight"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                <div className="space-y-5">
+                  {/* Header Card */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="p-1 rounded-md bg-orange-100 text-[#FF7A00]">
+                          <Sparkles className="w-3.5 h-3.5" />
+                        </span>
+                        <h4 className="font-bold text-slate-800 text-xs sm:text-sm">
+                          4 Key Highlight Points (Between Reviews &amp; Price)
+                        </h4>
+                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          2x2 Storefront Grid
+                        </span>
                       </div>
-                    ))}
+                      <p className="text-[11px] text-slate-500 mt-1 max-w-xl leading-relaxed">
+                        These 4 points appear directly below the customer reviews rating and above the product price in a strict 2x2 grid (2 points per row) on both mobile and desktop views.
+                      </p>
+                    </div>
+
+                    {/* Presets dropdown / quick buttons */}
+                    <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          applyPresetPoints([
+                            "3 Fast Heat Modes (45-65°C)",
+                            "4 Vibration Massage Modes",
+                            "Skin-Friendly Plush Velvet",
+                            "Wireless USB Rechargeable",
+                          ])
+                        }
+                        className="px-2.5 py-1 text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors cursor-pointer"
+                        title="Load Menstrual Heating Pad Points"
+                      >
+                        Heating Pad
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          applyPresetPoints([
+                            "Dynamic Water Wave Ripple",
+                            "16 RGB Colors + Remote",
+                            "Ambient Bedside Lighting",
+                            "Touch & Wireless Control",
+                          ])
+                        }
+                        className="px-2.5 py-1 text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors cursor-pointer"
+                        title="Load Water Ripple Lamp Points"
+                      >
+                        Ripple Lamp
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          applyPresetPoints([
+                            "30s Rapid Heat-Up",
+                            "Dual Wet & Dry Ironing",
+                            "180° Foldable Travel Body",
+                            "Anti-Burn Ceramic Plate",
+                          ])
+                        }
+                        className="px-2.5 py-1 text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors cursor-pointer"
+                        title="Load Steam Iron Points"
+                      >
+                        Steam Iron
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          applyPresetPoints([
+                            "Premium Quality Build & Finish",
+                            "Fast 3-Second Operation",
+                            "Ergonomic Compact Design",
+                            "Verified Authentic Zupe Original",
+                          ])
+                        }
+                        className="px-2.5 py-1 text-[11px] bg-orange-50 hover:bg-orange-100 text-[#FF7A00] font-semibold rounded-lg transition-colors cursor-pointer"
+                        title="Load Standard 4 Defaults"
+                      >
+                        Defaults
+                      </button>
+                    </div>
                   </div>
 
+                  {/* Live 2x2 Storefront Preview */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-orange-50/20 border border-slate-200/90 space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-[#FF7A00] animate-pulse" />
+                        <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                          Live Storefront Preview (Reviews ↔ Price Gap)
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        Strict 2x2 grid on mobile &amp; desktop
+                      </span>
+                    </div>
+
+                    <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3 max-w-md">
+                      {/* Mock Reviews Row */}
+                      <div className="flex items-center gap-1.5 text-[11px] text-[#6B7280]">
+                        <span className="text-[#F59E0B] font-bold">★★★★★</span>
+                        <span className="font-semibold text-gray-800">(5.0)</span>
+                        <span className="text-gray-300">|</span>
+                        <span className="underline decoration-dotted text-gray-500">2 verified customer reviews • Customer Reviews ↓</span>
+                      </div>
+
+                      {/* The 2x2 Points Grid */}
+                      <div className="grid grid-cols-2 gap-2 my-1">
+                        {[0, 1, 2, 3].map((sIdx) => (
+                          <div
+                            key={sIdx}
+                            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-gray-50/90 border border-gray-200/80 text-[11px] font-semibold text-gray-800 min-w-0"
+                          >
+                            <div className="w-4 h-4 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center shrink-0">
+                              <Check className="w-2.5 h-2.5 text-emerald-600 stroke-[3]" />
+                            </div>
+                            <span className="truncate leading-tight">
+                              {formFeatures[sIdx] || `Point ${sIdx + 1} (empty)`}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Mock Price Row */}
+                      <div className="flex items-baseline gap-2 pt-1">
+                        <span className="text-xl font-extrabold text-[#111111]">
+                          ₹{formPrice ? Number(formPrice).toLocaleString("en-IN") : "799"}
+                        </span>
+                        {formMrp && Number(formMrp) > (Number(formPrice) || 0) && (
+                          <span className="text-xs text-gray-400 line-through">
+                            ₹{Number(formMrp).toLocaleString("en-IN")}
+                          </span>
+                        )}
+                        <span className="px-1.5 py-0.5 rounded bg-[#FFE8EC] text-[#FF334B] text-[10px] font-extrabold">
+                          30% OFF
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-gray-400 -mt-1">Inclusive of all taxes &amp; free shipping</p>
+                    </div>
+                  </div>
+
+                  {/* 4 Dedicated Slot Cards */}
+                  <div className="space-y-3">
+                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+                      Edit the 4 Points (2 in Row 1, 2 in Row 2)
+                    </span>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {[0, 1, 2, 3].map((slotIdx) => (
+                        <div
+                          key={slotIdx}
+                          className="p-3 rounded-xl bg-white border border-slate-200 shadow-xs space-y-1.5 hover:border-slate-300 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                              <span className="w-4.5 h-4.5 rounded-md bg-orange-100 text-[#FF7A00] font-extrabold text-[10px] flex items-center justify-center">
+                                {slotIdx + 1}
+                              </span>
+                              Point {slotIdx + 1} &mdash;{" "}
+                              <span className="text-slate-400 font-normal">
+                                {slotIdx < 2 ? "Row 1 (Top " : "Row 2 (Bottom "}
+                                {slotIdx % 2 === 0 ? "Left)" : "Right)"}
+                              </span>
+                            </span>
+                            {formFeatures[slotIdx] && (
+                              <button
+                                type="button"
+                                onClick={() => updateFeatureSlot(slotIdx, "")}
+                                className="text-[10px] text-rose-500 hover:text-rose-700"
+                              >
+                                Clear
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center shrink-0">
+                              <Check className="w-2.5 h-2.5 stroke-[3]" />
+                            </div>
+                            <input
+                              type="text"
+                              value={formFeatures[slotIdx] || ""}
+                              onChange={(e) => updateFeatureSlot(slotIdx, e.target.value)}
+                              placeholder={
+                                slotIdx === 0
+                                  ? "e.g. 3 Fast Heat Modes (45-65°C)"
+                                  : slotIdx === 1
+                                  ? "e.g. 4 Vibration Massage Modes"
+                                  : slotIdx === 2
+                                  ? "e.g. Skin-Friendly Plush Velvet"
+                                  : "e.g. Wireless USB Rechargeable"
+                              }
+                              className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:border-[#FF7A00] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Additional Feature Bullets (If any) */}
+                  {formFeatures.length > 4 && (
+                    <div className="pt-3 border-t border-slate-200 space-y-2">
+                      <span className="text-xs font-bold text-slate-700 block">
+                        Additional Highlight Bullets ({formFeatures.length - 4} Extra)
+                      </span>
+                      <div className="space-y-2">
+                        {formFeatures.slice(4).map((feat, extraIdx) => {
+                          const realIdx = extraIdx + 4;
+                          return (
+                            <div
+                              key={realIdx}
+                              className="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-slate-200 shadow-xs"
+                            >
+                              <span className="text-xs font-bold text-slate-400 select-none shrink-0 w-5">
+                                #{realIdx + 1}
+                              </span>
+                              <input
+                                type="text"
+                                value={feat}
+                                onChange={(e) => updateFeature(realIdx, e.target.value)}
+                                className="flex-1 px-2 py-1 bg-slate-50/50 border border-transparent rounded-lg text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-[#FF7A00] focus:outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeFeature(realIdx)}
+                                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors shrink-0"
+                                title="Delete this extra highlight"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Add Extra Feature Input */}
                   <div className="pt-2 border-t border-slate-200">
                     <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      Add New Highlight Point
+                      + Add Another Feature Point
                     </label>
                     <div className="flex items-center gap-2">
                       <input
@@ -3252,9 +3595,9 @@ export default function AdminProductsPage() {
                       <button
                         type="button"
                         onClick={addFeature}
-                        className="px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs font-semibold shrink-0 transition-colors shadow-sm shadow-orange-500/20 active:scale-[0.98]"
+                        className="px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs font-semibold shrink-0 transition-colors shadow-sm shadow-orange-500/20 active:scale-[0.98] cursor-pointer"
                       >
-                        + Add Highlight
+                        + Add Point
                       </button>
                     </div>
                   </div>
