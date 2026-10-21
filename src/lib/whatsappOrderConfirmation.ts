@@ -228,7 +228,7 @@ export async function sendOrderConfirmationWhatsApp(
     .join("\n");
   const moreItems = items.length > 3 ? "\n  • ...and " + (items.length - 3) + " more" : "";
   const trackUrl = STORE_BASE_URL + "/order-tracking?query=" + encodeURIComponent(orderId);
-  const payNowUrl = STORE_BASE_URL + "/checkout?method=prepaid&switch=cod";
+  const payNowUrl = STORE_BASE_URL + "/checkout?method=prepaid&switch=cod&orderId=" + encodeURIComponent(orderId);
 
   let message: string;
   if (paymentMethod === "cod") {
@@ -260,36 +260,73 @@ export async function sendOrderConfirmationWhatsApp(
 
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
-  // 1. Try official Meta UTILITY Template 'zupe_order_confirmed' first (approved for all customers 24/7)
-  let utilitySent = false;
-  try {
-    utilitySent = await sendViaConfirmedUtilityTemplate(
-      apiUrl,
-      token,
-      digits,
-      firstName,
-      orderId,
-      totalAmount,
-      paymentMethodLabel
-    );
-  } catch (err) {
-    console.warn("[WA Order Confirm] Utility template send attempt:", err);
-  }
+  if (paymentMethod === "cod") {
+    // 1. For COD: Send approved Utility template 'zupe_order_cod_v2' which includes BOTH buttons:
+    // [Pay Online (Save Rs 30)] and [Track Order]
+    let codV2Sent = false;
+    try {
+      codV2Sent = await sendViaCodV2Template(
+        apiUrl,
+        token,
+        digits,
+        firstName,
+        orderId,
+        totalAmount,
+        discountedAmount
+      );
+    } catch (err) {
+      console.warn("[WA Order Confirm] COD V2 template attempt:", err);
+    }
 
-  // 2. Also try specific prepaid or cod templates
-  try {
-    await sendViaTemplate(
-      apiUrl,
-      token,
-      digits,
-      paymentMethod,
-      firstName,
-      orderId,
-      totalAmount,
-      discountedAmount
-    );
-  } catch (err) {
-    console.warn("[WA Order Confirm] Specific template attempt:", err);
+    // 2. If V2 template failed, fallback to generic confirmed utility template
+    if (!codV2Sent) {
+      try {
+        await sendViaConfirmedUtilityTemplate(
+          apiUrl,
+          token,
+          digits,
+          firstName,
+          orderId,
+          totalAmount,
+          paymentMethodLabel
+        );
+      } catch (err) {
+        console.warn("[WA Order Confirm] Fallback utility template attempt:", err);
+      }
+    }
+  } else {
+    // Prepaid orders: Send prepaid template or confirmed template
+    let prepaidSent = false;
+    try {
+      prepaidSent = await sendViaTemplate(
+        apiUrl,
+        token,
+        digits,
+        paymentMethod,
+        firstName,
+        orderId,
+        totalAmount,
+        discountedAmount
+      );
+    } catch (err) {
+      console.warn("[WA Order Confirm] Prepaid template attempt:", err);
+    }
+
+    if (!prepaidSent) {
+      try {
+        await sendViaConfirmedUtilityTemplate(
+          apiUrl,
+          token,
+          digits,
+          firstName,
+          orderId,
+          totalAmount,
+          paymentMethodLabel
+        );
+      } catch (err) {
+        console.warn("[WA Order Confirm] Fallback utility template attempt:", err);
+      }
+    }
   }
 
   // 3. ALWAYS send the complete itemized direct WhatsApp confirmation message!
@@ -300,6 +337,70 @@ export async function sendOrderConfirmationWhatsApp(
   } catch (err) {
     console.warn("[WA Order Confirm] Direct message dispatch error:", err);
   }
+}
+
+async function sendViaCodV2Template(
+  apiUrl: string,
+  token: string,
+  to: string,
+  firstName: string,
+  orderId: string,
+  totalAmount: number,
+  discountedAmount: number
+): Promise<boolean> {
+  const payload = {
+    messaging_product: "whatsapp",
+    recipient_type: "individual",
+    to,
+    type: "template",
+    template: {
+      name: "zupe_order_cod_v2",
+      language: { code: TEMPLATE_LANG },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: firstName },
+            { type: "text", text: orderId },
+            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
+            { type: "text", text: `Rs ${discountedAmount.toLocaleString("en-IN")}` },
+          ],
+        },
+        {
+          type: "button",
+          sub_type: "url",
+          index: "0",
+          parameters: [{ type: "text", text: orderId }],
+        },
+        {
+          type: "button",
+          sub_type: "url",
+          index: "1",
+          parameters: [{ type: "text", text: orderId }],
+        },
+      ],
+    },
+  };
+
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = (await res.json()) as any;
+    if (res.ok && data.messages?.length > 0) {
+      console.log(`✅ [WA Order Confirm] Utility template 'zupe_order_cod_v2' with Pay Online and Track buttons dispatched to ${to}`);
+      return true;
+    }
+    console.warn("[WA Order Confirm] COD V2 template rejected:", data?.error || data);
+  } catch (err) {
+    console.warn("[WA Order Confirm] COD V2 template error:", err);
+  }
+  return false;
 }
 
 async function sendViaConfirmedUtilityTemplate(
