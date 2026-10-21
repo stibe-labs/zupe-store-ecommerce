@@ -183,6 +183,21 @@ export default function AdminShipmentsPage() {
   };
 
   const filtered = orders.filter((o) => {
+    // 1. CRITICAL: Shipments must ONLY include confirmed orders ready for dispatch!
+    // Orders still awaiting WhatsApp confirmation must remain on hold and not appear in Shipments.
+    const isAwaitingWhatsApp =
+      o.whatsapp_confirm_status === "pending_whatsapp" ||
+      (o as any).whatsapp_status === "pending_whatsapp" ||
+      o.status === "Awaiting Confirmation";
+    if (isAwaitingWhatsApp) return false;
+
+    // 2. Exclude cancelled orders from active shipments queue
+    const isCancelled =
+      o.status === "Cancelled" ||
+      o.delivery_status === "Cancelled" ||
+      o.whatsapp_confirm_status === "cancelled";
+    if (isCancelled) return false;
+
     if (courierFilter !== "all" && o.courier_partner !== courierFilter) return false;
     if (statusFilter !== "all") {
       if (statusFilter === "NDR") {

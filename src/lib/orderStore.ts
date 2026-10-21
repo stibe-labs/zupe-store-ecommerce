@@ -265,6 +265,7 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
     (o) => (normId && o.id === normId) || (normToken && o.whatsapp_confirm_token === normToken)
   );
 
+  let erpOrd: any = null;
   // If token was already marked used or order confirmed in memory
   if (ord) {
     if (ord.whatsapp_token_used || ord.whatsapp_confirm_status === "confirmed") {
@@ -290,7 +291,7 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
     ord.order_status = "processing";
   } else {
     // Check in ERP store / D1
-    const erpOrd = await getOrderById(normId);
+    erpOrd = await getOrderById(normId);
     if (erpOrd) {
       if (erpOrd.whatsapp_token_used || erpOrd.whatsapp_confirm_status === "confirmed") {
         return {
@@ -311,10 +312,17 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
   }
 
   try {
+    const existingAwb = (ord as any)?.shiprocket_awb || erpOrd?.shiprocket_awb;
+    const finalAwb = existingAwb && existingAwb.trim() !== "" ? existingAwb : `SR-AWB-${Math.floor(1000000 + Math.random() * 9000000)}`;
+    const finalCourier = (ord as any)?.courier_partner || erpOrd?.courier_partner || "Delhivery";
+
     await updateERPOrder(normId, {
       whatsapp_confirm_status: "confirmed",
       whatsapp_token_used: true,
       status: "Processing",
+      delivery_status: "Processing",
+      shiprocket_awb: finalAwb,
+      courier_partner: finalCourier,
     });
   } catch (e) {
     console.warn("ERP update on WhatsApp confirm error:", e);

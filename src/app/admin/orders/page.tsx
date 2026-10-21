@@ -617,10 +617,21 @@ function AdminOrdersContent() {
                           </span>
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <p className="font-semibold text-slate-800">{ord.courier_partner || "Delhivery"}</p>
-                          <span className="font-mono text-[11px] text-slate-600">
-                            {ord.shiprocket_awb || "Pending"}
-                          </span>
+                          {ord.whatsapp_confirm_status === "pending_whatsapp" ? (
+                            <div>
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/80">
+                                <Clock className="w-3 h-3 text-amber-600" /> Awaiting Confirmation
+                              </span>
+                              <span className="block text-[10px] text-slate-400 mt-0.5">AWB generated on verify</span>
+                            </div>
+                          ) : (
+                            <>
+                              <p className="font-semibold text-slate-800">{ord.courier_partner || "Delhivery"}</p>
+                              <span className="font-mono text-[11px] text-slate-600">
+                                {ord.shiprocket_awb || "Pending"}
+                              </span>
+                            </>
+                          )}
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           {ord.whatsapp_confirm_status === "pending_whatsapp" ? (

@@ -1084,8 +1084,12 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
     payment_method: paymentMethod,
     payment_status: orderData.payment_status || (paymentMethod === "COD" ? "Pending" : "Completed"),
     shipping_address: orderData.shipping_address || "India",
-    shiprocket_awb: orderData.shiprocket_awb || `SR-AWB-${9871109 + count}`,
-    courier_partner: orderData.courier_partner || "Delhivery",
+    shiprocket_awb: (orderData.whatsapp_confirm_status || "pending_whatsapp") === "pending_whatsapp"
+      ? ""
+      : (orderData.shiprocket_awb || `SR-AWB-${9871109 + count}`),
+    courier_partner: (orderData.whatsapp_confirm_status || "pending_whatsapp") === "pending_whatsapp"
+      ? ""
+      : (orderData.courier_partner || "Delhivery"),
     delivery_status: (orderData.delivery_status as any) || "Processing",
     ndr_status: orderData.ndr_status || "None",
     rto_status: orderData.rto_status || "None",
