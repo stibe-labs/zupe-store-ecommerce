@@ -49,6 +49,50 @@ function OrdersPageContent() {
   const [isSilentSyncing, setIsSilentSyncing] = useState<boolean>(false);
   const prevOrdersRef = useRef<OrderRecord[]>([]);
 
+  // Track dismissed confirmation banners in local state + sessionStorage so they never reappear
+  const [dismissedConfirmBannerIds, setDismissedConfirmBannerIds] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const saved = sessionStorage.getItem("zupe_dismissed_wa_confirmations");
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+  const dismissedConfirmBannerIdsRef = useRef<Set<string>>(dismissedConfirmBannerIds);
+  useEffect(() => {
+    dismissedConfirmBannerIdsRef.current = dismissedConfirmBannerIds;
+  }, [dismissedConfirmBannerIds]);
+
+  const handleDismissConfirmBanner = useCallback((ordId: string) => {
+    setDismissedConfirmBannerIds((prev) => {
+      const next = new Set(prev);
+      next.add(ordId);
+      try {
+        sessionStorage.setItem("zupe_dismissed_wa_confirmations", JSON.stringify(Array.from(next)));
+      } catch {}
+      return next;
+    });
+    setAutoConfirmedOrderId(null);
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("confirmed")) {
+        url.searchParams.delete("confirmed");
+        window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+      }
+    } catch {}
+  }, []);
+
+  const activeConfirmBannerId = useMemo(() => {
+    if (confirmedOrderId && !dismissedConfirmBannerIds.has(confirmedOrderId)) {
+      return confirmedOrderId;
+    }
+    if (autoConfirmedOrderId && !dismissedConfirmBannerIds.has(autoConfirmedOrderId)) {
+      return autoConfirmedOrderId;
+    }
+    return null;
+  }, [confirmedOrderId, autoConfirmedOrderId, dismissedConfirmBannerIds]);
+
   useEffect(() => {
     if (cancelPromptParam && orders.length > 0) {
       const targetOrd = orders.find((o) => o.id === cancelPromptParam);
@@ -135,7 +179,8 @@ function OrdersPageContent() {
                 oldOrd.whatsapp_confirm_status === "pending_whatsapp" &&
                 (newOrd.whatsapp_confirm_status === "confirmed" ||
                   newOrd.order_status === "processing" ||
-                  (newOrd as any).status === "Processing")
+                  (newOrd as any).status === "Processing") &&
+                !dismissedConfirmBannerIdsRef.current.has(newOrd.id)
               ) {
                 setAutoConfirmedOrderId(newOrd.id);
               }
@@ -330,16 +375,18 @@ function OrdersPageContent() {
   const getStatusBadge = (status: OrderRecord["order_status"], waStatus?: string) => {
     if (waStatus === "cancelled" || status === "cancelled") {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
-          <XCircle className="w-3.5 h-3.5" /> Cancelled
+        <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200/80 truncate w-full sm:w-auto">
+          <XCircle className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">Cancelled</span>
         </span>
       );
     }
 
     if (waStatus === "pending_whatsapp") {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 animate-pulse">
-          <Clock className="w-3.5 h-3.5 text-amber-600" /> Awaiting WhatsApp
+        <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-300/80 truncate w-full sm:w-auto">
+          <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+          <span className="truncate">Awaiting WhatsApp</span>
         </span>
       );
     }
@@ -347,21 +394,24 @@ function OrdersPageContent() {
     switch (status) {
       case "delivered":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Delivered
+          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 truncate w-full sm:w-auto">
+            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Delivered</span>
           </span>
         );
       case "shipped":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
-            <Truck className="w-3.5 h-3.5" /> In Transit
+          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200/80 truncate w-full sm:w-auto">
+            <Truck className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">In Transit</span>
           </span>
         );
       case "processing":
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-[#FF7A00]">
-            <Clock className="w-3.5 h-3.5" /> Processing
+          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-orange-50 text-[#FF7A00] border border-orange-200/80 truncate w-full sm:w-auto">
+            <Clock className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Processing</span>
           </span>
         );
     }
@@ -416,25 +466,31 @@ function OrdersPageContent() {
           </div>
         </div>
 
-        {/* Banner: Order Confirmed via WhatsApp Link or Real-time Sync */}
-        {(confirmedOrderId || autoConfirmedOrderId) && (
-          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-start gap-3 shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="font-bold text-sm">🎉 Order Confirmed via WhatsApp!</p>
-              <p className="text-xs text-emerald-700 mt-0.5">
-                Thank you! Your order <strong>#{confirmedOrderId || autoConfirmedOrderId}</strong> has been confirmed. We have dispatched our full confirmation message with tracking and discount details to your WhatsApp, and your package is being prepared for dispatch.
-              </p>
+        {/* Banner: Order Confirmed via WhatsApp Link or Real-time Sync (Reduced Height & Guaranteed One-time Dismissal) */}
+        {activeConfirmBannerId && (
+          <div className="mb-4 py-2 px-3 sm:px-4 rounded-xl bg-emerald-50 border border-emerald-200/90 text-emerald-950 flex items-center justify-between gap-3 shadow-xs animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-bold text-xs text-emerald-950">🎉 Order Confirmed via WhatsApp!</span>
+                  <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-100/80 px-1.5 py-0.5 rounded">
+                    #{activeConfirmBannerId}
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-800 mt-0.5 truncate sm:overflow-visible sm:whitespace-normal">
+                  Thank you! Tracking details dispatched to your WhatsApp. Package is being prepared for dispatch.
+                </p>
+              </div>
             </div>
-            {autoConfirmedOrderId && (
-              <button
-                onClick={() => setAutoConfirmedOrderId(null)}
-                className="text-emerald-700 hover:text-emerald-900 p-1 rounded-lg hover:bg-emerald-100/60 transition"
-                aria-label="Dismiss banner"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              onClick={() => handleDismissConfirmBanner(activeConfirmBannerId)}
+              className="text-emerald-700 hover:text-emerald-950 p-1 rounded-lg hover:bg-emerald-100/80 transition shrink-0 cursor-pointer"
+              aria-label="Dismiss banner"
+              title="Close notification"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         )}
 
@@ -578,7 +634,7 @@ function OrdersPageContent() {
               return (
                 <div
                   key={ord.id}
-                  className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8"
+                  className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8"
                 >
                   {/* Header row */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 mb-6">
@@ -615,57 +671,66 @@ function OrdersPageContent() {
                         </span>
                       ) : null}
                     </div>
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      {getStatusBadge(isDelivered ? "delivered" : ord.order_status, ord.whatsapp_confirm_status)}
+                    {/* Status Badges & Action Buttons: 2 Clean Rows (Row 1: Informational Badges, Row 2: Action Buttons) */}
+                    <div className="flex flex-col gap-2 w-full sm:w-auto">
+                      {/* Row 1: Informational Badges (Status & Payment Method) */}
+                      <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+                        {getStatusBadge(isDelivered ? "delivered" : ord.order_status, ord.whatsapp_confirm_status)}
 
-                      {/* Payment Mode Pill */}
-                      {isRefunded ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                          <RotateCcw className="w-3.5 h-3.5" />
-                          <span>Refund Initiated</span>
-                        </span>
-                      ) : isPaid ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Prepaid (Paid)</span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>Cash on Delivery</span>
-                        </span>
-                      )}
+                        {/* Payment Mode Badge */}
+                        {isRefunded ? (
+                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200/80 truncate w-full sm:w-auto">
+                            <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">Refunded</span>
+                          </span>
+                        ) : isPaid ? (
+                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 truncate w-full sm:w-auto">
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">Prepaid (Paid)</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100/90 text-slate-700 border border-slate-200 truncate w-full sm:w-auto">
+                            <ShoppingBag className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                            <span className="truncate">Cash on Delivery</span>
+                          </span>
+                        )}
+                      </div>
 
-                      {/* COD Pay Online & Save Rs 30 Button */}
-                      {isCod && ord.order_status !== "cancelled" && (
-                        <Link
-                          href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(ord.id)}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold bg-[#FF7A00] hover:bg-[#E66E00] text-white shadow-xs transition-all cursor-pointer animate-pulse"
-                        >
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span>Pay Online (Save ₹30)</span>
-                        </Link>
-                      )}
-
+                      {/* Row 2: Action Buttons (Distinct Interactive Touch Targets) */}
                       {ord.order_status !== "cancelled" && (
-                        <Link
-                          href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-orange-50 text-[#FF7A00] hover:bg-[#FF7A00] hover:text-white border border-[#FF7A00]/20 transition-all cursor-pointer"
-                        >
-                          <Truck className="w-3.5 h-3.5" />
-                          <span>Track Package</span>
-                        </Link>
-                      )}
+                        <div className={`grid ${isCod ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-none"} sm:flex sm:items-center gap-2 w-full sm:w-auto`}>
+                          {/* COD Pay Online & Save Rs 30 Button */}
+                          {isCod && (
+                            <Link
+                              href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(ord.id)}`}
+                              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold bg-[#FF7A00] hover:bg-[#E66E00] text-white shadow-xs transition-all active:scale-[0.98] w-full sm:w-auto text-center"
+                            >
+                              <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                              <span className="truncate">Pay Online (-₹30)</span>
+                            </Link>
+                          )}
 
-                      {isDelivered && (
-                        <button
-                          type="button"
-                          onClick={() => handleOpenReviewModal(ord, rawItems[0])}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 shadow-xs transition-all cursor-pointer"
-                        >
-                          <Star className="w-3.5 h-3.5 fill-current" />
-                          <span>Rate & Review</span>
-                        </button>
+                          {/* Track Package Button */}
+                          <Link
+                            href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
+                            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-orange-50/80 text-[#FF7A00] border border-[#FF7A00]/40 hover:border-[#FF7A00] shadow-2xs transition-all active:scale-[0.98] w-full sm:w-auto text-center"
+                          >
+                            <Truck className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">Track Package</span>
+                          </Link>
+
+                          {/* Rate & Review Button (Delivered) */}
+                          {isDelivered && (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenReviewModal(ord, rawItems[0])}
+                              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition-all active:scale-[0.98] w-full sm:w-auto text-center cursor-pointer"
+                            >
+                              <Star className="w-3.5 h-3.5 fill-current shrink-0" />
+                              <span className="truncate">Rate & Review</span>
+                            </button>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -692,44 +757,44 @@ function OrdersPageContent() {
                     </div>
                   )}
 
-                  {/* WhatsApp Verification Alert Banner on Card */}
+                  {/* WhatsApp Verification Alert Banner on Card (Slim, Reduced Height, Mobile-Optimized) */}
                   {ord.whatsapp_confirm_status === "pending_whatsapp" && (
-                    <div className="mb-6 p-4 rounded-2xl bg-amber-50/90 border border-amber-200 text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-                      <div className="flex items-start sm:items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-amber-100 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0">
-                          <AlertTriangle className="w-4 h-4" />
+                    <div className="mb-4 py-2 px-3 sm:px-3.5 rounded-xl bg-amber-50/90 border border-amber-200/90 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                          <AlertTriangle className="w-3.5 h-3.5" />
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-extrabold text-amber-900">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-extrabold text-amber-950">
                               Please confirm your order in WhatsApp
                             </span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/70 text-amber-800">
-                              Awaiting Confirmation
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-200/80 text-amber-900">
+                              Action Required
                             </span>
                           </div>
-                          <p className="text-[11px] text-amber-800 mt-0.5">
-                            We sent a message to <strong>{ord.customer_phone || "your WhatsApp"}</strong> with Confirm and Cancel buttons. Please tap <strong>Confirm Order</strong> in WhatsApp to dispatch your package.
+                          <p className="text-[11px] text-amber-800 leading-snug mt-0.5 truncate sm:overflow-visible sm:whitespace-normal">
+                            Tap <strong>Confirm Order</strong> sent to <strong>{ord.customer_phone || "your WhatsApp"}</strong> to dispatch.
                           </p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                         {cancelPromptId === ord.id ? (
-                          <div className="flex items-center gap-2 bg-white/90 p-1.5 px-2.5 rounded-xl border border-rose-200">
-                            <span className="text-[11px] text-rose-700 font-bold">Are you sure?</span>
+                          <div className="flex items-center gap-1.5 bg-white p-1 px-2 rounded-lg border border-rose-200">
+                            <span className="text-[11px] text-rose-700 font-bold">Cancel?</span>
                             <button
                               type="button"
                               onClick={() => handleCancelOrder(ord.id)}
                               disabled={cancellingOrderId === ord.id}
-                              className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer"
+                              className="px-2 py-0.5 rounded text-[11px] font-bold text-white bg-rose-600 hover:bg-rose-700 transition cursor-pointer"
                             >
-                              {cancellingOrderId === ord.id ? "Cancelling..." : "Yes, Cancel"}
+                              {cancellingOrderId === ord.id ? "..." : "Yes"}
                             </button>
                             <button
                               type="button"
                               onClick={() => setCancelPromptId(null)}
-                              className="px-2 py-1 rounded-lg text-[11px] font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                              className="px-2 py-0.5 rounded text-[11px] font-bold text-gray-600 hover:bg-gray-100 transition cursor-pointer"
                             >
                               No
                             </button>
@@ -738,7 +803,7 @@ function OrdersPageContent() {
                           <button
                             type="button"
                             onClick={() => setCancelPromptId(ord.id)}
-                            className="px-3 py-1.5 rounded-full text-xs font-bold text-rose-700 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:border-rose-600 transition-all cursor-pointer"
+                            className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:border-rose-600 transition-all cursor-pointer"
                           >
                             Cancel Order
                           </button>

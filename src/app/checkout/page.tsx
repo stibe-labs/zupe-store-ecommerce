@@ -839,7 +839,7 @@ function CheckoutContent() {
       setErrorMessage("Please enter your full name.");
       return;
     }
-    if (!email.trim() || !email.includes("@")) {
+    if (email.trim() && !email.includes("@")) {
       setErrorMessage("Please enter a valid email address.");
       return;
     }
@@ -1967,14 +1967,13 @@ function CheckoutContent() {
               {/* Email Address */}
               <div className="space-y-1">
                 <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                  Email Address *
+                  Email Address <span className="text-gray-400 font-normal lowercase">(optional)</span>
                 </label>
                 <input
                   type="email"
-                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder="you@example.com (optional)"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white"
                 />
               </div>

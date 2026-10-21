@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
       await executeD1Query(
         `INSERT OR IGNORE INTO users (id, name, email, password_hash, phone, created_at)
          VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP);`,
-        [effectiveUserId, customer_name || "Customer", customer_email || "", "guest_verified_checkout", customer_phone || null]
+        [effectiveUserId, customer_name || "Customer", customer_email ? customer_email.trim() : null, "guest_verified_checkout", customer_phone || null]
       );
     } catch (guestErr) {
       // Non-fatal

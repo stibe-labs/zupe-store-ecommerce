@@ -206,7 +206,7 @@ export async function POST(req: NextRequest) {
       user_id,
     } = body;
 
-    if (!customer_name || !customer_email || !shipping_address || !items || items.length === 0) {
+    if (!customer_name || !shipping_address || !items || items.length === 0) {
       return NextResponse.json(
         { success: false, error: "Missing required order information" },
         { status: 400 }
@@ -236,7 +236,7 @@ export async function POST(req: NextRequest) {
       await executeD1Query(
         `INSERT OR IGNORE INTO users (id, name, email, password_hash, phone, created_at)
          VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP);`,
-        [effectiveUserId, customer_name, customer_email, "guest_verified_checkout", customer_phone || null]
+        [effectiveUserId, customer_name, customer_email ? customer_email.trim() : null, "guest_verified_checkout", customer_phone || null]
       );
     } catch (guestErr) {
       // Non-fatal
@@ -252,7 +252,7 @@ export async function POST(req: NextRequest) {
       id: orderId,
       user_id: effectiveUserId,
       customer_name,
-      customer_email,
+      customer_email: customer_email ? customer_email.trim() : "",
       customer_phone: customer_phone || "",
       shipping_address,
       city: city || "",
@@ -276,7 +276,7 @@ export async function POST(req: NextRequest) {
       const { syncAddressFromOrder } = await import("@/lib/addressStore");
       await syncAddressFromOrder({
         customer_name,
-        customer_email,
+        customer_email: customer_email ? customer_email.trim() : "",
         customer_phone,
         shipping_address,
         city,
