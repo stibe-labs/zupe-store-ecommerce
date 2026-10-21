@@ -254,6 +254,58 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer);
   }, [cart, isInitialized, user]);
 
+  // Sync abandoned cart session for identified users (logged in or previously entered phone)
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    let phone = user?.phone || "";
+    let name = user?.name || "";
+
+    if (!phone && typeof window !== "undefined") {
+      phone = localStorage.getItem("zupe_checkout_phone") || "";
+      name = localStorage.getItem("zupe_checkout_name") || "";
+    }
+
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (cleanPhone.length < 10) return;
+
+    if (cart.length === 0) {
+      fetch("/api/checkout/abandoned", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer_phone: cleanPhone,
+          action: "clear_empty",
+        }),
+      }).catch(() => {});
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      const subtotalVal = cart.reduce((sum, it) => sum + it.price * it.quantity, 0);
+      fetch("/api/checkout/abandoned", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer_name: name.trim() || undefined,
+          customer_phone: cleanPhone,
+          total_amount: subtotalVal,
+          source: "cart",
+          is_backout: false,
+          items: cart.map((c) => ({
+            id: c.id,
+            name: c.name,
+            price: c.price,
+            quantity: c.quantity,
+            poster_image: c.poster_image,
+          })),
+        }),
+      }).catch(() => {});
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [cart, isInitialized, user]);
+
   const openCart = () => setIsOpen(true);
   const closeCart = () => setIsOpen(false);
   const toggleCart = () => setIsOpen((prev) => !prev);

@@ -26,8 +26,6 @@ export async function POST(req: NextRequest) {
       success: true,
       codeSent: result.codeSent ?? true,
       message: result.message,
-      // If code was not sent or in test mode, return otp for seamless testing
-      ...(result.otp ? { otp: result.otp } : {}),
     });
   } catch (err: any) {
     console.error("WhatsApp send OTP error:", err);

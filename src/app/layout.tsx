@@ -10,6 +10,7 @@ import { SearchModal } from "@/components/SearchModal";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { WhatsAppFloatingButton } from "@/components/WhatsAppFloatingButton";
+import { AbandonedCartAutoChecker } from "@/components/AbandonedCartAutoChecker";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -61,6 +62,7 @@ export default function RootLayout({
                   <SearchModal />
                   <MobileBottomNav />
                   <WhatsAppFloatingButton />
+                  <AbandonedCartAutoChecker />
                 </SmoothScrollProvider>
               </SearchProvider>
             </CartProvider>

@@ -32,6 +32,8 @@ function OrdersPageContent() {
   const { user, isAuthenticated, openAuthModal } = useAuth();
   const searchParams = useSearchParams();
   const confirmedOrderId = searchParams.get("confirmed");
+  const cancelledOrderId = searchParams.get("cancelled");
+  const noticeCode = searchParams.get("notice");
   const rawCancelPrompt = searchParams.get("cancelPrompt") || searchParams.get("cancel") || "";
   const cancelPromptParam = rawCancelPrompt.startsWith("cancelPrompt=")
     ? rawCancelPrompt.replace(/^cancelPrompt=/, "")

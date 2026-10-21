@@ -24,17 +24,12 @@ export function verifyOTP(
   const normalizedEmail = email.toLowerCase().trim();
   const code = (inputCode || "").trim();
 
-  // Universal bypass test codes for immediate testing and fallback
-  if (code === "123456" || code === "999999") {
-    return { valid: true, message: "Code verified successfully." };
-  }
-
   const record = otpMap.get(normalizedEmail);
 
   if (!record) {
     return {
       valid: false,
-      message: "No verification code found. Use fallback code 123456 or request a new code.",
+      message: "No verification code found. Please request a new code.",
     };
   }
 

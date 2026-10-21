@@ -141,6 +141,7 @@ function CheckoutContent() {
   const [confirmedPaymentId, setConfirmedPaymentId] = useState<string>("");
   const [confirmedTotal, setConfirmedTotal] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState("");
+  const [recoveredBanner, setRecoveredBanner] = useState<string | null>(null);
 
   // Urgency Timer (13:59 countdown)
   const [timeLeft, setTimeLeft] = useState(14 * 60 - 1); // 13:59
@@ -219,6 +220,63 @@ function CheckoutContent() {
       lookupCodOrder(initialTerm);
     }
   }, [isCodSwitchMode]);
+
+  // 1-Click Cart Restoration via WhatsApp Recovery Link (?recover=token or ?token=token)
+  useEffect(() => {
+    const recoverToken =
+      searchParams.get("recover") ||
+      searchParams.get("recovery") ||
+      searchParams.get("rec_token") ||
+      searchParams.get("token");
+
+    if (!recoverToken) return;
+
+    let isMounted = true;
+    async function restoreCheckoutSession() {
+      try {
+        const res = await fetch(`/api/checkout/abandoned?token=${encodeURIComponent(recoverToken as string)}`);
+        const data = await res.json();
+        if (isMounted && data.success && data.checkout) {
+          const chk = data.checkout;
+          if (chk.customer_name) setName(chk.customer_name);
+          if (chk.customer_phone) setPhone(cleanPhoneDigits(chk.customer_phone));
+          if (chk.customer_email) setEmail(chk.customer_email);
+          if (chk.shipping_address) setAddress(chk.shipping_address);
+          if (chk.city) setCity(chk.city);
+          if (chk.postal_code) setPostalCode(chk.postal_code);
+
+          // Restore items into cart
+          if (Array.isArray(chk.items) && chk.items.length > 0) {
+            chk.items.forEach((it: any) => {
+              addToCart(
+                {
+                  id: it.id || it.product_id,
+                  name: it.name || it.product_name,
+                  price: Number(it.price || it.unit_price || 0),
+                  original_price: Number(it.original_price || it.mrp || 0),
+                  poster_image: it.poster_image || it.image || "/products/ripple-lamp.jpg",
+                  category: it.category || "General",
+                },
+                Number(it.quantity || 1),
+                { overrideQuantity: true }
+              );
+            });
+          }
+
+          setRecoveredBanner(
+            `🎉 Welcome back${chk.customer_name ? `, ${chk.customer_name.split(" ")[0]}` : ""}! Your cart and shipping details have been restored.`
+          );
+        }
+      } catch (err) {
+        console.warn("Failed to restore abandoned checkout:", err);
+      }
+    }
+
+    restoreCheckoutSession();
+    return () => {
+      isMounted = false;
+    };
+  }, [searchParams, addToCart]);
 
   const handlePayForCodOrder = async () => {
     if (!switchOrder) return;
@@ -607,6 +665,115 @@ function CheckoutContent() {
     const cartIds = new Set(cart.map((c) => c.id));
     return BUMP_PRODUCTS.filter((b) => !cartIds.has(b.id));
   }, [cart]);
+
+  // Auto-track Abandoned Checkout when Phone is 10 digits
+  useEffect(() => {
+    if (orderComplete || isCodSwitchMode) return;
+    const clean = cleanPhoneDigits(phone);
+    if (clean.length !== 10) return;
+
+    try {
+      localStorage.setItem("zupe_checkout_phone", clean);
+      if (name.trim()) localStorage.setItem("zupe_checkout_name", name.trim());
+    } catch (e) {}
+
+    if (cart.length === 0) {
+      // If customer removed all items from cart, clear their abandoned session
+      fetch("/api/checkout/abandoned", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer_phone: clean,
+          action: "clear_empty",
+        }),
+      }).catch(() => {});
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetch("/api/checkout/abandoned", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer_name: name.trim() || undefined,
+          customer_phone: clean,
+          customer_email: email.trim() || undefined,
+          shipping_address: address.trim() || undefined,
+          city: state ? `${city.trim()}, ${state.trim()}` : city.trim() || undefined,
+          postal_code: postalCode.trim() || undefined,
+          total_amount: grandTotal,
+          source: "checkout",
+          items: cart.map((c) => ({
+            id: c.id,
+            name: c.name,
+            price: c.price,
+            quantity: c.quantity,
+            poster_image: c.poster_image,
+          })),
+        }),
+      }).catch(() => {});
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [phone, name, email, address, city, state, postalCode, cart, grandTotal, orderComplete, isCodSwitchMode]);
+
+  // Checkout Page Back-Out Capture (Detects tab-switch, back-button, navigation, or page close)
+  useEffect(() => {
+    if (orderComplete || isCodSwitchMode) return;
+
+    const captureBackOut = () => {
+      const clean = cleanPhoneDigits(phone);
+      if (clean.length !== 10 || cart.length === 0 || orderComplete) return;
+
+      const payload = JSON.stringify({
+        customer_name: name.trim() || undefined,
+        customer_phone: clean,
+        customer_email: email.trim() || undefined,
+        shipping_address: address.trim() || undefined,
+        city: state ? `${city.trim()}, ${state.trim()}` : city.trim() || undefined,
+        postal_code: postalCode.trim() || undefined,
+        total_amount: grandTotal,
+        items: cart.map((c) => ({
+          id: c.id,
+          name: c.name,
+          price: c.price,
+          quantity: c.quantity,
+          poster_image: c.poster_image,
+        })),
+        is_backout: true,
+        source: "checkout",
+      });
+
+      if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+        const blob = new Blob([payload], { type: "application/json" });
+        navigator.sendBeacon("/api/checkout/abandoned", blob);
+      } else {
+        fetch("/api/checkout/abandoned", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload,
+          keepalive: true,
+        }).catch(() => {});
+      }
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        captureBackOut();
+      }
+    };
+
+    window.addEventListener("beforeunload", captureBackOut);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      window.removeEventListener("beforeunload", captureBackOut);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      if (!orderComplete) {
+        captureBackOut();
+      }
+    };
+  }, [phone, name, email, address, city, state, postalCode, cart, grandTotal, orderComplete, isCodSwitchMode]);
 
   const syncAddressAfterOrder = async () => {
     try {
@@ -1573,6 +1740,27 @@ function CheckoutContent() {
 
       {/* 3. MAIN CHECKOUT GRID */}
       <main className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
+        {recoveredBanner && (
+          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm flex items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <div>
+                <p className="font-bold text-emerald-950">{recoveredBanner}</p>
+                <p className="text-[11px] text-emerald-700 mt-0.5">
+                  Your cart items and saved delivery information are ready. Complete your order below.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRecoveredBanner(null)}
+              className="text-emerald-700 hover:text-emerald-900 font-bold text-xs p-1"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {errorMessage && (
           <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-center gap-2.5">
             <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />

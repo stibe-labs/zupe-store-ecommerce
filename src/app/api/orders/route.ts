@@ -287,6 +287,20 @@ export async function POST(req: NextRequest) {
       console.warn("Auto-sync address from order failed:", syncErr);
     }
 
+    // Mark any existing abandoned checkouts for this customer phone as recovered
+    try {
+      const { executeD1Query } = await import("@/lib/d1");
+      const normDigits = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+      await executeD1Query(
+        `UPDATE abandoned_checkouts
+         SET status = 'recovered', recovered_order_id = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE (customer_phone = ? OR customer_phone = ?) AND status = 'abandoned'`,
+        [orderId, normDigits, cleanPhone]
+      );
+    } catch (recErr) {
+      console.warn("Error marking abandoned checkout as recovered:", recErr);
+    }
+
     // Send WhatsApp interactive pre-confirmation (Confirm/Cancel buttons)
     try {
       const { sendOrderPreConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");

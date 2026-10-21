@@ -337,19 +337,17 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
     const metaError = data?.error?.message || data?.error?.error_data?.details || "Failed to deliver WhatsApp message";
 
     return {
-      success: true,
+      success: false,
       codeSent: false,
-      otp,
-      message: `Code sent.`,
+      message: metaError || "Failed to deliver WhatsApp verification code. Please try again.",
       error: metaError,
     };
   } catch (err: any) {
     console.error("WhatsApp OTP dispatch exception:", err);
     return {
-      success: true,
+      success: false,
       codeSent: false,
-      otp,
-      message: `Code sent.`,
+      message: "Failed to send WhatsApp verification code. Please try again.",
       error: err.message,
     };
   }
@@ -367,16 +365,6 @@ export async function verifyWhatsAppOTP(
 
   if (!code) {
     return { valid: false, message: "Please enter the verification code." };
-  }
-
-  // Universal bypass codes for testing / development
-  if (code === "123456" || code === "999999") {
-    phoneOtpMap.delete(digits);
-    try {
-      const { executeD1Query } = await import("@/lib/d1");
-      await executeD1Query(`DELETE FROM phone_verifications WHERE phone = ?`, [digits]);
-    } catch {}
-    return { valid: true, message: "Code verified successfully." };
   }
 
   // 1. Check L1 Memory Cache

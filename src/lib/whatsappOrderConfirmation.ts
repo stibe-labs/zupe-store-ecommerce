@@ -70,11 +70,32 @@ export async function sendOrderPreConfirmationWhatsApp(
   const cancelUrl = `${STORE_BASE_URL}/api/orders/whatsapp-cancel?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
-  // 1. ALWAYS send the guaranteed direct verification message immediately.
-  //    Why: Meta template messages for 'zupe_order_verify' currently show "Messages sent: --" (0 delivered)
-  //    in WhatsApp Manager because Meta Cloud API requires an active Payment Method on the WABA account
-  //    and holds newly edited templates in "Quality pending" status.
-  //    Direct messages are guaranteed to deliver in 5-10 seconds.
+  // 1. Try official Meta Template with interactive buttons first (zupe_order_verify)
+  let templateSent = false;
+  try {
+    templateSent = await sendPreConfirmViaTemplate(
+      apiUrl,
+      apiToken,
+      digits,
+      firstName,
+      orderId,
+      totalAmount,
+      paymentMethodLabel,
+      confirmUrl,
+      cancelUrl,
+      token
+    );
+  } catch (err) {
+    console.warn("[WA Pre-Confirm] Template send failed, falling back to direct message:", err);
+  }
+
+  if (templateSent) {
+    console.log(`✅ [WA Pre-Confirm] Official template '${TEMPLATE_VERIFY}' with buttons dispatched for ${digits}`);
+    return true;
+  }
+
+  // 2. Fallback to direct message only if template was not accepted
+  console.log(`⚠️ [WA Pre-Confirm] Falling back to direct WhatsApp verification message for ${digits}`);
   const message =
     `*Order Verification — Zupe Store* 🛍️\n\n` +
     `Hi ${firstName}! Thank you for placing your order with Zupe Store.\n\n` +
@@ -87,28 +108,7 @@ export async function sendOrderPreConfirmationWhatsApp(
     `Zupe Store Team`;
 
   await sendWhatsAppTextMessage(apiUrl, apiToken, digits, message);
-  console.log(`✅ [WA Pre-Confirm] Guaranteed verification message delivered to ${digits} for order ${orderId}`);
-
-  // 2. Also dispatch the official Meta Utility Template with buttons in parallel.
-  //    Once Meta's billing/quality-pending review clears in WhatsApp Manager,
-  //    the interactive buttons will deliver alongside it.
-  try {
-    sendPreConfirmViaTemplate(
-      apiUrl,
-      apiToken,
-      digits,
-      firstName,
-      orderId,
-      totalAmount,
-      paymentMethodLabel,
-      confirmUrl,
-      cancelUrl,
-      token
-    ).then((sent) => {
-      if (sent) console.log(`✅ [WA Pre-Confirm] Template '${TEMPLATE_VERIFY}' with buttons dispatched to Meta for ${digits}`);
-    }).catch(() => {});
-  } catch {}
-
+  console.log(`✅ [WA Pre-Confirm] Fallback verification message delivered to ${digits} for order ${orderId}`);
   return true;
 }
 
@@ -258,19 +258,32 @@ export async function sendOrderConfirmationWhatsApp(
       "Thank you for shopping with Zupe Store!";
   }
 
-  // 1. ALWAYS send the guaranteed direct confirmation message immediately (delivers in 5 seconds)
-  await sendWhatsAppTextMessage(apiUrl, token, digits, message);
-  console.log(`✅ [WA Order Confirm] Guaranteed ${paymentMethod.toUpperCase()} confirmation message delivered to ${digits} for ${orderId}`);
-
-  // 2. Also dispatch official template concurrently in parallel
+  // 1. Try official Meta Template first (zupe_order_cod or zupe_order_prepaid)
+  let templateSent = false;
   try {
-    sendViaTemplate(
-      apiUrl, token, digits, paymentMethod,
-      firstName, orderId, totalAmount, discountedAmount
-    ).then((sent) => {
-      if (sent) console.log(`[WA Order Confirm] Template dispatched for ${digits}`);
-    }).catch(() => {});
-  } catch {}
+    templateSent = await sendViaTemplate(
+      apiUrl,
+      token,
+      digits,
+      paymentMethod,
+      firstName,
+      orderId,
+      totalAmount,
+      discountedAmount
+    );
+  } catch (err) {
+    console.warn("[WA Order Confirm] Template send failed, falling back to direct message:", err);
+  }
+
+  if (templateSent) {
+    console.log(`✅ [WA Order Confirm] Official template '${paymentMethod === "cod" ? TEMPLATE_COD : TEMPLATE_PREPAID}' dispatched for ${digits}`);
+    return;
+  }
+
+  // 2. Fallback to direct message only if template was not accepted
+  console.log(`⚠️ [WA Order Confirm] Falling back to direct WhatsApp confirmation message for ${digits}`);
+  await sendWhatsAppTextMessage(apiUrl, token, digits, message);
+  console.log(`✅ [WA Order Confirm] Fallback ${paymentMethod.toUpperCase()} confirmation message delivered to ${digits} for ${orderId}`);
 }
 
 async function sendViaTemplate(
@@ -420,5 +433,98 @@ export async function sendOrderCancellationRefundWhatsApp(
   }
 
   await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
+  return true;
+}
+
+export interface AbandonedCartWhatsAppParams {
+  customerName?: string;
+  customerPhone: string;
+  items: Array<{ name: string; quantity: number; price?: number }>;
+  totalAmount: number;
+  recoveryUrl: string;
+  source?: "checkout" | "cart";
+}
+
+export async function sendAbandonedCartWhatsApp(
+  params: AbandonedCartWhatsAppParams
+): Promise<boolean> {
+  const { customerName, customerPhone, items, totalAmount, recoveryUrl, source = "checkout" } = params;
+
+  const { digits, isValid } = normalizePhoneNumber(customerPhone);
+  if (!isValid) {
+    console.warn("[WA Abandoned Cart] Invalid phone:", customerPhone);
+    return false;
+  }
+
+  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+
+  const firstName = customerName?.trim() ? customerName.split(" ")[0] : "there";
+  
+  // Format items showing name and price
+  const itemLines = (items || [])
+    .slice(0, 4)
+    .map((it) => {
+      const priceStr = it.price ? ` — ₹${Number(it.price).toLocaleString("en-IN")}` : "";
+      const qtyStr = it.quantity > 1 ? ` (x${it.quantity})` : "";
+      return `• ${it.name}${qtyStr}${priceStr}`;
+    })
+    .join("\n");
+  const more = (items || []).length > 4 ? `\n• ...and ${(items || []).length - 4} more item(s)` : "";
+
+  const sectionName = source === "cart" ? "cart" : "checkout section";
+  const actionText = source === "cart"
+    ? "👉 Tap here to view your cart & complete your order:"
+    : "👉 Tap here to complete your order in 1 click:";
+
+  const body =
+    `Hi ${firstName}! We noticed you left some great items in your ${sectionName} at Zupe Store:\n\n` +
+    `${itemLines}${more}\n\n` +
+    `⚡ Currently this is a great price! Plus, if you order now, you get Free Delivery without any extra charges.\n\n` +
+    `${actionText}\n${recoveryUrl}\n\n` +
+    `Need any assistance? Just reply to this message!\n` +
+    `Zupe Store Team`;
+
+  await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
+  console.log(`✅ [WA Abandoned Cart] Recovery WhatsApp message (${source}) dispatched to ${digits}`);
+
+  // Concurrently attempt official template dispatch (for when billing is enabled in Meta)
+  try {
+    const tokenPart = recoveryUrl.split("recover=")[1] || "";
+    fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + apiToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: digits,
+        type: "template",
+        template: {
+          name: "zupe_abandoned_cart",
+          language: { code: TEMPLATE_LANG },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: firstName },
+                { type: "text", text: "Rs " + totalAmount.toLocaleString("en-IN") },
+              ],
+            },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [{ type: "text", text: tokenPart }],
+            },
+          ],
+        },
+      }),
+    }).catch(() => {});
+  } catch {}
+
   return true;
 }

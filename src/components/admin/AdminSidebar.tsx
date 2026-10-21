@@ -22,6 +22,7 @@ import {
   Sparkles,
   X,
   LogOut,
+  ShoppingCart,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -83,6 +84,11 @@ export default function AdminSidebar({
       href: "/admin/orders",
       icon: ShoppingBag,
       badge: ordersCount > 0 ? String(ordersCount) : undefined,
+    },
+    {
+      name: "Abandoned Carts",
+      href: "/admin/abandoned-carts",
+      icon: ShoppingCart,
     },
     {
       name: "Shipments",
