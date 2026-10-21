@@ -1017,9 +1017,10 @@ export function registerERPOrderInMemory(order: ERPOrder) {
 }
 
 export async function getOrderById(orderId: string): Promise<ERPOrder | null> {
-  const normId = orderId.trim();
+  const normId = (orderId || "").trim();
+  if (!normId) return null;
   const found = inMemoryERPOrders.find(
-    (o) => o.id === normId || o.shopify_order_id.toLowerCase() === normId.toLowerCase()
+    (o) => o.id === normId || (Boolean(o.shopify_order_id) && o.shopify_order_id.toLowerCase() === normId.toLowerCase())
   );
   if (found) return found;
 
@@ -1177,9 +1178,10 @@ export async function updateERPOrder(
   orderId: string,
   updates: Partial<ERPOrder>
 ): Promise<ERPOrder | null> {
-  const normId = orderId.trim();
+  const normId = (orderId || "").trim();
+  if (!normId) return null;
   let index = inMemoryERPOrders.findIndex(
-    (o) => o.id === normId || o.shopify_order_id.toLowerCase() === normId.toLowerCase()
+    (o) => o.id === normId || (Boolean(o.shopify_order_id) && o.shopify_order_id.toLowerCase() === normId.toLowerCase())
   );
 
   let targetOrder: ERPOrder | null = null;

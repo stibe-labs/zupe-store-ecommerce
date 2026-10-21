@@ -153,9 +153,29 @@ export function getStorefrontOrderById(orderId: string): OrderRecord | null {
   return inMemoryOrders.find((o) => o.id.toLowerCase() === norm) || null;
 }
 
-export function getOrderByToken(token: string): OrderRecord | null {
-  if (!token) return null;
-  return inMemoryOrders.find((o) => o.whatsapp_confirm_token === token) || null;
+export async function getOrderByToken(token: string): Promise<OrderRecord | any | null> {
+  const normToken = (token || "").trim();
+  if (!normToken) return null;
+  const mem = inMemoryOrders.find((o) => o.whatsapp_confirm_token === normToken);
+  if (mem) return mem;
+
+  try {
+    const rows = await executeD1Query<any>(
+      "SELECT * FROM orders WHERE whatsapp_confirm_token = ? LIMIT 1",
+      [normToken]
+    );
+    if (rows && rows.length > 0) {
+      const row = rows[0];
+      let items = row.items;
+      if (typeof items === "string") {
+        try { items = JSON.parse(items); } catch { items = []; }
+      }
+      return { ...row, items: Array.isArray(items) ? items : [] };
+    }
+  } catch (e) {
+    console.warn("D1 getOrderByToken error:", e);
+  }
+  return null;
 }
 
 export function updateStorefrontOrder(orderId: string, updates: Partial<OrderRecord>): void {
@@ -277,6 +297,7 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
           success: true,
           alreadyUsed: true,
           message: "Order was already confirmed previously.",
+          order: erpOrd as any,
         };
       }
       if (erpOrd.whatsapp_confirm_status === "cancelled") {

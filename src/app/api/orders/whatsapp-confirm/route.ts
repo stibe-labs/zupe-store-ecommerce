@@ -20,127 +20,20 @@ export async function GET(req: NextRequest) {
     // 1. Verify and confirm the order
     const result = await confirmWhatsAppOrder(token, orderId);
 
-    if (result.alreadyUsed) {
-      const alreadyHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Order Already Processed — Zupe Store</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #0f172a;
-      color: #f8fafc;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+    // 2. Resolve order record from all available sources (result, D1 by ID, D1 by Token)
+    let ord: any = result.order;
+    const resolvedOrderId = orderId || ord?.id || "";
+
+    if (!ord && resolvedOrderId) {
+      ord = await getOrderById(resolvedOrderId);
     }
-    .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 28px;
-      max-width: 440px;
-      width: 100%;
-      padding: 40px 28px;
-      text-align: center;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-    }
-    .icon-ring {
-      width: 76px;
-      height: 76px;
-      background: rgba(59, 130, 246, 0.15);
-      border: 2px solid #3b82f6;
-      color: #3b82f6;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 38px;
-    }
-    .order-id {
-      display: inline-block;
-      background: #0f172a;
-      color: #94a3b8;
-      font-family: monospace;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 6px 14px;
-      border-radius: 999px;
-      border: 1px solid #334155;
-      margin-bottom: 16px;
-    }
-    h1 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 10px; }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(59, 130, 246, 0.15);
-      color: #60a5fa;
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      padding: 8px 16px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 20px;
-    }
-    p { font-size: 14px; color: #94a3b8; line-height: 1.6; margin-bottom: 28px; }
-    .btn-wa {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      background: #25D366;
-      color: #fff;
-      font-weight: 800;
-      font-size: 15px;
-      text-decoration: none;
-      padding: 14px;
-      border-radius: 16px;
-      margin-bottom: 14px;
-    }
-    .btn-orders { display: inline-block; color: #94a3b8; font-size: 13px; text-decoration: none; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <div class="icon-ring">✓</div>
-    <div class="order-id">ORDER #${orderId || "RECORDED"}</div>
-    <h1>Already Processed</h1>
-    <div class="badge">● Action Completed Previously</div>
-    <p>${result.message || "This order has already been verified and confirmed in our system. You do not need to click again."}</p>
-    <a class="btn-wa" href="https://wa.me/919778137954">💬 Return to WhatsApp</a>
-    <a class="btn-orders" href="/orders">View in My Orders →</a>
-  </div>
-</body>
-</html>`;
-      return new NextResponse(alreadyHtml, {
-        status: 200,
-        headers: { "Content-Type": "text/html; charset=utf-8" },
-      });
+    if (!ord && token) {
+      ord = await getOrderByToken(token);
     }
 
-    if (!result.success) {
-      return NextResponse.redirect(
-        new URL(`/orders?error=verification_failed&orderId=${encodeURIComponent(orderId)}`, req.url)
-      );
-    }
-
-    const resolvedOrderId = orderId || (result.order as any)?.id || "";
-
-    // 2. Dispatch the official order confirmation WhatsApp message (COD with switch offer / Prepaid confirmation)
-    try {
-      const ord =
-        result.order ||
-        (resolvedOrderId ? await getOrderById(resolvedOrderId) : null) ||
-        getStorefrontOrderById(resolvedOrderId) ||
-        getOrderByToken(token);
-
-      if (ord) {
+    // 3. Dispatch the official order confirmation WhatsApp message
+    if (ord && ord.customer_phone) {
+      try {
         const isCod =
           (ord.payment_method || "").toLowerCase().includes("cash on delivery") ||
           (ord.payment_method || "").toUpperCase() === "COD";
@@ -154,7 +47,7 @@ export async function GET(req: NextRequest) {
         await sendOrderConfirmationWhatsApp({
           customerName: ord.customer_name || "Valued Customer",
           customerPhone: ord.customer_phone || "",
-          orderId: (ord as any).shopify_order_id || ord.id,
+          orderId: ord.id || (ord as any).shopify_order_id || resolvedOrderId,
           totalAmount: Number(ord.total_amount) || 0,
           paymentMethod: isCod ? "cod" : "prepaid",
           items: rawItems.map((it: any) => ({
@@ -163,9 +56,15 @@ export async function GET(req: NextRequest) {
             price: Number(it.unit_price || it.price || 0),
           })),
         });
+      } catch (notifyErr) {
+        console.warn("Failed to dispatch WhatsApp order confirmation on verify:", notifyErr);
       }
-    } catch (notifyErr) {
-      console.warn("Failed to dispatch WhatsApp order confirmation on verify:", notifyErr);
+    }
+
+    if (!result.success && !result.alreadyUsed) {
+      return NextResponse.redirect(
+        new URL(`/orders?error=verification_failed&orderId=${encodeURIComponent(orderId)}`, req.url)
+      );
     }
 
     // 3. Render clean, instant in-place confirmation screen without redirecting across the storefront

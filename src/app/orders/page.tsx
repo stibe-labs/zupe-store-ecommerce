@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -22,6 +22,8 @@ import {
   AlertTriangle,
   XCircle,
   RotateCcw,
+  RefreshCw,
+  Check,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -43,6 +45,9 @@ function OrdersPageContent() {
   const [cancelSuccessMsg, setCancelSuccessMsg] = useState<string | null>(null);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [autoConfirmedOrderId, setAutoConfirmedOrderId] = useState<string | null>(null);
+  const [isSilentSyncing, setIsSilentSyncing] = useState<boolean>(false);
+  const prevOrdersRef = useRef<OrderRecord[]>([]);
 
   useEffect(() => {
     if (cancelPromptParam && orders.length > 0) {
@@ -94,16 +99,14 @@ function OrdersPageContent() {
     }
   }, [reviewModalItem]);
 
-  useEffect(() => {
-    // Load local reviewed items cache
-    try {
-      const saved = localStorage.getItem("zupe_reviewed_items");
-      if (saved) {
-        setReviewedItems(JSON.parse(saved));
+  // Reusable order fetching with silent background sync option
+  const fetchOrders = useCallback(
+    async (isSilent = false) => {
+      if (!isSilent) {
+        setLoading(true);
+      } else {
+        setIsSilentSyncing(true);
       }
-    } catch {}
-
-    async function fetchOrders() {
       try {
         const params = new URLSearchParams();
         if (user?.email) params.set("email", user.email);
@@ -111,7 +114,9 @@ function OrdersPageContent() {
 
         // Also check if user recently placed an order as guest / phone
         try {
-          const lastPhone = localStorage.getItem("zupe_last_cod_phone");
+          const lastPhone =
+            localStorage.getItem("zupe_last_cod_phone") ||
+            localStorage.getItem("zupe_checkout_phone");
           if (lastPhone && !params.has("phone")) {
             params.set("phone", lastPhone);
           }
@@ -121,16 +126,88 @@ function OrdersPageContent() {
         const res = await fetch(`/api/orders${queryString}`, { cache: "no-store" });
         const data = await res.json();
         if (data.success && Array.isArray(data.orders)) {
+          // Detect if an order was awaiting WhatsApp confirmation and just transitioned to confirmed
+          if (prevOrdersRef.current.length > 0) {
+            for (const newOrd of data.orders) {
+              const oldOrd = prevOrdersRef.current.find((o) => o.id === newOrd.id);
+              if (
+                oldOrd &&
+                oldOrd.whatsapp_confirm_status === "pending_whatsapp" &&
+                (newOrd.whatsapp_confirm_status === "confirmed" ||
+                  newOrd.order_status === "processing" ||
+                  (newOrd as any).status === "Processing")
+              ) {
+                setAutoConfirmedOrderId(newOrd.id);
+              }
+            }
+          }
+          prevOrdersRef.current = data.orders;
           setOrders(data.orders);
         }
       } catch (err) {
         console.warn("Failed to fetch orders:", err);
       } finally {
-        setLoading(false);
+        if (!isSilent) setLoading(false);
+        setIsSilentSyncing(false);
       }
-    }
-    fetchOrders();
-  }, [user]);
+    },
+    [user]
+  );
+
+  // Check if any active order is awaiting WhatsApp confirmation
+  const hasPendingWhatsApp = useMemo(() => {
+    return orders.some(
+      (o) =>
+        o.whatsapp_confirm_status === "pending_whatsapp" &&
+        o.order_status !== "cancelled" &&
+        (o as any).status !== "Cancelled"
+    );
+  }, [orders]);
+
+  // Initial load
+  useEffect(() => {
+    // Load local reviewed items cache
+    try {
+      const saved = localStorage.getItem("zupe_reviewed_items");
+      if (saved) {
+        setReviewedItems(JSON.parse(saved));
+      }
+    } catch {}
+
+    fetchOrders(false);
+  }, [fetchOrders]);
+
+  // Fast auto-polling: Polls every 2.5s while any order is awaiting WhatsApp confirmation!
+  // The moment customer taps 'Confirm Order' on WhatsApp, this page updates automatically
+  // in front of their eyes without requiring a browser refresh.
+  useEffect(() => {
+    const pollInterval = hasPendingWhatsApp ? 2500 : 30000;
+    const intervalId = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchOrders(true);
+      }
+    }, pollInterval);
+
+    return () => clearInterval(intervalId);
+  }, [hasPendingWhatsApp, fetchOrders]);
+
+  // Tab switch & focus auto-refresh:
+  // When the user switches back from WhatsApp to this browser tab, refresh immediately.
+  useEffect(() => {
+    const handleFocusOrVisible = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchOrders(true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+    return () => {
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+    };
+  }, [fetchOrders]);
 
   const handleOpenReviewModal = (ord: OrderRecord, item: OrderItem) => {
     const itemKey = `${ord.id}_${item.product_id || item.name}`;
@@ -295,36 +372,69 @@ function OrdersPageContent() {
       <Navbar />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-12 sm:pb-16">
-        <div className="flex items-center justify-between mb-6 pb-3 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-3 border-b border-gray-200">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900">
-              My Orders
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900">
+                My Orders
+              </h1>
+              {hasPendingWhatsApp && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full text-xs font-semibold animate-pulse">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                  Live Syncing · Awaiting WhatsApp
+                </span>
+              )}
+            </div>
             <p className="text-xs text-gray-500 mt-0.5">
               Track packages, check shipping updates, rate & review delivered purchases
             </p>
           </div>
 
-          {!isAuthenticated && (
-            <Link
-              href="/signin?redirect=/orders&notice=Please sign in to view and track your orders"
-              className="text-xs font-semibold text-[#FF7A00] hover:underline"
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => fetchOrders(false)}
+              disabled={loading || isSilentSyncing}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition shadow-xs disabled:opacity-60"
+              title="Refresh order statuses"
             >
-              Sign In for full account sync
-            </Link>
-          )}
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${
+                  loading || isSilentSyncing ? "animate-spin text-[#FF7A00]" : "text-gray-500"
+                }`}
+              />
+              <span>{isSilentSyncing ? "Syncing..." : "Refresh"}</span>
+            </button>
+
+            {!isAuthenticated && (
+              <Link
+                href="/signin?redirect=/orders&notice=Please sign in to view and track your orders"
+                className="text-xs font-semibold text-[#FF7A00] hover:underline ml-1"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
         </div>
 
-        {/* Banner: Order Confirmed via WhatsApp Link */}
-        {confirmedOrderId && (
-          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-start gap-3 shadow-xs">
+        {/* Banner: Order Confirmed via WhatsApp Link or Real-time Sync */}
+        {(confirmedOrderId || autoConfirmedOrderId) && (
+          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-start gap-3 shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-bold text-sm">🎉 Order Confirmed via WhatsApp!</p>
               <p className="text-xs text-emerald-700 mt-0.5">
-                Thank you! Your order <strong>#{confirmedOrderId}</strong> has been confirmed. We have dispatched our full confirmation message with tracking and discount details to your WhatsApp, and your package is being prepared for dispatch.
+                Thank you! Your order <strong>#{confirmedOrderId || autoConfirmedOrderId}</strong> has been confirmed. We have dispatched our full confirmation message with tracking and discount details to your WhatsApp, and your package is being prepared for dispatch.
               </p>
             </div>
+            {autoConfirmedOrderId && (
+              <button
+                onClick={() => setAutoConfirmedOrderId(null)}
+                className="text-emerald-700 hover:text-emerald-900 p-1 rounded-lg hover:bg-emerald-100/60 transition"
+                aria-label="Dismiss banner"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
         )}
 
