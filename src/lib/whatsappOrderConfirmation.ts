@@ -258,10 +258,27 @@ export async function sendOrderConfirmationWhatsApp(
       "Thank you for shopping with Zupe Store!";
   }
 
-  // 1. Try official Meta Template first (zupe_order_cod or zupe_order_prepaid)
-  let templateSent = false;
+  const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
+
+  // 1. Try official Meta UTILITY Template 'zupe_order_confirmed' first (approved for all customers 24/7)
+  let utilitySent = false;
   try {
-    templateSent = await sendViaTemplate(
+    utilitySent = await sendViaConfirmedUtilityTemplate(
+      apiUrl,
+      token,
+      digits,
+      firstName,
+      orderId,
+      totalAmount,
+      paymentMethodLabel
+    );
+  } catch (err) {
+    console.warn("[WA Order Confirm] Utility template send attempt:", err);
+  }
+
+  // 2. Also try specific prepaid or cod templates
+  try {
+    await sendViaTemplate(
       apiUrl,
       token,
       digits,
@@ -272,18 +289,74 @@ export async function sendOrderConfirmationWhatsApp(
       discountedAmount
     );
   } catch (err) {
-    console.warn("[WA Order Confirm] Template send failed, falling back to direct message:", err);
+    console.warn("[WA Order Confirm] Specific template attempt:", err);
   }
 
-  if (templateSent) {
-    console.log(`✅ [WA Order Confirm] Official template '${paymentMethod === "cod" ? TEMPLATE_COD : TEMPLATE_PREPAID}' dispatched for ${digits}`);
-    return;
+  // 3. ALWAYS send the complete itemized direct WhatsApp confirmation message!
+  // This guarantees immediate delivery with full items list, delivery estimate, tracking link, and switch offer
+  try {
+    await sendWhatsAppTextMessage(apiUrl, token, digits, message);
+    console.log(`✅ [WA Order Confirm] Itemized confirmation delivered to ${digits} for order ${orderId}`);
+  } catch (err) {
+    console.warn("[WA Order Confirm] Direct message dispatch error:", err);
   }
+}
 
-  // 2. Fallback to direct message only if template was not accepted
-  console.log(`⚠️ [WA Order Confirm] Falling back to direct WhatsApp confirmation message for ${digits}`);
-  await sendWhatsAppTextMessage(apiUrl, token, digits, message);
-  console.log(`✅ [WA Order Confirm] Fallback ${paymentMethod.toUpperCase()} confirmation message delivered to ${digits} for ${orderId}`);
+async function sendViaConfirmedUtilityTemplate(
+  apiUrl: string,
+  token: string,
+  to: string,
+  firstName: string,
+  orderId: string,
+  totalAmount: number,
+  paymentMethodLabel: string
+): Promise<boolean> {
+  const payload = {
+    messaging_product: "whatsapp",
+    recipient_type: "individual",
+    to,
+    type: "template",
+    template: {
+      name: "zupe_order_confirmed",
+      language: { code: TEMPLATE_LANG },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: firstName },
+            { type: "text", text: orderId },
+            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
+            { type: "text", text: paymentMethodLabel },
+          ],
+        },
+        {
+          type: "button",
+          sub_type: "url",
+          index: "0",
+          parameters: [{ type: "text", text: orderId }],
+        },
+      ],
+    },
+  };
+
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = (await res.json()) as any;
+    if (res.ok && data.messages?.length > 0) {
+      console.log(`✅ [WA Order Confirm] Utility template 'zupe_order_confirmed' sent to ${to}`);
+      return true;
+    }
+  } catch (err) {
+    console.warn("[WA Order Confirm] Utility template error:", err);
+  }
+  return false;
 }
 
 async function sendViaTemplate(
