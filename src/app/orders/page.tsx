@@ -381,7 +381,7 @@ function OrdersPageContent() {
   const getStatusBadge = (status: OrderRecord["order_status"], waStatus?: string) => {
     if (waStatus === "cancelled" || status === "cancelled") {
       return (
-        <span className="inline-flex items-center justify-center gap-1.5 px-2 py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg text-[10px] sm:text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+        <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
           <XCircle className="w-3.5 h-3.5 shrink-0" />
           <span>Cancelled</span>
         </span>
@@ -391,7 +391,7 @@ function OrdersPageContent() {
     if (waStatus === "pending_whatsapp") {
       return (
         <span
-          className="inline-flex items-center justify-center gap-1.5 px-2 py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg text-[10px] sm:text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300/80 whitespace-nowrap w-full sm:w-auto tracking-tight transition-all duration-300 hover:scale-[1.03] hover:-translate-y-0.5 hover:shadow-xs hover:border-amber-400 select-none cursor-default"
+          className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[9.5px] sm:text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-300/80 w-full sm:w-auto tracking-tight transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-xs hover:border-amber-400 select-none cursor-default leading-tight text-center"
           title="Awaiting customer confirmation on WhatsApp"
         >
           {/* Pulsing live amber ping dot */}
@@ -400,7 +400,7 @@ function OrdersPageContent() {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
           </span>
           <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-          <span>Awaiting WhatsApp</span>
+          <span className="leading-tight text-center">Awaiting WhatsApp Confirmation</span>
         </span>
       );
     }
@@ -408,14 +408,14 @@ function OrdersPageContent() {
     switch (status) {
       case "delivered":
         return (
-          <span className="inline-flex items-center justify-center gap-1.5 px-2 py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
             <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
             <span>Delivered</span>
           </span>
         );
       case "shipped":
         return (
-          <span className="inline-flex items-center justify-center gap-1.5 px-2 py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg text-[10px] sm:text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
             <Truck className="w-3.5 h-3.5 shrink-0" />
             <span>In Transit</span>
           </span>
@@ -423,7 +423,7 @@ function OrdersPageContent() {
       case "processing":
       default:
         return (
-          <span className="inline-flex items-center justify-center gap-1.5 px-2 py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg text-[10px] sm:text-[11px] font-bold bg-orange-50 text-[#FF7A00] border border-orange-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-orange-50 text-[#FF7A00] border border-orange-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
             <Clock className="w-3.5 h-3.5 shrink-0" />
             <span>Processing</span>
           </span>
@@ -445,7 +445,7 @@ function OrdersPageContent() {
               {hasPendingWhatsApp && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full text-xs font-semibold animate-pulse">
                   <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                  Live Syncing · Awaiting WhatsApp
+                  Live Syncing · Awaiting WhatsApp Confirmation
                 </span>
               )}
             </div>
@@ -704,49 +704,55 @@ function OrdersPageContent() {
                         </span>
                       ) : null}
                     </div>
-                    {/* Status Badges & Action Buttons: 2 Clean Rows (Row 1: Informational Badges, Row 2: Action Buttons with Hover Animation) */}
-                    <div className="flex flex-col gap-2 w-full sm:w-auto">
-                      {/* Row 1: Informational Badges (Status & Payment Method) - Increased height & optimized text size for full readability */}
+                    {/* Status Badges & Action Buttons: 2 Symmetrical Rows (Row 1: Status & Pay Online, Row 2: Cash on Delivery & Track) */}
+                    <div className="flex flex-col gap-2.5 w-full sm:w-auto">
+                      {/* Row 1: Status Badge & Pay Online (Save ₹30) Button */}
                       <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+                        {/* Status Badge (e.g. Awaiting WhatsApp Confirmation) */}
                         {getStatusBadge(isDelivered ? "delivered" : ord.order_status, ord.whatsapp_confirm_status)}
 
-                        {/* Payment Mode Badge */}
-                        {isRefunded ? (
-                          <span className="inline-flex items-center justify-center gap-1.5 px-2 py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg text-[10px] sm:text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+                        {/* Top Right Position: Pay Online (Save ₹30) Button for COD, or Payment Badge for Prepaid */}
+                        {isCod && ord.order_status !== "cancelled" ? (
+                          <Link
+                            href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(ord.id)}`}
+                            className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-xs font-black tracking-tight bg-[#FF7A00] hover:bg-[#E66E00] text-white shadow-xs hover:shadow-md hover:shadow-orange-500/25 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] w-full sm:w-auto text-center animate-pulse whitespace-nowrap"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                            <span>Pay Online (Save ₹30)</span>
+                          </Link>
+                        ) : isRefunded ? (
+                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
                             <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                             <span>Refunded</span>
                           </span>
                         ) : isPaid ? (
-                          <span className="inline-flex items-center justify-center gap-1.5 px-2 py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
                             <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                             <span>Prepaid (Paid)</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center justify-center gap-1.5 px-2 py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg text-[10px] sm:text-[11px] font-bold bg-slate-100/90 text-slate-700 border border-slate-200 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-slate-100/90 text-slate-700 border border-slate-200 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
                             <ShoppingBag className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                             <span>Cash on Delivery</span>
                           </span>
                         )}
                       </div>
 
-                      {/* Row 2: Action Buttons (Increased height, full readability & hover animation) */}
+                      {/* Row 2: Cash on Delivery Badge & Track Package Button */}
                       {ord.order_status !== "cancelled" && (
                         <div className={`grid ${isCod ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-none"} sm:flex sm:items-center gap-2 w-full sm:w-auto`}>
-                          {/* COD Pay Online & Save Rs 30 Button - Attractive Hover Animation */}
+                          {/* Cash on Delivery Badge in Row 2 Col 1 */}
                           {isCod && (
-                            <Link
-                              href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(ord.id)}`}
-                              className="inline-flex items-center justify-center gap-1.5 px-2 sm:px-3.5 py-2.5 min-h-[40px] sm:min-h-[42px] rounded-xl text-[10.5px] sm:text-xs font-black tracking-tight bg-[#FF7A00] hover:bg-[#E66E00] text-white shadow-xs hover:shadow-md hover:shadow-orange-500/25 transition-all duration-300 hover:scale-[1.03] hover:-translate-y-0.5 active:scale-[0.98] w-full sm:w-auto text-center animate-pulse whitespace-nowrap"
-                            >
-                              <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                              <span>Pay Online (-₹30)</span>
-                            </Link>
+                            <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-slate-100/90 text-slate-700 border border-slate-200 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+                              <ShoppingBag className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                              <span>Cash on Delivery</span>
+                            </span>
                           )}
 
-                          {/* Track Package Button - Hover Micro-lift */}
+                          {/* Track Package Button in Row 2 Col 2 */}
                           <Link
                             href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
-                            className="inline-flex items-center justify-center gap-1.5 px-2 sm:px-3.5 py-2.5 min-h-[40px] sm:min-h-[42px] rounded-xl text-[10.5px] sm:text-xs font-bold tracking-tight bg-white hover:bg-orange-50/90 text-[#FF7A00] border border-[#FF7A00]/40 hover:border-[#FF7A00] shadow-2xs hover:shadow-xs transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] w-full sm:w-auto text-center whitespace-nowrap"
+                            className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-bold tracking-tight bg-white hover:bg-orange-50/90 text-[#FF7A00] border border-[#FF7A00]/40 hover:border-[#FF7A00] shadow-2xs hover:shadow-xs transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] w-full sm:w-auto text-center whitespace-nowrap"
                           >
                             <Truck className="w-3.5 h-3.5 shrink-0" />
                             <span>Track Package</span>
@@ -757,7 +763,7 @@ function OrdersPageContent() {
                             <button
                               type="button"
                               onClick={() => handleOpenReviewModal(ord, rawItems[0])}
-                              className="inline-flex items-center justify-center gap-1.5 px-2 sm:px-3.5 py-2.5 min-h-[40px] sm:min-h-[42px] rounded-xl text-[10.5px] sm:text-xs font-bold tracking-tight bg-amber-500 hover:bg-amber-600 text-white shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] w-full sm:w-auto text-center cursor-pointer whitespace-nowrap"
+                              className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-bold tracking-tight bg-amber-500 hover:bg-amber-600 text-white shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] w-full sm:w-auto text-center cursor-pointer whitespace-nowrap"
                             >
                               <Star className="w-3.5 h-3.5 fill-current shrink-0" />
                               <span>Rate & Review</span>
