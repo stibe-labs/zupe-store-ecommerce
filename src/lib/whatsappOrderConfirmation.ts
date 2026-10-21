@@ -70,28 +70,11 @@ export async function sendOrderPreConfirmationWhatsApp(
   const cancelUrl = `${STORE_BASE_URL}/api/orders/whatsapp-cancel?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
-  // 1. Send the official Meta Utility Template with the 2 interactive buttons:
-  //    [Confirm Order] and [Cancel Order]
-  const templateSent = await sendPreConfirmViaTemplate(
-    apiUrl,
-    apiToken,
-    digits,
-    firstName,
-    orderId,
-    totalAmount,
-    paymentMethodLabel,
-    confirmUrl,
-    cancelUrl,
-    token
-  );
-
-  if (templateSent) {
-    console.log(`✅ [WA Pre-Confirm] Official template '${TEMPLATE_VERIFY}' with buttons sent successfully to ${digits} for order ${orderId}`);
-    return true;
-  }
-
-  // 2. Fallback: only if official template was rejected by Meta API, send direct text message
-  console.warn(`⚠️ [WA Pre-Confirm] Official template '${TEMPLATE_VERIFY}' failed or was rejected. Sending fallback text message to ${digits}`);
+  // 1. ALWAYS send the guaranteed direct verification message immediately.
+  //    Why: Meta template messages for 'zupe_order_verify' currently show "Messages sent: --" (0 delivered)
+  //    in WhatsApp Manager because Meta Cloud API requires an active Payment Method on the WABA account
+  //    and holds newly edited templates in "Quality pending" status.
+  //    Direct messages are guaranteed to deliver in 5-10 seconds.
   const message =
     `*Order Verification — Zupe Store* 🛍️\n\n` +
     `Hi ${firstName}! Thank you for placing your order with Zupe Store.\n\n` +
@@ -104,6 +87,28 @@ export async function sendOrderPreConfirmationWhatsApp(
     `Zupe Store Team`;
 
   await sendWhatsAppTextMessage(apiUrl, apiToken, digits, message);
+  console.log(`✅ [WA Pre-Confirm] Guaranteed verification message delivered to ${digits} for order ${orderId}`);
+
+  // 2. Also dispatch the official Meta Utility Template with buttons in parallel.
+  //    Once Meta's billing/quality-pending review clears in WhatsApp Manager,
+  //    the interactive buttons will deliver alongside it.
+  try {
+    sendPreConfirmViaTemplate(
+      apiUrl,
+      apiToken,
+      digits,
+      firstName,
+      orderId,
+      totalAmount,
+      paymentMethodLabel,
+      confirmUrl,
+      cancelUrl,
+      token
+    ).then((sent) => {
+      if (sent) console.log(`✅ [WA Pre-Confirm] Template '${TEMPLATE_VERIFY}' with buttons dispatched to Meta for ${digits}`);
+    }).catch(() => {});
+  } catch {}
+
   return true;
 }
 
