@@ -8,8 +8,10 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const token = searchParams.get("token") || "";
-    const orderId = searchParams.get("orderId") || "";
+    const rawToken = searchParams.get("token") || "";
+    const token = rawToken.startsWith("token=") ? rawToken.replace(/^token=/, "") : rawToken;
+    const rawOrderId = searchParams.get("orderId") || "";
+    const orderId = rawOrderId.startsWith("orderId=") ? rawOrderId.replace(/^orderId=/, "") : rawOrderId;
 
     if (!token && !orderId) {
       return NextResponse.redirect(new URL("/orders?error=missing_credentials", req.url));
@@ -128,12 +130,14 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const resolvedOrderId = orderId || (result.order as any)?.id || "";
+
     // 2. Perform any background notifications asynchronously without blocking the user's redirect
     // This makes the button redirect INSTANT (under 50ms) and prevents duplicate conflicting messages
     try {
       const ord =
         result.order ||
-        getStorefrontOrderById(orderId) ||
+        getStorefrontOrderById(resolvedOrderId) ||
         getOrderByToken(token);
 
       if (ord) {
@@ -284,7 +288,7 @@ export async function GET(req: NextRequest) {
 <body>
   <div class="card">
     <div class="icon-ring">✓</div>
-    <div class="order-id">ORDER #${orderId || "CONFIRMED"}</div>
+    <div class="order-id">ORDER #${resolvedOrderId || "CONFIRMED"}</div>
     <h1>Order Confirmed!</h1>
     <div class="badge">
       <span>●</span> Verified & Confirmed via WhatsApp

@@ -218,9 +218,31 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
   order?: OrderRecord;
   alreadyUsed?: boolean;
 }> {
-  const normId = (orderId || "").trim();
+  let normId = (orderId || "").trim();
+  const normToken = (token || "").trim();
+
+  // If orderId is not provided, look it up in memory or D1 using the verification token
+  if (!normId && normToken) {
+    const memOrd = inMemoryOrders.find((o) => o.whatsapp_confirm_token === normToken);
+    if (memOrd) {
+      normId = memOrd.id;
+    } else {
+      try {
+        const rows = await executeD1Query<any>(
+          "SELECT id FROM orders WHERE whatsapp_confirm_token = ? LIMIT 1",
+          [normToken]
+        );
+        if (rows && rows.length > 0 && rows[0]?.id) {
+          normId = rows[0].id;
+        }
+      } catch (e) {
+        console.warn("D1 query error in confirmWhatsAppOrder:", e);
+      }
+    }
+  }
+
   const ord = inMemoryOrders.find(
-    (o) => o.id === normId || (token && o.whatsapp_confirm_token === token)
+    (o) => (normId && o.id === normId) || (normToken && o.whatsapp_confirm_token === normToken)
   );
 
   // If token was already marked used or order confirmed in memory

@@ -70,10 +70,28 @@ export async function sendOrderPreConfirmationWhatsApp(
   const cancelUrl = `${STORE_BASE_URL}/api/orders/whatsapp-cancel?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
-  // 1. ALWAYS send the direct text message first — this is GUARANTEED to deliver instantly.
-  //    Meta template messages with "Quality pending" status return 200 OK but silently
-  //    drop the message before it reaches the customer's phone. Direct text messages
-  //    always deliver within seconds.
+  // 1. Send the official Meta Utility Template with the 2 interactive buttons:
+  //    [Confirm Order] and [Cancel Order]
+  const templateSent = await sendPreConfirmViaTemplate(
+    apiUrl,
+    apiToken,
+    digits,
+    firstName,
+    orderId,
+    totalAmount,
+    paymentMethodLabel,
+    confirmUrl,
+    cancelUrl,
+    token
+  );
+
+  if (templateSent) {
+    console.log(`✅ [WA Pre-Confirm] Official template '${TEMPLATE_VERIFY}' with buttons sent successfully to ${digits} for order ${orderId}`);
+    return true;
+  }
+
+  // 2. Fallback: only if official template was rejected by Meta API, send direct text message
+  console.warn(`⚠️ [WA Pre-Confirm] Official template '${TEMPLATE_VERIFY}' failed or was rejected. Sending fallback text message to ${digits}`);
   const message =
     `*Order Verification — Zupe Store* 🛍️\n\n` +
     `Hi ${firstName}! Thank you for placing your order with Zupe Store.\n\n` +
@@ -86,30 +104,6 @@ export async function sendOrderPreConfirmationWhatsApp(
     `Zupe Store Team`;
 
   await sendWhatsAppTextMessage(apiUrl, apiToken, digits, message);
-  console.log(`✅ [WA Pre-Confirm] Guaranteed text message sent to ${digits} for order ${orderId}`);
-
-  // 2. Also try the official Meta Utility template with nice buttons (fire-and-forget).
-  //    If the template is fully approved and delivering, the customer gets the nice
-  //    button-style message too. If not, they already have the text message above.
-  try {
-    sendPreConfirmViaTemplate(
-      apiUrl,
-      apiToken,
-      digits,
-      firstName,
-      orderId,
-      totalAmount,
-      paymentMethodLabel,
-      confirmUrl,
-      cancelUrl,
-      token
-    ).then((sent) => {
-      if (sent) console.log(`✅ [WA Pre-Confirm] Template with buttons also queued for ${digits}`);
-    }).catch(() => {});
-  } catch {
-    // Non-blocking — text message already sent above
-  }
-
   return true;
 }
 
@@ -127,12 +121,12 @@ async function sendPreConfirmViaTemplate(
 ): Promise<boolean> {
   // The zupe_order_verify template in Meta Business Manager:
   // - Body with 4 parameters: {{1}}=firstName, {{2}}=orderId, {{3}}=amount, {{4}}=paymentMethod
-  // - Button 0 (Confirm Order): Dynamic URL ending with {{1}}
-  //   Base URL configured in Meta: https://zupe-store.stibelabs.workers.dev/api/orders/whatsapp-confirm?
-  //   We append: token=xxx&orderId=yyy
-  // - Button 1 (Cancel Order): Dynamic URL ending with {{1}}
-  //   Base URL configured in Meta: https://zupe-store.stibelabs.workers.dev/orders?
-  //   We append: cancelPrompt=yyy
+  // - Button 0 (Confirm Order): Dynamic URL configured with base:
+  //   https://zupe-store.stibelabs.workers.dev/api/orders/whatsapp-confirm?token={{1}}
+  //   Parameter 1: verificationToken (e.g. tok_xxx)
+  // - Button 1 (Cancel Order): Dynamic URL configured with base:
+  //   https://zupe-store.stibelabs.workers.dev/orders?cancelPrompt={{1}}
+  //   Parameter 1: orderId (e.g. ord_xxx)
 
   const payload = {
     messaging_product: "whatsapp",
@@ -159,7 +153,7 @@ async function sendPreConfirmViaTemplate(
           parameters: [
             {
               type: "text",
-              text: `token=${encodeURIComponent(verificationToken)}&orderId=${encodeURIComponent(orderId)}`,
+              text: verificationToken,
             },
           ],
         },
@@ -170,7 +164,7 @@ async function sendPreConfirmViaTemplate(
           parameters: [
             {
               type: "text",
-              text: `cancelPrompt=${encodeURIComponent(orderId)}`,
+              text: orderId,
             },
           ],
         },
