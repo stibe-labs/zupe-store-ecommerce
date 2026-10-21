@@ -438,17 +438,9 @@ function OrdersPageContent() {
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-12 sm:pb-16">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-3 border-b border-gray-200">
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900">
-                My Orders
-              </h1>
-              {hasPendingWhatsApp && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full text-xs font-semibold animate-pulse">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                  Live Syncing · Awaiting WhatsApp Confirmation
-                </span>
-              )}
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900 tracking-tight whitespace-nowrap">
+              My Orders
+            </h1>
             <p className="text-xs text-gray-500 mt-0.5">
               Track packages, check shipping updates, rate & review delivered purchases
             </p>
@@ -704,21 +696,21 @@ function OrdersPageContent() {
                         </span>
                       ) : null}
                     </div>
-                    {/* Status Badges & Action Buttons: 2 Symmetrical Rows (Row 1: Status & Pay Online, Row 2: Cash on Delivery & Track) */}
+                    {/* Status Badges & Action Buttons: 2 Symmetrical Rows (Row 1: Status & Pay Now, Row 2: Cash on Delivery & Track) */}
                     <div className="flex flex-col gap-2.5 w-full sm:w-auto">
-                      {/* Row 1: Status Badge & Pay Online (Save ₹30) Button */}
+                      {/* Row 1: Status Badge & Pay Now (Save ₹30) Button */}
                       <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
                         {/* Status Badge (e.g. Awaiting WhatsApp Confirmation) */}
                         {getStatusBadge(isDelivered ? "delivered" : ord.order_status, ord.whatsapp_confirm_status)}
 
-                        {/* Top Right Position: Pay Online (Save ₹30) Button for COD, or Payment Badge for Prepaid */}
+                        {/* Top Right Position: Pay Now (Save ₹30) Button for COD, or Payment Badge for Prepaid */}
                         {isCod && ord.order_status !== "cancelled" ? (
                           <Link
                             href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(ord.id)}`}
                             className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-xs font-black tracking-tight bg-[#FF7A00] hover:bg-[#E66E00] text-white shadow-xs hover:shadow-md hover:shadow-orange-500/25 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] w-full sm:w-auto text-center animate-pulse whitespace-nowrap"
                           >
                             <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                            <span>Pay Online (Save ₹30)</span>
+                            <span>Pay Now (Save ₹30)</span>
                           </Link>
                         ) : isRefunded ? (
                           <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
