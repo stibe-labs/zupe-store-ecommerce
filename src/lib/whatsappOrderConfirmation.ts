@@ -70,9 +70,29 @@ export async function sendOrderPreConfirmationWhatsApp(
   const cancelUrl = `${STORE_BASE_URL}/api/orders/whatsapp-cancel?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
-  // 1. Try approved Meta Utility template with buttons (only 1 single message)
+  // 1. ALWAYS send the direct text message first — this is GUARANTEED to deliver instantly.
+  //    Meta template messages with "Quality pending" status return 200 OK but silently
+  //    drop the message before it reaches the customer's phone. Direct text messages
+  //    always deliver within seconds.
+  const message =
+    `*Order Verification — Zupe Store* 🛍️\n\n` +
+    `Hi ${firstName}! Thank you for placing your order with Zupe Store.\n\n` +
+    `📦 *Order ID:* ${orderId}\n` +
+    `📋 *Items:*\n${itemLines}${more}\n\n` +
+    `💰 *Amount:* Rs ${totalAmount.toLocaleString("en-IN")} (${paymentMethodLabel})\n\n` +
+    `Please confirm your order below so we can pack and dispatch your shipment:\n\n` +
+    `✅ *Confirm Order:*\n${confirmUrl}\n\n` +
+    `❌ *Cancel Order:*\n${cancelUrl}\n\n` +
+    `Zupe Store Team`;
+
+  await sendWhatsAppTextMessage(apiUrl, apiToken, digits, message);
+  console.log(`✅ [WA Pre-Confirm] Guaranteed text message sent to ${digits} for order ${orderId}`);
+
+  // 2. Also try the official Meta Utility template with nice buttons (fire-and-forget).
+  //    If the template is fully approved and delivering, the customer gets the nice
+  //    button-style message too. If not, they already have the text message above.
   try {
-    const templateSent = await sendPreConfirmViaTemplate(
+    sendPreConfirmViaTemplate(
       apiUrl,
       apiToken,
       digits,
@@ -83,30 +103,13 @@ export async function sendOrderPreConfirmationWhatsApp(
       confirmUrl,
       cancelUrl,
       token
-    );
-
-    if (templateSent) {
-      console.log(`✅ [WA Pre-Confirm] Official template with buttons sent to ${digits}`);
-      return true;
-    }
-  } catch (tplErr) {
-    console.warn("[WA Pre-Confirm] Template send error:", tplErr);
+    ).then((sent) => {
+      if (sent) console.log(`✅ [WA Pre-Confirm] Template with buttons also queued for ${digits}`);
+    }).catch(() => {});
+  } catch {
+    // Non-blocking — text message already sent above
   }
 
-  // 2. Fallback ONLY if template was not sent
-  const message =
-    `*Order Verification — Zupe Store* 🛍️\n\n` +
-    `Hi ${firstName}! Thank you for placing your order with Zupe Store.\n\n` +
-    `📦 *Order ID:* ${orderId}\n` +
-    `📋 *Items:*\n${itemLines}${more}\n\n` +
-    `💰 *Amount:* Rs ${totalAmount.toLocaleString("en-IN")} (${paymentMethodLabel})\n\n` +
-    `Please confirm your order below so we can pack and dispatch your shipment:\n\n` +
-    `✅ *CONFIRM ORDER:*\n${confirmUrl}\n\n` +
-    `❌ *CANCEL ORDER:*\n${cancelUrl}\n\n` +
-    `⚠️ _Please click *Confirm Order* so we can pack and dispatch your shipment._\n\n` +
-    `Zupe Store Team`;
-
-  await sendWhatsAppTextMessage(apiUrl, apiToken, digits, message);
   return true;
 }
 
