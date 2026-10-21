@@ -132,16 +132,15 @@ export async function GET(req: NextRequest) {
 
     const resolvedOrderId = orderId || (result.order as any)?.id || "";
 
-    // 2. Perform any background notifications asynchronously without blocking the user's redirect
-    // This makes the button redirect INSTANT (under 50ms) and prevents duplicate conflicting messages
+    // 2. Dispatch the official order confirmation WhatsApp message (COD with switch offer / Prepaid confirmation)
     try {
       const ord =
         result.order ||
+        (resolvedOrderId ? await getOrderById(resolvedOrderId) : null) ||
         getStorefrontOrderById(resolvedOrderId) ||
         getOrderByToken(token);
 
       if (ord) {
-        // Fire non-blocking background notification (will not delay the redirect)
         const isCod =
           (ord.payment_method || "").toLowerCase().includes("cash on delivery") ||
           (ord.payment_method || "").toUpperCase() === "COD";
@@ -152,8 +151,7 @@ export async function GET(req: NextRequest) {
           try { rawItems = JSON.parse(ord.items); } catch { rawItems = []; }
         }
 
-        // Fire-and-forget without awaiting
-        sendOrderConfirmationWhatsApp({
+        await sendOrderConfirmationWhatsApp({
           customerName: ord.customer_name || "Valued Customer",
           customerPhone: ord.customer_phone || "",
           orderId: (ord as any).shopify_order_id || ord.id,
@@ -164,9 +162,11 @@ export async function GET(req: NextRequest) {
             quantity: Number(it.quantity || 1),
             price: Number(it.unit_price || it.price || 0),
           })),
-        }).catch(() => {});
+        });
       }
-    } catch {}
+    } catch (notifyErr) {
+      console.warn("Failed to dispatch WhatsApp order confirmation on verify:", notifyErr);
+    }
 
     // 3. Render clean, instant in-place confirmation screen without redirecting across the storefront
     const html = `<!DOCTYPE html>
@@ -296,13 +296,28 @@ export async function GET(req: NextRequest) {
     <p>
       Thank you for confirming! Your order has been verified and updated in our system. Our fulfillment team is now preparing your parcel for prompt dispatch.
     </p>
-    <a class="btn-wa" href="https://wa.me/919778137954">
+    <a class="btn-wa" id="wa-btn" href="https://wa.me/919778137954">
       <span>💬 Return to WhatsApp</span>
     </a>
+    <p id="countdown" style="font-size: 12px; color: #64748b; margin-bottom: 18px;">
+      Returning to WhatsApp in <span id="sec">2</span>s...
+    </p>
     <a class="btn-orders" href="/orders">
       View in My Orders →
     </a>
   </div>
+  <script>
+    var timeLeft = 2;
+    var timer = setInterval(function() {
+      timeLeft--;
+      var secEl = document.getElementById("sec");
+      if (secEl) secEl.innerText = timeLeft;
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        window.location.href = "https://wa.me/919778137954";
+      }
+    }, 1000);
+  </script>
 </body>
 </html>`;
 

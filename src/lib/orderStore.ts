@@ -289,7 +289,6 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
     }
   }
 
-  // Update ERP & D1 stores
   try {
     await updateERPOrder(normId, {
       whatsapp_confirm_status: "confirmed",
@@ -300,10 +299,13 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
     console.warn("ERP update on WhatsApp confirm error:", e);
   }
 
+  // Retrieve full order record (from memory or D1) so downstream confirmation messages have full details
+  const finalOrd = ord || (await getOrderById(normId));
+
   return {
     success: true,
     message: "Order confirmed successfully!",
-    order: ord,
+    order: (finalOrd as any) || undefined,
   };
 }
 

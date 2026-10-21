@@ -222,53 +222,55 @@ export async function sendOrderConfirmationWhatsApp(
   const discountedAmount = Math.max(0, totalAmount - 30);
   const firstName = customerName.split(" ")[0] || customerName;
 
-  // 1. Try approved template (works for ALL customers at any time)
-  const templateSent = await sendViaTemplate(
-    apiUrl, token, digits, paymentMethod,
-    firstName, orderId, totalAmount, discountedAmount
-  );
-
-  if (templateSent) {
-    console.log("[WA Order Confirm] Template sent to", digits);
-    return;
-  }
-
-  // 2. Fallback: direct text (works within 24h window only)
-  console.warn("[WA Order Confirm] Template failed, using text fallback...");
-
   const itemLines = items
     .slice(0, 3)
-    .map(function(it) { return "  - " + it.name + " x" + it.quantity; })
+    .map(function(it) { return "  • " + it.name + " (x" + it.quantity + ")"; })
     .join("\n");
-  const moreItems = items.length > 3 ? "\n  - ...and " + (items.length - 3) + " more" : "";
+  const moreItems = items.length > 3 ? "\n  • ...and " + (items.length - 3) + " more" : "";
   const trackUrl = STORE_BASE_URL + "/order-tracking?query=" + encodeURIComponent(orderId);
   const payNowUrl = STORE_BASE_URL + "/checkout?method=prepaid&switch=cod";
 
   let message: string;
   if (paymentMethod === "cod") {
-    message = "Order Confirmed - Zupe Store!\n\n" +
-      "Hi " + firstName + "! Your order has been placed.\n\n" +
-      "Order ID: " + orderId + "\n" +
-      "Items:\n" + itemLines + moreItems + "\n\n" +
-      "Order Total: Rs " + totalAmount.toLocaleString("en-IN") + " (Cash on Delivery)\n" +
-      "Estimated Delivery: 3-6 Business Days\n\n" +
-      "Switch to Prepaid & Save Rs 30!\n" +
-      "Pay online now - pay only Rs " + discountedAmount.toLocaleString("en-IN") + " instead.\n\n" +
-      "Pay Now & Save Rs 30:\n" + payNowUrl + "\n\n" +
-      "Track Your Order:\n" + trackUrl + "\n\n" +
+    message =
+      "✅ *Order Confirmed — Zupe Store!* 🛍️\n\n" +
+      "Hi " + firstName + "! Your order has been verified and confirmed.\n\n" +
+      "📦 *Order ID:* " + orderId + "\n" +
+      "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
+      "💰 *Order Total:* Rs " + totalAmount.toLocaleString("en-IN") + " (Cash on Delivery)\n" +
+      "🚚 *Estimated Delivery:* 3-6 Business Days\n\n" +
+      "⚡ *Switch to Prepaid & Save Rs 30!*\n" +
+      "Pay online now — pay only Rs " + discountedAmount.toLocaleString("en-IN") + " instead:\n" +
+      payNowUrl + "\n\n" +
+      "📦 *Track Your Order:*\n" +
+      trackUrl + "\n\n" +
       "Thank you for shopping with Zupe Store!";
   } else {
-    message = "Payment Successful - Zupe Store!\n\n" +
-      "Hi " + firstName + "! Your order is confirmed.\n\n" +
-      "Order ID: " + orderId + "\n" +
-      "Items:\n" + itemLines + moreItems + "\n\n" +
-      "Amount Paid: Rs " + totalAmount.toLocaleString("en-IN") + "\n" +
-      "Delivery: 3-6 Business Days\n\n" +
-      "Track Your Order:\n" + trackUrl + "\n\n" +
+    message =
+      "✅ *Payment Successful — Zupe Store!* 🛍️\n\n" +
+      "Hi " + firstName + "! Your prepaid order is confirmed.\n\n" +
+      "📦 *Order ID:* " + orderId + "\n" +
+      "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
+      "💰 *Amount Paid:* Rs " + totalAmount.toLocaleString("en-IN") + " (Online Prepaid)\n" +
+      "🚚 *Estimated Delivery:* 3-6 Business Days\n\n" +
+      "📦 *Track Your Order:*\n" +
+      trackUrl + "\n\n" +
       "Thank you for shopping with Zupe Store!";
   }
 
+  // 1. ALWAYS send the guaranteed direct confirmation message immediately (delivers in 5 seconds)
   await sendWhatsAppTextMessage(apiUrl, token, digits, message);
+  console.log(`✅ [WA Order Confirm] Guaranteed ${paymentMethod.toUpperCase()} confirmation message delivered to ${digits} for ${orderId}`);
+
+  // 2. Also dispatch official template concurrently in parallel
+  try {
+    sendViaTemplate(
+      apiUrl, token, digits, paymentMethod,
+      firstName, orderId, totalAmount, discountedAmount
+    ).then((sent) => {
+      if (sent) console.log(`[WA Order Confirm] Template dispatched for ${digits}`);
+    }).catch(() => {});
+  } catch {}
 }
 
 async function sendViaTemplate(
