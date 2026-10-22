@@ -120,14 +120,6 @@ function CheckoutContent() {
   // Payment method state ("prepaid" or "cod")
   const [paymentMethod, setPaymentMethod] = useState<"prepaid" | "cod">("prepaid");
 
-  // Promo code state
-  const [promoCode, setPromoCode] = useState("");
-  const [promoApplied, setPromoApplied] = useState(false);
-  const [promoDiscount, setPromoDiscount] = useState(0);
-  const [promoError, setPromoError] = useState("");
-
-  // Mobile Order Summary Accordion
-  const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
 
   // Saved Addresses
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
@@ -401,7 +393,7 @@ function CheckoutContent() {
     }
   }, [searchParams]);
 
-  // Populate user data if logged in (phone and real name only - never synthetic email)
+  // Populate user data if logged in (phone, real name, and real email if not synthetic)
   useEffect(() => {
     if (user) {
       if (!name && user.name && !user.name.startsWith("Customer ")) {
@@ -410,8 +402,11 @@ function CheckoutContent() {
       if (!phone && user.phone) {
         setPhone(cleanPhoneDigits(user.phone));
       }
+      if (!email && user.email && !user.email.endsWith("@customer.zupestore.com") && user.email.includes("@")) {
+        setEmail(user.email);
+      }
     }
-  }, [user, name, phone]);
+  }, [user, name, phone, email]);
 
   // Hydrate saved addresses
   useEffect(() => {
@@ -622,36 +617,19 @@ function CheckoutContent() {
     }
   };
 
-  // Promo Code Application
-  const handleApplyPromo = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPromoError("");
-    const clean = promoCode.trim().toUpperCase();
-    if (!clean) {
-      setPromoError("Please enter a promo code.");
-      return;
-    }
-    if (clean === "ZUPE10" || clean === "WELCOME10" || clean === "SWIVO10") {
-      const discount = Math.round(subtotal * 0.1);
-      setPromoDiscount(discount);
-      setPromoApplied(true);
-    } else if (clean === "SAVE50" || clean === "SPECIAL50") {
-      const discount = Math.min(50, subtotal);
-      setPromoDiscount(discount);
-      setPromoApplied(true);
-    } else {
-      setPromoError("Invalid promo code. Try ZUPE10 for 10% off!");
-    }
-  };
-
-  // Shipping calculation (Free over threshold or included)
-  // COD adds ₹49 shipping; Prepaid is free
-  const shippingFee = paymentMethod === "cod" ? 49 : 0;
+  // Shipping & COD Calculations
+  // Prepaid has Free Shipping (₹0) and ₹0 COD fee.
+  // Cash on Delivery has ₹49 Shipping Charge and ₹19 Advance Payment collected online (remaining balance at doorstep).
+  const isCod = paymentMethod === "cod";
+  const shippingFee = isCod ? 49 : 0;
+  const codAdvance = isCod ? 19 : 0;
   const totalItemCount = cart.reduce((sum, it) => sum + it.quantity, 0);
 
   // Total calculations
-  const totalDiscount = savings + promoDiscount;
-  const grandTotal = Math.max(0, subtotal - promoDiscount + shippingFee);
+  const totalDiscount = savings;
+  const grandTotal = subtotal + shippingFee;
+  const payableNow = isCod ? 19 : subtotal;
+  const doorstepBalance = isCod ? Math.max(0, grandTotal - 19) : 0;
 
   // Total MRP for comparison pill
   const totalMrp = cart.reduce((sum, it) => {
@@ -871,60 +849,7 @@ function CheckoutContent() {
       return;
     }
 
-    // Process Cash on Delivery
-    if (paymentMethod === "cod") {
-      try {
-        const orderPayload = {
-          customer_name: name.trim(),
-          customer_email: email.trim(),
-          customer_phone: phone.trim().startsWith("+91") ? phone.trim() : `+91 ${phone.trim()}`,
-          shipping_address: address.trim(),
-          city: state ? `${city.trim()}, ${state.trim()}` : city.trim(),
-          postal_code: postalCode.trim(),
-          total_amount: grandTotal,
-          discount_amount: totalDiscount,
-          payment_method: "Cash on Delivery",
-          user_id: user?.id,
-          items: cart.map((c) => ({
-            product_id: c.id,
-            name: c.name,
-            price: c.price,
-            quantity: c.quantity,
-            image: c.poster_image,
-          })),
-        };
-
-        const res = await fetch("/api/orders", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(orderPayload),
-        });
-
-        const data = await res.json();
-        setLoading(false);
-
-        if (data.success && data.order) {
-          syncAddressAfterOrder();
-          setConfirmedTotal(grandTotal);
-          setConfirmedOrderId(data.order.id);
-          setConfirmedPaymentId("");
-          setOrderComplete(true);
-          clearCart();
-          try {
-            localStorage.setItem("zupe_last_cod_order_id", data.order.id);
-            localStorage.setItem("zupe_last_cod_phone", phone.trim());
-          } catch {}
-        } else {
-          setErrorMessage(data.error || "Failed to process order. Please try again.");
-        }
-      } catch (err: any) {
-        setLoading(false);
-        setErrorMessage("Network error occurred while submitting your order.");
-      }
-      return;
-    }
-
-    // Online Payment via Razorpay (UPI, Cards, Net Banking)
+    // Online Payment via Razorpay (Prepaid Full Amount or COD ₹19 Partial Advance)
     try {
       const isScriptLoaded = await loadRazorpayScript();
       if (!isScriptLoaded) {
@@ -933,11 +858,14 @@ function CheckoutContent() {
         return;
       }
 
+      const isCod = paymentMethod === "cod";
+      const amountToCharge = isCod ? 19 : grandTotal;
+
       const createOrderRes = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: grandTotal,
+          amount: amountToCharge,
           items: cart.map((c) => ({
             product_id: c.id,
             name: c.name,
@@ -949,7 +877,7 @@ function CheckoutContent() {
             customer_email: email,
             customer_phone: phone,
             shipping_address: `${address}, ${city}, ${postalCode}`,
-            payment_type: paymentMethod,
+            payment_type: isCod ? "cod_partial" : "prepaid",
           },
         }),
       });
@@ -961,14 +889,16 @@ function CheckoutContent() {
         return;
       }
 
-      const methodLabel = "Prepaid (Online)";
+      const methodLabel = isCod ? "Cash on Delivery (Partial Payment)" : "Prepaid (Online)";
 
       const options = {
         key: orderData.keyId || RAZORPAY_KEY_ID,
         amount: orderData.amount,
         currency: orderData.currency || "INR",
         name: "Zupe Store",
-        description: `Payment for Order (${cart.length} item${cart.length === 1 ? "" : "s"})`,
+        description: isCod
+          ? `COD Order Confirmation Advance (₹19) - Zupe Store`
+          : `Payment for Order (${cart.length} item${cart.length === 1 ? "" : "s"})`,
         image: "/zupe-logo.webp",
         order_id: orderData.orderId,
         prefill: {
@@ -987,7 +917,11 @@ function CheckoutContent() {
         modal: {
           ondismiss: function () {
             setLoading(false);
-            setErrorMessage("Payment was cancelled. You can retry whenever you are ready.");
+            setErrorMessage(
+              isCod
+                ? "Payment was cancelled. Pay ₹19 advance to confirm your Cash on Delivery order."
+                : "Payment was cancelled. You can retry whenever you are ready."
+            );
           },
         },
         handler: async function (response: any) {
@@ -1010,6 +944,10 @@ function CheckoutContent() {
                   total_amount: grandTotal,
                   discount_amount: totalDiscount,
                   payment_method: methodLabel,
+                  is_cod_partial: isCod,
+                  advance_amount: isCod ? 19 : grandTotal,
+                  balance_amount: isCod ? doorstepBalance : 0,
+                  shipping_fee: shippingFee,
                   user_id: user?.id,
                   items: cart.map((c) => ({
                     product_id: c.id,
@@ -1030,6 +968,12 @@ function CheckoutContent() {
               setConfirmedPaymentId(response.razorpay_payment_id);
               setOrderComplete(true);
               clearCart();
+              if (isCod) {
+                try {
+                  localStorage.setItem("zupe_last_cod_order_id", verifyData.order.id);
+                  localStorage.setItem("zupe_last_cod_phone", phone.trim());
+                } catch {}
+              }
             } else {
               setErrorMessage(
                 verifyData.error || "Payment received, but verification encountered an error. Please contact support."
@@ -1237,48 +1181,70 @@ function CheckoutContent() {
               </div>
 
               {/* Price Breakdown with Rs 30 discount */}
-              <div className="space-y-2.5 pt-2 text-xs sm:text-sm">
-                <div className="flex justify-between text-gray-600">
-                  <span>COD Order Total:</span>
-                  <span className="line-through text-gray-400">₹{Number(switchOrder.total_amount).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-emerald-600 font-bold">
-                  <span className="flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4" />
-                    <span>Prepaid Switch Discount:</span>
-                  </span>
-                  <span>-₹30</span>
-                </div>
-                <div className="pt-3 border-t border-gray-200 flex justify-between items-center text-base sm:text-lg">
-                  <span className="font-bold text-gray-900">Final Amount to Pay:</span>
-                  <div className="text-right">
-                    <span className="font-extrabold text-[#FF7A00] text-xl">
-                      ₹{Math.max(0, Number(switchOrder.total_amount) - 30).toLocaleString()}
-                    </span>
-                    <span className="block text-[10px] text-emerald-600 font-bold">You Save ₹30 Instantly</span>
-                  </div>
-                </div>
-              </div>
+              {(() => {
+                const codTotal = Number(switchOrder.total_amount) || 0;
+                const doorstepDue = (switchOrder as any).doorstep_balance !== undefined
+                  ? Number((switchOrder as any).doorstep_balance)
+                  : Math.max(0, codTotal - 19);
+                const finalPayable = (switchOrder as any).discounted_amount !== undefined
+                  ? Number((switchOrder as any).discounted_amount)
+                  : Math.max(1, doorstepDue - 30);
 
-              {/* Pay Now Button */}
-              <button
-                type="button"
-                onClick={handlePayForCodOrder}
-                disabled={switchPaying}
-                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-orange-500 via-[#FF7A00] to-orange-600 hover:from-[#e06900] hover:to-[#d06000] text-white font-extrabold text-base shadow-lg shadow-[#FF7A00]/30 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
-              >
-                {switchPaying ? (
+                return (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Launching Secure Payment...</span>
+                    <div className="space-y-2.5 pt-2 text-xs sm:text-sm">
+                      <div className="flex justify-between text-gray-600">
+                        <span>COD Total Order Value:</span>
+                        <span className="font-semibold text-gray-800">₹{codTotal.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-emerald-600 font-medium">
+                        <span>Advance Paid Online:</span>
+                        <span className="font-bold">₹19 (Paid)</span>
+                      </div>
+                      <div className="flex justify-between text-gray-600">
+                        <span>Doorstep Balance Due (COD):</span>
+                        <span className="line-through text-gray-400 font-semibold">₹{doorstepDue.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-emerald-600 font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <Sparkles className="w-4 h-4" />
+                          <span>Prepaid Switch Discount:</span>
+                        </span>
+                        <span>-₹30</span>
+                      </div>
+                      <div className="pt-3 border-t border-gray-200 flex justify-between items-center text-base sm:text-lg">
+                        <span className="font-bold text-gray-900">Final Amount to Pay Online:</span>
+                        <div className="text-right">
+                          <span className="font-extrabold text-[#FF7A00] text-xl">
+                            ₹{finalPayable.toLocaleString()}
+                          </span>
+                          <span className="block text-[10px] text-emerald-600 font-bold">You Save ₹30 • ₹0 at Delivery</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pay Now Button */}
+                    <button
+                      type="button"
+                      onClick={handlePayForCodOrder}
+                      disabled={switchPaying}
+                      className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-orange-500 via-[#FF7A00] to-orange-600 hover:from-[#e06900] hover:to-[#d06000] text-white font-extrabold text-base shadow-lg shadow-[#FF7A00]/30 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 mt-4"
+                    >
+                      {switchPaying ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <span>Launching Secure Payment...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-5 h-5" />
+                          <span>Pay ₹{finalPayable.toLocaleString()} Online Now →</span>
+                        </>
+                      )}
+                    </button>
                   </>
-                ) : (
-                  <>
-                    <Lock className="w-5 h-5" />
-                    <span>Pay ₹{Math.max(0, Number(switchOrder.total_amount) - 30).toLocaleString()} Online Now →</span>
-                  </>
-                )}
-              </button>
+                );
+              })()}
 
               {/* Security info */}
               <div className="pt-2 text-center text-[11px] text-gray-400 space-y-1">
@@ -1394,7 +1360,7 @@ function CheckoutContent() {
           {/* Status Badge */}
           {paymentMethod === "cod" ? (
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 mb-2 border border-amber-200">
-              Cash on Delivery • Order Placed
+              Cash on Delivery • ₹19 Advance Received
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 mb-2 border border-emerald-200">
@@ -1404,40 +1370,20 @@ function CheckoutContent() {
 
           <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
             {paymentMethod === "cod"
-              ? `Thank you, ${name || "Shopper"}!`
+              ? `Order Confirmed, ${name || "Shopper"}!`
               : `Payment Successful, ${name || "Shopper"}!`}
           </h1>
 
           <p className="text-sm text-gray-500 mb-6 leading-relaxed max-w-md mx-auto">
             {paymentMethod === "cod"
-              ? `Your Cash on Delivery order has been placed. Please keep cash ready when the courier delivers your parcel. Live updates sent to +91 ${(phone || "").replace(/^\+91\s*/, "")}.`
+              ? `Your Cash on Delivery order has been confirmed! We have received your ₹19 confirmation advance. Please pay the remaining balance of ₹${Math.max(0, (confirmedTotal || grandTotal) - 19).toLocaleString()} in cash or UPI when your parcel is delivered.`
               : `Your online payment has been verified and your order is in Priority Express Dispatch. Live updates sent to +91 ${(phone || "").replace(/^\+91\s*/, "")}.`}
+            {email.trim() && (
+              <span className="block mt-2 font-medium text-emerald-700 bg-emerald-50 py-1.5 px-3 rounded-lg border border-emerald-200/70 text-xs">
+                📧 Order receipt &amp; live tracking link sent to <strong>{email.trim()}</strong>
+              </span>
+            )}
           </p>
-
-          {/* COD Switch to Prepaid Instant Discount Promo Banner */}
-          {paymentMethod === "cod" && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-orange-500/10 via-[#FF7A00]/10 to-amber-500/10 border border-[#FF7A00]/30 text-left mb-6 relative overflow-hidden">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FF7A00] text-white uppercase tracking-wider mb-1">
-                    ⚡ Save ₹30 Instantly
-                  </span>
-                  <h4 className="text-sm font-bold text-gray-900">
-                    Switch to Prepaid &amp; Pay Only ₹{Math.max(0, (confirmedTotal || grandTotal) - 30).toLocaleString()}
-                  </h4>
-                  <p className="text-xs text-gray-600 mt-0.5">
-                    Pay online now via UPI, Cards, or Net Banking to waive cash charges and get Priority Express Dispatch.
-                  </p>
-                </div>
-                <Link
-                  href={`/checkout?method=prepaid&switch=cod&order_id=${encodeURIComponent(confirmedOrderId)}&phone=${encodeURIComponent(phone)}`}
-                  className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold transition-all shadow-sm shrink-0 whitespace-nowrap text-center"
-                >
-                  Pay Online &amp; Save ₹30 →
-                </Link>
-              </div>
-            </div>
-          )}
 
           {/* Order Summary Details Card */}
           <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-xs mb-8 text-left space-y-3 text-xs text-gray-600">
@@ -1445,6 +1391,12 @@ function CheckoutContent() {
               <span className="text-gray-500">Order ID:</span>
               <span className="font-mono font-bold text-gray-900 text-sm">{confirmedOrderId}</span>
             </div>
+            {email.trim() && (
+              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                <span className="text-gray-500">Order Updates Email:</span>
+                <span className="font-semibold text-emerald-700">{email.trim()}</span>
+              </div>
+            )}
             {confirmedPaymentId && (
               <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                 <span className="text-gray-500">Transaction ID:</span>
@@ -1454,7 +1406,7 @@ function CheckoutContent() {
             <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
               <span className="text-gray-500">Payment Mode:</span>
               <span className="font-semibold text-gray-900">
-                {paymentMethod === "cod" ? "Cash on Delivery (COD)" : "Prepaid (Online via UPI/Cards)"}
+                {paymentMethod === "cod" ? "Cash on Delivery (Partial Payment)" : "Prepaid (Online via UPI/Cards)"}
               </span>
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
@@ -1467,20 +1419,68 @@ function CheckoutContent() {
                 {address}, {city} - {postalCode}
               </span>
             </div>
-            <div className="flex justify-between items-center pt-2 text-sm">
-              <span className="font-bold text-gray-900">
-                {paymentMethod === "cod" ? "Total Payable on Delivery:" : "Total Paid Online:"}
-              </span>
-              <div className="text-right">
-                <span className="font-extrabold text-[#FF7A00] text-lg block">
-                  ₹{(confirmedTotal || grandTotal).toLocaleString()}
-                </span>
-                <span className={`text-[10px] font-bold block ${paymentMethod === "cod" ? "text-amber-600" : "text-emerald-600"}`}>
-                  {paymentMethod === "cod" ? "Pay in cash to courier" : "✓ Paid Online"}
-                </span>
+            {paymentMethod === "cod" ? (
+              <>
+                <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                  <span className="text-gray-500">Shipping Charge:</span>
+                  <span className="font-semibold text-gray-900">₹49</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                  <span className="text-gray-500">Total Order Amount:</span>
+                  <span className="font-semibold text-gray-900">₹{(confirmedTotal || grandTotal).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                  <span className="text-gray-500">Advance Paid Online:</span>
+                  <span className="font-bold text-emerald-600">₹19 (Paid)</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 text-sm">
+                  <span className="font-bold text-gray-900">Balance on Delivery:</span>
+                  <div className="text-right">
+                    <span className="font-extrabold text-[#FF7A00] text-lg block">
+                      ₹{Math.max(0, (confirmedTotal || grandTotal) - 19).toLocaleString()}
+                    </span>
+                    <span className="text-[10px] font-bold block text-amber-600">
+                      Pay in cash or UPI to courier
+                    </span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-between items-center pt-2 text-sm">
+                <span className="font-bold text-gray-900">Total Paid Online:</span>
+                <div className="text-right">
+                  <span className="font-extrabold text-[#FF7A00] text-lg block">
+                    ₹{(confirmedTotal || grandTotal).toLocaleString()}
+                  </span>
+                  <span className="text-[10px] font-bold block text-emerald-600">
+                    ✓ Paid Online
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
+
+          {paymentMethod === "cod" && (
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border border-orange-200 text-left mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-[#FF7A00] tracking-wider block">
+                  ⚡ Special Prepaid Switch Offer
+                </span>
+                <p className="text-sm font-bold text-gray-900 mt-0.5">
+                  Switch to Prepaid &amp; Save ₹30!
+                </p>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Pay only ₹{Math.max(1, (confirmedTotal || grandTotal) - 49).toLocaleString()} online now instead of ₹{Math.max(0, (confirmedTotal || grandTotal) - 19).toLocaleString()} at delivery.
+                </p>
+              </div>
+              <Link
+                href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(confirmedOrderId)}`}
+                className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-xs shrink-0 text-center transition-colors shadow-xs"
+              >
+                Pay ₹{Math.max(1, (confirmedTotal || grandTotal) - 49).toLocaleString()} Now (Save ₹30) →
+              </Link>
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
@@ -1580,163 +1580,7 @@ function CheckoutContent() {
         </div>
       </header>
 
-      {/* 2. MOBILE COLLAPSIBLE ORDER SUMMARY ACCORDION */}
-      <div className="lg:hidden border-b border-gray-200 bg-[#F4F4F5]">
-        <button
-          type="button"
-          onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}
-          className="w-full py-3.5 px-4 flex items-center justify-between text-left cursor-pointer"
-        >
-          <div className="flex items-center gap-1.5 text-sm font-bold text-gray-900">
-            <span>Order summary</span>
-            {isMobileSummaryOpen ? (
-              <ChevronUp className="w-4 h-4 text-gray-600" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-gray-600" />
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {totalMrp > grandTotal && (
-              <span className="text-xs text-gray-400 line-through">
-                ₹{totalMrp.toLocaleString()}
-              </span>
-            )}
-            <span className="font-bold text-base text-gray-900">
-              ₹{grandTotal.toLocaleString()}
-            </span>
-          </div>
-        </button>
 
-        <AnimatePresence>
-          {isMobileSummaryOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden border-t border-gray-200 px-4 py-4 space-y-4 bg-white"
-            >
-              {/* Product List */}
-              <div className="space-y-3">
-                {cart.map((item) => {
-                  const itemMrp = item.mrp || item.original_price || Math.round(item.price * 1.35);
-                  return (
-                    <div key={item.id} className="flex items-center gap-3">
-                      <div className="relative w-14 h-14 rounded-xl bg-gray-50 border border-gray-200 shrink-0">
-                        <Image
-                          src={item.poster_image}
-                          alt={item.name}
-                          fill
-                          className="object-cover rounded-xl"
-                        />
-                        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#111111] text-white text-[10px] font-bold flex items-center justify-center">
-                          {item.quantity}
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-xs text-gray-900 truncate">
-                          {item.name}
-                        </p>
-                        <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mt-0.5">
-                          {itemMrp > item.price && (
-                            <span className="line-through text-gray-400">
-                              ₹{itemMrp.toLocaleString()}
-                            </span>
-                          )}
-                          <span>₹{item.price.toLocaleString()} × {item.quantity}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="font-bold text-xs text-gray-900">
-                          ₹{(item.price * item.quantity).toLocaleString()}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => removeFromCart(item.id)}
-                          title="Remove item"
-                          className="p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                          aria-label={`Remove ${item.name} from cart`}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Promo code input */}
-              <form onSubmit={handleApplyPromo} className="flex gap-2 pt-2">
-                <input
-                  type="text"
-                  placeholder="Promo code"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value)}
-                  className="flex-1 px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-medium uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-[#FF7A00] focus:border-[#FF7A00]"
-                />
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-black text-white text-xs font-semibold hover:bg-gray-800 transition-colors"
-                >
-                  Apply
-                </button>
-              </form>
-              {promoApplied && (
-                <p className="text-[11px] text-[#FF7A00] font-semibold flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5" /> Promo code applied! Saved ₹{promoDiscount.toLocaleString()}
-                </p>
-              )}
-              {promoError && <p className="text-[11px] text-red-500">{promoError}</p>}
-
-              <hr className="border-gray-100" />
-
-              {/* Price Breakdown */}
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal · {totalItemCount} {totalItemCount === 1 ? "item" : "items"}</span>
-                  <span className="font-semibold text-gray-900">₹{subtotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Taxes (GST)</span>
-                  <span className="text-gray-500">Included</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <div>
-                    <span>Shipping</span>
-                    <p className="text-[10px] text-gray-400">Arrives in 3-6 days</p>
-                  </div>
-                  {paymentMethod === "cod" ? (
-                    <span className="font-bold text-amber-600">+₹49</span>
-                  ) : (
-                    <span className="font-bold text-[#FF7A00]">Free</span>
-                  )}
-                </div>
-                <div className="flex justify-between items-baseline pt-2 border-t border-gray-100">
-                  <span className="font-bold text-sm text-gray-900">Total</span>
-                  <div className="flex items-baseline gap-2">
-                    {totalMrp > grandTotal && (
-                      <span className="text-xs text-gray-400 line-through">
-                        ₹{totalMrp.toLocaleString()}
-                      </span>
-                    )}
-                    <span className="font-extrabold text-lg text-gray-900">
-                      ₹{grandTotal.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* You're paying less pill */}
-              {totalMrpSavings > 0 && (
-                <div className="py-2.5 px-3 rounded-lg bg-[#FFF7ED] border border-[#FFEDD5] text-[#FF7A00] font-bold text-[11px] flex items-center justify-center gap-1.5 uppercase tracking-wide">
-                  <Tag className="w-3.5 h-3.5" />
-                  <span>YOU&apos;RE PAYING ₹{totalMrpSavings.toLocaleString()} LESS THAN MRP</span>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
 
       {/* 3. MAIN CHECKOUT GRID */}
       <main className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
@@ -2078,97 +1922,339 @@ function CheckoutContent() {
                 />
               </div>
 
-              {/* Payment Method Selection */}
-              <div className="pt-2 space-y-2.5">
-                <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                  Select Payment Method *
-                </label>
+              {/* Payment Method Selection (Matches Reference Design) */}
+              <div className="pt-2 space-y-3.5">
+                {/* Header */}
+                <div className="flex items-center justify-between pb-1">
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
+                      Select Payment Method
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Choose how you want to pay for your order
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-right text-gray-500">
+                    <Lock className="w-4 h-4 text-gray-600 shrink-0" />
+                    <div>
+                      <p className="text-[11px] font-bold text-gray-800 leading-tight">100% Secure Payments</p>
+                      <p className="text-[10px] text-gray-400 leading-tight">Powered by Razorpay</p>
+                    </div>
+                  </div>
+                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Order With Prepaid (highlighted / recommended) */}
+                <div className="space-y-3">
+                  {/* CARD 1: Pay Online (Prepaid) */}
                   <div
                     onClick={() => setPaymentMethod("prepaid")}
-                    className={`relative p-3.5 pt-5 rounded-xl border-2 cursor-pointer transition-all ${
+                    className={`relative p-4 sm:p-5 pt-6 rounded-2xl border-2 cursor-pointer transition-all ${
                       paymentMethod === "prepaid"
-                        ? "border-[#FF7A00] bg-[#FFF7ED]/80 ring-1 ring-[#FF7A00] shadow-md shadow-[#FF7A00]/10"
-                        : "border-gray-200 bg-white hover:border-[#FF7A00]/50"
+                        ? "border-[#FF7A00] bg-[#FFFBF8] shadow-sm ring-1 ring-[#FF7A00]/20"
+                        : "border-gray-200 bg-white hover:border-[#FF7A00]/40"
                     }`}
                   >
-                    {/* Recommended badge with glow animation */}
-                    <span
-                      style={{
-                        animation: "recommendGlow 1.8s ease-in-out infinite",
-                      }}
-                      className="absolute -top-2.5 left-3 px-2 py-0.5 rounded-full bg-[#FF7A00] text-white text-[9px] font-extrabold uppercase tracking-wider shadow-sm"
-                    >
-                      ★ Recommended
+                    {/* RECOMMENDED BADGE */}
+                    <span className="absolute -top-3 left-4 px-3 py-0.5 rounded-full bg-[#FF7A00] text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs flex items-center gap-1">
+                      ★ RECOMMENDED
                     </span>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center shrink-0">
-                          <QrCode className="w-4 h-4" />
+
+                    {/* Top Row: Radio + Icon + Title + Free Shipping Badge */}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        {/* Radio circle */}
+                        <div
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white transition-colors ${
+                            paymentMethod === "prepaid" ? "border-[#FF7A00]" : "border-gray-300"
+                          }`}
+                        >
+                          {paymentMethod === "prepaid" && (
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#FF7A00]" />
+                          )}
+                        </div>
+
+                        {/* QR / Online Icon */}
+                        <div className="w-10 h-10 rounded-xl bg-orange-100/60 border border-orange-200/50 flex items-center justify-center text-[#FF7A00] shrink-0">
+                          <QrCode className="w-5 h-5" />
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
+                            Pay Online (Prepaid)
+                          </h4>
+                          <p className="text-xs text-gray-500 mt-0.5">UPI, Cards &amp; Net Banking</p>
+                        </div>
+                      </div>
+
+                      {/* Free Shipping Badge */}
+                      <div className="rounded-xl bg-emerald-50 border border-emerald-100 px-2.5 py-1.5 text-right shrink-0">
+                        <div className="flex items-center justify-end gap-1 text-emerald-700 font-extrabold text-[11px] tracking-wide">
+                          <Truck className="w-3.5 h-3.5" />
+                          <span>FREE SHIPPING</span>
+                        </div>
+                        <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">
+                          Save ₹49 on this order
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Payment Logos Row */}
+                    <div className="flex flex-wrap items-center gap-2.5 pt-3.5 mt-3.5 border-t border-gray-100">
+                      {/* UPI */}
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
+                        <span className="font-black italic text-xs tracking-tighter text-[#2E3192]">UPI</span>
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                          <path d="M14 4L7 12H13L10 20L17 12H11L14 4Z" fill="#097939" />
+                        </svg>
+                      </div>
+
+                      {/* VISA */}
+                      <span className="font-black italic text-xs tracking-wider text-[#1A1F71] font-sans px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
+                        VISA
+                      </span>
+
+                      {/* Mastercard */}
+                      <div className="flex items-center px-2 py-1 rounded bg-white border border-gray-200 shadow-2xs">
+                        <div className="w-3.5 h-3.5 rounded-full bg-[#EB001B] opacity-90" />
+                        <div className="w-3.5 h-3.5 rounded-full bg-[#F79E1B] -ml-1.5 mix-blend-multiply opacity-90" />
+                      </div>
+
+                      {/* RuPay */}
+                      <div className="flex items-center px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
+                        <span className="font-black text-xs tracking-tight text-[#002D62]">Ru</span>
+                        <span className="font-black text-xs tracking-tight text-[#00A4E4]">Pay</span>
+                        <span className="w-1 h-3 bg-gradient-to-b from-[#00A4E4] to-[#F15A24] -skew-x-12 ml-0.5" />
+                      </div>
+
+                      {/* Net Banking */}
+                      <div className="flex items-center gap-1 text-[11px] font-semibold text-gray-700 px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
+                        <Building2 className="w-3.5 h-3.5 text-gray-600" />
+                        <span>Net Banking</span>
+                      </div>
+                    </div>
+
+                    {/* 3 Checkmark Points Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3 mt-3 border-t border-gray-100">
+                      <div className="flex items-start gap-2">
+                        <div className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                          <Check className="w-2.5 h-2.5 stroke-[3]" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-gray-900">Order With Prepaid</p>
-                          <p className="text-[10px] text-gray-500">UPI · Cards · Net Banking</p>
+                          <p className="text-xs font-bold text-gray-900 leading-tight">No COD fee</p>
+                          <p className="text-[10px] text-gray-500 leading-tight mt-0.5">Save ₹49</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-green-100 text-green-700 shrink-0">
-                        Free Shipping
-                      </span>
+
+                      <div className="flex items-start gap-2">
+                        <div className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                          <Check className="w-2.5 h-2.5 stroke-[3]" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-gray-900 leading-tight">Instant confirmation</p>
+                          <p className="text-[10px] text-gray-500 leading-tight mt-0.5">Order is processed faster</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <div className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                          <Check className="w-2.5 h-2.5 stroke-[3]" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-gray-900 leading-tight">100% secure</p>
+                          <p className="text-[10px] text-gray-500 leading-tight mt-0.5">Razorpay secure payments</p>
+                        </div>
+                      </div>
                     </div>
-                    {/* 3 benefit points */}
-                    <ul className="mt-2.5 ml-10 space-y-0.5">
-                      <li className="flex items-center gap-1.5 text-[10px] text-gray-600">
-                        <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
-                        Secure Payment
-                      </li>
-                      <li className="flex items-center gap-1.5 text-[10px] text-gray-600">
-                        <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
-                        Instant Confirmation
-                      </li>
-                      <li className="flex items-center gap-1.5 text-[10px] text-gray-600">
-                        <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
-                        Faster Processing
-                      </li>
-                    </ul>
                   </div>
 
-                  {/* Cash on Delivery */}
+                  {/* CARD 2: Cash on Delivery (Partial Payment) */}
                   <div
                     onClick={() => setPaymentMethod("cod")}
-                    className={`relative p-3.5 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+                    className={`relative p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all ${
                       paymentMethod === "cod"
-                        ? "border-gray-400 bg-gray-50 ring-1 ring-gray-400"
-                        : "border-gray-200 bg-white hover:border-gray-400"
+                        ? "border-[#FF7A00] bg-[#FFFBF8] shadow-sm ring-1 ring-[#FF7A00]/20"
+                        : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                   >
-                    {/* Extra Charges Apply badge */}
-                    <span className="absolute -top-2.5 left-3 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-extrabold uppercase tracking-wider shadow-sm">
-                      Extra Charges Apply
-                    </span>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
-                        <Truck className="w-4 h-4" />
+                    {/* Top Row: Radio + Icon + Title + ₹19 Handling Fee Badge */}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        {/* Radio circle */}
+                        <div
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white transition-colors ${
+                            paymentMethod === "cod" ? "border-[#FF7A00]" : "border-gray-300"
+                          }`}
+                        >
+                          {paymentMethod === "cod" && (
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#FF7A00]" />
+                          )}
+                        </div>
+
+                        {/* Package / Delivery Icon */}
+                        <div className="w-10 h-10 rounded-xl bg-orange-100/60 border border-orange-200/50 flex items-center justify-center text-[#FF7A00] shrink-0">
+                          <ShoppingBag className="w-5 h-5" />
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
+                            Cash on Delivery (Partial Payment)
+                          </h4>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            Pay only ₹19 now, rest ₹{doorstepBalance.toLocaleString()} at delivery
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs font-bold text-gray-900">Cash on Delivery</p>
-                        <p className="text-[10px] text-gray-500">Pay cash/UPI at doorstep</p>
+
+                      {/* ₹19 Advance Badge */}
+                      <div className="rounded-xl bg-amber-50 border border-amber-200/80 px-2.5 py-1 text-center shrink-0 min-w-[70px]">
+                        <p className="text-base sm:text-lg font-black text-amber-600 leading-none">₹19</p>
+                        <p className="text-[10px] font-bold text-amber-700 leading-tight mt-0.5">Advance</p>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 shrink-0">
-                      +₹49
-                    </span>
+
+                    {/* Red / Rose Alert Box */}
+                    <div className="rounded-xl bg-rose-50/70 border border-rose-100/90 p-3 flex items-start gap-2.5 mt-3">
+                      <div className="w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-rose-900">
+                          Pay only ₹19 to confirm your order
+                        </p>
+                        <p className="text-[11px] text-rose-700 leading-snug mt-0.5">
+                          This small amount helps us confirm genuine orders and reduces fake orders. Shipping charge is ₹49. The remaining ₹{doorstepBalance.toLocaleString()} can be paid in cash or UPI when your order arrives at your doorstep.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 4 Points Row with Orange Circle Icons */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-3 mt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </div>
+                        <span className="text-[11px] font-medium text-gray-700">Confirms your order</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0">
+                          <ShoppingBag className="w-3 h-3" />
+                        </div>
+                        <span className="text-[11px] font-medium text-gray-700">Open &amp; check product first</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0 font-bold text-[10px]">
+                          ₹
+                        </div>
+                        <span className="text-[11px] font-medium text-gray-700">Pay ₹{doorstepBalance.toLocaleString()} at delivery</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0">
+                          <ShieldCheck className="w-3 h-3" />
+                        </div>
+                        <span className="text-[11px] font-medium text-gray-700">Safe &amp; secure for you</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* ACTION BUTTON (Zupe Vibrant Theme) */}
+              {/* MOBILE ORDER SUMMARY (Placed right before Pay Button) */}
+              <div className="block lg:hidden rounded-2xl border border-gray-200 bg-white p-4 space-y-4 shadow-xs mt-4">
+                {/* Header */}
+                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                  <h3 className="text-base font-bold text-gray-900">Order Summary</h3>
+                  <span className="text-xs text-gray-500 font-medium">
+                    {totalItemCount} {totalItemCount === 1 ? "item" : "items"} in your cart
+                  </span>
+                </div>
+
+                {/* Cart Products List */}
+                <div className="space-y-3">
+                  {cart.map((item) => (
+                    <div key={item.id} className="flex items-center gap-3">
+                      <div className="relative w-14 h-14 rounded-xl bg-gray-50 border border-gray-200 shrink-0 overflow-hidden">
+                        <Image src={item.poster_image} alt={item.name} fill className="object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-gray-900 truncate">{item.name}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Qty: {item.quantity}</p>
+                      </div>
+                      <span className="text-sm font-bold text-gray-900 shrink-0">
+                        ₹{(item.price * item.quantity).toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Breakdown Rows */}
+                <div className="pt-2 border-t border-gray-100 space-y-2 text-xs">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Item Total</span>
+                    <span className="font-semibold text-gray-900">₹{subtotal.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span className="flex items-center gap-1.5">
+                      Shipping Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
+                    </span>
+                    {paymentMethod === "cod" ? (
+                      <span className="font-semibold text-gray-900">+₹49</span>
+                    ) : (
+                      <span className="font-bold text-emerald-600">FREE</span>
+                    )}
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>COD Advance (Pay Online)</span>
+                    {paymentMethod === "cod" ? (
+                      <span className="font-bold text-[#FF7A00]">₹19</span>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Total Payable Box */}
+                <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100/90 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">
+                      {paymentMethod === "cod" ? "Total Payable (Advance)" : "Total Payable (Prepaid)"}
+                    </p>
+                    {paymentMethod === "cod" && (
+                      <p className="text-[11px] text-amber-700 font-medium">
+                        ₹{doorstepBalance.toLocaleString()} to pay in cash/UPI on delivery
+                      </p>
+                    )}
+                  </div>
+                  <span className="text-xl font-black text-gray-950">
+                    ₹{payableNow.toLocaleString()}
+                  </span>
+                </div>
+
+                {/* Savings Pill */}
+                {paymentMethod === "prepaid" ? (
+                  <div className="p-2.5 rounded-xl bg-emerald-50/90 text-emerald-700 text-xs font-semibold flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                      ₹
+                    </div>
+                    <span>You save ₹49 (Free Shipping) by paying online!</span>
+                  </div>
+                ) : (
+                  <div className="p-2.5 rounded-xl bg-amber-50/90 text-amber-800 text-xs font-semibold flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                      ₹
+                    </div>
+                    <span>Pay ₹19 advance now &amp; remaining ₹{doorstepBalance.toLocaleString()} at delivery!</span>
+                  </div>
+                )}
+              </div>
+
+              {/* ACTION BUTTON (Matches Reference) */}
               <div className="pt-2">
                 <button
                   type="submit"
                   disabled={loading || hasOutOfStockItems}
-                  className={`w-full py-4 px-6 rounded-xl text-white font-bold text-base shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  className={`w-full py-4 px-6 rounded-2xl text-white font-bold text-base shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     loading || hasOutOfStockItems
                       ? "bg-gray-400 cursor-not-allowed opacity-80"
                       : "bg-[#FF7A00] hover:bg-[#E66E00] shadow-[#FF7A00]/25 active:scale-[0.99]"
@@ -2183,27 +2269,56 @@ function CheckoutContent() {
                     <span>⚠️ Remove Out of Stock Items to Continue</span>
                   ) : paymentMethod === "cod" ? (
                     <>
-                      <span>Place Order with Cash on Delivery (₹{grandTotal.toLocaleString()})</span>
+                      <Lock className="w-5 h-5" />
+                      <span>Pay ₹19 &amp; Place Order</span>
                       <ArrowRight className="w-5 h-5" />
                     </>
                   ) : (
                     <>
-                      <span>Continue to Payment</span>
+                      <Lock className="w-5 h-5" />
+                      <span>Pay Securely &amp; Place Order</span>
                       <ArrowRight className="w-5 h-5" />
                     </>
                   )}
                 </button>
               </div>
 
-              {/* Trust Subtext */}
-              <div className="pt-1 flex items-center justify-center gap-2 text-[11px] text-gray-400 font-medium">
-                <ShieldCheck className="w-3.5 h-3.5 text-gray-500" />
-                <span>256-Bit Bank Grade SSL Encrypted · 100% Purchase Protection</span>
+              {/* Trust Badges below Pay Button (Matches Reference) */}
+              <div className="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-3 text-center sm:text-left">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 shrink-0">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-gray-800">256-Bit SSL Encrypted</p>
+                    <p className="text-[10px] text-gray-400">Bank-grade Security</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 shrink-0">
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-gray-800">Secure Payments by Razorpay</p>
+                    <p className="text-[10px] text-gray-400">Trusted by 10,00,000+ businesses</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 shrink-0">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-gray-800">100% Purchase Protection</p>
+                    <p className="text-[10px] text-gray-400">Get help if anything goes wrong</p>
+                  </div>
+                </div>
               </div>
 
-              {/* Policy Redirection Links (like reference) */}
-              <div className="pt-4 border-t border-gray-100 mt-2">
-                <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-gray-500 font-medium">
+              {/* Policy Redirection Links & Copyright (Matches Reference) */}
+              <div className="pt-4 border-t border-gray-100 mt-2 space-y-2 text-center">
+                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-gray-500 font-medium">
                   <Link
                     href="/return"
                     target="_blank"
@@ -2211,6 +2326,7 @@ function CheckoutContent() {
                   >
                     Return &amp; Refund Policy
                   </Link>
+                  <span className="text-gray-300">|</span>
                   <Link
                     href="/shipping-and-delivery"
                     target="_blank"
@@ -2218,6 +2334,7 @@ function CheckoutContent() {
                   >
                     Shipping &amp; Delivery
                   </Link>
+                  <span className="text-gray-300">|</span>
                   <Link
                     href="/privacy"
                     target="_blank"
@@ -2225,6 +2342,7 @@ function CheckoutContent() {
                   >
                     Privacy Policy
                   </Link>
+                  <span className="text-gray-300">|</span>
                   <Link
                     href="/terms-and-conditions"
                     target="_blank"
@@ -2233,6 +2351,7 @@ function CheckoutContent() {
                     Terms &amp; Conditions
                   </Link>
                 </div>
+                <p className="text-xs text-gray-400">© 2026 Zupe Store</p>
               </div>
             </div>
           </div>
@@ -2298,67 +2417,65 @@ function CheckoutContent() {
 
               <hr className="border-gray-100" />
 
-              {/* Subtotal, Taxes, Shipping */}
+              {/* Breakdown: Subtotal, Shipping, COD Fee */}
               <div className="space-y-2.5 text-xs">
                 <div className="flex justify-between text-gray-600">
-                  <span>Subtotal ({totalItemCount} {totalItemCount === 1 ? "item" : "items"})</span>
+                  <span>Item Total ({totalItemCount} {totalItemCount === 1 ? "item" : "items"})</span>
                   <span className="font-semibold text-gray-900">₹{subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
-                  <span>Taxes (GST)</span>
-                  <span className="text-gray-500">Included</span>
+                  <span className="flex items-center gap-1.5">
+                    Shipping Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
+                  </span>
+                  {paymentMethod === "cod" ? (
+                    <span className="font-semibold text-gray-900">+₹49</span>
+                  ) : (
+                    <span className="font-bold text-emerald-600">FREE</span>
+                  )}
                 </div>
                 <div className="flex justify-between text-gray-600">
-                  <div>
-                    <span>Shipping</span>
-                    <p className="text-[10px] text-gray-400">Arrives in 3-6 days</p>
-                  </div>
+                  <span>COD Advance (Pay Online)</span>
                   {paymentMethod === "cod" ? (
-                    <span className="font-bold text-amber-600">+₹49</span>
+                    <span className="font-bold text-[#FF7A00]">₹19</span>
                   ) : (
-                    <span className="font-bold text-[#FF7A00]">Free</span>
+                    <span className="text-gray-400">—</span>
                   )}
                 </div>
               </div>
 
-              {/* Promo Code Input Box */}
-              <form onSubmit={handleApplyPromo} className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Promo code"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value)}
-                  className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-[#FF7A00] focus:border-[#FF7A00]"
-                />
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-black text-white text-xs font-semibold hover:bg-gray-800 transition-colors cursor-pointer"
-                >
-                  Apply
-                </button>
-              </form>
-              {promoApplied && (
-                <p className="text-[11px] text-[#FF7A00] font-semibold flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5" /> Promo code applied! Saved ₹{promoDiscount.toLocaleString()}
-                </p>
-              )}
-              {promoError && <p className="text-[11px] text-red-500">{promoError}</p>}
-
-              {/* Savings Highlight Pill (Zupe Theme) */}
-              {totalMrpSavings > 0 && (
-                <div className="py-2.5 px-3 rounded-xl bg-[#FFF7ED] border border-[#FFEDD5] text-[#FF7A00] font-bold text-xs flex items-center justify-center gap-1.5 uppercase tracking-wide">
-                  <Tag className="w-3.5 h-3.5" />
-                  <span>YOU&apos;RE PAYING ₹{totalMrpSavings.toLocaleString()} LESS THAN MRP</span>
+              {/* Total Payable Box */}
+              <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100/90 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold text-gray-900">
+                    {paymentMethod === "cod" ? "Total Payable (Advance)" : "Total Payable (Prepaid)"}
+                  </p>
+                  {paymentMethod === "cod" && (
+                    <p className="text-[11px] text-amber-700 font-medium">
+                      ₹{doorstepBalance.toLocaleString()} to pay in cash/UPI on delivery
+                    </p>
+                  )}
                 </div>
-              )}
-
-              {/* Grand Total Row */}
-              <div className="pt-2 border-t border-gray-100 flex justify-between items-baseline">
-                <span className="font-bold text-base text-gray-900">Total to pay</span>
-                <span className="font-display font-extrabold text-2xl text-gray-900">
-                  ₹{grandTotal.toLocaleString()}
+                <span className="text-xl font-black text-gray-950">
+                  ₹{payableNow.toLocaleString()}
                 </span>
               </div>
+
+              {/* Savings Pill */}
+              {paymentMethod === "prepaid" ? (
+                <div className="p-2.5 rounded-xl bg-emerald-50/90 text-emerald-700 text-xs font-semibold flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                    ₹
+                  </div>
+                  <span>You save ₹49 (Free Shipping) by paying online!</span>
+                </div>
+              ) : (
+                <div className="p-2.5 rounded-xl bg-amber-50/90 text-amber-800 text-xs font-semibold flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                    ₹
+                  </div>
+                  <span>Pay ₹19 advance now &amp; remaining ₹{doorstepBalance.toLocaleString()} at delivery!</span>
+                </div>
+              )}
 
               {/* YOU MIGHT ALSO LIKE (Bump Offers) */}
               {availableUpsells.length > 0 && (

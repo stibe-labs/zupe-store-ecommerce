@@ -95,13 +95,20 @@ export async function sendOrderPreConfirmationWhatsApp(
   }
 
   // 2. Fallback to direct message only if template was not accepted
-  console.log(`⚠️ [WA Pre-Confirm] Falling back to direct WhatsApp verification message for ${digits}`);
+  const codDoorstepDue = Math.max(0, totalAmount - 19);
+  const paymentBreakdownText =
+    paymentMethod === "cod"
+      ? `💰 *Total Amount:* Rs ${totalAmount.toLocaleString("en-IN")}\n` +
+        `💳 *Advance Paid Online:* Rs 19 (Verified)\n` +
+        `📦 *Balance Due at Doorstep:* Rs ${codDoorstepDue.toLocaleString("en-IN")}\n\n`
+      : `💰 *Amount Paid:* Rs ${totalAmount.toLocaleString("en-IN")} (Prepaid Online)\n\n`;
+
   const message =
     `*Order Verification — Zupe Store* 🛍️\n\n` +
     `Hi ${firstName}! Thank you for placing your order with Zupe Store.\n\n` +
     `📦 *Order ID:* ${orderId}\n` +
     `📋 *Items:*\n${itemLines}${more}\n\n` +
-    `💰 *Amount:* Rs ${totalAmount.toLocaleString("en-IN")} (${paymentMethodLabel})\n\n` +
+    paymentBreakdownText +
     `Please confirm your order below so we can pack and dispatch your shipment:\n\n` +
     `✅ *Confirm Order:*\n${confirmUrl}\n\n` +
     `❌ *Cancel Order:*\n${cancelUrl}\n\n` +
@@ -219,7 +226,10 @@ export async function sendOrderConfirmationWhatsApp(
   const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
   const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
 
-  const discountedAmount = Math.max(0, totalAmount - 30);
+  const advancePaid = 19;
+  const doorstepBalance = Math.max(0, totalAmount - advancePaid); // e.g. 1048 - 19 = 1029
+  const switchPrepaidAmount = Math.max(1, doorstepBalance - 30);  // e.g. 1029 - 30 = 999 (Product amount only!)
+  const productSubtotal = totalAmount >= 49 ? totalAmount - 49 : totalAmount;
   const firstName = customerName.split(" ")[0] || customerName;
 
   const itemLines = items
@@ -234,13 +244,18 @@ export async function sendOrderConfirmationWhatsApp(
   if (paymentMethod === "cod") {
     message =
       "✅ *Order Confirmed — Zupe Store!* 🛍️\n\n" +
-      "Hi " + firstName + "! Your order has been verified and confirmed.\n\n" +
+      "Hi " + firstName + "! Your Cash on Delivery order is confirmed.\n\n" +
       "📦 *Order ID:* " + orderId + "\n" +
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
-      "💰 *Order Total:* Rs " + totalAmount.toLocaleString("en-IN") + " (Cash on Delivery)\n" +
+      "💰 *Price Breakdown:*\n" +
+      "  • Product Amount: Rs " + productSubtotal.toLocaleString("en-IN") + "\n" +
+      "  • Shipping Charge: Rs 49\n" +
+      "  • Total Amount: Rs " + totalAmount.toLocaleString("en-IN") + "\n" +
+      "  • Advance Paid Online: Rs 19 (Received)\n" +
+      "  • *Balance Due at Doorstep: Rs " + doorstepBalance.toLocaleString("en-IN") + "*\n\n" +
       "🚚 *Estimated Delivery:* 3-6 Business Days\n\n" +
       "⚡ *Switch to Prepaid & Save Rs 30!*\n" +
-      "Pay online now — pay only Rs " + discountedAmount.toLocaleString("en-IN") + " instead:\n" +
+      "Pay online now — pay only *Rs " + switchPrepaidAmount.toLocaleString("en-IN") + "* instead of Rs " + doorstepBalance.toLocaleString("en-IN") + " at delivery:\n" +
       payNowUrl + "\n\n" +
       "📦 *Track Your Order:*\n" +
       trackUrl + "\n\n" +
@@ -271,8 +286,8 @@ export async function sendOrderConfirmationWhatsApp(
         digits,
         firstName,
         orderId,
-        totalAmount,
-        discountedAmount
+        doorstepBalance,
+        switchPrepaidAmount
       );
     } catch (err) {
       console.warn("[WA Order Confirm] COD V2 template attempt:", err);
@@ -306,7 +321,7 @@ export async function sendOrderConfirmationWhatsApp(
         firstName,
         orderId,
         totalAmount,
-        discountedAmount
+        switchPrepaidAmount
       );
     } catch (err) {
       console.warn("[WA Order Confirm] Prepaid template attempt:", err);

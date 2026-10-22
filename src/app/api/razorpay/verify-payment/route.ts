@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
 
       const discountedAmount = Number(
         order_payload.discounted_amount ||
-          (existingOrder ? Math.max(0, existingOrder.total_amount - 30) : 0)
+          (existingOrder ? Math.max(1, (Number(existingOrder.total_amount) - 19) - 30) : 0)
       );
 
       const prodCost = Number(existingOrder?.product_cost || 0);
@@ -93,12 +93,13 @@ export async function POST(req: NextRequest) {
         });
       } catch {}
 
+      const custName = existingOrder?.customer_name || order_payload.customer_name || "Customer";
+      const custPhone = existingOrder?.customer_phone || order_payload.customer_phone || "";
+      const orderItems = existingOrder?.items || order_payload.items || [];
+
       // 3. Dispatch WhatsApp confirmation (prepaid template)
       try {
         const { sendOrderConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
-        const custName = existingOrder?.customer_name || order_payload.customer_name || "Customer";
-        const custPhone = existingOrder?.customer_phone || order_payload.customer_phone || "";
-        const orderItems = existingOrder?.items || order_payload.items || [];
         await sendOrderConfirmationWhatsApp({
           customerName: custName,
           customerPhone: custPhone,
@@ -113,6 +114,41 @@ export async function POST(req: NextRequest) {
         });
       } catch (waErr) {
         console.warn("WA switch confirm dispatch error:", waErr);
+      }
+
+      // 4. Dispatch Email Confirmation update if customer email is on record
+      const switchEmail = (existingOrder?.guest_email || (existingOrder as any)?.customer_email || order_payload?.customer_email || "").trim();
+      if (switchEmail && switchEmail.includes("@") && !switchEmail.endsWith("@customer.zupestore.com")) {
+        try {
+          const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
+          const { markOrderEmailSent } = await import("@/lib/orderStore");
+          sendOrderConfirmationEmail({
+            orderId: existingOrderId,
+            customerName: custName,
+            customerEmail: switchEmail,
+            customerPhone: custPhone,
+            shippingAddress: existingOrder?.shipping_address || order_payload?.shipping_address || "",
+            city: (existingOrder as any)?.city || order_payload?.city || "",
+            postalCode: (existingOrder as any)?.postal_code || order_payload?.postal_code || "",
+            totalAmount: discountedAmount,
+            discountAmount: (existingOrder?.discount_amount || 0) + 30,
+            paymentMethod: "Prepaid (Switched to Online - Saved ₹30)",
+            paymentStatus: "paid",
+            items: orderItems.map((it: any) => ({
+              name: it.product_name || it.name,
+              quantity: Number(it.quantity || 1),
+              price: Number(it.unit_price || it.price || 0),
+              image: it.image || it.poster_image,
+            })),
+            createdAt: existingOrder?.created_at || new Date().toISOString(),
+          }).then(async (res) => {
+            if (res.success && !res.skipped) {
+              await markOrderEmailSent(existingOrderId);
+            }
+          }).catch((err) => console.warn("Failed to send switched prepaid email:", err));
+        } catch (e) {
+          console.warn("Error initializing switched prepaid email:", e);
+        }
       }
 
       return NextResponse.json({
@@ -168,6 +204,12 @@ export async function POST(req: NextRequest) {
       // Non-fatal
     }
 
+    const isCodPartial = Boolean(order_payload?.is_cod_partial);
+    const orderPaymentMethod = isCodPartial
+      ? "Cash on Delivery (Partial Payment)"
+      : (payment_method || "Online Payment");
+    const orderPaymentStatus = isCodPartial ? "pending" : "paid";
+
     const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const confirmToken = `tok_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`;
     const newOrder: OrderRecord = {
@@ -181,12 +223,12 @@ export async function POST(req: NextRequest) {
       postal_code: postal_code || "",
       total_amount: Number(total_amount),
       discount_amount: Number(discount_amount || 0),
-      payment_method: payment_method || "Online Payment",
-      payment_status: "paid",
+      payment_method: orderPaymentMethod,
+      payment_status: orderPaymentStatus,
       order_status: "processing",
-      whatsapp_confirm_status: "pending_whatsapp",
+      whatsapp_confirm_status: isCodPartial ? "confirmed" : "pending_whatsapp",
       whatsapp_confirm_token: confirmToken,
-      whatsapp_token_used: false,
+      whatsapp_token_used: isCodPartial ? true : false,
       items: items || [],
       created_at: new Date().toISOString(),
     };
@@ -194,6 +236,11 @@ export async function POST(req: NextRequest) {
     // Attach razorpay payment reference
     (newOrder as any).razorpay_order_id = razorpay_order_id;
     (newOrder as any).razorpay_payment_id = razorpay_payment_id;
+    if (isCodPartial) {
+      (newOrder as any).advance_paid = 19;
+      (newOrder as any).shipping_fee = 49;
+      (newOrder as any).balance_due = Math.max(0, Number(total_amount) - 19);
+    }
 
     await createOrder(newOrder);
 
@@ -227,25 +274,74 @@ export async function POST(req: NextRequest) {
       console.warn("Error marking abandoned checkout as recovered:", recErr);
     }
 
-    // Send WhatsApp interactive pre-confirmation for prepaid
+    // Send WhatsApp notification
     try {
-      const { sendOrderPreConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
-      const waSent = await sendOrderPreConfirmationWhatsApp({
-        customerName: customer_name || "Customer",
-        customerPhone: customer_phone || "",
-        orderId,
-        totalAmount: Number(total_amount),
-        paymentMethod: "prepaid",
-        token: confirmToken,
-        items: (items || []).map((it: any) => ({
-          name: it.name,
-          quantity: Number(it.quantity || 1),
-          price: Number(it.price || 0),
-        })),
-      });
-      console.log(`[Verify Payment] WhatsApp pre-confirmation dispatched for ${orderId}: ${waSent}`);
+      const { sendOrderPreConfirmationWhatsApp, sendOrderConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+      if (isCodPartial) {
+        // ₹19 advance received and verified via Razorpay - dispatch official confirmation with Doorstep balance and Switch to Prepaid offer
+        await sendOrderConfirmationWhatsApp({
+          customerName: customer_name || "Customer",
+          customerPhone: customer_phone || "",
+          orderId,
+          totalAmount: Number(total_amount),
+          paymentMethod: "cod",
+          items: (items || []).map((it: any) => ({
+            name: it.name,
+            quantity: Number(it.quantity || 1),
+            price: Number(it.price || 0),
+          })),
+        });
+        console.log(`[Verify Payment] COD order confirmation dispatched via WhatsApp for ${orderId}`);
+      } else {
+        const waSent = await sendOrderPreConfirmationWhatsApp({
+          customerName: customer_name || "Customer",
+          customerPhone: customer_phone || "",
+          orderId,
+          totalAmount: Number(total_amount),
+          paymentMethod: "prepaid",
+          token: confirmToken,
+          items: (items || []).map((it: any) => ({
+            name: it.name,
+            quantity: Number(it.quantity || 1),
+            price: Number(it.price || 0),
+          })),
+        });
+        console.log(`[Verify Payment] WhatsApp pre-confirmation dispatched for ${orderId}: ${waSent}`);
+      }
     } catch (waErr) {
-      console.warn("Failed to dispatch WA order pre-confirmation:", waErr);
+      console.warn("Failed to dispatch WA order confirmation:", waErr);
+    }
+
+    // Automated Order Confirmation Email (Dispatched ONLY if customer provided optional email at checkout)
+    const normEmail = (customer_email || "").trim();
+    if (normEmail && normEmail.includes("@") && !normEmail.endsWith("@customer.zupestore.com")) {
+      try {
+        const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
+        const { markOrderEmailSent } = await import("@/lib/orderStore");
+        sendOrderConfirmationEmail({
+          orderId,
+          customerName: customer_name || "Customer",
+          customerEmail: normEmail,
+          customerPhone: customer_phone || "",
+          shippingAddress: shipping_address || "",
+          city: city || "",
+          postalCode: postal_code || "",
+          totalAmount: Number(total_amount),
+          discountAmount: Number(discount_amount || 0),
+          paymentMethod: isCodPartial ? "Cash on Delivery (₹19 Advance Paid)" : (payment_method || "Prepaid (Online Payment)"),
+          paymentStatus: orderPaymentStatus,
+          items: items || [],
+          createdAt: newOrder.created_at,
+        }).then(async (res) => {
+          if (res.success && !res.skipped) {
+            await markOrderEmailSent(orderId);
+          }
+        }).catch((emailErr) => {
+          console.warn("[Verify Payment] Failed to send order confirmation email:", emailErr);
+        });
+      } catch (importErr) {
+        console.warn("[Verify Payment] Error initializing order confirmation email:", importErr);
+      }
     }
 
     return NextResponse.json({

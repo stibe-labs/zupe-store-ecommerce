@@ -88,6 +88,7 @@ export interface ERPOrder {
   whatsapp_confirm_status?: string;
   whatsapp_confirm_token?: string;
   whatsapp_token_used?: boolean;
+  confirmation_email_sent?: boolean;
   created_at: string;
   items?: { product_name: string; quantity: number; unit_price: number }[];
 }

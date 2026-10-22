@@ -4,15 +4,33 @@ export interface SendEmailOptions {
   to: string;
   subject: string;
   html: string;
+  text?: string;
+  from?: string;
+  replyTo?: string;
+  attachments?: Array<{
+    filename: string;
+    path?: string;
+    content?: any;
+    cid?: string;
+    contentType?: string;
+    contentDisposition?: string;
+  }>;
 }
 
 export async function sendEmail({
   to,
   subject,
   html,
+  text,
+  from,
+  replyTo,
+  attachments,
 }: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
-  const companyEmail = process.env.SMTP_USER || "stibelabs@gmail.com";
-  const smtpPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
+  const companyEmail = process.env.SMTP_USER || "zupestoreonline@gmail.com";
+  const rawPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || "";
+  const smtpPass = rawPass.replace(/\s+/g, "");
+  const fromAddress = from || `"Zupe Store" <${companyEmail}>`;
+  const replyToAddress = replyTo || companyEmail;
 
   // 1. Check for Gmail SMTP if password is provided
   if (smtpPass) {
@@ -26,15 +44,22 @@ export async function sendEmail({
           user: companyEmail,
           pass: smtpPass,
         },
+        tls: {
+          rejectUnauthorized: false,
+        },
       });
 
       await transporter.sendMail({
-        from: `"Zupe Store" <${companyEmail}>`,
+        from: fromAddress,
         to,
         subject,
         html,
+        text,
+        replyTo: replyToAddress,
+        attachments: attachments as any,
       });
 
+      console.log(`[Mailer] ✅ SMTP email delivered to ${to} from ${fromAddress}`);
       return { success: true };
     } catch (err: any) {
       console.error("Nodemailer SMTP error:", err);

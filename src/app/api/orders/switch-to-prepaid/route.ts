@@ -91,7 +91,9 @@ export async function GET(req: NextRequest) {
       if (productSubtotal > 0 && originalTotal <= productSubtotal) {
         originalTotal = productSubtotal + 49;
       }
-      const discountedAmount = Math.max(0, originalTotal - 30);
+      const advancePaid = 19;
+      const doorstepBalance = Math.max(0, originalTotal - advancePaid);
+      const discountedAmount = Math.max(1, doorstepBalance - 30);
 
       return NextResponse.json({
         success: true,
@@ -106,9 +108,13 @@ export async function GET(req: NextRequest) {
           payment_method: sfMatched.payment_method,
           payment_status: sfMatched.payment_status,
           total_amount: originalTotal,
+          doorstep_balance: doorstepBalance,
+          advance_paid: advancePaid,
+          discounted_amount: discountedAmount,
           items: sfMatched.items,
         },
         discount: 30,
+        doorstep_balance: doorstepBalance,
         discounted_amount: discountedAmount,
       });
     }
@@ -144,7 +150,9 @@ export async function GET(req: NextRequest) {
     if (productSubtotal > 0 && originalTotal <= productSubtotal) {
       originalTotal = productSubtotal + 49;
     }
-    const discountedAmount = Math.max(0, originalTotal - 30);
+    const advancePaid = 19;
+    const doorstepBalance = Math.max(0, originalTotal - advancePaid);
+    const discountedAmount = Math.max(1, doorstepBalance - 30);
 
     return NextResponse.json({
       success: true,
@@ -158,9 +166,13 @@ export async function GET(req: NextRequest) {
         payment_method: matched.payment_method,
         payment_status: matched.payment_status,
         total_amount: originalTotal,
+        doorstep_balance: doorstepBalance,
+        advance_paid: advancePaid,
+        discounted_amount: discountedAmount,
         items: matched.items || [],
       },
       discount: 30,
+      doorstep_balance: doorstepBalance,
       discounted_amount: discountedAmount,
     });
   } catch (err: any) {
@@ -217,8 +229,10 @@ export async function POST(req: NextRequest) {
       originalTotal = productSubtotal + 49;
     }
 
-    // Apply the Rs 30 discount for switching to prepaid
-    const payableAmount = Math.max(1, originalTotal - 30);
+    // Doorstep balance was originalTotal - 19
+    const doorstepBalance = Math.max(0, originalTotal - 19);
+    // Apply the Rs 30 discount from doorstep balance for switching to prepaid (e.g. 1029 - 30 = 999)
+    const payableAmount = Math.max(1, doorstepBalance - 30);
 
     // Initialize Razorpay order
     const rzpOrder = await createRazorpayOrder({
@@ -229,6 +243,7 @@ export async function POST(req: NextRequest) {
         switch_from_cod: "true",
         original_order_id: orderId,
         discount_applied: "30",
+        doorstep_balance: doorstepBalance.toString(),
       },
     });
 

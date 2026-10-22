@@ -322,6 +322,38 @@ export async function POST(req: NextRequest) {
       console.warn("Failed to dispatch WA order pre-confirmation:", waErr);
     }
 
+    // Automated Order Confirmation Email (Dispatched ONLY if customer provided optional email at checkout)
+    const normEmail = (customer_email || "").trim();
+    if (normEmail && normEmail.includes("@") && !normEmail.endsWith("@customer.zupestore.com")) {
+      try {
+        const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
+        const { markOrderEmailSent } = await import("@/lib/orderStore");
+        sendOrderConfirmationEmail({
+          orderId,
+          customerName: customer_name,
+          customerEmail: normEmail,
+          customerPhone: customer_phone || "",
+          shippingAddress: shipping_address || "",
+          city: city || "",
+          postalCode: postal_code || "",
+          totalAmount: Number(total_amount),
+          discountAmount: Number(discount_amount || 0),
+          paymentMethod: payment_method || (isCod ? "Cash on Delivery" : "Prepaid"),
+          paymentStatus: isCod ? "pending" : "paid",
+          items: items || [],
+          createdAt: newOrder.created_at,
+        }).then(async (res) => {
+          if (res.success && !res.skipped) {
+            await markOrderEmailSent(orderId);
+          }
+        }).catch((emailErr) => {
+          console.warn("[Orders Route] Failed to send order confirmation email:", emailErr);
+        });
+      } catch (importErr) {
+        console.warn("[Orders Route] Error initializing order confirmation email:", importErr);
+      }
+    }
+
     return NextResponse.json({ success: true, order: newOrder });
 
   } catch (err: any) {

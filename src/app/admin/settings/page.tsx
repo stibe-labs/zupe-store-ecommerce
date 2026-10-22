@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   Activity,
   Layers,
+  Mail,
 } from "lucide-react";
 import { ERPIntegrationsSettings } from "@/lib/erpStore";
 
@@ -33,6 +34,7 @@ export default function AdminSettingsPage() {
   // Store Profile
   const [storeName, setStoreName] = useState("Zupe Store India");
   const [supportEmail, setSupportEmail] = useState("zupestoreonline@gmail.com");
+  const [testEmailAddress, setTestEmailAddress] = useState("zupestoreonline@gmail.com");
   const [supportPhone, setSupportPhone] = useState("+91 97441 22853");
   const [currency, setCurrency] = useState("INR (₹)");
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("499");
@@ -161,7 +163,7 @@ export default function AdminSettingsPage() {
     }
   };
 
-  const handleTestConnection = async (provider: "shopify" | "shiprocket" | "meta") => {
+  const handleTestConnection = async (provider: "shopify" | "shiprocket" | "meta" | "email") => {
     setTestingProvider(provider);
     setTestResult(null);
 
@@ -176,6 +178,8 @@ export default function AdminSettingsPage() {
     } else if (provider === "meta") {
       testPayload.accountId = metaAccountId;
       testPayload.token = metaToken;
+    } else if (provider === "email") {
+      testPayload.to = testEmailAddress;
     }
 
     try {
@@ -652,6 +656,85 @@ export default function AdminSettingsPage() {
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs"
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* 5. Automated Order Confirmation Emails Box */}
+              <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#FF7A00] flex items-center justify-center">
+                      <Mail className="w-4 h-4 stroke-[2.2]" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-base">Automated Order Confirmation Emails</h3>
+                      <p className="text-xs text-slate-500">
+                        Dispatches branded emails from <strong className="text-slate-800">zupestoreonline@gmail.com</strong> when customer fills optional checkout email
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Automated Active
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700">Sender Email Address</span>
+                      <span className="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        Official Sender
+                      </span>
+                    </div>
+                    <div className="font-mono text-xs font-bold text-slate-900">
+                      zupestoreonline@gmail.com
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                      All confirmation emails are addressed as <strong className="text-slate-700">&quot;Zupe Store&quot; &lt;zupestoreonline@gmail.com&gt;</strong>.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700">Automation Trigger Condition</span>
+                      <span className="text-[10px] uppercase font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
+                        Checkout Opt-in
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      Customers receive this automation <strong>strictly when they enter their email</strong> in the optional checkout input field. If left blank, email dispatch is cleanly skipped.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Test Dispatch Form */}
+                <div className="pt-2 border-t border-slate-100">
+                  <label className="block font-semibold text-slate-700 mb-1">
+                    Send Test Order Confirmation Email (Preview in Inbox)
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-2.5">
+                    <input
+                      type="email"
+                      value={testEmailAddress}
+                      onChange={(e) => setTestEmailAddress(e.target.value)}
+                      placeholder="Enter recipient email (e.g. zupestoreonline@gmail.com)"
+                      className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleTestConnection("email")}
+                      disabled={testingProvider === "email" || !testEmailAddress}
+                      className="px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs font-bold transition-all shadow-sm disabled:opacity-50 shrink-0"
+                    >
+                      {testingProvider === "email" ? "Dispatching..." : "Send Test Email →"}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1.5">
+                    Tests full HTML layout with sample product details, payment method, estimated delivery, and live tracking order link.
+                  </p>
                 </div>
               </div>
 

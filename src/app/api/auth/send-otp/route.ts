@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const otp = generateOTP(email);
     console.log(`\n🔑 OTP for ${email}: ${otp}\n`);
 
-    const companyEmail = process.env.SMTP_USER || "stibelabs@gmail.com";
+    const companyEmail = process.env.SMTP_USER || "zupestoreonline@gmail.com";
 
     const emailResult = await sendEmail({
       to: email,

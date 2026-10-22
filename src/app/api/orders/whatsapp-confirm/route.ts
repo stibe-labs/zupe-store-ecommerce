@@ -59,6 +59,55 @@ export async function GET(req: NextRequest) {
       } catch (notifyErr) {
         console.warn("Failed to dispatch WhatsApp order confirmation on verify:", notifyErr);
       }
+
+      // 3b. Dispatch Order Confirmation Email if optional email was provided and not yet sent
+      const customerEmail = (ord.guest_email || ord.customer_email || "").trim();
+      if (
+        customerEmail &&
+        customerEmail.includes("@") &&
+        !customerEmail.endsWith("@customer.zupestore.com") &&
+        !ord.confirmation_email_sent
+      ) {
+        try {
+          const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
+          const { markOrderEmailSent } = await import("@/lib/orderStore");
+          const isCod =
+            (ord.payment_method || "").toLowerCase().includes("cash on delivery") ||
+            (ord.payment_method || "").toUpperCase() === "COD";
+
+          let rawItems: any[] = [];
+          if (Array.isArray(ord.items)) rawItems = ord.items;
+          else if (typeof ord.items === "string") {
+            try { rawItems = JSON.parse(ord.items); } catch { rawItems = []; }
+          }
+
+          sendOrderConfirmationEmail({
+            orderId: ord.id || (ord as any).shopify_order_id || resolvedOrderId,
+            customerName: ord.customer_name || "Valued Customer",
+            customerEmail,
+            customerPhone: ord.customer_phone,
+            shippingAddress: ord.shipping_address || "",
+            city: ord.city,
+            postalCode: ord.postal_code,
+            totalAmount: Number(ord.total_amount) || 0,
+            paymentMethod: ord.payment_method || (isCod ? "Cash on Delivery" : "Prepaid"),
+            paymentStatus: ord.payment_status || "pending",
+            items: rawItems.map((it: any) => ({
+              name: it.product_name || it.name || "Purchased Product",
+              quantity: Number(it.quantity || 1),
+              price: Number(it.unit_price || it.price || 0),
+              image: it.image || it.poster_image,
+            })),
+            createdAt: ord.created_at,
+          }).then(async (res) => {
+            if (res.success && !res.skipped) {
+              await markOrderEmailSent(ord.id || resolvedOrderId);
+            }
+          }).catch((err) => console.warn("WA verify email dispatch error:", err));
+        } catch (emailErr) {
+          console.warn("Failed to dispatch email confirmation on WA verify:", emailErr);
+        }
+      }
     }
 
     if (!result.success && !result.alreadyUsed) {

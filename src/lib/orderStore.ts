@@ -27,6 +27,7 @@ export interface OrderRecord {
   whatsapp_confirm_status?: "pending_whatsapp" | "confirmed" | "cancelled";
   whatsapp_confirm_token?: string;
   whatsapp_token_used?: boolean;
+  confirmation_email_sent?: boolean;
   items: OrderItem[];
   created_at: string;
 }
@@ -67,6 +68,7 @@ async function ensureOrderSchema(): Promise<void> {
     await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_confirm_status TEXT DEFAULT 'pending_whatsapp'`).catch(() => {});
     await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_confirm_token TEXT`).catch(() => {});
     await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_token_used INTEGER DEFAULT 0`).catch(() => {});
+    await executeD1Query(`ALTER TABLE orders ADD COLUMN confirmation_email_sent INTEGER DEFAULT 0`).catch(() => {});
   } catch (err) {
     // Non-fatal if columns already exist or D1 offline
   }
@@ -92,6 +94,7 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
       whatsapp_confirm_status: order.whatsapp_confirm_status || "pending_whatsapp",
       whatsapp_confirm_token: order.whatsapp_confirm_token || "",
       whatsapp_token_used: order.whatsapp_token_used || false,
+      confirmation_email_sent: order.confirmation_email_sent || false,
       items: order.items.map((it) => ({
         product_name: it.name,
         quantity: it.quantity,
@@ -112,13 +115,15 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
        SET user_id = ?, 
            whatsapp_confirm_status = ?, 
            whatsapp_confirm_token = ?, 
-           whatsapp_token_used = ?
+           whatsapp_token_used = ?,
+           confirmation_email_sent = ?
        WHERE id = ?`,
       [
         order.user_id || null,
         order.whatsapp_confirm_status || "pending_whatsapp",
         order.whatsapp_confirm_token || null,
         order.whatsapp_token_used ? 1 : 0,
+        order.confirmation_email_sent ? 1 : 0,
         order.id,
       ]
     );
@@ -129,6 +134,23 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
   // (Note: Inventory decrement is cleanly handled once inside createERPOrder)
 
   return order;
+}
+
+/**
+ * Marks that the order confirmation email has been dispatched for this order.
+ */
+export async function markOrderEmailSent(orderId: string): Promise<void> {
+  const ord = inMemoryOrders.find((o) => o.id === orderId);
+  if (ord) ord.confirmation_email_sent = true;
+
+  try {
+    await executeD1Query(
+      "UPDATE orders SET confirmation_email_sent = 1 WHERE id = ? OR shopify_order_id = ?",
+      [orderId, orderId]
+    );
+  } catch (err) {
+    console.warn("D1 markOrderEmailSent warning:", err);
+  }
 }
 
 export function getOrders(userEmail?: string, userPhone?: string, userId?: string): OrderRecord[] {
