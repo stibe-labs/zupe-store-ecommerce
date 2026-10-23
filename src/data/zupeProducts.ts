@@ -117,14 +117,14 @@ export const DEFAULT_PRODUCTS: Product[] = [
     ],
     shipping_info: [
       "Fast Dispatch: Orders dispatched within 24 hours of placement.",
-      "Free Delivery: Free express door-step shipping across India in 3–5 days.",
-      "Live Tracking: Real-time SMS and WhatsApp courier tracking updates.",
+      "Free Delivery: Free express door-step shipping across India in 5–7 business days.",
+      "Live Tracking: Real-time WhatsApp and Email courier tracking updates.",
       "Cash on Delivery: Available across 19,000+ pin codes at zero extra charge.",
     ],
     return_info: [
-      "7 Days Replacement Guarantee: Instant replacement if damaged in transit.",
-      "Zero Hassle Returns: Free doorstep return pickup.",
-      "Instant Refund: Refund processed directly to your UPI/Bank within 24 hours of pickup.",
+      "For Return / Exchange: Continuous unboxing video required for damaged/defective claims.",
+      "WhatsApp Support: WhatsApp us at +91 97441 22853 with the video and order number.",
+      "Exchange Process: Verified exchanges processed within 3–5 business days.",
     ],
     how_to_use: {
       enabled: true,

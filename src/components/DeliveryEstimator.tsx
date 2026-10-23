@@ -60,13 +60,10 @@ export function DeliveryEstimator({ businessDays = 5 }: DeliveryEstimatorProps) 
     const shippedDayNext = addBusinessDays(now, 1);
     const shippedDate = `${formatOrdinal(now)} - ${formatOrdinal(shippedDayNext)}`;
 
-    // Step 3: Delivered (5 business days)
-    const deliveryDayStart = addBusinessDays(now, Math.max(1, businessDays - 1));
-    const deliveryDayEnd = addBusinessDays(now, businessDays);
-    const deliveredRange =
-      deliveryDayStart.getDate() === deliveryDayEnd.getDate()
-        ? formatOrdinal(deliveryDayEnd)
-        : `${formatOrdinal(deliveryDayStart)} - ${formatOrdinal(deliveryDayEnd)}`;
+    // Step 3: Delivered (5–7 business days)
+    const deliveryDayStart = addBusinessDays(now, 5);
+    const deliveryDayEnd = addBusinessDays(now, 7);
+    const deliveredRange = `${formatOrdinal(deliveryDayStart)} - ${formatOrdinal(deliveryDayEnd)}`;
 
     const deliveryDayFull = deliveryDayEnd.toLocaleDateString("en-US", {
       weekday: "short",
@@ -205,7 +202,7 @@ export function DeliveryEstimator({ businessDays = 5 }: DeliveryEstimatorProps) 
                 <span>Delivery available to </span>
                 <span className="font-extrabold text-emerald-800">{checkedPincode}</span>
                 <span className="text-emerald-500 mx-1.5 font-bold">•</span>
-                <span>Estimated in {businessDays} business days</span>
+                <span>Estimated in 5–7 business days</span>
               </div>
             </div>
 

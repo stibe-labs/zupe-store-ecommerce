@@ -429,19 +429,19 @@ function OrderTrackingContent() {
   const faqs = [
     {
       q: "Where can I find my Order ID or AWB Tracking Number?",
-      a: "Your Order ID (e.g., #1054) was sent in the confirmation SMS and email right after your purchase. Your courier AWB tracking number (e.g., SR-AWB-9871105) is sent via WhatsApp and SMS once the package is dispatched.",
+      a: "Your Order ID (e.g., #1054) was sent in the confirmation email and WhatsApp message right after your purchase. Your courier AWB tracking number (e.g., SR-AWB-9871105) is sent via WhatsApp and Email once the package is dispatched.",
     },
     {
       q: "How long does standard delivery take?",
-      a: "Orders are dispatched within 24 business hours. Metro cities typically receive deliveries within 2-3 business days, while other regional locations take 3-5 business days.",
+      a: "Orders are dispatched within 24 business hours. Estimated delivery is 5-7 business days across India.",
     },
     {
       q: "Can I track my order if I paid via Cash on Delivery (COD)?",
-      a: "Yes! All prepaid and COD orders are assigned full real-time tracking numbers with live SMS and WhatsApp status updates.",
+      a: "Yes! All prepaid and COD orders are assigned full real-time tracking numbers with live WhatsApp and Email status updates.",
     },
     {
       q: "What should I do if my delivery executive hasn't arrived?",
-      a: "On the day of delivery, you will receive the delivery driver's contact details via SMS. If you miss the attempt, the courier will re-attempt delivery on the next working day automatically.",
+      a: "On the day of delivery, you will receive the delivery driver's contact details via WhatsApp or notification. If you miss the attempt, the courier will re-attempt delivery on the next working day automatically.",
     },
   ];
 
@@ -542,7 +542,7 @@ function OrderTrackingContent() {
               <div className="text-sm flex-1">
                 <p className="font-bold">{errorMessage}</p>
                 <p className="text-xs text-rose-600 mt-1">
-                  Tip: Please check your SMS/WhatsApp confirmation or try searching with your 10-digit registered mobile number.
+                  Tip: Please check your Email/WhatsApp confirmation or try searching with your 10-digit registered mobile number.
                 </p>
                 {errorSupport && (
                   <div className="mt-3">
@@ -1008,7 +1008,7 @@ function OrderTrackingContent() {
                   </div>
                   <h3 className="font-bold text-base text-gray-900 mb-1.5">3. Doorstep Delivery</h3>
                   <p className="text-xs text-gray-500 leading-relaxed">
-                    Real-time SMS & WhatsApp alerts with OTP verification ensure your item reaches you safely.
+                    Real-time WhatsApp & Email alerts with OTP verification ensure your item reaches you safely.
                   </p>
                 </div>
               </div>

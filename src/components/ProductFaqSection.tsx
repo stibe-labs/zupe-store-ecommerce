@@ -14,7 +14,7 @@ const DEFAULT_FAQS: FaqItem[] = [
     id: 1,
     question: "How long will delivery take?",
     answer:
-      "Delivery usually takes 2 to 4 business days depending on your location across India. Metro cities receive orders within 24–48 hours. Once shipped, you will receive real-time tracking updates via SMS and WhatsApp.",
+      "Delivery usually takes 5 to 7 business days depending on your location across India. Once shipped, you will receive real-time tracking updates via WhatsApp and Email.",
   },
   {
     id: 2,
@@ -26,7 +26,7 @@ const DEFAULT_FAQS: FaqItem[] = [
     id: 3,
     question: "What is the return and replacement policy?",
     answer:
-      "We provide a 7-Day Hassle-Free Replacement Guarantee. If the product arrives damaged, defective, or different from expected, simply WhatsApp our support team at +91 80862 39659 to arrange an instant free replacement or refund.",
+      "For returns and exchanges, please record a continuous unboxing video when opening your package. If you spot any damage or defects, WhatsApp us at +91 97441 22853 with the video attached and your order number. Our team will verify and process your exchange within 3–5 business days.",
   },
   {
     id: 4,
@@ -38,7 +38,7 @@ const DEFAULT_FAQS: FaqItem[] = [
     id: 5,
     question: "How can I track my order?",
     answer:
-      "As soon as your order is dispatched, you will receive a tracking link via WhatsApp & SMS. You can also visit our 'Track Order' page anytime and enter your Order ID or mobile number for live GPS tracking.",
+      "As soon as your order is dispatched, you will receive a tracking link via WhatsApp & Email. You can also visit our 'Track Order' page anytime and enter your Order ID or mobile number for live GPS tracking.",
   },
   {
     id: 6,

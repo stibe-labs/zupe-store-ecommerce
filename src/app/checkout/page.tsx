@@ -1416,7 +1416,7 @@ function CheckoutContent() {
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
               <span className="text-gray-500">Estimated Delivery:</span>
-              <span className="font-semibold text-gray-900">3 - 6 Business Days</span>
+              <span className="font-semibold text-gray-900">5 - 7 Business Days</span>
             </div>
             <div className="flex justify-between items-start py-1.5 border-b border-gray-100">
               <span className="text-gray-500">Delivery Address:</span>
@@ -1671,7 +1671,7 @@ function CheckoutContent() {
 
                 {/* Helper info card */}
                 <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100 text-xs text-gray-500 leading-relaxed">
-                  Please enter your mobile number to continue. We&apos;ll send order confirmation and delivery updates over WhatsApp / SMS.
+                  Please enter your mobile number to continue. We&apos;ll send order confirmation and delivery updates over WhatsApp and Email.
                 </div>
               </div>
             </div>

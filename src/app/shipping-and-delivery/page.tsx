@@ -105,7 +105,7 @@ export default function ShippingAndDeliveryPage() {
               <Truck className="w-5 h-5" />
             </div>
             <h4 className="font-semibold text-gray-900 text-sm">Delivery Window</h4>
-            <p className="text-xs text-gray-500 mt-1">4-9 business days across India</p>
+            <p className="text-xs text-gray-500 mt-1">5-7 business days across India</p>
           </div>
         </div>
 
@@ -118,7 +118,7 @@ export default function ShippingAndDeliveryPage() {
               <h2>Order Processing</h2>
             </div>
             <p>
-              Once you place an order, our team begins preparing it for dispatch. Standard processing time is <strong className="text-gray-900">1-3 business days</strong>. During festive or high-demand periods, order handling may take slightly longer. Once your order is shipped, you&apos;ll receive a confirmation email or SMS with full tracking details.
+              Once you place an order, our team begins preparing it for dispatch. Standard processing time is <strong className="text-gray-900">1-3 business days</strong>. During festive or high-demand periods, order handling may take slightly longer. Once your order is shipped, you&apos;ll receive a confirmation email and WhatsApp message with full tracking details.
             </p>
           </section>
 
@@ -130,10 +130,10 @@ export default function ShippingAndDeliveryPage() {
             </div>
             <ul className="space-y-2 list-disc list-inside pl-2 text-gray-700">
               <li>
-                <strong className="text-gray-900">Standard Shipping (Across India):</strong> 4-9 business days
+                <strong className="text-gray-900">Standard Shipping (Across India):</strong> 5-7 business days
               </li>
               <li>
-                <strong className="text-gray-900">Remote or Rural Areas:</strong> May take an additional 3-5 business days
+                <strong className="text-gray-900">Remote or Rural Areas:</strong> May take an additional 2-3 business days
               </li>
             </ul>
             <p className="text-xs sm:text-sm bg-gray-50 border border-gray-200/80 rounded-xl p-3 text-gray-600">
@@ -164,7 +164,7 @@ export default function ShippingAndDeliveryPage() {
               <h2>Tracking Information</h2>
             </div>
             <p>
-              After dispatch, you&apos;ll receive a <strong className="text-gray-900">tracking link</strong> via email or SMS. Tracking updates generally take <strong className="text-gray-900">24-48 hours</strong> to become active after shipment. You can use this link to follow your package until it&apos;s delivered safely to your doorstep.
+              After dispatch, you&apos;ll receive a <strong className="text-gray-900">tracking link</strong> via WhatsApp and Email. Tracking updates generally take <strong className="text-gray-900">24-48 hours</strong> to become active after shipment. You can use this link to follow your package until it&apos;s delivered safely to your doorstep.
             </p>
             
             {/* Inline Redirect to Order Tracking */}

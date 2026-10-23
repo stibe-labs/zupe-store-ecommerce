@@ -63,9 +63,9 @@ function calculateEstimatedDelivery(dateStr?: string): { minDate: string; maxDat
   const baseDate = dateStr ? new Date(dateStr) : new Date();
   const validDate = isNaN(baseDate.getTime()) ? new Date() : baseDate;
 
-  // Standard Indian express ecommerce transit: 3 to 6 business days
-  const minDays = 3;
-  const maxDays = 6;
+  // Standard Indian express ecommerce transit: 5 to 7 business days
+  const minDays = 5;
+  const maxDays = 7;
   const minDateObj = new Date(validDate.getTime() + minDays * 24 * 60 * 60 * 1000);
   const maxDateObj = new Date(validDate.getTime() + maxDays * 24 * 60 * 60 * 1000);
 
@@ -81,7 +81,7 @@ function calculateEstimatedDelivery(dateStr?: string): { minDate: string; maxDat
   return {
     minDate: minFormatted,
     maxDate: maxFormatted,
-    label: `${minFormatted} – ${maxFormatted} (3–6 Business Days)`,
+    label: `${minFormatted} – ${maxFormatted} (5–7 Business Days)`,
   };
 }
 

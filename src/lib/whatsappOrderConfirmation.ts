@@ -255,7 +255,7 @@ export async function sendOrderConfirmationWhatsApp(
       "  • Total Amount: Rs " + totalAmount.toLocaleString("en-IN") + "\n" +
       "  • Advance Paid Online: Rs 19 (Received)\n" +
       "  • *Balance Due at Doorstep: Rs " + doorstepBalance.toLocaleString("en-IN") + "*\n\n" +
-      "🚚 *Estimated Delivery:* 3-6 Business Days\n\n" +
+      "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
       "⚡ *Switch to Prepaid & Save Rs 30!*\n" +
       "Pay online now — pay only *Rs " + switchPrepaidAmount.toLocaleString("en-IN") + "* instead of Rs " + doorstepBalance.toLocaleString("en-IN") + " at delivery:\n" +
       payNowUrl + "\n\n" +
@@ -269,7 +269,7 @@ export async function sendOrderConfirmationWhatsApp(
       "📦 *Order ID:* " + orderId + "\n" +
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
       "💰 *Amount Paid:* Rs " + totalAmount.toLocaleString("en-IN") + " (Online Prepaid)\n" +
-      "🚚 *Estimated Delivery:* 3-6 Business Days\n\n" +
+      "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
       "📦 *Track Your Order:*\n" +
       trackUrl + "\n\n" +
       "Thank you for shopping with Zupe Store!";

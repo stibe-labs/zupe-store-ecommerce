@@ -13,6 +13,7 @@ import {
   Truck,
   ShieldCheck,
   RotateCcw,
+  Undo2,
   Headphones,
   Plus,
   Minus,
@@ -28,6 +29,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Banknote,
+  Video,
+  MessageCircle,
+  Search,
+  Clock,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -481,11 +486,6 @@ export default function ProductDetailPage() {
       "7-Day Easy Replacement",
     ];
   }, [product]);
-
-  // Derived highlights for "Why You'll Love This" card
-  const productHighlights = useMemo(() => {
-    return productPoints.map((text) => ({ icon: "✨", text }));
-  }, [productPoints]);
 
   // Dynamic Estimated Delivery Date Range (e.g. today is 20 Oct -> "25 Oct - 27 Oct")
   const [deliveryDateRange, setDeliveryDateRange] = useState<string>("25 Oct - 27 Oct");
@@ -1562,9 +1562,6 @@ export default function ProductDetailPage() {
 
             {/* Quantity Selector & Real-Time Stock Status */}
             <div className="mt-4">
-              <h3 className="text-[13px] font-bold text-gray-900 mb-2">
-                Quantity
-              </h3>
               <div className="flex items-center gap-4">
                 <div className="flex items-center border border-gray-200 rounded-xl bg-white shadow-xs p-1">
                   <button
@@ -1918,31 +1915,38 @@ export default function ProductDetailPage() {
                         ⚡ <strong>Same-Day Dispatch:</strong> Orders placed before 3:00 PM IST are processed and shipped the same business day.
                       </p>
                       <p>
-                        🚚 <strong>Delivery Timeline:</strong> Metro cities receive packages within 2–4 business days. Non-metro locations take 4–6 business days via Bluedart and Delhivery Express.
+                        🚚 <strong>Delivery Timeline:</strong> Estimated delivery within <strong>5–7 business days</strong> across India via Bluedart and Delhivery Express.
                       </p>
                       <p>
-                        📦 <strong>Real-time Tracking:</strong> AWB live tracking link is sent via WhatsApp and SMS immediately upon courier handoff.
+                        📦 <strong>Real-time Tracking:</strong> AWB live tracking link is sent via <strong>WhatsApp and Email</strong> immediately upon courier handoff.
                       </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
 
-              {/* 5. Return & Replacement Policy */}
+              {/* 5. For Return / Exchange (Unboxing Video Workflow) */}
               <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden shadow-xs">
                 <button
                   onClick={() => toggleAccordion("returns")}
                   className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <RotateCcw className="w-5 h-5 text-gray-700 stroke-[1.8]" />
-                    <span className="font-bold text-[14px] sm:text-[15px] text-gray-900">
-                      7-Day Replacement Guarantee
-                    </span>
+                    <div className="w-10 h-10 rounded-full bg-blue-50/80 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                      <Undo2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-[14px] sm:text-[15px] text-gray-900 block leading-tight">
+                        For Return / Exchange
+                      </span>
+                      <span className="text-xs text-gray-500 font-normal block leading-tight mt-0.5">
+                        Please record a continuous unboxing video.
+                      </span>
+                    </div>
                   </div>
                   <ChevronDown
                     className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${
-                      openAccordions.returns ? "rotate-180 text-gray-800" : ""
+                      openAccordions.returns ? "rotate-180 text-blue-600" : ""
                     }`}
                   />
                 </button>
@@ -1952,50 +1956,101 @@ export default function ProductDetailPage() {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      className="px-4 pb-4 pt-1 text-[13px] text-gray-600 leading-relaxed space-y-1.5 border-t border-gray-50"
+                      className="px-4 pb-5 pt-3 border-t border-gray-100 bg-[#FAFAFA]/70"
                     >
-                      <p>
-                        🛡️ <strong>Zero-Hassle Replacement:</strong> If your product arrives damaged or defective, we provide an immediate 1-click replacement within 7 days of delivery.
+                      {/* Section Title */}
+                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-4">
+                        HOW IT WORKS
                       </p>
-                      <p>
-                        📞 <strong>Direct Support:</strong> Contact our WhatsApp support at{" "}
-                        <a
-                          href="https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20have%20an%20inquiry%20about%20a%20product"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#FF7A00] font-semibold hover:underline"
-                        >
-                          +91 97441 22853
-                        </a>{" "}
-                        or email{" "}
-                        <a
-                          href="mailto:zupestoreonline@gmail.com"
-                          className="text-[#FF7A00] font-semibold hover:underline"
-                        >
-                          zupestoreonline@gmail.com
-                        </a>{" "}
-                        for instant assistance.
-                      </p>
+
+                      {/* 3 Step Timeline */}
+                      <div className="space-y-0 relative">
+                        {/* Step 1: Record an unboxing video */}
+                        <div className="flex items-start gap-3.5 relative">
+                          <div className="flex flex-col items-center">
+                            <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                              <Video className="w-4 h-4" />
+                            </div>
+                            <div className="w-[1.5px] bg-blue-100 h-8 my-1" />
+                          </div>
+                          <div className="pt-0.5 pb-2">
+                            <h4 className="font-bold text-[13px] sm:text-sm text-gray-900 leading-snug">
+                              Record an unboxing video
+                            </h4>
+                            <p className="text-xs text-gray-500 leading-relaxed mt-0.5">
+                              Film yourself opening the package, start before the seal is broken. Keep it continuous, no cuts.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Step 2: WhatsApp us the video */}
+                        <div className="flex items-start gap-3.5 relative">
+                          <div className="flex flex-col items-center">
+                            <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                              <MessageCircle className="w-4 h-4" />
+                            </div>
+                            <div className="w-[1.5px] bg-blue-100 h-8 my-1" />
+                          </div>
+                          <div className="pt-0.5 pb-2">
+                            <h4 className="font-bold text-[13px] sm:text-sm text-gray-900 leading-snug">
+                              WhatsApp us the video
+                            </h4>
+                            <p className="text-xs text-gray-500 leading-relaxed mt-0.5">
+                              Spotted an issue? WhatsApp us at{" "}
+                              <a
+                                href="https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20have%20an%20unboxing%20video%20for%20return%2Fexchange"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 font-bold hover:underline"
+                              >
+                                +91 97441 22853
+                              </a>{" "}
+                              with the video attached and your order number.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Step 3: We review and exchange */}
+                        <div className="flex items-start gap-3.5 relative">
+                          <div className="flex flex-col items-center">
+                            <div className="w-9 h-9 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                              <Search className="w-4 h-4" />
+                            </div>
+                          </div>
+                          <div className="pt-0.5">
+                            <h4 className="font-bold text-[13px] sm:text-sm text-gray-900 leading-snug">
+                              We review and exchange
+                            </h4>
+                            <p className="text-xs text-gray-500 leading-relaxed mt-0.5">
+                              Our team verifies the video and processes your exchange within 3–5 business days.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Warning / Important Callout Box */}
+                      <div className="mt-4 p-3.5 rounded-xl bg-[#FEF2F2] border border-[#FEE2E2] flex items-start gap-2.5 text-xs text-[#B91C1C] leading-relaxed">
+                        <AlertCircle className="w-4 h-4 text-[#EF4444] shrink-0 mt-0.5" />
+                        <div>
+                          A continuous unboxing video helps <strong className="font-bold text-[#991B1B]">Zupe Store</strong> verify transit damage, missing contents, wrong products or initial defects faster.
+                        </div>
+                      </div>
+
+                      {/* Under tags (without 3-day window) */}
+                      <div className="mt-4 pt-3 flex items-center flex-wrap gap-4 text-xs text-gray-500 font-medium border-t border-gray-100">
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-gray-400" />
+                          <span>Resolved in 3–5 days</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+                          <span>Easy process</span>
+                        </div>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
-            </div>
-
-            {/* "Why You'll Love This ❤️" Card (Repositioned after accordions before You May Also Like) */}
-            <div className="mt-6 p-4 sm:p-5 rounded-[20px] bg-[#F3F4F6] border border-gray-100">
-              <h3 className="text-[14px] sm:text-[15px] font-bold text-gray-900 mb-3 flex items-center gap-1.5">
-                <span>Why You'll Love This</span>
-                <span>❤️</span>
-              </h3>
-              <ul className="space-y-2 text-[13px] text-gray-700 leading-relaxed font-normal">
-                {productHighlights.map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-2.5">
-                    <span className="text-base select-none">{item.icon}</span>
-                    <span>{item.text}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
 
             {/* ========================================================
