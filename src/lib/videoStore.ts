@@ -160,22 +160,36 @@ export async function getAllVideos(): Promise<ProductVideo[]> {
 }
 
 /**
- * Get active videos matching a product ID or slug (plus all other active store videos)
- * Ensures all active videos appear on every product while product-specific reels appear first.
+ * Get active videos matching a product ID or slug, or matching a specific list of selected video_ids.
+ * Only returns videos assigned to this specific product.
  */
-export async function getVideosByProduct(productId: string): Promise<ProductVideo[]> {
-  const normId = (productId || "").trim().toLowerCase();
+export async function getVideosByProduct(
+  productId: string,
+  explicitVideoIds?: string[]
+): Promise<ProductVideo[]> {
   const all = await getAllVideos();
-
-  // Strictly filter for active & visible on store videos
   const activeVideos = all.filter((v) => v.active !== false);
 
-  if (!normId) return activeVideos;
+  // If explicit video IDs are assigned to the product, return only those in specified order
+  if (Array.isArray(explicitVideoIds)) {
+    if (explicitVideoIds.length === 0) return [];
+    const videoMap = new Map<string, ProductVideo>();
+    activeVideos.forEach((v) => videoMap.set(v.id, v));
+    const selected: ProductVideo[] = [];
+    explicitVideoIds.forEach((id) => {
+      const v = videoMap.get(id);
+      if (v) selected.push(v);
+    });
+    return selected;
+  }
+
+  const normId = (productId || "").trim().toLowerCase();
+  if (!normId) return [];
 
   const normClean = normId.replace(/[-_ ]+/g, " ").trim();
 
-  // Prioritize videos specifically attached to this product first
-  const matching = activeVideos.filter((v) => {
+  // Return videos specifically attached to this product
+  return activeVideos.filter((v) => {
     const vPid = (v.productId || "").toLowerCase().trim();
     if (!vPid || vPid === "none" || vPid === "all") return false;
     const vPidClean = vPid.replace(/[-_ ]+/g, " ").trim();
@@ -188,11 +202,6 @@ export async function getVideosByProduct(productId: string): Promise<ProductVide
       vPidClean.includes(normClean)
     );
   });
-
-  // Then append all other active videos so the shopper sees all store videos
-  const remaining = activeVideos.filter((v) => !matching.some((m) => m.id === v.id));
-
-  return [...matching, ...remaining];
 }
 
 /**

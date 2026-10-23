@@ -88,6 +88,7 @@ export interface Product {
   whats_in_box?: string[];
   bundle_tiers?: BuyMoreSaveMoreConfig;
   how_to_use?: HowToUseConfig;
+  video_ids?: string[];
   shipping_info?: string[];
   return_info?: string[];
   reviews_data?: {
@@ -139,4 +140,5 @@ export interface AdminProductFormData {
   whats_in_box?: string[];
   bundle_tiers?: BuyMoreSaveMoreConfig;
   how_to_use?: HowToUseConfig;
+  video_ids?: string[];
 }

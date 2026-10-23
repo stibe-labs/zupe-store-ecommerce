@@ -276,6 +276,12 @@ export default function AdminReviewsPage() {
   }, [productDropdownOpen]);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("tab") === "videos") {
+        setActiveTab("videos");
+      }
+    }
     refreshAll();
     fetchProducts();
   }, []);

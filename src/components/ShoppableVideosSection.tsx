@@ -132,7 +132,7 @@ export function ShoppableVideosSection({
   const { user, openAuthModal } = useAuth();
   const { addToCart, addItem } = useCart();
 
-  const [videos, setVideos] = useState<ProductVideo[]>(SEED_CREATOR_VIDEOS);
+  const [videos, setVideos] = useState<ProductVideo[]>(currentProduct ? [] : SEED_CREATOR_VIDEOS);
   const [catalog, setCatalog] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -184,7 +184,7 @@ export function ShoppableVideosSection({
   const isMouseDownRef = useRef(false);
   const mouseStartXRef = useRef(0);
 
-  // 1. Fetch videos for product or store, merged with guaranteed local fallbacks
+  // 1. Fetch videos for product or store, strictly scoped when on a product page
   useEffect(() => {
     let isMounted = true;
     const prodKey = currentProduct?.slug || currentProduct?.id;
@@ -195,27 +195,36 @@ export function ShoppableVideosSection({
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
-        if (isMounted && data.success && Array.isArray(data.videos) && data.videos.length > 0) {
-          const merged = data.videos.map((v: ProductVideo, i: number) => {
-            const fallback = SEED_CREATOR_VIDEOS[i % SEED_CREATOR_VIDEOS.length];
-            const isGoogleStorage = (v.videoUrl || "").includes("gtv-videos-bucket");
-            return {
-              ...v,
-              videoUrl: isGoogleStorage || !v.videoUrl ? fallback.videoUrl : v.videoUrl,
-              posterUrl: v.posterUrl || fallback.posterUrl,
-              productImage: v.productImage || fallback.productImage,
-              productName: v.productName || fallback.productName,
-              productPrice: v.productPrice || fallback.productPrice,
-              productSlug: v.productSlug || fallback.productSlug,
-            };
-          });
-          setVideos(merged);
-        } else if (isMounted) {
-          setVideos(SEED_CREATOR_VIDEOS);
+        if (!isMounted) return;
+        if (data.success && Array.isArray(data.videos)) {
+          if (data.videos.length > 0) {
+            if (currentProduct) {
+              setVideos(data.videos);
+            } else {
+              const merged = data.videos.map((v: ProductVideo, i: number) => {
+                const fallback = SEED_CREATOR_VIDEOS[i % SEED_CREATOR_VIDEOS.length];
+                const isGoogleStorage = (v.videoUrl || "").includes("gtv-videos-bucket");
+                return {
+                  ...v,
+                  videoUrl: isGoogleStorage || !v.videoUrl ? fallback.videoUrl : v.videoUrl,
+                  posterUrl: v.posterUrl || fallback.posterUrl,
+                  productImage: v.productImage || fallback.productImage,
+                  productName: v.productName || fallback.productName,
+                  productPrice: v.productPrice || fallback.productPrice,
+                  productSlug: v.productSlug || fallback.productSlug,
+                };
+              });
+              setVideos(merged);
+            }
+          } else {
+            setVideos(currentProduct ? [] : SEED_CREATOR_VIDEOS);
+          }
+        } else {
+          setVideos(currentProduct ? [] : SEED_CREATOR_VIDEOS);
         }
       })
       .catch(() => {
-        if (isMounted) setVideos(SEED_CREATOR_VIDEOS);
+        if (isMounted) setVideos(currentProduct ? [] : SEED_CREATOR_VIDEOS);
       })
       .finally(() => {
         if (isMounted) setLoading(false);

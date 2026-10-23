@@ -43,6 +43,7 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
   const parsedBox = parseJsonSafe(p.whats_in_box, defaultFound?.whats_in_box || undefined);
   const parsedTiers = parseJsonSafe(p.bundle_tiers, defaultFound?.bundle_tiers || undefined);
   const parsedHowToUse = parseJsonSafe(p.how_to_use, defaultFound?.how_to_use || undefined);
+  const parsedVideoIds = parseJsonSafe(p.video_ids, defaultFound?.video_ids || undefined);
 
   const priceNum = Number(p.price);
   const mrpNum = Number(p.mrp ?? p.price);
@@ -165,6 +166,7 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
     whats_in_box: parsedBox,
     bundle_tiers: parsedTiers,
     how_to_use: parsedHowToUse,
+    video_ids: Array.isArray(parsedVideoIds) ? parsedVideoIds : undefined,
     created_at: p.created_at || defaultFound?.created_at || new Date().toISOString(),
   };
 }
@@ -282,6 +284,7 @@ export async function POST(req: NextRequest) {
       whats_in_box,
       bundle_tiers,
       how_to_use,
+      video_ids,
     } = body;
 
     // Find existing product in D1 first, then cache or defaults
@@ -422,6 +425,7 @@ export async function POST(req: NextRequest) {
       whats_in_box: whats_in_box !== undefined ? whats_in_box : existingProd?.whats_in_box || undefined,
       bundle_tiers: bundle_tiers !== undefined ? bundle_tiers : existingProd?.bundle_tiers || undefined,
       how_to_use: how_to_use !== undefined ? how_to_use : existingProd?.how_to_use || undefined,
+      video_ids: video_ids !== undefined ? video_ids : existingProd?.video_ids || undefined,
       created_at: existingProd?.created_at || new Date().toISOString(),
     };
 
@@ -449,6 +453,7 @@ export async function POST(req: NextRequest) {
       const boxJson = newProd.whats_in_box ? JSON.stringify(newProd.whats_in_box) : null;
       const tiersJson = newProd.bundle_tiers ? JSON.stringify(newProd.bundle_tiers) : null;
       const howToUseJson = newProd.how_to_use ? JSON.stringify(newProd.how_to_use) : null;
+      const videoIdsJson = newProd.video_ids ? JSON.stringify(newProd.video_ids) : null;
 
       const runSaveQueries = async () => {
         if (existingRows && existingRows.length > 0) {
@@ -458,7 +463,7 @@ export async function POST(req: NextRequest) {
                  price = ?, mrp = ?, offer_price = ?, cost_price = ?, stock_count = ?, volume = ?,
                  poster_image = ?, images = ?, color = ?, colors = ?, has_colors = ?, overview_blocks = ?, material = ?, badge = ?,
                  in_stock = ?, rating = ?, review_count = ?, sold_count = ?, features = ?,
-                 specifications = ?, whats_in_box = ?, bundle_tiers = ?, how_to_use = ?
+                 specifications = ?, whats_in_box = ?, bundle_tiers = ?, how_to_use = ?, video_ids = ?
              WHERE id = ?;`,
             [
               newProd.slug,
@@ -491,6 +496,7 @@ export async function POST(req: NextRequest) {
               boxJson,
               tiersJson,
               howToUseJson,
+              videoIdsJson,
               existingRows[0].id,
             ]
           );
@@ -501,9 +507,9 @@ export async function POST(req: NextRequest) {
                price, mrp, offer_price, cost_price, stock_count, volume,
                poster_image, images, color, colors, has_colors, overview_blocks, material, badge,
                in_stock, rating, review_count, sold_count, features,
-               specifications, whats_in_box, bundle_tiers, how_to_use
+               specifications, whats_in_box, bundle_tiers, how_to_use, video_ids
              )
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
             [
               newProd.id,
               newProd.slug,
@@ -536,6 +542,7 @@ export async function POST(req: NextRequest) {
               boxJson,
               tiersJson,
               howToUseJson,
+              videoIdsJson,
             ]
           );
         }
@@ -544,13 +551,30 @@ export async function POST(req: NextRequest) {
       try {
         await runSaveQueries();
       } catch (initialErr: any) {
-        // If the table doesn't have how_to_use column yet, attempt quick schema migration
-        if (String(initialErr?.message || "").includes("no such column: how_to_use")) {
+        const errMsg = String(initialErr?.message || "").toLowerCase();
+        let migrated = false;
+        if (errMsg.includes("no such column: video_ids")) {
+          try {
+            await executeD1Query("ALTER TABLE products ADD COLUMN video_ids TEXT;");
+            migrated = true;
+          } catch (migErr) {
+            console.warn("Could not add video_ids column:", migErr);
+          }
+        }
+        if (errMsg.includes("no such column: how_to_use")) {
           try {
             await executeD1Query("ALTER TABLE products ADD COLUMN how_to_use TEXT;");
+            migrated = true;
+          } catch (migErr) {
+            console.warn("Could not add how_to_use column:", migErr);
+          }
+        }
+
+        if (migrated) {
+          try {
             await runSaveQueries();
           } catch (retryErr) {
-            console.warn("Retry after adding how_to_use column failed:", retryErr);
+            console.warn("Retry after adding missing column(s) failed:", retryErr);
           }
         } else {
           throw initialErr;

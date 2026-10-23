@@ -11,10 +11,6 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const productId = searchParams.get("productId");
 
-    let videos = productId
-      ? await getVideosByProduct(productId)
-      : (await getAllVideos()).filter((v) => v.active !== false);
-
     // Query D1 products table to merge with DEFAULT_PRODUCTS
     let allProducts: any[] = [...DEFAULT_PRODUCTS];
     try {
@@ -26,25 +22,52 @@ export async function GET(req: NextRequest) {
       // fallback
     }
 
+    // Find the current product if productId was passed
+    let targetProd: any = null;
+    let explicitVideoIds: string[] | undefined = undefined;
+
+    if (productId) {
+      const normPid = productId.trim().toLowerCase();
+      targetProd = allProducts.find((p) => {
+        const pId = String(p.id || "").toLowerCase().trim();
+        const pSlug = String(p.slug || "").toLowerCase().trim();
+        return pId === normPid || pSlug === normPid;
+      });
+
+      if (targetProd) {
+        if (Array.isArray(targetProd.video_ids)) {
+          explicitVideoIds = targetProd.video_ids;
+        } else if (typeof targetProd.video_ids === "string" && targetProd.video_ids.trim()) {
+          try {
+            const parsed = JSON.parse(targetProd.video_ids);
+            if (Array.isArray(parsed)) explicitVideoIds = parsed;
+          } catch {}
+        }
+      }
+    }
+
+    let videos = productId
+      ? await getVideosByProduct(productId, explicitVideoIds)
+      : (await getAllVideos()).filter((v) => v.active !== false);
+
     // Enrich video items with product metadata (name, price, mrp, image, slug)
     const enriched = videos.map((v) => {
       const vPid = (v.productId || "").toLowerCase().trim();
       const isNone = !vPid || vPid === "none" || vPid === "all";
 
-      const matchedProd = isNone
-        ? null
-        : allProducts.find((p) => {
-            const pId = String(p.id || "").toLowerCase().trim();
-            const pSlug = String(p.slug || "").toLowerCase().trim();
-            const pName = String(p.name || "").toLowerCase().trim();
+      const matchedProd =
+        allProducts.find((p) => {
+          const pId = String(p.id || "").toLowerCase().trim();
+          const pSlug = String(p.slug || "").toLowerCase().trim();
+          const pName = String(p.name || "").toLowerCase().trim();
 
-            return (
-              pId === vPid ||
-              pSlug === vPid ||
-              pName === vPid ||
-              (pSlug.length > 0 && (pSlug.includes(vPid) || vPid.includes(pSlug)))
-            );
-          });
+          return (
+            pId === vPid ||
+            pSlug === vPid ||
+            pName === vPid ||
+            (pSlug.length > 0 && (pSlug.includes(vPid) || vPid.includes(pSlug)))
+          );
+        }) || targetProd;
 
       const targetSlug = matchedProd?.slug || matchedProd?.id || undefined;
 

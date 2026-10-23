@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS products (
     sold_count TEXT,
     bundle_tiers TEXT,
     how_to_use TEXT,
+    video_ids TEXT,
     in_stock INTEGER DEFAULT 1,
     rating REAL DEFAULT 4.9,
     review_count INTEGER DEFAULT 0,

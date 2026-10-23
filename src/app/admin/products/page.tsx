@@ -60,6 +60,7 @@ import {
 } from "@/types/product";
 import { DEFAULT_PRODUCTS, getSubcategoriesForCategory } from "@/data/zupeProducts";
 import { HowToUseSection } from "@/components/HowToUseSection";
+import { ProductVideo } from "@/lib/videoStore";
 
 // Exact Category & Subcategory taxonomy from official catalog structure
 const PRODUCT_CATEGORIES_DATA = [
@@ -125,6 +126,7 @@ const FORM_TABS_LIST = [
   "overview",
   "specs",
   "how_to_use",
+  "action_videos",
 ] as const;
 
 type FormTabKey = (typeof FORM_TABS_LIST)[number];
@@ -289,6 +291,30 @@ export default function AdminProductsPage() {
     stepId: string;
   } | null>(null);
 
+  // Tab 8: Action Videos (See It in Action)
+  const [formVideoIds, setFormVideoIds] = useState<string[]>([]);
+  const [availableVideos, setAvailableVideos] = useState<ProductVideo[]>([]);
+  const [loadingVideos, setLoadingVideos] = useState<boolean>(false);
+  const [videoSearchTerm, setVideoSearchTerm] = useState<string>("");
+  const [videoPreviewItem, setVideoPreviewItem] = useState<ProductVideo | null>(null);
+
+  const fetchAvailableVideos = async () => {
+    setLoadingVideos(true);
+    try {
+      const res = await fetch(`/api/admin/videos?_t=${Date.now()}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.videos)) {
+          setAvailableVideos(data.videos);
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to fetch available videos:", err);
+    } finally {
+      setLoadingVideos(false);
+    }
+  };
+
   // Social Proof:
   const [formRating, setFormRating] = useState("4.8");
   const [formReviewCount, setFormReviewCount] = useState("120");
@@ -348,6 +374,7 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     fetchProducts();
+    fetchAvailableVideos();
     fetch("/api/content/categories")
       .then((res) => res.json())
       .then((data) => {
@@ -433,6 +460,9 @@ export default function AdminProductsPage() {
       },
     ]);
     setEmptyStepWarningModal(null);
+    setFormVideoIds([]);
+    setVideoSearchTerm("");
+    fetchAvailableVideos();
 
     setActionMessage(null);
     setShowModal(true);
@@ -652,6 +682,21 @@ export default function AdminProductsPage() {
       setFormHowToUseSteps([]);
     }
     setEmptyStepWarningModal(null);
+    if (prod.video_ids && Array.isArray(prod.video_ids)) {
+      setFormVideoIds([...prod.video_ids]);
+    } else {
+      const normId = (prod.id || "").toLowerCase().trim();
+      const normSlug = (prod.slug || "").toLowerCase().trim();
+      const matched = availableVideos
+        .filter((v) => {
+          const vPid = (v.productId || "").toLowerCase().trim();
+          return vPid && (vPid === normId || vPid === normSlug);
+        })
+        .map((v) => v.id);
+      setFormVideoIds(matched);
+    }
+    setVideoSearchTerm("");
+    fetchAvailableVideos();
 
     setActionMessage(null);
     setShowModal(true);
@@ -1135,6 +1180,7 @@ export default function AdminProductsPage() {
         card_shadow: formHowToUseCardShadow,
         steps: formHowToUseSteps,
       },
+      video_ids: formVideoIds,
     };
 
     // Pre-publish empty-step warning (Specification §10)
@@ -1818,6 +1864,19 @@ export default function AdminProductsPage() {
               >
                 <HelpCircle className="w-3.5 h-3.5" />
                 <span>7. How to Use {formHowToUseEnabled ? `(${formHowToUseSteps.length})` : "(Off)"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("action_videos")}
+                className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                  activeTab === "action_videos"
+                    ? "border-[#FF7A00] text-[#FF7A00]"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <Video className="w-3.5 h-3.5" />
+                <span>8. Action Videos ({formVideoIds.length})</span>
               </button>
             </div>
 
@@ -4241,6 +4300,273 @@ export default function AdminProductsPage() {
                   )}
                 </div>
               )}
+
+              {/* ========================================================
+                  TAB 8: ACTION VIDEOS (SEE IT IN ACTION)
+                 ======================================================== */}
+              {activeTab === "action_videos" && (
+                <div className="space-y-6">
+                  {/* 1. Header Card */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-orange-50/70 via-amber-50/40 to-white border border-orange-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-xl bg-[#FF7A00] text-white flex items-center justify-center shadow-xs">
+                          <Video className="w-4 h-4" />
+                        </div>
+                        <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                          SEE IT IN ACTION Videos
+                        </h4>
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FF7A00]/10 text-[#FF7A00] border border-[#FF7A00]/20">
+                          {formVideoIds.length} Selected
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 leading-relaxed max-w-xl">
+                        Select which videos from your store&apos;s Social Proof library show in the &quot;SEE IT IN ACTION&quot; section on this product&apos;s page. Each product displays only its own selected videos.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={fetchAvailableVideos}
+                        disabled={loadingVideos}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold shadow-2xs transition-colors"
+                        title="Refresh video list"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${loadingVideos ? "animate-spin text-[#FF7A00]" : "text-slate-500"}`} />
+                        <span>Refresh</span>
+                      </button>
+
+                      <a
+                        href="/admin/reviews?tab=videos"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold shadow-xs transition-colors"
+                      >
+                        <Video className="w-3.5 h-3.5" />
+                        <span>Manage All Videos in Social Proof</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* 2. Filter & Bulk Selection Bar */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                    <div className="relative flex-1 max-w-sm">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={videoSearchTerm}
+                        onChange={(e) => setVideoSearchTerm(e.target.value)}
+                        placeholder="Search videos by title or badge..."
+                        className="w-full pl-9 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00]"
+                      />
+                      {videoSearchTerm && (
+                        <button
+                          type="button"
+                          onClick={() => setVideoSearchTerm("")}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 self-end sm:self-auto text-xs">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const filtered = availableVideos
+                            .filter((v) => {
+                              if (!videoSearchTerm.trim()) return true;
+                              const q = videoSearchTerm.toLowerCase();
+                              return (
+                                v.title?.toLowerCase().includes(q) ||
+                                v.badge?.toLowerCase().includes(q) ||
+                                v.productId?.toLowerCase().includes(q)
+                              );
+                            })
+                            .map((v) => v.id);
+                          setFormVideoIds(Array.from(new Set([...formVideoIds, ...filtered])));
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-semibold transition-colors"
+                      >
+                        Select All
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setFormVideoIds([])}
+                        className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-rose-300 hover:text-rose-600 text-slate-700 font-semibold transition-colors"
+                      >
+                        Clear Selection
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 3. Videos Grid */}
+                  {loadingVideos ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5">
+                      {[1, 2, 3, 4].map((n) => (
+                        <div
+                          key={`vid-skel-${n}`}
+                          className="aspect-[9/16] rounded-2xl bg-slate-100 border border-slate-200 animate-pulse"
+                        />
+                      ))}
+                    </div>
+                  ) : availableVideos.length === 0 ? (
+                    <div className="text-center py-12 px-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-3">
+                      <div className="w-12 h-12 rounded-2xl bg-orange-100 text-[#FF7A00] flex items-center justify-center mx-auto">
+                        <Video className="w-6 h-6" />
+                      </div>
+                      <div className="space-y-1">
+                        <h5 className="font-bold text-slate-900 text-sm">No videos found in library</h5>
+                        <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                          Videos are added and managed under Admin &gt; Social Proof &gt; Videos tab. Once you add videos there, they will automatically appear here so you can assign them to this product.
+                        </p>
+                      </div>
+                      <a
+                        href="/admin/reviews?tab=videos"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Add Video in Social Proof</span>
+                      </a>
+                    </div>
+                  ) : (
+                    (() => {
+                      const filtered = availableVideos.filter((v) => {
+                        if (!videoSearchTerm.trim()) return true;
+                        const q = videoSearchTerm.toLowerCase();
+                        return (
+                          v.title?.toLowerCase().includes(q) ||
+                          v.badge?.toLowerCase().includes(q) ||
+                          v.productId?.toLowerCase().includes(q)
+                        );
+                      });
+
+                      if (filtered.length === 0) {
+                        return (
+                          <div className="text-center py-10 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                            <p className="text-xs font-semibold text-slate-600">
+                              No videos match &quot;{videoSearchTerm}&quot;
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => setVideoSearchTerm("")}
+                              className="text-xs font-bold text-[#FF7A00] hover:underline"
+                            >
+                              Clear search
+                            </button>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5">
+                          {filtered.map((v) => {
+                            const isSelected = formVideoIds.includes(v.id);
+                            const poster =
+                              v.posterUrl ||
+                              v.productImage ||
+                              "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800";
+
+                            return (
+                              <div
+                                key={v.id}
+                                onClick={() => {
+                                  setFormVideoIds((prev) =>
+                                    prev.includes(v.id)
+                                      ? prev.filter((id) => id !== v.id)
+                                      : [...prev, v.id]
+                                  );
+                                }}
+                                className={`group relative aspect-[9/16] rounded-2xl overflow-hidden cursor-pointer select-none border-2 transition-all duration-200 ${
+                                  isSelected
+                                    ? "border-[#FF7A00] ring-3 ring-[#FF7A00]/25 shadow-lg shadow-orange-500/15"
+                                    : "border-slate-200 hover:border-slate-300 opacity-80 hover:opacity-100"
+                                }`}
+                              >
+                                {/* Background Image or Poster */}
+                                <img
+                                  src={poster}
+                                  alt={v.title}
+                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+
+                                {/* Top Gradient & Controls */}
+                                <div className="absolute inset-x-0 top-0 p-2.5 flex items-start justify-between z-10 bg-gradient-to-b from-black/60 to-transparent">
+                                  {v.badge ? (
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-[#FF7A00] text-white shadow-xs">
+                                      {v.badge}
+                                    </span>
+                                  ) : (
+                                    <span />
+                                  )}
+
+                                  {/* Selection Checkmark Bubble */}
+                                  <div
+                                    className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+                                      isSelected
+                                        ? "bg-[#FF7A00] text-white shadow-md scale-105"
+                                        : "bg-black/40 backdrop-blur-xs border-2 border-white/80 group-hover:border-white"
+                                    }`}
+                                  >
+                                    {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                                  </div>
+                                </div>
+
+                                {/* Preview Button */}
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setVideoPreviewItem(v);
+                                  }}
+                                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                  title="Preview video"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+
+                                {/* Bottom Info Gradient */}
+                                <div className="absolute inset-x-0 bottom-0 p-3 pt-8 bg-gradient-to-t from-black via-black/75 to-transparent z-10 text-white space-y-1">
+                                  <p className="text-xs font-bold leading-tight line-clamp-2 drop-shadow-xs">
+                                    {v.title}
+                                  </p>
+                                  <div className="flex items-center justify-between text-[10.5px] text-white/80 pt-0.5">
+                                    <span className="flex items-center gap-1">
+                                      <Eye className="w-3 h-3" />
+                                      {v.viewsText || "24.5k"}
+                                    </span>
+                                    {isSelected ? (
+                                      <span className="text-[10px] font-bold text-[#FF9E40] uppercase">
+                                        Selected
+                                      </span>
+                                    ) : (
+                                      <span className="text-[10px] text-white/60">Tap to select</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()
+                  )}
+
+                  {/* 4. Helpful Guidance Note */}
+                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-start gap-2.5">
+                    <Info className="w-4 h-4 text-[#FF7A00] shrink-0 mt-0.5" />
+                    <p className="leading-relaxed">
+                      <strong>How this works:</strong> Only the checked videos above will appear in the &quot;SEE IT IN ACTION&quot; section on this product&apos;s storefront page. If 0 videos are selected, the &quot;SEE IT IN ACTION&quot; section is automatically hidden on this product.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 4. Pinned Sticky Footer (shrink-0) - ALWAYS VISIBLE! */}
@@ -4282,11 +4608,12 @@ export default function AdminProductsPage() {
                   {activeTab === "overview" && "Product Details & Overview"}
                   {activeTab === "specs" && "Specs & Box"}
                   {activeTab === "how_to_use" && "How to Use"}
+                  {activeTab === "action_videos" && "Action Videos"}
                 </span>
               </div>
 
               <div className="flex items-center gap-2.5">
-                {editingProduct && activeTab !== "how_to_use" && (
+                {editingProduct && activeTab !== "action_videos" && (
                   <button
                     key="btn-step-save-changes-early"
                     type="button"
@@ -4308,7 +4635,7 @@ export default function AdminProductsPage() {
                   </button>
                 )}
 
-                {activeTab !== "how_to_use" ? (
+                {activeTab !== "action_videos" ? (
                   <button
                     key={`btn-step-${activeTab}`}
                     type="button"
@@ -4482,6 +4809,42 @@ export default function AdminProductsPage() {
               >
                 Delete
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Video Preview Modal */}
+      {videoPreviewItem && (
+        <div
+          data-lenis-prevent="true"
+          onClick={() => setVideoPreviewItem(null)}
+          className="fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900 rounded-3xl w-full max-w-xs overflow-hidden shadow-2xl border border-slate-700 flex flex-col cursor-default"
+          >
+            <div className="p-3.5 border-b border-slate-800 flex items-center justify-between text-white bg-slate-900">
+              <span className="font-bold text-xs truncate max-w-[220px]">
+                {videoPreviewItem.title}
+              </span>
+              <button
+                type="button"
+                onClick={() => setVideoPreviewItem(null)}
+                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="relative aspect-[9/16] bg-black flex items-center justify-center">
+              <video
+                src={videoPreviewItem.videoUrl}
+                poster={videoPreviewItem.posterUrl}
+                controls
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
