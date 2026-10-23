@@ -14,7 +14,6 @@ import {
   ChevronRight,
   Eye,
   ShoppingBag,
-  Sparkles,
   ExternalLink,
 } from "lucide-react";
 import { ProductVideo } from "@/lib/videoStore";
@@ -160,6 +159,7 @@ export function ShoppableVideosSection({
   const [desktopIndex, setDesktopIndex] = useState(0);
   const [desktopStepWidth, setDesktopStepWidth] = useState(240);
   const [isDesktopTransitioning, setIsDesktopTransitioning] = useState(true);
+  const [isDesktopMuted, setIsDesktopMuted] = useState(true);
 
   // Shared state
   const [isHovered, setIsHovered] = useState(false);
@@ -282,7 +282,7 @@ export function ShoppableVideosSection({
     return () => observer.disconnect();
   }, []);
 
-  // 5. Measure mobile container width for pixel-perfect card sizing & translation
+  // 5. Measure mobile container width and calculate increased card size
   useEffect(() => {
     if (!mobileContainerRef.current) return;
     const updateSize = () => {
@@ -302,17 +302,24 @@ export function ShoppableVideosSection({
     };
   }, []);
 
-  const mobileGap = 8;
+  // Increased mobile card size slightly (~25% wider and taller, perfectly proportional)
+  const mobileGap = 10;
   const mobileCardWidth =
-    containerWidth > 0 ? (containerWidth - 2 * mobileGap) / 3 : 110;
+    containerWidth > 0
+      ? Math.min(155, Math.max(120, (containerWidth - 20) / 2.55))
+      : 132;
   const mobileStep = mobileCardWidth + mobileGap;
+
+  // Perfectly centers the active card in the viewport with symmetric peek on left & right
   const mobileBaseTranslateX =
-    mobileN >= 3 ? -(mobileTrackIndex - 1) * mobileStep : 0;
+    containerWidth > 0
+      ? (containerWidth - mobileCardWidth) / 2 - mobileTrackIndex * mobileStep
+      : 0;
   const mobileCurrentTranslateX = mobileBaseTranslateX + dragOffset;
   const realVideoIndex =
     mobileN > 0 ? (mobileTrackIndex % mobileN) % videos.length : 0;
 
-  // 6. Measure desktop step width dynamically (matching CreatorsReelsSection)
+  // 6. Measure desktop step width dynamically
   const measureDesktopStepWidth = useCallback(() => {
     if (firstDesktopCardRef.current && desktopTrackRef.current) {
       const cardW = firstDesktopCardRef.current.offsetWidth;
@@ -411,10 +418,7 @@ export function ShoppableVideosSection({
     displayMobileVideos,
   ]);
 
-  // 10. DESKTOP: Continuous moving step behavior (Exact replica of CreatorsReelsSection on homepage)
-  // - Stays 2000ms
-  // - Smoothly shifts left by 1 card over 650ms
-  // - Repeats infinitely
+  // 10. DESKTOP: Continuous moving step behavior
   useEffect(() => {
     if (variant === "mobile") return;
     if (
@@ -434,7 +438,6 @@ export function ShoppableVideosSection({
     return () => clearInterval(interval);
   }, [variant, isHovered, activeModalVideoIndex, totalItems, isSectionInView]);
 
-  // DESKTOP: Seamless infinite wrap-around
   const handleDesktopTransitionEnd = () => {
     if (desktopIndex >= totalItems) {
       setIsDesktopTransitioning(false);
@@ -461,7 +464,7 @@ export function ShoppableVideosSection({
       if (!video) return;
       const isVisible = idx >= startIdx && idx <= endIdx;
       if (isVisible) {
-        video.muted = true;
+        video.muted = isDesktopMuted;
         video.defaultMuted = true;
         if (video.paused) {
           video.play().catch(() => {});
@@ -472,7 +475,7 @@ export function ShoppableVideosSection({
         }
       }
     });
-  }, [variant, isSectionInView, videos, desktopIndex]);
+  }, [variant, isSectionInView, videos, desktopIndex, isDesktopMuted]);
 
   // 11. Mobile touch swipe handlers
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -588,6 +591,14 @@ export function ShoppableVideosSection({
       activeVid.pause();
       setIsCenterPlaying(false);
     }
+  };
+
+  const toggleDesktopMute = () => {
+    const nextMuted = !isDesktopMuted;
+    setIsDesktopMuted(nextMuted);
+    desktopVideoRefs.current.forEach((video) => {
+      if (video) video.muted = nextMuted;
+    });
   };
 
   // 12. Modal Player controls
@@ -789,7 +800,9 @@ export function ShoppableVideosSection({
   }
 
   // ==========================================================
-  // RENDER DESKTOP VARIANT (Exact replica of CreatorsReelsSection on homepage)
+  // RENDER DESKTOP VARIANT
+  // Pure, clean video row with ONLY speaker icon on front
+  // All details (product name, price, badges, buy actions) inside reel modal
   // ==========================================================
   if (variant === "desktop") {
     return (
@@ -797,7 +810,7 @@ export function ShoppableVideosSection({
         ref={sectionRef}
         className={`w-full max-w-[1520px] mx-auto select-none ${className}`}
       >
-        {/* Section Heading & Desktop side buttons */}
+        {/* Section Heading & Desktop navigation buttons */}
         {showHeader && (
           <div className="flex items-center justify-between mb-3.5 px-0.5">
             <div>
@@ -870,13 +883,13 @@ export function ShoppableVideosSection({
                   key={`${video.id}-${idx}`}
                   ref={idx === 0 ? firstDesktopCardRef : undefined}
                   onClick={() => handleOpenReel(idx % videos.length)}
-                  className="w-[155px] min-w-[155px] sm:w-[175px] sm:min-w-[175px] md:w-[200px] md:min-w-[200px] lg:w-[225px] lg:min-w-[225px] xl:w-[240px] xl:min-w-[240px] aspect-[9/15.5] flex-shrink-0 rounded-2xl sm:rounded-3xl overflow-hidden relative shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer bg-slate-950 group border border-slate-200/60 hover:border-[#FF7A00]/50 hover:-translate-y-0.5"
+                  className="w-[165px] min-w-[165px] sm:w-[185px] sm:min-w-[185px] md:w-[210px] md:min-w-[210px] lg:w-[230px] lg:min-w-[230px] xl:w-[245px] xl:min-w-[245px] aspect-[9/15.5] flex-shrink-0 rounded-2xl sm:rounded-3xl overflow-hidden relative shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer bg-slate-950 group border border-slate-200/60 hover:border-[#FF7A00]/50 hover:-translate-y-0.5"
                 >
-                  {/* Background Video (All Visible Videos Play Muted at all times) */}
+                  {/* Clean Background Video Playing Muted */}
                   <video
                     ref={(el) => {
                       if (el) {
-                        el.muted = true;
+                        el.muted = isDesktopMuted;
                         el.defaultMuted = true;
                         desktopVideoRefs.current.set(idx, el);
                         if (isSectionInView) {
@@ -889,35 +902,38 @@ export function ShoppableVideosSection({
                     src={video.videoUrl}
                     poster={poster}
                     autoPlay
-                    muted
+                    muted={isDesktopMuted}
                     loop
                     playsInline
                     preload="metadata"
                     className="w-full h-full object-cover pointer-events-none group-hover:scale-105 transition-transform duration-700"
                   />
 
-                  {/* Top-Right Brand Badge */}
-                  <div className="absolute top-2.5 right-2.5 z-10 w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-gradient-to-tr from-[#FF7A00] to-[#FF9E42] flex items-center justify-center shadow-md border border-white/20">
-                    <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white drop-shadow-xs" />
+                  {/* Top-Right Speaker Icon ONLY (Zero other symbols) */}
+                  <div className="absolute top-2.5 right-2.5 z-20">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleDesktopMute();
+                      }}
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/90 transition-all shadow-md active:scale-90 cursor-pointer"
+                      aria-label={isDesktopMuted ? "Unmute video" : "Mute video"}
+                      title={isDesktopMuted ? "Unmute" : "Mute"}
+                    >
+                      {isDesktopMuted ? (
+                        <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                      ) : (
+                        <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                      )}
+                    </button>
                   </div>
 
                   {/* Center Hover Play Icon */}
                   <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/40 backdrop-blur-xs text-white flex items-center justify-center shadow-lg border border-white/30 scale-90 group-hover:scale-100 transition-transform">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/40 backdrop-blur-xs text-white flex items-center justify-center shadow-lg border border-white/30 scale-90 group-hover:scale-100 transition-transform">
                       <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-white ml-0.5" />
                     </div>
-                  </div>
-
-                  {/* Bottom Gradient Overlay with Title and Price */}
-                  <div className="absolute inset-x-0 bottom-0 z-10 p-2.5 sm:p-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none">
-                    <p className="text-[11px] sm:text-xs md:text-[13px] font-semibold text-white truncate drop-shadow-sm leading-tight">
-                      {video.productName || video.title}
-                    </p>
-                    {video.productPrice && (
-                      <span className="inline-block mt-1 text-[10px] sm:text-xs font-bold text-white bg-white/25 backdrop-blur-md px-2 py-0.5 rounded-full">
-                        ₹{Number(video.productPrice).toFixed(0)}
-                      </span>
-                    )}
                   </div>
                 </div>
               );
@@ -932,7 +948,10 @@ export function ShoppableVideosSection({
   }
 
   // ==========================================================
-  // RENDER MOBILE VARIANT (Exact 3-in-1 3D Pop-Up Carousel)
+  // RENDER MOBILE VARIANT
+  // 3-in-1 3D Pop-Up Carousel with slightly increased video card size
+  // Red badge, views badge, and bottom product card REMOVED
+  // ONLY speaker mute/unmute icon and center play/pause button kept
   // ==========================================================
   return (
     <section
@@ -964,7 +983,7 @@ export function ShoppableVideosSection({
         {/* Carousel Sliding Viewport Container */}
         <div
           ref={mobileContainerRef}
-          className="relative w-full overflow-hidden py-4 sm:py-6 touch-pan-y select-none"
+          className="relative w-full overflow-hidden py-5 sm:py-7 touch-pan-y select-none"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => {
             setIsHovered(false);
@@ -1007,10 +1026,10 @@ export function ShoppableVideosSection({
                     width: `${mobileCardWidth}px`,
                     flexShrink: 0,
                   }}
-                  className={`relative aspect-[9/16] rounded-[18px] sm:rounded-[24px] overflow-hidden bg-slate-950 transition-all duration-500 ease-out select-none ${
+                  className={`relative aspect-[9/16] rounded-[20px] sm:rounded-[26px] overflow-hidden bg-slate-950 transition-all duration-500 ease-out select-none ${
                     isCenter
-                      ? "scale-[1.08] sm:scale-105 z-20 shadow-[0_16px_36px_rgba(0,0,0,0.4)] border-2 border-white/80 ring-2 ring-black/10 cursor-pointer"
-                      : "scale-[0.92] sm:scale-95 z-10 opacity-75 hover:opacity-95 shadow-md border border-gray-200/60 cursor-pointer"
+                      ? "scale-[1.08] z-20 shadow-[0_16px_36px_rgba(0,0,0,0.45)] border-2 border-white/80 ring-2 ring-black/10 cursor-pointer"
+                      : "scale-[0.92] z-10 opacity-75 hover:opacity-95 shadow-md border border-gray-200/60 cursor-pointer"
                   }`}
                 >
                   {/* Background Video Element or Poster */}
@@ -1039,43 +1058,26 @@ export function ShoppableVideosSection({
                         className="w-full h-full object-cover pointer-events-none"
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/35 pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 pointer-events-none" />
                   </div>
 
-                  {/* Top Overlay: Badges, View Counter & Mute Toggle for Center Card */}
-                  <div className="absolute top-1.5 left-1.5 right-1.5 sm:top-2.5 sm:left-2.5 sm:right-2.5 z-20 flex items-center justify-between">
-                    {vid.badge ? (
-                      <span className="bg-[#FF3B30] text-white text-[8px] sm:text-[9.5px] font-black uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full shadow-xs">
-                        {vid.badge}
-                      </span>
-                    ) : (
-                      <span className="bg-[#FF7A00] text-white text-[8px] sm:text-[9.5px] font-black uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full shadow-xs">
-                        NEW
-                      </span>
+                  {/* Top-Right: Speaker Mute / Unmute Button ONLY */}
+                  <div className="absolute top-2.5 right-2.5 z-20">
+                    {isCenter && (
+                      <button
+                        type="button"
+                        onClick={toggleCenterMute}
+                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/90 transition-all shadow-md active:scale-90 cursor-pointer"
+                        aria-label={isCenterMuted ? "Unmute video" : "Mute video"}
+                        title={isCenterMuted ? "Unmute" : "Mute"}
+                      >
+                        {isCenterMuted ? (
+                          <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                        ) : (
+                          <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                        )}
+                      </button>
                     )}
-
-                    <div className="flex items-center gap-1">
-                      {isCenter ? (
-                        <button
-                          type="button"
-                          onClick={toggleCenterMute}
-                          className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/90 transition-all shadow-md active:scale-90 cursor-pointer"
-                          aria-label={isCenterMuted ? "Unmute video" : "Mute video"}
-                          title={isCenterMuted ? "Unmute" : "Mute"}
-                        >
-                          {isCenterMuted ? (
-                            <VolumeX className="w-3.5 h-3.5 text-white" />
-                          ) : (
-                            <Volume2 className="w-3.5 h-3.5 text-white" />
-                          )}
-                        </button>
-                      ) : (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[8px] sm:text-[9.5px] font-bold shadow-xs">
-                          <Eye className="w-2.5 h-2.5 text-rose-400" />
-                          <span>{vid.viewsText || "24.5k"}</span>
-                        </span>
-                      )}
-                    </div>
                   </div>
 
                   {/* Center Play/Pause Button */}
@@ -1084,50 +1086,18 @@ export function ShoppableVideosSection({
                       <button
                         type="button"
                         onClick={toggleCenterPlayPause}
-                        className="w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-black/45 backdrop-blur-xs border border-white/40 text-white flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
+                        className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/45 backdrop-blur-xs border border-white/40 text-white flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
                         aria-label={isCenterPlaying ? "Pause video" : "Play video"}
                       >
                         {isCenterPlaying ? (
-                          <Pause className="w-3.5 h-3.5 sm:w-5 sm:h-5 fill-white text-white" />
+                          <Pause className="w-4 h-4 sm:w-5 sm:h-5 fill-white text-white" />
                         ) : (
-                          <Play className="w-3.5 h-3.5 sm:w-5 sm:h-5 fill-white text-white ml-0.5" />
+                          <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-white text-white ml-0.5" />
                         )}
                       </button>
                     ) : (
                       <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-black/40 backdrop-blur-xs border border-white/30 text-white flex items-center justify-center shadow-md">
-                        <Play className="w-3 h-3 sm:w-4 sm:h-4 fill-white text-white ml-0.5" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Bottom Price Badge */}
-                  <div className="absolute bottom-1.5 sm:bottom-2.5 left-1.5 sm:left-2.5 right-1.5 sm:right-2.5 z-20">
-                    {isCenter ? (
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenReel(realIdx);
-                        }}
-                        className="p-1 sm:p-1.5 rounded-lg sm:rounded-xl bg-black/70 backdrop-blur-md border border-white/20 text-white text-center shadow-lg hover:bg-black/85 transition-all cursor-pointer"
-                        title="Click to view shoppable details"
-                      >
-                        <p className="text-[8.5px] sm:text-[11px] font-bold truncate leading-tight text-white/95">
-                          {vid.productName || vid.title}
-                        </p>
-                        <div className="flex items-center justify-center gap-1 sm:gap-1.5 mt-0.5">
-                          <span className="text-[9.5px] sm:text-xs font-black text-[#FF7A00]">
-                            ₹{(vid.productPrice || currentProduct?.price || 799).toLocaleString("en-IN")}
-                          </span>
-                          {(vid.productMrp || currentProduct?.mrp) && (
-                            <span className="text-[7.5px] sm:text-[9.5px] text-gray-400 line-through">
-                              ₹{(vid.productMrp || currentProduct?.mrp || 1199).toLocaleString("en-IN")}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="px-1.5 py-0.5 rounded-md bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold truncate text-center leading-tight">
-                        ₹{(vid.productPrice || currentProduct?.price || 799).toLocaleString("en-IN")}
+                        <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white text-white ml-0.5" />
                       </div>
                     )}
                   </div>
@@ -1175,6 +1145,7 @@ export function ShoppableVideosSection({
 
   // ==========================================================
   // SHARED FULLSCREEN REELS MODAL VIDEO PLAYER
+  // Contains ALL product details, badges, price, MRP, Add to Cart, Buy Now
   // ==========================================================
   function renderModal() {
     if (!currentReel) return null;
