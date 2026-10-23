@@ -1662,16 +1662,17 @@ export default function ProductDetailPage() {
             </div>
 
             {/* ========================================================
-                SEE IT IN ACTION (REEL VIDEOS - 3 IN 1 ROW ON MOBILE)
+                SEE IT IN ACTION (MOBILE VIEW ONLY: 3-IN-1 POP-UP CAROUSEL)
                ======================================================== */}
             {product && (
-              <div className="mt-6 pt-5 border-t border-gray-100">
+              <div className="lg:hidden mt-6 pt-5 border-t border-gray-100">
                 <ShoppableVideosSection
                   currentProduct={product}
                   showHeader={true}
                   title="SEE IT IN ACTION"
                   subtitle="Discover the little details, clever features, and everyday benefits that make a big difference."
                   centeredHeader={true}
+                  variant="mobile"
                   onToast={(msg) => showToast(msg)}
                 />
               </div>
@@ -2004,6 +2005,23 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </main>
+
+      {/* ========================================================
+          SEE IT IN ACTION (DESKTOP VIEW ONLY: 1-ROW CONTINUOUS MOVING REELS ABOVE YOU MAY ALSO LIKE)
+         ======================================================== */}
+      {product && (
+        <div className="hidden lg:block w-full max-w-[1520px] mx-auto px-6 mt-14 mb-4">
+          <ShoppableVideosSection
+            currentProduct={product}
+            showHeader={true}
+            title="SEE IT IN ACTION"
+            subtitle="Discover the little details, clever features, and everyday benefits that make a big difference."
+            centeredHeader={false}
+            variant="desktop"
+            onToast={(msg) => showToast(msg)}
+          />
+        </div>
+      )}
 
       {/* ========================================================
           YOU MAY ALSO LIKE (MATCHING PRODUCTS SET / RELATED PRODUCTS)
