@@ -673,20 +673,24 @@ export async function sendOrderCancellationEmail(
                 </tr>`
               : ""
           }
-          <tr>
-            <td style="color: #047857; padding: 4px 0; font-weight: 600;">Expected Credit:</td>
-            <td style="color: #065f46; font-weight: 700; text-align: right;">UPI: 2-4 hrs | Cards: 2-4 days</td>
-          </tr>
         </table>
+        <div style="margin-top: 14px; background: #ffffff; border: 1px solid #d1fae5; border-radius: 10px; padding: 12px; font-size: 12px; color: #065f46; line-height: 1.6;">
+          <div style="font-weight: 800; color: #047857; margin-bottom: 4px;">⏱️ Expected Credit Timeline:</div>
+          <div>• <strong>UPI (GPay, PhonePe, Paytm):</strong> Usually credited within <strong>2 to 4 hours</strong> (or up to 24 hours depending on the issuing bank).</div>
+          <div style="margin-top: 3px;">• <strong>Debit / Credit Cards / Netbanking:</strong> Credited within <strong>2 to 4 business days</strong>.</div>
+        </div>
       </div>
     `
     : `
-      <div style="background-color: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px; margin-bottom: 24px;">
-        <div style="font-size: 14px; font-weight: 700; color: #374151;">
+      <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 18px; margin-bottom: 24px;">
+        <div style="font-size: 15px; font-weight: 800; color: #92400e; margin-bottom: 6px;">
           Cash on Delivery Order Cancelled
         </div>
-        <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">
-          No charges were deducted since this was a Cash on Delivery order.
+        <div style="font-size: 13px; color: #78350f; line-height: 1.6;">
+          Your Cash on Delivery order has been successfully cancelled. Your shipment will not be dispatched and no payment will be collected at your doorstep.
+        </div>
+        <div style="margin-top: 12px; background: #ffffff; border: 1px solid #fef3c7; border-radius: 10px; padding: 12px; font-size: 12px; color: #92400e; line-height: 1.5;">
+          <strong>ℹ️ Advance Fee Note:</strong> The <strong>₹19 advance verification fee</strong> paid during checkout covers anti-fraud address verification and carrier commitment, and is <strong>non-refundable</strong>.
         </div>
       </div>
     `;
@@ -780,10 +784,12 @@ ${
     ? `FULL REFUND INITIATED:
 Refund Amount: ₹${totalAmount.toLocaleString("en-IN")}
 ${refundId ? `Refund Reference: ${refundId}\n` : ""}${paymentId ? `Payment ID: ${paymentId}\n` : ""}
-Credit Timeline:
-- UPI (GPay / PhonePe / Paytm): Within 2 to 4 hours
-- Cards / Netbanking: 2 to 4 business days`
-    : `Cash on Delivery order cancelled. No amount was charged.`
+EXPECTED CREDIT TIMELINE:
+• UPI (GPay, PhonePe, Paytm): Usually credited within 2 to 4 hours (or up to 24 hours depending on the issuing bank).
+• Debit / Credit Cards / Netbanking: Credited within 2 to 4 business days.`
+    : `CASH ON DELIVERY ORDER CANCELLED:
+Your Cash on Delivery order has been successfully cancelled. No doorstep payment will be collected.
+Note: The ₹19 advance verification fee paid during checkout covers order verification and carrier reservation, and is non-refundable.`
 }
 
 If you need any assistance, reply to this email at zupestoreonline@gmail.com.

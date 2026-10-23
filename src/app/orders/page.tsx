@@ -843,23 +843,36 @@ function OrdersPageContent() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           {cancelPromptId === ord.id ? (
-                            <div className="flex items-center gap-1.5 bg-white p-1 px-2 rounded-lg border border-rose-200">
-                              <span className="text-[11px] text-rose-700 font-bold">Cancel?</span>
-                              <button
-                                type="button"
-                                onClick={() => handleCancelOrder(ord.id)}
-                                disabled={cancellingOrderId === ord.id}
-                                className="px-2 py-0.5 rounded text-[11px] font-bold text-white bg-rose-600 hover:bg-rose-700 transition cursor-pointer"
-                              >
-                                {cancellingOrderId === ord.id ? "..." : "Yes"}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setCancelPromptId(null)}
-                                className="px-2 py-0.5 rounded text-[11px] font-bold text-gray-600 hover:bg-gray-100 transition cursor-pointer"
-                              >
-                                No
-                              </button>
+                            <div className="flex flex-col items-end gap-1.5 bg-rose-50/95 p-2 sm:p-2.5 rounded-xl border border-rose-200 shadow-xs">
+                              <div className="text-[11px] text-rose-900 text-right leading-tight max-w-[240px] sm:max-w-xs">
+                                <span className="font-bold text-rose-950">Cancel Order? </span>
+                                {isCod ? (
+                                  <span className="text-amber-800 font-medium">
+                                    Doorstep balance cancelled. (Note: ₹19 advance verification fee is non-refundable).
+                                  </span>
+                                ) : (
+                                  <span className="text-emerald-800 font-medium">
+                                    Full ₹{displayedTotal} refund to original payment source (UPI 2-4 hrs, Cards 2-4 days).
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleCancelOrder(ord.id)}
+                                  disabled={cancellingOrderId === ord.id}
+                                  className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-white bg-rose-600 hover:bg-rose-700 transition cursor-pointer shadow-xs"
+                                >
+                                  {cancellingOrderId === ord.id ? "Cancelling..." : "Confirm"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setCancelPromptId(null)}
+                                  className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-700 bg-white hover:bg-gray-100 border border-gray-200 transition cursor-pointer"
+                                >
+                                  Keep
+                                </button>
+                              </div>
                             </div>
                           ) : (
                             <button
@@ -883,23 +896,36 @@ function OrdersPageContent() {
                     !isShipped && (
                       <div className="mb-4 flex items-center justify-end">
                         {cancelPromptId === ord.id ? (
-                          <div className="flex items-center gap-2 bg-rose-50/80 p-1.5 px-3 rounded-xl border border-rose-200">
-                            <span className="text-xs text-rose-800 font-bold">Cancel this order?</span>
-                            <button
-                              type="button"
-                              onClick={() => handleCancelOrder(ord.id)}
-                              disabled={cancellingOrderId === ord.id}
-                              className="px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer"
-                            >
-                              {cancellingOrderId === ord.id ? "Cancelling..." : "Confirm Cancel"}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setCancelPromptId(null)}
-                              className="px-2 py-1 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
-                            >
-                              Keep Order
-                            </button>
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 bg-rose-50/95 p-3 rounded-xl border border-rose-200 w-full shadow-xs">
+                            <div className="text-xs text-rose-900 leading-relaxed">
+                              <span className="font-bold text-rose-950">Are you sure you want to cancel this order? </span>
+                              {isCod ? (
+                                <span className="block text-amber-900 font-medium text-[11px] mt-0.5">
+                                  ⚠️ Doorstep parcel delivery will be cancelled. Please note that the <strong>₹19 advance verification fee</strong> paid during checkout is <strong>non-refundable</strong>.
+                                </span>
+                              ) : (
+                                <span className="block text-emerald-900 font-medium text-[11px] mt-0.5">
+                                  ✓ Full refund of <strong>₹{displayedTotal}</strong> will be initiated to your original payment method. Expected timeline: UPI within 2–4 hours, Cards/Netbanking within 2–4 days.
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                              <button
+                                type="button"
+                                onClick={() => handleCancelOrder(ord.id)}
+                                disabled={cancellingOrderId === ord.id}
+                                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer shadow-xs"
+                              >
+                                {cancellingOrderId === ord.id ? "Cancelling..." : "Confirm Cancel"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setCancelPromptId(null)}
+                                className="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-700 bg-white hover:bg-gray-100 border border-gray-200 transition-colors cursor-pointer"
+                              >
+                                Keep Order
+                              </button>
+                            </div>
                           </div>
                         ) : (
                           <button

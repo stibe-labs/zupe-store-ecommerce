@@ -163,15 +163,51 @@ export default function ReturnPolicyPage() {
             </p>
           </section>
 
-          {/* 5. Cancellations */}
-          <section className="space-y-3">
+          {/* 5. Cancellations & Refunds */}
+          <section className="space-y-4">
             <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg border-b border-gray-100 pb-2">
               <Clock className="w-5 h-5 text-[#FF7A00]" />
-              <h2>Cancellations</h2>
+              <h2>Order Cancellation &amp; Refund Policy</h2>
             </div>
             <p>
-              Orders can only be canceled within <strong className="text-gray-900">12 hours of placing them</strong>. Once the order has been packed or shipped, cancellation requests cannot be processed.
+              Orders can be canceled anytime before they are packed or dispatched for shipping directly from your <strong className="text-gray-900">My Orders</strong> page or via the link in your WhatsApp verification message. Once an order is handed over to our courier partner and marked as dispatched, it cannot be canceled online.
             </p>
+
+            {/* Prepaid Refunds Box */}
+            <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 space-y-2.5 text-emerald-950">
+              <h4 className="font-bold text-sm sm:text-base flex items-center gap-2 text-emerald-900">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                Prepaid Online Orders (100% Refund)
+              </h4>
+              <p className="text-xs sm:text-sm text-emerald-800 leading-relaxed">
+                When you cancel a prepaid order before dispatch, a <strong className="text-emerald-950">100% full refund</strong> is automatically initiated to your original payment method (UPI, Debit/Credit Card, or Netbanking) via our verified payment gateway partner (Razorpay).
+              </p>
+              <div className="bg-white/80 rounded-xl p-3 border border-emerald-200 text-xs sm:text-sm space-y-1 text-emerald-900">
+                <div className="font-semibold text-emerald-950">Expected Credit Timeline:</div>
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-emerald-700">•</span>
+                  <span><strong>UPI (GPay, PhonePe, Paytm):</strong> Usually credited within <strong>2 to 4 hours</strong> (or up to 24 hours depending on the issuing bank).</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-emerald-700">•</span>
+                  <span><strong>Debit / Credit Cards / Netbanking:</strong> Credited within <strong>2 to 4 business days</strong>.</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Cash on Delivery Policy Box */}
+            <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 sm:p-5 space-y-2.5 text-amber-950">
+              <h4 className="font-bold text-sm sm:text-base flex items-center gap-2 text-amber-900">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                Cash on Delivery (COD) Orders &amp; ₹19 Advance Fee
+              </h4>
+              <p className="text-xs sm:text-sm text-amber-800 leading-relaxed">
+                When you cancel a Cash on Delivery order, the remaining balance due at doorstep is completely canceled, and our logistics partner will not deliver the parcel.
+              </p>
+              <div className="bg-white/80 rounded-xl p-3 border border-amber-200 text-xs sm:text-sm text-amber-900 leading-relaxed">
+                <strong>Important Note:</strong> The <strong>₹19 advance verification fee</strong> paid during checkout covers courier dispatch reservation, automated fraud prevention, and parcel allocation, and is <strong className="text-red-700">strictly non-refundable</strong> upon order cancellation.
+              </div>
+            </div>
           </section>
 
           {/* 6. Our Commitment */}

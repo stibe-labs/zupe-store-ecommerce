@@ -13,6 +13,8 @@ const STORE_BASE_URL = "https://zupe-store.stibelabs.workers.dev";
 const TEMPLATE_PREPAID = "zupe_order_prepaid";
 const TEMPLATE_COD = "zupe_order_cod";
 const TEMPLATE_VERIFY = "zupe_order_verify";
+const TEMPLATE_CANCEL_PREPAID = "zupe_order_cancelled_prepaid";
+const TEMPLATE_CANCEL_COD = "zupe_order_cancelled_cod";
 const TEMPLATE_LANG = "en";
 
 export interface OrderConfirmationParams {
@@ -601,6 +603,92 @@ export async function sendOrderCancellationRefundWhatsApp(
 
   const firstName = customerName.split(" ")[0] || customerName;
 
+  // 1. Try official Meta utility template first (guaranteed delivery outside 24h window once approved)
+  if (isPrepaid && refundAmount) {
+    try {
+      const payload = {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: digits,
+        type: "template",
+        template: {
+          name: TEMPLATE_CANCEL_PREPAID,
+          language: { code: TEMPLATE_LANG },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: firstName },
+                { type: "text", text: orderId },
+                { type: "text", text: `Rs ${refundAmount.toLocaleString("en-IN")}` },
+                { type: "text", text: refundId || "Initiated" },
+              ],
+            },
+          ],
+        },
+      };
+
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + apiToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(6000),
+      });
+
+      const data = (await res.json()) as any;
+      if (res.ok && data.messages?.length > 0) {
+        console.log(`✅ [WA Cancel] Official template '${TEMPLATE_CANCEL_PREPAID}' dispatched for order ${orderId} to ${digits}`);
+        return true;
+      }
+    } catch (tErr) {
+      // Non-fatal, proceed to text fallback
+    }
+  } else {
+    try {
+      const payload = {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: digits,
+        type: "template",
+        template: {
+          name: TEMPLATE_CANCEL_COD,
+          language: { code: TEMPLATE_LANG },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: firstName },
+                { type: "text", text: orderId },
+              ],
+            },
+          ],
+        },
+      };
+
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + apiToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(6000),
+      });
+
+      const data = (await res.json()) as any;
+      if (res.ok && data.messages?.length > 0) {
+        console.log(`✅ [WA Cancel] Official template '${TEMPLATE_CANCEL_COD}' dispatched for order ${orderId} to ${digits}`);
+        return true;
+      }
+    } catch (tErr) {
+      // Non-fatal, proceed to text fallback
+    }
+  }
+
+  // 2. Fallback to direct text message
   let body = "";
   if (isPrepaid && refundAmount) {
     body =
@@ -610,14 +698,16 @@ export async function sendOrderCancellationRefundWhatsApp(
       `💳 *Refund Reference:* ${refundId || "Initiated via Razorpay"}\n` +
       `⚡ *Payment Source:* Released back to your original payment method (UPI / Card / Netbanking)\n\n` +
       `⏱️ *Expected Credit Timeline:*\n` +
-      `• UPI (GPay / PhonePe / Paytm): Within 2 to 4 hours\n` +
-      `• Debit / Credit Card: 2 to 4 business days\n\n` +
+      `• UPI (GPay, PhonePe, Paytm): Usually credited within 2 to 4 hours (or up to 24 hours depending on the issuing bank)\n` +
+      `• Debit / Credit Cards / Netbanking: Credited within 2 to 4 business days\n\n` +
       `Thank you for shopping with Zupe Store!`;
   } else {
     body =
       `🛍️ *Zupe Store — Order Cancelled*\n\n` +
       `Hi ${firstName}! Your Cash on Delivery order *#${orderId}* has been successfully cancelled.\n\n` +
-      `No amount was charged. If you need any assistance or want to re-order, we are here to help.\n\n` +
+      `📦 *Status:* Shipment cancelled. No payment will be collected at your doorstep.\n` +
+      `ℹ️ *Note:* The Rs 19 advance verification fee paid during order placement is non-refundable.\n\n` +
+      `If you need any assistance or wish to re-order, we are always here to help.\n\n` +
       `Thank you,\nZupe Store Team`;
   }
 
