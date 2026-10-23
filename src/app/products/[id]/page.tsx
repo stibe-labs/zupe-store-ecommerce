@@ -957,7 +957,7 @@ export default function ProductDetailPage() {
       <Navbar />
 
       {/* Main Container */}
-      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-2 sm:pt-6">
+      <main className="max-w-[1600px] mx-auto px-0 sm:px-6 pt-0 sm:pt-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-14 items-stretch">
           
           {/* ========================================================
@@ -968,9 +968,9 @@ export default function ProductDetailPage() {
               {/* Product Deal Countdown Timer (Small size matching reference photo) */}
               <ProductDealTimer discountPercent={discountPercent > 0 ? discountPercent : 50} />
 
-              {/* Main Showcase Image Container with Touch & Drag Swipe */}
+              {/* Main Showcase Image Container with Touch & Drag Swipe (Filled Square edge-to-edge on mobile) */}
               <div
-                className={`group relative aspect-square w-full rounded-[24px] sm:rounded-[28px] overflow-hidden bg-[#F3F4F6] shadow-sm select-none touch-pan-y ${
+                className={`group relative aspect-square w-full rounded-none sm:rounded-[28px] overflow-hidden bg-[#F3F4F6] shadow-none sm:shadow-sm select-none touch-pan-y ${
                 gallery.length > 1 ? "cursor-grab active:cursor-grabbing" : ""
               }`}
               onTouchStart={handleTouchStart}
@@ -1039,14 +1039,14 @@ export default function ProductDetailPage() {
                 </button>
               </div>
 
-              {/* Left & Right Interactive Arrow Buttons */}
+              {/* Left & Right Interactive Arrow Buttons (Hidden on mobile for full clean picture, visible on desktop hover) */}
               {gallery.length > 1 && (
                 <>
                   {safeActiveIndex > 0 && (
                     <button
                       type="button"
                       onClick={handlePrevImage}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 hover:bg-white backdrop-blur-md shadow-md flex items-center justify-center text-gray-800 hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
+                      className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 hover:bg-white backdrop-blur-md shadow-md items-center justify-center text-gray-800 hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                       aria-label="Previous image"
                     >
                       <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
@@ -1056,7 +1056,7 @@ export default function ProductDetailPage() {
                     <button
                       type="button"
                       onClick={handleNextImage}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 hover:bg-white backdrop-blur-md shadow-md flex items-center justify-center text-gray-800 hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
+                      className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 hover:bg-white backdrop-blur-md shadow-md items-center justify-center text-gray-800 hover:scale-110 active:scale-95 transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                       aria-label="Next image"
                     >
                       <ChevronRight className="w-5 h-5 stroke-[2.5]" />
@@ -1065,25 +1065,25 @@ export default function ProductDetailPage() {
                 </>
               )}
 
-              {/* Bottom-Right Counter Badge */}
+              {/* Bottom-Right Counter Badge (Desktop only) */}
               {gallery.length > 1 && (
-                <div className="absolute bottom-3.5 right-3.5 z-20 pointer-events-none">
+                <div className="hidden sm:block absolute bottom-3.5 right-3.5 z-20 pointer-events-none">
                   <span className="px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white text-[11px] font-semibold tracking-wide">
                     {safeActiveIndex + 1}/{gallery.length}
                   </span>
                 </div>
               )}
 
-              {/* Mobile Swipe Pagination Dots */}
+              {/* Mobile Swipe Pagination Dots (clean circular dots matching reference image) */}
               {gallery.length > 1 && (
-                <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:hidden pointer-events-none">
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:hidden pointer-events-none">
                   {gallery.map((_, i) => (
                     <span
                       key={i}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                      className={`rounded-full transition-all duration-300 ${
                         i === safeActiveIndex
-                          ? "w-4 bg-white shadow-sm"
-                          : "w-1.5 bg-white/50"
+                          ? "w-2.5 h-2.5 bg-white shadow-md ring-1 ring-black/20"
+                          : "w-2 h-2 bg-white/60 backdrop-blur-xs"
                       }`}
                     />
                   ))}
@@ -1137,7 +1137,7 @@ export default function ProductDetailPage() {
               RIGHT COLUMN: TITLE, PRICE, CTA BUTTONS, TRUST BADGES,
               COLOR SWATCHES, ACCORDIONS & REVIEWS
              ======================================================== */}
-          <div className="w-full mt-4 lg:mt-0">
+          <div className="w-full mt-4 lg:mt-0 px-4 sm:px-0">
             {/* Product Title */}
             <h1 className="text-[20px] sm:text-[24px] font-display font-bold text-[#111111] leading-snug tracking-tight">
               {product.name}

@@ -67,7 +67,7 @@ export function ProductDealTimer({
 
   return (
     <div
-      className={`w-full py-1.5 px-3 sm:px-4 mb-3 rounded-xl bg-gradient-to-r from-[#FF4D15] via-[#FF6A00] to-[#FFA000] text-white flex items-center justify-between shadow-xs select-none ${className}`}
+      className={`w-full py-1.5 px-3 sm:px-4 mb-0 sm:mb-3 rounded-none sm:rounded-xl bg-gradient-to-r from-[#FF4D15] via-[#FF6A00] to-[#FFA000] text-white flex items-center justify-between shadow-xs select-none ${className}`}
     >
       {/* Left: Deal Badge */}
       <div className="flex items-center gap-1.5 min-w-0">
