@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
             try { rawItems = JSON.parse(ord.items); } catch { rawItems = []; }
           }
 
-          sendOrderConfirmationEmail({
+          const emailRes = await sendOrderConfirmationEmail({
             orderId: ord.id || (ord as any).shopify_order_id || resolvedOrderId,
             customerName: ord.customer_name || "Valued Customer",
             customerEmail,
@@ -99,11 +99,10 @@ export async function GET(req: NextRequest) {
               image: it.image || it.poster_image,
             })),
             createdAt: ord.created_at,
-          }).then(async (res) => {
-            if (res.success && !res.skipped) {
-              await markOrderEmailSent(ord.id || resolvedOrderId);
-            }
-          }).catch((err) => console.warn("WA verify email dispatch error:", err));
+          });
+          if (emailRes.success && !emailRes.skipped) {
+            await markOrderEmailSent(ord.id || resolvedOrderId);
+          }
         } catch (emailErr) {
           console.warn("Failed to dispatch email confirmation on WA verify:", emailErr);
         }

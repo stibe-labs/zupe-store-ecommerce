@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
         try {
           const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
           const { markOrderEmailSent } = await import("@/lib/orderStore");
-          sendOrderConfirmationEmail({
+          const emailRes = await sendOrderConfirmationEmail({
             orderId: existingOrderId,
             customerName: custName,
             customerEmail: switchEmail,
@@ -141,11 +141,10 @@ export async function POST(req: NextRequest) {
               image: it.image || it.poster_image,
             })),
             createdAt: existingOrder?.created_at || new Date().toISOString(),
-          }).then(async (res) => {
-            if (res.success && !res.skipped) {
-              await markOrderEmailSent(existingOrderId);
-            }
-          }).catch((err) => console.warn("Failed to send switched prepaid email:", err));
+          });
+          if (emailRes.success && !emailRes.skipped) {
+            await markOrderEmailSent(existingOrderId);
+          }
         } catch (e) {
           console.warn("Error initializing switched prepaid email:", e);
         }
@@ -318,7 +317,7 @@ export async function POST(req: NextRequest) {
       try {
         const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
         const { markOrderEmailSent } = await import("@/lib/orderStore");
-        sendOrderConfirmationEmail({
+        const emailRes = await sendOrderConfirmationEmail({
           orderId,
           customerName: customer_name || "Customer",
           customerEmail: normEmail,
@@ -332,15 +331,12 @@ export async function POST(req: NextRequest) {
           paymentStatus: orderPaymentStatus,
           items: items || [],
           createdAt: newOrder.created_at,
-        }).then(async (res) => {
-          if (res.success && !res.skipped) {
-            await markOrderEmailSent(orderId);
-          }
-        }).catch((emailErr) => {
-          console.warn("[Verify Payment] Failed to send order confirmation email:", emailErr);
         });
-      } catch (importErr) {
-        console.warn("[Verify Payment] Error initializing order confirmation email:", importErr);
+        if (emailRes.success && !emailRes.skipped) {
+          await markOrderEmailSent(orderId);
+        }
+      } catch (emailErr) {
+        console.warn("[Verify Payment] Failed to send order confirmation email:", emailErr);
       }
     }
 

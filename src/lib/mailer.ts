@@ -34,6 +34,57 @@ export async function sendEmail({
 
   // 1. Check for Gmail SMTP if password is provided
   if (smtpPass) {
+    // A. In Cloudflare Workers environment, use WorkerMailer with cloudflare:sockets
+    try {
+      const { WorkerMailer } = await import("worker-mailer");
+      const wmAttachments: Array<{ filename: string; content: string; mimeType?: string }> = [];
+      if (Array.isArray(attachments)) {
+        for (const att of attachments) {
+          if (att.content) {
+            const b64 = Buffer.isBuffer(att.content)
+              ? att.content.toString("base64")
+              : typeof att.content === "string"
+              ? att.content
+              : Buffer.from(att.content).toString("base64");
+            wmAttachments.push({
+              filename: att.filename,
+              content: b64,
+              mimeType: att.contentType,
+            });
+          }
+        }
+      }
+
+      await WorkerMailer.send(
+        {
+          host: process.env.SMTP_HOST || "smtp.gmail.com",
+          port: Number(process.env.SMTP_PORT) || 465,
+          secure: true,
+          authType: ["login", "plain"],
+          credentials: {
+            username: companyEmail,
+            password: smtpPass,
+          },
+        },
+        {
+          from: { name: "Zupe Store", email: companyEmail },
+          to,
+          reply: replyToAddress,
+          subject,
+          html,
+          text,
+          attachments: wmAttachments.length > 0 ? wmAttachments : undefined,
+        }
+      );
+
+      console.log(`[Mailer] ✅ Cloudflare WorkerMailer delivered email to ${to} via Gmail SMTP`);
+      return { success: true };
+    } catch (cfErr: any) {
+      console.warn("[Mailer] WorkerMailer socket connection attempt failed / not in CF:", cfErr?.message || cfErr);
+      // Fall through to standard Node.js nodemailer
+    }
+
+    // B. Standard Node.js environment fallback
     try {
       const port = Number(process.env.SMTP_PORT) || 465;
       const transporter = nodemailer.createTransport({
@@ -59,10 +110,10 @@ export async function sendEmail({
         attachments: attachments as any,
       });
 
-      console.log(`[Mailer] ✅ SMTP email delivered to ${to} from ${fromAddress}`);
+      console.log(`[Mailer] ✅ Nodemailer delivered email to ${to} from ${fromAddress}`);
       return { success: true };
     } catch (err: any) {
-      console.error("Nodemailer SMTP error:", err);
+      console.error("[Mailer] Nodemailer SMTP error:", err);
       // Fall through to HTTP options if SMTP fails
     }
   }

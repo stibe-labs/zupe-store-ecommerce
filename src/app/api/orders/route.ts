@@ -328,7 +328,7 @@ export async function POST(req: NextRequest) {
       try {
         const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
         const { markOrderEmailSent } = await import("@/lib/orderStore");
-        sendOrderConfirmationEmail({
+        const emailRes = await sendOrderConfirmationEmail({
           orderId,
           customerName: customer_name,
           customerEmail: normEmail,
@@ -342,15 +342,12 @@ export async function POST(req: NextRequest) {
           paymentStatus: isCod ? "pending" : "paid",
           items: items || [],
           createdAt: newOrder.created_at,
-        }).then(async (res) => {
-          if (res.success && !res.skipped) {
-            await markOrderEmailSent(orderId);
-          }
-        }).catch((emailErr) => {
-          console.warn("[Orders Route] Failed to send order confirmation email:", emailErr);
         });
-      } catch (importErr) {
-        console.warn("[Orders Route] Error initializing order confirmation email:", importErr);
+        if (emailRes.success && !emailRes.skipped) {
+          await markOrderEmailSent(orderId);
+        }
+      } catch (emailErr) {
+        console.warn("[Orders Route] Failed to send order confirmation email:", emailErr);
       }
     }
 
