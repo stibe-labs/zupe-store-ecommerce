@@ -99,16 +99,28 @@ function OrdersPageContent() {
     return null;
   }, [confirmedOrderId, autoConfirmedOrderId, dismissedConfirmBannerIds]);
 
+  const cancelPromptHandledRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (cancelPromptParam && orders.length > 0) {
+    if (!cancelPromptParam) return;
+    if (cancelPromptHandledRef.current === cancelPromptParam) return;
+
+    if (orders.length > 0) {
       const targetOrd = orders.find((o) => o.id === cancelPromptParam);
-      if (targetOrd && targetOrd.whatsapp_confirm_status !== "pending_whatsapp") {
-        setCancelPromptId(null);
-      } else {
-        setCancelPromptId(cancelPromptParam);
+      if (targetOrd) {
+        cancelPromptHandledRef.current = cancelPromptParam;
+        if (targetOrd.order_status === "cancelled" || targetOrd.whatsapp_confirm_status === "cancelled") {
+          // If the target order is already cancelled, clear the parameter from URL so it doesn't linger
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("cancelPrompt");
+            url.searchParams.delete("cancel");
+            window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+          } catch {}
+        } else {
+          setCancelPromptId(cancelPromptParam);
+        }
       }
-    } else if (cancelPromptParam) {
-      setCancelPromptId(cancelPromptParam);
     }
   }, [cancelPromptParam, orders]);
 
@@ -192,8 +204,33 @@ function OrdersPageContent() {
               }
             }
           }
-          prevOrdersRef.current = data.orders;
-          setOrders(data.orders);
+
+          // Smart Diffing: Only trigger React state updates if orders or statuses actually changed!
+          const hasOrdersChanged = () => {
+            if (prevOrdersRef.current.length !== data.orders.length) return true;
+            for (let i = 0; i < data.orders.length; i++) {
+              const prev = prevOrdersRef.current[i];
+              const curr = data.orders[i];
+              if (!prev || !curr) return true;
+              if (
+                prev.id !== curr.id ||
+                prev.whatsapp_confirm_status !== curr.whatsapp_confirm_status ||
+                prev.order_status !== curr.order_status ||
+                prev.payment_status !== curr.payment_status ||
+                (prev as any).status !== (curr as any).status ||
+                (prev as any).delivery_status !== (curr as any).delivery_status ||
+                (prev as any).shiprocket_awb !== (curr as any).shiprocket_awb
+              ) {
+                return true;
+              }
+            }
+            return false;
+          };
+
+          if (hasOrdersChanged() || prevOrdersRef.current.length === 0) {
+            prevOrdersRef.current = data.orders;
+            setOrders(data.orders);
+          }
         }
       } catch (err) {
         console.warn("Failed to fetch orders:", err);
@@ -368,6 +405,12 @@ function OrdersPageContent() {
           data.message || `Order #${orderId} was successfully cancelled.`
         );
         setCancelPromptId(null);
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.delete("cancelPrompt");
+          url.searchParams.delete("cancel");
+          window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+        } catch {}
       } else {
         alert(data.error || "Failed to cancel order.");
       }
@@ -867,7 +910,15 @@ function OrdersPageContent() {
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => setCancelPromptId(null)}
+                                  onClick={() => {
+                                    setCancelPromptId(null);
+                                    try {
+                                      const url = new URL(window.location.href);
+                                      url.searchParams.delete("cancelPrompt");
+                                      url.searchParams.delete("cancel");
+                                      window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+                                    } catch {}
+                                  }}
                                   className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-700 bg-white hover:bg-gray-100 border border-gray-200 transition cursor-pointer"
                                 >
                                   Keep
@@ -920,7 +971,15 @@ function OrdersPageContent() {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => setCancelPromptId(null)}
+                                onClick={() => {
+                                  setCancelPromptId(null);
+                                  try {
+                                    const url = new URL(window.location.href);
+                                    url.searchParams.delete("cancelPrompt");
+                                    url.searchParams.delete("cancel");
+                                    window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+                                  } catch {}
+                                }}
                                 className="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-700 bg-white hover:bg-gray-100 border border-gray-200 transition-colors cursor-pointer"
                               >
                                 Keep Order
