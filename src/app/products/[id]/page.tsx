@@ -1275,7 +1275,7 @@ export default function ProductDetailPage() {
                         key={i}
                         type="button"
                         onClick={() => handleSelectColorSwatch(c.name, c.image)}
-                        className={`relative w-[25px] h-[25px] sm:w-[27px] sm:h-[27px] rounded-full flex-shrink-0 transition-all duration-200 cursor-pointer overflow-hidden p-0 ${
+                        className={`relative w-[32px] h-[32px] sm:w-[35px] sm:h-[35px] rounded-full flex-shrink-0 transition-all duration-200 cursor-pointer overflow-hidden p-0 ${
                           isSelected
                             ? "ring-2 ring-offset-[2px] ring-[#FF7A00] scale-105 shadow-2xs"
                             : "border border-gray-300/80 hover:scale-105 opacity-90 hover:opacity-100"
