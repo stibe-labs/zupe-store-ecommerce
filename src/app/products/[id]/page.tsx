@@ -1268,23 +1268,39 @@ export default function ProductDetailPage() {
                   {availableColors.map((c, i) => {
                     const isSelected = selectedColor.toLowerCase() === c.name.toLowerCase();
                     const bgHex = getColorHex(c.name, c.colorHex);
+                    const swatchImg = c.thumb || c.image || (c.images && c.images.length > 0 ? c.images[0] : null);
+
                     return (
                       <button
                         key={i}
                         type="button"
                         onClick={() => handleSelectColorSwatch(c.name, c.image)}
-                        className={`relative w-7 h-7 sm:w-8 sm:h-8 rounded-full flex-shrink-0 transition-all duration-200 cursor-pointer ${
+                        className={`relative w-[25px] h-[25px] sm:w-[27px] sm:h-[27px] rounded-full flex-shrink-0 transition-all duration-200 cursor-pointer overflow-hidden p-0 ${
                           isSelected
-                            ? "ring-2 ring-offset-2 ring-[#FF7A00] scale-110 shadow-xs"
-                            : "border border-gray-300 hover:scale-105 opacity-85 hover:opacity-100"
+                            ? "ring-2 ring-offset-[2px] ring-[#FF7A00] scale-105 shadow-2xs"
+                            : "border border-gray-300/80 hover:scale-105 opacity-90 hover:opacity-100"
                         }`}
                         style={{ backgroundColor: bgHex }}
                         title={c.name}
                         aria-label={c.name}
                         aria-pressed={isSelected}
                       >
+                        {swatchImg ? (
+                          <Image
+                            src={swatchImg}
+                            alt={c.name}
+                            fill
+                            sizes="32px"
+                            className="object-cover rounded-full"
+                          />
+                        ) : (
+                          <span
+                            className="w-full h-full block rounded-full"
+                            style={{ backgroundColor: bgHex }}
+                          />
+                        )}
                         {isSelected && (
-                          <span className="absolute inset-0 rounded-full border border-black/15 pointer-events-none" />
+                          <span className="absolute inset-0 rounded-full border border-black/10 pointer-events-none" />
                         )}
                       </button>
                     );
