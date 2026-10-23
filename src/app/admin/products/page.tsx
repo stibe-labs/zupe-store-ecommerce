@@ -37,9 +37,29 @@ import {
   GripVertical,
   Move,
   Truck,
+  HelpCircle,
+  Eye,
+  Monitor,
+  Smartphone,
+  Video,
 } from "lucide-react";
-import { Product, ProductColorVariant, BuyMoreSaveMoreConfig, BuyMoreSaveMoreTier, ProductOverviewBlock } from "@/types/product";
+import {
+  Product,
+  ProductColorVariant,
+  BuyMoreSaveMoreConfig,
+  BuyMoreSaveMoreTier,
+  ProductOverviewBlock,
+  HowToUseStep,
+  HowToUseConfig,
+  HowToUseMediaType,
+  HowToUseMediaFit,
+  HowToUseSectionBg,
+  HowToUseCardRadius,
+  HowToUseCardBorder,
+  HowToUseCardShadow,
+} from "@/types/product";
 import { DEFAULT_PRODUCTS, getSubcategoriesForCategory } from "@/data/zupeProducts";
+import { HowToUseSection } from "@/components/HowToUseSection";
 
 // Exact Category & Subcategory taxonomy from official catalog structure
 const PRODUCT_CATEGORIES_DATA = [
@@ -105,6 +125,7 @@ const FORM_TABS_LIST = [
   "overview",
   "highlights",
   "specs",
+  "how_to_use",
 ] as const;
 
 type FormTabKey = (typeof FORM_TABS_LIST)[number];
@@ -253,6 +274,22 @@ export default function AdminProductsPage() {
   const [formWhatsInBox, setFormWhatsInBox] = useState<string[]>([]);
   const [newBoxInput, setNewBoxInput] = useState("");
 
+  // Tab 8: How to Use Configuration State
+  const [formHowToUseEnabled, setFormHowToUseEnabled] = useState<boolean>(true);
+  const [formHowToUseSectionBg, setFormHowToUseSectionBg] = useState<HowToUseSectionBg>("white");
+  const [formHowToUseCardRadius, setFormHowToUseCardRadius] = useState<HowToUseCardRadius>("rounded-2xl");
+  const [formHowToUseCardBorder, setFormHowToUseCardBorder] = useState<HowToUseCardBorder>("subtle");
+  const [formHowToUseCardShadow, setFormHowToUseCardShadow] = useState<HowToUseCardShadow>("sm");
+  const [formHowToUseSteps, setFormHowToUseSteps] = useState<HowToUseStep[]>([]);
+  const [howToUsePreviewMode, setHowToUsePreviewMode] = useState<"mobile" | "desktop">("mobile");
+  const [mediaLibraryModalOpen, setMediaLibraryModalOpen] = useState<boolean>(false);
+  const [mediaLibraryTargetStepId, setMediaLibraryTargetStepId] = useState<string | null>(null);
+  const [emptyStepWarningModal, setEmptyStepWarningModal] = useState<{
+    open: boolean;
+    stepIndex: number;
+    stepId: string;
+  } | null>(null);
+
   // Social Proof:
   const [formRating, setFormRating] = useState("4.8");
   const [formReviewCount, setFormReviewCount] = useState("120");
@@ -380,6 +417,23 @@ export default function AdminProductsPage() {
     setFormRating("4.8");
     setFormReviewCount("120");
     setFormSoldCount("1,250+ verified orders");
+
+    setFormHowToUseEnabled(true);
+    setFormHowToUseSectionBg("white");
+    setFormHowToUseCardRadius("rounded-2xl");
+    setFormHowToUseCardBorder("subtle");
+    setFormHowToUseCardShadow("sm");
+    setFormHowToUseSteps([
+      {
+        id: `step-1-${Date.now()}`,
+        media_type: "image",
+        media_url: "",
+        media_fit: "contain",
+        title: "",
+        description: "",
+      },
+    ]);
+    setEmptyStepWarningModal(null);
 
     setActionMessage(null);
     setShowModal(true);
@@ -579,6 +633,27 @@ export default function AdminProductsPage() {
     setFormReviewCount(String(prod.review_count ?? 120));
     setFormSoldCount(prod.sold_count || "1,250+ verified orders");
 
+    if (prod.how_to_use) {
+      setFormHowToUseEnabled(prod.how_to_use.enabled !== false);
+      setFormHowToUseSectionBg(prod.how_to_use.section_bg || "white");
+      setFormHowToUseCardRadius(prod.how_to_use.card_radius || "rounded-2xl");
+      setFormHowToUseCardBorder(prod.how_to_use.card_border || "subtle");
+      setFormHowToUseCardShadow(prod.how_to_use.card_shadow || "sm");
+      setFormHowToUseSteps(
+        Array.isArray(prod.how_to_use.steps)
+          ? JSON.parse(JSON.stringify(prod.how_to_use.steps))
+          : []
+      );
+    } else {
+      setFormHowToUseEnabled(true);
+      setFormHowToUseSectionBg("white");
+      setFormHowToUseCardRadius("rounded-2xl");
+      setFormHowToUseCardBorder("subtle");
+      setFormHowToUseCardShadow("sm");
+      setFormHowToUseSteps([]);
+    }
+    setEmptyStepWarningModal(null);
+
     setActionMessage(null);
     setShowModal(true);
   };
@@ -684,11 +759,93 @@ export default function AdminProductsPage() {
       setActiveTab("highlights");
     } else if (activeTab === "highlights") {
       setActiveTab("specs");
+    } else if (activeTab === "specs") {
+      setActiveTab("how_to_use");
     }
 
     if (modalScrollRef.current) {
       modalScrollRef.current.scrollTop = 0;
     }
+  };
+
+  // Tab 8: How to Use manipulation helpers
+  const handleStepMediaUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    stepId: string
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    let detectedType: HowToUseMediaType = "image";
+    if (file.type.startsWith("video/")) {
+      detectedType = "video";
+    } else if (file.type === "image/gif") {
+      detectedType = "gif";
+    }
+    updateHowToUseStep(stepId, "media_type", detectedType);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        updateHowToUseStep(stepId, "media_url", dataUrl);
+      }
+    };
+    reader.readAsDataURL(file);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", detectedType === "video" ? "videos" : "images");
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        updateHowToUseStep(stepId, "media_url", data.url);
+      }
+    } catch (err) {
+      console.warn("Upload to R2 fallback to local dataURL:", err);
+    }
+    e.target.value = "";
+  };
+
+  const addHowToUseStep = () => {
+    const newStep: HowToUseStep = {
+      id: `step-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      media_type: "image",
+      media_url: "",
+      media_fit: "contain",
+      title: "",
+      description: "",
+    };
+    setFormHowToUseSteps((prev) => [...prev, newStep]);
+  };
+
+  const updateHowToUseStep = (id: string, field: keyof HowToUseStep, val: any) => {
+    setFormHowToUseSteps((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, [field]: val } : s))
+    );
+  };
+
+  const removeHowToUseStep = (id: string) => {
+    setFormHowToUseSteps((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const moveHowToUseStep = (id: string, direction: "up" | "down") => {
+    setFormHowToUseSteps((prev) => {
+      const idx = prev.findIndex((s) => s.id === id);
+      if (idx === -1) return prev;
+      if (direction === "up" && idx === 0) return prev;
+      if (direction === "down" && idx === prev.length - 1) return prev;
+      const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+      const updated = [...prev];
+      const temp = updated[idx];
+      updated[idx] = updated[targetIdx];
+      updated[targetIdx] = temp;
+      return updated;
+    });
   };
 
   const handlePrevTab = (e?: React.MouseEvent) => {
@@ -854,7 +1011,10 @@ export default function AdminProductsPage() {
     );
   };
 
-  const handleSaveProduct = async (e?: React.FormEvent | React.MouseEvent) => {
+  const handleSaveProduct = async (
+    e?: React.FormEvent | React.MouseEvent,
+    skipEmptyStepWarning = false
+  ) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -970,7 +1130,30 @@ export default function AdminProductsPage() {
       specifications: Object.keys(specsObj).length > 0 ? specsObj : undefined,
       whats_in_box: formWhatsInBox.filter(Boolean),
       bundle_tiers: formBundleTiers,
+      how_to_use: {
+        enabled: formHowToUseEnabled,
+        section_bg: formHowToUseSectionBg,
+        card_radius: formHowToUseCardRadius,
+        card_border: formHowToUseCardBorder,
+        card_shadow: formHowToUseCardShadow,
+        steps: formHowToUseSteps,
+      },
     };
+
+    // Pre-publish empty-step warning (Specification §10)
+    if (formHowToUseEnabled && formHowToUseSteps.length > 0 && !skipEmptyStepWarning) {
+      const emptyIdx = formHowToUseSteps.findIndex(
+        (s) => !s.media_url?.trim() && !s.title?.trim() && !s.description?.trim()
+      );
+      if (emptyIdx !== -1) {
+        setEmptyStepWarningModal({
+          open: true,
+          stepIndex: emptyIdx + 1,
+          stepId: formHowToUseSteps[emptyIdx].id,
+        });
+        return;
+      }
+    }
 
     try {
       const res = await fetch("/api/products", {
@@ -1638,6 +1821,19 @@ export default function AdminProductsPage() {
               >
                 <ListPlus className="w-3.5 h-3.5" />
                 <span>7. Specs & Box</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("how_to_use")}
+                className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                  activeTab === "how_to_use"
+                    ? "border-[#FF7A00] text-[#FF7A00]"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>8. How to Use {formHowToUseEnabled ? `(${formHowToUseSteps.length})` : "(Off)"}</span>
               </button>
             </div>
 
@@ -3815,6 +4011,459 @@ export default function AdminProductsPage() {
                   </div>
                 </div>
               )}
+
+              {/* ========================================================
+                  TAB 8: HOW TO USE (STEP-BY-STEP REUSABLE BUILDER)
+                 ======================================================== */}
+              {activeTab === "how_to_use" && (
+                <div className="space-y-6">
+                  {/* 1. Header & Enable/Disable Toggle */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-orange-50/60 border border-orange-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#FF7A00] text-white">
+                          Customer-Facing Feature
+                        </span>
+                        <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                          &ldquo;How to Use&rdquo; Interactive Section
+                        </h4>
+                      </div>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        Show a clean 3-card mobile carousel and 4-5 card desktop carousel walking customers step-by-step through using this product.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormHowToUseEnabled(!formHowToUseEnabled)}
+                      className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        formHowToUseEnabled ? "bg-[#FF7A00]" : "bg-slate-300"
+                      }`}
+                      role="switch"
+                      aria-checked={formHowToUseEnabled}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                          formHowToUseEnabled ? "translate-x-6" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* 2. Product-Level Section & Card Styling Options */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+                    <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                      <Palette className="w-3.5 h-3.5 text-[#FF7A00]" />
+                      <span>Section & Card Styling (Product-Level)</span>
+                    </h5>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                      {/* Section Background */}
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1.5">
+                          Section Background
+                        </label>
+                        <div className="space-y-1.5">
+                          {[
+                            { id: "white", label: "Pure White (#FFF)", hex: "#FFFFFF" },
+                            { id: "soft_gray", label: "Soft Gray (#F3F4F6)", hex: "#F3F4F6" },
+                            { id: "light_orange", label: "Very Light Orange (#FFF3E8)", hex: "#FFF3E8" },
+                          ].map((bg) => (
+                            <button
+                              key={bg.id}
+                              type="button"
+                              onClick={() => setFormHowToUseSectionBg(bg.id as HowToUseSectionBg)}
+                              className={`w-full p-2 rounded-xl border flex items-center gap-2.5 text-left transition-all ${
+                                formHowToUseSectionBg === bg.id
+                                  ? "border-[#FF7A00] bg-orange-50/50 ring-1 ring-[#FF7A00]/20 font-bold text-slate-900"
+                                  : "border-slate-200 hover:border-slate-300 bg-white text-slate-700"
+                              }`}
+                            >
+                              <span
+                                className="w-4 h-4 rounded-full border border-slate-300 shrink-0 shadow-2xs"
+                                style={{ backgroundColor: bg.hex }}
+                              />
+                              <span className="truncate">{bg.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Card Corner Radius */}
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1.5">
+                          Card Corner Radius
+                        </label>
+                        <div className="space-y-1.5">
+                          {[
+                            { id: "rounded-xl", label: "Standard (Rounded)" },
+                            { id: "rounded-2xl", label: "Smooth (Recommended)" },
+                            { id: "rounded-3xl", label: "Pill / Maximum" },
+                          ].map((rad) => (
+                            <button
+                              key={rad.id}
+                              type="button"
+                              onClick={() => setFormHowToUseCardRadius(rad.id as HowToUseCardRadius)}
+                              className={`w-full p-2 rounded-xl border text-left transition-all ${
+                                formHowToUseCardRadius === rad.id
+                                  ? "border-[#FF7A00] bg-orange-50/50 ring-1 ring-[#FF7A00]/20 font-bold text-slate-900"
+                                  : "border-slate-200 hover:border-slate-300 bg-white text-slate-700"
+                              }`}
+                            >
+                              {rad.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Card Border */}
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1.5">
+                          Card Border Style
+                        </label>
+                        <div className="space-y-1.5">
+                          {[
+                            { id: "subtle", label: "Subtle Gray Border" },
+                            { id: "orange", label: "Restrained Orange Accent" },
+                            { id: "none", label: "Borderless Clean" },
+                          ].map((bor) => (
+                            <button
+                              key={bor.id}
+                              type="button"
+                              onClick={() => setFormHowToUseCardBorder(bor.id as HowToUseCardBorder)}
+                              className={`w-full p-2 rounded-xl border text-left transition-all ${
+                                formHowToUseCardBorder === bor.id
+                                  ? "border-[#FF7A00] bg-orange-50/50 ring-1 ring-[#FF7A00]/20 font-bold text-slate-900"
+                                  : "border-slate-200 hover:border-slate-300 bg-white text-slate-700"
+                              }`}
+                            >
+                              {bor.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Card Shadow */}
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1.5">
+                          Card Shadow Depth
+                        </label>
+                        <div className="space-y-1.5">
+                          {[
+                            { id: "none", label: "Flat (No Shadow)" },
+                            { id: "sm", label: "Subtle Depth (Default)" },
+                            { id: "md", label: "Medium Shadow" },
+                            { id: "lg", label: "Elevated Shadow" },
+                          ].map((sha) => (
+                            <button
+                              key={sha.id}
+                              type="button"
+                              onClick={() => setFormHowToUseCardShadow(sha.id as HowToUseCardShadow)}
+                              className={`w-full p-2 rounded-xl border text-left transition-all ${
+                                formHowToUseCardShadow === sha.id
+                                  ? "border-[#FF7A00] bg-orange-50/50 ring-1 ring-[#FF7A00]/20 font-bold text-slate-900"
+                                  : "border-slate-200 hover:border-slate-300 bg-white text-slate-700"
+                              }`}
+                            >
+                              {sha.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Steps List Builder */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900">
+                          Configured Steps ({formHowToUseSteps.length})
+                        </h4>
+                        <p className="text-xs text-slate-500">
+                          Step numbers are generated sequentially (STEP 01, STEP 02...). Media, title, and description are all optional.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={addHowToUseStep}
+                        className="px-3.5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Step</span>
+                      </button>
+                    </div>
+
+                    {formHowToUseSteps.length === 0 ? (
+                      <div className="p-8 text-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50">
+                        <p className="text-xs font-medium text-slate-500">
+                          No steps added yet. Click &ldquo;Add Step&rdquo; above to create the first step.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3.5">
+                        {formHowToUseSteps.map((step, idx) => {
+                          const stepLabel = `STEP ${String(idx + 1).padStart(2, "0")}`;
+                          const isFirst = idx === 0;
+                          const isLast = idx === formHowToUseSteps.length - 1;
+
+                          return (
+                            <div
+                              key={step.id || `step-item-${idx}`}
+                              id={`step-card-${step.id}`}
+                              className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3 transition-all hover:border-slate-300"
+                            >
+                              {/* Step Top Bar */}
+                              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="px-2.5 py-0.5 rounded-lg bg-orange-100 text-[#FF7A00] text-xs font-black tracking-wider">
+                                    {stepLabel}
+                                  </span>
+                                  <span className="text-xs text-slate-400 font-medium">
+                                    {step.title ? `— ${step.title}` : "(No title set)"}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => moveHowToUseStep(step.id, "up")}
+                                    disabled={isFirst}
+                                    title="Move step up"
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-30 transition-colors"
+                                  >
+                                    <ArrowUp className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => moveHowToUseStep(step.id, "down")}
+                                    disabled={isLast}
+                                    title="Move step down"
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-30 transition-colors"
+                                  >
+                                    <ArrowDown className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeHowToUseStep(step.id)}
+                                    title="Delete step"
+                                    className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors ml-1"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Step Inputs */}
+                              <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
+                                {/* Left: Media Configuration (5 cols) */}
+                                <div className="md:col-span-5 space-y-2.5">
+                                  {/* Media Type & Media Fit Selectors */}
+                                  <div className="flex items-center gap-2">
+                                    <select
+                                      value={step.media_type || "image"}
+                                      onChange={(e) =>
+                                        updateHowToUseStep(step.id, "media_type", e.target.value as HowToUseMediaType)
+                                      }
+                                      className="flex-1 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#FF7A00]"
+                                    >
+                                      <option value="image">Static Image</option>
+                                      <option value="gif">Animated GIF</option>
+                                      <option value="video">Short Video (&lt;10s)</option>
+                                    </select>
+
+                                    <select
+                                      value={step.media_fit || "contain"}
+                                      onChange={(e) =>
+                                        updateHowToUseStep(step.id, "media_fit", e.target.value as HowToUseMediaFit)
+                                      }
+                                      className="flex-1 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#FF7A00]"
+                                    >
+                                      <option value="contain">Contain (Full view)</option>
+                                      <option value="cover">Cover (Crop)</option>
+                                    </select>
+                                  </div>
+
+                                  {/* Media Input Row */}
+                                  <div className="flex items-center gap-1.5">
+                                    <input
+                                      type="text"
+                                      value={step.media_url || ""}
+                                      onChange={(e) => updateHowToUseStep(step.id, "media_url", e.target.value)}
+                                      placeholder="https://... or upload"
+                                      className="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-[#FF7A00]"
+                                    />
+
+                                    <label
+                                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1 shrink-0"
+                                      title="Upload Image/Video"
+                                    >
+                                      <Upload className="w-3 h-3" />
+                                      <span>Upload</span>
+                                      <input
+                                        type="file"
+                                        accept="image/*,video/mp4,video/webm"
+                                        className="hidden"
+                                        onChange={(e) => handleStepMediaUpload(e, step.id)}
+                                      />
+                                    </label>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setMediaLibraryTargetStepId(step.id);
+                                        setMediaLibraryModalOpen(true);
+                                      }}
+                                      className="px-2.5 py-1.5 bg-orange-50 hover:bg-orange-100 text-[#FF7A00] rounded-lg text-xs font-bold transition-colors flex items-center gap-1 shrink-0"
+                                      title="Select from Media Library"
+                                    >
+                                      <ImageIcon className="w-3 h-3" />
+                                      <span>Library</span>
+                                    </button>
+                                  </div>
+
+                                  {/* Preview Thumbnail */}
+                                  {step.media_url ? (
+                                    <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-[#FFF3E8] border border-orange-200 shrink-0">
+                                      {step.media_type === "video" || step.media_url.endsWith(".mp4") ? (
+                                        <video
+                                          src={step.media_url}
+                                          muted
+                                          loop
+                                          playsInline
+                                          className={`w-full h-full ${
+                                            step.media_fit === "cover" ? "object-cover" : "object-contain p-1"
+                                          }`}
+                                        />
+                                      ) : (
+                                        <img
+                                          src={step.media_url}
+                                          alt={step.title || stepLabel}
+                                          className={`w-full h-full ${
+                                            step.media_fit === "cover" ? "object-cover" : "object-contain p-1"
+                                          }`}
+                                        />
+                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={() => updateHowToUseStep(step.id, "media_url", "")}
+                                        className="absolute top-1 right-1 p-0.5 rounded-full bg-slate-900/70 hover:bg-rose-600 text-white transition-colors"
+                                        title="Remove media"
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="h-10 rounded-lg border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center text-[11px] text-slate-400">
+                                      No media assigned (optional)
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Right: Title & Description (7 cols) */}
+                                <div className="md:col-span-7 space-y-2.5">
+                                  <div>
+                                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                                      Step Title (Optional &bull; Max 1 line)
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={step.title || ""}
+                                      onChange={(e) => updateHowToUseStep(step.id, "title", e.target.value)}
+                                      placeholder="e.g. Plug & Power On"
+                                      maxLength={60}
+                                      className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:border-[#FF7A00]"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                                      Short Description (Optional &bull; Max 2 lines)
+                                    </label>
+                                    <textarea
+                                      rows={2}
+                                      value={step.description || ""}
+                                      onChange={(e) => updateHowToUseStep(step.id, "description", e.target.value)}
+                                      placeholder="e.g. Connect the included USB cable to any 5V USB adapter, power bank, or laptop."
+                                      maxLength={140}
+                                      className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-[#FF7A00] resize-none"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 4. Live Storefront Interactive Preview */}
+                  {formHowToUseSteps.length > 0 && (
+                    <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 space-y-3.5">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div className="flex items-center gap-2">
+                          <Eye className="w-4 h-4 text-[#FF7A00]" />
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                            Live Storefront Preview
+                          </h4>
+                        </div>
+
+                        {/* Mobile vs Desktop Toggle */}
+                        <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl text-xs font-semibold">
+                          <button
+                            type="button"
+                            onClick={() => setHowToUsePreviewMode("mobile")}
+                            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
+                              howToUsePreviewMode === "mobile"
+                                ? "bg-white text-slate-900 shadow-xs"
+                                : "text-slate-500 hover:text-slate-800"
+                            }`}
+                          >
+                            <Smartphone className="w-3.5 h-3.5" />
+                            <span>Mobile (3 Cards)</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setHowToUsePreviewMode("desktop")}
+                            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
+                              howToUsePreviewMode === "desktop"
+                                ? "bg-white text-slate-900 shadow-xs"
+                                : "text-slate-500 hover:text-slate-800"
+                            }`}
+                          >
+                            <Monitor className="w-3.5 h-3.5" />
+                            <span>Desktop (4-5 Cards)</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Preview Container */}
+                      <div className="bg-slate-100/70 p-3 sm:p-5 rounded-2xl flex justify-center overflow-hidden">
+                        <div
+                          className={`w-full transition-all duration-300 ${
+                            howToUsePreviewMode === "mobile"
+                              ? "max-w-[420px] bg-white rounded-3xl shadow-lg border border-slate-200/90 overflow-hidden"
+                              : "max-w-4xl bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
+                          }`}
+                        >
+                          <HowToUseSection
+                            config={{
+                              enabled: true,
+                              section_bg: formHowToUseSectionBg,
+                              card_radius: formHowToUseCardRadius,
+                              card_border: formHowToUseCardBorder,
+                              card_shadow: formHowToUseCardShadow,
+                              steps: formHowToUseSteps,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* 4. Pinned Sticky Footer (shrink-0) - ALWAYS VISIBLE! */}
@@ -3856,11 +4505,12 @@ export default function AdminProductsPage() {
                   {activeTab === "overview" && "Product Details & Overview"}
                   {activeTab === "highlights" && "Highlights"}
                   {activeTab === "specs" && "Specs & Box"}
+                  {activeTab === "how_to_use" && "How to Use"}
                 </span>
               </div>
 
               <div className="flex items-center gap-2.5">
-                {editingProduct && activeTab !== "specs" && (
+                {editingProduct && activeTab !== "how_to_use" && (
                   <button
                     key="btn-step-save-changes-early"
                     type="button"
@@ -3882,7 +4532,7 @@ export default function AdminProductsPage() {
                   </button>
                 )}
 
-                {activeTab !== "specs" ? (
+                {activeTab !== "how_to_use" ? (
                   <button
                     key={`btn-step-${activeTab}`}
                     type="button"
@@ -3913,6 +4563,107 @@ export default function AdminProductsPage() {
               </div>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Media Library Picker Modal */}
+      {mediaLibraryModalOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-sm text-slate-900">Reusable Media Library</h3>
+                <p className="text-xs text-slate-500">Pick any image or video previously uploaded to the store</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setMediaLibraryModalOpen(false);
+                  setMediaLibraryTargetStepId(null);
+                }}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-4 overflow-y-auto flex-1 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+              {Array.from(
+                new Set(
+                  products
+                    .flatMap((p) => [
+                      p.poster_image,
+                      ...(p.images || []),
+                      ...(p.overview_blocks || []).map((b) => b.media_url),
+                      ...(p.how_to_use?.steps || []).map((s) => s.media_url),
+                    ])
+                    .filter((url): url is string => Boolean(url && typeof url === "string" && url.trim().length > 0))
+                )
+              ).map((url, i) => (
+                <button
+                  key={`med-lib-${i}`}
+                  type="button"
+                  onClick={() => {
+                    if (mediaLibraryTargetStepId) {
+                      updateHowToUseStep(mediaLibraryTargetStepId, "media_url", url);
+                    }
+                    setMediaLibraryModalOpen(false);
+                    setMediaLibraryTargetStepId(null);
+                  }}
+                  className="group relative aspect-square rounded-xl overflow-hidden border border-slate-200 hover:border-[#FF7A00] hover:ring-2 hover:ring-[#FF7A00]/20 bg-slate-50 transition-all cursor-pointer"
+                >
+                  <img src={url} alt={`Media ${i}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pre-Publish Empty Step Warning Modal (Specification §10) */}
+      {emptyStepWarningModal && (
+        <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4 border border-amber-200">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-bold text-sm text-slate-900">Empty Step Warning</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Step {String(emptyStepWarningModal.stepIndex).padStart(2, "0")} has no media, title, or description.
+                  This step will appear empty on the product page. Do you still want to publish?
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmptyStepWarningModal(null);
+                  setActiveTab("how_to_use");
+                  const cardEl = document.getElementById(`step-card-${emptyStepWarningModal.stepId}`);
+                  if (cardEl) {
+                    cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }
+                }}
+                className="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors"
+              >
+                Review Step
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  setEmptyStepWarningModal(null);
+                  handleSaveProduct(e, true);
+                }}
+                className="px-4 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold transition-all shadow-xs"
+              >
+                Publish Anyway
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

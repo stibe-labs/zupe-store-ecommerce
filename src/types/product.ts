@@ -29,6 +29,32 @@ export interface ProductOverviewBlock {
   media_caption?: string;
 }
 
+export type HowToUseMediaType = "image" | "gif" | "video";
+export type HowToUseMediaFit = "contain" | "cover";
+export type HowToUseSectionBg = "white" | "soft_gray" | "light_orange";
+export type HowToUseCardRadius = "rounded-xl" | "rounded-2xl" | "rounded-3xl";
+export type HowToUseCardBorder = "subtle" | "orange" | "none";
+export type HowToUseCardShadow = "none" | "sm" | "md" | "lg";
+
+export interface HowToUseStep {
+  id: string;
+  media_type?: HowToUseMediaType;
+  media_url?: string;
+  thumbnail_url?: string;
+  media_fit?: HowToUseMediaFit;
+  title?: string;
+  description?: string;
+}
+
+export interface HowToUseConfig {
+  enabled: boolean;
+  section_bg?: HowToUseSectionBg;
+  card_radius?: HowToUseCardRadius;
+  card_border?: HowToUseCardBorder;
+  card_shadow?: HowToUseCardShadow;
+  steps: HowToUseStep[];
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -61,6 +87,7 @@ export interface Product {
   specifications?: Record<string, string>;
   whats_in_box?: string[];
   bundle_tiers?: BuyMoreSaveMoreConfig;
+  how_to_use?: HowToUseConfig;
   shipping_info?: string[];
   return_info?: string[];
   reviews_data?: {
@@ -111,4 +138,5 @@ export interface AdminProductFormData {
   specifications?: Record<string, string>;
   whats_in_box?: string[];
   bundle_tiers?: BuyMoreSaveMoreConfig;
+  how_to_use?: HowToUseConfig;
 }

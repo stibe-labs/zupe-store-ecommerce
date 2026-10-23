@@ -42,6 +42,7 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
   const parsedSpecs = parseJsonSafe(p.specifications, defaultFound?.specifications || undefined);
   const parsedBox = parseJsonSafe(p.whats_in_box, defaultFound?.whats_in_box || undefined);
   const parsedTiers = parseJsonSafe(p.bundle_tiers, defaultFound?.bundle_tiers || undefined);
+  const parsedHowToUse = parseJsonSafe(p.how_to_use, defaultFound?.how_to_use || undefined);
 
   const priceNum = Number(p.price);
   const mrpNum = Number(p.mrp ?? p.price);
@@ -163,6 +164,7 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
     specifications: parsedSpecs,
     whats_in_box: parsedBox,
     bundle_tiers: parsedTiers,
+    how_to_use: parsedHowToUse,
     created_at: p.created_at || defaultFound?.created_at || new Date().toISOString(),
   };
 }
@@ -279,6 +281,7 @@ export async function POST(req: NextRequest) {
       specifications,
       whats_in_box,
       bundle_tiers,
+      how_to_use,
     } = body;
 
     // Find existing product in D1 first, then cache or defaults
@@ -418,6 +421,7 @@ export async function POST(req: NextRequest) {
       specifications: specifications !== undefined ? specifications : existingProd?.specifications || undefined,
       whats_in_box: whats_in_box !== undefined ? whats_in_box : existingProd?.whats_in_box || undefined,
       bundle_tiers: bundle_tiers !== undefined ? bundle_tiers : existingProd?.bundle_tiers || undefined,
+      how_to_use: how_to_use !== undefined ? how_to_use : existingProd?.how_to_use || undefined,
       created_at: existingProd?.created_at || new Date().toISOString(),
     };
 
@@ -444,92 +448,113 @@ export async function POST(req: NextRequest) {
       const specsJson = newProd.specifications ? JSON.stringify(newProd.specifications) : null;
       const boxJson = newProd.whats_in_box ? JSON.stringify(newProd.whats_in_box) : null;
       const tiersJson = newProd.bundle_tiers ? JSON.stringify(newProd.bundle_tiers) : null;
+      const howToUseJson = newProd.how_to_use ? JSON.stringify(newProd.how_to_use) : null;
 
-      if (existingRows && existingRows.length > 0) {
-        await executeD1Query(
-          `UPDATE products 
-           SET slug = ?, name = ?, subtitle = ?, category = ?, subcategory = ?, tagline = ?, description = ?,
-               price = ?, mrp = ?, offer_price = ?, cost_price = ?, stock_count = ?, volume = ?,
-               poster_image = ?, images = ?, color = ?, colors = ?, has_colors = ?, overview_blocks = ?, material = ?, badge = ?,
-               in_stock = ?, rating = ?, review_count = ?, sold_count = ?, features = ?,
-               specifications = ?, whats_in_box = ?, bundle_tiers = ?
-           WHERE id = ?;`,
-          [
-            newProd.slug,
-            newProd.name,
-            newProd.subtitle ?? null,
-            newProd.category,
-            newProd.subcategory ?? null,
-            newProd.tagline ?? null,
-            newProd.description ?? null,
-            newProd.price,
-            newProd.mrp,
-            newProd.offer_price,
-            newProd.cost_price,
-            newProd.stock_count,
-            newProd.volume ?? null,
-            newProd.poster_image,
-            imagesJson,
-            newProd.color ?? null,
-            colorsJson,
-            newProd.has_colors ? 1 : 0,
-            overviewBlocksJson,
-            newProd.material ?? null,
-            newProd.badge ?? null,
-            newProd.in_stock,
-            newProd.rating,
-            newProd.review_count,
-            newProd.sold_count,
-            featuresJson,
-            specsJson,
-            boxJson,
-            tiersJson,
-            existingRows[0].id,
-          ]
-        );
-      } else {
-        await executeD1Query(
-          `INSERT INTO products (
-             id, slug, name, subtitle, category, subcategory, tagline, description,
-             price, mrp, offer_price, cost_price, stock_count, volume,
-             poster_image, images, color, colors, has_colors, overview_blocks, material, badge,
-             in_stock, rating, review_count, sold_count, features,
-             specifications, whats_in_box, bundle_tiers
-           )
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-          [
-            newProd.id,
-            newProd.slug,
-            newProd.name,
-            newProd.subtitle ?? null,
-            newProd.category,
-            newProd.subcategory ?? null,
-            newProd.tagline ?? null,
-            newProd.description ?? null,
-            newProd.price,
-            newProd.mrp,
-            newProd.offer_price,
-            newProd.cost_price,
-            newProd.stock_count,
-            newProd.volume ?? null,
-            newProd.poster_image,
-            imagesJson,
-            newProd.color ?? null,
-            colorsJson,
-            newProd.has_colors ? 1 : 0,
-            overviewBlocksJson,
-            newProd.material ?? null,
-            newProd.badge ?? null,
-            newProd.in_stock,
-            newProd.rating,
-            newProd.review_count,
-            newProd.sold_count,
-            featuresJson,
-            specsJson,
-            boxJson,
-            tiersJson,
-          ]
-        );
+      const runSaveQueries = async () => {
+        if (existingRows && existingRows.length > 0) {
+          await executeD1Query(
+            `UPDATE products 
+             SET slug = ?, name = ?, subtitle = ?, category = ?, subcategory = ?, tagline = ?, description = ?,
+                 price = ?, mrp = ?, offer_price = ?, cost_price = ?, stock_count = ?, volume = ?,
+                 poster_image = ?, images = ?, color = ?, colors = ?, has_colors = ?, overview_blocks = ?, material = ?, badge = ?,
+                 in_stock = ?, rating = ?, review_count = ?, sold_count = ?, features = ?,
+                 specifications = ?, whats_in_box = ?, bundle_tiers = ?, how_to_use = ?
+             WHERE id = ?;`,
+            [
+              newProd.slug,
+              newProd.name,
+              newProd.subtitle ?? null,
+              newProd.category,
+              newProd.subcategory ?? null,
+              newProd.tagline ?? null,
+              newProd.description ?? null,
+              newProd.price,
+              newProd.mrp,
+              newProd.offer_price,
+              newProd.cost_price,
+              newProd.stock_count,
+              newProd.volume ?? null,
+              newProd.poster_image,
+              imagesJson,
+              newProd.color ?? null,
+              colorsJson,
+              newProd.has_colors ? 1 : 0,
+              overviewBlocksJson,
+              newProd.material ?? null,
+              newProd.badge ?? null,
+              newProd.in_stock,
+              newProd.rating,
+              newProd.review_count,
+              newProd.sold_count,
+              featuresJson,
+              specsJson,
+              boxJson,
+              tiersJson,
+              howToUseJson,
+              existingRows[0].id,
+            ]
+          );
+        } else {
+          await executeD1Query(
+            `INSERT INTO products (
+               id, slug, name, subtitle, category, subcategory, tagline, description,
+               price, mrp, offer_price, cost_price, stock_count, volume,
+               poster_image, images, color, colors, has_colors, overview_blocks, material, badge,
+               in_stock, rating, review_count, sold_count, features,
+               specifications, whats_in_box, bundle_tiers, how_to_use
+             )
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+            [
+              newProd.id,
+              newProd.slug,
+              newProd.name,
+              newProd.subtitle ?? null,
+              newProd.category,
+              newProd.subcategory ?? null,
+              newProd.tagline ?? null,
+              newProd.description ?? null,
+              newProd.price,
+              newProd.mrp,
+              newProd.offer_price,
+              newProd.cost_price,
+              newProd.stock_count,
+              newProd.volume ?? null,
+              newProd.poster_image,
+              imagesJson,
+              newProd.color ?? null,
+              colorsJson,
+              newProd.has_colors ? 1 : 0,
+              overviewBlocksJson,
+              newProd.material ?? null,
+              newProd.badge ?? null,
+              newProd.in_stock,
+              newProd.rating,
+              newProd.review_count,
+              newProd.sold_count,
+              featuresJson,
+              specsJson,
+              boxJson,
+              tiersJson,
+              howToUseJson,
+            ]
+          );
+        }
+      };
+
+      try {
+        await runSaveQueries();
+      } catch (initialErr: any) {
+        // If the table doesn't have how_to_use column yet, attempt quick schema migration
+        if (String(initialErr?.message || "").includes("no such column: how_to_use")) {
+          try {
+            await executeD1Query("ALTER TABLE products ADD COLUMN how_to_use TEXT;");
+            await runSaveQueries();
+          } catch (retryErr) {
+            console.warn("Retry after adding how_to_use column failed:", retryErr);
+          }
+        } else {
+          throw initialErr;
+        }
       }
     } catch (d1Err) {
       console.warn("Could not save to D1:", d1Err);

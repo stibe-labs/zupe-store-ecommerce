@@ -42,6 +42,7 @@ import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { DeliveryEstimator } from "@/components/DeliveryEstimator";
 import { PaymentTrustBadges } from "@/components/PaymentTrustBadges";
+import { HowToUseSection } from "@/components/HowToUseSection";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -1650,6 +1651,15 @@ export default function ProductDetailPage() {
                 )}
               </div>
             ) : null}
+
+            {/* ========================================================
+                HOW TO USE (STEP-BY-STEP REUSABLE CAROUSEL)
+               ======================================================== */}
+            {product.how_to_use && (
+              <div className="mt-8 pt-6 border-t border-gray-100">
+                <HowToUseSection config={product.how_to_use} />
+              </div>
+            )}
 
             {/* ========================================================
                 COLLAPSIBLE ACCORDIONS (SPECIFICATIONS, WHAT'S IN THE BOX, ETC.)
