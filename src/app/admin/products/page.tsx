@@ -4444,11 +4444,20 @@ export default function AdminProductsPage() {
                         <div
                           className={`w-full transition-all duration-300 ${
                             howToUsePreviewMode === "mobile"
-                              ? "max-w-[420px] bg-white rounded-3xl shadow-lg border border-slate-200/90 overflow-hidden"
+                              ? "max-w-[390px] bg-white rounded-3xl shadow-lg border border-slate-200/90 overflow-hidden"
                               : "max-w-4xl bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
                           }`}
                         >
+                          {/* Simulated Phone Top Speaker pill in mobile preview */}
+                          {howToUsePreviewMode === "mobile" && (
+                            <div className="pt-2.5 pb-1 flex justify-center items-center bg-white border-b border-slate-100">
+                              <div className="w-12 h-1 bg-slate-300 rounded-full" />
+                            </div>
+                          )}
+
                           <HowToUseSection
+                            previewMode={howToUsePreviewMode}
+                            isPreview={true}
                             config={{
                               enabled: true,
                               section_bg: formHowToUseSectionBg,
