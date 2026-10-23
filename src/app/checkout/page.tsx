@@ -232,7 +232,14 @@ function CheckoutContent() {
           const chk = data.checkout;
           if (chk.customer_name) setName(chk.customer_name);
           if (chk.customer_phone) setPhone(cleanPhoneDigits(chk.customer_phone));
-          if (chk.customer_email) setEmail(chk.customer_email);
+          if (
+            chk.customer_email &&
+            !chk.customer_email.includes("example.com") &&
+            !chk.customer_email.endsWith("@customer.zupestore.com") &&
+            !chk.customer_email.toLowerCase().startsWith("test@")
+          ) {
+            setEmail(chk.customer_email);
+          }
           if (chk.shipping_address) setAddress(chk.shipping_address);
           if (chk.city) setCity(chk.city);
           if (chk.postal_code) setPostalCode(chk.postal_code);
@@ -393,7 +400,7 @@ function CheckoutContent() {
     }
   }, [searchParams]);
 
-  // Populate user data if logged in (phone, real name, and real email if not synthetic)
+  // Populate user data if logged in (phone and real name only - no default email)
   useEffect(() => {
     if (user) {
       if (!name && user.name && !user.name.startsWith("Customer ")) {
@@ -402,11 +409,8 @@ function CheckoutContent() {
       if (!phone && user.phone) {
         setPhone(cleanPhoneDigits(user.phone));
       }
-      if (!email && user.email && !user.email.endsWith("@customer.zupestore.com") && user.email.includes("@")) {
-        setEmail(user.email);
-      }
     }
-  }, [user, name, phone, email]);
+  }, [user, name, phone]);
 
   // Hydrate saved addresses
   useEffect(() => {
@@ -755,8 +759,9 @@ function CheckoutContent() {
 
   const syncAddressAfterOrder = async () => {
     try {
-      if (email.trim() && address.trim()) {
-        const userEmailNorm = email.toLowerCase().trim();
+      const targetEmail = (email.trim() || user?.email || "").toLowerCase().trim();
+      if (targetEmail && address.trim()) {
+        const userEmailNorm = targetEmail;
         const cacheKey = `zp_user_addresses_${userEmailNorm}`;
 
         const targetNormKey = normalizeAddressKey(address, postalCode);
@@ -1817,7 +1822,7 @@ function CheckoutContent() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com (optional)"
+                  placeholder="Enter email address (optional)"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white"
                 />
               </div>
