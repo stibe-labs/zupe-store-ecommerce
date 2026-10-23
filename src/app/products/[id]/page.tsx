@@ -43,6 +43,9 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { DeliveryEstimator } from "@/components/DeliveryEstimator";
 import { PaymentTrustBadges } from "@/components/PaymentTrustBadges";
 import { HowToUseSection } from "@/components/HowToUseSection";
+import { ProductDealTimer } from "@/components/ProductDealTimer";
+import { ProductComparisonTable } from "@/components/ProductComparisonTable";
+import { ProductFaqSection } from "@/components/ProductFaqSection";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -364,6 +367,27 @@ export default function ProductDetailPage() {
       }
     }
   }, [availableColors, selectedColor]);
+
+  // Map color name or hex to background color for circular swatches
+  const getColorHex = (name: string, explicitHex?: string) => {
+    if (explicitHex && explicitHex.startsWith("#")) return explicitHex;
+    const n = (name || "").toLowerCase().trim();
+    if (n.includes("amber") || n.includes("gold")) return "#F59E0B";
+    if (n.includes("green") || n.includes("emerald")) return "#10B981";
+    if (n.includes("teal") || n.includes("cyan")) return "#14B8A6";
+    if (n.includes("blue") || n.includes("sky") || n.includes("ocean")) return "#0284C7";
+    if (n.includes("mint")) return "#6EE7B7";
+    if (n.includes("peach") || n.includes("coral")) return "#FDBA74";
+    if (n.includes("red") || n.includes("rose") || n.includes("crimson")) return "#EF4444";
+    if (n.includes("pink")) return "#F472B6";
+    if (n.includes("purple") || n.includes("violet") || n.includes("lavender")) return "#A855F7";
+    if (n.includes("yellow")) return "#FACC15";
+    if (n.includes("orange")) return "#FF7A00";
+    if (n.includes("black") || n.includes("dark")) return "#1E293B";
+    if (n.includes("grey") || n.includes("gray") || n.includes("silver")) return "#64748B";
+    if (n.includes("white")) return "#FFFFFF";
+    return "#FF7A00";
+  };
 
   // 4 Key Highlight Points between Reviews & Price (2 in 1 row, total 2 rows on mobile & desktop)
   const productPoints = useMemo<string[]>(() => {
@@ -941,6 +965,9 @@ export default function ProductDetailPage() {
              ======================================================== */}
           <div className="w-full h-full">
             <div className="w-full lg:sticky lg:top-[115px] lg:pb-8">
+              {/* Product Deal Countdown Timer (Small size matching reference photo) */}
+              <ProductDealTimer discountPercent={discountPercent > 0 ? discountPercent : 50} />
+
               {/* Main Showcase Image Container with Touch & Drag Swipe */}
               <div
                 className={`group relative aspect-square w-full rounded-[24px] sm:rounded-[28px] overflow-hidden bg-[#F3F4F6] shadow-sm select-none touch-pan-y ${
@@ -1174,6 +1201,49 @@ export default function ProductDetailPage() {
                 ))}
               </div>
             )}
+
+            {/* Color / Variant Selector - Placed directly between bullet points and price */}
+            {availableColors.length > 0 && product.has_colors !== false ? (
+              <div className="mt-3 mb-1">
+                <div className="flex items-center gap-1.5 text-[12.5px] sm:text-[13px] font-bold text-gray-900 mb-2">
+                  <span>Color:</span>
+                  <span className="font-extrabold text-[#FF7A00]">{selectedColor}</span>
+                </div>
+                <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+                  {availableColors.map((c, i) => {
+                    const isSelected = selectedColor.toLowerCase() === c.name.toLowerCase();
+                    const bgHex = getColorHex(c.name, c.colorHex);
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleSelectColorSwatch(c.name, c.image)}
+                        className={`relative w-7 h-7 sm:w-8 sm:h-8 rounded-full flex-shrink-0 transition-all duration-200 cursor-pointer ${
+                          isSelected
+                            ? "ring-2 ring-offset-2 ring-[#FF7A00] scale-110 shadow-xs"
+                            : "border border-gray-300 hover:scale-105 opacity-85 hover:opacity-100"
+                        }`}
+                        style={{ backgroundColor: bgHex }}
+                        title={c.name}
+                        aria-label={c.name}
+                        aria-pressed={isSelected}
+                      >
+                        {isSelected && (
+                          <span className="absolute inset-0 rounded-full border border-black/15 pointer-events-none" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : product.color && product.has_colors !== false && product.color.toLowerCase() !== "standard" ? (
+              <div className="mt-3 mb-1">
+                <div className="flex items-center gap-1.5 text-[12.5px] sm:text-[13px] font-bold text-gray-900">
+                  <span>Color:</span>
+                  <span className="font-extrabold text-[#FF7A00]">{product.color}</span>
+                </div>
+              </div>
+            ) : null}
 
             {/* Price & Discount Row */}
             <div className="mt-3 flex items-baseline gap-2.5">
@@ -1435,104 +1505,6 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* Trust Badges: 100% Secure, Free Shipping, Easy Returns, Cash on Delivery */}
-            <div className="mt-4 sm:mt-5 grid grid-cols-4 gap-2 sm:gap-2.5">
-              {[
-                {
-                  icon: ShieldCheck,
-                  title: "100% Secure",
-                  subtitle: "SSL Protected",
-                },
-                {
-                  icon: Truck,
-                  title: "Free Shipping",
-                  subtitle: "On All Orders",
-                },
-                {
-                  icon: RotateCcw,
-                  title: "Easy Returns",
-                  subtitle: "7 Days Window",
-                },
-                {
-                  icon: Banknote,
-                  title: "Cash on Delivery",
-                  subtitle: "COD Available",
-                },
-              ].map((badge, idx) => {
-                const IconComponent = badge.icon;
-                return (
-                  <div
-                    key={idx}
-                    className={`trust-flow-card trust-flow-card-${idx} relative flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl border border-gray-200/80 bg-white text-center select-none cursor-default shadow-2xs`}
-                  >
-                    <div
-                      className={`trust-flow-icon trust-flow-icon-${idx} w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center mb-1.5 bg-gray-100 text-gray-700`}
-                    >
-                      <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
-                    </div>
-                    <span className="text-[10px] sm:text-[11.5px] font-bold text-gray-900 leading-tight">
-                      {badge.title}
-                    </span>
-                    <span className="text-[8px] sm:text-[9.5px] text-gray-500 font-medium leading-tight mt-0.5">
-                      {badge.subtitle}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Color / Variant Selector - Universal for all products */}
-            {availableColors.length > 0 && product.has_colors !== false ? (
-              <div className="mt-5">
-                <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-900 mb-2">
-                  Color: <span className="font-semibold text-[#FF7A00]">{selectedColor}</span>
-                </h3>
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  {availableColors.map((c, i) => {
-                    const isSelected = selectedColor.toLowerCase() === c.name.toLowerCase();
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => handleSelectColorSwatch(c.name, c.image)}
-                        className={`relative w-12 h-12 rounded-[14px] overflow-hidden flex-shrink-0 transition-all duration-200 ${
-                          isSelected
-                            ? "ring-2 ring-[#FF7A00] ring-offset-2 scale-105 shadow-md"
-                            : "border border-gray-200 opacity-80 hover:opacity-100 hover:scale-105"
-                        }`}
-                        title={c.name}
-                        aria-label={c.name}
-                        aria-pressed={isSelected}
-                      >
-                        <Image
-                          src={c.image}
-                          alt={c.name}
-                          fill
-                          className="object-cover"
-                        />
-                        {c.colorHex && (
-                          <span
-                            className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 rounded-full border border-white/80 shadow-sm"
-                            style={{ backgroundColor: c.colorHex }}
-                          />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-                {activeColorVariant?.images && activeColorVariant.images.length > 1 && (
-                  <p className="text-[10px] text-gray-400 mt-1.5">
-                    {activeColorVariant.images.length} photos for {selectedColor}
-                  </p>
-                )}
-              </div>
-            ) : product.color && product.has_colors !== false && product.color.toLowerCase() !== "standard" ? (
-              <div className="mt-5">
-                <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-900 mb-1">
-                  Color: <span className="font-semibold text-[#FF7A00]">{product.color}</span>
-                </h3>
-              </div>
-            ) : null}
-
             {/* Quantity Selector & Real-Time Stock Status */}
             <div className="mt-4">
               <h3 className="text-[13px] font-bold text-gray-900 mb-2">
@@ -1587,6 +1559,68 @@ export default function ProductDetailPage() {
 
             {/* PIN Code Delivery Availability Checker & Animated Timeline */}
             <DeliveryEstimator businessDays={5} />
+
+            {/* Trust Badges: 100% Secure, Free Shipping, Easy Returns, Cash on Delivery */}
+            <div className="mt-4 sm:mt-5 grid grid-cols-4 gap-2 sm:gap-2.5">
+              {[
+                {
+                  icon: ShieldCheck,
+                  title: "100% Secure",
+                  subtitle: "SSL Protected",
+                },
+                {
+                  icon: Truck,
+                  title: "Free Shipping",
+                  subtitle: "On All Orders",
+                },
+                {
+                  icon: RotateCcw,
+                  title: "Easy Returns",
+                  subtitle: "7 Days Window",
+                },
+                {
+                  icon: Banknote,
+                  title: "Cash on Delivery",
+                  subtitle: "COD Available",
+                },
+              ].map((badge, idx) => {
+                const IconComponent = badge.icon;
+                return (
+                  <div
+                    key={idx}
+                    className={`trust-flow-card trust-flow-card-${idx} relative flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl border border-gray-200/80 bg-white text-center select-none cursor-default shadow-2xs`}
+                  >
+                    <div
+                      className={`trust-flow-icon trust-flow-icon-${idx} w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center mb-1.5 bg-gray-100 text-gray-700`}
+                    >
+                      <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
+                    </div>
+                    <span className="text-[10px] sm:text-[11.5px] font-bold text-gray-900 leading-tight">
+                      {badge.title}
+                    </span>
+                    <span className="text-[8px] sm:text-[9.5px] text-gray-500 font-medium leading-tight mt-0.5">
+                      {badge.subtitle}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ========================================================
+                SEE IT IN ACTION (REEL VIDEOS - 3 IN 1 ROW ON MOBILE)
+               ======================================================== */}
+            {product && (
+              <div className="mt-6 pt-5 border-t border-gray-100">
+                <ShoppableVideosSection
+                  currentProduct={product}
+                  showHeader={true}
+                  title="SEE IT IN ACTION"
+                  subtitle="Discover the little details, clever features, and everyday benefits that make a big difference."
+                  centeredHeader={true}
+                  onToast={(msg) => showToast(msg)}
+                />
+              </div>
+            )}
 
             {/* ========================================================
                 COLLAPSIBLE ACCORDIONS (DYNAMIC SPECIFICATIONS)
@@ -1651,6 +1685,13 @@ export default function ProductDetailPage() {
                 )}
               </div>
             ) : null}
+
+            {/* ========================================================
+                WHY CHOOSE THIS PRODUCT? (COMPARISON TABLE)
+               ======================================================== */}
+            {product && (
+              <ProductComparisonTable product={product} />
+            )}
 
             {/* ========================================================
                 HOW TO USE (STEP-BY-STEP REUSABLE CAROUSEL)
@@ -1900,25 +1941,20 @@ export default function ProductDetailPage() {
                 ))}
               </ul>
             </div>
+
+            {/* ========================================================
+                FREQUENTLY ASKED QUESTIONS (MATCHING REFERENCE DESIGN)
+               ======================================================== */}
+            <ProductFaqSection />
           </div>
         </div>
       </main>
 
       {/* ========================================================
-          YOU MAY ALSO LIKE (MATCHING PRODUCTS SET)
+          YOU MAY ALSO LIKE (MATCHING PRODUCTS SET / RELATED PRODUCTS)
          ======================================================== */}
       {product && (
         <YouMayAlsoLike
-          currentProduct={product}
-          onToast={(msg) => showToast(msg)}
-        />
-      )}
-
-      {/* ========================================================
-          SHOPPABLE PRODUCT VIDEOS & REELS (BEFORE REVIEWS)
-         ======================================================== */}
-      {product && (
-        <ShoppableVideosSection
           currentProduct={product}
           onToast={(msg) => showToast(msg)}
         />

@@ -25,12 +25,20 @@ import { useAuth } from "@/context/AuthContext";
 interface ShoppableVideosSectionProps {
   currentProduct?: Product;
   showHeader?: boolean;
+  title?: string;
+  subtitle?: string;
+  centeredHeader?: boolean;
+  className?: string;
   onToast?: (msg: string) => void;
 }
 
 export function ShoppableVideosSection({
   currentProduct,
   showHeader = true,
+  title = "SEE IT IN ACTION",
+  subtitle = "Discover the little details, clever features, and everyday benefits that make a big difference.",
+  centeredHeader = true,
+  className = "",
   onToast,
 }: ShoppableVideosSectionProps) {
   const router = useRouter();
@@ -309,48 +317,49 @@ export function ShoppableVideosSection({
   return (
     <section
       ref={sectionRef}
-      className={`w-full max-w-[1600px] mx-auto px-4 sm:px-6 ${showHeader ? "py-8 sm:py-12 border-t border-gray-100" : "py-5 sm:py-8"}`}
+      className={`w-full max-w-[1600px] mx-auto px-4 sm:px-6 ${showHeader ? "py-6 sm:py-10" : "py-4 sm:py-6"} ${className}`}
     >
-      {/* Section Header (Only rendered when showHeader is true) */}
+      {/* Section Header */}
       {showHeader && (
-        <div className="flex items-center justify-between mb-5 sm:mb-6">
-          <div>
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#111111] tracking-tight">
-              Watch in Action
+        <div className={`mb-4 sm:mb-6 ${centeredHeader ? "text-center" : "flex items-center justify-between"}`}>
+          <div className={centeredHeader ? "max-w-xl mx-auto" : ""}>
+            <h2 className="text-[17px] sm:text-2xl font-display font-extrabold text-[#111111] tracking-tight uppercase">
+              {title}
             </h2>
-            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-              Real unboxings, tutorials, and authentic customer experiences
+            <p className="text-[11.5px] sm:text-sm text-gray-500 mt-1 leading-snug">
+              {subtitle}
             </p>
           </div>
 
-          {/* Carousel Navigation Buttons */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={scrollPrev}
-              className="w-9 h-9 rounded-full bg-white border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-black flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
-              aria-label="Previous videos"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              type="button"
-              onClick={scrollNext}
-              className="w-9 h-9 rounded-full bg-white border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-black flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
-              aria-label="Next videos"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
+          {!centeredHeader && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={scrollPrev}
+                className="w-9 h-9 rounded-full bg-white border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-black flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
+                aria-label="Previous videos"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={scrollNext}
+                className="w-9 h-9 rounded-full bg-white border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-black flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
+                aria-label="Next videos"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       {/* Relative wrapper for video carousel & floating navigation */}
       <div className="relative group/carousel">
-        {/* Horizontal Carousel of 9:16 Video Reel Cards */}
+        {/* Horizontal Carousel of 9:16 Video Reel Cards (3 in 1 row on mobile) */}
         <div
           ref={scrollContainerRef}
-          className="flex items-stretch gap-4 sm:gap-6 overflow-x-auto pb-4 pt-1 scrollbar-none snap-x snap-mandatory select-none"
+          className="flex items-stretch gap-2 sm:gap-4 overflow-x-auto pb-2 pt-1 scrollbar-none snap-x snap-mandatory select-none"
         >
           {videos.map((vid, idx) => {
             const poster =
@@ -363,7 +372,7 @@ export function ShoppableVideosSection({
               <div
                 key={vid.id || idx}
                 onClick={() => handleOpenReel(idx)}
-                className="group relative flex-shrink-0 w-[240px] sm:w-[280px] h-[390px] sm:h-[450px] rounded-[24px] sm:rounded-[28px] overflow-hidden bg-slate-900 shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer snap-start border border-gray-200/80 hover:border-[#FF7A00]/50"
+                className="group relative flex-shrink-0 w-[calc((100%-16px)/3)] min-w-[96px] max-w-[130px] sm:w-[220px] sm:max-w-none aspect-[9/16] sm:aspect-auto sm:h-[390px] rounded-[14px] sm:rounded-[24px] overflow-hidden bg-slate-900 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer snap-start border border-gray-200/90 hover:border-[#FF7A00]/50"
               >
                 {/* Background Video (Auto-plays muted when reached) or Poster Fallback */}
                 <div className="absolute inset-0 z-0 overflow-hidden bg-black">
@@ -406,87 +415,91 @@ export function ShoppableVideosSection({
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/40 pointer-events-none" />
                 </div>
 
-                {/* Top Badges */}
-                <div className="absolute top-3.5 left-3.5 right-3.5 z-10 flex items-center justify-between">
+                {/* Top Badges / View count */}
+                <div className="absolute top-1.5 left-1.5 right-1.5 sm:top-3 sm:left-3 sm:right-3 z-10 flex items-center justify-between">
                   {vid.badge ? (
-                    <span className="bg-[#FF3B30] text-white text-[10px] sm:text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-md">
+                    <span className="bg-[#FF3B30] text-white text-[8px] sm:text-[10px] font-black uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full shadow-xs">
                       {vid.badge}
                     </span>
                   ) : (
                     <span />
                   )}
 
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-bold shadow-md">
-                    <Eye className="w-3 h-3 text-rose-400" />
-                    <span>{vid.viewsText || "24.5k"}</span>
+                  <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[8px] sm:text-[10px] font-bold shadow-xs">
+                    <Eye className="w-2.5 h-2.5 text-rose-400" />
+                    <span>{vid.viewsText || "24k"}</span>
                   </span>
                 </div>
 
                 {/* Center Play Button Icon */}
                 <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-                  <div className="w-12 h-12 rounded-full bg-black/35 backdrop-blur-xs border border-white/30 text-white flex items-center justify-center group-hover:scale-115 group-hover:bg-[#FF7A00] transition-all duration-300 shadow-xl opacity-75 group-hover:opacity-100">
-                    <Play className="w-5 h-5 fill-white ml-0.5" />
+                  <div className="w-7 h-7 sm:w-11 sm:h-11 rounded-full bg-black/40 backdrop-blur-xs border border-white/30 text-white flex items-center justify-center group-hover:scale-110 group-hover:bg-[#FF7A00] transition-all duration-300 shadow-md">
+                    <Play className="w-3.5 h-3.5 sm:w-5 sm:h-5 fill-white ml-0.5" />
                   </div>
                 </div>
 
-                {/* Bottom Floating Shoppable Product Card Overlay (Only if product attached) */}
+                {/* Bottom Overlay - Compact for Mobile, Detailed for Desktop */}
                 {vid.productId &&
                 vid.productId !== "none" &&
                 vid.productId !== "all" &&
                 (vid.productName || vid.productSlug) ? (
-                  <div className="absolute bottom-3.5 left-3.5 right-3.5 z-10">
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const target = vid.productSlug || vid.productId;
-                        if (target && target !== "all" && target !== "none") {
-                          router.push(`/products/${target}`);
-                        } else {
-                          router.push("/products");
-                        }
-                      }}
-                      className="p-2.5 rounded-2xl bg-white/95 backdrop-blur-md border border-white/60 shadow-lg flex items-center gap-2.5 hover:bg-white hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group/pill"
-                      title={`View ${vid.productName || "product"} page`}
-                    >
-                      {/* Small Square Thumbnail */}
-                      <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
-                        <img
-                          src={vid.productImage || currentProduct?.poster_image || poster}
-                          alt={vid.productName || currentProduct?.name || vid.title}
-                          className="w-full h-full object-cover group-hover/pill:scale-110 transition-transform duration-300"
-                        />
-                      </div>
-
-                      {/* Product Details */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-gray-900 truncate leading-tight group-hover/pill:text-[#FF7A00] transition-colors">
-                          {vid.productName || currentProduct?.name || vid.title}
-                        </p>
-                        <div className="flex items-baseline gap-1.5 mt-0.5">
-                          <span className="text-xs font-black text-[#FF7A00]">
-                            ₹{(vid.productPrice || currentProduct?.price || 799).toLocaleString("en-IN")}
-                          </span>
-                          {(vid.productMrp || currentProduct?.mrp) && (
-                            <span className="text-[10px] text-gray-400 line-through">
-                              ₹{(vid.productMrp || currentProduct?.mrp || 1199).toLocaleString("en-IN")}
+                  <>
+                    {/* Desktop Full Card Overlay */}
+                    <div className="hidden sm:block absolute bottom-3 left-3 right-3 z-10">
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const target = vid.productSlug || vid.productId;
+                          if (target && target !== "all" && target !== "none") {
+                            router.push(`/products/${target}`);
+                          } else {
+                            router.push("/products");
+                          }
+                        }}
+                        className="p-2.5 rounded-2xl bg-white/95 backdrop-blur-md border border-white/60 shadow-lg flex items-center gap-2 hover:bg-white hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group/pill"
+                        title={`View ${vid.productName || "product"} page`}
+                      >
+                        <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
+                          <img
+                            src={vid.productImage || currentProduct?.poster_image || poster}
+                            alt={vid.productName || currentProduct?.name || vid.title}
+                            className="w-full h-full object-cover group-hover/pill:scale-110 transition-transform duration-300"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-gray-900 truncate leading-tight group-hover/pill:text-[#FF7A00] transition-colors">
+                            {vid.productName || currentProduct?.name || vid.title}
+                          </p>
+                          <div className="flex items-baseline gap-1.5 mt-0.5">
+                            <span className="text-xs font-black text-[#FF7A00]">
+                              ₹{(vid.productPrice || currentProduct?.price || 799).toLocaleString("en-IN")}
                             </span>
-                          )}
+                            {(vid.productMrp || currentProduct?.mrp) && (
+                              <span className="text-[10px] text-gray-400 line-through">
+                                ₹{(vid.productMrp || currentProduct?.mrp || 1199).toLocaleString("en-IN")}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="w-6 h-6 rounded-full bg-[#FF7A00]/10 text-[#FF7A00] flex items-center justify-center shrink-0 group-hover/pill:bg-[#FF7A00] group-hover/pill:text-white transition-colors">
+                          <ExternalLink className="w-3 h-3" />
                         </div>
                       </div>
+                    </div>
 
-                      {/* Quick Arrow / Action Icon */}
-                      <div className="w-7 h-7 rounded-full bg-[#FF7A00]/10 text-[#FF7A00] flex items-center justify-center shrink-0 group-hover/pill:bg-[#FF7A00] group-hover/pill:text-white transition-colors">
-                        <ExternalLink className="w-3.5 h-3.5" />
+                    {/* Mobile Compact Overlay */}
+                    <div className="sm:hidden absolute bottom-1.5 left-1.5 right-1.5 z-10 pointer-events-none">
+                      <div className="px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-white text-[9px] font-bold truncate text-center leading-tight">
+                        ₹{(vid.productPrice || currentProduct?.price || 799).toLocaleString("en-IN")}
                       </div>
                     </div>
-                  </div>
+                  </>
                 ) : (
-                  <div className="absolute bottom-3.5 left-3.5 right-3.5 z-10 pointer-events-none">
-                    <div className="p-2.5 rounded-2xl bg-black/60 backdrop-blur-md border border-white/20 text-white">
-                      <p className="text-xs font-bold truncate leading-tight">
+                  <div className="absolute bottom-1.5 sm:bottom-3 left-1.5 sm:left-3 right-1.5 sm:right-3 z-10 pointer-events-none">
+                    <div className="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-black/60 backdrop-blur-xs border border-white/20 text-white text-center">
+                      <p className="text-[9px] sm:text-xs font-bold truncate leading-tight">
                         {vid.title}
                       </p>
-                      <p className="text-[10px] text-gray-300 mt-0.5">Tap to watch reel</p>
                     </div>
                   </div>
                 )}
@@ -495,8 +508,14 @@ export function ShoppableVideosSection({
           })}
         </div>
 
-        {/* Floating Side Navigation Buttons for Desktop (Always active on Home or when header is hidden) */}
-        {!showHeader && videos.length > 2 && (
+        {/* Mobile Pagination Dots */}
+        <div className="flex items-center justify-center gap-1.5 mt-2.5 sm:hidden">
+          <span className="w-2 h-2 rounded-full bg-gray-900" />
+          <span className="w-2 h-2 rounded-full bg-gray-300" />
+        </div>
+
+        {/* Floating Side Navigation Buttons for Desktop */}
+        {videos.length > 3 && (
           <>
             <button
               type="button"
