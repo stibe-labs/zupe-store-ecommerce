@@ -1932,9 +1932,7 @@ export default function ProductDetailPage() {
                   className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-50/80 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-                      <Undo2 className="w-5 h-5" />
-                    </div>
+                    <RotateCcw className="w-5 h-5 text-gray-700 stroke-[1.8]" />
                     <div>
                       <span className="font-bold text-[14px] sm:text-[15px] text-gray-900 block leading-tight">
                         For Return / Exchange
@@ -1946,7 +1944,7 @@ export default function ProductDetailPage() {
                   </div>
                   <ChevronDown
                     className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${
-                      openAccordions.returns ? "rotate-180 text-blue-600" : ""
+                      openAccordions.returns ? "rotate-180 text-gray-800" : ""
                     }`}
                   />
                 </button>
@@ -1963,15 +1961,15 @@ export default function ProductDetailPage() {
                         HOW IT WORKS
                       </p>
 
-                      {/* 3 Step Timeline */}
+                      {/* 3 Step Timeline in Zupe Brand Theme */}
                       <div className="space-y-0 relative">
                         {/* Step 1: Record an unboxing video */}
                         <div className="flex items-start gap-3.5 relative">
                           <div className="flex flex-col items-center">
-                            <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                            <div className="w-9 h-9 rounded-full bg-[#FF7A00] text-white flex items-center justify-center shrink-0 shadow-xs">
                               <Video className="w-4 h-4" />
                             </div>
-                            <div className="w-[1.5px] bg-blue-100 h-8 my-1" />
+                            <div className="w-[1.5px] bg-orange-200 h-8 my-1" />
                           </div>
                           <div className="pt-0.5 pb-2">
                             <h4 className="font-bold text-[13px] sm:text-sm text-gray-900 leading-snug">
@@ -1986,10 +1984,10 @@ export default function ProductDetailPage() {
                         {/* Step 2: WhatsApp us the video */}
                         <div className="flex items-start gap-3.5 relative">
                           <div className="flex flex-col items-center">
-                            <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                            <div className="w-9 h-9 rounded-full bg-[#FF7A00] text-white flex items-center justify-center shrink-0 shadow-xs">
                               <MessageCircle className="w-4 h-4" />
                             </div>
-                            <div className="w-[1.5px] bg-blue-100 h-8 my-1" />
+                            <div className="w-[1.5px] bg-orange-200 h-8 my-1" />
                           </div>
                           <div className="pt-0.5 pb-2">
                             <h4 className="font-bold text-[13px] sm:text-sm text-gray-900 leading-snug">
@@ -2001,7 +1999,7 @@ export default function ProductDetailPage() {
                                 href="https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20have%20an%20unboxing%20video%20for%20return%2Fexchange"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-blue-600 font-bold hover:underline"
+                                className="text-[#FF7A00] font-bold hover:underline"
                               >
                                 +91 97441 22853
                               </a>{" "}
@@ -2028,11 +2026,11 @@ export default function ProductDetailPage() {
                         </div>
                       </div>
 
-                      {/* Warning / Important Callout Box */}
-                      <div className="mt-4 p-3.5 rounded-xl bg-[#FEF2F2] border border-[#FEE2E2] flex items-start gap-2.5 text-xs text-[#B91C1C] leading-relaxed">
-                        <AlertCircle className="w-4 h-4 text-[#EF4444] shrink-0 mt-0.5" />
+                      {/* Warning / Important Callout Box in Brand Color */}
+                      <div className="mt-4 p-3.5 rounded-xl bg-orange-50/80 border border-orange-200/90 text-xs text-orange-950 leading-relaxed flex items-start gap-2.5">
+                        <AlertCircle className="w-4 h-4 text-[#FF7A00] shrink-0 mt-0.5" />
                         <div>
-                          A continuous unboxing video helps <strong className="font-bold text-[#991B1B]">Zupe Store</strong> verify transit damage, missing contents, wrong products or initial defects faster.
+                          A continuous unboxing video helps <strong className="font-bold text-[#FF7A00]">Zupe Store</strong> verify transit damage, missing contents, wrong products or initial defects faster.
                         </div>
                       </div>
 
@@ -2043,7 +2041,7 @@ export default function ProductDetailPage() {
                           <span>Resolved in 3–5 days</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+                          <Check className="w-3.5 h-3.5 text-[#FF7A00] stroke-[2.5]" />
                           <span>Easy process</span>
                         </div>
                       </div>

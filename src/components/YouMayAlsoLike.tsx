@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Star, Heart, ArrowRight } from "lucide-react";
+import { Star, Heart, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Product } from "@/types/product";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { useCart } from "@/context/CartContext";
@@ -82,8 +82,8 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
       return (Number(b.product.rating) || 0) - (Number(a.product.rating) || 0);
     });
 
-    // Return the top 4 matching products
-    return scored.slice(0, 4).map((s) => s.product);
+    // Return the top matching products for 1-row swiping carousel
+    return scored.slice(0, 10).map((s) => s.product);
   }, [catalog, currentProduct]);
 
   if (!matchingProducts || matchingProducts.length === 0) {
@@ -153,10 +153,19 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
     }
   };
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: "left" | "right") => {
+    if (scrollRef.current) {
+      const offset = direction === "left" ? -300 : 300;
+      scrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
+    }
+  };
+
   return (
     <section className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 py-10 sm:py-14 border-t border-gray-100">
       {/* Section Header */}
-      <div className="flex items-center justify-between mb-6 sm:mb-8">
+      <div className="flex items-center justify-between mb-5 sm:mb-7">
         <div>
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#111111] tracking-tight">
             You may also like
@@ -166,17 +175,42 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
           </p>
         </div>
 
-        <Link
-          href={`/products?category=${encodeURIComponent(currentProduct.category || "all")}`}
-          className="hidden sm:inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#FF7A00] hover:text-[#E66E00] transition-colors"
-        >
-          <span>View all in {currentProduct.category || "Catalog"}</span>
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href={`/products?category=${encodeURIComponent(currentProduct.category || "all")}`}
+            className="hidden sm:inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#FF7A00] hover:text-[#E66E00] transition-colors"
+          >
+            <span>View all in {currentProduct.category || "Catalog"}</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+
+          {/* Desktop Arrow Buttons for manual sliding */}
+          <div className="hidden sm:flex items-center gap-1.5 ml-1">
+            <button
+              type="button"
+              onClick={() => scroll("left")}
+              aria-label="Scroll left"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-gray-200 bg-white hover:bg-gray-100 active:scale-95 flex items-center justify-center text-gray-700 transition-all shadow-2xs cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scroll("right")}
+              aria-label="Scroll right"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-gray-200 bg-white hover:bg-gray-100 active:scale-95 flex items-center justify-center text-gray-700 transition-all shadow-2xs cursor-pointer"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* 4-Item Grid matching maxsmile / Zupe Store layout */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6">
+      {/* 1-Row Manually Moving / Swiping Product Track */}
+      <div
+        ref={scrollRef}
+        className="flex items-stretch overflow-x-auto gap-3 sm:gap-4.5 pb-4 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+      >
         {matchingProducts.map((item) => {
           const discountPercent =
             item.mrp && item.mrp > item.price
@@ -193,7 +227,7 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
           return (
             <div
               key={item.id || item.slug}
-              className="group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl bg-white border border-gray-100 hover:border-gray-200 p-2.5 sm:p-4 shadow-2xs hover:shadow-lg transition-all duration-300"
+              className="w-[185px] sm:w-[220px] md:w-[250px] shrink-0 snap-start group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl bg-white border border-gray-100 hover:border-gray-200 p-2.5 sm:p-4 shadow-2xs hover:shadow-lg transition-all duration-300"
             >
               <div>
                 {/* Product Image Box */}
