@@ -615,3 +615,194 @@ Need assistance? Reply to this email at zupestoreonline@gmail.com.
     return { success: false, error: err.message };
   }
 }
+
+export interface SendOrderCancellationEmailParams {
+  orderId: string;
+  customerName: string;
+  customerEmail: string;
+  totalAmount: number;
+  isPrepaid: boolean;
+  refundId?: string;
+  paymentId?: string;
+  reason?: string;
+}
+
+/**
+ * Sends an official order cancellation and refund initiation email to the customer.
+ */
+export async function sendOrderCancellationEmail(
+  params: SendOrderCancellationEmailParams
+): Promise<{ success: boolean; skipped?: boolean; error?: string; message?: string }> {
+  const { orderId, customerName, customerEmail, totalAmount, isPrepaid, refundId, paymentId, reason } = params;
+
+  if (
+    !customerEmail ||
+    !customerEmail.includes("@") ||
+    customerEmail.toLowerCase().includes("example.com") ||
+    customerEmail.toLowerCase().includes("test@")
+  ) {
+    return { success: false, skipped: true, message: "No valid customer email" };
+  }
+
+  const cleanEmail = customerEmail.trim().toLowerCase();
+  const firstName = (customerName || "Valued Customer").trim().split(" ")[0] || "there";
+
+  const refundDetailsHtml = isPrepaid
+    ? `
+      <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <div style="font-size: 15px; font-weight: 800; color: #065f46; margin-bottom: 8px;">
+          ✓ Full Refund Initiated: ₹${totalAmount.toLocaleString("en-IN")}
+        </div>
+        <div style="font-size: 13px; color: #047857; line-height: 1.6;">
+          Your refund of <strong>₹${totalAmount.toLocaleString("en-IN")}</strong> has been processed to your original payment method.
+        </div>
+        <table style="width: 100%; margin-top: 12px; font-size: 12px; border-top: 1px dashed #a7f3d0; padding-top: 12px;">
+          ${
+            refundId
+              ? `<tr>
+                  <td style="color: #047857; padding: 4px 0; font-weight: 600;">Refund Reference:</td>
+                  <td style="color: #065f46; font-family: monospace; font-weight: 700; text-align: right;">${refundId}</td>
+                </tr>`
+              : ""
+          }
+          ${
+            paymentId
+              ? `<tr>
+                  <td style="color: #047857; padding: 4px 0; font-weight: 600;">Payment ID:</td>
+                  <td style="color: #065f46; font-family: monospace; font-weight: 700; text-align: right;">${paymentId}</td>
+                </tr>`
+              : ""
+          }
+          <tr>
+            <td style="color: #047857; padding: 4px 0; font-weight: 600;">Expected Credit:</td>
+            <td style="color: #065f46; font-weight: 700; text-align: right;">UPI: 2-4 hrs | Cards: 2-4 days</td>
+          </tr>
+        </table>
+      </div>
+    `
+    : `
+      <div style="background-color: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px; margin-bottom: 24px;">
+        <div style="font-size: 14px; font-weight: 700; color: #374151;">
+          Cash on Delivery Order Cancelled
+        </div>
+        <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">
+          No charges were deducted since this was a Cash on Delivery order.
+        </div>
+      </div>
+    `;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Order Cancelled — Zupe Store</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 30px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+        <!-- Header -->
+        <tr>
+          <td style="padding: 28px 32px; background: linear-gradient(135deg, #111827 0%, #1f2937 100%); text-align: center;">
+            <div style="font-size: 24px; font-weight: 900; color: #FF7A00; letter-spacing: -0.5px;">
+              Zupe Store
+            </div>
+            <div style="font-size: 12px; color: #9ca3af; margin-top: 4px; letter-spacing: 1px; text-transform: uppercase;">
+              Order Cancellation Notice
+            </div>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="padding: 32px;">
+            <h2 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 800; color: #111827;">
+              Hi ${firstName},
+            </h2>
+            <p style="margin: 0 0 20px 0; font-size: 14px; color: #4b5563; line-height: 1.6;">
+              As requested, your order <strong>#${orderId}</strong> has been cancelled.
+              ${reason ? `<br><span style="color: #6b7280; font-size: 12px;">Reason: ${reason}</span>` : ""}
+            </p>
+
+            ${refundDetailsHtml}
+
+            <div style="background-color: #f9fafb; border-radius: 12px; padding: 18px; margin-bottom: 24px;">
+              <table style="width: 100%; font-size: 13px;">
+                <tr>
+                  <td style="color: #6b7280; padding: 4px 0;">Order Reference:</td>
+                  <td style="color: #111827; font-weight: 700; text-align: right;">${orderId}</td>
+                </tr>
+                <tr>
+                  <td style="color: #6b7280; padding: 4px 0;">Order Total:</td>
+                  <td style="color: #111827; font-weight: 700; text-align: right;">₹${totalAmount.toLocaleString("en-IN")}</td>
+                </tr>
+                <tr>
+                  <td style="color: #6b7280; padding: 4px 0;">Status:</td>
+                  <td style="color: #dc2626; font-weight: 700; text-align: right;">Cancelled</td>
+                </tr>
+              </table>
+            </div>
+
+            <div style="text-align: center; margin: 28px 0 10px 0;">
+              <a href="${STORE_BASE_URL}" target="_blank" style="display: inline-block; padding: 12px 28px; background-color: #FF7A00; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 10px;">
+                Continue Shopping on Zupe Store →
+              </a>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Support Info -->
+        <tr>
+          <td style="padding: 20px 32px; background-color: #f9fafb; border-top: 1px solid #f3f4f6; text-align: center; font-size: 12px; color: #6b7280;">
+            Need help or have questions? Contact us anytime at <a href="mailto:zupestoreonline@gmail.com" style="color: #FF7A00; text-decoration: none; font-weight: 600;">zupestoreonline@gmail.com</a>.
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding: 16px 32px; background-color: #111827; text-align: center; color: #9ca3af; font-size: 11px;">
+            © ${new Date().getFullYear()} Zupe Store. Sent to ${cleanEmail}.
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  const textBody = `
+Zupe Store — Order #${orderId} Cancelled
+
+Hi ${firstName},
+
+Your order #${orderId} has been cancelled.
+
+${
+  isPrepaid
+    ? `FULL REFUND INITIATED:
+Refund Amount: ₹${totalAmount.toLocaleString("en-IN")}
+${refundId ? `Refund Reference: ${refundId}\n` : ""}${paymentId ? `Payment ID: ${paymentId}\n` : ""}
+Credit Timeline:
+- UPI (GPay / PhonePe / Paytm): Within 2 to 4 hours
+- Cards / Netbanking: 2 to 4 business days`
+    : `Cash on Delivery order cancelled. No amount was charged.`
+}
+
+If you need any assistance, reply to this email at zupestoreonline@gmail.com.
+
+Zupe Store Team
+${STORE_BASE_URL}
+  `.trim();
+
+  try {
+    const res = await sendEmail({
+      to: cleanEmail,
+      subject: `Order #${orderId} Cancelled & Refund Initiated — Zupe Store`,
+      html,
+      text: textBody,
+    });
+    return res;
+  } catch (err: any) {
+    console.error(`[Order Email Service] Cancellation email error:`, err);
+    return { success: false, error: err.message };
+  }
+}
+

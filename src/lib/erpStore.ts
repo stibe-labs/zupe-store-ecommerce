@@ -89,6 +89,8 @@ export interface ERPOrder {
   whatsapp_confirm_token?: string;
   whatsapp_token_used?: boolean;
   confirmation_email_sent?: boolean;
+  razorpay_payment_id?: string;
+  razorpay_order_id?: string;
   created_at: string;
   items?: { product_name: string; quantity: number; unit_price: number }[];
 }
@@ -1099,6 +1101,8 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
     whatsapp_confirm_status: orderData.whatsapp_confirm_status || "pending_whatsapp",
     whatsapp_confirm_token: orderData.whatsapp_confirm_token || "",
     whatsapp_token_used: orderData.whatsapp_token_used || false,
+    razorpay_payment_id: orderData.razorpay_payment_id || undefined,
+    razorpay_order_id: orderData.razorpay_order_id || undefined,
     created_at: orderData.created_at || new Date().toISOString().replace("T", " ").substring(0, 19),
     items: orderData.items || [],
   };
@@ -1113,8 +1117,9 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
         payment_status, shipping_address, tracking_number, shiprocket_awb,
         courier_partner, delivery_status, ndr_status, rto_status, remittance_status,
         supplier_id, product_cost, rto_shipping_charge, ad_spend_attributed, net_profit, created_at, items,
-        whatsapp_confirm_status, whatsapp_confirm_token, whatsapp_token_used
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        whatsapp_confirm_status, whatsapp_confirm_token, whatsapp_token_used,
+        razorpay_payment_id, razorpay_order_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         newOrder.id,
         newOrder.shopify_order_id,
@@ -1145,6 +1150,8 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
         newOrder.whatsapp_confirm_status || "pending_whatsapp",
         newOrder.whatsapp_confirm_token || null,
         newOrder.whatsapp_token_used ? 1 : 0,
+        newOrder.razorpay_payment_id || null,
+        newOrder.razorpay_order_id || null,
       ]
     );
   } catch (err) {

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cancelWhatsAppOrder, getStorefrontOrderById, updateStorefrontOrder } from "@/lib/orderStore";
 import { getOrderById, updateERPOrder } from "@/lib/erpStore";
-import { refundRazorpayPayment } from "@/lib/razorpay";
+import { refundRazorpayPayment, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } from "@/lib/razorpay";
 import { sendOrderCancellationRefundWhatsApp } from "@/lib/whatsappOrderConfirmation";
+import { sendOrderCancellationEmail } from "@/lib/orderEmailService";
 
 export const dynamic = "force-dynamic";
 
@@ -55,11 +56,61 @@ export async function POST(req: NextRequest) {
       (ord as any)?.payment_status === "Completed";
 
     let refundInfo: { id: string; amount: number; isPrepaid: boolean } | null = null;
+    let custName = (ord as any)?.customer_name || "Valued Customer";
+    let custPhone = (ord as any)?.customer_phone || "";
+    let custEmail = (ord as any)?.customer_email || (ord as any)?.guest_email || "";
+
+    // If phone, email, or Razorpay IDs are missing from ord, look them up in D1
+    if (!custPhone || !custEmail || !(ord as any)?.razorpay_payment_id) {
+      try {
+        const { executeD1Query } = await import("@/lib/d1");
+        const rows = await executeD1Query<any>(
+          "SELECT customer_phone, guest_email, customer_name, razorpay_payment_id, razorpay_order_id, total_amount FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
+          [orderId, orderId]
+        );
+        if (rows && rows.length > 0) {
+          if (!custPhone && rows[0].customer_phone) custPhone = rows[0].customer_phone;
+          if (!custEmail && rows[0].guest_email) custEmail = rows[0].guest_email;
+          if (!custName && rows[0].customer_name) custName = rows[0].customer_name;
+          if (!(ord as any)?.razorpay_payment_id && rows[0].razorpay_payment_id) {
+            (ord as any).razorpay_payment_id = rows[0].razorpay_payment_id;
+          }
+          if (!(ord as any)?.razorpay_order_id && rows[0].razorpay_order_id) {
+            (ord as any).razorpay_order_id = rows[0].razorpay_order_id;
+          }
+        }
+      } catch (d1Err) {
+        console.warn("D1 order detail lookup warning:", d1Err);
+      }
+    }
 
     if (isPrepaid) {
       const totalAmount = Number((ord as any)?.total_amount || 0);
       let paymentId = (ord as any)?.razorpay_payment_id;
+      const razorpayOrderId = (ord as any)?.razorpay_order_id;
       let refundId = `rfnd_auto_${orderId.replace(/[^a-zA-Z0-9]/g, "").slice(-8)}`;
+
+      // If paymentId is missing but razorpayOrderId exists, query Razorpay order payments
+      if (!paymentId && razorpayOrderId) {
+        try {
+          const authHeader = `Basic ${Buffer.from(
+            `${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`
+          ).toString("base64")}`;
+          const rRes = await fetch(`https://api.razorpay.com/v1/orders/${razorpayOrderId}/payments`, {
+            headers: { Authorization: authHeader },
+          });
+          if (rRes.ok) {
+            const data = (await rRes.json()) as any;
+            const captured = data.items?.find((p: any) => p.status === "captured") || data.items?.[0];
+            if (captured?.id) {
+              paymentId = captured.id;
+              console.log(`🔍 [Razorpay Lookup] Found payment ID ${paymentId} for order ${razorpayOrderId}`);
+            }
+          }
+        } catch (rErr) {
+          console.warn("Failed to lookup Razorpay order payments:", rErr);
+        }
+      }
 
       // 1. Attempt automated instant refund through Razorpay API
       if (paymentId) {
@@ -121,11 +172,27 @@ export async function POST(req: NextRequest) {
         console.warn("D1 update error on refund:", d1Err);
       }
 
-      // 3. Dispatch WhatsApp Notification to customer with Refund ID & Timeline
-      try {
-        const custName = (ord as any)?.customer_name || "Valued Customer";
-        const custPhone = (ord as any)?.customer_phone || "";
-        if (custPhone) {
+      // 3. Dispatch Email Notification if customer email is available
+      if (custEmail) {
+        try {
+          await sendOrderCancellationEmail({
+            orderId,
+            customerName: custName,
+            customerEmail: custEmail,
+            totalAmount,
+            isPrepaid: true,
+            refundId,
+            paymentId,
+            reason,
+          });
+        } catch (emailErr) {
+          console.warn("Failed to dispatch cancellation email:", emailErr);
+        }
+      }
+
+      // 4. Dispatch WhatsApp Notification to customer with Refund ID & Timeline
+      if (custPhone) {
+        try {
           await sendOrderCancellationRefundWhatsApp({
             customerName: custName,
             customerPhone: custPhone,
@@ -134,25 +201,38 @@ export async function POST(req: NextRequest) {
             refundId,
             isPrepaid: true,
           }).catch((e) => console.warn("WhatsApp refund notification error:", e));
+        } catch (waErr) {
+          console.warn("Failed to dispatch WhatsApp refund alert:", waErr);
         }
-      } catch (waErr) {
-        console.warn("Failed to dispatch WhatsApp refund alert:", waErr);
       }
     } else {
-      // Cash on Delivery cancellation WhatsApp alert
-      try {
-        const custName = (ord as any)?.customer_name || "Valued Customer";
-        const custPhone = (ord as any)?.customer_phone || "";
-        if (custPhone) {
+      // Cash on Delivery cancellation
+      if (custEmail) {
+        try {
+          await sendOrderCancellationEmail({
+            orderId,
+            customerName: custName,
+            customerEmail: custEmail,
+            totalAmount: Number((ord as any)?.total_amount || 0),
+            isPrepaid: false,
+            reason,
+          });
+        } catch (emailErr) {
+          console.warn("Failed to dispatch COD cancel email:", emailErr);
+        }
+      }
+
+      if (custPhone) {
+        try {
           await sendOrderCancellationRefundWhatsApp({
             customerName: custName,
             customerPhone: custPhone,
             orderId,
             isPrepaid: false,
           }).catch((e) => console.warn("WhatsApp COD cancel alert error:", e));
+        } catch (waErr) {
+          console.warn("Failed to dispatch WhatsApp cancel alert:", waErr);
         }
-      } catch (waErr) {
-        console.warn("Failed to dispatch WhatsApp cancel alert:", waErr);
       }
     }
 

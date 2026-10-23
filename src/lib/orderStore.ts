@@ -28,6 +28,8 @@ export interface OrderRecord {
   whatsapp_confirm_token?: string;
   whatsapp_token_used?: boolean;
   confirmation_email_sent?: boolean;
+  razorpay_payment_id?: string;
+  razorpay_order_id?: string;
   items: OrderItem[];
   created_at: string;
 }
@@ -95,6 +97,8 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
       whatsapp_confirm_token: order.whatsapp_confirm_token || "",
       whatsapp_token_used: order.whatsapp_token_used || false,
       confirmation_email_sent: order.confirmation_email_sent || false,
+      razorpay_payment_id: (order as any).razorpay_payment_id || null,
+      razorpay_order_id: (order as any).razorpay_order_id || null,
       items: order.items.map((it) => ({
         product_name: it.name,
         quantity: it.quantity,
@@ -108,7 +112,7 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
     console.warn("Failed to sync storefront order to ERP:", err);
   }
 
-  // 2. Persist/update user_id and verification tokens in D1 if available
+  // 2. Persist/update user_id, verification tokens, and Razorpay IDs in D1 if available
   try {
     await executeD1Query(
       `UPDATE orders 
@@ -116,7 +120,9 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
            whatsapp_confirm_status = ?, 
            whatsapp_confirm_token = ?, 
            whatsapp_token_used = ?,
-           confirmation_email_sent = ?
+           confirmation_email_sent = ?,
+           razorpay_payment_id = COALESCE(?, razorpay_payment_id),
+           razorpay_order_id = COALESCE(?, razorpay_order_id)
        WHERE id = ?`,
       [
         order.user_id || null,
@@ -124,6 +130,8 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
         order.whatsapp_confirm_token || null,
         order.whatsapp_token_used ? 1 : 0,
         order.confirmation_email_sent ? 1 : 0,
+        (order as any).razorpay_payment_id || null,
+        (order as any).razorpay_order_id || null,
         order.id,
       ]
     );

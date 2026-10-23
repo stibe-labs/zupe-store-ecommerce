@@ -79,6 +79,8 @@ CREATE TABLE IF NOT EXISTS orders (
     whatsapp_confirm_status TEXT DEFAULT 'pending_whatsapp',
     whatsapp_confirm_token TEXT,
     whatsapp_token_used INTEGER DEFAULT 0,
+    razorpay_payment_id TEXT,
+    razorpay_order_id TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
