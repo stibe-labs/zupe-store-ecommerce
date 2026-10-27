@@ -27,6 +27,7 @@ export interface OrderRecord {
   postal_code: string;
   total_amount: number;
   discount_amount?: number;
+  promo_code?: string;
   payment_method: string;
   payment_status: "pending" | "paid" | "failed" | "refunded";
   order_status: "processing" | "shipped" | "delivered" | "cancelled";
@@ -94,6 +95,8 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
       guest_email: order.customer_email,
       customer_phone: order.customer_phone || "+91 98000 00000",
       total_amount: order.total_amount,
+      discount_amount: order.discount_amount,
+      promo_code: order.promo_code,
       shipping_address: `${order.shipping_address}, ${order.city} ${order.postal_code}`,
       payment_method: order.payment_method === "Credit Card" ? "Prepaid" : order.payment_method,
       payment_status: order.payment_status === "paid" ? "Completed" : "Pending",

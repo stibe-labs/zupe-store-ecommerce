@@ -166,8 +166,9 @@ function CheckoutContent() {
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
   const [promoError, setPromoError] = useState<string | null>(null);
   const [promoSuccess, setPromoSuccess] = useState<string | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
 
-  const handleApplyPromo = () => {
+  const handleApplyPromo = async () => {
     setPromoError(null);
     setPromoSuccess(null);
     const code = promoCode.trim().toUpperCase();
@@ -175,29 +176,56 @@ function CheckoutContent() {
       setPromoError("Please enter a valid promo code");
       return;
     }
-    if (code === "ZUPE10" || code === "WELCOME10" || code === "OFFER10") {
-      const disc = Math.min(100, Math.round(subtotal * 0.1));
-      setPromoDiscount(disc);
-      setAppliedPromo(code);
-      setPromoSuccess(`🎉 Code ${code} applied! ₹${disc} discount added.`);
-    } else if (code === "SAVE50" || code === "SWIVO" || code === "SWIVO10") {
-      const disc = subtotal >= 399 ? 50 : 25;
-      setPromoDiscount(disc);
-      setAppliedPromo(code);
-      setPromoSuccess(`🎉 Code ${code} applied! ₹${disc} discount added.`);
-    } else if (code === "FREESHIP") {
-      setPromoDiscount(49);
-      setAppliedPromo(code);
-      setPromoSuccess(`🎉 Free shipping applied!`);
-    } else {
-      const disc = Math.min(50, Math.round(subtotal * 0.05));
-      if (disc > 0) {
+
+    setPromoLoading(true);
+
+    try {
+      const res = await fetch("/api/promo-codes/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code,
+          subtotal,
+          items: cart.map((c) => ({
+            id: c.id,
+            name: c.name,
+            price: (c.bundle_tier && c.bundle_tier > 1 && c.bundle_total)
+              ? Math.round(c.bundle_total / c.quantity)
+              : c.price,
+            quantity: c.quantity,
+          })),
+        }),
+      });
+
+      const data = await res.json();
+      if (data.valid && data.discount > 0) {
+        setPromoDiscount(data.discount);
+        setAppliedPromo(data.code || code);
+        setPromoSuccess(data.message || `🎉 Code ${data.code || code} applied! ₹${data.discount} discount added.`);
+        setPromoError(null);
+      } else {
+        setPromoDiscount(0);
+        setAppliedPromo(null);
+        setPromoError(data.error || "Invalid promo code.");
+        setPromoSuccess(null);
+      }
+    } catch {
+      // Fallback
+      if (code === "ZUPE10" || code === "WELCOME10" || code === "OFFER10") {
+        const disc = Math.min(100, Math.round(subtotal * 0.1));
+        setPromoDiscount(disc);
+        setAppliedPromo(code);
+        setPromoSuccess(`🎉 Code ${code} applied! ₹${disc} discount added.`);
+      } else if (code === "SAVE50") {
+        const disc = subtotal >= 399 ? 50 : 25;
         setPromoDiscount(disc);
         setAppliedPromo(code);
         setPromoSuccess(`🎉 Code ${code} applied! ₹${disc} discount added.`);
       } else {
-        setPromoError("Invalid promo code. Try ZUPE10 or SAVE50.");
+        setPromoError("Unable to validate promo code. Please check your connection and try again.");
       }
+    } finally {
+      setPromoLoading(false);
     }
   };
 
@@ -1163,6 +1191,8 @@ function CheckoutContent() {
                   postal_code: postalCode.trim(),
                   total_amount: grandTotal,
                   discount_amount: totalDiscount,
+                  promo_code: appliedPromo || undefined,
+                  promo_discount: promoDiscount || undefined,
                   payment_method: methodLabel,
                   is_cod_partial: isCod,
                   advance_amount: isCod ? 19 : grandTotal,
@@ -2015,10 +2045,17 @@ function CheckoutContent() {
                         <button
                           type="button"
                           onClick={handleApplyPromo}
-                          className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-xs shadow-2xs transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+                          disabled={promoLoading}
+                          className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-xs shadow-2xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60"
                         >
-                          <span>Apply</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
+                          {promoLoading ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <>
+                              <span>Apply</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </>
+                          )}
                         </button>
                       </div>
 
@@ -2850,6 +2887,15 @@ function CheckoutContent() {
                           <span className="font-extrabold">-₹{bundleSavings.toLocaleString()}</span>
                         </div>
                       )}
+                      {promoDiscount > 0 && (
+                        <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
+                          <span className="flex items-center gap-1 font-bold">
+                            <Tag className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Promo Discount ({appliedPromo})</span>
+                          </span>
+                          <span className="font-extrabold">-₹{promoDiscount.toLocaleString()}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-gray-600">
                         <span className="flex items-center gap-1.5">
                           Shipping Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
@@ -3127,10 +3173,17 @@ function CheckoutContent() {
                   <button
                     type="button"
                     onClick={handleApplyPromo}
-                    className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-xs shadow-2xs transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+                    disabled={promoLoading}
+                    className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-xs shadow-2xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60"
                   >
-                    <span>Apply</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    {promoLoading ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <>
+                        <span>Apply</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </>
+                    )}
                   </button>
                 </div>
 

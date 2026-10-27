@@ -171,6 +171,7 @@ export async function POST(req: NextRequest) {
       payment_method,
       items,
       user_id,
+      promo_code,
     } = order_payload;
 
     if (items && Array.isArray(items) && items.length > 0) {
@@ -222,6 +223,7 @@ export async function POST(req: NextRequest) {
       postal_code: postal_code || "",
       total_amount: Number(total_amount),
       discount_amount: Number(discount_amount || 0),
+      promo_code: promo_code || undefined,
       payment_method: orderPaymentMethod,
       payment_status: orderPaymentStatus,
       order_status: "shipped",
@@ -242,6 +244,16 @@ export async function POST(req: NextRequest) {
     }
 
     await createOrder(newOrder);
+
+    // Track coupon usage increment if applicable
+    if (promo_code) {
+      try {
+        const { incrementCouponUsage } = await import("@/lib/couponStore");
+        await incrementCouponUsage(promo_code);
+      } catch (cErr) {
+        console.warn("Could not record coupon redemption count:", cErr);
+      }
+    }
 
     // Instant Automated Dispatch to Shiprocket on Payment Confirmation
     let liveAwb: string | undefined;

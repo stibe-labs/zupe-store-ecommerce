@@ -69,6 +69,7 @@ export interface ERPOrder {
   total_amount: number;
   subtotal?: number;
   discount_amount?: number;
+  promo_code?: string;
   product_cost: number;
   shipping_cost: number;
   rto_shipping_charge: number;

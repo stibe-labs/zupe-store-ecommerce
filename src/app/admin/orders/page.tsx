@@ -24,6 +24,7 @@ import {
   MessageCircle,
   XCircle,
   MoreVertical,
+  Tag,
 } from "lucide-react";
 import { ERPOrder } from "@/lib/erpStore";
 
@@ -750,6 +751,13 @@ function AdminOrdersContent() {
                                     <span>{bundleItem.offer_label || `Buy ${bundleItem.bundle_tier || totalQty} Save More`}</span>
                                   </span>
                                 )}
+                                {ord.promo_code && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                    <Tag className="w-2.5 h-2.5 text-purple-600" />
+                                    <span>Promo: {ord.promo_code}</span>
+                                    {ord.discount_amount ? <span className="text-purple-600 font-extrabold">(-₹{ord.discount_amount})</span> : null}
+                                  </span>
+                                )}
                               </div>
                             );
                           })()}
@@ -1159,6 +1167,24 @@ function AdminOrdersContent() {
                         );
                       })}
                     </div>
+                    {selectedOrder.promo_code && (
+                      <div className="mt-3 p-3 rounded-xl bg-purple-50/90 border border-purple-200 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <Tag className="w-4 h-4 text-purple-600" />
+                          <span className="font-bold text-purple-900">
+                            Promo Code Applied:{" "}
+                            <span className="font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-800 tracking-wider">
+                              {selectedOrder.promo_code}
+                            </span>
+                          </span>
+                        </div>
+                        {selectedOrder.discount_amount && selectedOrder.discount_amount > 0 && (
+                          <span className="font-extrabold text-purple-800 bg-purple-100 px-2.5 py-1 rounded-md border border-purple-200">
+                            🎉 -₹{Number(selectedOrder.discount_amount).toLocaleString()} Discount
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })()}

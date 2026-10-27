@@ -23,6 +23,7 @@ import {
   X,
   LogOut,
   ShoppingCart,
+  Tag,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -98,6 +99,7 @@ export default function AdminSidebar({
       badgeColor: "bg-rose-500/20 text-rose-300 border border-rose-500/30",
     },
     { name: "Products", href: "/admin/products", icon: Box },
+    { name: "Promo Codes", href: "/admin/promo-codes", icon: Tag },
     { name: "Social Proof", href: "/admin/reviews", icon: Sparkles },
     { name: "Website Content", href: "/admin/website-content", icon: Palette },
     { name: "Suppliers", href: "/admin/suppliers", icon: Users },
