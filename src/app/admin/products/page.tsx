@@ -1089,7 +1089,9 @@ export default function AdminProductsPage() {
     });
 
     const generatedSlug =
-      formSlug.trim() ||
+      (formSlug.trim()
+        ? formSlug.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+        : "") ||
       formName
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
@@ -1751,7 +1753,7 @@ export default function AdminProductsPage() {
                 )}
                 {editingProduct && (
                   <a
-                    href={`/products/${editingProduct.slug || editingProduct.id}`}
+                    href={`/products/${editingProduct.slug ? editingProduct.slug.toLowerCase().replace(/[\s_]+/g, "-") : editingProduct.id}`}
                     target="_blank"
                     rel="noreferrer"
                     className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#FF7A00] bg-orange-50 hover:bg-orange-100 rounded-lg transition-all"

@@ -51,7 +51,19 @@ function getProductImageFallback(productName: string): string {
   return "/products/ripple/ripple-amber.jpg";
 }
 
-function buildTrackingCheckpoints(order: ERPOrder): TrackingCheckpoint[] {
+function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): TrackingCheckpoint[] {
+  // If live carrier scan activities returned from Shiprocket API, render real-time events
+  if (liveTracking?.activities && Array.isArray(liveTracking.activities) && liveTracking.activities.length > 0) {
+    return liveTracking.activities.map((act: any, idx: number) => ({
+      title: act.activity || act.status || "Package Scanned",
+      location: act.location || "Logistics Hub",
+      timestamp: act.date || "",
+      completed: true,
+      active: idx === 0,
+      description: `Carrier update from ${order.courier_partner || liveTracking.courier_name || "Logistics"}: ${act.activity || act.status}.`,
+    }));
+  }
+
   const dateObj = new Date(order.created_at || Date.now());
   const formatDate = (offsetHours: number) => {
     const d = new Date(dateObj.getTime() + offsetHours * 3600000);
@@ -304,6 +316,7 @@ function OrderTrackingContent() {
   const [errorSupport, setErrorSupport] = useState<string | null>(null);
   const [matchedOrders, setMatchedOrders] = useState<ERPOrder[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<ERPOrder | null>(null);
+  const [liveTracking, setLiveTracking] = useState<any>(null);
   const [copiedAWB, setCopiedAWB] = useState(false);
   const [copiedOrderId, setCopiedOrderId] = useState(false);
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
@@ -321,6 +334,7 @@ function OrderTrackingContent() {
     setErrorSupport(null);
     setMatchedOrders([]);
     setSelectedOrder(null);
+    setLiveTracking(null);
 
     try {
       const res = await fetch(`/api/orders/track?query=${encodeURIComponent(trimmed)}`);
@@ -329,6 +343,9 @@ function OrderTrackingContent() {
       if (data.success && Array.isArray(data.orders) && data.orders.length > 0) {
         setMatchedOrders(data.orders);
         setSelectedOrder(data.orders[0]);
+        if (data.live_tracking) {
+          setLiveTracking(data.live_tracking);
+        }
       } else {
         setErrorMessage(
           data.error || `No order found matching "${trimmed}". Please double check your order details.`
@@ -608,7 +625,7 @@ function OrderTrackingContent() {
               {(() => {
                 const badge = getStatusBadge(selectedOrder.delivery_status || selectedOrder.status);
                 const BadgeIcon = badge.icon;
-                const checkpoints = buildTrackingCheckpoints(selectedOrder);
+                const checkpoints = buildTrackingCheckpoints(selectedOrder, liveTracking);
 
                 return (
                   <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
@@ -652,8 +669,22 @@ function OrderTrackingContent() {
                           </p>
                         </div>
 
-                        {/* Status Badge */}
-                        <div className="flex items-center gap-3">
+                        {/* Status Badge & Live Sync indicator */}
+                        <div className="flex flex-wrap items-center gap-2.5">
+                          {liveTracking && !liveTracking.isSimulated && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                              Live Courier Scan
+                            </span>
+                          )}
+
+                          {liveTracking?.edd && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+                              <Clock className="w-3.5 h-3.5" />
+                              Est. Delivery: {liveTracking.edd}
+                            </span>
+                          )}
+
                           <span
                             className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold border ${badge.bg}`}
                           >
@@ -661,6 +692,15 @@ function OrderTrackingContent() {
                             <BadgeIcon className="w-4 h-4" />
                             <span>{badge.label}</span>
                           </span>
+
+                          <button
+                            onClick={() => fetchTracking(selectedOrder.shopify_order_id || selectedOrder.id || inputTerm)}
+                            disabled={loading}
+                            title="Refresh live status from Shiprocket"
+                            className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors border border-gray-200/80"
+                          >
+                            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-[#FF7A00]" : ""}`} />
+                          </button>
                         </div>
                       </div>
 

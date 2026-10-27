@@ -207,6 +207,14 @@ export const DEFAULT_PRODUCTS: Product[] = [
         },
       ],
     },
+    video_ids: [
+      "vid-mv0gb5xf-to4r",
+      "vid-watch-01",
+      "vid-heating-pad-02",
+      "vid-heating-pad-01",
+      "vid-mist-fan-01",
+      "vid-ripple-lamp-01",
+    ],
   },
   {
     id: "mini-portable-steam-iron",

@@ -26,24 +26,13 @@ export async function POST(req: NextRequest) {
       }
 
       if (provider === "shiprocket") {
-        const email = body.email || "";
-        const token = body.token || "";
-        if (!email.includes("@")) {
-          return NextResponse.json({
-            success: false,
-            message: "Invalid Shiprocket account email.",
-          });
-        }
-        if (!token || token.length < 10) {
-          return NextResponse.json({
-            success: false,
-            message: "Invalid Shiprocket API Token / JWT token length.",
-          });
-        }
-        return NextResponse.json({
-          success: true,
-          message: `Shiprocket logistics API authenticated for ${email}. Live AWB & NDR sync active.`,
+        const { testShiprocketConnection } = await import("@/lib/shiprocketService");
+        const testRes = await testShiprocketConnection({
+          email: body.email,
+          password: body.password,
+          token: body.token,
         });
+        return NextResponse.json(testRes);
       }
 
       if (provider === "meta") {

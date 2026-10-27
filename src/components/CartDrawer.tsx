@@ -186,13 +186,22 @@ export function CartDrawer() {
                             ✨ {item.offer_label}
                           </span>
                         ) : null}
-                        <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
                           <span className="text-sm font-bold text-[#FF7A00]">
                             ₹{item.price.toLocaleString()}
                           </span>
-                          {item.mrp && item.mrp > item.price && (
+                          {item.original_price && item.original_price > item.price ? (
+                            <span className="text-xs text-[#B2BEC3] line-through">
+                              ₹{item.original_price.toLocaleString()}
+                            </span>
+                          ) : item.mrp && item.mrp > item.price ? (
                             <span className="text-xs text-[#B2BEC3] line-through">
                               ₹{item.mrp.toLocaleString()}
+                            </span>
+                          ) : null}
+                          {item.quantity > 1 && (
+                            <span className="text-xs font-semibold text-gray-500">
+                              (Total: ₹{(item.bundle_total ?? (item.price * item.quantity)).toLocaleString()})
                             </span>
                           )}
                         </div>

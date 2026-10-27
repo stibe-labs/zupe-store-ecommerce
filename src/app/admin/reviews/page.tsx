@@ -34,6 +34,9 @@ import {
   Edit,
   ChevronDown,
   Ban,
+  Home,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { ProductReview } from "@/lib/reviewStore";
@@ -159,6 +162,13 @@ export default function AdminReviewsPage() {
   const [videoSearchQuery, setVideoSearchQuery] = useState("");
   const [previewModalVideo, setPreviewModalVideo] = useState<ProductVideo | null>(null);
 
+  // Home Page Video Selector State
+  const [homeVideoIds, setHomeVideoIds] = useState<string[]>([]);
+  const [savingHomeVideos, setSavingHomeVideos] = useState(false);
+  const [homeSelectorModalOpen, setHomeSelectorModalOpen] = useState(false);
+  const [selectorSelectedIds, setSelectorSelectedIds] = useState<string[]>([]);
+  const [selectorSearch, setSelectorSearch] = useState("");
+
   const [videoForm, setVideoForm] = useState({
     id: "",
     productId: "none",
@@ -218,6 +228,9 @@ export default function AdminReviewsPage() {
       const data = await res.json();
       if (data.success && Array.isArray(data.videos)) {
         setVideos(data.videos);
+        if (Array.isArray(data.homeVideoIds)) {
+          setHomeVideoIds(data.homeVideoIds);
+        }
       }
     } catch (err) {
       console.warn("Failed to fetch videos:", err);
@@ -458,6 +471,79 @@ export default function AdminReviewsPage() {
     }
   };
 
+  // Toggle video on home page creator reel section
+  const handleToggleHomeVideo = async (vidId: string) => {
+    const isCurrentlyOnHome = homeVideoIds.includes(vidId);
+    const next = isCurrentlyOnHome
+      ? homeVideoIds.filter((id) => id !== vidId)
+      : [...homeVideoIds, vidId];
+    setHomeVideoIds(next);
+
+    try {
+      const res = await fetch("/api/admin/videos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "toggle_home_video",
+          id: vidId,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.homeVideoIds)) {
+        setHomeVideoIds(data.homeVideoIds);
+      }
+    } catch (err) {
+      console.warn("Failed to toggle home video status:", err);
+    }
+  };
+
+  const handleOpenHomeSelector = () => {
+    setSelectorSelectedIds([...homeVideoIds]);
+    setSelectorSearch("");
+    setHomeSelectorModalOpen(true);
+  };
+
+  const handleSaveHomeSelector = async (idsToSave?: string[]) => {
+    const ids = idsToSave !== undefined ? idsToSave : selectorSelectedIds;
+    setSavingHomeVideos(true);
+    try {
+      const res = await fetch("/api/admin/videos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "set_home_videos",
+          homeVideoIds: ids,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.homeVideoIds)) {
+        setHomeVideoIds(data.homeVideoIds);
+        setHomeSelectorModalOpen(false);
+      } else {
+        alert(data.error || "Failed to update home page videos");
+      }
+    } catch (err: any) {
+      console.error("Failed to save home video selection:", err);
+      alert("Error saving: " + (err.message || "Failed"));
+    } finally {
+      setSavingHomeVideos(false);
+    }
+  };
+
+  const handleMoveSelectorVideo = (id: string, direction: "up" | "down") => {
+    setSelectorSelectedIds((prev) => {
+      const idx = prev.indexOf(id);
+      if (idx === -1) return prev;
+      const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+      if (targetIdx < 0 || targetIdx >= prev.length) return prev;
+      const next = [...prev];
+      const temp = next[idx];
+      next[idx] = next[targetIdx];
+      next[targetIdx] = temp;
+      return next;
+    });
+  };
+
   // Video file upload reader with progress & cloud storage upload
   const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -603,12 +689,18 @@ export default function AdminReviewsPage() {
   const filteredVideos = useMemo(() => {
     return videos.filter((v) => {
       if (videoFilterProduct !== "all") {
-        const vPid = (v.productId || "").toLowerCase().trim();
-        const targetPid = videoFilterProduct.toLowerCase().trim();
-        if (targetPid === "none") {
-          if (vPid && vPid !== "none" && vPid !== "all") return false;
+        if (videoFilterProduct === "home_only") {
+          if (!homeVideoIds.includes(v.id)) return false;
+        } else if (videoFilterProduct === "not_on_home") {
+          if (homeVideoIds.includes(v.id)) return false;
         } else {
-          if (vPid !== targetPid) return false;
+          const vPid = (v.productId || "").toLowerCase().trim();
+          const targetPid = videoFilterProduct.toLowerCase().trim();
+          if (targetPid === "none") {
+            if (vPid && vPid !== "none" && vPid !== "all") return false;
+          } else {
+            if (vPid !== targetPid) return false;
+          }
         }
       }
       if (videoSearchQuery.trim()) {
@@ -619,7 +711,18 @@ export default function AdminReviewsPage() {
       }
       return true;
     });
-  }, [videos, videoFilterProduct, videoSearchQuery]);
+  }, [videos, videoFilterProduct, videoSearchQuery, homeVideoIds]);
+
+  // Filtered videos for the Home Page Selector Modal
+  const filteredModalVideos = useMemo(() => {
+    if (!selectorSearch.trim()) return videos;
+    const q = selectorSearch.toLowerCase().trim();
+    return videos.filter(
+      (v) =>
+        (v.title && v.title.toLowerCase().includes(q)) ||
+        (v.productId && v.productId.toLowerCase().includes(q))
+    );
+  }, [videos, selectorSearch]);
 
   // Product helper lookup
   const getProductInfo = (prodSlug: string) => {
@@ -1434,6 +1537,39 @@ export default function AdminReviewsPage() {
              ======================================================== */}
           {activeTab === "videos" && (
             <div className="space-y-6">
+              {/* Home Page Video Selector Banner */}
+              <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-500/30 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
+                <div className="space-y-1.5 max-w-2xl">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-900 border border-amber-500/30 text-xs font-black uppercase tracking-wider">
+                      <Home className="w-3.5 h-3.5 text-amber-700" />
+                      Home Page Video Selector
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white text-slate-700 text-xs font-bold border border-slate-200">
+                      <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                      {homeVideoIds.length} Selected for Home Page
+                    </span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                    Home Page Creator Reels Selector
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600">
+                    Only selected videos will appear in the "From our creators" moving reel section on your storefront home page. Click <strong>★ On Home</strong> on any card to toggle, or click below to multi-select and order them.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleOpenHomeSelector}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#FF7A00] to-[#FF9029] hover:from-[#E66E00] hover:to-[#FF7A00] text-white font-bold rounded-xl text-xs sm:text-sm shadow-md shadow-orange-500/20 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Select Home Page Videos ({homeVideoIds.length})</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Video KPIs */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs">
@@ -1455,6 +1591,23 @@ export default function AdminReviewsPage() {
 
                 <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs">
                   <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Selected for Home Page
+                  </span>
+                  <div className="flex items-baseline justify-between mt-2">
+                    <p className="text-2xl sm:text-3xl font-bold text-amber-600 tracking-tight">
+                      {homeVideoIds.length}
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                      <Star className="w-3 h-3 fill-amber-500" /> Creator Reels
+                    </span>
+                  </div>
+                  <span className="text-xs text-slate-400 mt-1 block">
+                    Only these show on home
+                  </span>
+                </div>
+
+                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                     Active on Storefront
                   </span>
                   <div className="flex items-baseline justify-between mt-2">
@@ -1467,26 +1620,6 @@ export default function AdminReviewsPage() {
                   </div>
                   <span className="text-xs text-slate-400 mt-1 block">
                     Visible to shoppers
-                  </span>
-                </div>
-
-                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    Estimated Impressions
-                  </span>
-                  <div className="flex items-baseline justify-between mt-2">
-                    <p className="text-2xl sm:text-3xl font-bold text-purple-600 tracking-tight">
-                      {videos.reduce((sum, v) => {
-                        const num = parseFloat((v.viewsText || "0").replace(/[^0-9.]/g, "") || "0");
-                        return sum + ((v.viewsText || "").includes("k") ? Math.round(num * 1000) : Math.round(num));
-                      }, 0).toLocaleString("en-IN")}+
-                    </p>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full">
-                      <Eye className="w-3 h-3" /> Views
-                    </span>
-                  </div>
-                  <span className="text-xs text-slate-400 mt-1 block">
-                    Total video views
                   </span>
                 </div>
 
@@ -1523,14 +1656,16 @@ export default function AdminReviewsPage() {
                     />
                   </div>
 
-                  {/* Filter by Product */}
+                  {/* Filter by Product & Home Page */}
                   <select
                     value={videoFilterProduct}
                     onChange={(e) => setVideoFilterProduct(e.target.value)}
                     className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                   >
-                    <option value="all">All Videos</option>
-                    <option value="none">None (No product attached)</option>
+                    <option value="all">All Videos ({videos.length})</option>
+                    <option value="home_only">★ Selected for Home Page ({homeVideoIds.length})</option>
+                    <option value="not_on_home">Not on Home Page ({videos.length - homeVideoIds.length})</option>
+                    <option value="none">No product attached</option>
                     {productsList.map((p) => (
                       <option key={p.id || p.slug} value={p.slug || p.id}>
                         {p.name}
@@ -1579,11 +1714,14 @@ export default function AdminReviewsPage() {
                       vid.posterUrl ||
                       prod?.image ||
                       "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800";
+                    const isOnHome = homeVideoIds.includes(vid.id);
 
                     return (
                       <div
                         key={vid.id}
-                        className="bg-white rounded-2xl overflow-hidden border border-slate-200/90 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+                        className={`bg-white rounded-2xl overflow-hidden border transition-all flex flex-col justify-between group shadow-xs hover:shadow-md ${
+                          isOnHome ? "border-amber-300 ring-2 ring-amber-400/20" : "border-slate-200/90"
+                        }`}
                       >
                         {/* 9:16 Video Thumbnail Container */}
                         <div className="relative aspect-[9/16] bg-slate-900 overflow-hidden">
@@ -1595,12 +1733,20 @@ export default function AdminReviewsPage() {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
 
                           {/* Top Badges */}
-                          <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
-                            {vid.badge && (
-                              <span className="bg-[#FF3B30] text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs">
-                                {vid.badge}
-                              </span>
-                            )}
+                          <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10 gap-1">
+                            <div className="flex flex-wrap items-center gap-1">
+                              {vid.badge && (
+                                <span className="bg-[#FF3B30] text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs">
+                                  {vid.badge}
+                                </span>
+                              )}
+                              {isOnHome && (
+                                <span className="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-xs flex items-center gap-0.5">
+                                  <Star className="w-3 h-3 fill-white" />
+                                  Home
+                                </span>
+                              )}
+                            </div>
                             <span className="inline-flex items-center gap-1 bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                               <Eye className="w-3 h-3 text-rose-400" />
                               <span>{vid.viewsText || "24.5k"}</span>
@@ -1659,22 +1805,40 @@ export default function AdminReviewsPage() {
                             ) : null}
                           </div>
 
-                          {/* Footer Action Controls: Active Toggle + Edit + Delete */}
-                          <div className="flex items-center justify-between pt-1">
-                            <button
-                              type="button"
-                              onClick={() => handleToggleVideoActive(vid)}
-                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors cursor-pointer ${
-                                vid.active !== false
-                                  ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                              }`}
-                            >
-                              <span className={`w-1.5 h-1.5 rounded-full ${vid.active !== false ? "bg-emerald-500" : "bg-slate-400"}`} />
-                              <span>{vid.active !== false ? "Active" : "Draft"}</span>
-                            </button>
+                          {/* Footer Action Controls: Home Page Toggle + Active Toggle + Edit + Delete */}
+                          <div className="flex items-center justify-between pt-1 gap-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {/* Home Page Selector 1-Click Toggle */}
+                              <button
+                                type="button"
+                                onClick={() => handleToggleHomeVideo(vid.id)}
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${
+                                  isOnHome
+                                    ? "bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 shadow-xs"
+                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200"
+                                }`}
+                                title={isOnHome ? "Selected for Home Page. Click to remove." : "Click to show on Home Page"}
+                              >
+                                <Star className={`w-3 h-3 ${isOnHome ? "fill-amber-500 text-amber-500" : "text-slate-400"}`} />
+                                <span>{isOnHome ? "On Home" : "+ Home"}</span>
+                              </button>
 
-                            <div className="flex items-center gap-1">
+                              {/* Active/Draft Toggle */}
+                              <button
+                                type="button"
+                                onClick={() => handleToggleVideoActive(vid)}
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors cursor-pointer ${
+                                  vid.active !== false
+                                    ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                                }`}
+                              >
+                                <span className={`w-1.5 h-1.5 rounded-full ${vid.active !== false ? "bg-emerald-500" : "bg-slate-400"}`} />
+                                <span>{vid.active !== false ? "Active" : "Draft"}</span>
+                              </button>
+                            </div>
+
+                            <div className="flex items-center gap-1 shrink-0">
                               <button
                                 type="button"
                                 onClick={() => handleOpenEditVideo(vid)}
@@ -2672,6 +2836,205 @@ export default function AdminReviewsPage() {
                 {deletingVideo && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>Delete</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================
+          MODAL: HOME PAGE VIDEO SELECTOR & REORDER
+         ======================================================== */}
+      {homeSelectorModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setHomeSelectorModalOpen(false);
+          }}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl relative my-8 animate-scaleIn max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setHomeSelectorModalOpen(false)}
+              className="absolute top-5 right-5 p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+              title="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">
+                  Select Home Page Creator Reels
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Choose which videos appear in the "From our creators" section on the home page. Reorder them using the arrows.
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Actions & Search */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 pb-2 border-b border-slate-100">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search reels by title or product..."
+                  value={selectorSearch}
+                  onChange={(e) => setSelectorSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#FF7A00]"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectorSelectedIds(videos.map((v) => v.id))}
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer"
+                >
+                  Select All ({videos.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectorSelectedIds([])}
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer"
+                >
+                  Clear All
+                </button>
+              </div>
+            </div>
+
+            {/* Video List */}
+            <div className="flex-1 overflow-y-auto space-y-2 py-3 pr-1">
+              {filteredModalVideos.length === 0 ? (
+                <div className="text-center py-10 text-slate-400 text-xs">
+                  No videos match your search.
+                </div>
+              ) : (
+                filteredModalVideos.map((vid) => {
+                  const isSelected = selectorSelectedIds.includes(vid.id);
+                  const orderIdx = selectorSelectedIds.indexOf(vid.id);
+                  const prod = getProductInfo(vid.productId);
+                  const poster = vid.posterUrl || prod?.image || "/products/ripple/ripple-amber.jpg";
+
+                  return (
+                    <div
+                      key={vid.id}
+                      onClick={() => {
+                        setSelectorSelectedIds((prev) =>
+                          prev.includes(vid.id)
+                            ? prev.filter((id) => id !== vid.id)
+                            : [...prev, vid.id]
+                        );
+                      }}
+                      className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-amber-50/70 border-amber-300 shadow-xs"
+                          : "bg-white border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        {/* Checkbox */}
+                        <div
+                          className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
+                            isSelected
+                              ? "bg-[#FF7A00] border-[#FF7A00] text-white"
+                              : "border-slate-300 bg-white"
+                          }`}
+                        >
+                          {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                        </div>
+
+                        {/* Thumbnail */}
+                        <div className="w-10 h-14 rounded-lg bg-slate-900 overflow-hidden relative shrink-0">
+                          <img src={poster} alt="" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                            <Play className="w-3.5 h-3.5 fill-white text-white" />
+                          </div>
+                        </div>
+
+                        {/* Title & Product */}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-slate-900 truncate">
+                            {vid.title}
+                          </p>
+                          <p className="text-[11px] text-slate-500 truncate flex items-center gap-1.5 mt-0.5">
+                            <span className="font-semibold text-slate-700">{prod.name}</span>
+                            {vid.badge && (
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-100 text-rose-700">
+                                {vid.badge}
+                              </span>
+                            )}
+                            <span className="text-slate-400 font-mono text-[10px]">
+                              {vid.viewsText || "24.5k"} views
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Order & Reorder Controls */}
+                      {isSelected && (
+                        <div
+                          className="flex items-center gap-1 ml-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold mr-1">
+                            #{orderIdx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={orderIdx === 0}
+                            onClick={() => handleMoveSelectorVideo(vid.id, "up")}
+                            className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-amber-100 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                            title="Move Up in order"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={orderIdx === selectorSelectedIds.length - 1}
+                            onClick={() => handleMoveSelectorVideo(vid.id, "down")}
+                            className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-amber-100 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                            title="Move Down in order"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-500">
+                {selectorSelectedIds.length} of {videos.length} reels selected
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setHomeSelectorModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={savingHomeVideos}
+                  onClick={() => handleSaveHomeSelector()}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#FF7A00] to-[#FF9029] hover:from-[#E66E00] hover:to-[#FF7A00] text-white text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  {savingHomeVideos && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>Save Home Page Selection</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

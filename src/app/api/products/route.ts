@@ -182,11 +182,36 @@ export async function GET(req: NextRequest) {
 
     // Single product query by ID or Slug
     if (id || slug) {
-      const p1 = (id || slug || "").trim();
-      const p2 = (slug || id || "").trim();
-      const query = "SELECT * FROM products WHERE id = ? OR slug = ? OR id = ? OR slug = ? LIMIT 1;";
+      const rawInput = (id || slug || "").trim();
+      const lowerInput = rawInput.toLowerCase();
+      const hyphenInput = lowerInput.replace(/[\s_]+/g, "-");
+      const spaceInput = lowerInput.replace(/[-_ ]+/g, " ");
 
-      const d1Results = await executeD1Query<Product>(query, [p1, p1, p2, p2]);
+      const query = `
+        SELECT * FROM products 
+        WHERE id = ? OR slug = ? 
+           OR id = ? OR slug = ? 
+           OR id = ? OR slug = ?
+           OR REPLACE(slug, '-', ' ') = ? 
+           OR REPLACE(id, '-', ' ') = ?
+           OR REPLACE(slug, ' ', '-') = ?
+           OR REPLACE(id, ' ', '-') = ?
+        LIMIT 1;
+      `;
+
+      const d1Results = await executeD1Query<Product>(query, [
+        rawInput,
+        rawInput,
+        hyphenInput,
+        hyphenInput,
+        spaceInput,
+        spaceInput,
+        spaceInput,
+        spaceInput,
+        hyphenInput,
+        hyphenInput,
+      ]);
+
       if (d1Results && d1Results.length > 0) {
         const formatted = formatDbProduct(d1Results[0], reviewStatsMap);
         return NextResponse.json(
@@ -195,10 +220,29 @@ export async function GET(req: NextRequest) {
         );
       }
 
-      // In-memory fallback
+      // In-memory fallback with flexible matching
+      const targetKeys = [lowerInput, hyphenInput, spaceInput].filter(Boolean);
+      const matchesTarget = (p: any) => {
+        if (!p) return false;
+        const pid = String(p.id || "").toLowerCase().trim();
+        const pslug = String(p.slug || "").toLowerCase().trim();
+        const pclean = pslug.replace(/[-_ ]+/g, " ") || pid.replace(/[-_ ]+/g, " ");
+        const pname = String(p.name || "").toLowerCase().trim();
+
+        return targetKeys.some(
+          (t) =>
+            pid === t ||
+            pslug === t ||
+            pclean === t ||
+            pname === t ||
+            (t.length > 3 && (pclean.includes(t) || t.includes(pclean) || pname.includes(t)))
+        );
+      };
+
       const found =
-        serverProductsCache.find((p) => p.id === p1 || p.slug === p1 || p.id === p2 || p.slug === p2) ||
-        DEFAULT_PRODUCTS.find((p) => p.id === p1 || p.slug === p1 || p.id === p2 || p.slug === p2);
+        serverProductsCache.find(matchesTarget) ||
+        DEFAULT_PRODUCTS.find(matchesTarget);
+
       if (found) {
         const formatted = formatDbProduct(found, reviewStatsMap);
         return NextResponse.json(
@@ -553,7 +597,7 @@ export async function POST(req: NextRequest) {
       } catch (initialErr: any) {
         const errMsg = String(initialErr?.message || "").toLowerCase();
         let migrated = false;
-        if (errMsg.includes("no such column: video_ids")) {
+        if (errMsg.includes("video_ids")) {
           try {
             await executeD1Query("ALTER TABLE products ADD COLUMN video_ids TEXT;");
             migrated = true;
@@ -561,7 +605,7 @@ export async function POST(req: NextRequest) {
             console.warn("Could not add video_ids column:", migErr);
           }
         }
-        if (errMsg.includes("no such column: how_to_use")) {
+        if (errMsg.includes("how_to_use")) {
           try {
             await executeD1Query("ALTER TABLE products ADD COLUMN how_to_use TEXT;");
             migrated = true;
@@ -581,7 +625,7 @@ export async function POST(req: NextRequest) {
         }
       }
     } catch (d1Err) {
-      console.warn("Could not save to D1:", d1Err);
+      console.error("Could not save to D1:", d1Err);
     }
 
     // Synchronize memory stock overrides immediately

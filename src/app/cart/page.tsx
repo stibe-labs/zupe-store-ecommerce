@@ -174,13 +174,29 @@ export default function CartPage() {
                   {item.subtitle && (
                     <p className="text-xs text-gray-400">{item.subtitle}</p>
                   )}
-                  <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
+                  {item.offer_label && (
+                    <div className="mt-1 flex justify-center sm:justify-start">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-orange-50 text-[#FF5722] border border-orange-200">
+                        ✨ {item.offer_label}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-center sm:justify-start gap-2 mt-2 flex-wrap">
                     <span className="font-bold text-base text-gray-900">
                       ₹{item.price.toLocaleString()}
                     </span>
-                    {item.mrp && item.mrp > item.price && (
+                    {item.original_price && item.original_price > item.price ? (
+                      <span className="text-xs text-gray-400 line-through">
+                        ₹{item.original_price.toLocaleString()}
+                      </span>
+                    ) : item.mrp && item.mrp > item.price ? (
                       <span className="text-xs text-gray-400 line-through">
                         ₹{item.mrp.toLocaleString()}
+                      </span>
+                    ) : null}
+                    {item.quantity > 1 && (
+                      <span className="text-xs text-gray-500 font-medium">
+                        (₹{(item.bundle_total ?? (item.price * item.quantity)).toLocaleString()} total)
                       </span>
                     )}
                   </div>

@@ -16,21 +16,102 @@ export interface ProductVideo {
   productSlug?: string;
   productImage?: string;
   active: boolean;
+  featuredOnHome?: boolean;
   createdAt: string;
 }
 
-// Default seed videos for instant demonstration
+// Default seed videos including live creator sample assets
 const DEFAULT_VIDEOS: ProductVideo[] = [
+  {
+    id: "creator-vid-02",
+    productId: "ripple-lamp",
+    title: "Dynamic Water Ripple Night Light (Flower Demo)",
+    videoUrl: "/videos/creator-flower.mp4",
+    posterUrl: "/products/ripple/ripple-amber.jpg",
+    viewsText: "42.1k",
+    badge: "TRENDING",
+    productName: "Dynamic Water Ripple Night Light",
+    productPrice: 650,
+    productMrp: 1099,
+    productSlug: "dynamic-water-ripple-night-light",
+    productImage: "/products/ripple/ripple-amber.jpg",
+    active: true,
+    createdAt: "2026-03-05T12:00:00.000Z",
+  },
+  {
+    id: "creator-vid-03",
+    productId: "portable-menstrual-heating-pad",
+    title: "Portable Heating Pad Experience (Bear Demo)",
+    videoUrl: "/videos/creator-bear.mp4",
+    posterUrl: "/products/heating-pad/pad-pink-1.jpg",
+    viewsText: "31.5k",
+    badge: "HOT",
+    productName: "Portable Menstrual Heating Pad",
+    productPrice: 799,
+    productMrp: 1149,
+    productSlug: "portable-menstrual-heating-pad",
+    productImage: "/products/heating-pad.jpg",
+    active: true,
+    createdAt: "2026-03-01T10:00:00.000Z",
+  },
+  {
+    id: "creator-vid-04",
+    productId: "mini-portable-steam-iron",
+    title: "Handheld Steam Iron Unboxing & Test (Sintel Demo)",
+    videoUrl: "/videos/creator-sintel.mp4",
+    posterUrl: "/products/iron/iron-teal-1.jpg",
+    viewsText: "19.8k",
+    badge: "NEW",
+    productName: "Mini Portable Steam Iron",
+    productPrice: 599,
+    productMrp: 1199,
+    productSlug: "mini-portable-steam-iron",
+    productImage: "/products/steam-iron.jpg",
+    active: true,
+    createdAt: "2026-02-28T09:00:00.000Z",
+  },
+  {
+    id: "creator-vid-05",
+    productId: "portable-mini-foldable-washer-spin-dryer",
+    title: "Compact Washer Delicate Clothes Demo (Bunny Demo)",
+    videoUrl: "/videos/creator-bunny.mp4",
+    posterUrl: "/products/washer/washer-purple-1.jpg",
+    viewsText: "37.2k",
+    badge: "MUST HAVE",
+    productName: "Portable Mini Foldable Washer & Spin Dryer",
+    productPrice: 1299,
+    productMrp: 1949,
+    productSlug: "portable-mini-foldable-washer-spin-dryer",
+    productImage: "/products/foldable-washer.jpg",
+    active: true,
+    createdAt: "2026-02-15T15:30:00.000Z",
+  },
+  {
+    id: "vid-mv0gb5xf-to4r",
+    productId: "watch",
+    title: "Titan Minimalist Watch Hands-on",
+    videoUrl: "https://pub-abec22fbfdb8446490341e69eabe6a1c.r2.dev/videos/1791519244046-VID_20260913_013314_447-9d231d.mp4",
+    posterUrl: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800",
+    viewsText: "28.4k",
+    badge: "POPULAR",
+    productName: "Titan Minimalist Analog Watch",
+    productPrice: 1799,
+    productMrp: 2999,
+    productSlug: "watch",
+    productImage: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=600",
+    active: true,
+    createdAt: "2026-03-08T12:00:00.000Z",
+  },
   {
     id: "vid-watch-01",
     productId: "watch",
-    title: "Titan Minimalist Analog Watch Hands-on",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+    title: "Titan Minimalist Analog Watch Details",
+    videoUrl: "https://pub-abec22fbfdb8446490341e69eabe6a1c.r2.dev/videos/1791519244046-VID_20260913_013314_447-9d231d.mp4",
     posterUrl: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800",
     viewsText: "24.5k",
     badge: "NEW",
     productName: "watch",
-    productPrice: 1999,
+    productPrice: 1799,
     productMrp: 3499,
     productSlug: "watch",
     productImage: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=600",
@@ -41,7 +122,7 @@ const DEFAULT_VIDEOS: ProductVideo[] = [
     id: "vid-heating-pad-01",
     productId: "portable-menstrual-heating-pad",
     title: "Instant Relief & 3 Heat Modes Demo",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    videoUrl: "/videos/creator-bear.mp4",
     posterUrl: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800",
     viewsText: "29.7k",
     badge: "NEW",
@@ -57,7 +138,7 @@ const DEFAULT_VIDEOS: ProductVideo[] = [
     id: "vid-heating-pad-02",
     productId: "portable-menstrual-heating-pad",
     title: "How to wear & gentle vibration mode",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    videoUrl: "/videos/creator-bear.mp4",
     posterUrl: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800",
     viewsText: "18.4k",
     badge: "TRENDING",
@@ -73,7 +154,7 @@ const DEFAULT_VIDEOS: ProductVideo[] = [
     id: "vid-mist-fan-01",
     productId: "portable-mist-cooling-fan",
     title: "Ice Cold Mist Air in 5 Seconds!",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+    videoUrl: "/videos/creator-sintel.mp4",
     posterUrl: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800",
     viewsText: "34.1k",
     badge: "NEW",
@@ -89,7 +170,7 @@ const DEFAULT_VIDEOS: ProductVideo[] = [
     id: "vid-ripple-lamp-01",
     productId: "ripple-lamp",
     title: "Ocean Wave Visual Effect in Bedroom",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4",
+    videoUrl: "/videos/creator-flower.mp4",
     posterUrl: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800",
     viewsText: "42.8k",
     badge: "POPULAR",
@@ -104,6 +185,75 @@ const DEFAULT_VIDEOS: ProductVideo[] = [
 ];
 
 let inMemoryVideos: ProductVideo[] = [...DEFAULT_VIDEOS];
+let cachedHomeVideoIds: string[] | null = null;
+let homeVideoIdsCacheTime = 0;
+
+export async function getHomePageVideoIds(): Promise<string[]> {
+  const now = Date.now();
+  if (cachedHomeVideoIds && now - homeVideoIdsCacheTime < 15000) {
+    return cachedHomeVideoIds;
+  }
+
+  try {
+    const rows = await executeD1Query<{ provider: string; config_data: string }>(
+      "SELECT config_data FROM integrations_config WHERE provider = ?",
+      ["homepage_video_ids"]
+    );
+    if (rows && rows.length > 0 && rows[0].config_data) {
+      const parsed = JSON.parse(rows[0].config_data);
+      let ids: string[] = [];
+      if (Array.isArray(parsed)) {
+        ids = parsed;
+      } else if (parsed && Array.isArray(parsed.videoIds)) {
+        ids = parsed.videoIds;
+      }
+      cachedHomeVideoIds = ids;
+      homeVideoIdsCacheTime = now;
+      return ids;
+    }
+  } catch (err) {
+    console.warn("Error fetching homepage_video_ids from D1:", err);
+  }
+
+  // Default home page featured video IDs
+  const defaultIds = [
+    "creator-vid-02",
+    "creator-vid-03",
+    "creator-vid-04",
+    "creator-vid-05",
+    "vid-mv0gb5xf-to4r",
+    "vid-watch-01",
+  ];
+  cachedHomeVideoIds = defaultIds;
+  homeVideoIdsCacheTime = now;
+  return defaultIds;
+}
+
+export async function saveHomePageVideoIds(videoIds: string[]): Promise<string[]> {
+  const cleanIds = Array.from(
+    new Set(videoIds.map((id) => String(id).trim()).filter(Boolean))
+  );
+
+  cachedHomeVideoIds = cleanIds;
+  homeVideoIdsCacheTime = Date.now();
+
+  try {
+    const jsonStr = JSON.stringify({ videoIds: cleanIds });
+    await executeD1Query(
+      `INSERT INTO integrations_config (provider, config_data, is_active, last_synced_at, updated_at)
+       VALUES (?, ?, 1, datetime('now'), datetime('now'))
+       ON CONFLICT(provider) DO UPDATE SET 
+         config_data = excluded.config_data,
+         is_active = excluded.is_active,
+         updated_at = excluded.updated_at`,
+      ["homepage_video_ids", jsonStr]
+    );
+  } catch (err) {
+    console.warn("Failed to persist homepage_video_ids to D1:", err);
+  }
+
+  return cleanIds;
+}
 
 export async function ensureVideoTable(): Promise<void> {
   try {
@@ -129,23 +279,30 @@ export async function ensureVideoTable(): Promise<void> {
  * Get all videos from D1 or in-memory fallback
  */
 export async function getAllVideos(): Promise<ProductVideo[]> {
+  const homeVideoIds = await getHomePageVideoIds();
+  const homeSet = new Set(homeVideoIds);
+
   try {
     const rows = await executeD1Query<any>(
       `SELECT * FROM product_videos ORDER BY created_at DESC`
     );
 
     if (rows && rows.length > 0) {
-      const dbVideos: ProductVideo[] = rows.map((r) => ({
-        id: String(r.id),
-        productId: String(r.product_id),
-        title: String(r.title),
-        videoUrl: String(r.video_url),
-        posterUrl: r.posterUrl || r.poster_url || "",
-        viewsText: r.viewsText || r.views_text || "24.5k",
-        badge: r.badge || "NEW",
-        active: r.active === 0 || r.active === "0" || r.active === false ? false : true,
-        createdAt: r.created_at || new Date().toISOString(),
-      }));
+      const dbVideos: ProductVideo[] = rows.map((r) => {
+        const id = String(r.id);
+        return {
+          id,
+          productId: String(r.product_id),
+          title: String(r.title),
+          videoUrl: String(r.video_url),
+          posterUrl: r.posterUrl || r.poster_url || "",
+          viewsText: r.viewsText || r.views_text || "24.5k",
+          badge: r.badge || "NEW",
+          active: r.active === 0 || r.active === "0" || r.active === false ? false : true,
+          featuredOnHome: homeSet.has(id),
+          createdAt: r.created_at || new Date().toISOString(),
+        };
+      });
 
       return dbVideos;
     }
@@ -156,7 +313,10 @@ export async function getAllVideos(): Promise<ProductVideo[]> {
     }
   }
 
-  return inMemoryVideos;
+  return inMemoryVideos.map((v) => ({
+    ...v,
+    featuredOnHome: homeSet.has(v.id),
+  }));
 }
 
 /**
@@ -164,7 +324,7 @@ export async function getAllVideos(): Promise<ProductVideo[]> {
  * Only returns videos assigned to this specific product.
  */
 export async function getVideosByProduct(
-  productId: string,
+  productId: string | string[],
   explicitVideoIds?: string[]
 ): Promise<ProductVideo[]> {
   const all = await getAllVideos();
@@ -183,24 +343,34 @@ export async function getVideosByProduct(
     return selected;
   }
 
-  const normId = (productId || "").trim().toLowerCase();
-  if (!normId) return [];
+  const rawKeys = Array.isArray(productId) ? productId : [productId];
+  const normalizedKeys = rawKeys
+    .map((k) => String(k || "").trim().toLowerCase())
+    .filter(Boolean);
 
-  const normClean = normId.replace(/[-_ ]+/g, " ").trim();
+  if (normalizedKeys.length === 0) return [];
 
-  // Return videos specifically attached to this product
+  const cleanKeys = normalizedKeys.map((k) => k.replace(/[-_ ]+/g, " ").trim());
+
+  // Return videos specifically attached to this product or any of its aliases
   return activeVideos.filter((v) => {
     const vPid = (v.productId || "").toLowerCase().trim();
     if (!vPid || vPid === "none" || vPid === "all") return false;
     const vPidClean = vPid.replace(/[-_ ]+/g, " ").trim();
-    return (
-      vPid === normId ||
-      vPidClean === normClean ||
-      normId.includes(vPid) ||
-      vPid.includes(normId) ||
-      normClean.includes(vPidClean) ||
-      vPidClean.includes(normClean)
-    );
+
+    return normalizedKeys.some((normId, idx) => {
+      const normClean = cleanKeys[idx];
+      return (
+        vPid === normId ||
+        vPidClean === normClean ||
+        normId.includes(vPid) ||
+        vPid.includes(normId) ||
+        normClean.includes(vPidClean) ||
+        vPidClean.includes(normClean) ||
+        (normClean.length > 3 &&
+          vPidClean.split(" ").some((w) => w.length > 3 && normClean.includes(w)))
+      );
+    });
   });
 }
 

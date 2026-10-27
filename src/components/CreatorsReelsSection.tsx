@@ -134,31 +134,18 @@ export function CreatorsReelsSection() {
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
-  // Fetch dynamic videos from API if available
+  // Fetch dynamic videos selected for home page
   useEffect(() => {
-    fetch("/api/videos")
+    fetch(`/api/videos?scope=home&_t=${Date.now()}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.videos) && data.videos.length > 0) {
-          // Merge API videos with working fallbacks
-          const merged = data.videos.map((v: ProductVideo, i: number) => {
-            const fallback = SEED_CREATOR_VIDEOS[i % SEED_CREATOR_VIDEOS.length];
-            // If videoUrl is an old forbidden link, replace with working fallback
-            const isGoogleStorage = (v.videoUrl || "").includes("gtv-videos-bucket");
-            return {
-              ...v,
-              videoUrl: isGoogleStorage || !v.videoUrl ? fallback.videoUrl : v.videoUrl,
-              posterUrl: v.posterUrl || fallback.posterUrl,
-              productImage: v.productImage || fallback.productImage,
-              productName: v.productName || fallback.productName,
-              productPrice: v.productPrice || fallback.productPrice,
-              productSlug: v.productSlug || fallback.productSlug,
-            };
-          });
-          setVideos(merged);
+        if (data.success && Array.isArray(data.videos)) {
+          setVideos(data.videos);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.warn("Failed to load home creator reels:", err);
+      });
   }, []);
 
   const totalItems = videos.length;

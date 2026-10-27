@@ -8,6 +8,8 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const latStr = searchParams.get("lat") || searchParams.get("latitude");
     const lngStr = searchParams.get("lng") || searchParams.get("lon") || searchParams.get("longitude");
+    const accuracyStr = searchParams.get("accuracy");
+    const accuracy = accuracyStr ? parseFloat(accuracyStr) : null;
 
     if (!latStr || !lngStr) {
       return NextResponse.json(
@@ -27,21 +29,24 @@ export async function GET(req: NextRequest) {
     }
 
     let street = "";
+    let area = "";
     let city = "";
+    let district = "";
     let state = "";
     let pincode = "";
     let formatted_address = "";
+    let postOffices: string[] = [];
 
-    // 1. Primary Provider: OpenStreetMap Nominatim
+    // 1. Primary Provider: OpenStreetMap Nominatim with zoom=18 for building/rooftop level precision
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4500);
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
 
       const nomRes = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&addressdetails=1`,
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
         {
           headers: {
-            "User-Agent": "ZupeStoreEcommerce/1.0 (support@zupestore.com)",
+            "User-Agent": "ZupeStoreEcommerce/2.0 (support@zupestore.com)",
             "Accept-Language": "en-IN,en;q=0.9",
           },
           signal: controller.signal,
@@ -52,20 +57,38 @@ export async function GET(req: NextRequest) {
       if (nomRes.ok) {
         const nomData = await nomRes.json();
         const addr = nomData.address || {};
-
         formatted_address = nomData.display_name || "";
 
-        // Build a readable street address line
-        const streetParts = [
-          addr.house_number || addr.building,
-          addr.road,
-          addr.residential,
-          addr.neighbourhood,
-          addr.suburb,
-        ].filter(Boolean);
+        // Specific area / colony / neighborhood
+        area =
+          addr.suburb ||
+          addr.neighbourhood ||
+          addr.residential ||
+          addr.colony ||
+          addr.sector ||
+          addr.village ||
+          addr.hamlet ||
+          "";
 
-        street = streetParts.join(", ") || (formatted_address ? formatted_address.split(",").slice(0, 3).join(", ").trim() : "");
-        city = addr.city || addr.town || addr.village || addr.suburb || addr.city_district || addr.county || "";
+        const road = addr.road || "";
+        const house = addr.house_number || addr.building || addr.house_name || "";
+
+        // Build clean street address without obscure administrative codes
+        const cleanParts: string[] = [];
+        if (house) cleanParts.push(house);
+        if (road && !road.match(/^(NH|SH|MDR)\s*\d+/i)) {
+          cleanParts.push(road);
+        } else if (road) {
+          cleanParts.push(road);
+        }
+        if (area && !cleanParts.includes(area)) {
+          cleanParts.push(area);
+        }
+
+        street = cleanParts.join(", ") || (formatted_address ? formatted_address.split(",").slice(0, 3).join(", ").trim() : "");
+
+        district = addr.state_district || addr.district || addr.county || "";
+        city = addr.city || addr.town || addr.municipality || district || "";
         state = addr.state || "";
 
         if (addr.postcode) {
@@ -95,6 +118,9 @@ export async function GET(req: NextRequest) {
           if (!pincode && bdcData.postcode) {
             pincode = String(bdcData.postcode).replace(/\D/g, "").slice(0, 6);
           }
+          if (!area && bdcData.locality) {
+            area = bdcData.locality;
+          }
           if (!street && bdcData.locality) {
             street = bdcData.locality;
           }
@@ -104,29 +130,80 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 3. Optional Post-Office refinement if pincode is available but city/state is generic
-    if (pincode && pincode.length === 6 && (!city || !state)) {
+    // 3. Indian Postal Pincode Auto-Reconciliation (India Post Official Directory)
+    if (pincode && pincode.length === 6) {
       try {
-        const pinRes = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+        const pinController = new AbortController();
+        const pinTimeout = setTimeout(() => pinController.abort(), 4000);
+
+        const pinRes = await fetch(`https://api.postalpincode.in/pincode/${pincode}`, {
+          signal: pinController.signal,
+        });
+        clearTimeout(pinTimeout);
+
         if (pinRes.ok) {
           const pinData = await pinRes.json();
-          if (Array.isArray(pinData) && pinData[0]?.Status === "Success" && pinData[0]?.PostOffice?.length > 0) {
-            const po = pinData[0].PostOffice[0];
-            if (!city && po.District) city = po.District;
-            if (!state && po.State) state = po.State;
+          if (Array.isArray(pinData) && pinData[0]?.Status === "Success" && Array.isArray(pinData[0]?.PostOffice)) {
+            const offices = pinData[0].PostOffice;
+            if (offices.length > 0) {
+              const primaryPo = offices[0];
+              // Use official Indian Postal District as the standardized city/district for couriers
+              if (primaryPo.District) {
+                district = primaryPo.District;
+                // If current city is a smaller municipality, taluk or village, standardize with District
+                city = primaryPo.District;
+              }
+              if (primaryPo.State) {
+                state = primaryPo.State;
+              }
+
+              // Extract all local post offices in this pincode
+              postOffices = Array.from(
+                new Set(offices.map((po: any) => po.Name).filter(Boolean))
+              ) as string[];
+
+              // If area is empty or generic, use the main delivery post office
+              if (!area && offices[0].Name) {
+                area = offices[0].Name;
+              }
+            }
           }
         }
-      } catch {}
+      } catch (pinErr) {
+        console.warn("India Post API lookup warning:", pinErr);
+      }
     }
+
+    // Format final clean street address
+    let finalStreet = street.trim();
+    if (!finalStreet && area) {
+      finalStreet = area;
+    }
+
+    const isHighAccuracy = accuracy !== null && accuracy <= 200;
+    const accuracyLabel =
+      accuracy === null
+        ? "Detected"
+        : accuracy <= 100
+        ? `GPS Precision (~${Math.round(accuracy)}m)`
+        : accuracy <= 500
+        ? `Area Precision (~${Math.round(accuracy)}m)`
+        : `Network Estimated (~${(accuracy / 1000).toFixed(1)} km)`;
 
     return NextResponse.json({
       success: true,
-      street: street.trim(),
+      street: finalStreet,
+      area: area.trim(),
       city: city.trim(),
+      district: district.trim(),
       state: state.trim(),
       pincode: pincode.trim(),
-      formatted_address: formatted_address || [street, city, state, pincode].filter(Boolean).join(", "),
+      post_offices: postOffices,
+      formatted_address: formatted_address || [finalStreet, city, state, pincode].filter(Boolean).join(", "),
       coordinates: { lat, lng },
+      accuracy_meters: accuracy,
+      is_high_accuracy: isHighAccuracy,
+      accuracy_label: accuracyLabel,
     });
   } catch (err: any) {
     return NextResponse.json(
@@ -135,3 +212,4 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+

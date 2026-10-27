@@ -856,7 +856,23 @@ export default function AdminDashboardPage() {
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <p className="font-semibold text-slate-900">{ord.customer_name}</p>
-                        <p className="text-[11px] text-slate-400">{ord.customer_phone}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <p className="text-[11px] text-slate-400">{ord.customer_phone}</p>
+                          {(() => {
+                            let itemsList: any[] = [];
+                            if (Array.isArray(ord.items)) itemsList = ord.items;
+                            else if (typeof ord.items === "string") {
+                              try { itemsList = JSON.parse(ord.items); } catch { itemsList = []; }
+                            }
+                            const hasBundle = itemsList.some((it) => (it.bundle_tier && Number(it.bundle_tier) > 1) || it.offer_label);
+                            if (!hasBundle) return null;
+                            return (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-orange-100 text-[#E65100]">
+                                ✨ Save More
+                              </span>
+                            );
+                          })()}
+                        </div>
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <span

@@ -1,16 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllVideos, addVideo, updateVideo, deleteVideo } from "@/lib/videoStore";
+import {
+  getAllVideos,
+  addVideo,
+  updateVideo,
+  deleteVideo,
+  getHomePageVideoIds,
+  saveHomePageVideoIds,
+} from "@/lib/videoStore";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET() {
   try {
-    const videos = await getAllVideos();
+    const [videos, homeVideoIds] = await Promise.all([
+      getAllVideos(),
+      getHomePageVideoIds(),
+    ]);
     return NextResponse.json(
       {
         success: true,
         videos,
+        homeVideoIds,
       },
       {
         headers: {
@@ -29,6 +40,26 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+
+    if (body.action === "set_home_videos" && Array.isArray(body.homeVideoIds)) {
+      const updated = await saveHomePageVideoIds(body.homeVideoIds);
+      return NextResponse.json({
+        success: true,
+        homeVideoIds: updated,
+      });
+    }
+
+    if (body.action === "toggle_home_video" && body.id) {
+      const current = await getHomePageVideoIds();
+      const next = current.includes(body.id)
+        ? current.filter((id) => id !== body.id)
+        : [...current, body.id];
+      const updated = await saveHomePageVideoIds(next);
+      return NextResponse.json({
+        success: true,
+        homeVideoIds: updated,
+      });
+    }
 
     if (body.action === "update" && body.id) {
       const updated = await updateVideo(body.id, body);

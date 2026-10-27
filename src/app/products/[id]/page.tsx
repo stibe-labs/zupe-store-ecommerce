@@ -184,12 +184,28 @@ export default function ProductDetailPage() {
 
       // 2. Fetch fresh live product from API (matches both ID and slug)
       try {
-        const res = await fetch(`/api/products?id=${encodeURIComponent(normSlug || normId)}&slug=${encodeURIComponent(normSlug || normId)}`);
+        const querySlug = normSlug || normId;
+        const res = await fetch(`/api/products?id=${encodeURIComponent(querySlug)}&slug=${encodeURIComponent(querySlug)}&_t=${Date.now()}`, {
+          cache: "no-store",
+        });
         const data = await res.json();
         if (isMounted && data.success && data.product) {
           applyProduct(data.product);
           setLoadingProduct(false);
           return;
+        }
+
+        // Retry with static fallback id if different
+        if (staticFound?.id && staticFound.id !== querySlug) {
+          const retryRes = await fetch(`/api/products?id=${encodeURIComponent(staticFound.id)}&_t=${Date.now()}`, {
+            cache: "no-store",
+          });
+          const retryData = await retryRes.json();
+          if (isMounted && retryData.success && retryData.product) {
+            applyProduct(retryData.product);
+            setLoadingProduct(false);
+            return;
+          }
         }
       } catch (e) {
         // continue
@@ -756,10 +772,13 @@ export default function ProductDetailPage() {
         color: availableColors.length > 0 && product!.has_colors !== false ? selectedColor : undefined,
         poster_image: selectedImage || product!.poster_image,
         price: bundle.unitPrice,
+        offer_price: bundle.unitPrice,
         original_price: singleUnitPrice,
         bundle_tier: bundle.tier,
         bundle_savings: bundle.savings,
+        bundle_total: bundle.totalPrice,
         offer_label: bundle.label,
+        bundle_tiers: product?.bundle_tiers,
       },
       quantity,
       { overrideQuantity: true }
@@ -803,10 +822,13 @@ export default function ProductDetailPage() {
         color: availableColors.length > 0 && product!.has_colors !== false ? selectedColor : undefined,
         poster_image: selectedImage || product!.poster_image,
         price: bundle.unitPrice,
+        offer_price: bundle.unitPrice,
         original_price: singleUnitPrice,
         bundle_tier: bundle.tier,
         bundle_savings: bundle.savings,
+        bundle_total: bundle.totalPrice,
         offer_label: bundle.label,
+        bundle_tiers: product?.bundle_tiers,
       },
       quantity,
       { overrideQuantity: true }
@@ -849,10 +871,13 @@ export default function ProductDetailPage() {
         color: availableColors.length > 0 && product!.has_colors !== false ? selectedColor : undefined,
         poster_image: selectedImage || product!.poster_image,
         price: bundle.unitPrice,
+        offer_price: bundle.unitPrice,
         original_price: singleUnitPrice,
         bundle_tier: bundle.tier,
         bundle_savings: bundle.savings,
+        bundle_total: bundle.totalPrice,
         offer_label: bundle.label,
+        bundle_tiers: product?.bundle_tiers,
       },
       quantity,
       { overrideQuantity: true }

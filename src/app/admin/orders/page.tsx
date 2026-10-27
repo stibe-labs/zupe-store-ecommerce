@@ -21,6 +21,9 @@ import {
   Eye,
   X,
   Zap,
+  MessageCircle,
+  XCircle,
+  MoreVertical,
 } from "lucide-react";
 import { ERPOrder } from "@/lib/erpStore";
 
@@ -66,12 +69,46 @@ function AdminOrdersContent() {
   const [orderModalMsg, setOrderModalMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
+  // Quick WhatsApp / Manual Confirm / Cancel Action states
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [actionType, setActionType] = useState<"resend" | "confirm" | "cancel" | null>(null);
+  const [orderToCancel, setOrderToCancel] = useState<ERPOrder | null>(null);
+  const [cancelReason, setCancelReason] = useState<string>("Customer requested via phone call");
+  const [cancelNotes, setCancelNotes] = useState<string>("");
+  const [openMenuOrderId, setOpenMenuOrderId] = useState<string | null>(null);
+
   const showToast = (type: "success" | "error", text: string) => {
     setToastMessage({ type, text });
     setTimeout(() => {
       setToastMessage((prev) => (prev?.text === text ? null : prev));
     }, 5000);
   };
+
+  // Close 3-dots action menu on outside click or scroll
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement)?.closest?.(".order-action-menu-container")) {
+        setOpenMenuOrderId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Lock background body scroll when order cancellation modal is open
+  useEffect(() => {
+    if (orderToCancel) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [orderToCancel]);
 
   // Lock background body scroll when order modal is open
   useEffect(() => {
@@ -244,6 +281,127 @@ function AdminOrdersContent() {
       showToast("error", errMsg);
     } finally {
       setIsGeneratingAWB(false);
+    }
+  };
+
+  const handleResendWAButtons = async (ord: ERPOrder) => {
+    setActionLoadingId(ord.id);
+    setActionType("resend");
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "resend_wa_buttons",
+          order_id: ord.id,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.order) {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === data.order.id ? { ...o, ...data.order } : o))
+        );
+        if (selectedOrder && selectedOrder.id === data.order.id) {
+          setSelectedOrder((prev) => (prev ? { ...prev, ...data.order } : null));
+        }
+        showToast(
+          "success",
+          `WhatsApp message with Confirm & Cancel buttons sent to ${data.order.customer_phone || ord.customer_phone}!`
+        );
+      } else {
+        const errMsg = data.error || "Failed to resend WhatsApp buttons";
+        showToast("error", errMsg);
+      }
+    } catch (err: any) {
+      showToast("error", err.message || "Network error while resending WhatsApp buttons");
+    } finally {
+      setActionLoadingId(null);
+      setActionType(null);
+    }
+  };
+
+  const handleManualConfirmOrder = async (ord: ERPOrder) => {
+    setActionLoadingId(ord.id);
+    setActionType("confirm");
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "manual_confirm",
+          order_id: ord.id,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.order) {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === data.order.id ? { ...o, ...data.order } : o))
+        );
+        if (selectedOrder && selectedOrder.id === data.order.id) {
+          setSelectedOrder((prev) => (prev ? { ...prev, ...data.order } : null));
+          setEditDeliveryStatus(data.order.delivery_status || "Processing");
+          if (data.order.shiprocket_awb) setEditAWB(data.order.shiprocket_awb);
+          if (data.order.courier_partner) setEditCourier(data.order.courier_partner);
+        }
+        showToast(
+          "success",
+          `Order #${data.order.shopify_order_id || ord.id} confirmed! Normal confirmation WhatsApp dispatched.`
+        );
+      } else {
+        const errMsg = data.error || "Failed to manually confirm order";
+        showToast("error", errMsg);
+      }
+    } catch (err: any) {
+      showToast("error", err.message || "Network error while confirming order");
+    } finally {
+      setActionLoadingId(null);
+      setActionType(null);
+    }
+  };
+
+  const handleManualCancelOrder = async () => {
+    if (!orderToCancel) return;
+    const ord = orderToCancel;
+    setActionLoadingId(ord.id);
+    setActionType("cancel");
+    try {
+      const combinedReason = cancelNotes.trim()
+        ? `${cancelReason} - ${cancelNotes.trim()}`
+        : cancelReason;
+      const res = await fetch("/api/admin/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "manual_cancel",
+          order_id: ord.id,
+          reason: combinedReason,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.order) {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === data.order.id ? { ...o, ...data.order } : o))
+        );
+        if (selectedOrder && selectedOrder.id === data.order.id) {
+          setSelectedOrder((prev) => (prev ? { ...prev, ...data.order } : null));
+          setEditDeliveryStatus("Cancelled");
+          if (data.order.payment_status) setEditPaymentStatus(data.order.payment_status);
+        }
+        const refundMsg = data.refund ? ` (Refund ₹${data.refund.amount} initiated)` : "";
+        showToast(
+          "success",
+          `Order #${data.order.shopify_order_id || ord.id} cancelled successfully${refundMsg}. Customer WhatsApp notification sent.`
+        );
+        setOrderToCancel(null);
+      } else {
+        const errMsg = data.error || "Failed to cancel order";
+        showToast("error", errMsg);
+      }
+    } catch (err: any) {
+      showToast("error", err.message || "Network error while cancelling order");
+    } finally {
+      setActionLoadingId(null);
+      setActionType(null);
     }
   };
 
@@ -510,7 +668,7 @@ function AdminOrdersContent() {
 
           {/* Table */}
           <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto min-h-[480px] pb-28">
               <table className="w-full text-left text-xs sm:text-sm text-slate-700">
                 <thead className="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <tr>
@@ -523,7 +681,7 @@ function AdminOrdersContent() {
                     <th className="py-3.5 px-4">Courier & AWB</th>
                     <th className="py-3.5 px-4">Delivery Status</th>
                     <th className="py-3.5 px-4">Net Profit</th>
-                    <th className="py-3.5 px-4 text-right">Actions</th>
+                    <th className="py-3.5 px-4 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
@@ -552,7 +710,7 @@ function AdminOrdersContent() {
                       </td>
                     </tr>
                   ) : (
-                    orders.map((ord) => (
+                    orders.map((ord, idx) => (
                       <tr key={ord.id} className="hover:bg-slate-50/70 transition-colors">
                         <td className="py-3.5 px-4 sm:px-6 font-bold text-[#FF7A00] whitespace-nowrap">
                           {ord.shopify_order_id}
@@ -578,10 +736,21 @@ function AdminOrdersContent() {
                             const totalQty = rawItems.reduce((acc, it) => acc + Number(it.quantity || 1), 0);
                             const firstName = rawItems[0]?.name || rawItems[0]?.product_name;
                             if (!firstName) return null;
+                            const bundleItem = rawItems.find((it) => (it.bundle_tier && Number(it.bundle_tier) > 1) || it.offer_label);
+
                             return (
-                              <span className="block text-[11px] text-[#FF7A00] font-semibold truncate max-w-[180px] mt-0.5">
-                                📦 {totalQty > 1 ? `${totalQty}× ` : ""}{firstName}
-                              </span>
+                              <div className="space-y-1">
+                                <span className="block text-[11px] text-[#FF7A00] font-semibold truncate max-w-[200px] mt-0.5">
+                                  📦 {totalQty > 1 ? `${totalQty}× ` : ""}{firstName}
+                                  {rawItems.length > 1 ? ` +${rawItems.length - 1} more` : ""}
+                                </span>
+                                {bundleItem && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-extrabold bg-gradient-to-r from-orange-100 to-amber-100 text-[#E65100] border border-orange-200">
+                                    <span>✨</span>
+                                    <span>{bundleItem.offer_label || `Buy ${bundleItem.bundle_tier || totalQty} Save More`}</span>
+                                  </span>
+                                )}
+                              </div>
                             );
                           })()}
                         </td>
@@ -683,14 +852,115 @@ function AdminOrdersContent() {
                             {ord.net_profit >= 0 ? `+₹${ord.net_profit}` : `-₹${Math.abs(ord.net_profit)}`}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                          <button
-                            onClick={() => setSelectedOrder(ord)}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-[#FF7A00] hover:text-[#E66E00] hover:underline"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>Details</span>
-                          </button>
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                          <div className="relative inline-block text-left order-action-menu-container">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenMenuOrderId(openMenuOrderId === ord.id ? null : ord.id);
+                              }}
+                              className={`w-8 h-8 rounded-xl inline-flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 border transition-all cursor-pointer ${
+                                openMenuOrderId === ord.id
+                                  ? "bg-slate-100 text-slate-900 border-slate-300 shadow-inner"
+                                  : "border-transparent"
+                              }`}
+                              title="Order actions"
+                              aria-label="Order actions"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+
+                            {openMenuOrderId === ord.id && (
+                              <div
+                                className={`absolute right-0 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 text-left ${
+                                  idx >= orders.length - 2 && orders.length > 2
+                                    ? "bottom-full mb-1.5 origin-bottom-right"
+                                    : "top-full mt-1.5 origin-top-right"
+                                }`}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {/* 1. Resend WhatsApp Interactive Buttons */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenMenuOrderId(null);
+                                    handleResendWAButtons(ord);
+                                  }}
+                                  disabled={actionLoadingId === ord.id}
+                                  className="w-full px-3.5 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2.5 transition-colors cursor-pointer text-left disabled:opacity-50"
+                                >
+                                  {actionLoadingId === ord.id && actionType === "resend" ? (
+                                    <RefreshCw className="w-4 h-4 animate-spin text-emerald-600 shrink-0" />
+                                  ) : (
+                                    <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                                  )}
+                                  <div>
+                                    <p className="font-bold text-slate-800">Resend WA Buttons</p>
+                                    <p className="text-[10px] text-slate-400 font-normal">Confirm & Cancel prompt</p>
+                                  </div>
+                                </button>
+
+                                {/* 2. Manually Confirm Order */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenMenuOrderId(null);
+                                    handleManualConfirmOrder(ord);
+                                  }}
+                                  disabled={actionLoadingId === ord.id}
+                                  className="w-full px-3.5 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 flex items-center gap-2.5 transition-colors cursor-pointer text-left disabled:opacity-50"
+                                >
+                                  {actionLoadingId === ord.id && actionType === "confirm" ? (
+                                    <RefreshCw className="w-4 h-4 animate-spin text-blue-600 shrink-0" />
+                                  ) : (
+                                    <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
+                                  )}
+                                  <div>
+                                    <p className="font-bold text-slate-800">Confirm Order</p>
+                                    <p className="text-[10px] text-slate-400 font-normal">Manual verify & notify</p>
+                                  </div>
+                                </button>
+
+                                {/* 3. Cancel Order */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenMenuOrderId(null);
+                                    setOrderToCancel(ord);
+                                    setCancelReason("Customer requested cancellation");
+                                    setCancelNotes("");
+                                  }}
+                                  disabled={actionLoadingId === ord.id}
+                                  className="w-full px-3.5 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 flex items-center gap-2.5 transition-colors cursor-pointer text-left disabled:opacity-50"
+                                >
+                                  <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                                  <div>
+                                    <p className="font-bold text-slate-800">Cancel Order</p>
+                                    <p className="text-[10px] text-slate-400 font-normal">Restock & refund if paid</p>
+                                  </div>
+                                </button>
+
+                                <div className="my-1 border-t border-slate-100" />
+
+                                {/* 4. Details Option */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenMenuOrderId(null);
+                                    setSelectedOrder(ord);
+                                  }}
+                                  className="w-full px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-[#FF7A00] flex items-center gap-2.5 transition-colors cursor-pointer text-left"
+                                >
+                                  <Eye className="w-4 h-4 text-[#FF7A00] shrink-0" />
+                                  <div>
+                                    <p className="font-bold text-slate-800">Order 360° Details</p>
+                                    <p className="text-[10px] text-slate-400 font-normal">View items & logistics</p>
+                                  </div>
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -813,43 +1083,78 @@ function AdminOrdersContent() {
                         const itemQty = Number(item.quantity || 1);
                         const itemPrice = Number(item.price || item.unit_price || 0);
                         const itemImg = item.image || item.poster_image || "";
+                        const isBundle = Boolean((item.bundle_tier && Number(item.bundle_tier) > 1) || item.offer_label);
+                        const itemTotal = Number(item.bundle_total || (itemPrice * itemQty));
 
                         return (
                           <div
                             key={idx}
-                            className="flex items-center justify-between bg-white p-2.5 rounded-lg border border-slate-200/70 text-xs shadow-2xs"
+                            className={`p-3 rounded-xl border text-xs shadow-2xs ${
+                              isBundle
+                                ? "bg-gradient-to-r from-orange-50/50 via-amber-50/30 to-white border-orange-200"
+                                : "bg-white border-slate-200/70"
+                            }`}
                           >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              {itemImg ? (
-                                <img
-                                  src={itemImg}
-                                  alt={itemName}
-                                  className="w-10 h-10 object-cover rounded-md border border-slate-100 shrink-0"
-                                />
-                              ) : (
-                                <div className="w-10 h-10 rounded-md bg-orange-50 text-[#FF7A00] flex items-center justify-center font-bold text-xs shrink-0">
-                                  ZP
-                                </div>
-                              )}
-                              <div className="min-w-0">
-                                <p className="font-bold text-slate-900 truncate max-w-[220px]">
-                                  {itemName}
-                                </p>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FF7A00] text-white">
-                                    Qty: {itemQty}
-                                  </span>
-                                  <span className="text-slate-500 text-[11px]">
-                                    ₹{itemPrice.toLocaleString()} each
-                                  </span>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                {itemImg ? (
+                                  <img
+                                    src={itemImg}
+                                    alt={itemName}
+                                    className="w-11 h-11 object-cover rounded-lg border border-slate-100 shrink-0"
+                                  />
+                                ) : (
+                                  <div className="w-11 h-11 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center font-bold text-xs shrink-0">
+                                    ZP
+                                  </div>
+                                )}
+                                <div className="min-w-0">
+                                  <p className="font-bold text-slate-900 truncate max-w-[240px]">
+                                    {itemName}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FF7A00] text-white">
+                                      Qty: {itemQty}
+                                    </span>
+                                    <span className="text-slate-600 text-[11px] font-semibold">
+                                      ₹{itemPrice.toLocaleString()} each
+                                    </span>
+                                    {item.original_price && Number(item.original_price) > itemPrice && (
+                                      <span className="text-slate-400 text-[10px] line-through">
+                                        ₹{Number(item.original_price).toLocaleString()}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
+                              <div className="text-right shrink-0">
+                                <span className="font-extrabold text-slate-900 block text-xs sm:text-sm">
+                                  ₹{itemTotal.toLocaleString()}
+                                </span>
+                                {item.bundle_savings && Number(item.bundle_savings) > 0 && (
+                                  <span className="text-[10px] font-bold text-emerald-600 block">
+                                    Saved ₹{Number(item.bundle_savings).toLocaleString()}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            <div className="text-right shrink-0">
-                              <span className="font-extrabold text-slate-900 block text-xs">
-                                ₹{(itemPrice * itemQty).toLocaleString()}
-                              </span>
-                            </div>
+
+                            {/* Buy More Save More Badge & Savings Highlight */}
+                            {isBundle && (
+                              <div className="mt-2 pt-2 border-t border-orange-200/60 flex items-center justify-between flex-wrap gap-2">
+                                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-gradient-to-r from-orange-100 to-amber-100 text-[#E65100] border border-orange-300">
+                                  <span>✨</span>
+                                  <span>
+                                    {item.offer_label || `Buy More Save More: ${itemQty} Units Offer`}
+                                  </span>
+                                </div>
+                                {item.bundle_savings && Number(item.bundle_savings) > 0 && (
+                                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                    🎉 Bundle Discount: ₹{Number(item.bundle_savings).toLocaleString()} OFF
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -887,71 +1192,130 @@ function AdminOrdersContent() {
 
               {/* WhatsApp Order Verification Status Card */}
               <div
-                className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 ${
+                className={`p-4 rounded-xl border flex flex-col gap-3.5 ${
                   selectedOrder.whatsapp_confirm_status === "pending_whatsapp"
-                    ? "bg-amber-50/70 border-amber-200"
-                    : selectedOrder.whatsapp_confirm_status === "cancelled"
-                    ? "bg-rose-50/70 border-rose-200"
-                    : "bg-emerald-50/70 border-emerald-200"
+                    ? "bg-amber-50/80 border-amber-300"
+                    : (selectedOrder.whatsapp_confirm_status === "cancelled" || selectedOrder.delivery_status === "Cancelled")
+                    ? "bg-rose-50/80 border-rose-300"
+                    : "bg-emerald-50/80 border-emerald-300"
                 }`}
               >
-                <div className="flex items-center gap-2.5">
-                  <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                      selectedOrder.whatsapp_confirm_status === "pending_whatsapp"
-                        ? "bg-amber-100 text-amber-700"
-                        : selectedOrder.whatsapp_confirm_status === "cancelled"
-                        ? "bg-rose-100 text-rose-700"
-                        : "bg-emerald-100 text-emerald-700"
-                    }`}
-                  >
-                    {selectedOrder.whatsapp_confirm_status === "pending_whatsapp" ? (
-                      <Clock className="w-4 h-4 stroke-[2.2]" />
-                    ) : selectedOrder.whatsapp_confirm_status === "cancelled" ? (
-                      <X className="w-4 h-4 stroke-[2.2]" />
-                    ) : (
-                      <CheckCircle2 className="w-4 h-4 stroke-[2.2]" />
-                    )}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                        WhatsApp Status:
-                      </span>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                        selectedOrder.whatsapp_confirm_status === "pending_whatsapp"
+                          ? "bg-amber-100 text-amber-700"
+                          : (selectedOrder.whatsapp_confirm_status === "cancelled" || selectedOrder.delivery_status === "Cancelled")
+                          ? "bg-rose-100 text-rose-700"
+                          : "bg-emerald-100 text-emerald-700"
+                      }`}
+                    >
                       {selectedOrder.whatsapp_confirm_status === "pending_whatsapp" ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-200 text-amber-900 animate-pulse">
-                          Awaiting Customer Confirmation
-                        </span>
-                      ) : selectedOrder.whatsapp_confirm_status === "cancelled" ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-200 text-rose-900">
-                          Cancelled via WhatsApp
-                        </span>
+                        <Clock className="w-5 h-5 stroke-[2.2]" />
+                      ) : (selectedOrder.whatsapp_confirm_status === "cancelled" || selectedOrder.delivery_status === "Cancelled") ? (
+                        <X className="w-5 h-5 stroke-[2.2]" />
                       ) : (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-200 text-emerald-900">
-                          Verified & Confirmed
-                        </span>
+                        <CheckCircle2 className="w-5 h-5 stroke-[2.2]" />
                       )}
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                      {selectedOrder.whatsapp_confirm_status === "pending_whatsapp"
-                        ? `Verification prompt sent to ${selectedOrder.customer_phone || "customer"}. Customer must tap Confirm.`
-                        : selectedOrder.whatsapp_confirm_status === "cancelled"
-                        ? "Customer tapped Cancel Order in WhatsApp."
-                        : "Customer confirmed order via interactive WhatsApp message."}
-                    </p>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                          WhatsApp Status:
+                        </span>
+                        {selectedOrder.whatsapp_confirm_status === "pending_whatsapp" ? (
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-200 text-amber-900 animate-pulse">
+                            Awaiting Customer Confirmation
+                          </span>
+                        ) : (selectedOrder.whatsapp_confirm_status === "cancelled" || selectedOrder.delivery_status === "Cancelled") ? (
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-rose-200 text-rose-900">
+                            Order Cancelled
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-200 text-emerald-900">
+                            Verified & Confirmed
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[12px] text-slate-600 mt-1">
+                        {selectedOrder.whatsapp_confirm_status === "pending_whatsapp"
+                          ? `Interactive message with Confirm & Cancel buttons was sent to ${selectedOrder.customer_phone || "customer"}. Awaiting customer button tap.`
+                          : (selectedOrder.whatsapp_confirm_status === "cancelled" || selectedOrder.delivery_status === "Cancelled")
+                          ? "Order is cancelled. Customer received standard cancellation notice."
+                          : "Order verified and confirmed. Standard confirmation template dispatched to customer WhatsApp."}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
+                {/* Interactive Action Bar inside WhatsApp Card */}
                 {selectedOrder.whatsapp_confirm_status === "pending_whatsapp" && (
-                  <button
-                    type="button"
-                    onClick={handleManualWAConfirm}
-                    className="px-3 py-1.5 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 shrink-0 cursor-pointer"
-                    title="Manually verify if customer confirmed over phone or chat"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Manual Verify</span>
-                  </button>
+                  <div className="pt-2.5 border-t border-amber-200/80 flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleResendWAButtons(selectedOrder)}
+                      disabled={actionLoadingId === selectedOrder.id}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      title="Resend WhatsApp message with interactive Confirm & Cancel buttons attached"
+                    >
+                      {actionLoadingId === selectedOrder.id && actionType === "resend" ? (
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <MessageCircle className="w-3.5 h-3.5" />
+                      )}
+                      <span>Resend WA Buttons</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleManualConfirmOrder(selectedOrder)}
+                      disabled={actionLoadingId === selectedOrder.id}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      title="Manually confirm order (sends normal WhatsApp confirmation to customer)"
+                    >
+                      {actionLoadingId === selectedOrder.id && actionType === "confirm" ? (
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      )}
+                      <span>Manually Confirm Order</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOrderToCancel(selectedOrder);
+                        setCancelReason("Customer requested cancellation");
+                        setCancelNotes("");
+                      }}
+                      disabled={actionLoadingId === selectedOrder.id}
+                      className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      title="Cancel order, restock inventory, process refund if prepaid, and send cancellation notification"
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                      <span>Cancel Order</span>
+                    </button>
+                  </div>
+                )}
+
+                {selectedOrder.whatsapp_confirm_status === "confirmed" && selectedOrder.delivery_status !== "Cancelled" && (
+                  <div className="pt-2 border-t border-emerald-200/80 flex items-center justify-between">
+                    <span className="text-[11px] text-emerald-800 font-medium">✓ Order confirmed and ready for fulfillment.</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOrderToCancel(selectedOrder);
+                        setCancelReason("Customer requested cancellation");
+                        setCancelNotes("");
+                      }}
+                      disabled={actionLoadingId === selectedOrder.id}
+                      className="px-2.5 py-1 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                      <span>Cancel Order</span>
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -1182,6 +1546,160 @@ function AdminOrdersContent() {
                   <>
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Save Order Changes</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Order Confirmation Modal */}
+      {orderToCancel && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-150"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && actionLoadingId !== orderToCancel.id) {
+              setOrderToCancel(null);
+            }
+          }}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 bg-rose-50/80 border-b border-rose-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center">
+                  <XCircle className="w-5 h-5 stroke-[2.2]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base">
+                    Cancel Order #{orderToCancel.shopify_order_id || orderToCancel.id}
+                  </h3>
+                  <p className="text-xs text-rose-600 font-semibold">
+                    Order Cancellation & Customer Notification
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOrderToCancel(null)}
+                disabled={actionLoadingId === orderToCancel.id}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-white/80 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              {/* Order Quick Summary */}
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2 text-xs">
+                <div className="flex justify-between items-center text-slate-600">
+                  <span className="font-medium">Customer:</span>
+                  <span className="font-bold text-slate-900">{orderToCancel.customer_name} ({orderToCancel.customer_phone})</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-600">
+                  <span className="font-medium">Order Total:</span>
+                  <span className="font-bold text-slate-900 font-mono">₹{orderToCancel.total_amount}</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-600">
+                  <span className="font-medium">Payment Method:</span>
+                  <span className="font-bold uppercase text-slate-900">{orderToCancel.payment_method}</span>
+                </div>
+              </div>
+
+              {/* Prepaid / COD Context Banner */}
+              {orderToCancel.payment_method !== "COD" &&
+               !orderToCancel.payment_method?.toLowerCase().includes("cash on delivery") ? (
+                <div className="p-3.5 bg-purple-50 rounded-xl border border-purple-200 flex items-start gap-2.5">
+                  <RotateCcw className="w-4 h-4 text-purple-700 mt-0.5 shrink-0" />
+                  <div className="text-xs text-purple-900">
+                    <p className="font-bold">Automated Full Refund (₹{orderToCancel.total_amount})</p>
+                    <p className="mt-0.5 text-purple-700 text-[11px] leading-relaxed">
+                      This is a prepaid order. Cancelling will automatically initiate a full refund back to the customer's original payment method via Razorpay, update payment status to Refunded, and restock inventory.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-200 flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-700 mt-0.5 shrink-0" />
+                  <div className="text-xs text-amber-900">
+                    <p className="font-bold">Cash on Delivery Order</p>
+                    <p className="mt-0.5 text-amber-700 text-[11px] leading-relaxed">
+                      No customer payment was captured. Cancelling will restock product inventory and release reserved units.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Cancellation Reason Selector */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Cancellation Reason
+                </label>
+                <select
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  className="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                >
+                  <option value="Customer requested via phone call">Customer requested via phone call</option>
+                  <option value="Customer requested cancellation via WhatsApp / Chat">Customer requested cancellation via WhatsApp / Chat</option>
+                  <option value="Customer unresponsive to WhatsApp verification">Customer unresponsive to WhatsApp verification</option>
+                  <option value="Customer address incomplete or unreachable">Customer address incomplete or unreachable</option>
+                  <option value="Duplicate order / Customer changed mind">Duplicate order / Customer changed mind</option>
+                  <option value="Item temporarily out of stock">Item temporarily out of stock</option>
+                  <option value="Fraud check / Operational reason">Fraud check / Operational reason</option>
+                </select>
+              </div>
+
+              {/* Optional Custom Note */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Internal Note (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Spoke with customer at 11:30 AM"
+                  value={cancelNotes}
+                  onChange={(e) => setCancelNotes(e.target.value)}
+                  className="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                />
+              </div>
+
+              {/* Customer Experience Notice */}
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-500 leading-relaxed">
+                ℹ️ <strong>Customer Experience:</strong> Customer will receive standard order cancellation WhatsApp & email templates, and their order on &quot;My Orders&quot; will show Cancelled seamlessly without mentioning admin action.
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setOrderToCancel(null)}
+                disabled={actionLoadingId === orderToCancel.id}
+                className="px-4 py-2 border border-slate-300 rounded-xl text-xs font-bold text-slate-700 hover:bg-white transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Keep Order
+              </button>
+              <button
+                type="button"
+                onClick={handleManualCancelOrder}
+                disabled={actionLoadingId === orderToCancel.id}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                {actionLoadingId === orderToCancel.id && actionType === "cancel" ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Processing Cancellation...</span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-3.5 h-3.5" />
+                    <span>Confirm Order Cancellation</span>
                   </>
                 )}
               </button>

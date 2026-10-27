@@ -1041,6 +1041,12 @@ function OrdersPageContent() {
                               <p className="text-xs text-gray-500 mt-0.5">
                                 Qty: {itemQty} × ₹{itemUnitPrice.toLocaleString()}
                               </p>
+                              {((it as any).bundle_tier > 1 || (it as any).offer_label) && (
+                                <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-orange-50 text-[#FF5722] border border-orange-200">
+                                  <span>✨</span>
+                                  <span>{(it as any).offer_label || `Buy ${itemQty} Save More`}</span>
+                                </span>
+                              )}
 
                               {/* Review & Rating Trigger on Delivered Product */}
                               {isDelivered ? (

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getVideosByProduct, getAllVideos } from "@/lib/videoStore";
+import { getVideosByProduct, getAllVideos, getHomePageVideoIds } from "@/lib/videoStore";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { executeD1Query } from "@/lib/d1";
 
@@ -10,6 +10,8 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const productId = searchParams.get("productId");
+    const videoIdsParam = searchParams.get("videoIds");
+    const scope = searchParams.get("scope");
 
     // Query D1 products table to merge with DEFAULT_PRODUCTS
     let allProducts: any[] = [...DEFAULT_PRODUCTS];
@@ -22,33 +24,88 @@ export async function GET(req: NextRequest) {
       // fallback
     }
 
+    // Direct explicit videoIds passed as query parameter
+    let explicitVideoIds: string[] | undefined = undefined;
+    if (videoIdsParam) {
+      try {
+        const parsed = videoIdsParam.startsWith("[")
+          ? JSON.parse(videoIdsParam)
+          : videoIdsParam.split(",");
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          explicitVideoIds = parsed.map((id) => String(id).trim()).filter(Boolean);
+        }
+      } catch {}
+    }
+
     // Find the current product if productId was passed
     let targetProd: any = null;
-    let explicitVideoIds: string[] | undefined = undefined;
 
     if (productId) {
       const normPid = productId.trim().toLowerCase();
+      const cleanNorm = normPid.replace(/[-_ ]+/g, " ");
+      const hyphenNorm = normPid.replace(/[\s_]+/g, "-");
+
       targetProd = allProducts.find((p) => {
         const pId = String(p.id || "").toLowerCase().trim();
         const pSlug = String(p.slug || "").toLowerCase().trim();
-        return pId === normPid || pSlug === normPid;
+        const pName = String(p.name || "").toLowerCase().trim();
+        const cleanSlug = pSlug.replace(/[-_ ]+/g, " ");
+        const cleanId = pId.replace(/[-_ ]+/g, " ");
+
+        return (
+          pId === normPid ||
+          pSlug === normPid ||
+          pId === hyphenNorm ||
+          pSlug === hyphenNorm ||
+          cleanSlug === cleanNorm ||
+          cleanId === cleanNorm ||
+          (cleanNorm.length > 3 && (cleanSlug.includes(cleanNorm) || cleanNorm.includes(cleanSlug))) ||
+          pName === cleanNorm ||
+          (cleanNorm.length > 3 && pName.includes(cleanNorm))
+        );
       });
 
-      if (targetProd) {
+      if (targetProd && !explicitVideoIds) {
         if (Array.isArray(targetProd.video_ids)) {
           explicitVideoIds = targetProd.video_ids;
         } else if (typeof targetProd.video_ids === "string" && targetProd.video_ids.trim()) {
           try {
             const parsed = JSON.parse(targetProd.video_ids);
-            if (Array.isArray(parsed)) explicitVideoIds = parsed;
+            if (Array.isArray(parsed) && parsed.length > 0) explicitVideoIds = parsed;
           } catch {}
         }
       }
     }
 
-    let videos = productId
-      ? await getVideosByProduct(productId, explicitVideoIds)
-      : (await getAllVideos()).filter((v) => v.active !== false);
+    const searchProductKeys: string[] = [];
+    if (targetProd?.id) searchProductKeys.push(targetProd.id);
+    if (targetProd?.slug) searchProductKeys.push(targetProd.slug);
+    if (productId) searchProductKeys.push(productId);
+
+    let videos: any[] = [];
+
+    if (productId || (explicitVideoIds && explicitVideoIds.length > 0)) {
+      videos = await getVideosByProduct(
+        searchProductKeys.length > 0 ? searchProductKeys : productId || "",
+        explicitVideoIds
+      );
+    } else if (scope === "home" || (!productId && !videoIdsParam)) {
+      // Home page: strictly return only selected videos in the chosen order
+      const homeVideoIds = await getHomePageVideoIds();
+      const allActive = (await getAllVideos()).filter((v) => v.active !== false);
+
+      if (homeVideoIds && homeVideoIds.length > 0) {
+        const map = new Map(allActive.map((v) => [v.id, v]));
+        const selectedList = homeVideoIds
+          .map((id) => map.get(id))
+          .filter(Boolean);
+        videos = selectedList.length > 0 ? selectedList : allActive;
+      } else {
+        videos = allActive;
+      }
+    } else {
+      videos = (await getAllVideos()).filter((v) => v.active !== false);
+    }
 
     // Enrich video items with product metadata (name, price, mrp, image, slug)
     const enriched = videos.map((v) => {

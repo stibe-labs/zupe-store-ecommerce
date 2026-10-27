@@ -188,9 +188,13 @@ export function ShoppableVideosSection({
   useEffect(() => {
     let isMounted = true;
     const prodKey = currentProduct?.slug || currentProduct?.id;
-    const url = prodKey
+    let url = prodKey
       ? `/api/videos?productId=${encodeURIComponent(prodKey)}&_t=${Date.now()}`
       : `/api/videos?_t=${Date.now()}`;
+
+    if (currentProduct?.video_ids && Array.isArray(currentProduct.video_ids) && currentProduct.video_ids.length > 0) {
+      url += `&videoIds=${encodeURIComponent(currentProduct.video_ids.join(","))}`;
+    }
 
     fetch(url)
       .then((res) => res.json())
@@ -233,7 +237,7 @@ export function ShoppableVideosSection({
     return () => {
       isMounted = false;
     };
-  }, [currentProduct]);
+  }, [currentProduct?.id, currentProduct?.slug, JSON.stringify(currentProduct?.video_ids || [])]);
 
   // 2. Fetch live products catalog for shoppable modal
   useEffect(() => {

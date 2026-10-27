@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createOrder, getOrders, updateOrderStatus, OrderRecord } from "@/lib/orderStore";
+import { createOrder, getOrders, updateOrderStatus, OrderRecord, OrderItem } from "@/lib/orderStore";
 import { getERPOrders } from "@/lib/erpStore";
 import { getAuthenticatedUser } from "@/lib/userAuth";
 
@@ -71,12 +71,17 @@ export async function GET(req: NextRequest) {
         }
         if (!Array.isArray(rawItems)) rawItems = [];
 
-        let items = rawItems.map((it: any) => ({
+        let items: OrderItem[] = rawItems.map((it: any) => ({
           product_id: it.product_id || it.id || "ripple-lamp",
           name: it.product_name || it.name || "Purchased Product",
           price: Number(it.unit_price || it.price || o.total_amount),
           quantity: Number(it.quantity || 1),
           image: it.image || it.poster_image || "/products/ripple-lamp.jpg",
+          bundle_tier: it.bundle_tier,
+          bundle_savings: it.bundle_savings,
+          bundle_total: it.bundle_total,
+          offer_label: it.offer_label,
+          original_price: it.original_price,
         }));
 
         if (items.length === 0) {
@@ -134,9 +139,13 @@ export async function GET(req: NextRequest) {
           shipping_address: o.shipping_address,
           city: "",
           postal_code: "",
-          payment_method: o.payment_method,
-          payment_status: isPaid ? "paid" : "pending",
-          order_status: (o.delivery_status === "Cancelled" || o.status === "Cancelled")
+          payment_method: o.payment_method || (isPaid ? "Prepaid" : "Cash on Delivery"),
+          payment_status: (o.payment_status || "").toLowerCase() === "refunded"
+            ? "refunded"
+            : isPaid
+            ? "paid"
+            : "pending",
+          order_status: (o.delivery_status === "Cancelled" || o.status === "Cancelled" || (o.whatsapp_confirm_status || "").toLowerCase() === "cancelled")
             ? "cancelled"
             : isDelivered
             ? "delivered"
@@ -170,7 +179,7 @@ export async function GET(req: NextRequest) {
           return {
             ...so,
             total_amount: finalTotal,
-            payment_status: isPaid ? ("paid" as const) : ("pending" as const),
+            payment_status: (so.payment_status as any) === "refunded" ? ("refunded" as const) : isPaid ? ("paid" as const) : ("pending" as const),
           };
         });
 

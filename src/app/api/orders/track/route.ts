@@ -48,12 +48,30 @@ export async function GET(req: NextRequest) {
       return false;
     });
 
+    let liveTracking: any = null;
+
     if (matchedErp.length > 0) {
+      const target = matchedErp[0];
+      const awb = (target.shiprocket_awb || (target as any).tracking_number || "").trim();
+      if (awb) {
+        try {
+          const { getShiprocketLiveTracking } = await import("@/lib/shiprocketService");
+          liveTracking = await getShiprocketLiveTracking(awb);
+          if (liveTracking?.success) {
+            if (liveTracking.delivery_status) target.delivery_status = liveTracking.delivery_status;
+            if (liveTracking.courier_name) target.courier_partner = liveTracking.courier_name;
+          }
+        } catch (e) {
+          console.warn("Live track fetch error:", e);
+        }
+      }
+
       return NextResponse.json({
         success: true,
         source: "erp",
-        order: matchedErp[0],
+        order: target,
         orders: matchedErp,
+        live_tracking: liveTracking,
       });
     }
 
@@ -91,8 +109,8 @@ export async function GET(req: NextRequest) {
         payment_method: so.payment_method === "Credit Card" ? "Prepaid" : so.payment_method,
         payment_status: so.payment_status === "paid" ? "Completed" : "Pending",
         shipping_address: `${so.shipping_address}, ${so.city} ${so.postal_code}`,
-        shiprocket_awb: `SR-AWB-${Math.abs(so.id.split("").reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0)).toString().slice(0, 7)}`,
-        courier_partner: "Delhivery",
+        shiprocket_awb: (so as any).shiprocket_awb || `SR-AWB-${Math.abs(so.id.split("").reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0)).toString().slice(0, 7)}`,
+        courier_partner: (so as any).courier_partner || "Delhivery",
         delivery_status:
           so.order_status === "delivered"
             ? "Delivered"
@@ -112,11 +130,27 @@ export async function GET(req: NextRequest) {
         })),
       }));
 
+      const target = mappedOrders[0];
+      const awb = (target.shiprocket_awb || (target as any).tracking_number || "").trim();
+      if (awb) {
+        try {
+          const { getShiprocketLiveTracking } = await import("@/lib/shiprocketService");
+          liveTracking = await getShiprocketLiveTracking(awb);
+          if (liveTracking?.success) {
+            if (liveTracking.delivery_status) target.delivery_status = liveTracking.delivery_status;
+            if (liveTracking.courier_name) target.courier_partner = liveTracking.courier_name;
+          }
+        } catch (e) {
+          console.warn("Live track fetch error on storefront order:", e);
+        }
+      }
+
       return NextResponse.json({
         success: true,
         source: "storefront",
-        order: mappedOrders[0],
+        order: target,
         orders: mappedOrders,
+        live_tracking: liveTracking,
       });
     }
 

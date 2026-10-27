@@ -17,7 +17,9 @@ export interface CartItem {
   color?: string;
   bundle_tier?: number;
   bundle_savings?: number;
+  bundle_total?: number;
   offer_label?: string;
+  bundle_tiers?: any;
 }
 
 interface CartContextType {
@@ -42,7 +44,9 @@ interface CartContextType {
       color?: string;
       bundle_tier?: number;
       bundle_savings?: number;
+      bundle_total?: number;
       offer_label?: string;
+      bundle_tiers?: any;
     },
     quantity?: number,
     options?: {
@@ -326,7 +330,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       color?: string;
       bundle_tier?: number;
       bundle_savings?: number;
+      bundle_total?: number;
       offer_label?: string;
+      bundle_tiers?: any;
     },
     quantity: number = 1,
     options?: {
@@ -337,9 +343,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return false;
     }
 
-    const finalPrice = product.offer_price || product.price || 990;
-    const finalMrp = product.mrp || Math.round((product.original_price || finalPrice) * 1.25);
+    const isBundleTier = Boolean(product.bundle_tier && product.bundle_tier > 1);
+    const finalPrice = isBundleTier && product.price !== undefined
+      ? product.price
+      : (product.offer_price ?? product.price ?? 990);
+    const finalOriginalPrice = product.original_price || (isBundleTier ? (product.offer_price || product.price || 990) : finalPrice);
+    const finalMrp = product.mrp || Math.round((finalOriginalPrice || finalPrice) * 1.25);
     const finalImage = product.poster_image || product.image || "";
+    const finalBundleTotal = product.bundle_total || (isBundleTier ? (finalPrice * quantity) : undefined);
 
     setCart((prevCart) => {
       const existingIdx = prevCart.findIndex((item) => item.id === product.id);
@@ -352,14 +363,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updated[existingIdx] = {
           ...updated[existingIdx],
           price: finalPrice,
-          original_price: product.original_price || updated[existingIdx].original_price || finalPrice,
+          original_price: finalOriginalPrice || updated[existingIdx].original_price || finalPrice,
           mrp: finalMrp,
           quantity: newQty,
           poster_image: finalImage || updated[existingIdx].poster_image,
           color: product.color || updated[existingIdx].color,
           bundle_tier: product.bundle_tier !== undefined ? product.bundle_tier : updated[existingIdx].bundle_tier,
           bundle_savings: product.bundle_savings !== undefined ? product.bundle_savings : updated[existingIdx].bundle_savings,
+          bundle_total: finalBundleTotal !== undefined ? finalBundleTotal : updated[existingIdx].bundle_total,
           offer_label: product.offer_label !== undefined ? product.offer_label : updated[existingIdx].offer_label,
+          bundle_tiers: product.bundle_tiers !== undefined ? product.bundle_tiers : updated[existingIdx].bundle_tiers,
         };
         return updated;
       } else {
@@ -371,7 +384,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             subtitle: product.subtitle,
             category: product.category || "Product",
             price: finalPrice,
-            original_price: product.original_price || finalPrice,
+            original_price: finalOriginalPrice || finalPrice,
             mrp: finalMrp,
             quantity: quantity,
             poster_image: finalImage,
@@ -379,7 +392,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             color: product.color,
             bundle_tier: product.bundle_tier,
             bundle_savings: product.bundle_savings,
+            bundle_total: finalBundleTotal,
             offer_label: product.offer_label,
+            bundle_tiers: product.bundle_tiers,
           },
         ];
       }
@@ -396,7 +411,44 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCart((prev) =>
       prev.map((item) => {
         if (item.id === productId) {
-          // If quantity changes manually, adjust bundle tier if it no longer matches
+          // If item has bundle_tiers configuration, dynamically match tier for new quantity
+          if (item.bundle_tiers && Array.isArray(item.bundle_tiers.tiers)) {
+            const activeTiers = item.bundle_tiers.tiers.filter((t: any) => t.enabled !== false);
+            const matchedTier = activeTiers.find((t: any) => t.qty === quantity) ||
+              [...activeTiers].reverse().find((t: any) => quantity >= t.qty && t.qty > 1);
+
+            if (matchedTier && matchedTier.qty > 1) {
+              const basePrice = item.original_price || item.price;
+              const regTotal = basePrice * quantity;
+              let tot = regTotal;
+              let sav = 0;
+              const discPct = matchedTier.discountPercent || 0;
+
+              if (matchedTier.customPrice && matchedTier.customPrice > 0) {
+                tot = matchedTier.customPrice;
+                sav = Math.max(0, regTotal - tot);
+              } else if (discPct > 0) {
+                sav = Math.round(regTotal * (discPct / 100));
+                tot = Math.max(0, regTotal - sav);
+              }
+
+              const uPrice = Math.round(tot / quantity);
+              const tagTxt = matchedTier.tagText || (discPct > 0 ? `Extra ${discPct}% OFF` : "");
+              const lbl = `Buy ${matchedTier.qty} - ${tagTxt || matchedTier.badge || "Save More"}`;
+
+              return {
+                ...item,
+                quantity,
+                price: uPrice,
+                bundle_tier: matchedTier.qty,
+                bundle_savings: sav,
+                bundle_total: tot,
+                offer_label: lbl,
+              };
+            }
+          }
+
+          // Fallback if quantity changes manually and no longer matches bundle tier
           const isBundle = item.bundle_tier && item.bundle_tier === quantity;
           return {
             ...item,
@@ -404,6 +456,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             price: isBundle ? item.price : (item.original_price || item.price),
             bundle_tier: isBundle ? item.bundle_tier : undefined,
             bundle_savings: isBundle ? item.bundle_savings : undefined,
+            bundle_total: isBundle ? item.bundle_total : undefined,
             offer_label: isBundle ? item.offer_label : undefined,
           };
         }
@@ -424,7 +477,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((sum, item) => {
+    if (item.bundle_tier && item.bundle_tier > 1 && item.bundle_total) {
+      return sum + item.bundle_total;
+    }
+    return sum + item.price * item.quantity;
+  }, 0);
   const mrpTotal = cart.reduce(
     (sum, item) => sum + (item.mrp || Math.round((item.original_price || item.price) * 1.25)) * item.quantity,
     0

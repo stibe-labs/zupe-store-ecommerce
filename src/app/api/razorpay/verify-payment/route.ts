@@ -224,10 +224,10 @@ export async function POST(req: NextRequest) {
       discount_amount: Number(discount_amount || 0),
       payment_method: orderPaymentMethod,
       payment_status: orderPaymentStatus,
-      order_status: "processing",
-      whatsapp_confirm_status: isCodPartial ? "confirmed" : "pending_whatsapp",
+      order_status: "shipped",
+      whatsapp_confirm_status: "confirmed",
       whatsapp_confirm_token: confirmToken,
-      whatsapp_token_used: isCodPartial ? true : false,
+      whatsapp_token_used: true,
       items: items || [],
       created_at: new Date().toISOString(),
     };
@@ -242,6 +242,36 @@ export async function POST(req: NextRequest) {
     }
 
     await createOrder(newOrder);
+
+    // Instant Automated Dispatch to Shiprocket on Payment Confirmation
+    let liveAwb: string | undefined;
+    let liveCourier: string | undefined;
+    try {
+      const { dispatchShiprocketOrder } = await import("@/lib/shiprocketService");
+      const dispatchResult = await dispatchShiprocketOrder(newOrder);
+      if (dispatchResult.success && dispatchResult.awb) {
+        liveAwb = dispatchResult.awb;
+        liveCourier = dispatchResult.courier;
+        (newOrder as any).shiprocket_awb = liveAwb;
+        (newOrder as any).tracking_number = liveAwb;
+        (newOrder as any).courier_partner = liveCourier;
+        (newOrder as any).delivery_status = "In Transit";
+        newOrder.order_status = "shipped";
+
+        const { updateERPOrder } = await import("@/lib/erpStore");
+        await updateERPOrder(orderId, {
+          whatsapp_confirm_status: "confirmed",
+          whatsapp_token_used: true,
+          status: "In Transit",
+          delivery_status: "In Transit",
+          shiprocket_awb: liveAwb,
+          tracking_number: liveAwb,
+          courier_partner: liveCourier,
+        });
+      }
+    } catch (dispatchErr) {
+      console.warn("[Verify Payment] Instant Shiprocket dispatch error:", dispatchErr);
+    }
 
     // Automatically sync delivery address and phone to customer profile
     try {
@@ -275,38 +305,21 @@ export async function POST(req: NextRequest) {
 
     // Send WhatsApp notification
     try {
-      const { sendOrderPreConfirmationWhatsApp, sendOrderConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
-      if (isCodPartial) {
-        // ₹19 advance received and verified via Razorpay - dispatch official confirmation with Doorstep balance and Switch to Prepaid offer
-        await sendOrderConfirmationWhatsApp({
-          customerName: customer_name || "Customer",
-          customerPhone: customer_phone || "",
-          orderId,
-          totalAmount: Number(total_amount),
-          paymentMethod: "cod",
-          items: (items || []).map((it: any) => ({
-            name: it.name,
-            quantity: Number(it.quantity || 1),
-            price: Number(it.price || 0),
-          })),
-        });
-        console.log(`[Verify Payment] COD order confirmation dispatched via WhatsApp for ${orderId}`);
-      } else {
-        const waSent = await sendOrderPreConfirmationWhatsApp({
-          customerName: customer_name || "Customer",
-          customerPhone: customer_phone || "",
-          orderId,
-          totalAmount: Number(total_amount),
-          paymentMethod: "prepaid",
-          token: confirmToken,
-          items: (items || []).map((it: any) => ({
-            name: it.name,
-            quantity: Number(it.quantity || 1),
-            price: Number(it.price || 0),
-          })),
-        });
-        console.log(`[Verify Payment] WhatsApp pre-confirmation dispatched for ${orderId}: ${waSent}`);
-      }
+      const { sendOrderConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+      // Payment verified & dispatched: send official Order Confirmation via WhatsApp
+      await sendOrderConfirmationWhatsApp({
+        customerName: customer_name || "Customer",
+        customerPhone: customer_phone || "",
+        orderId,
+        totalAmount: Number(total_amount),
+        paymentMethod: isCodPartial ? "cod" : "prepaid",
+        items: (items || []).map((it: any) => ({
+          name: it.name,
+          quantity: Number(it.quantity || 1),
+          price: Number(it.price || 0),
+        })),
+      });
+      console.log(`[Verify Payment] Order confirmation WhatsApp dispatched for ${orderId}`);
     } catch (waErr) {
       console.warn("Failed to dispatch WA order confirmation:", waErr);
     }

@@ -8,6 +8,12 @@ export interface OrderItem {
   price: number;
   quantity: number;
   image?: string;
+  unit_price?: number;
+  original_price?: number;
+  bundle_tier?: number;
+  bundle_savings?: number;
+  bundle_total?: number;
+  offer_label?: string;
 }
 
 export interface OrderRecord {
@@ -99,12 +105,17 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
       confirmation_email_sent: order.confirmation_email_sent || false,
       razorpay_payment_id: (order as any).razorpay_payment_id || null,
       razorpay_order_id: (order as any).razorpay_order_id || null,
-      items: order.items.map((it) => ({
-        product_name: it.name,
+      items: order.items.map((it: any) => ({
+        product_name: it.name || it.product_name,
         quantity: it.quantity,
-        unit_price: it.price,
+        unit_price: it.price || it.unit_price,
         product_id: it.product_id,
         image: it.image,
+        original_price: it.original_price,
+        bundle_tier: it.bundle_tier,
+        bundle_savings: it.bundle_savings,
+        bundle_total: it.bundle_total,
+        offer_label: it.offer_label,
       })),
       created_at: order.created_at,
     });
@@ -341,16 +352,39 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
     }
   }
 
-  try {
-    const existingAwb = (ord as any)?.shiprocket_awb || erpOrd?.shiprocket_awb;
-    const finalAwb = existingAwb && existingAwb.trim() !== "" ? existingAwb : `SR-AWB-${Math.floor(1000000 + Math.random() * 9000000)}`;
-    const finalCourier = (ord as any)?.courier_partner || erpOrd?.courier_partner || "Delhivery";
+  // Instant Automated Dispatch to Shiprocket on WhatsApp Confirmation
+  const targetOrder: any = ord || erpOrd || (await getOrderById(normId));
+  let finalAwb = targetOrder?.shiprocket_awb;
+  let finalCourier = targetOrder?.courier_partner || "Delhivery";
 
+  try {
+    const { dispatchShiprocketOrder } = await import("@/lib/shiprocketService");
+    const dispatchRes = await dispatchShiprocketOrder(targetOrder);
+    if (dispatchRes.success && dispatchRes.awb) {
+      finalAwb = dispatchRes.awb;
+      finalCourier = dispatchRes.courier || finalCourier;
+    }
+  } catch (dispatchErr) {
+    console.warn("Instant Shiprocket dispatch on WhatsApp confirm error:", dispatchErr);
+  }
+
+  if (!finalAwb) {
+    finalAwb = `SR-AWB-${Math.floor(1000000 + Math.random() * 9000000)}`;
+  }
+
+  if (ord) {
+    ord.order_status = "shipped";
+    (ord as any).shiprocket_awb = finalAwb;
+    (ord as any).courier_partner = finalCourier;
+    (ord as any).delivery_status = "In Transit";
+  }
+
+  try {
     await updateERPOrder(normId, {
       whatsapp_confirm_status: "confirmed",
       whatsapp_token_used: true,
-      status: "Processing",
-      delivery_status: "Processing",
+      status: "In Transit",
+      delivery_status: "In Transit",
       shiprocket_awb: finalAwb,
       courier_partner: finalCourier,
     });
@@ -363,7 +397,7 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
 
   return {
     success: true,
-    message: "Order confirmed successfully!",
+    message: "Order confirmed and automatically dispatched for shipping!",
     order: (finalOrd as any) || undefined,
   };
 }

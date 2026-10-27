@@ -50,7 +50,9 @@ export default function AdminSettingsPage() {
 
   // Shiprocket
   const [shiprocketEmail, setShiprocketEmail] = useState("logistics@zupestore.com");
+  const [shiprocketPassword, setShiprocketPassword] = useState("");
   const [shiprocketToken, setShiprocketToken] = useState("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...");
+  const [shiprocketPickupLocation, setShiprocketPickupLocation] = useState("Primary");
   const [shiprocketAutoSync, setShiprocketAutoSync] = useState(true);
   const [preferredCourier, setPreferredCourier] = useState("Delhivery Priority");
   const [shiprocketActive, setShiprocketActive] = useState(true);
@@ -85,7 +87,9 @@ export default function AdminSettingsPage() {
         }
         if (s.shiprocket) {
           setShiprocketEmail(s.shiprocket.email || "");
+          setShiprocketPassword((s.shiprocket as any).password || "");
           setShiprocketToken(s.shiprocket.token || "");
+          setShiprocketPickupLocation((s.shiprocket as any).pickup_location || "Primary");
           setShiprocketAutoSync(s.shiprocket.autoSync !== false);
           setPreferredCourier(s.shiprocket.preferredCourier || "Delhivery Priority");
           setShiprocketActive(s.shiprocket.isActive !== false);
@@ -132,7 +136,9 @@ export default function AdminSettingsPage() {
       },
       shiprocket: {
         email: shiprocketEmail.trim(),
+        password: shiprocketPassword.trim(),
         token: shiprocketToken.trim(),
+        pickup_location: shiprocketPickupLocation.trim() || "Primary",
         autoSync: shiprocketAutoSync,
         preferredCourier,
         isActive: shiprocketActive,
@@ -173,8 +179,9 @@ export default function AdminSettingsPage() {
       testPayload.token = shopifyToken;
       testPayload.apiVersion = shopifyApiVersion;
     } else if (provider === "shiprocket") {
-      testPayload.email = shiprocketEmail;
-      testPayload.token = shiprocketToken;
+      testPayload.email = shiprocketEmail.trim();
+      testPayload.password = shiprocketPassword.trim();
+      testPayload.token = shiprocketToken.trim();
     } else if (provider === "meta") {
       testPayload.accountId = metaAccountId;
       testPayload.token = metaToken;
@@ -537,7 +544,7 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">
                       Shiprocket Account Email
@@ -546,19 +553,34 @@ export default function AdminSettingsPage() {
                       type="email"
                       value={shiprocketEmail}
                       onChange={(e) => setShiprocketEmail(e.target.value)}
+                      placeholder="e.g. logistics@zupestore.com"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
                     />
                   </div>
 
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">
-                      Shiprocket API Token / JWT
+                      Account Password <span className="text-[10px] text-emerald-600 font-normal">(Auto-Renews Token)</span>
                     </label>
                     <input
                       type="password"
-                      value={shiprocketToken}
-                      onChange={(e) => setShiprocketToken(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs"
+                      value={shiprocketPassword}
+                      onChange={(e) => setShiprocketPassword(e.target.value)}
+                      placeholder="Enter Shiprocket password"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Pickup Location Name
+                    </label>
+                    <input
+                      type="text"
+                      value={shiprocketPickupLocation}
+                      onChange={(e) => setShiprocketPickupLocation(e.target.value)}
+                      placeholder="Primary"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
                     />
                   </div>
 
@@ -577,6 +599,19 @@ export default function AdminSettingsPage() {
                       <option value="Xpressbees Standard">Xpressbees Standard</option>
                     </select>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">
+                    Direct API Token / JWT <span className="text-[10px] text-slate-400 font-normal">(Optional if Email & Password are provided)</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={shiprocketToken}
+                    onChange={(e) => setShiprocketToken(e.target.value)}
+                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs"
+                  />
                 </div>
 
                 <div>

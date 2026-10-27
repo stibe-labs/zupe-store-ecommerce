@@ -79,6 +79,7 @@ export interface ERPOrder {
   payment_status: string;
   shipping_address: string;
   shiprocket_awb?: string;
+  tracking_number?: string;
   courier_partner?: string;
   delivery_status: "Processing" | "In Transit" | "Out for Delivery" | "Delivered" | "NDR" | "RTO Initiated" | "RTO In Transit" | "RTO Delivered" | "Cancelled";
   ndr_status: string;
@@ -92,7 +93,18 @@ export interface ERPOrder {
   razorpay_payment_id?: string;
   razorpay_order_id?: string;
   created_at: string;
-  items?: { product_name: string; quantity: number; unit_price: number }[];
+  items?: {
+    product_name: string;
+    quantity: number;
+    unit_price: number;
+    product_id?: string;
+    image?: string;
+    original_price?: number;
+    bundle_tier?: number;
+    bundle_savings?: number;
+    bundle_total?: number;
+    offer_label?: string;
+  }[];
 }
 
 // In-Memory Baseline Fallbacks matching reference Image 3
@@ -1649,7 +1661,9 @@ export interface ERPIntegrationsSettings {
   };
   shiprocket: {
     email: string;
+    password?: string;
     token: string;
+    pickup_location?: string;
     autoSync: boolean;
     preferredCourier: string;
     isActive: boolean;
@@ -1684,7 +1698,9 @@ let inMemorySettings: ERPIntegrationsSettings = {
   },
   shiprocket: {
     email: "logistics@zupestore.com",
+    password: "",
     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    pickup_location: "Primary",
     autoSync: true,
     preferredCourier: "Delhivery Priority",
     isActive: true,
