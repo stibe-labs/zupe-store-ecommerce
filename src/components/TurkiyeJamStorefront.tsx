@@ -65,6 +65,37 @@ const HERO_GALLERY = [
   },
 ];
 
+const CAMPAIGN_HERO_SLIDES = [
+  {
+    id: "women",
+    tag: "For Her",
+    headline: "Heightened Libido & Deep Sensation",
+    subhead: "Natural Turkish Herbal Aphrodisiac for Women",
+    badge: "100% Botanical for Her",
+    src: "/tj/turkiye-jam-gallery-5.jpeg",
+    alt: "Turkiye Jam Herbal Vitality Campaign For Women",
+    benefits: [
+      "Naturally stimulates intimate arousal & sensitivity",
+      "Heightens climax response & natural lubrication",
+      "100% plant-based with zero synthetic additives",
+    ],
+  },
+  {
+    id: "men",
+    tag: "For Him",
+    headline: "Explosive Stamina & Sustained Power",
+    subhead: "Wild Epimedium Macun for Men's Performance",
+    badge: "Bioactive Icariin 48h Action",
+    src: "/tj/turkiye-jam-gallery-7.jpeg",
+    alt: "Turkiye Jam Herbal Vitality Campaign For Men",
+    benefits: [
+      "Extended physical stamina & rock-solid firmness",
+      "Faster recovery between intimate sessions",
+      "Natural surge of vitality lasting 24–48 hours",
+    ],
+  },
+];
+
 const FAQS = [
   {
     q: "What is Themra Epimedium Herbal Macun (Turkiye Jam)?",
@@ -128,10 +159,20 @@ export function TurkiyeJamStorefront() {
 
   const [selectedVariant, setSelectedVariant] = useState<TurkiyeJamVariant>(TURKIYE_JAM_VARIANTS[0]);
   const [activeHeroImageIndex, setActiveHeroImageIndex] = useState<number>(0);
+  const [activeHeroSlide, setActiveHeroSlide] = useState<number>(0);
+  const [isSliderHovered, setIsSliderHovered] = useState<boolean>(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [activeTestimonial, setActiveTestimonial] = useState<number>(0);
   const [quickOrderPhone, setQuickOrderPhone] = useState<string>("");
   const [quickOrderSuccess, setQuickOrderSuccess] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isSliderHovered) return;
+    const interval = setInterval(() => {
+      setActiveHeroSlide((prev) => (prev + 1) % CAMPAIGN_HERO_SLIDES.length);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [isSliderHovered]);
 
   const activeImage = HERO_GALLERY[activeHeroImageIndex]?.src || selectedVariant.image;
 
@@ -236,46 +277,47 @@ Please confirm priority delivery details.`;
       </aside>
 
       {/* ─────────────────────────────────────────────────────────────
-          1. HERO SECTION (High-Impact Minimalist Stage with Pedestal)
+          1. HERO SECTION (Modern Minimalist Clean Layout + Campaign Slider)
       ───────────────────────────────────────────────────────────── */}
-      <section className="relative pt-6 sm:pt-10 pb-16 sm:pb-24 overflow-hidden bg-gradient-to-b from-[#fdf2f2]/70 via-[#FCFBF8] to-[#FCFBF8]">
+      <section className="relative pt-6 sm:pt-10 pb-16 sm:pb-24 overflow-hidden bg-gradient-to-b from-[#fdf2f2]/60 via-[#FCFBF8] to-[#FCFBF8]">
         {/* Subtle Organic Background Glow */}
-        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#cb0805]/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#cb0805]/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 left-10 w-[400px] h-[400px] bg-[#cb0805]/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             
-            {/* Left Column: Brand Statement, Typography, Selector, Actions */}
+            {/* Left Column: Clean Brand Statement, Minimal Typography, Selector, Actions */}
             <div className="lg:col-span-6 flex flex-col justify-center space-y-6 sm:space-y-7">
               {/* Brand Header & Headline */}
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#cb0805]/10 border border-[#cb0805]/20 text-[#8c0503] text-xs font-semibold tracking-wide uppercase mb-4">
-                  <Leaf className="w-3.5 h-3.5 text-[#cb0805]" />
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#cb0805]/10 border border-[#cb0805]/20 text-[#cb0805] text-xs font-semibold tracking-wide uppercase mb-4">
+                  <span className="w-2 h-2 rounded-full bg-[#cb0805] animate-pulse" />
                   <span>100% Authentic Anatolian Botanical Macun</span>
                 </div>
 
-                {/* Oversized Signature Lowercase Brand Wordmark (Matches 'snaillia') */}
-                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[#1A2E22] leading-[1.05] font-sans">
-                  turkiye jam
+                {/* Modern Headline */}
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#1A2E22] leading-[1.08] font-sans">
+                  Natural Stamina &amp;{" "}
+                  <span className="text-[#cb0805] block sm:inline">Intimate Vitality</span>
                 </h1>
 
                 {/* Subtitle */}
-                <h2 className="text-lg sm:text-xl font-medium text-[#cb0805] mt-3">
-                  Natural Inner Vitality &amp; Endurance
+                <h2 className="text-base sm:text-lg font-medium text-stone-700 mt-2.5">
+                  Turkish Epimedium Botanical Herbal Paste • For Him &amp; Her
                 </h2>
 
-                {/* Editorial Description */}
+                {/* Clean 2-sentence explanation */}
                 <p className="text-sm sm:text-base text-stone-600 leading-relaxed max-w-xl mt-3 font-normal">
-                  Handcrafted with wild Turkish Epimedium, pure Anatolian blossom honey, royal jelly, and red ginseng. Formulated to naturally elevate physical endurance, stamina, and intimate vitality for both men and women without synthetic stimulants.
+                  Handcrafted in Turkey with pure mountain blossom honey, wild Epimedium, royal jelly, and red ginseng. Formulated to naturally elevate stamina, passion, and recovery for both partners without synthetic stimulants.
                 </p>
               </div>
 
-              {/* Sizes / Package Selection (Radio Style Matching Reference) */}
+              {/* Sizes / Package Selection (Radio Style) */}
               <div className="pt-1">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-2.5">
                   <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                    Select Size &amp; Package:
+                    Select Package Option:
                   </span>
                   {selectedVariant.badge && (
                     <span className="text-xs font-semibold text-[#cb0805] bg-[#cb0805]/10 px-2.5 py-0.5 rounded-full border border-[#cb0805]/20">
@@ -295,7 +337,7 @@ Please confirm priority delivery details.`;
                         className={`flex flex-col text-left p-3 rounded-xl border transition-all text-xs relative ${
                           isSelected
                             ? "bg-white border-[#cb0805] shadow-sm ring-2 ring-[#cb0805]/20"
-                            : "bg-white/60 hover:bg-white border-stone-200/90 text-stone-700"
+                            : "bg-white/70 hover:bg-white border-stone-200/90 text-stone-700 hover:border-stone-300"
                         }`}
                       >
                         <div className="flex items-center gap-2 mb-1">
@@ -318,15 +360,15 @@ Please confirm priority delivery details.`;
                 </div>
               </div>
 
-              {/* Action Buttons: Add To Cart + WhatsApp Order */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+              {/* Action Buttons: Add To Cart + Buy Now + WhatsApp Order */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="flex-1 py-4 px-8 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-semibold text-sm tracking-wide shadow-md shadow-[#cb0805]/15 hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2.5"
+                  className="flex-1 py-4 px-8 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-semibold text-sm tracking-wide shadow-md shadow-[#cb0805]/20 hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2.5"
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  <span>Add to your cart</span>
+                  <span>Add to Cart • ₹{selectedVariant.price.toLocaleString()}</span>
                 </button>
 
                 <button
@@ -367,81 +409,135 @@ Please confirm priority delivery details.`;
               </div>
             </div>
 
-            {/* Right Column: Hero Product Pedestal Stage */}
-            <div className="lg:col-span-6 relative flex flex-col items-center justify-center min-h-[440px] sm:min-h-[520px]">
+            {/* Right Column: Modern Campaign Cross-Fade Slider with Soft Fading Effect */}
+            <div className="lg:col-span-6 relative flex flex-col items-center justify-center">
               
-              {/* Translucent Oversized Vertical Watermark (Matches 'faceoil' in Reference) */}
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 font-serif font-bold text-7xl sm:text-8xl lg:text-9xl tracking-[0.25em] text-[#cb0805]/10 uppercase select-none pointer-events-none rotate-90 origin-center whitespace-nowrap z-0">
-                herbal macun
-              </div>
-
-              {/* Natural Stone Pedestal Composition */}
-              <div className="relative z-10 w-full max-w-[460px] flex flex-col items-center">
-                
-                {/* Floating Seal Badge */}
-                <div className="absolute -top-3 -left-2 sm:left-4 z-20 bg-white/95 backdrop-blur-md border border-[#cb0805]/20 rounded-2xl p-2.5 sm:p-3 shadow-md flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-red-950 font-bold text-sm shadow-xs">
-                    🇹🇷
-                  </div>
-                  <div className="text-left">
-                    <div className="text-[11px] font-bold text-stone-900 leading-tight">Authentic Import</div>
-                    <div className="text-[10px] text-[#cb0805] font-semibold">Themra Turkey Certified</div>
-                  </div>
-                </div>
-
-                {/* Main Product Showcase Photo */}
-                <motion.div
-                  key={activeImage}
-                  initial={{ opacity: 0.6, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.35, ease: "easeOut" }}
-                  className="relative w-full aspect-[4/3] sm:aspect-square flex items-center justify-center"
-                >
+              {/* Modern Campaign Slider Container */}
+              <div
+                className="relative w-full max-w-[460px] aspect-[4/5] sm:aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl border border-stone-200/90 bg-stone-900 group select-none"
+                onMouseEnter={() => setIsSliderHovered(true)}
+                onMouseLeave={() => setIsSliderHovered(false)}
+              >
+                {/* Preload second slide for zero-latency cross-fade */}
+                <div className="hidden" aria-hidden="true">
                   <Image
-                    src={activeImage}
-                    alt={selectedVariant.name}
-                    width={480}
-                    height={480}
+                    src="/tj/turkiye-jam-gallery-7.jpeg"
+                    alt="Preload campaign"
+                    width={10}
+                    height={10}
                     priority
-                    className="w-auto h-[82%] sm:h-[88%] object-contain drop-shadow-2xl z-10 hover:scale-105 transition-transform duration-500"
                   />
-                </motion.div>
-
-                {/* Realistic Natural Organic Stone Slab Pedestal (Replicates Reference Stone) */}
-                <div className="relative -mt-6 sm:-mt-8 w-[88%] sm:w-[94%] h-12 sm:h-14 rounded-[42px] bg-gradient-to-b from-[#E6E8E2] via-[#D5D8CF] to-[#B8BCB0] shadow-xl border border-stone-300/80 overflow-hidden flex items-center justify-center">
-                  {/* Natural Stone Speckles & Texture Highlights */}
-                  <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#8f9689_1px,transparent_1px)] [background-size:8px_8px]" />
-                  <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-white/70 to-transparent" />
-                  <div className="absolute bottom-0 left-0 w-full h-2 bg-stone-700/20 blur-xs" />
                 </div>
 
-                {/* Soft Contact Ambient Pedestal Floor Shadow */}
-                <div className="w-[78%] h-5 bg-stone-900/15 rounded-full blur-md -mt-2 pointer-events-none" />
+                {/* Cross-Fade Animated Poster Slide */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={CAMPAIGN_HERO_SLIDES[activeHeroSlide].id}
+                    initial={{ opacity: 0, scale: 1.03 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.6, ease: "easeInOut" }}
+                    className="absolute inset-0"
+                  >
+                    <Image
+                      src={CAMPAIGN_HERO_SLIDES[activeHeroSlide].src}
+                      alt={CAMPAIGN_HERO_SLIDES[activeHeroSlide].alt}
+                      fill
+                      priority
+                      className="object-cover object-center"
+                      sizes="(max-width: 768px) 100vw, 500px"
+                    />
 
-                {/* Thumbnail Preview Bar to inspect all authentic product views */}
-                <div className="flex items-center gap-2.5 mt-6 pt-2 z-20">
-                  {HERO_GALLERY.map((thumb, idx) => (
-                    <button
-                      key={thumb.src}
-                      type="button"
-                      onClick={() => setActiveHeroImageIndex(idx)}
-                      className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden border-2 transition-all p-1 bg-white ${
-                        activeHeroImageIndex === idx
-                          ? "border-[#cb0805] shadow-md scale-105"
-                          : "border-stone-200 opacity-70 hover:opacity-100"
-                      }`}
-                      aria-label={thumb.label}
-                    >
-                      <Image
-                        src={thumb.src}
-                        alt={thumb.label}
-                        fill
-                        className="object-contain p-0.5"
-                      />
-                    </button>
-                  ))}
+                    {/* Seamless Edge Fading Vignette Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/30 pointer-events-none" />
+                    <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/95 via-black/60 to-transparent pointer-events-none" />
+                    <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-black/30 to-transparent pointer-events-none" />
+                    <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-black/30 to-transparent pointer-events-none" />
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Top Controls: Interactive Switcher Pills (For Her / For Him) */}
+                <div className="absolute top-4 inset-x-4 z-20 flex items-center justify-between">
+                  <div className="inline-flex p-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 shadow-lg">
+                    {CAMPAIGN_HERO_SLIDES.map((slide, idx) => {
+                      const isActive = activeHeroSlide === idx;
+                      return (
+                        <button
+                          key={slide.id}
+                          type="button"
+                          onClick={() => setActiveHeroSlide(idx)}
+                          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                            isActive
+                              ? "bg-[#cb0805] text-white shadow-md"
+                              : "text-white/80 hover:text-white hover:bg-white/10"
+                          }`}
+                        >
+                          {slide.tag}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-[#1A2E22] text-[11px] font-bold shadow-md flex items-center gap-1.5">
+                    <span className="text-sm">🇹🇷</span>
+                    <span>Themra Original</span>
+                  </div>
+                </div>
+
+                {/* Bottom Overlay: Description & Slide Dots */}
+                <div className="absolute bottom-0 inset-x-0 p-5 sm:p-7 z-20 text-white flex flex-col justify-end">
+                  <div className="inline-flex items-center gap-2 mb-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#ff807e] bg-[#cb0805]/30 px-2.5 py-0.5 rounded-full border border-[#cb0805]/50 backdrop-blur-sm">
+                      {CAMPAIGN_HERO_SLIDES[activeHeroSlide].badge}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight">
+                    {CAMPAIGN_HERO_SLIDES[activeHeroSlide].headline}
+                  </h3>
+
+                  <p className="text-xs sm:text-sm text-stone-200 line-clamp-2 mt-1.5">
+                    {CAMPAIGN_HERO_SLIDES[activeHeroSlide].benefits[0]} • {CAMPAIGN_HERO_SLIDES[activeHeroSlide].benefits[1]}
+                  </p>
+
+                  {/* Slide Indicators & Auto-slide Dots */}
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/15">
+                    <div className="flex items-center gap-2">
+                      {CAMPAIGN_HERO_SLIDES.map((slide, idx) => (
+                        <button
+                          key={slide.id}
+                          type="button"
+                          onClick={() => setActiveHeroSlide(idx)}
+                          className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                            activeHeroSlide === idx
+                              ? "w-8 bg-[#cb0805]"
+                              : "w-2.5 bg-white/40 hover:bg-white/80"
+                          }`}
+                          aria-label={`Switch to ${slide.tag} slide`}
+                        />
+                      ))}
+                    </div>
+
+                    <span className="text-[11px] text-white/70 font-medium">
+                      Auto-slides • Hover to pause
+                    </span>
+                  </div>
                 </div>
               </div>
+
+              {/* Quick Persona Highlights Below Slider */}
+              <div className="flex items-center justify-center gap-3 mt-4 text-xs text-stone-500 font-medium">
+                <span className="inline-flex items-center gap-1">
+                  <Heart className="w-3.5 h-3.5 text-[#cb0805]" />
+                  Women&apos;s Sensitivity
+                </span>
+                <span className="text-stone-300">•</span>
+                <span className="inline-flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-[#cb0805]" />
+                  Men&apos;s 48h Endurance
+                </span>
+              </div>
+
             </div>
 
           </div>
