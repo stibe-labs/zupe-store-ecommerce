@@ -49,7 +49,7 @@ const HERO_PRODUCTS = [
     mrp: 4500,
     offerText: "2 Free Strips Included",
     servings: "Approx. 25–30 Doses",
-    src: "/tj/WhatsApp Image 2026-10-29 at 01.01.10.jpeg",
+    src: "/tj/turkiye-jam-model-female.jpeg",
     hotspots: [
       {
         id: 1,
@@ -92,7 +92,7 @@ const HERO_PRODUCTS = [
     mrp: 4500,
     offerText: "2 Free Strips Included",
     servings: "Approx. 25–30 Doses",
-    src: "/tj/WhatsApp Image 2026-10-29 at 00.42.29.jpeg",
+    src: "/tj/turkiye-jam-model-male.jpeg",
     hotspots: [
       {
         id: 1,
@@ -355,231 +355,64 @@ export function TurkiyeJamStorefront() {
     <div className="min-h-screen bg-[#faf9f6] text-stone-900 font-sans selection:bg-[#cb0805] selection:text-white">
       
       {/* ─────────────────────────────────────────────────────────────
-          1. HERO SECTION (FURNEXA LUXURY ARCHITECTURE)
+          1. FULL-SCREEN HERO SECTION (PURE IMAGE + ADD TO CART ONLY)
       ───────────────────────────────────────────────────────────── */}
-      <section className="relative w-full min-h-[90vh] md:min-h-[95vh] flex flex-col justify-between overflow-hidden bg-[#ebe8e3] text-stone-900">
+      <section className="relative w-full h-[75vh] sm:h-[85vh] md:h-[calc(100vh-100px)] min-h-[520px] max-h-[920px] flex flex-col justify-between overflow-hidden bg-[#fabf00] text-stone-900 select-none">
         
-        {/* Giant Furnexa Background Display Typography */}
-        <div className="absolute inset-x-0 top-4 sm:top-8 md:top-12 flex items-center justify-center pointer-events-none select-none z-0">
-          <span className="furnexa-hero-title text-[15vw] tracking-tighter text-stone-800/20 sm:text-stone-800/15">
-            TURKIYE JAM
-          </span>
+        {/* Full-Screen Edge-to-Edge Campaign Image (Switchable Her/Him) */}
+        <div className="absolute inset-0 w-full h-full">
+          <Image
+            key={currentHero.id}
+            src={currentHero.src}
+            alt={currentHero.name}
+            fill
+            priority
+            sizes="100vw"
+            className="object-contain md:object-cover object-center"
+          />
         </div>
 
-        {/* Ambient Top Light Beam */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4/5 h-96 bg-gradient-to-b from-white/70 to-transparent pointer-events-none blur-3xl z-0" />
-
-        {/* Center Stage: Authentic Campaign Poster Display with Interactive Hotspots */}
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-8 py-6 md:py-10">
-          
-          {/* Quick Gender Campaign Switcher Pills */}
-          <div className="flex items-center gap-2 mb-4 z-20">
+        {/* Top-Right Minimal Gender Switcher Pill */}
+        <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-8 pt-4 flex items-center justify-end">
+          <div className="flex items-center gap-1.5 p-1 rounded-full bg-black/65 backdrop-blur-xl border border-white/20 shadow-xl">
             {HERO_PRODUCTS.map((prod, idx) => (
               <button
                 key={prod.id}
-                onClick={() => {
-                  setActiveHotspot(null);
-                  setHeroProductIndex(idx);
-                }}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                type="button"
+                onClick={() => setHeroProductIndex(idx)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   heroProductIndex === idx
-                    ? "bg-[#cb0805] text-white shadow-lg shadow-[#cb0805]/30 scale-105"
-                    : "bg-white/80 hover:bg-white text-stone-800 border border-stone-300/80 backdrop-blur-md"
+                    ? "bg-[#cb0805] text-white shadow-md shadow-[#cb0805]/40"
+                    : "text-stone-300 hover:text-white hover:bg-white/10"
                 }`}
               >
-                <span className={`w-2 h-2 rounded-full ${heroProductIndex === idx ? "bg-white" : "bg-[#cb0805]"}`} />
-                <span>{prod.targetLabel}</span>
+                {prod.targetLabel}
               </button>
             ))}
           </div>
-
-          <div className="relative w-full max-w-4xl aspect-[16/9] max-h-[460px] sm:max-h-[520px] flex items-center justify-center">
-            
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentHero.id}
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.03 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl border border-stone-300/70 drop-shadow-[0_25px_40px_rgba(0,0,0,0.25)]"
-              >
-                {/* 16:9 Authentic Campaign Poster */}
-                <Image
-                  src={currentHero.src}
-                  alt={currentHero.name}
-                  fill
-                  priority
-                  className="object-cover object-center"
-                />
-
-                {/* ─── Interactive SVG Hotspot Pins on Poster Jar ─── */}
-                {currentHero.hotspots.map((hs) => {
-                  const isActive = activeHotspot === hs.id;
-                  const isRight = hs.direction === "right";
-
-                  return (
-                    <div
-                      key={hs.id}
-                      style={{ top: hs.top, left: hs.left }}
-                      className="absolute z-30"
-                    >
-                      {/* Pulsing Target Ring Button */}
-                      <button
-                        type="button"
-                        onClick={() => setActiveHotspot(isActive ? null : hs.id)}
-                        className="group relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/95 backdrop-blur-md shadow-lg border border-stone-300 hover:border-[#cb0805] hover:scale-110 transition-all cursor-pointer"
-                        aria-label={`Inspect ${hs.title}`}
-                      >
-                        <span className="absolute inset-0 rounded-full bg-[#cb0805]/30 animate-hotspot-ping" />
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#cb0805] transition-transform group-hover:scale-125" />
-                      </button>
-
-                      {/* Hairline Connecting Vector + Label */}
-                      <div
-                        className={`hidden md:flex items-center absolute top-1/2 -translate-y-1/2 pointer-events-none ${
-                          isRight
-                            ? "left-full pl-3 flex-row"
-                            : "right-full pr-3 flex-row-reverse"
-                        }`}
-                      >
-                        <div className="w-12 md:w-16 h-[1.5px] bg-stone-900/80" />
-                        <div className="w-1.5 h-1.5 rounded-full bg-stone-900" />
-                        <span className="mx-2 px-3 py-1 rounded-full bg-stone-950/90 backdrop-blur-md text-white text-[11px] font-semibold tracking-wide whitespace-nowrap shadow-lg">
-                          {hs.title}
-                        </span>
-                      </div>
-
-                      {/* Expanding Tooltip Modal on Click/Hover */}
-                      <AnimatePresence>
-                        {isActive && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                            transition={{ duration: 0.25 }}
-                            className="absolute z-40 w-64 sm:w-76 p-4 rounded-2xl bg-stone-950/95 text-white backdrop-blur-2xl border border-white/20 shadow-2xl right-0 mt-3 sm:right-10 sm:-top-6"
-                          >
-                            <div className="flex items-center justify-between gap-2 mb-1.5">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#ff807e]">
-                                {hs.subtitle}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveHotspot(null);
-                                }}
-                                className="text-stone-400 hover:text-white"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                            <h4 className="font-bold text-sm text-white mb-1">
-                              {hs.title}
-                            </h4>
-                            <p className="text-xs text-stone-300 leading-relaxed">
-                              {hs.desc}
-                            </p>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
-              </motion.div>
-            </AnimatePresence>
-          </div>
         </div>
 
-        {/* ─── Bottom Bar in Hero: Skateshop Product Card & Pill Carousel Controls ─── */}
-        <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-8 pb-8 pt-2 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
-          
-          {/* Bottom-Left Floating Product Card */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-stone-900/90 text-white backdrop-blur-xl border border-white/10 shadow-2xl max-w-md w-full">
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-stone-200 text-[10px] font-semibold tracking-wide uppercase">
-                {currentHero.subtitle}
-              </span>
-              <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                In Stock (Dispatches 24h)
-              </span>
-            </div>
-
-            <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white mb-1">
-              {currentHero.name}
-            </h3>
-            
-            <p className="text-xs text-stone-300 mb-3">
-              {currentHero.servings} • {currentHero.offerText}
-            </p>
-
-            <div className="flex items-baseline gap-2.5 mb-4">
-              <span className="text-3xl font-black text-white">
-                ₹{currentHero.price.toLocaleString("en-IN")}
-              </span>
-              <span className="text-xs text-stone-400 line-through">
-                ₹{currentHero.mrp.toLocaleString("en-IN")}
-              </span>
-              <span className="text-xs font-bold text-[#ff807e] ml-1 bg-[#cb0805]/20 px-2 py-0.5 rounded">
-                Save 35%
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  const target = TURKIYE_JAM_VARIANTS.find((v) => v.id === currentHero.variantId) || selectedVariant;
-                  handleBuyNow(target);
-                }}
-                className="flex-1 py-3 px-4 rounded-full bg-white text-stone-900 font-bold text-xs uppercase tracking-wider hover:bg-stone-200 transition-all active:scale-95 cursor-pointer text-center shadow-md"
-              >
-                Buy Now
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => {
-                  const target = TURKIYE_JAM_VARIANTS.find((v) => v.id === currentHero.variantId) || selectedVariant;
-                  handleAddToCart(target);
-                }}
-                className="py-3 px-5 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md shadow-[#cb0805]/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                aria-label="Add to cart"
-              >
-                <ShoppingBag className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Add</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Pill Slider Controls (←) (→) */}
-          <div className="flex items-center gap-3 self-end sm:self-auto">
-            <span className="text-xs font-semibold text-stone-600 hidden sm:inline">
-              0{heroProductIndex + 1} / 0{HERO_PRODUCTS.length}
-            </span>
-            <div className="flex items-center gap-2 bg-stone-900/80 backdrop-blur-md p-1.5 rounded-full border border-white/10 shadow-lg">
-              <button
-                type="button"
-                onClick={handlePrevHero}
-                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
-                aria-label="Previous Showcase Product"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={handleNextHero}
-                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
-                aria-label="Next Showcase Product"
-              >
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
+        {/* Bottom Floating Bar: ONLY "Add to Cart" Button */}
+        <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-8 pb-8 sm:pb-12 flex items-center justify-center">
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            type="button"
+            onClick={() => {
+              const target = TURKIYE_JAM_VARIANTS.find((v) => v.id === currentHero.variantId) || selectedVariant;
+              handleAddToCart(target);
+            }}
+            className="group px-8 sm:px-10 py-4 sm:py-4.5 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-black text-sm sm:text-base uppercase tracking-wider shadow-[0_20px_50px_rgba(203,8,5,0.45)] hover:shadow-[0_25px_60px_rgba(203,8,5,0.6)] flex items-center gap-3 transition-all cursor-pointer border border-white/20"
+            aria-label="Add to Cart"
+          >
+            <ShoppingBag className="w-5 h-5 transition-transform group-hover:scale-110" />
+            <span>Add to Cart</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
+            <span className="text-white/90 font-extrabold">₹{currentHero.price.toLocaleString("en-IN")}</span>
+            <span className="text-xs font-bold text-amber-200 hidden sm:inline">(+2 Free Strips)</span>
+          </motion.button>
         </div>
+
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
@@ -896,7 +729,7 @@ export function TurkiyeJamStorefront() {
               <div>
                 <div className="relative w-full h-56 mb-5 rounded-2xl overflow-hidden bg-stone-100 shadow-sm">
                   <Image
-                    src="/tj/WhatsApp Image 2026-10-29 at 00.42.29.jpeg"
+                    src="/tj/turkiye-jam-model-male.jpeg"
                     alt="Turkiye Jam For Men - Sustained Stamina"
                     fill
                     className="object-cover object-top hover:scale-105 transition-transform duration-500"
@@ -937,7 +770,7 @@ export function TurkiyeJamStorefront() {
               <div>
                 <div className="relative w-full h-56 mb-5 rounded-2xl overflow-hidden bg-stone-100 shadow-sm">
                   <Image
-                    src="/tj/WhatsApp Image 2026-10-29 at 01.01.10.jpeg"
+                    src="/tj/turkiye-jam-model-female.jpeg"
                     alt="Turkiye Jam For Women - Sensation & Libido"
                     fill
                     className="object-cover object-top hover:scale-105 transition-transform duration-500"
