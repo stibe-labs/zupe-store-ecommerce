@@ -141,6 +141,24 @@ p, li, span:not([class*="tracking"]), label, td, th, blockquote {
   animation-play-state: paused;
 }
 
+/* ─── TopBar Ticker Marquee (Balanced slow-medium speed) ─── */
+@keyframes topbar-ticker {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.animate-topbar-ticker {
+  display: flex;
+  width: max-content;
+  animation: topbar-ticker 28s linear infinite;
+  will-change: transform;
+}
+
+.animate-topbar-ticker:hover,
+.animate-topbar-ticker:active {
+  animation-play-state: paused;
+}
+
 /* ─── Shimmer Animation ─── */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
