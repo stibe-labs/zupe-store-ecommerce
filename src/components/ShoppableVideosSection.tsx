@@ -315,15 +315,15 @@ export function ShoppableVideosSection({
     };
   }, []);
 
-  // Increased mobile card size slightly (~25% wider and taller, perfectly proportional)
-  const mobileGap = 10;
+  // Exactly calculates card width so all 3 cards (left, center, right) fit 100% on mobile without cut-off
+  const mobileGap = 8;
   const mobileCardWidth =
     containerWidth > 0
-      ? Math.min(155, Math.max(120, (containerWidth - 20) / 2.55))
-      : 132;
+      ? Math.floor((containerWidth - 2 * mobileGap - 6) / 2.95)
+      : 110;
   const mobileStep = mobileCardWidth + mobileGap;
 
-  // Perfectly centers the active card in the viewport with symmetric peek on left & right
+  // Perfectly centers the active card in the viewport with symmetric margin on left & right
   const mobileBaseTranslateX =
     containerWidth > 0
       ? (containerWidth - mobileCardWidth) / 2 - mobileTrackIndex * mobileStep
@@ -405,7 +405,7 @@ export function ShoppableVideosSection({
     mobileCardVideoRefs.current.forEach((video, idx) => {
       if (!video) return;
       if (idx === mobileTrackIndex) {
-        video.muted = isCenterMuted;
+        video.muted = true;
         video.defaultMuted = true;
         const playPromise = video.play();
         if (playPromise !== undefined) {
@@ -427,7 +427,6 @@ export function ShoppableVideosSection({
     mobileTrackIndex,
     isSectionInView,
     activeModalVideoIndex,
-    isCenterMuted,
     displayMobileVideos,
   ]);
 
@@ -583,28 +582,6 @@ export function ShoppableVideosSection({
     }
   };
 
-  const toggleCenterMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const nextMuted = !isCenterMuted;
-    setIsCenterMuted(nextMuted);
-    const activeVid = mobileCardVideoRefs.current.get(mobileTrackIndex);
-    if (activeVid) {
-      activeVid.muted = nextMuted;
-    }
-  };
-
-  const toggleCenterPlayPause = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const activeVid = mobileCardVideoRefs.current.get(mobileTrackIndex);
-    if (!activeVid) return;
-    if (activeVid.paused) {
-      activeVid.play().catch(() => {});
-      setIsCenterPlaying(true);
-    } else {
-      activeVid.pause();
-      setIsCenterPlaying(false);
-    }
-  };
 
   const toggleDesktopMute = () => {
     const nextMuted = !isDesktopMuted;
@@ -962,16 +939,16 @@ export function ShoppableVideosSection({
 
   // ==========================================================
   // RENDER MOBILE VARIANT
-  // 3-in-1 3D Pop-Up Carousel with slightly increased video card size
-  // Red badge, views badge, and bottom product card REMOVED
-  // ONLY speaker mute/unmute icon and center play/pause button kept
+  // 3-in-1 Carousel: Fits 100% on mobile without side cut-off
+  // Pure, clean video: Pause button and speaker icon removed
+  // Continuous auto-moving and muted auto-play
   // ==========================================================
   return (
     <section
       ref={sectionRef}
-      className={`w-full max-w-[1600px] mx-auto px-4 sm:px-6 ${
-        showHeader ? "py-4 sm:py-8" : "py-2 sm:py-4"
-      } ${className}`}
+      className={`w-full max-w-[1600px] mx-auto ${
+        variant === "mobile" ? "px-0" : "px-4 sm:px-6"
+      } ${showHeader ? "py-4 sm:py-8" : "py-2 sm:py-4"} ${className}`}
     >
       {/* Section Header */}
       {showHeader && (
@@ -996,7 +973,7 @@ export function ShoppableVideosSection({
         {/* Carousel Sliding Viewport Container */}
         <div
           ref={mobileContainerRef}
-          className="relative w-full overflow-hidden py-5 sm:py-7 touch-pan-y select-none"
+          className="relative w-full overflow-hidden py-4 sm:py-6 touch-pan-y select-none"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => {
             setIsHovered(false);
@@ -1039,10 +1016,10 @@ export function ShoppableVideosSection({
                     width: `${mobileCardWidth}px`,
                     flexShrink: 0,
                   }}
-                  className={`relative aspect-[9/16] rounded-[20px] sm:rounded-[26px] overflow-hidden bg-slate-950 transition-all duration-500 ease-out select-none ${
+                  className={`relative aspect-[9/16] rounded-[18px] sm:rounded-[22px] overflow-hidden bg-slate-950 transition-all duration-500 ease-out select-none cursor-pointer ${
                     isCenter
-                      ? "scale-[1.08] z-20 shadow-[0_16px_36px_rgba(0,0,0,0.45)] border-2 border-white/80 ring-2 ring-black/10 cursor-pointer"
-                      : "scale-[0.92] z-10 opacity-75 hover:opacity-95 shadow-md border border-gray-200/60 cursor-pointer"
+                      ? "scale-[1.05] z-20 shadow-[0_12px_28px_rgba(0,0,0,0.35)] border-2 border-white/90 ring-1 ring-black/10"
+                      : "scale-[0.95] z-10 opacity-80 hover:opacity-100 shadow-sm border border-gray-200/60"
                   }`}
                 >
                   {/* Background Video Element or Poster */}
@@ -1058,7 +1035,7 @@ export function ShoppableVideosSection({
                         }}
                         src={vid.videoUrl}
                         poster={poster}
-                        muted={isCenter ? isCenterMuted : true}
+                        muted
                         loop
                         playsInline
                         preload="auto"
@@ -1070,48 +1047,6 @@ export function ShoppableVideosSection({
                         alt={vid.title}
                         className="w-full h-full object-cover pointer-events-none"
                       />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 pointer-events-none" />
-                  </div>
-
-                  {/* Top-Right: Speaker Mute / Unmute Button ONLY */}
-                  <div className="absolute top-2.5 right-2.5 z-20">
-                    {isCenter && (
-                      <button
-                        type="button"
-                        onClick={toggleCenterMute}
-                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/90 transition-all shadow-md active:scale-90 cursor-pointer"
-                        aria-label={isCenterMuted ? "Unmute video" : "Mute video"}
-                        title={isCenterMuted ? "Unmute" : "Mute"}
-                      >
-                        {isCenterMuted ? (
-                          <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-                        ) : (
-                          <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-                        )}
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Center Play/Pause Button */}
-                  <div className="absolute inset-0 z-10 flex items-center justify-center">
-                    {isCenter ? (
-                      <button
-                        type="button"
-                        onClick={toggleCenterPlayPause}
-                        className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/45 backdrop-blur-xs border border-white/40 text-white flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
-                        aria-label={isCenterPlaying ? "Pause video" : "Play video"}
-                      >
-                        {isCenterPlaying ? (
-                          <Pause className="w-4 h-4 sm:w-5 sm:h-5 fill-white text-white" />
-                        ) : (
-                          <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-white text-white ml-0.5" />
-                        )}
-                      </button>
-                    ) : (
-                      <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-black/40 backdrop-blur-xs border border-white/30 text-white flex items-center justify-center shadow-md">
-                        <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white text-white ml-0.5" />
-                      </div>
                     )}
                   </div>
                 </div>
