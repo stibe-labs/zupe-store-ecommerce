@@ -242,12 +242,17 @@ Please confirm priority delivery details.`;
   };
 
   return (
-    <div className="relative bg-[#FAFBF9] text-[#1D2B22] overflow-hidden selection:bg-[#cb0805] selection:text-white font-sans">
+    <div className="relative bg-[#070709] text-stone-100 overflow-hidden selection:bg-[#cb0805] selection:text-white font-sans min-h-screen">
+      {/* Ambient Liquid Glowing Orbs */}
+      <div className="fixed top-1/4 -left-48 w-[650px] h-[650px] rounded-full bg-[#cb0805]/10 blur-[150px] pointer-events-none -z-10" />
+      <div className="fixed bottom-1/4 -right-48 w-[650px] h-[650px] rounded-full bg-[#cb0805]/10 blur-[150px] pointer-events-none -z-10" />
+      <div className="fixed top-2/3 left-1/3 w-[500px] h-[500px] rounded-full bg-amber-500/5 blur-[160px] pointer-events-none -z-10" />
+
       {/* ─────────────────────────────────────────────────────────────
           1. HERO SECTION (Split Screen: Dark Left Content + Full Right Image Slider)
       ───────────────────────────────────────────────────────────── */}
       <section
-        className="relative bg-stone-950 text-white overflow-hidden"
+        className="relative bg-stone-950 text-white overflow-hidden border-b border-white/10"
         onMouseEnter={() => setIsSliderHovered(true)}
         onMouseLeave={() => setIsSliderHovered(false)}
       >
@@ -265,14 +270,14 @@ Please confirm priority delivery details.`;
         <div className="flex flex-col lg:flex-row min-h-[680px] lg:min-h-[760px] lg:h-[calc(100vh-80px)] lg:max-h-[880px] w-full">
           
           {/* ── LEFT HALF: Ultra-Minimal Dark Left Side with Just Add to Cart ── */}
-          <div className="w-full lg:w-1/2 flex items-center justify-center lg:justify-end px-6 sm:px-10 lg:px-16 xl:px-20 py-16 lg:py-24 bg-stone-950 relative z-10 order-2 lg:order-1">
+          <div className="w-full lg:w-1/2 flex items-center justify-center lg:justify-end px-6 sm:px-10 lg:px-16 xl:px-20 py-16 lg:py-24 bg-stone-950/90 backdrop-blur-2xl relative z-10 order-2 lg:order-1">
             <div className="w-full max-w-md space-y-6 text-center lg:text-left">
               
               <div>
-                <span className="text-xs font-semibold uppercase tracking-widest text-[#ff807e]">
+                <span className="text-xs font-semibold uppercase tracking-widest text-[#ff807e] px-3 py-1 rounded-full bg-[#cb0805]/15 border border-[#cb0805]/30 inline-block">
                   For Him &amp; Her • 48h Natural Action
                 </span>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mt-2 leading-tight font-sans">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mt-3 leading-tight font-sans">
                   Natural Stamina &amp;{" "}
                   <span className="text-[#ff807e] block sm:inline">Intimate Vitality</span>
                 </h1>
@@ -283,6 +288,9 @@ Please confirm priority delivery details.`;
                   </span>
                   <span className="text-base text-stone-500 line-through">
                     ₹{selectedVariant.mrp.toLocaleString()}
+                  </span>
+                  <span className="text-xs font-bold text-[#ff807e] bg-[#cb0805]/20 px-2.5 py-0.5 rounded-full border border-[#cb0805]/30">
+                    Special Offer
                   </span>
                 </div>
               </div>
@@ -389,173 +397,123 @@ Please confirm priority delivery details.`;
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. STAT COUNTER BANNER (Matches Reference Counter Strip)
+          2. STAT COUNTER BANNER (Floating Liquid Glass Strip)
       ───────────────────────────────────────────────────────────── */}
-      <section className="bg-white border-y border-stone-200/80 py-10 sm:py-12 relative z-10">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-stone-100">
-            
-            <div className="pt-4 md:pt-0">
-              <div className="text-3xl sm:text-4xl font-extrabold text-[#1A2E22] tracking-tight font-sans">
-                25,356
-              </div>
-              <div className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
-                Happy Customers Across India
-              </div>
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 my-10 sm:my-14 relative z-10">
+        <div className="liquid-glass-elevated rounded-3xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-white/10">
+          
+          <div className="pt-4 md:pt-0">
+            <div className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
+              25,356+
             </div>
-
-            <div className="pt-4 md:pt-0">
-              <div className="text-3xl sm:text-4xl font-extrabold text-[#cb0805] tracking-tight font-sans">
-                6,050+
-              </div>
-              <div className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
-                5-Star Verified Reviews
-              </div>
+            <div className="text-xs sm:text-sm text-stone-400 font-medium mt-1">
+              Happy Couples Across India
             </div>
-
-            <div className="pt-4 md:pt-0">
-              <div className="text-3xl sm:text-4xl font-extrabold text-[#1A2E22] tracking-tight font-sans">
-                100%
-              </div>
-              <div className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
-                Authentic Turkish Import Guarantee
-              </div>
-            </div>
-
-            <div className="pt-4 md:pt-0">
-              <div className="text-3xl sm:text-4xl font-extrabold text-[#cb0805] tracking-tight font-sans">
-                98.7%
-              </div>
-              <div className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
-                Customer Satisfaction &amp; Re-Order Rate
-              </div>
-            </div>
-
           </div>
+
+          <div className="pt-4 md:pt-0">
+            <div className="text-3xl sm:text-4xl font-extrabold text-[#ff807e] tracking-tight font-sans">
+              6,050+
+            </div>
+            <div className="text-xs sm:text-sm text-stone-400 font-medium mt-1">
+              5-Star Verified Reviews
+            </div>
+          </div>
+
+          <div className="pt-4 md:pt-0">
+            <div className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
+              100%
+            </div>
+            <div className="text-xs sm:text-sm text-stone-400 font-medium mt-1">
+              Authentic Turkish Import
+            </div>
+          </div>
+
+          <div className="pt-4 md:pt-0">
+            <div className="text-3xl sm:text-4xl font-extrabold text-[#ff807e] tracking-tight font-sans">
+              98.7%
+            </div>
+            <div className="text-xs sm:text-sm text-stone-400 font-medium mt-1">
+              Satisfaction &amp; Re-Order Rate
+            </div>
+          </div>
+
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. "WHY TURKIYE JAM?" (Feature Grid Matching Reference)
+          3. "WHY TURKIYE JAM?" (Apple-Style Liquid Bento Grid)
       ───────────────────────────────────────────────────────────── */}
-      <section id="benefits" className="py-20 sm:py-28 bg-[#FAFBF9] relative">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-16">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[#1A2E22] font-sans">
-            WHY TURKIYE JAM?
+      <section id="benefits" className="py-16 sm:py-24 relative">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-14">
+          <span className="text-xs font-bold uppercase tracking-widest text-[#ff807e] bg-[#cb0805]/15 border border-[#cb0805]/30 px-3 py-1 rounded-full inline-block mb-3">
+            Pure Botanical Alchemy
+          </span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white font-sans">
+            Why Choose Turkiye Jam?
           </h2>
-          <p className="text-sm sm:text-base text-stone-600 mt-3 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base text-stone-300 mt-3 max-w-2xl mx-auto leading-relaxed">
             Crafted strictly according to traditional Ottoman herbal compounding, certified 100% natural without synthetic stimulants or chemical additives.
           </p>
         </div>
 
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 text-center">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             
-            {/* Feature 1: Natural */}
-            <div className="flex flex-col items-center p-8 rounded-2xl bg-white border border-stone-200/70 shadow-xs hover:shadow-md transition-shadow">
-              <div className="w-16 h-16 rounded-full bg-[#fdf2f2] flex items-center justify-center text-[#cb0805] mb-5 border border-[#cb0805]/20">
-                <Leaf className="w-8 h-8 stroke-[1.75]" />
-              </div>
-              <h3 className="text-lg font-bold text-[#1A2E22] mb-2">
-                100% Natural Botanicals
-              </h3>
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
-                Compounded with wild Epimedium, Red Ginseng, Ginkgo Biloba, Royal Jelly, and pure Anatolian blossom honey to promote organic, sustained energy.
-              </p>
-            </div>
-
-            {/* Feature 2: No Side Effect */}
-            <div className="flex flex-col items-center p-8 rounded-2xl bg-white border border-stone-200/70 shadow-xs hover:shadow-md transition-shadow">
-              <div className="w-16 h-16 rounded-full bg-[#fdf2f2] flex items-center justify-center text-[#cb0805] mb-5 border border-[#cb0805]/20">
-                <ShieldCheck className="w-8 h-8 stroke-[1.75]" />
-              </div>
-              <h3 className="text-lg font-bold text-[#1A2E22] mb-2">
-                Zero Side Effects
-              </h3>
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
-                Zero synthetic chemicals, pharmaceutical drugs, or harmful additives. Works gently and safely with your natural physiology for enduring endurance.
-              </p>
-            </div>
-
-            {/* Feature 3: 100% Organic Origin */}
-            <div className="flex flex-col items-center p-8 rounded-2xl bg-white border border-stone-200/70 shadow-xs hover:shadow-md transition-shadow">
-              <div className="w-16 h-16 rounded-full bg-[#fdf2f2] flex items-center justify-center text-[#cb0805] mb-5 border border-[#cb0805]/20">
-                <Award className="w-8 h-8 stroke-[1.75]" />
-              </div>
-              <h3 className="text-lg font-bold text-[#1A2E22] mb-2">
-                100% Turkish Import
-              </h3>
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
-                Directly imported from Turkey with authentic Themra holographic security seal. Certified under Turkish Food Codex regulations for utmost purity.
-              </p>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────────────────────────────────────────────────────────
-          4. "ABOUT US" (Ottoman Botanical Story + Pedestal)
-      ───────────────────────────────────────────────────────────── */}
-      <section id="story" className="py-20 sm:py-28 bg-[#FAF7F5] border-y border-stone-200/70 relative overflow-hidden">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-            
-            {/* Left Column: Narrative */}
-            <div className="lg:col-span-6 space-y-6">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805]">
-                Ancient Heritage &bull; Modern Vitality
-              </span>
-
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1A2E22] tracking-tight leading-tight font-sans">
-                ABOUT THEMRA MACUN
-              </h2>
-
-              <p className="text-sm sm:text-base text-stone-600 leading-relaxed">
-                For centuries across the Ottoman Empire, revered herbal alchemists formulated natural botanical pastes known as <em>Macun</em>. These nutrient-dense compounds combined Anatolian mountain honey with potent aphrodisiac botanicals to invigorate the body, balance reproductive vitality, and fuel enduring physical stamina.
-              </p>
-
-              <p className="text-sm sm:text-base text-stone-600 leading-relaxed">
-                Today, Themra continues this royal botanical tradition. Our Epimedium Herbal Macun is revered by couples worldwide for its balanced dual-action effect: enhancing physical firmness and rapid recovery for men, while naturally heightening sensitivity and intimate pleasure for women.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  className="py-3.5 px-7 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-semibold text-sm shadow-sm transition-all active:scale-98"
-                >
-                  Buy Now &bull; ₹{selectedVariant.price}
-                </button>
-
-                <a
-                  href="#usage"
-                  className="py-3.5 px-6 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-800 font-semibold text-sm transition-colors"
-                >
-                  View Usage Guide
-                </a>
-              </div>
-            </div>
-
-            {/* Right Column: Secondary Pedestal Shot with Dot Grid */}
-            <div className="lg:col-span-6 relative flex justify-center items-center">
-              {/* Subtle Decorative Geometric Dot Grid (Matches Reference Mockup) */}
-              <div className="absolute top-2 right-4 sm:right-10 w-24 h-24 text-stone-400/50 [background-image:radial-gradient(currentColor_1.5px,transparent_1.5px)] [background-size:12px_12px] pointer-events-none" />
-
-              <div className="relative w-full max-w-[420px] flex flex-col items-center">
-                <div className="relative w-full aspect-square flex items-center justify-center">
-                  <Image
-                    src="/tj/turkiye-jam-gallery-3.jpeg"
-                    alt="Themra Turkiye Jam Botanical Display"
-                    width={420}
-                    height={420}
-                    className="w-[84%] h-auto object-contain rounded-2xl shadow-xl z-10"
-                  />
+            {/* Bento Card 1: 100% Natural Botanicals */}
+            <div className="liquid-glass-elevated rounded-3xl p-8 hover:border-[#cb0805]/50 transition-all group flex flex-col justify-between">
+              <div>
+                <div className="w-14 h-14 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 flex items-center justify-center text-[#ff807e] mb-6 shadow-[0_0_25px_rgba(203,8,5,0.3)] group-hover:scale-105 transition-transform">
+                  <Leaf className="w-7 h-7 stroke-[2]" />
                 </div>
+                <h3 className="text-xl font-bold text-white mb-2.5">
+                  100% Natural Botanicals
+                </h3>
+                <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
+                  Compounded with wild Epimedium, Red Ginseng, Ginkgo Biloba, Royal Jelly, and pure Anatolian blossom honey to promote organic, sustained energy.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-2 text-xs text-[#ff807e] font-semibold">
+                <CheckCircle2 className="w-4 h-4 text-[#cb0805]" />
+                <span>Zero Synthetic Stimulants</span>
+              </div>
+            </div>
 
-                {/* Pedestal Rock Base */}
-                <div className="relative -mt-6 w-[86%] h-10 rounded-[30px] bg-gradient-to-b from-[#E6E8E2] to-[#BDC2B6] shadow-lg border border-stone-300/80" />
-                <div className="w-[70%] h-4 bg-stone-900/15 rounded-full blur-sm -mt-1.5" />
+            {/* Bento Card 2: Zero Side Effects */}
+            <div className="liquid-glass-elevated rounded-3xl p-8 hover:border-[#cb0805]/50 transition-all group flex flex-col justify-between">
+              <div>
+                <div className="w-14 h-14 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 flex items-center justify-center text-[#ff807e] mb-6 shadow-[0_0_25px_rgba(203,8,5,0.3)] group-hover:scale-105 transition-transform">
+                  <ShieldCheck className="w-7 h-7 stroke-[2]" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2.5">
+                  Zero Side Effects
+                </h3>
+                <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
+                  Zero synthetic chemicals, pharmaceutical drugs, or harmful additives. Works gently and safely with your natural physiology for enduring stamina.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-2 text-xs text-[#ff807e] font-semibold">
+                <CheckCircle2 className="w-4 h-4 text-[#cb0805]" />
+                <span>Natural Endocrine Balance</span>
+              </div>
+            </div>
+
+            {/* Bento Card 3: 100% Turkish Import */}
+            <div className="liquid-glass-elevated rounded-3xl p-8 hover:border-[#cb0805]/50 transition-all group flex flex-col justify-between">
+              <div>
+                <div className="w-14 h-14 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 flex items-center justify-center text-[#ff807e] mb-6 shadow-[0_0_25px_rgba(203,8,5,0.3)] group-hover:scale-105 transition-transform">
+                  <Award className="w-7 h-7 stroke-[2]" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2.5">
+                  100% Turkish Import
+                </h3>
+                <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
+                  Directly imported from Turkey with authentic Themra holographic security seal. Certified under Turkish Food Codex regulations for utmost purity.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-2 text-xs text-[#ff807e] font-semibold">
+                <CheckCircle2 className="w-4 h-4 text-[#cb0805]" />
+                <span>Themra Original Guarantee</span>
               </div>
             </div>
 
@@ -564,22 +522,22 @@ Please confirm priority delivery details.`;
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          5. "OUR PACKAGES" (Interactive Format Selector)
+          4. "OUR PACKAGES" (Liquid Glass Package Cards)
       ───────────────────────────────────────────────────────────── */}
-      <section id="offers" className="py-20 sm:py-28 bg-[#FAFBF9]">
+      <section id="offers" className="py-16 sm:py-24 relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-14">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805] block mb-2">
-            Limited Period Promotional Offers
+          <span className="text-xs font-bold uppercase tracking-widest text-[#ff807e] bg-[#cb0805]/15 border border-[#cb0805]/30 px-3 py-1 rounded-full inline-block mb-3">
+            Limited Promotional Offers
           </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A2E22] tracking-tight font-sans">
-            OUR PACKAGES
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight font-sans">
+            Select Your Package
           </h2>
-          <p className="text-sm sm:text-base text-stone-600 mt-2">
+          <p className="text-sm sm:text-base text-stone-300 mt-2">
             Choose between our high-value 240g Glass Jar or convenient single-dose sachet strip packs.
           </p>
         </div>
 
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {TURKIYE_JAM_VARIANTS.map((variant) => {
               const isSelected = selectedVariant.id === variant.id;
@@ -590,58 +548,58 @@ Please confirm priority delivery details.`;
                 <div
                   key={variant.id}
                   onClick={() => handleSelectVariant(variant)}
-                  className={`cursor-pointer rounded-2xl p-6 sm:p-7 border transition-all relative flex flex-col justify-between ${
+                  className={`cursor-pointer rounded-3xl p-6 sm:p-7 border transition-all relative flex flex-col justify-between ${
                     isSelected
-                      ? "bg-white border-[#cb0805] shadow-xl ring-2 ring-[#cb0805]/20"
-                      : "bg-white/80 hover:bg-white border-stone-200 shadow-xs hover:shadow-md"
+                      ? "liquid-glass-red border-[#cb0805] shadow-[0_20px_60px_-10px_rgba(203,8,5,0.45)] ring-2 ring-[#cb0805]/40"
+                      : "liquid-glass-elevated hover:border-white/25"
                   }`}
                 >
                   {/* Top Badges */}
                   <div className="flex items-center justify-between mb-4">
                     {variant.badge ? (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-[#cb0805] text-white shadow-xs">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-[#cb0805] text-white shadow-md shadow-[#cb0805]/30">
                         <Gift className="w-3.5 h-3.5" />
                         {variant.badge}
                       </span>
                     ) : (
-                      <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+                      <span className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
                         {variant.unitCount} {variant.format}
                       </span>
                     )}
 
-                    <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                    <span className="text-xs font-bold text-[#ff807e] bg-[#cb0805]/20 px-2.5 py-0.5 rounded-full border border-[#cb0805]/40">
                       Save {savingsPercent}%
                     </span>
                   </div>
 
                   {/* Product Visual */}
-                  <div className="relative w-full aspect-[4/3] flex items-center justify-center my-2">
+                  <div className="relative w-full aspect-[4/3] flex items-center justify-center my-3">
                     <Image
                       src={variant.image}
                       alt={variant.name}
                       width={280}
                       height={210}
-                      className="max-h-full w-auto object-contain hover:scale-105 transition-transform"
+                      className="max-h-full w-auto object-contain hover:scale-105 transition-transform drop-shadow-2xl"
                     />
                   </div>
 
                   {/* Title & Description */}
                   <div className="mt-3">
-                    <h3 className="text-lg font-extrabold text-[#1A2E22]">
+                    <h3 className="text-lg font-extrabold text-white">
                       {variant.name}
                     </h3>
-                    <p className="text-xs text-stone-500 mt-1 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-stone-300 mt-1 line-clamp-2 leading-relaxed">
                       {variant.description}
                     </p>
                   </div>
 
                   {/* Pricing & CTA */}
-                  <div className="pt-5 mt-4 border-t border-stone-100 flex items-center justify-between gap-4">
+                  <div className="pt-5 mt-4 border-t border-white/10 flex items-center justify-between gap-4">
                     <div>
-                      <div className="text-2xl font-black text-[#1A2E22]">
+                      <div className="text-2xl font-black text-white">
                         ₹{variant.price.toLocaleString()}
                       </div>
-                      <div className="text-xs text-stone-400 line-through">
+                      <div className="text-xs text-stone-500 line-through">
                         MRP ₹{variant.mrp.toLocaleString()}
                       </div>
                     </div>
@@ -653,10 +611,10 @@ Please confirm priority delivery details.`;
                         handleSelectVariant(variant);
                         handleAddToCart();
                       }}
-                      className={`px-5 py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all ${
+                      className={`px-5 py-2.5 rounded-full font-bold text-xs tracking-wide transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-[#cb0805] hover:bg-[#a80604] text-white shadow-sm"
-                          : "bg-stone-100 hover:bg-[#cb0805] text-stone-800 hover:text-white"
+                          ? "bg-[#cb0805] hover:bg-[#a80604] text-white shadow-lg shadow-[#cb0805]/40 hover:scale-105"
+                          : "bg-white/10 hover:bg-[#cb0805] text-white"
                       }`}
                     >
                       {isSelected ? "Add to Cart" : "Select & Add"}
@@ -670,32 +628,98 @@ Please confirm priority delivery details.`;
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          6. "TESTIMONIALS" (Matching Reference Review Layout)
+          5. HERITAGE & SCIENCE (Liquid Showcase Bento)
       ───────────────────────────────────────────────────────────── */}
-      <section id="reviews" className="py-20 sm:py-28 bg-[#FAF7F5] border-y border-stone-200/80">
+      <section id="story" className="py-16 sm:py-24 relative overflow-hidden border-y border-white/10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+            
+            {/* Left Column: Narrative */}
+            <div className="lg:col-span-6 space-y-6">
+              <span className="text-xs font-bold uppercase tracking-widest text-[#ff807e] bg-[#cb0805]/15 border border-[#cb0805]/30 px-3 py-1 rounded-full inline-block">
+                Ancient Heritage &bull; Modern Vitality
+              </span>
+
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight font-sans">
+                About Themra Macun
+              </h2>
+
+              <p className="text-sm sm:text-base text-stone-300 leading-relaxed">
+                For centuries across the Ottoman Empire, revered herbal alchemists formulated natural botanical pastes known as <em>Macun</em>. These nutrient-dense compounds combined Anatolian mountain honey with potent aphrodisiac botanicals to invigorate the body, balance reproductive vitality, and fuel enduring physical stamina.
+              </p>
+
+              <p className="text-sm sm:text-base text-stone-300 leading-relaxed">
+                Today, Themra continues this royal botanical tradition. Our Epimedium Herbal Macun is revered by couples worldwide for its balanced dual-action effect: enhancing physical firmness and rapid recovery for men, while naturally heightening sensitivity and intimate pleasure for women.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4 pt-2">
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className="py-3.5 px-7 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-sm shadow-xl shadow-[#cb0805]/30 transition-all active:scale-95 cursor-pointer"
+                >
+                  Buy Now &bull; ₹{selectedVariant.price}
+                </button>
+
+                <a
+                  href="#usage"
+                  className="py-3.5 px-6 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-white font-semibold text-sm transition-colors"
+                >
+                  View Usage Guide
+                </a>
+              </div>
+            </div>
+
+            {/* Right Column: Liquid Pedestal Showcase */}
+            <div className="lg:col-span-6 relative flex justify-center items-center">
+              <div className="liquid-glass-elevated rounded-3xl p-6 sm:p-8 w-full max-w-[420px] flex flex-col items-center relative group">
+                <div className="relative w-full aspect-square flex items-center justify-center">
+                  <Image
+                    src="/tj/turkiye-jam-gallery-3.jpeg"
+                    alt="Themra Turkiye Jam Botanical Display"
+                    width={400}
+                    height={400}
+                    className="w-[90%] h-auto object-contain rounded-2xl drop-shadow-2xl z-10 group-hover:scale-105 transition-transform"
+                  />
+                </div>
+                <div className="mt-4 text-center">
+                  <div className="text-sm font-bold text-white">Authentic Botanical Composition</div>
+                  <div className="text-xs text-[#ff807e] font-semibold mt-0.5">Themra Turkey Certified Import</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          6. "TESTIMONIALS" (Liquid Glass Review Cards)
+      ───────────────────────────────────────────────────────────── */}
+      <section id="reviews" className="py-16 sm:py-24 relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-14">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805] block mb-2">
+          <span className="text-xs font-bold uppercase tracking-widest text-[#ff807e] bg-[#cb0805]/15 border border-[#cb0805]/30 px-3 py-1 rounded-full inline-block mb-3">
             Real Customer Experiences
           </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A2E22] tracking-tight font-sans">
-            TESTIMONIALS
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight font-sans">
+            What Customers Say
           </h2>
-          <p className="text-sm sm:text-base text-stone-600 mt-2">
-            Read verified feedback from couples and wellness seekers across Kerala and India.
+          <p className="text-sm sm:text-base text-stone-300 mt-2">
+            Verified feedback from couples and wellness seekers across Kerala and India.
           </p>
         </div>
 
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {TESTIMONIALS.map((t, idx) => (
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            {TESTIMONIALS.map((t) => (
               <div
                 key={t.name}
-                className="bg-white rounded-2xl p-7 border border-stone-200/80 shadow-xs flex flex-col justify-between relative"
+                className="liquid-glass-elevated rounded-3xl p-7 border border-white/10 flex flex-col justify-between hover:border-white/20 transition-all"
               >
                 <div>
                   {/* Rating Stars & Quote Icon */}
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-1 text-amber-500">
+                    <div className="flex items-center gap-1 text-amber-400">
                       {[...Array(t.rating)].map((_, i) => (
                         <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                       ))}
@@ -705,13 +729,13 @@ Please confirm priority delivery details.`;
                     </span>
                   </div>
 
-                  <p className="text-sm text-stone-700 leading-relaxed italic mb-6">
+                  <p className="text-sm text-stone-300 leading-relaxed italic mb-6">
                     &ldquo;{t.text}&rdquo;
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-stone-100 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden relative shrink-0 border border-stone-200">
+                <div className="pt-4 border-t border-white/10 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden relative shrink-0 border border-white/20">
                     <Image
                       src={t.avatar}
                       alt={t.name}
@@ -720,8 +744,8 @@ Please confirm priority delivery details.`;
                     />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-stone-900">{t.name}</div>
-                    <div className="text-[11px] text-[#cb0805] font-medium flex items-center gap-1">
+                    <div className="text-xs font-bold text-white">{t.name}</div>
+                    <div className="text-[11px] text-[#ff807e] font-medium flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3 text-[#cb0805]" />
                       {t.location} &bull; {t.package}
                     </div>
@@ -734,79 +758,77 @@ Please confirm priority delivery details.`;
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          7. BRAND CERTIFICATION / TRUST BAR
+          7. BRAND TRUST & CERTIFICATION RIBBON (Liquid Capsule)
       ───────────────────────────────────────────────────────────── */}
-      <section className="py-12 bg-white border-b border-stone-200/80">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="flex flex-wrap items-center justify-around gap-6 sm:gap-10 text-stone-500 text-xs sm:text-sm font-semibold uppercase tracking-wider">
-            <span className="inline-flex items-center gap-2">
-              <Award className="w-5 h-5 text-[#cb0805]" />
-              Halal Certified
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-[#cb0805]" />
-              ISO 22000 Standard
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-[#cb0805]" />
-              Turkish Ministry of Food Codex
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <Leaf className="w-5 h-5 text-[#cb0805]" />
-              100% Herbal &bull; No Synthetic Drug
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <Package className="w-5 h-5 text-[#cb0805]" />
-              Discreet Plain Box Packaging
-            </span>
-          </div>
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 my-10 relative z-10">
+        <div className="liquid-glass rounded-full px-6 py-4 flex flex-wrap items-center justify-around gap-6 text-stone-300 text-xs sm:text-sm font-semibold uppercase tracking-wider">
+          <span className="inline-flex items-center gap-2">
+            <Award className="w-4 h-4 text-[#ff807e]" />
+            Halal Certified
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-[#ff807e]" />
+            ISO 22000 Standard
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-[#ff807e]" />
+            Turkish Food Codex
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <Leaf className="w-4 h-4 text-[#ff807e]" />
+            100% Herbal Formula
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <Package className="w-4 h-4 text-[#ff807e]" />
+            100% Discreet Packaging
+          </span>
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          8. HOW TO USE & INGREDIENTS
+          8. HOW TO USE TURKIYE JAM (3-Step Liquid Bento)
       ───────────────────────────────────────────────────────────── */}
-      <section id="usage" className="py-20 sm:py-28 bg-[#FAFBF9]">
+      <section id="usage" className="py-16 sm:py-24 relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-14">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805] block mb-2">
+          <span className="text-xs font-bold uppercase tracking-widest text-[#ff807e] bg-[#cb0805]/15 border border-[#cb0805]/30 px-3 py-1 rounded-full inline-block mb-3">
             Safe &bull; Effective &bull; Easy to Use
           </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A2E22] tracking-tight font-sans">
-            HOW TO USE TURKIYE JAM
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight font-sans">
+            How to Use Turkiye Jam
           </h2>
-          <p className="text-sm sm:text-base text-stone-600 mt-2">
+          <p className="text-sm sm:text-base text-stone-300 mt-2">
             Simple dosage instructions for optimal vitality and endurance.
           </p>
         </div>
 
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-7 rounded-2xl border border-stone-200/80 shadow-xs">
-              <div className="w-10 h-10 rounded-xl bg-[#cb0805]/10 text-[#cb0805] font-bold text-lg flex items-center justify-center mb-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            <div className="liquid-glass-elevated p-8 rounded-3xl">
+              <div className="w-12 h-12 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 text-[#ff807e] font-extrabold text-lg flex items-center justify-center mb-5 shadow-[0_0_20px_rgba(203,8,5,0.3)]">
                 1
               </div>
-              <h3 className="font-bold text-[#1A2E22] text-base mb-2">Recommended Dosage</h3>
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+              <h3 className="font-bold text-white text-base mb-2">Recommended Dosage</h3>
+              <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
                 Take <strong>half a teaspoon</strong> from the 240g jar (stir jar thoroughly before scooping) or <strong>1 single-dose sachet strip</strong>.
               </p>
             </div>
 
-            <div className="bg-white p-7 rounded-2xl border border-stone-200/80 shadow-xs">
-              <div className="w-10 h-10 rounded-xl bg-[#cb0805]/10 text-[#cb0805] font-bold text-lg flex items-center justify-center mb-4">
+            <div className="liquid-glass-elevated p-8 rounded-3xl">
+              <div className="w-12 h-12 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 text-[#ff807e] font-extrabold text-lg flex items-center justify-center mb-5 shadow-[0_0_20px_rgba(203,8,5,0.3)]">
                 2
               </div>
-              <h3 className="font-bold text-[#1A2E22] text-base mb-2">Timing &amp; Consumption</h3>
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+              <h3 className="font-bold text-white text-base mb-2">Timing &amp; Consumption</h3>
+              <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
                 Consume <strong>30 to 45 minutes</strong> prior to intimate activity. Drink one full glass of warm water or milk after taking it.
               </p>
             </div>
 
-            <div className="bg-white p-7 rounded-2xl border border-stone-200/80 shadow-xs">
-              <div className="w-10 h-10 rounded-xl bg-[#cb0805]/10 text-[#cb0805] font-bold text-lg flex items-center justify-center mb-4">
+            <div className="liquid-glass-elevated p-8 rounded-3xl">
+              <div className="w-12 h-12 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 text-[#ff807e] font-extrabold text-lg flex items-center justify-center mb-5 shadow-[0_0_20px_rgba(203,8,5,0.3)]">
                 3
               </div>
-              <h3 className="font-bold text-[#1A2E22] text-base mb-2">Long-Lasting Vitality</h3>
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+              <h3 className="font-bold text-white text-base mb-2">Long-Lasting Vitality</h3>
+              <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
                 Noticeable physical stamina, readiness, and intimate energy remain active for up to <strong>24 to 48 hours</strong>. Do not exceed 1 dose in 24 hours.
               </p>
             </div>
@@ -815,13 +837,13 @@ Please confirm priority delivery details.`;
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          9. QUICK ORDER & CONSULTATION BANNER (Split Card)
+          9. QUICK ORDER & CONSULTATION (Liquid Card)
       ───────────────────────────────────────────────────────────── */}
-      <section className="py-16 sm:py-24 bg-[#fdf2f2]">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-3xl p-8 sm:p-12 border border-[#cb0805]/20 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <section className="py-16 sm:py-20 relative">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="liquid-glass-elevated rounded-3xl p-8 sm:p-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border border-white/15">
             
-            {/* Left: Product preview on pedestal */}
+            {/* Left: Product preview */}
             <div className="lg:col-span-5 flex flex-col items-center justify-center">
               <div className="relative w-64 h-56 flex items-center justify-center">
                 <Image
@@ -829,27 +851,26 @@ Please confirm priority delivery details.`;
                   alt="Turkiye Jam Quick Order"
                   width={260}
                   height={220}
-                  className="object-contain max-h-full z-10 drop-shadow-lg"
+                  className="object-contain max-h-full z-10 drop-shadow-2xl"
                 />
               </div>
-              <div className="w-48 h-6 rounded-full bg-gradient-to-b from-[#E6E8E2] to-[#BDC2B6] border border-stone-300 shadow-md -mt-2" />
             </div>
 
             {/* Right: Quick Order Form */}
             <div className="lg:col-span-7 space-y-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#cb0805]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#ff807e]">
                 Express Consultation &bull; 1-Click Ordering
               </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1A2E22] tracking-tight font-sans">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-sans">
                 Ready to Experience Turkiye Jam?
               </h2>
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
                 Have questions regarding dosage or privacy? Enter your WhatsApp phone number for instant consultation with our discreet customer support team.
               </p>
 
               {quickOrderSuccess ? (
-                <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-[#cb0805] shrink-0" />
+                <div className="p-4 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 text-white text-xs sm:text-sm font-semibold flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-[#ff807e] shrink-0" />
                   <span>Connecting you to WhatsApp care now...</span>
                 </div>
               ) : (
@@ -860,11 +881,11 @@ Please confirm priority delivery details.`;
                     value={quickOrderPhone}
                     onChange={(e) => setQuickOrderPhone(e.target.value)}
                     required
-                    className="flex-1 px-4 py-3.5 rounded-xl border border-stone-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#cb0805] focus:border-transparent"
+                    className="flex-1 px-5 py-3.5 rounded-full bg-white/5 border border-white/15 text-white placeholder-stone-500 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#cb0805] focus:border-transparent"
                   />
                   <button
                     type="submit"
-                    className="py-3.5 px-6 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2"
+                    className="py-3.5 px-7 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-sm transition-all shadow-lg shadow-[#cb0805]/30 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <MessageCircle className="w-4 h-4" />
                     <span>Connect WhatsApp</span>
@@ -878,36 +899,40 @@ Please confirm priority delivery details.`;
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          10. FREQUENTLY ASKED QUESTIONS
+          10. FREQUENTLY ASKED QUESTIONS (Liquid Glass Accordion)
       ───────────────────────────────────────────────────────────── */}
-      <section id="faq" className="py-20 sm:py-28 bg-[#FAFBF9]">
+      <section id="faq" className="py-16 sm:py-24 relative">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805] block mb-2">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#ff807e] bg-[#cb0805]/15 border border-[#cb0805]/30 px-3 py-1 rounded-full inline-block mb-2">
               Got Questions?
             </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1A2E22] tracking-tight font-sans">
-              FREQUENTLY ASKED QUESTIONS
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
+              Frequently Asked Questions
             </h2>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             {FAQS.map((faq, index) => {
               const isOpen = openFaqIndex === index;
               return (
                 <div
                   key={faq.q}
-                  className="rounded-2xl border border-stone-200/80 bg-white overflow-hidden shadow-xs transition-all"
+                  className={`rounded-2xl border transition-all overflow-hidden ${
+                    isOpen
+                      ? "liquid-glass-red border-[#cb0805]/50 shadow-[0_10px_30px_rgba(203,8,5,0.2)]"
+                      : "liquid-glass-elevated border-white/10 hover:border-white/20"
+                  }`}
                 >
                   <button
                     type="button"
                     onClick={() => setOpenFaqIndex(isOpen ? null : index)}
-                    className="w-full text-left px-6 py-4.5 flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-[#1A2E22] hover:text-[#cb0805] transition-colors"
+                    className="w-full text-left px-6 py-4.5 flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-white hover:text-[#ff807e] transition-colors cursor-pointer"
                   >
                     <span>{faq.q}</span>
                     <ChevronDown
                       className={`w-4 h-4 text-stone-400 shrink-0 transition-transform duration-300 ${
-                        isOpen ? "rotate-180 text-[#cb0805]" : ""
+                        isOpen ? "rotate-180 text-[#ff807e]" : ""
                       }`}
                     />
                   </button>
@@ -921,7 +946,7 @@ Please confirm priority delivery details.`;
                         transition={{ duration: 0.25 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-6 pb-5 pt-1 text-xs sm:text-sm text-stone-600 leading-relaxed border-t border-stone-100">
+                        <div className="px-6 pb-5 pt-1 text-xs sm:text-sm text-stone-300 leading-relaxed border-t border-white/10">
                           {faq.a}
                         </div>
                       </motion.div>
@@ -935,14 +960,14 @@ Please confirm priority delivery details.`;
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          11. STICKY MOBILE BOTTOM PURCHASE BAR
+          11. STICKY MOBILE BOTTOM PURCHASE BAR (Floating Frosted Capsule)
       ───────────────────────────────────────────────────────────── */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 p-3 shadow-lg flex items-center justify-between gap-3">
-        <div>
-          <div className="text-[11px] font-bold text-stone-500 uppercase truncate max-w-[130px]">
+      <div className="md:hidden fixed bottom-3 left-3 right-3 z-40 liquid-glass-elevated rounded-full p-2.5 shadow-2xl flex items-center justify-between gap-3 border border-white/20">
+        <div className="pl-3">
+          <div className="text-[10px] font-bold text-stone-400 uppercase truncate max-w-[120px]">
             {selectedVariant.name}
           </div>
-          <div className="text-lg font-black text-[#1A2E22]">
+          <div className="text-base font-black text-white">
             ₹{selectedVariant.price.toLocaleString()}
           </div>
         </div>
@@ -951,7 +976,7 @@ Please confirm priority delivery details.`;
           <button
             type="button"
             onClick={handleAddToCart}
-            className="py-2.5 px-4 rounded-xl bg-[#cb0805] text-white font-bold text-xs shadow-sm flex items-center gap-1.5"
+            className="py-2.5 px-4 rounded-full bg-[#cb0805] text-white font-bold text-xs shadow-md shadow-[#cb0805]/40 flex items-center gap-1.5 cursor-pointer"
           >
             <ShoppingBag className="w-3.5 h-3.5" />
             <span>Add to Cart</span>
@@ -960,7 +985,7 @@ Please confirm priority delivery details.`;
           <button
             type="button"
             onClick={handleBuyNow}
-            className="py-2.5 px-4 rounded-xl bg-[#1A2E22] text-white font-bold text-xs shadow-sm"
+            className="py-2.5 px-4 rounded-full bg-white text-stone-900 font-bold text-xs shadow-md cursor-pointer"
           >
             Buy Now
           </button>

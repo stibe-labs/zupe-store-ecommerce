@@ -35,11 +35,11 @@ export function TopBar() {
   return (
     <aside
       aria-label="Store Announcements"
-      className="relative bg-gradient-to-r from-[#380303] via-[#5c0605] to-[#380303] text-rose-100 text-[11px] sm:text-xs py-2 overflow-hidden border-b border-[#cb0805]/30 select-none z-30"
+      className="relative bg-black/80 backdrop-blur-2xl text-stone-200 text-[11px] sm:text-xs py-2 overflow-hidden border-b border-white/10 select-none z-30"
     >
       {/* Edge gradient masks for smooth fade in/out */}
-      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-[#380303] to-transparent z-10" />
-      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-[#380303] to-transparent z-10" />
+      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-black to-transparent z-10" />
+      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-black to-transparent z-10" />
 
       {/* Marquee Track: Seamless Infinite Loop */}
       <div className="flex animate-topbar-ticker whitespace-nowrap">
@@ -52,14 +52,14 @@ export function TopBar() {
             {ANNOUNCEMENT_ITEMS.map((item, idx) => {
               const Icon = item.icon;
               return (
-                <div key={idx} className="flex items-center gap-2 text-amber-100/90">
-                  <Icon className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <div key={idx} className="flex items-center gap-2 text-stone-300">
+                  <Icon className="w-3.5 h-3.5 text-[#ff807e] shrink-0" />
                   {item.href ? (
                     <a
                       href={item.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-medium text-amber-300 hover:text-white transition-colors inline-flex items-center gap-1 underline-offset-2 hover:underline"
+                      className="font-medium text-white hover:text-[#ff807e] transition-colors inline-flex items-center gap-1 underline-offset-2 hover:underline"
                     >
                       {item.text}
                     </a>
@@ -69,7 +69,7 @@ export function TopBar() {
                     </span>
                   )}
                   {/* Subtle Separator Dot */}
-                  <span className="text-amber-500/40 text-xs ml-4 sm:ml-6 select-none">•</span>
+                  <span className="text-white/20 text-xs ml-4 sm:ml-6 select-none">•</span>
                 </div>
               );
             })}
