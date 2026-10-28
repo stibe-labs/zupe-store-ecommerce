@@ -24,6 +24,7 @@ import {
   LogOut,
   ShoppingCart,
   Tag,
+  Calculator,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -112,6 +113,13 @@ export default function AdminSidebar({
       highlight: true,
     },
     { name: "Reports", href: "/admin/reports", icon: BarChart2 },
+    {
+      name: "Profit Studio",
+      href: "/admin/calculator",
+      icon: Calculator,
+      badge: "Calc",
+      badgeColor: "bg-orange-500/20 text-[#FF7A00] border border-orange-500/30",
+    },
     { name: "Customers", href: "/admin/customers", icon: UserCheck },
     { name: "Settings", href: "/admin/settings", icon: Settings },
   ];
