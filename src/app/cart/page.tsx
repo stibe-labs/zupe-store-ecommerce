@@ -72,7 +72,7 @@ export default function CartPage() {
       <div className="min-h-screen bg-[#F3F4F6] flex flex-col justify-between">
         <Navbar />
         <div className="max-w-md mx-auto py-32 px-4 text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-orange-100/70 flex items-center justify-center text-[#FF7A00]">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-rose-100/70 flex items-center justify-center text-[#cb0805]">
             <ShoppingBag className="w-10 h-10" />
           </div>
           <h1 className="text-3xl font-bold font-display text-gray-900 mb-2">
@@ -83,7 +83,7 @@ export default function CartPage() {
           </p>
           <Link
             href="/products"
-            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-sm shadow-lg shadow-[#FF7A00]/30 transition-all"
+            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-[#cb0805] hover:bg-[#a80604] text-white font-semibold text-sm shadow-lg shadow-[#cb0805]/30 transition-all"
           >
             <span>Explore Collection</span>
             <ArrowRight className="w-4 h-4" />
@@ -120,14 +120,14 @@ export default function CartPage() {
         <div className="mb-8 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between text-xs font-semibold mb-2">
             <span className="flex items-center gap-1.5 text-gray-700">
-              <Truck className="w-4 h-4 text-[#FF7A00]" />
+              <Truck className="w-4 h-4 text-[#cb0805]" />
               {freeShippingRemaining === 0 ? (
                 <span className="text-emerald-600 font-bold">
                   You unlocked FREE Standard Delivery!
                 </span>
               ) : (
                 <span>
-                  Add <strong className="text-[#FF7A00]">₹{freeShippingRemaining.toLocaleString()}</strong> more to get Free Delivery
+                  Add <strong className="text-[#cb0805]">₹{freeShippingRemaining.toLocaleString()}</strong> more to get Free Delivery
                 </span>
               )}
             </span>
@@ -137,7 +137,7 @@ export default function CartPage() {
           </div>
           <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#FF7A00] to-[#FF8A65] rounded-full transition-all duration-500"
+              className="h-full bg-gradient-to-r from-[#cb0805] to-[#FF8A65] rounded-full transition-all duration-500"
               style={{
                 width: `${Math.min(100, (subtotal / freeShippingThreshold) * 100)}%`,
               }}
@@ -165,7 +165,7 @@ export default function CartPage() {
 
                 {/* Info */}
                 <div className="flex-1 w-full sm:w-auto text-center sm:text-left">
-                  <span className="text-[10px] font-bold text-[#FF7A00] uppercase">
+                  <span className="text-[10px] font-bold text-[#cb0805] uppercase">
                     {item.category}
                   </span>
                   <h3 className="font-display font-bold text-base text-gray-900 line-clamp-1">
@@ -176,7 +176,7 @@ export default function CartPage() {
                   )}
                   {item.offer_label && (
                     <div className="mt-1 flex justify-center sm:justify-start">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-orange-50 text-[#FF5722] border border-orange-200">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-50 text-[#FF5722] border border-rose-200">
                         ✨ {item.offer_label}
                       </span>
                     </div>
@@ -253,7 +253,7 @@ export default function CartPage() {
                       placeholder="Promo Code (e.g. ZUPE10)"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-medium uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00]"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-medium uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30 focus:border-[#cb0805]"
                     />
                   </div>
                   <button
@@ -302,7 +302,7 @@ export default function CartPage() {
 
                 <div className="flex justify-between items-baseline text-base font-bold text-gray-900">
                   <span>Total Amount</span>
-                  <span className="text-2xl font-display text-[#FF7A00]">
+                  <span className="text-2xl font-display text-[#cb0805]">
                     ₹{grandTotal.toLocaleString()}
                   </span>
                 </div>
@@ -317,7 +317,7 @@ export default function CartPage() {
                   }
                   router.push("/checkout");
                 }}
-                className="w-full py-4 px-6 rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-sm shadow-xl shadow-[#FF7A00]/30 transition-all flex items-center justify-center gap-2 transform active:scale-95 cursor-pointer"
+                className="w-full py-4 px-6 rounded-2xl bg-[#cb0805] hover:bg-[#a80604] text-white font-semibold text-sm shadow-xl shadow-[#cb0805]/30 transition-all flex items-center justify-center gap-2 transform active:scale-95 cursor-pointer"
               >
                 <span>Proceed to Checkout</span>
                 <ArrowRight className="w-4 h-4" />

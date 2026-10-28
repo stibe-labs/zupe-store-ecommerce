@@ -62,7 +62,7 @@ export function Navbar() {
           <div className="flex items-center gap-3.5">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="p-2 -ml-1.5 text-stone-800 hover:text-[#3F6650] md:hidden transition-colors rounded-lg hover:bg-stone-100"
+              className="p-2 -ml-1.5 text-stone-800 hover:text-[#cb0805] md:hidden transition-colors rounded-lg hover:bg-stone-100"
               aria-label="Open Navigation Menu"
             >
               <Menu className="w-6 h-6 stroke-[2]" />
@@ -88,7 +88,7 @@ export function Navbar() {
               <a
                 key={item.href}
                 href={item.href}
-                className="hover:text-[#3F6650] transition-colors py-1 hover:border-b-2 hover:border-[#3F6650]"
+                className="hover:text-[#cb0805] transition-colors py-1 hover:border-b-2 hover:border-[#cb0805]"
               >
                 {item.label}
               </a>
@@ -102,7 +102,7 @@ export function Navbar() {
               href="https://wa.me/919744122853?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden lg:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#3F6650] hover:bg-[#325240] text-white text-xs font-bold shadow-xs transition-all active:scale-95"
+              className="hidden lg:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white text-xs font-bold shadow-xs transition-all active:scale-95"
             >
               <Phone className="w-3.5 h-3.5" />
               <span>WhatsApp Care</span>
@@ -111,7 +111,7 @@ export function Navbar() {
             {/* Account */}
             <button
               onClick={handleAccountClick}
-              className="p-2.5 text-stone-700 hover:text-[#3F6650] hover:bg-stone-100 rounded-full transition-colors cursor-pointer"
+              className="p-2.5 text-stone-700 hover:text-[#cb0805] hover:bg-stone-100 rounded-full transition-colors cursor-pointer"
               aria-label="User Account"
             >
               <User className="w-5 h-5 stroke-[1.8]" />
@@ -120,12 +120,12 @@ export function Navbar() {
             {/* Cart Button */}
             <button
               onClick={openCart}
-              className="relative p-2.5 text-stone-800 hover:text-[#3F6650] hover:bg-stone-100 rounded-full transition-colors cursor-pointer"
+              className="relative p-2.5 text-stone-800 hover:text-[#cb0805] hover:bg-stone-100 rounded-full transition-colors cursor-pointer"
               aria-label="View Shopping Cart"
             >
               <ShoppingBag className="w-5 h-5 stroke-[1.8]" />
               {totalItems > 0 && (
-                <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#3F6650] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white shadow-xs">
+                <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#cb0805] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white shadow-xs">
                   {totalItems}
                 </span>
               )}
@@ -168,7 +168,7 @@ export function Navbar() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3.5 py-3 rounded-xl text-sm font-semibold text-stone-800 hover:bg-[#EBF2EC] hover:text-[#3F6650] transition-colors"
+                    className="block px-3.5 py-3 rounded-xl text-sm font-semibold text-stone-800 hover:bg-rose-50 hover:text-[#cb0805] transition-colors"
                   >
                     {item.label}
                   </a>
@@ -181,7 +181,7 @@ export function Navbar() {
                 href="https://wa.me/919744122853?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-md transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white text-sm font-bold shadow-md transition-colors"
               >
                 <Phone className="w-4 h-4" />
                 <span>Order via WhatsApp</span>

@@ -8,7 +8,7 @@ export const revalidate = 30;
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#FAFBF9] text-[#1A2E22] selection:bg-[#3F6650] selection:text-white">
+    <main className="min-h-screen bg-[#FCFBF8] text-[#1A1A1A] selection:bg-[#cb0805] selection:text-white">
       {/* 1. Turkish Botanical Vitality Announcement Bar */}
       <TopBar />
 

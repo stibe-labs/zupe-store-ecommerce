@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  /* ─── Zupe Official Brand Palette ─── */
-  --zp-orange: #FF7A00;          /* Brand / CTA */
-  --zp-accent: #FF7A00;
-  --zp-accent-light: #FF9633;
-  --zp-accent-dark: #E66E00;
-  --zp-amber: #FFC107;           /* Accent */
-  --zp-amber-light: #FFD54F;
-  --zp-amber-dark: #FFA000;
+  /* ─── Turkiye Jam Logo Red Brand Palette ─── */
+  --zp-orange: #cb0805;          /* Logo Red / CTA */
+  --zp-accent: #cb0805;
+  --zp-accent-light: #e02320;
+  --zp-accent-dark: #a80604;
+  --zp-amber: #cb0805;           /* Accent */
+  --zp-amber-light: #fdf2f2;
+  --zp-amber-dark: #8c0503;
   --zp-charcoal: #0F172A;        /* Text / dark section */
   --zp-charcoal-deep: #020617;
   --zp-charcoal-muted: #334155;

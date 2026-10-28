@@ -43,7 +43,7 @@ export default function WishlistPage() {
           <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center">
             <Link
               href="/signin?redirect=/wishlist&notice=Please sign in to access your saved wishlist"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl sm:rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-xs sm:text-sm shadow-md shadow-[#FF7A00]/25 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl sm:rounded-2xl bg-[#cb0805] hover:bg-[#a80604] text-white font-semibold text-xs sm:text-sm shadow-md shadow-[#cb0805]/25 transition-all"
             >
               <span>Sign In to Your Account</span>
               <ArrowRight className="w-4 h-4" />
@@ -99,7 +99,7 @@ export default function WishlistPage() {
             </p>
             <Link
               href="/products"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-xs sm:text-sm shadow-md shadow-[#FF7A00]/25 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-semibold text-xs sm:text-sm shadow-md shadow-[#cb0805]/25 transition-all"
             >
               <span>Explore Products</span>
               <ArrowRight className="w-4 h-4" />
@@ -147,14 +147,14 @@ export default function WishlistPage() {
                     </div>
 
                     {/* Category */}
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[#FF7A00] truncate mb-1">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[#cb0805] truncate mb-1">
                       {item.category}
                     </div>
 
                     {/* Title */}
                     <Link
                       href={`/products/${item.slug || item.id}`}
-                      className="block text-xs sm:text-sm font-bold text-gray-900 line-clamp-2 hover:text-[#FF7A00] transition-colors leading-snug mb-1.5 min-h-[32px] sm:min-h-[36px]"
+                      className="block text-xs sm:text-sm font-bold text-gray-900 line-clamp-2 hover:text-[#cb0805] transition-colors leading-snug mb-1.5 min-h-[32px] sm:min-h-[36px]"
                     >
                       {item.name}
                     </Link>
@@ -180,7 +180,7 @@ export default function WishlistPage() {
                   ) : (
                     <button
                       onClick={() => handleMoveToCart(item)}
-                      className="w-full py-2 px-2.5 rounded-lg sm:rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-95 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="w-full py-2 px-2.5 rounded-lg sm:rounded-xl bg-[#cb0805] hover:bg-[#a80604] active:scale-95 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
                       <span>Move to Bag</span>

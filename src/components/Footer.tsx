@@ -47,10 +47,10 @@ function FooterLink({ link }: { link: { label: string; href: string } }) {
 
 export function Footer() {
   return (
-    <footer className="bg-[#16241C] text-white relative overflow-hidden border-t border-[#3F6650]/30">
-      {/* Decorative botanical gold accent line */}
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#3F6650] via-amber-400 to-[#3F6650]" />
-      <div className="absolute top-12 right-12 w-96 h-96 bg-[#3F6650]/10 rounded-full blur-3xl pointer-events-none" />
+    <footer className="bg-[#1a0404] text-white relative overflow-hidden border-t border-[#cb0805]/30">
+      {/* Decorative Turkish gold & ruby accent line */}
+      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#cb0805] via-amber-400 to-[#cb0805]" />
+      <div className="absolute top-12 right-12 w-96 h-96 bg-[#cb0805]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 lg:gap-16">
@@ -74,7 +74,7 @@ export function Footer() {
 
             <div className="flex flex-wrap items-center gap-3 text-xs text-stone-300 font-medium pt-1">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" /> 100% Genuine Import
+                <ShieldCheck className="w-4 h-4 text-rose-400" /> 100% Genuine Import
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
                 📦 Discreet Plain Box Packaging
@@ -87,7 +87,7 @@ export function Footer() {
 
           {/* Customer Care / Support */}
           <div>
-            <h4 className="font-semibold text-xs text-amber-400 mb-4 tracking-widest uppercase">
+            <h4 className="font-semibold text-xs text-rose-300 mb-4 tracking-widest uppercase">
               Customer Support
             </h4>
             <ul className="space-y-2.5">

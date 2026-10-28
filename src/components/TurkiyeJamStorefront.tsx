@@ -201,7 +201,7 @@ Please confirm priority delivery details.`;
   };
 
   return (
-    <div className="relative bg-[#FAFBF9] text-[#1D2B22] overflow-hidden selection:bg-[#436A54] selection:text-white font-sans">
+    <div className="relative bg-[#FAFBF9] text-[#1D2B22] overflow-hidden selection:bg-[#cb0805] selection:text-white font-sans">
       {/* Floating Left Vertical Social Rail (Matches Reference Mockup) */}
       <aside
         className="fixed left-0 top-1/2 -translate-y-1/2 z-30 hidden lg:flex flex-col items-center bg-[#243329] text-white/80 py-4 px-2.5 rounded-r-xl gap-4 text-xs tracking-wider shadow-lg select-none"
@@ -238,10 +238,10 @@ Please confirm priority delivery details.`;
       {/* ─────────────────────────────────────────────────────────────
           1. HERO SECTION (High-Impact Minimalist Stage with Pedestal)
       ───────────────────────────────────────────────────────────── */}
-      <section className="relative pt-6 sm:pt-10 pb-16 sm:pb-24 overflow-hidden bg-gradient-to-b from-[#EBF2EC] via-[#F4F7F4] to-[#FAFBF9]">
+      <section className="relative pt-6 sm:pt-10 pb-16 sm:pb-24 overflow-hidden bg-gradient-to-b from-[#fdf2f2]/70 via-[#FCFBF8] to-[#FCFBF8]">
         {/* Subtle Organic Background Glow */}
-        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#436A54]/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 left-10 w-[400px] h-[400px] bg-[#D4A359]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#cb0805]/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 left-10 w-[400px] h-[400px] bg-[#cb0805]/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
@@ -250,8 +250,8 @@ Please confirm priority delivery details.`;
             <div className="lg:col-span-6 flex flex-col justify-center space-y-6 sm:space-y-7">
               {/* Brand Header & Headline */}
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3F6650]/10 border border-[#3F6650]/20 text-[#315240] text-xs font-semibold tracking-wide uppercase mb-4">
-                  <Leaf className="w-3.5 h-3.5 text-[#3F6650]" />
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#cb0805]/10 border border-[#cb0805]/20 text-[#8c0503] text-xs font-semibold tracking-wide uppercase mb-4">
+                  <Leaf className="w-3.5 h-3.5 text-[#cb0805]" />
                   <span>100% Authentic Anatolian Botanical Macun</span>
                 </div>
 
@@ -261,7 +261,7 @@ Please confirm priority delivery details.`;
                 </h1>
 
                 {/* Subtitle */}
-                <h2 className="text-lg sm:text-xl font-medium text-[#436A54] mt-3">
+                <h2 className="text-lg sm:text-xl font-medium text-[#cb0805] mt-3">
                   Natural Inner Vitality &amp; Endurance
                 </h2>
 
@@ -278,7 +278,7 @@ Please confirm priority delivery details.`;
                     Select Size &amp; Package:
                   </span>
                   {selectedVariant.badge && (
-                    <span className="text-xs font-semibold text-[#3F6650] bg-[#3F6650]/10 px-2.5 py-0.5 rounded-full border border-[#3F6650]/20">
+                    <span className="text-xs font-semibold text-[#cb0805] bg-[#cb0805]/10 px-2.5 py-0.5 rounded-full border border-[#cb0805]/20">
                       ★ {selectedVariant.badge}
                     </span>
                   )}
@@ -294,14 +294,14 @@ Please confirm priority delivery details.`;
                         onClick={() => handleSelectVariant(v)}
                         className={`flex flex-col text-left p-3 rounded-xl border transition-all text-xs relative ${
                           isSelected
-                            ? "bg-white border-[#3F6650] shadow-sm ring-2 ring-[#3F6650]/20"
+                            ? "bg-white border-[#cb0805] shadow-sm ring-2 ring-[#cb0805]/20"
                             : "bg-white/60 hover:bg-white border-stone-200/90 text-stone-700"
                         }`}
                       >
                         <div className="flex items-center gap-2 mb-1">
                           <div
                             className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${
-                              isSelected ? "border-[#3F6650] bg-[#3F6650]" : "border-stone-300"
+                              isSelected ? "border-[#cb0805] bg-[#cb0805]" : "border-stone-300"
                             }`}
                           >
                             {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
@@ -323,7 +323,7 @@ Please confirm priority delivery details.`;
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="flex-1 py-4 px-8 rounded-xl bg-[#3F6650] hover:bg-[#325240] text-white font-semibold text-sm tracking-wide shadow-md shadow-[#3F6650]/15 hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2.5"
+                  className="flex-1 py-4 px-8 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-semibold text-sm tracking-wide shadow-md shadow-[#cb0805]/15 hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2.5"
                 >
                   <ShoppingBag className="w-4 h-4" />
                   <span>Add to your cart</span>
@@ -342,10 +342,10 @@ Please confirm priority delivery details.`;
                   href={buildWhatsAppOrderUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="py-4 px-5 rounded-xl border border-[#3F6650]/30 bg-white hover:bg-[#EBF2EC] text-[#315240] font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-2xs"
+                  className="py-4 px-5 rounded-xl border border-[#cb0805]/30 bg-white hover:bg-[#fdf2f2] text-[#8c0503] font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-2xs"
                   aria-label="Order via WhatsApp"
                 >
-                  <MessageCircle className="w-4 h-4 text-emerald-600" />
+                  <MessageCircle className="w-4 h-4 text-[#cb0805]" />
                   <span className="hidden sm:inline">WhatsApp</span>
                 </a>
               </div>
@@ -353,15 +353,15 @@ Please confirm priority delivery details.`;
               {/* Guarantees Strip */}
               <div className="flex flex-wrap items-center gap-y-2 gap-x-5 text-xs text-stone-600 pt-1 font-medium">
                 <span className="inline-flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#3F6650]" />
+                  <CheckCircle2 className="w-4 h-4 text-[#cb0805]" />
                   100% Original Themra Import
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <RotateCcw className="w-4 h-4 text-[#3F6650]" />
+                  <RotateCcw className="w-4 h-4 text-[#cb0805]" />
                   15-Day Unused Strip Refund
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <Truck className="w-4 h-4 text-[#3F6650]" />
+                  <Truck className="w-4 h-4 text-[#cb0805]" />
                   1–2 Day Express Kerala Delivery
                 </span>
               </div>
@@ -371,7 +371,7 @@ Please confirm priority delivery details.`;
             <div className="lg:col-span-6 relative flex flex-col items-center justify-center min-h-[440px] sm:min-h-[520px]">
               
               {/* Translucent Oversized Vertical Watermark (Matches 'faceoil' in Reference) */}
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 font-serif font-bold text-7xl sm:text-8xl lg:text-9xl tracking-[0.25em] text-[#3F6650]/10 uppercase select-none pointer-events-none rotate-90 origin-center whitespace-nowrap z-0">
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 font-serif font-bold text-7xl sm:text-8xl lg:text-9xl tracking-[0.25em] text-[#cb0805]/10 uppercase select-none pointer-events-none rotate-90 origin-center whitespace-nowrap z-0">
                 herbal macun
               </div>
 
@@ -379,13 +379,13 @@ Please confirm priority delivery details.`;
               <div className="relative z-10 w-full max-w-[460px] flex flex-col items-center">
                 
                 {/* Floating Seal Badge */}
-                <div className="absolute -top-3 -left-2 sm:left-4 z-20 bg-white/95 backdrop-blur-md border border-[#3F6650]/20 rounded-2xl p-2.5 sm:p-3 shadow-md flex items-center gap-2.5">
+                <div className="absolute -top-3 -left-2 sm:left-4 z-20 bg-white/95 backdrop-blur-md border border-[#cb0805]/20 rounded-2xl p-2.5 sm:p-3 shadow-md flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-red-950 font-bold text-sm shadow-xs">
                     🇹🇷
                   </div>
                   <div className="text-left">
                     <div className="text-[11px] font-bold text-stone-900 leading-tight">Authentic Import</div>
-                    <div className="text-[10px] text-[#3F6650] font-semibold">Themra Turkey Certified</div>
+                    <div className="text-[10px] text-[#cb0805] font-semibold">Themra Turkey Certified</div>
                   </div>
                 </div>
 
@@ -427,7 +427,7 @@ Please confirm priority delivery details.`;
                       onClick={() => setActiveHeroImageIndex(idx)}
                       className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden border-2 transition-all p-1 bg-white ${
                         activeHeroImageIndex === idx
-                          ? "border-[#3F6650] shadow-md scale-105"
+                          ? "border-[#cb0805] shadow-md scale-105"
                           : "border-stone-200 opacity-70 hover:opacity-100"
                       }`}
                       aria-label={thumb.label}
@@ -465,7 +465,7 @@ Please confirm priority delivery details.`;
             </div>
 
             <div className="pt-4 md:pt-0">
-              <div className="text-3xl sm:text-4xl font-extrabold text-[#3F6650] tracking-tight font-sans">
+              <div className="text-3xl sm:text-4xl font-extrabold text-[#cb0805] tracking-tight font-sans">
                 6,050+
               </div>
               <div className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
@@ -483,7 +483,7 @@ Please confirm priority delivery details.`;
             </div>
 
             <div className="pt-4 md:pt-0">
-              <div className="text-3xl sm:text-4xl font-extrabold text-[#3F6650] tracking-tight font-sans">
+              <div className="text-3xl sm:text-4xl font-extrabold text-[#cb0805] tracking-tight font-sans">
                 98.7%
               </div>
               <div className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
@@ -513,7 +513,7 @@ Please confirm priority delivery details.`;
             
             {/* Feature 1: Natural */}
             <div className="flex flex-col items-center p-8 rounded-2xl bg-white border border-stone-200/70 shadow-xs hover:shadow-md transition-shadow">
-              <div className="w-16 h-16 rounded-full bg-[#EBF2EC] flex items-center justify-center text-[#3F6650] mb-5 border border-[#3F6650]/20">
+              <div className="w-16 h-16 rounded-full bg-[#fdf2f2] flex items-center justify-center text-[#cb0805] mb-5 border border-[#cb0805]/20">
                 <Leaf className="w-8 h-8 stroke-[1.75]" />
               </div>
               <h3 className="text-lg font-bold text-[#1A2E22] mb-2">
@@ -526,7 +526,7 @@ Please confirm priority delivery details.`;
 
             {/* Feature 2: No Side Effect */}
             <div className="flex flex-col items-center p-8 rounded-2xl bg-white border border-stone-200/70 shadow-xs hover:shadow-md transition-shadow">
-              <div className="w-16 h-16 rounded-full bg-[#EBF2EC] flex items-center justify-center text-[#3F6650] mb-5 border border-[#3F6650]/20">
+              <div className="w-16 h-16 rounded-full bg-[#fdf2f2] flex items-center justify-center text-[#cb0805] mb-5 border border-[#cb0805]/20">
                 <ShieldCheck className="w-8 h-8 stroke-[1.75]" />
               </div>
               <h3 className="text-lg font-bold text-[#1A2E22] mb-2">
@@ -539,7 +539,7 @@ Please confirm priority delivery details.`;
 
             {/* Feature 3: 100% Organic Origin */}
             <div className="flex flex-col items-center p-8 rounded-2xl bg-white border border-stone-200/70 shadow-xs hover:shadow-md transition-shadow">
-              <div className="w-16 h-16 rounded-full bg-[#EBF2EC] flex items-center justify-center text-[#3F6650] mb-5 border border-[#3F6650]/20">
+              <div className="w-16 h-16 rounded-full bg-[#fdf2f2] flex items-center justify-center text-[#cb0805] mb-5 border border-[#cb0805]/20">
                 <Award className="w-8 h-8 stroke-[1.75]" />
               </div>
               <h3 className="text-lg font-bold text-[#1A2E22] mb-2">
@@ -557,13 +557,13 @@ Please confirm priority delivery details.`;
       {/* ─────────────────────────────────────────────────────────────
           4. "ABOUT US" (Ottoman Botanical Story + Pedestal)
       ───────────────────────────────────────────────────────────── */}
-      <section id="story" className="py-20 sm:py-28 bg-[#F4F7F4] border-y border-stone-200/70 relative overflow-hidden">
+      <section id="story" className="py-20 sm:py-28 bg-[#FAF7F5] border-y border-stone-200/70 relative overflow-hidden">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             
             {/* Left Column: Narrative */}
             <div className="lg:col-span-6 space-y-6">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#3F6650]">
+              <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805]">
                 Ancient Heritage &bull; Modern Vitality
               </span>
 
@@ -583,7 +583,7 @@ Please confirm priority delivery details.`;
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="py-3.5 px-7 rounded-xl bg-[#3F6650] hover:bg-[#325240] text-white font-semibold text-sm shadow-sm transition-all active:scale-98"
+                  className="py-3.5 px-7 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-semibold text-sm shadow-sm transition-all active:scale-98"
                 >
                   Buy Now &bull; ₹{selectedVariant.price}
                 </button>
@@ -628,7 +628,7 @@ Please confirm priority delivery details.`;
       ───────────────────────────────────────────────────────────── */}
       <section id="offers" className="py-20 sm:py-28 bg-[#FAFBF9]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-14">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#3F6650] block mb-2">
+          <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805] block mb-2">
             Limited Period Promotional Offers
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A2E22] tracking-tight font-sans">
@@ -652,14 +652,14 @@ Please confirm priority delivery details.`;
                   onClick={() => handleSelectVariant(variant)}
                   className={`cursor-pointer rounded-2xl p-6 sm:p-7 border transition-all relative flex flex-col justify-between ${
                     isSelected
-                      ? "bg-white border-[#3F6650] shadow-xl ring-2 ring-[#3F6650]/20"
+                      ? "bg-white border-[#cb0805] shadow-xl ring-2 ring-[#cb0805]/20"
                       : "bg-white/80 hover:bg-white border-stone-200 shadow-xs hover:shadow-md"
                   }`}
                 >
                   {/* Top Badges */}
                   <div className="flex items-center justify-between mb-4">
                     {variant.badge ? (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-[#3F6650] text-white shadow-xs">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-[#cb0805] text-white shadow-xs">
                         <Gift className="w-3.5 h-3.5" />
                         {variant.badge}
                       </span>
@@ -715,8 +715,8 @@ Please confirm priority delivery details.`;
                       }}
                       className={`px-5 py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all ${
                         isSelected
-                          ? "bg-[#3F6650] hover:bg-[#325240] text-white shadow-sm"
-                          : "bg-stone-100 hover:bg-[#3F6650] text-stone-800 hover:text-white"
+                          ? "bg-[#cb0805] hover:bg-[#a80604] text-white shadow-sm"
+                          : "bg-stone-100 hover:bg-[#cb0805] text-stone-800 hover:text-white"
                       }`}
                     >
                       {isSelected ? "Add to Cart" : "Select & Add"}
@@ -732,9 +732,9 @@ Please confirm priority delivery details.`;
       {/* ─────────────────────────────────────────────────────────────
           6. "TESTIMONIALS" (Matching Reference Review Layout)
       ───────────────────────────────────────────────────────────── */}
-      <section id="reviews" className="py-20 sm:py-28 bg-[#F4F7F4] border-y border-stone-200/80">
+      <section id="reviews" className="py-20 sm:py-28 bg-[#FAF7F5] border-y border-stone-200/80">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-14">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#3F6650] block mb-2">
+          <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805] block mb-2">
             Real Customer Experiences
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A2E22] tracking-tight font-sans">
@@ -760,7 +760,7 @@ Please confirm priority delivery details.`;
                         <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                       ))}
                     </div>
-                    <span className="text-2xl font-serif text-[#3F6650]/40 font-bold">
+                    <span className="text-2xl font-serif text-[#cb0805]/40 font-bold">
                       &ldquo;&rdquo;
                     </span>
                   </div>
@@ -781,8 +781,8 @@ Please confirm priority delivery details.`;
                   </div>
                   <div>
                     <div className="text-xs font-bold text-stone-900">{t.name}</div>
-                    <div className="text-[11px] text-[#3F6650] font-medium flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3 text-[#3F6650]" />
+                    <div className="text-[11px] text-[#cb0805] font-medium flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-[#cb0805]" />
                       {t.location} &bull; {t.package}
                     </div>
                   </div>
@@ -800,23 +800,23 @@ Please confirm priority delivery details.`;
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12">
           <div className="flex flex-wrap items-center justify-around gap-6 sm:gap-10 text-stone-500 text-xs sm:text-sm font-semibold uppercase tracking-wider">
             <span className="inline-flex items-center gap-2">
-              <Award className="w-5 h-5 text-[#3F6650]" />
+              <Award className="w-5 h-5 text-[#cb0805]" />
               Halal Certified
             </span>
             <span className="inline-flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-[#3F6650]" />
+              <ShieldCheck className="w-5 h-5 text-[#cb0805]" />
               ISO 22000 Standard
             </span>
             <span className="inline-flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-[#3F6650]" />
+              <CheckCircle2 className="w-5 h-5 text-[#cb0805]" />
               Turkish Ministry of Food Codex
             </span>
             <span className="inline-flex items-center gap-2">
-              <Leaf className="w-5 h-5 text-[#3F6650]" />
+              <Leaf className="w-5 h-5 text-[#cb0805]" />
               100% Herbal &bull; No Synthetic Drug
             </span>
             <span className="inline-flex items-center gap-2">
-              <Package className="w-5 h-5 text-[#3F6650]" />
+              <Package className="w-5 h-5 text-[#cb0805]" />
               Discreet Plain Box Packaging
             </span>
           </div>
@@ -828,7 +828,7 @@ Please confirm priority delivery details.`;
       ───────────────────────────────────────────────────────────── */}
       <section id="usage" className="py-20 sm:py-28 bg-[#FAFBF9]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-14">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#3F6650] block mb-2">
+          <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805] block mb-2">
             Safe &bull; Effective &bull; Easy to Use
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A2E22] tracking-tight font-sans">
@@ -842,7 +842,7 @@ Please confirm priority delivery details.`;
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white p-7 rounded-2xl border border-stone-200/80 shadow-xs">
-              <div className="w-10 h-10 rounded-xl bg-[#3F6650]/10 text-[#3F6650] font-bold text-lg flex items-center justify-center mb-4">
+              <div className="w-10 h-10 rounded-xl bg-[#cb0805]/10 text-[#cb0805] font-bold text-lg flex items-center justify-center mb-4">
                 1
               </div>
               <h3 className="font-bold text-[#1A2E22] text-base mb-2">Recommended Dosage</h3>
@@ -852,7 +852,7 @@ Please confirm priority delivery details.`;
             </div>
 
             <div className="bg-white p-7 rounded-2xl border border-stone-200/80 shadow-xs">
-              <div className="w-10 h-10 rounded-xl bg-[#3F6650]/10 text-[#3F6650] font-bold text-lg flex items-center justify-center mb-4">
+              <div className="w-10 h-10 rounded-xl bg-[#cb0805]/10 text-[#cb0805] font-bold text-lg flex items-center justify-center mb-4">
                 2
               </div>
               <h3 className="font-bold text-[#1A2E22] text-base mb-2">Timing &amp; Consumption</h3>
@@ -862,7 +862,7 @@ Please confirm priority delivery details.`;
             </div>
 
             <div className="bg-white p-7 rounded-2xl border border-stone-200/80 shadow-xs">
-              <div className="w-10 h-10 rounded-xl bg-[#3F6650]/10 text-[#3F6650] font-bold text-lg flex items-center justify-center mb-4">
+              <div className="w-10 h-10 rounded-xl bg-[#cb0805]/10 text-[#cb0805] font-bold text-lg flex items-center justify-center mb-4">
                 3
               </div>
               <h3 className="font-bold text-[#1A2E22] text-base mb-2">Long-Lasting Vitality</h3>
@@ -877,9 +877,9 @@ Please confirm priority delivery details.`;
       {/* ─────────────────────────────────────────────────────────────
           9. QUICK ORDER & CONSULTATION BANNER (Split Card)
       ───────────────────────────────────────────────────────────── */}
-      <section className="py-16 sm:py-24 bg-[#EBF2EC]">
+      <section className="py-16 sm:py-24 bg-[#fdf2f2]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-3xl p-8 sm:p-12 border border-[#3F6650]/20 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="bg-white rounded-3xl p-8 sm:p-12 border border-[#cb0805]/20 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
             {/* Left: Product preview on pedestal */}
             <div className="lg:col-span-5 flex flex-col items-center justify-center">
@@ -897,7 +897,7 @@ Please confirm priority delivery details.`;
 
             {/* Right: Quick Order Form */}
             <div className="lg:col-span-7 space-y-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#3F6650]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#cb0805]">
                 Express Consultation &bull; 1-Click Ordering
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1A2E22] tracking-tight font-sans">
@@ -908,8 +908,8 @@ Please confirm priority delivery details.`;
               </p>
 
               {quickOrderSuccess ? (
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm font-semibold flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-[#cb0805] shrink-0" />
                   <span>Connecting you to WhatsApp care now...</span>
                 </div>
               ) : (
@@ -920,11 +920,11 @@ Please confirm priority delivery details.`;
                     value={quickOrderPhone}
                     onChange={(e) => setQuickOrderPhone(e.target.value)}
                     required
-                    className="flex-1 px-4 py-3.5 rounded-xl border border-stone-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#3F6650] focus:border-transparent"
+                    className="flex-1 px-4 py-3.5 rounded-xl border border-stone-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#cb0805] focus:border-transparent"
                   />
                   <button
                     type="submit"
-                    className="py-3.5 px-6 rounded-xl bg-[#3F6650] hover:bg-[#325240] text-white font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2"
+                    className="py-3.5 px-6 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2"
                   >
                     <MessageCircle className="w-4 h-4" />
                     <span>Connect WhatsApp</span>
@@ -943,7 +943,7 @@ Please confirm priority delivery details.`;
       <section id="faq" className="py-20 sm:py-28 bg-[#FAFBF9]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#3F6650] block mb-2">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805] block mb-2">
               Got Questions?
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1A2E22] tracking-tight font-sans">
@@ -962,12 +962,12 @@ Please confirm priority delivery details.`;
                   <button
                     type="button"
                     onClick={() => setOpenFaqIndex(isOpen ? null : index)}
-                    className="w-full text-left px-6 py-4.5 flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-[#1A2E22] hover:text-[#3F6650] transition-colors"
+                    className="w-full text-left px-6 py-4.5 flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-[#1A2E22] hover:text-[#cb0805] transition-colors"
                   >
                     <span>{faq.q}</span>
                     <ChevronDown
                       className={`w-4 h-4 text-stone-400 shrink-0 transition-transform duration-300 ${
-                        isOpen ? "rotate-180 text-[#3F6650]" : ""
+                        isOpen ? "rotate-180 text-[#cb0805]" : ""
                       }`}
                     />
                   </button>
@@ -1011,7 +1011,7 @@ Please confirm priority delivery details.`;
           <button
             type="button"
             onClick={handleAddToCart}
-            className="py-2.5 px-4 rounded-xl bg-[#3F6650] text-white font-bold text-xs shadow-sm flex items-center gap-1.5"
+            className="py-2.5 px-4 rounded-xl bg-[#cb0805] text-white font-bold text-xs shadow-sm flex items-center gap-1.5"
           >
             <ShoppingBag className="w-3.5 h-3.5" />
             <span>Add to Cart</span>

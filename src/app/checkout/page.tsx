@@ -406,7 +406,7 @@ function CheckoutContent() {
           method: "upi",
         },
         theme: {
-          color: "#FF7A00",
+          color: "#cb0805",
           backdrop_color: "rgba(17, 17, 17, 0.7)",
         },
         modal: {
@@ -1159,7 +1159,7 @@ function CheckoutContent() {
           shipping_address: `${address.trim()}, ${city.trim()} - ${postalCode.trim()}`,
         },
         theme: {
-          color: "#FF7A00",
+          color: "#cb0805",
           backdrop_color: "rgba(17, 17, 17, 0.7)",
         },
         modal: {
@@ -1320,18 +1320,18 @@ function CheckoutContent() {
               </div>
               <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                 <span className="text-gray-500">Shipping:</span>
-                <span className="font-bold text-[#FF7A00]">FREE (Saved ₹49)</span>
+                <span className="font-bold text-[#cb0805]">FREE (Saved ₹49)</span>
               </div>
               <div className="flex justify-between items-center pt-2 text-sm">
                 <span className="font-bold text-gray-900">Total Paid:</span>
-                <span className="font-extrabold text-[#FF7A00] text-lg">₹{switchSuccessAmount.toLocaleString()}</span>
+                <span className="font-extrabold text-[#cb0805] text-lg">₹{switchSuccessAmount.toLocaleString()}</span>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
                 href={`/order-tracking?query=${encodeURIComponent(switchSuccessOrderId)}`}
-                className="flex-1 py-3.5 px-6 rounded-xl bg-[#FF7A00] text-white font-semibold text-sm hover:bg-[#E66E00] transition-colors flex items-center justify-center gap-2 shadow-xs"
+                className="flex-1 py-3.5 px-6 rounded-xl bg-[#cb0805] text-white font-semibold text-sm hover:bg-[#a80604] transition-colors flex items-center justify-center gap-2 shadow-xs"
               >
                 <Truck className="w-4 h-4" />
                 <span>Track Order</span>
@@ -1375,9 +1375,9 @@ function CheckoutContent() {
 
         <main className="max-w-xl mx-auto py-8 px-4 w-full">
           {/* Header Banner */}
-          <div className="bg-gradient-to-r from-orange-500 via-[#FF7A00] to-amber-500 rounded-3xl p-6 text-white text-center shadow-lg shadow-[#FF7A00]/20 mb-6 relative overflow-hidden">
+          <div className="bg-gradient-to-r from-[#cb0805] via-[#cb0805] to-amber-500 rounded-3xl p-6 text-white text-center shadow-lg shadow-[#cb0805]/20 mb-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 translate-x-4 -translate-y-4 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none" />
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-white text-[#FF7A00] uppercase tracking-wide mb-3 shadow-xs">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-white text-[#cb0805] uppercase tracking-wide mb-3 shadow-xs">
               ⚡ Instant ₹49 Discount Offer
             </span>
             <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight">
@@ -1400,7 +1400,7 @@ function CheckoutContent() {
 
           {switchLoading && (
             <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center">
-              <Loader2 className="w-8 h-8 text-[#FF7A00] animate-spin mx-auto mb-3" />
+              <Loader2 className="w-8 h-8 text-[#cb0805] animate-spin mx-auto mb-3" />
               <p className="text-sm font-semibold text-gray-700">Looking up your order details...</p>
             </div>
           )}
@@ -1476,7 +1476,7 @@ function CheckoutContent() {
                       <div className="pt-3 border-t border-gray-200 flex justify-between items-center text-base sm:text-lg">
                         <span className="font-bold text-gray-900">Final Amount to Pay Online:</span>
                         <div className="text-right">
-                          <span className="font-extrabold text-[#FF7A00] text-xl">
+                          <span className="font-extrabold text-[#cb0805] text-xl">
                             ₹{finalPayable.toLocaleString()}
                           </span>
                           <span className="block text-[10px] text-emerald-600 font-bold">You Save ₹49 • ₹0 at Delivery</span>
@@ -1489,7 +1489,7 @@ function CheckoutContent() {
                       type="button"
                       onClick={handlePayForCodOrder}
                       disabled={switchPaying}
-                      className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-orange-500 via-[#FF7A00] to-orange-600 hover:from-[#e06900] hover:to-[#d06000] text-white font-extrabold text-base shadow-lg shadow-[#FF7A00]/30 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 mt-4"
+                      className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#cb0805] via-[#cb0805] to-[#8c0503] hover:from-[#b90806] hover:to-[#8c0503] text-white font-extrabold text-base shadow-lg shadow-[#cb0805]/30 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 mt-4"
                     >
                       {switchPaying ? (
                         <>
@@ -1530,7 +1530,7 @@ function CheckoutContent() {
           ) : !switchLoading ? (
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/90 shadow-sm space-y-5">
               <div className="text-center">
-                <ShoppingBag className="w-10 h-10 text-[#FF7A00] mx-auto mb-2" />
+                <ShoppingBag className="w-10 h-10 text-[#cb0805] mx-auto mb-2" />
                 <h3 className="font-bold text-gray-900 text-base">Find Your Cash on Delivery Order</h3>
                 <p className="text-xs text-gray-500 mt-1">
                   Enter your Order ID (e.g. ord_...) or 10-digit mobile number to claim your ₹49 instant discount.
@@ -1553,14 +1553,14 @@ function CheckoutContent() {
                     value={switchQuery}
                     onChange={(e) => setSwitchQuery(e.target.value)}
                     placeholder="e.g. ord_177374... or 9876543210"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#cb0805]/20 focus:border-[#cb0805]"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={switchLoading || !switchQuery.trim()}
-                  className="w-full py-3.5 px-6 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-sm transition-all shadow-md shadow-[#FF7A00]/25 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full py-3.5 px-6 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-sm transition-all shadow-md shadow-[#cb0805]/25 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Search className="w-4 h-4" />
                   <span>Find Order &amp; Claim ₹49 Discount</span>
@@ -1611,7 +1611,7 @@ function CheckoutContent() {
             transition={{ type: "spring", damping: 15 }}
             className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center shadow-lg ${
               paymentMethod === "cod"
-                ? "bg-orange-50 text-[#FF7A00] shadow-[#FF7A00]/15"
+                ? "bg-rose-50 text-[#cb0805] shadow-[#cb0805]/15"
                 : "bg-emerald-50 text-emerald-600 shadow-emerald-500/15"
             }`}
           >
@@ -1697,7 +1697,7 @@ function CheckoutContent() {
                 <div className="flex justify-between items-center pt-2 text-sm">
                   <span className="font-bold text-gray-900">Balance on Delivery:</span>
                   <div className="text-right">
-                    <span className="font-extrabold text-[#FF7A00] text-lg block">
+                    <span className="font-extrabold text-[#cb0805] text-lg block">
                       ₹{Math.max(0, (confirmedTotal || grandTotal) - 10).toLocaleString()}
                     </span>
                     <span className="text-[10px] font-bold block text-amber-600">
@@ -1710,7 +1710,7 @@ function CheckoutContent() {
               <div className="flex justify-between items-center pt-2 text-sm">
                 <span className="font-bold text-gray-900">Total Paid Online:</span>
                 <div className="text-right">
-                  <span className="font-extrabold text-[#FF7A00] text-lg block">
+                  <span className="font-extrabold text-[#cb0805] text-lg block">
                     ₹{(confirmedTotal || grandTotal).toLocaleString()}
                   </span>
                   <span className="text-[10px] font-bold block text-emerald-600">
@@ -1722,9 +1722,9 @@ function CheckoutContent() {
           </div>
 
           {paymentMethod === "cod" && (
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border border-orange-200 text-left mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border border-rose-200 text-left mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#FF7A00] tracking-wider block">
+                <span className="text-[10px] uppercase font-bold text-[#cb0805] tracking-wider block">
                   ⚡ Special Prepaid Switch Offer
                 </span>
                 <p className="text-sm font-bold text-gray-900 mt-0.5">
@@ -1736,7 +1736,7 @@ function CheckoutContent() {
               </div>
               <Link
                 href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(confirmedOrderId)}`}
-                className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-xs shrink-0 text-center transition-colors shadow-xs"
+                className="px-4 py-2.5 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs shrink-0 text-center transition-colors shadow-xs"
               >
                 Pay ₹{Math.max(1, (confirmedTotal || grandTotal) - 10 - 49).toLocaleString()} Now (Save ₹49) →
               </Link>
@@ -1746,7 +1746,7 @@ function CheckoutContent() {
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
               href={`/order-tracking?query=${encodeURIComponent(confirmedOrderId)}`}
-              className="flex-1 py-3.5 px-6 rounded-xl bg-[#FF7A00] text-white font-semibold text-sm hover:bg-[#E66E00] transition-colors flex items-center justify-center gap-2 shadow-xs"
+              className="flex-1 py-3.5 px-6 rounded-xl bg-[#cb0805] text-white font-semibold text-sm hover:bg-[#a80604] transition-colors flex items-center justify-center gap-2 shadow-xs"
             >
               <Truck className="w-4 h-4" />
               <span>Track Order</span>
@@ -1787,14 +1787,14 @@ function CheckoutContent() {
         </header>
 
         <main className="max-w-md mx-auto py-24 px-4 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-50 flex items-center justify-center text-[#FF7A00]">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-50 flex items-center justify-center text-[#cb0805]">
             <ShoppingBag className="w-8 h-8" />
           </div>
           <h2 className="text-2xl font-bold font-display text-gray-900 mb-2">Your Bag is Empty</h2>
           <p className="text-sm text-gray-500 mb-6">You don&apos;t have any products ready for checkout yet.</p>
           <Link
             href="/products"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-sm shadow-xs transition-colors"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-semibold text-sm shadow-xs transition-colors"
           >
             Browse Trending Products
           </Link>
@@ -1810,9 +1810,9 @@ function CheckoutContent() {
   return (
     <div className="min-h-screen bg-white text-gray-900 antialiased">
       {/* 1. TOP TRUST HEADER (Matches Reference Photo 3) */}
-      <header className="relative border-b border-orange-100/70 bg-gradient-to-b from-[#FFF5EC]/90 via-[#FFF9F5]/60 to-white pt-4 pb-4 sm:pt-5 sm:pb-5 overflow-hidden">
+      <header className="relative border-b border-rose-100/70 bg-gradient-to-b from-[#fff5f5]/90 via-[#fffafa]/60 to-white pt-4 pb-4 sm:pt-5 sm:pb-5 overflow-hidden">
         {/* Soft glowing ambient arc in background */}
-        <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-32 bg-[#FF7A00]/10 blur-3xl rounded-full" />
+        <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-32 bg-[#cb0805]/10 blur-3xl rounded-full" />
 
         <div className="relative max-w-5xl mx-auto px-4 flex flex-col items-center text-center space-y-2">
           {/* Centered Logo */}
@@ -1830,7 +1830,7 @@ function CheckoutContent() {
           {/* Secure Checkout Heading */}
           <div>
             <div className="flex items-center justify-center gap-1.5 text-gray-900 font-extrabold text-base sm:text-lg">
-              <Lock className="w-4 h-4 text-[#FF7A00]" />
+              <Lock className="w-4 h-4 text-[#cb0805]" />
               <span>Secure Checkout</span>
             </div>
             <p className="text-[11px] sm:text-xs text-gray-400 font-medium mt-0.5">
@@ -1841,17 +1841,17 @@ function CheckoutContent() {
           {/* 3 Genuine Trust Badges in Reference Pill Design */}
           <div className="flex items-center justify-center gap-1 sm:gap-2 flex-nowrap overflow-x-auto max-w-full px-1 pt-1 text-xs font-semibold scrollbar-none">
             <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-[#FFF3E8] border border-[#FFE2CC] text-gray-800 text-[10px] sm:text-xs shadow-2xs whitespace-nowrap shrink-0">
-              <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#FF7A00]" />
+              <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#cb0805]" />
               <span>Premium Quality</span>
             </span>
             <span className="text-gray-300 hidden sm:inline">•</span>
             <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-[#FFF3E8] border border-[#FFE2CC] text-gray-800 text-[10px] sm:text-xs shadow-2xs whitespace-nowrap shrink-0">
-              <Truck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#FF7A00]" />
+              <Truck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#cb0805]" />
               <span>Fast Shipping</span>
             </span>
             <span className="text-gray-300 hidden sm:inline">•</span>
             <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-[#FFF3E8] border border-[#FFE2CC] text-gray-800 text-[10px] sm:text-xs shadow-2xs whitespace-nowrap shrink-0">
-              <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#FF7A00]" />
+              <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#cb0805]" />
               <span>Secure Payments</span>
             </span>
           </div>
@@ -1894,8 +1894,8 @@ function CheckoutContent() {
             {/* Urgency Countdown Banner (Matches Reference Photo 3) */}
             <div className="p-3 sm:p-4 rounded-2xl bg-[#FFF9F3] border border-[#FFE7D1] flex items-center justify-between gap-2 sm:gap-3 shadow-2xs">
               <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FFE5CC] text-[#FF7A00] flex items-center justify-center shrink-0">
-                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FF7A00]" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#fee2e2] text-[#cb0805] flex items-center justify-center shrink-0">
+                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#cb0805]" />
                 </div>
                 <div className="min-w-0">
                   <p className="font-extrabold text-[11px] sm:text-sm text-gray-900 leading-tight truncate">
@@ -1940,7 +1940,7 @@ function CheckoutContent() {
                 className="w-full p-3.5 flex items-center justify-between gap-3 text-left bg-gray-50/70 hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-orange-100/70 border border-orange-200/50 flex items-center justify-center text-[#FF7A00] shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-rose-100/70 border border-rose-200/50 flex items-center justify-center text-[#cb0805] shrink-0">
                     <ShoppingBag className="w-4 h-4" />
                   </div>
                   <div>
@@ -2004,12 +2004,12 @@ function CheckoutContent() {
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
                               <span className="text-[11px] text-gray-500">Qty: {item.quantity} × ₹{item.price.toLocaleString()}</span>
                               {isBundle ? (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-orange-50 border border-orange-200 text-[#FF5722] text-[10px] font-bold">
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-rose-50 border border-rose-200 text-[#FF5722] text-[10px] font-bold">
                                   <span>✨</span>
                                   <span>{item.offer_label || `Saved ₹${itemSaving.toLocaleString()}`}</span>
                                 </span>
                               ) : itemSaving > 0 ? (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-orange-50 border border-orange-200 text-[#FF7A00] text-[10px] font-bold">
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-rose-50 border border-rose-200 text-[#cb0805] text-[10px] font-bold">
                                   <Tag className="w-2.5 h-2.5" />
                                   <span>You&apos;re saving ₹{itemSaving.toLocaleString()}</span>
                                 </span>
@@ -2040,14 +2040,14 @@ function CheckoutContent() {
                             value={promoCode}
                             onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                             placeholder="Promo code"
-                            className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold uppercase tracking-wider text-gray-900 placeholder:normal-case placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:border-[#FF7A00] bg-white"
+                            className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold uppercase tracking-wider text-gray-900 placeholder:normal-case placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:border-[#cb0805] bg-white"
                           />
                         </div>
                         <button
                           type="button"
                           onClick={handleApplyPromo}
                           disabled={promoLoading}
-                          className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-xs shadow-2xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60"
+                          className="px-4 py-2.5 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs shadow-2xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60"
                         >
                           {promoLoading ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -2104,7 +2104,7 @@ function CheckoutContent() {
                 <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
                   MOBILE NUMBER *
                 </label>
-                <div className="flex rounded-xl border border-gray-200 overflow-hidden focus-within:border-[#FF7A00] focus-within:ring-1 focus-within:ring-[#FF7A00] transition-all bg-white shadow-2xs">
+                <div className="flex rounded-xl border border-gray-200 overflow-hidden focus-within:border-[#cb0805] focus-within:ring-1 focus-within:ring-[#cb0805] transition-all bg-white shadow-2xs">
                   {/* Flag & Country Code Selector Pill */}
                   <div className="px-3 bg-gray-50 border-r border-gray-200 text-gray-800 font-semibold text-xs flex items-center gap-1.5 select-none shrink-0">
                     <svg className="w-4 h-3 rounded-xs shrink-0 shadow-2xs border border-gray-200/50" viewBox="0 0 640 480">
@@ -2137,7 +2137,7 @@ function CheckoutContent() {
                     </svg>
                   </div>
                   <p className="text-xs text-gray-700 leading-relaxed">
-                    We&apos;ll send your <span className="font-bold text-[#FF7A00]">order confirmation</span> and <span className="font-bold text-[#FF7A00]">delivery updates</span> to this number.
+                    We&apos;ll send your <span className="font-bold text-[#cb0805]">order confirmation</span> and <span className="font-bold text-[#cb0805]">delivery updates</span> to this number.
                   </p>
                 </div>
 
@@ -2173,17 +2173,17 @@ function CheckoutContent() {
                     type="button"
                     onClick={handleFetchCurrentLocation}
                     disabled={locationLoading}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-[#FF7A00] bg-orange-50/90 hover:bg-orange-100 border border-[#FF7A00]/30 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-[#cb0805] bg-rose-50/90 hover:bg-rose-100 border border-[#cb0805]/30 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
                     title="Auto-fetch address using GPS current location"
                   >
                     {locationLoading ? (
                       <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FF7A00]" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#cb0805]" />
                         <span>Detecting Location...</span>
                       </>
                     ) : (
                       <>
-                        <LocateFixed className="w-3.5 h-3.5 text-[#FF7A00]" />
+                        <LocateFixed className="w-3.5 h-3.5 text-[#cb0805]" />
                         <span>Use current location</span>
                       </>
                     )}
@@ -2193,7 +2193,7 @@ function CheckoutContent() {
                     <button
                       type="button"
                       onClick={handleUseNewAddress}
-                      className="text-xs font-bold text-[#FF7A00] hover:underline flex items-center gap-1 cursor-pointer"
+                      className="text-xs font-bold text-[#cb0805] hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>{isUsingNewAddress ? "Entering New Address" : "Use New Address"}</span>
@@ -2257,10 +2257,10 @@ function CheckoutContent() {
 
               {/* India Post Detected Localities Chips */}
               {detectedPostOffices.length > 0 && (
-                <div className="p-3 bg-orange-50/70 border border-orange-200/80 rounded-xl space-y-1.5 animate-in fade-in duration-200">
+                <div className="p-3 bg-rose-50/70 border border-rose-200/80 rounded-xl space-y-1.5 animate-in fade-in duration-200">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-gray-800 flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-[#FF7A00]" />
+                      <MapPin className="w-3.5 h-3.5 text-[#cb0805]" />
                       Select your locality / post office in {postalCode || city}:
                     </span>
                     <button
@@ -2281,7 +2281,7 @@ function CheckoutContent() {
                             setAddress((prev) => (prev ? `${prev}, ${poName}` : poName));
                           }
                         }}
-                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-orange-200 text-gray-800 hover:border-[#FF7A00] hover:text-[#FF7A00] transition-colors shadow-2xs cursor-pointer flex items-center gap-1"
+                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-rose-200 text-gray-800 hover:border-[#cb0805] hover:text-[#cb0805] transition-colors shadow-2xs cursor-pointer flex items-center gap-1"
                       >
                         <span>+ {poName}</span>
                       </button>
@@ -2294,7 +2294,7 @@ function CheckoutContent() {
               {savedAddresses.length > 0 && !isUsingNewAddress && (
                 <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-200/80 space-y-2.5">
                   <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#FF7A00]" />
+                    <MapPin className="w-3.5 h-3.5 text-[#cb0805]" />
                     Saved Addresses ({savedAddresses.length})
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -2306,7 +2306,7 @@ function CheckoutContent() {
                           onClick={() => handleSelectSavedAddress(addr)}
                           className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
                             isSelected
-                              ? "border-[#FF7A00] bg-orange-50/50 ring-1 ring-[#FF7A00]"
+                              ? "border-[#cb0805] bg-rose-50/50 ring-1 ring-[#cb0805]"
                               : "border-gray-200 bg-white hover:border-gray-300"
                           }`}
                         >
@@ -2344,7 +2344,7 @@ function CheckoutContent() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Rahul Sharma"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white shadow-2xs"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#cb0805] focus:ring-1 focus:ring-[#cb0805] transition-all bg-white shadow-2xs"
                   />
                 </div>
                 {name.trim().length >= 2 && (
@@ -2368,7 +2368,7 @@ function CheckoutContent() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email address"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white shadow-2xs"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#cb0805] focus:ring-1 focus:ring-[#cb0805] transition-all bg-white shadow-2xs"
                   />
                 </div>
                 <p className="text-[11px] text-gray-400 pl-1">
@@ -2382,7 +2382,7 @@ function CheckoutContent() {
                   type="checkbox"
                   checked={marketingConsent}
                   onChange={(e) => setMarketingConsent(e.target.checked)}
-                  className="mt-0.5 rounded border-gray-300 text-[#FF7A00] focus:ring-[#FF7A00] w-4 h-4 cursor-pointer"
+                  className="mt-0.5 rounded border-gray-300 text-[#cb0805] focus:ring-[#cb0805] w-4 h-4 cursor-pointer"
                 />
                 <span>
                   Keep me in the loop — shipping updates on WhatsApp and the occasional deal by email. You can opt out anytime.
@@ -2409,7 +2409,7 @@ function CheckoutContent() {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="House number, street, area, landmark (e.g. Near bus stand)"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white resize-none shadow-2xs leading-relaxed"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#cb0805] focus:ring-1 focus:ring-[#cb0805] transition-all bg-white resize-none shadow-2xs leading-relaxed"
                   />
                 </div>
               </div>
@@ -2422,7 +2422,7 @@ function CheckoutContent() {
                       Pincode *
                     </label>
                     {pincodeLoading && (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FF7A00]" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#cb0805]" />
                     )}
                     {pincodeDetected && (
                       <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold flex items-center gap-1 shrink-0">
@@ -2440,7 +2440,7 @@ function CheckoutContent() {
                       value={postalCode}
                       onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                       placeholder="682001"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white shadow-2xs"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#cb0805] focus:ring-1 focus:ring-[#cb0805] transition-all bg-white shadow-2xs"
                     />
                   </div>
                   <p className="text-[11px] text-gray-400 pl-1">
@@ -2461,7 +2461,7 @@ function CheckoutContent() {
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       placeholder="Kochi"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white shadow-2xs"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#cb0805] focus:ring-1 focus:ring-[#cb0805] transition-all bg-white shadow-2xs"
                     />
                   </div>
                 </div>
@@ -2481,7 +2481,7 @@ function CheckoutContent() {
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     placeholder="Kerala"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white shadow-2xs"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#cb0805] focus:ring-1 focus:ring-[#cb0805] transition-all bg-white shadow-2xs"
                   />
                 </div>
               </div>
@@ -2494,7 +2494,7 @@ function CheckoutContent() {
                   <span className="text-[10px] text-gray-400">Hassle-free</span>
                 </div>
                 <div className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                  <Truck className="w-4 h-4 text-[#FF7A00]" />
+                  <Truck className="w-4 h-4 text-[#cb0805]" />
                   <span className="text-[11px] font-bold text-gray-800">Fast Delivery</span>
                   <span className="text-[10px] text-gray-400">Across India</span>
                 </div>
@@ -2563,7 +2563,7 @@ function CheckoutContent() {
                         const el = document.getElementById("name-input");
                         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
                       }}
-                      className="text-[#FF7A00] hover:text-[#E66E00] font-bold text-xs hover:underline cursor-pointer shrink-0 ml-2"
+                      className="text-[#cb0805] hover:text-[#a80604] font-bold text-xs hover:underline cursor-pointer shrink-0 ml-2"
                     >
                       Edit Address
                     </button>
@@ -2601,12 +2601,12 @@ function CheckoutContent() {
                       onClick={() => setPaymentMethod("prepaid")}
                       className={`relative p-4 sm:p-5 pt-6 rounded-2xl border-2 cursor-pointer transition-all ${
                         paymentMethod === "prepaid"
-                          ? "border-[#FF7A00] bg-[#FFFBF8] shadow-sm ring-1 ring-[#FF7A00]/20"
-                          : "border-gray-200 bg-white hover:border-[#FF7A00]/40"
+                          ? "border-[#cb0805] bg-[#FFFBF8] shadow-sm ring-1 ring-[#cb0805]/20"
+                          : "border-gray-200 bg-white hover:border-[#cb0805]/40"
                       }`}
                     >
                       {/* RECOMMENDED BADGE */}
-                      <span className="absolute -top-3 left-4 px-3 py-0.5 rounded-full bg-[#FF7A00] text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs flex items-center gap-1">
+                      <span className="absolute -top-3 left-4 px-3 py-0.5 rounded-full bg-[#cb0805] text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs flex items-center gap-1">
                         ★ RECOMMENDED
                       </span>
 
@@ -2615,15 +2615,15 @@ function CheckoutContent() {
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white transition-colors ${
-                              paymentMethod === "prepaid" ? "border-[#FF7A00]" : "border-gray-300"
+                              paymentMethod === "prepaid" ? "border-[#cb0805]" : "border-gray-300"
                             }`}
                           >
                             {paymentMethod === "prepaid" && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-[#FF7A00]" />
+                              <div className="w-2.5 h-2.5 rounded-full bg-[#cb0805]" />
                             )}
                           </div>
 
-                          <div className="w-10 h-10 rounded-xl bg-orange-100/60 border border-orange-200/50 flex items-center justify-center text-[#FF7A00] shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-rose-100/60 border border-rose-200/50 flex items-center justify-center text-[#cb0805] shrink-0">
                             <CreditCard className="w-5 h-5" />
                           </div>
 
@@ -2850,7 +2850,7 @@ function CheckoutContent() {
                                 Qty: {item.quantity} × ₹{item.price.toLocaleString()}
                               </p>
                               {isBundle && (
-                                <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-orange-50 text-[#FF5722] border border-orange-200">
+                                <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-rose-50 text-[#FF5722] border border-rose-200">
                                   <span>✨</span>
                                   <span>{item.offer_label || `Buy ${item.quantity} Save More`}</span>
                                 </span>
@@ -2910,7 +2910,7 @@ function CheckoutContent() {
                       <div className="flex justify-between text-gray-600">
                         <span>COD Advance (Pay Online)</span>
                         {paymentMethod === "cod" ? (
-                          <span className="font-bold text-[#FF7A00]">₹10</span>
+                          <span className="font-bold text-[#cb0805]">₹10</span>
                         ) : (
                           <span className="text-gray-400">—</span>
                         )}
@@ -2962,7 +2962,7 @@ function CheckoutContent() {
                           ? "bg-gray-400 cursor-not-allowed opacity-80"
                           : paymentMethod === "cod"
                           ? "bg-[#097939] hover:bg-[#076630] shadow-emerald-700/25 active:scale-[0.99]"
-                          : "bg-[#FF7A00] hover:bg-[#E66E00] shadow-[#FF7A00]/25 active:scale-[0.99]"
+                          : "bg-[#cb0805] hover:bg-[#a80604] shadow-[#cb0805]/25 active:scale-[0.99]"
                       }`}
                     >
                       {loading ? (
@@ -2996,7 +2996,7 @@ function CheckoutContent() {
                   {/* Trust Badges below Pay Button (Optimized: 3 in 1 row on Mobile!) */}
                   <div className="pt-3 grid grid-cols-3 gap-1.5 sm:gap-3 text-center">
                     <div className="flex flex-col items-center p-2 rounded-xl bg-gray-50/70 border border-gray-100 shadow-2xs">
-                      <div className="w-7 h-7 rounded-full bg-white shadow-2xs border border-gray-100 flex items-center justify-center text-[#FF7A00] shrink-0 mb-1 mx-auto">
+                      <div className="w-7 h-7 rounded-full bg-white shadow-2xs border border-gray-100 flex items-center justify-center text-[#cb0805] shrink-0 mb-1 mx-auto">
                         <ShieldCheck className="w-3.5 h-3.5" />
                       </div>
                       <p className="text-[10px] sm:text-xs font-bold text-gray-900 leading-tight">256-Bit SSL</p>
@@ -3124,7 +3124,7 @@ function CheckoutContent() {
                         {/* Buy More Save More Badge */}
                         {isBundle && (
                           <div className="mt-1">
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-extrabold bg-gradient-to-r from-orange-50 to-amber-50 text-[#FF5722] border border-orange-200 shadow-2xs">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-extrabold bg-gradient-to-r from-orange-50 to-amber-50 text-[#FF5722] border border-rose-200 shadow-2xs">
                               <span>✨</span>
                               <span>{item.offer_label || `Buy ${item.quantity} Save More`}</span>
                             </span>
@@ -3168,14 +3168,14 @@ function CheckoutContent() {
                       value={promoCode}
                       onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                       placeholder="Promo code"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold uppercase tracking-wider text-gray-900 placeholder:normal-case placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:border-[#FF7A00] bg-white"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold uppercase tracking-wider text-gray-900 placeholder:normal-case placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:border-[#cb0805] bg-white"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={handleApplyPromo}
                     disabled={promoLoading}
-                    className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-xs shadow-2xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60"
+                    className="px-4 py-2.5 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs shadow-2xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60"
                   >
                     {promoLoading ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -3249,7 +3249,7 @@ function CheckoutContent() {
                 <div className="flex justify-between text-gray-600">
                   <span>COD Advance (Pay Online)</span>
                   {paymentMethod === "cod" ? (
-                    <span className="font-bold text-[#FF7A00]">₹10</span>
+                    <span className="font-bold text-[#cb0805]">₹10</span>
                   ) : (
                     <span className="text-gray-400">—</span>
                   )}
@@ -3294,7 +3294,7 @@ function CheckoutContent() {
               {availableUpsells.length > 0 && (
                 <div className="pt-4 border-t border-gray-100 space-y-3">
                   <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-700 uppercase tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#cb0805]" />
                     <span>You Might Also Like</span>
                   </div>
 
@@ -3329,7 +3329,7 @@ function CheckoutContent() {
                         <button
                           type="button"
                           onClick={() => addToCart(item, 1)}
-                          className="px-3 py-1.5 rounded-lg bg-black text-white text-xs font-bold hover:bg-[#FF7A00] transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
+                          className="px-3 py-1.5 rounded-lg bg-black text-white text-xs font-bold hover:bg-[#cb0805] transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" />
                           <span>Add</span>
@@ -3358,7 +3358,7 @@ export default function CheckoutPage() {
       fallback={
         <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
-            <div className="w-8 h-8 border-3 border-[#FF7A00] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <div className="w-8 h-8 border-3 border-[#cb0805] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="text-xs font-semibold text-gray-500">Loading checkout...</p>
           </div>
         </div>

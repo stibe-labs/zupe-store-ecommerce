@@ -72,11 +72,11 @@ export function CartDrawer() {
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <ShoppingBag className="w-5 h-5 text-[#FF7A00]" />
+                <ShoppingBag className="w-5 h-5 text-[#cb0805]" />
                 <h2 className="font-display font-bold text-lg text-[#2D3436]">
                   Your Cart
                 </h2>
-                <span className="text-xs font-mono bg-[#FF7A00]/10 text-[#FF7A00] px-2 py-0.5 rounded-full">
+                <span className="text-xs font-mono bg-[#cb0805]/10 text-[#cb0805] px-2 py-0.5 rounded-full">
                   {totalItems} {totalItems === 1 ? "item" : "items"}
                 </span>
               </div>
@@ -90,9 +90,9 @@ export function CartDrawer() {
 
             {/* Free Shipping Progress */}
             {cart.length > 0 && (
-              <div className="px-5 py-3 bg-gradient-to-r from-[#FF7A00]/5 to-[#FF7A45]/5 border-b border-gray-100">
+              <div className="px-5 py-3 bg-gradient-to-r from-[#cb0805]/5 to-[#d1100d]/5 border-b border-gray-100">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <Truck className="w-4 h-4 text-[#FF7A00]" />
+                  <Truck className="w-4 h-4 text-[#cb0805]" />
                   <span className="text-xs font-medium text-[#636E72]">
                     {freeShippingRemaining > 0
                       ? `Add ₹${freeShippingRemaining.toLocaleString()} more for free shipping`
@@ -101,7 +101,7 @@ export function CartDrawer() {
                 </div>
                 <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-[#FF7A00] to-[#FF7A45] rounded-full"
+                    className="h-full bg-gradient-to-r from-[#cb0805] to-[#d1100d] rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${shippingProgress}%` }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
@@ -114,14 +114,14 @@ export function CartDrawer() {
             <div data-lenis-prevent className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-5" style={{ WebkitOverflowScrolling: "touch" }}>
               {cart.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <div className="w-20 h-20 rounded-full bg-[#FF7A00]/10 flex items-center justify-center mb-4">
-                    <ShoppingBag className="w-8 h-8 text-[#FF7A00]" />
+                  <div className="w-20 h-20 rounded-full bg-[#cb0805]/10 flex items-center justify-center mb-4">
+                    <ShoppingBag className="w-8 h-8 text-[#cb0805]" />
                   </div>
                   <p className="text-base font-semibold text-[#2D3436] mb-1">Your cart is empty</p>
                   <Link
                     href="/products"
                     onClick={closeCart}
-                    className="inline-flex items-center justify-center px-6 py-2.5 bg-[#FF7A00] text-white font-semibold text-sm rounded-xl hover:bg-[#E66E00] transition-colors shadow-sm shadow-[#FF7A00]/20 cursor-pointer"
+                    className="inline-flex items-center justify-center px-6 py-2.5 bg-[#cb0805] text-white font-semibold text-sm rounded-xl hover:bg-[#a80604] transition-colors shadow-sm shadow-[#cb0805]/20 cursor-pointer"
                   >
                     Start Shopping
                   </Link>
@@ -170,9 +170,9 @@ export function CartDrawer() {
                         <Link
                           href={`/products/${item.id}`}
                           onClick={closeCart}
-                          className="hover:text-[#FF7A00] transition-colors"
+                          className="hover:text-[#cb0805] transition-colors"
                         >
-                          <p className="text-sm font-semibold text-[#2D3436] truncate hover:text-[#FF7A00]">
+                          <p className="text-sm font-semibold text-[#2D3436] truncate hover:text-[#cb0805]">
                             {item.name}
                           </p>
                         </Link>
@@ -182,12 +182,12 @@ export function CartDrawer() {
                             ⚠️ Out of Stock
                           </span>
                         ) : item.offer_label ? (
-                          <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-[#FF5722] border border-orange-200">
+                          <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-[#FF5722] border border-rose-200">
                             ✨ {item.offer_label}
                           </span>
                         ) : null}
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
-                          <span className="text-sm font-bold text-[#FF7A00]">
+                          <span className="text-sm font-bold text-[#cb0805]">
                             ₹{item.price.toLocaleString()}
                           </span>
                           {item.original_price && item.original_price > item.price ? (
@@ -275,7 +275,7 @@ export function CartDrawer() {
                     className={`w-full flex items-center justify-center gap-2 py-3.5 text-white font-semibold rounded-xl transition-colors text-sm ${
                       hasOutOfStockItems
                         ? "bg-gray-400 cursor-not-allowed opacity-80 shadow-none"
-                        : "bg-[#FF7A00] hover:bg-[#E66E00] shadow-lg shadow-[#FF7A00]/25 cursor-pointer"
+                        : "bg-[#cb0805] hover:bg-[#a80604] shadow-lg shadow-[#cb0805]/25 cursor-pointer"
                     }`}
                   >
                     {hasOutOfStockItems ? "⚠️ Remove Out of Stock Items" : "Proceed to Checkout"}
@@ -284,7 +284,7 @@ export function CartDrawer() {
                 </div>
                 <button
                   onClick={closeCart}
-                  className="w-full text-center text-xs text-[#636E72] hover:text-[#FF7A00] transition-colors py-2"
+                  className="w-full text-center text-xs text-[#636E72] hover:text-[#cb0805] transition-colors py-2"
                 >
                   Continue Shopping
                 </button>

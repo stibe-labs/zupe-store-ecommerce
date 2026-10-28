@@ -35,11 +35,11 @@ export function TopBar() {
   return (
     <aside
       aria-label="Store Announcements"
-      className="relative bg-gradient-to-r from-[#1A2E22] via-[#284534] to-[#1A2E22] text-[#E8F0EA] text-[11px] sm:text-xs py-2 overflow-hidden border-b border-[#3F6650]/30 select-none z-30"
+      className="relative bg-gradient-to-r from-[#380303] via-[#5c0605] to-[#380303] text-rose-100 text-[11px] sm:text-xs py-2 overflow-hidden border-b border-[#cb0805]/30 select-none z-30"
     >
       {/* Edge gradient masks for smooth fade in/out */}
-      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-[#1A2E22] to-transparent z-10" />
-      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-[#1A2E22] to-transparent z-10" />
+      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-[#380303] to-transparent z-10" />
+      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-[#380303] to-transparent z-10" />
 
       {/* Marquee Track: Seamless Infinite Loop */}
       <div className="flex animate-topbar-ticker whitespace-nowrap">

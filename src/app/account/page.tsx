@@ -415,7 +415,7 @@ export default function AccountPage() {
       <div className="min-h-screen bg-[#FBFBFC] text-[#111111] flex flex-col justify-between">
         <Navbar />
         <div className="flex-1 flex items-center justify-center py-24">
-          <div className="w-10 h-10 border-4 border-[#FF7A00]/20 border-t-[#FF7A00] rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-[#cb0805]/20 border-t-[#cb0805] rounded-full animate-spin" />
         </div>
         <Footer />
       </div>
@@ -427,7 +427,7 @@ export default function AccountPage() {
       <div className="min-h-screen bg-[#FBFBFC] text-[#111111] flex flex-col justify-between">
         <Navbar />
         <div className="max-w-md mx-auto px-4 py-24 text-center">
-          <div className="w-16 h-16 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-full bg-rose-50 text-[#cb0805] flex items-center justify-center mx-auto mb-4">
             <User className="w-8 h-8" />
           </div>
           <h2 className="text-2xl font-bold font-display text-gray-900 mb-2">Sign in to your account</h2>
@@ -437,7 +437,7 @@ export default function AccountPage() {
           <div className="space-y-3">
             <Link
               href="/signin?redirect=/account"
-              className="w-full inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-[#FF7A00] text-white font-bold text-sm shadow-md shadow-[#FF7A00]/20 hover:bg-[#E66E00] transition-all"
+              className="w-full inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-[#cb0805] text-white font-bold text-sm shadow-md shadow-[#cb0805]/20 hover:bg-[#a80604] transition-all"
             >
               Sign In
             </Link>
@@ -463,11 +463,11 @@ export default function AccountPage() {
       <main className="flex-1 max-w-[1600px] mx-auto w-full px-4 sm:px-6 py-8 sm:py-12">
         {/* Profile Header Banner */}
         <div className="bg-gradient-to-r from-[#111111] via-[#1C1F26] to-[#111111] text-white rounded-3xl p-6 sm:p-8 shadow-xl mb-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-72 h-72 bg-[#FF7A00]/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-72 h-72 bg-[#cb0805]/15 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div className="flex items-center gap-4 sm:gap-5">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#FF7A00] to-[#FFA07A] text-white flex items-center justify-center font-display font-extrabold text-2xl sm:text-3xl shadow-lg shadow-[#FF7A00]/25 flex-shrink-0">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#cb0805] to-[#FFA07A] text-white flex items-center justify-center font-display font-extrabold text-2xl sm:text-3xl shadow-lg shadow-[#cb0805]/25 flex-shrink-0">
                 {initial}
               </div>
               <div className="min-w-0">
@@ -480,8 +480,8 @@ export default function AccountPage() {
                     Verified
                   </span>
                   {isSuperAdmin && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FF7A00]/20 text-[#FF9E40] text-[10px] font-bold tracking-wide uppercase border border-[#FF7A00]/40 shadow-xs">
-                      <Shield className="w-3 h-3 text-[#FF7A00]" />
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#cb0805]/20 text-[#FF9E40] text-[10px] font-bold tracking-wide uppercase border border-[#cb0805]/40 shadow-xs">
+                      <Shield className="w-3 h-3 text-[#cb0805]" />
                       Super Admin
                     </span>
                   )}
@@ -516,16 +516,16 @@ export default function AccountPage() {
                     onClick={handleOpenProfileModal}
                     className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-gray-200 hover:text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
                   >
-                    <Edit2 className="w-3 h-3 text-[#FF7A00]" />
+                    <Edit2 className="w-3 h-3 text-[#cb0805]" />
                     <span>Edit Profile Details</span>
                   </button>
 
                   {isSuperAdmin && (
                     <Link
                       href="/admin"
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#FF7A00]/20 hover:bg-[#FF7A00]/30 text-[#FF9E40] hover:text-white text-xs font-bold border border-[#FF7A00]/40 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#cb0805]/20 hover:bg-[#cb0805]/30 text-[#FF9E40] hover:text-white text-xs font-bold border border-[#cb0805]/40 transition-colors cursor-pointer"
                     >
-                      <LayoutDashboard className="w-3 h-3 text-[#FF7A00]" />
+                      <LayoutDashboard className="w-3 h-3 text-[#cb0805]" />
                       <span>Admin Portal</span>
                       <ArrowRight className="w-3 h-3" />
                     </Link>
@@ -538,7 +538,7 @@ export default function AccountPage() {
               {isSuperAdmin && (
                 <Link
                   href="/admin"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#FF7A00] to-orange-500 hover:from-[#E66E00] hover:to-orange-600 text-xs font-bold text-white shadow-lg shadow-[#FF7A00]/25 transition-all cursor-pointer border border-[#FF7A00]/50 active:scale-95"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#cb0805] to-[#a80604] hover:from-[#a80604] hover:to-[#8c0503] text-xs font-bold text-white shadow-lg shadow-[#cb0805]/25 transition-all cursor-pointer border border-[#cb0805]/50 active:scale-95"
                 >
                   <Shield className="w-3.5 h-3.5" />
                   <span>Admin Portal</span>
@@ -572,14 +572,14 @@ export default function AccountPage() {
           {/* 1. My Orders */}
           <Link
             href="/orders"
-            className="group bg-white rounded-3xl p-6 border border-gray-100 hover:border-[#FF7A00]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+            className="group bg-white rounded-3xl p-6 border border-gray-100 hover:border-[#cb0805]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center group-hover:scale-105 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-[#cb0805] flex items-center justify-center group-hover:scale-105 transition-transform">
                   <Package className="w-6 h-6" />
                 </div>
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider group-hover:text-[#FF7A00] transition-colors flex items-center gap-1">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider group-hover:text-[#cb0805] transition-colors flex items-center gap-1">
                   View <ChevronRight className="w-3.5 h-3.5" />
                 </span>
               </div>
@@ -588,7 +588,7 @@ export default function AccountPage() {
                 Track delivery status, rate & review delivered products, and upload photos.
               </p>
             </div>
-            <div className="mt-5 pt-3 border-t border-gray-50 flex items-center text-xs font-semibold text-[#FF7A00]">
+            <div className="mt-5 pt-3 border-t border-gray-50 flex items-center text-xs font-semibold text-[#cb0805]">
               <span>Go to Orders</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -597,17 +597,17 @@ export default function AccountPage() {
           {/* 2. Order Tracking */}
           <Link
             href="/order-tracking"
-            className="group bg-white rounded-3xl p-6 border border-gray-100 hover:border-[#FF7A00]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
+            className="group bg-white rounded-3xl p-6 border border-gray-100 hover:border-[#cb0805]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
           >
             <div className="absolute top-3 right-3">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FF7A00]/10 text-[#FF7A00] text-[10px] font-bold uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#FF7A00] animate-ping" />
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#cb0805]/10 text-[#cb0805] text-[10px] font-bold uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#cb0805] animate-ping" />
                 Live Tracker
               </span>
             </div>
             <div>
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center group-hover:scale-105 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-[#cb0805] flex items-center justify-center group-hover:scale-105 transition-transform">
                   <Truck className="w-6 h-6" />
                 </div>
               </div>
@@ -616,7 +616,7 @@ export default function AccountPage() {
                 Live courier updates, AWB lookup, and real-time shipment milestone timeline.
               </p>
             </div>
-            <div className="mt-5 pt-3 border-t border-gray-50 flex items-center text-xs font-semibold text-[#FF7A00]">
+            <div className="mt-5 pt-3 border-t border-gray-50 flex items-center text-xs font-semibold text-[#cb0805]">
               <span>Track Live Package</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -655,7 +655,7 @@ export default function AccountPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
             <div>
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 text-[#cb0805] flex items-center justify-center">
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
@@ -675,7 +675,7 @@ export default function AccountPage() {
             <button
               type="button"
               onClick={handleOpenAddAddress}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FF7A00] text-white text-xs font-bold shadow-md shadow-[#FF7A00]/20 hover:bg-[#E66E00] transition-all cursor-pointer whitespace-nowrap self-start sm:self-center"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#cb0805] text-white text-xs font-bold shadow-md shadow-[#cb0805]/20 hover:bg-[#a80604] transition-all cursor-pointer whitespace-nowrap self-start sm:self-center"
             >
               <Plus className="w-4 h-4" />
               <span>Add New Address</span>
@@ -686,11 +686,11 @@ export default function AccountPage() {
           <div className="pt-6">
             {loadingAddresses ? (
               <div className="py-12 flex items-center justify-center">
-                <Loader2 className="w-7 h-7 text-[#FF7A00] animate-spin" />
+                <Loader2 className="w-7 h-7 text-[#cb0805] animate-spin" />
               </div>
             ) : addresses.length === 0 ? (
               <div className="text-center py-10 px-4 rounded-2xl bg-gray-50 border border-dashed border-gray-200">
-                <div className="w-12 h-12 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-3">
+                <div className="w-12 h-12 rounded-full bg-rose-50 text-[#cb0805] flex items-center justify-center mx-auto mb-3">
                   <MapPin className="w-6 h-6" />
                 </div>
                 <h3 className="text-sm font-bold text-gray-900 mb-1">No Delivery Addresses Saved Yet</h3>
@@ -702,7 +702,7 @@ export default function AccountPage() {
                   onClick={handleOpenAddAddress}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-300 text-gray-800 text-xs font-bold hover:bg-gray-100 transition-colors shadow-sm cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5 text-[#FF7A00]" />
+                  <Plus className="w-3.5 h-3.5 text-[#cb0805]" />
                   <span>Add First Address</span>
                 </button>
               </div>
@@ -713,7 +713,7 @@ export default function AccountPage() {
                     key={addr.id}
                     className={`rounded-2xl p-5 border transition-all relative flex flex-col justify-between ${
                       addr.is_default
-                        ? "border-[#FF7A00]/50 bg-orange-50/20 shadow-sm ring-1 ring-[#FF7A00]/20"
+                        ? "border-[#cb0805]/50 bg-rose-50/20 shadow-sm ring-1 ring-[#cb0805]/20"
                         : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                   >
@@ -733,15 +733,15 @@ export default function AccountPage() {
                         </div>
 
                         {addr.is_default ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FF7A00]/10 text-[#FF7A00] text-[10px] font-bold border border-[#FF7A00]/20">
-                            <Star className="w-3 h-3 fill-[#FF7A00]" />
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#cb0805]/10 text-[#cb0805] text-[10px] font-bold border border-[#cb0805]/20">
+                            <Star className="w-3 h-3 fill-[#cb0805]" />
                             Default
                           </span>
                         ) : (
                           <button
                             type="button"
                             onClick={() => handleSetDefaultAddress(addr.id)}
-                            className="text-[11px] font-medium text-gray-400 hover:text-[#FF7A00] hover:underline cursor-pointer"
+                            className="text-[11px] font-medium text-gray-400 hover:text-[#cb0805] hover:underline cursor-pointer"
                           >
                             Set Default
                           </button>
@@ -808,7 +808,7 @@ export default function AccountPage() {
           <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 text-[#cb0805] flex items-center justify-center">
                   <ShoppingBag className="w-5 h-5" />
                 </div>
                 <div>
@@ -819,7 +819,7 @@ export default function AccountPage() {
               <button
                 type="button"
                 onClick={openCart}
-                className="px-3.5 py-1.5 rounded-xl bg-[#FF7A00] text-white text-xs font-bold hover:bg-[#E66E00] transition-colors cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-[#cb0805] text-white text-xs font-bold hover:bg-[#a80604] transition-colors cursor-pointer"
               >
                 Open Bag
               </button>
@@ -832,7 +832,7 @@ export default function AccountPage() {
           {/* Customer Support Card */}
           <div className="lg:col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-3xl p-6 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 text-[#FF7A00] mb-1">
+              <div className="flex items-center gap-2 text-[#cb0805] mb-1">
                 <Sparkles className="w-4 h-4" />
                 <span className="text-[11px] font-bold uppercase tracking-wider">
                   24/7 Dedicated Support
@@ -879,7 +879,7 @@ export default function AccountPage() {
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 text-[#cb0805] flex items-center justify-center">
                 <MapPin className="w-5 h-5" />
               </div>
               <div>
@@ -911,7 +911,7 @@ export default function AccountPage() {
                     value={recipientName}
                     onChange={(e) => setRecipientName(e.target.value)}
                     placeholder="e.g. John Doe"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
                   />
                 </div>
 
@@ -925,7 +925,7 @@ export default function AccountPage() {
                     value={addressPhone}
                     onChange={(e) => setAddressPhone(e.target.value)}
                     placeholder="10-digit mobile number"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
                   />
                 </div>
               </div>
@@ -940,7 +940,7 @@ export default function AccountPage() {
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
                   placeholder="Flat / House No., Apartment, Street, Landmark"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
                 />
               </div>
 
@@ -955,7 +955,7 @@ export default function AccountPage() {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="City"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
                   />
                 </div>
 
@@ -968,7 +968,7 @@ export default function AccountPage() {
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     placeholder="State"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
                   />
                 </div>
 
@@ -982,7 +982,7 @@ export default function AccountPage() {
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
                     placeholder="6-digit PIN"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
                   />
                 </div>
               </div>
@@ -1000,7 +1000,7 @@ export default function AccountPage() {
                       onClick={() => setTag(t)}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                         tag === t
-                          ? "bg-[#FF7A00] text-white shadow-sm"
+                          ? "bg-[#cb0805] text-white shadow-sm"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                       }`}
                     >
@@ -1019,7 +1019,7 @@ export default function AccountPage() {
                   type="checkbox"
                   checked={isDefault}
                   onChange={(e) => setIsDefault(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#FF7A00] focus:ring-[#FF7A00] cursor-pointer"
+                  className="w-4 h-4 rounded text-[#cb0805] focus:ring-[#cb0805] cursor-pointer"
                 />
                 <span className="text-xs font-medium text-gray-700">
                   Make this my default delivery address
@@ -1037,7 +1037,7 @@ export default function AccountPage() {
                 <button
                   type="submit"
                   disabled={addressSaving}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold shadow-md shadow-[#FF7A00]/25 transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white text-xs font-bold shadow-md shadow-[#cb0805]/25 transition-all cursor-pointer disabled:opacity-50"
                 >
                   {addressSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>Save Address</span>
@@ -1061,7 +1061,7 @@ export default function AccountPage() {
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 text-[#cb0805] flex items-center justify-center">
                 <User className="w-5 h-5" />
               </div>
               <div>
@@ -1099,7 +1099,7 @@ export default function AccountPage() {
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
                   placeholder="Your full name"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
                 />
               </div>
 
@@ -1112,7 +1112,7 @@ export default function AccountPage() {
                   value={profilePhone}
                   onChange={(e) => setProfilePhone(e.target.value)}
                   placeholder="e.g. 9876543210"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
                 />
                 <p className="text-[11px] text-gray-400 mt-1">
                   Used for order tracking SMS, courier OTP, and delivery coordination.
@@ -1145,7 +1145,7 @@ export default function AccountPage() {
                 <button
                   type="submit"
                   disabled={profileSaving || profileSuccess}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold shadow-md shadow-[#FF7A00]/25 transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white text-xs font-bold shadow-md shadow-[#cb0805]/25 transition-all cursor-pointer disabled:opacity-50"
                 >
                   {profileSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>Save Changes</span>

@@ -191,8 +191,8 @@ export function formatCategoryItems(rawCategories: StoreCategory[]): CategoryIte
         id: c.id,
         name: c.name,
         href: isAll ? "/products" : `/products?category=${encodeURIComponent(c.slug || c.name)}`,
-        bgColor: c.bgColor || (isAll ? "bg-[#EEF2FF]" : "bg-orange-50"),
-        iconColor: c.iconColor || (isAll ? "text-[#3B82F6]" : "text-[#FF7A00]"),
+        bgColor: c.bgColor || (isAll ? "bg-[#EEF2FF]" : "bg-rose-50"),
+        iconColor: c.iconColor || (isAll ? "text-[#3B82F6]" : "text-[#cb0805]"),
         iconShape: shape,
         icon: c.customIcon ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -319,7 +319,7 @@ export function CategoryPills({ initialCategories }: CategoryPillsProps) {
                 {cat.icon}
               </div>
               {/* Category Name Label */}
-              <span className="text-[11px] sm:text-xs font-semibold text-gray-700 group-hover:text-[#FF7A00] transition-colors leading-tight">
+              <span className="text-[11px] sm:text-xs font-semibold text-gray-700 group-hover:text-[#cb0805] transition-colors leading-tight">
                 {cat.name}
               </span>
             </Link>
