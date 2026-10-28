@@ -147,47 +147,9 @@ export default function AbandonedCartsAdminPage() {
     }, 4500);
   };
 
-  // 1-Click Manual Send (Opens WhatsApp Web / Mobile with recovery text and updates DB tracking)
+  // 1-Click Manual Send (Dispatches the automated WhatsApp recovery message directly in background)
   const handleSendWhatsApp = async (checkout: AbandonedCheckout) => {
     setSendingId(checkout.id);
-    const cleanPhone = checkout.customer_phone.replace(/\D/g, "");
-    const targetDigits = cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`;
-    const sectionName = checkout.source === "cart" ? "cart" : "checkout section";
-
-    const itemSummary = (checkout.items || [])
-      .map(
-        (it) =>
-          `• ${it.name || it.product_name || "Product"} (x${it.quantity || 1}) — ₹${Number(
-            it.price || it.unit_price || 0
-          ).toLocaleString("en-IN")}`
-      )
-      .join("\n");
-
-    const firstName = checkout.customer_name?.trim()
-      ? checkout.customer_name.trim().split(" ")[0]
-      : "there";
-    const actionText =
-      checkout.source === "cart"
-        ? "👉 Tap here to view your cart & complete your order:"
-        : "👉 Tap here to complete your order in 1 click:";
-
-    const waMessage =
-      `Hi ${firstName}! We noticed you left some great items in your ${sectionName} at Zupe Store:\n\n` +
-      `${itemSummary}\n\n` +
-      `⚡ Currently this is a great price! Plus, if you order now, you get Free Delivery without any extra charges.\n\n` +
-      `${actionText}\n${checkout.recovery_url}\n\n` +
-      `Need any assistance? Just reply to this message!\n` +
-      `Zupe Store Team`;
-
-    const waDirectUrl = `https://api.whatsapp.com/send?phone=${targetDigits}&text=${encodeURIComponent(
-      waMessage
-    )}`;
-
-    // Open WhatsApp directly so message is 100% delivered to the customer without Meta Cloud API restrictions
-    if (typeof window !== "undefined") {
-      window.open(waDirectUrl, "_blank");
-    }
-
     try {
       const res = await fetch("/api/admin/abandoned-checkouts", {
         method: "POST",
@@ -196,24 +158,28 @@ export default function AbandonedCartsAdminPage() {
       });
       const data = await res.json();
 
-      setCheckouts((prev) =>
-        prev.map((c) =>
-          c.id === checkout.id
-            ? {
-                ...c,
-                whatsapp_sent_count: (c.whatsapp_sent_count || 0) + 1,
-                last_whatsapp_sent_at: new Date().toISOString(),
-              }
-            : c
-        )
-      );
+      if (data.success) {
+        setCheckouts((prev) =>
+          prev.map((c) =>
+            c.id === checkout.id
+              ? {
+                  ...c,
+                  whatsapp_sent_count: (c.whatsapp_sent_count || 0) + 1,
+                  last_whatsapp_sent_at: new Date().toISOString(),
+                }
+              : c
+          )
+        );
 
-      showToast(
-        `WhatsApp chat opened for +${checkout.customer_phone}! Press send in WhatsApp to deliver.`,
-        "success"
-      );
+        showToast(
+          `WhatsApp recovery message dispatched to +${checkout.customer_phone}!`,
+          "success"
+        );
+      } else {
+        showToast(data.error || "Failed to send WhatsApp message.", "error");
+      }
     } catch (err: any) {
-      showToast("WhatsApp opened. Note: Network error updating background sent counter.", "success");
+      showToast("Network error while sending recovery WhatsApp.", "error");
     } finally {
       setSendingId(null);
     }
