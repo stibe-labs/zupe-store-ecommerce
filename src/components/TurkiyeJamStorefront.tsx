@@ -264,122 +264,39 @@ Please confirm priority delivery details.`;
 
         <div className="flex flex-col lg:flex-row min-h-[680px] lg:min-h-[760px] lg:h-[calc(100vh-80px)] lg:max-h-[880px] w-full">
           
-          {/* ── LEFT HALF: Dark Background with Minimal Text & Add to Cart ── */}
-          <div className="w-full lg:w-1/2 flex items-center justify-center lg:justify-end px-6 sm:px-10 lg:px-14 xl:px-18 py-12 lg:py-16 bg-stone-950 relative z-10 order-2 lg:order-1">
-            <div className="w-full max-w-xl space-y-5 sm:space-y-6">
+          {/* ── LEFT HALF: Ultra-Minimal Dark Left Side with Just Add to Cart ── */}
+          <div className="w-full lg:w-1/2 flex items-center justify-center lg:justify-end px-6 sm:px-10 lg:px-16 xl:px-20 py-16 lg:py-24 bg-stone-950 relative z-10 order-2 lg:order-1">
+            <div className="w-full max-w-md space-y-6 text-center lg:text-left">
               
-              {/* Top Origin & Persona Badge */}
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#cb0805]/15 border border-[#cb0805]/30 text-[#ff807e] text-xs font-semibold uppercase tracking-wider">
-                  <span className="w-2 h-2 rounded-full bg-[#cb0805] animate-pulse" />
-                  100% Authentic Anatolian Botanical Macun
-                </span>
-                <span className="text-xs text-stone-400 font-medium">🇹🇷 Themra Certified</span>
-              </div>
-
-              {/* Minimal Headline */}
               <div>
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.08] font-sans">
-                  turkiye jam
+                <span className="text-xs font-semibold uppercase tracking-widest text-[#ff807e]">
+                  For Him &amp; Her • 48h Natural Action
+                </span>
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mt-2 leading-tight font-sans">
+                  Natural Stamina &amp;{" "}
+                  <span className="text-[#ff807e] block sm:inline">Intimate Vitality</span>
                 </h1>
-                <p className="text-lg sm:text-xl font-semibold text-[#ff807e] mt-1.5">
-                  Natural Stamina &amp; Intimate Vitality
-                </p>
-              </div>
-
-              {/* Clean 2-Sentence Explanation */}
-              <p className="text-sm sm:text-base text-stone-300 leading-relaxed font-normal">
-                Handcrafted in Turkey with pure mountain blossom honey, wild Epimedium, royal jelly, and red ginseng. Formulated to naturally elevate physical endurance, stamina, and intimate vitality for both men and women without synthetic stimulants.
-              </p>
-
-              {/* Minimal Package Selector */}
-              <div className="pt-2">
-                <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-xs font-bold uppercase tracking-wider text-stone-400">
-                    Select Size &amp; Package:
+                
+                <div className="flex items-baseline gap-3 mt-4 justify-center lg:justify-start">
+                  <span className="text-3xl sm:text-4xl font-extrabold text-white">
+                    ₹{selectedVariant.price.toLocaleString()}
                   </span>
-                  {selectedVariant.badge && (
-                    <span className="text-[11px] font-bold text-[#ff807e] bg-[#cb0805]/25 px-2.5 py-0.5 rounded-full border border-[#cb0805]/40">
-                      ★ {selectedVariant.badge}
-                    </span>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {TURKIYE_JAM_VARIANTS.map((v) => {
-                    const isSelected = selectedVariant.id === v.id;
-                    return (
-                      <button
-                        key={v.id}
-                        type="button"
-                        onClick={() => handleSelectVariant(v)}
-                        className={`flex flex-col text-left p-2.5 rounded-xl border transition-all text-xs cursor-pointer ${
-                          isSelected
-                            ? "bg-white/15 border-[#cb0805] text-white ring-1 ring-[#cb0805] shadow-sm"
-                            : "bg-white/5 hover:bg-white/10 border-white/10 text-stone-300"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-bold truncate text-[11px]">{v.name}</span>
-                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#cb0805] shrink-0" />}
-                        </div>
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="font-extrabold text-white text-sm">₹{v.price.toLocaleString()}</span>
-                          <span className="line-through text-stone-400 text-[10px]">₹{v.mrp.toLocaleString()}</span>
-                        </div>
-                      </button>
-                    );
-                  })}
+                  <span className="text-base text-stone-500 line-through">
+                    ₹{selectedVariant.mrp.toLocaleString()}
+                  </span>
                 </div>
               </div>
 
-              {/* Action Buttons: Add To Cart (Primary) + Buy Now + WhatsApp */}
-              <div className="pt-1 space-y-2.5">
+              {/* Just the Add to Cart Button */}
+              <div className="pt-2">
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="w-full py-4 px-6 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-sm tracking-wide shadow-lg shadow-[#cb0805]/30 hover:shadow-[#cb0805]/50 transition-all active:scale-[0.98] flex items-center justify-center gap-2.5 cursor-pointer"
+                  className="w-full sm:w-auto min-w-[240px] py-4 px-8 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-base tracking-wide shadow-xl shadow-[#cb0805]/30 hover:shadow-[#cb0805]/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer"
                 >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Add to Cart • ₹{selectedVariant.price.toLocaleString()}</span>
+                  <ShoppingBag className="w-5 h-5" />
+                  <span>Add to Cart</span>
                 </button>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  <button
-                    type="button"
-                    onClick={handleBuyNow}
-                    className="py-3 px-4 rounded-xl bg-white hover:bg-stone-100 text-stone-900 font-bold text-xs tracking-wide transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <CreditCard className="w-3.5 h-3.5" />
-                    <span>Buy Now</span>
-                  </button>
-
-                  <a
-                    href={buildWhatsAppOrderUrl()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="py-3 px-4 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
-                    <span>Order on WhatsApp</span>
-                  </a>
-                </div>
-              </div>
-
-              {/* Guarantees Strip */}
-              <div className="flex flex-wrap items-center gap-y-2 gap-x-5 pt-3 border-t border-white/10 text-xs text-stone-300 font-medium">
-                <span className="inline-flex items-center gap-1.5">
-                  <Truck className="w-4 h-4 text-[#cb0805]" />
-                  1-Day Kerala Express
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#cb0805]" />
-                  100% Discreet Packaging
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <RotateCcw className="w-4 h-4 text-[#cb0805]" />
-                  15-Day Strip Refund
-                </span>
               </div>
 
             </div>
