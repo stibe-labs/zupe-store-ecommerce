@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     };
 
     // =========================================================
-    // 1. MONTHLY P&L (Owner's Correct Formula)
+    // 1. MONTHLY P&L (Delivered-Only Realized Revenue & Costs)
     //
     // Revenue = Delivered orders' selling price ONLY
     // COGS = Delivered orders' product cost ONLY (RTO cost recovered via supplier credit)
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
         other: number;
         netProfit: number;
         margin: string;
-        // Extended fields for owner's dashboard
+        // Extended fields for dashboard analytics
         totalOrders: number;
         deliveredOrders: number;
         rtoOrders: number;
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
       }
     >();
 
-    // Aggregate orders into months using owner's formula
+    // Aggregate orders into months using delivered-only formula
     for (const ord of orders) {
       const period = getPeriodKey(ord.created_at);
       if (!monthlyMap.has(period)) {
@@ -143,7 +143,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Finalize P&L rows with owner's formula
+    // Finalize P&L rows with delivered-only realized profit formula
     const plData = Array.from(monthlyMap.values()).map((row) => {
       // Net Profit = Delivered Revenue - Delivered COGS - ALL Shipping - RTO Charges - Ad Spend - Overheads
       const net = row.grossSales - row.cogs - row.shipping - row.rtoCharges - row.adSpend - row.other;
@@ -330,7 +330,7 @@ export async function GET(req: NextRequest) {
     }));
 
     // =========================================================
-    // 4. SUMMARY KPIs (Owner's Correct Method)
+    // 4. SUMMARY KPIs (Delivered-Only Method)
     // =========================================================
     const deliveredOrders = orders.filter(isOrderDelivered);
     const dispatchedOrders = orders.filter(isOrderDispatched);
@@ -359,7 +359,7 @@ export async function GET(req: NextRequest) {
     const avgCPA = orders.length > 0 && totalAdSpend > 0 ? Math.round(totalAdSpend / orders.length) : 0;
 
     // =========================================================
-    // 5. CASH FLOW CALCULATION (Owner's Requirement)
+    // 5. CASH FLOW CALCULATION (Bank Movement Framework)
     //
     // Cash Inflow = Actual money received (Prepaid settled + COD remitted)
     // Cash Outflow = Total product invoice + ALL shipping + RTO charges + Ads + Overheads
@@ -388,7 +388,7 @@ export async function GET(req: NextRequest) {
     const netCashFlow = totalCashInflow - totalCashOutflow;
 
     // =========================================================
-    // 6. SUPPLIER CREDIT CALCULATION (Owner's Requirement)
+    // 6. SUPPLIER CREDIT CALCULATION (Asset Recovery Model)
     //
     // Ending Credit = Opening Credit + New Eligible RTO Credit - Credit Used
     // =========================================================
@@ -408,7 +408,7 @@ export async function GET(req: NextRequest) {
     };
 
     // =========================================================
-    // 7. ORDER-WISE UNIT ECONOMICS (Owner's Correct Method)
+    // 7. ORDER-WISE UNIT ECONOMICS (Order-Level Realized Margin)
     // =========================================================
     const orderWiseData = orders.map((ord) => {
       const sellingPrice = Number(ord.total_amount) || 0;
@@ -490,7 +490,7 @@ export async function GET(req: NextRequest) {
         const dateOrders = orders.filter((o) => (o.created_at || "").startsWith(dateStr));
         const ordersCount = dateOrders.length;
         const dateDelivered = dateOrders.filter(isOrderDelivered);
-        // Use delivered revenue for ROAS (owner's preference)
+        // Use delivered revenue for ROAS calculation
         const grossRev = dateOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
         const deliveredRev = dateDelivered.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
 

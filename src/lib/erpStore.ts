@@ -1218,7 +1218,7 @@ export async function updateERPOrder(
       status: updates.status || (updates.delivery_status === "Delivered" ? "Delivered" : updates.delivery_status === "RTO Delivered" ? "Returned" : existing.status),
     };
 
-    // Recalculate profit if costs changed (Owner's correct formula)
+    // Recalculate profit if costs changed (Delivered-only realized formula)
     const total = Number(merged.total_amount) || 0;
     const prodCost = Number(merged.product_cost) || 0;
     const shipCost = Number(merged.shipping_cost) || 0;
@@ -1235,7 +1235,7 @@ export async function updateERPOrder(
     if (isDelivered) {
       merged.net_profit = total - prodCost - shipCost - adSpend;
     } else if (isRTO) {
-      // Owner formula: Revenue is 0, product cost is recovered via supplier credit
+      // Realized formula: Revenue is 0, product cost is recovered via supplier credit
       merged.net_profit = 0 - shipCost - rtoCharge - adSpend;
     } else if (isCancelled) {
       merged.net_profit = 0;
@@ -1538,7 +1538,7 @@ export async function getDashboardKPIs(
   const rtoOrders = orders.filter((o) => o.delivery_status === "RTO Delivered" || o.delivery_status === "RTO Initiated" || o.delivery_status === "RTO In Transit").length;
   const isOrderDispatched = (o: any) => o.status !== "Cancelled";
 
-  // Owner's Preferred Formula:
+  // Delivered-Only Realized Profit Formula:
   // Revenue = Delivered orders only (RTO earned ₹0)
   const totalSales = deliveredOrdList.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
   // COGS = Delivered orders only (RTO product cost recovered via supplier credit)

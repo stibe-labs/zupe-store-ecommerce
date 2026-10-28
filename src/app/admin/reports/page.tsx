@@ -324,7 +324,7 @@ export default function AdminReportsPage() {
   const isDispatched = (o: any) => !isCancelled(o);
 
   // Dynamically Recomputed Executive KPI Cards for the active period
-  // Using Owner's Correct Formula:
+  // Core Delivered-Only Accounting Formula:
   //   Revenue = Delivered orders only
   //   COGS = Delivered orders' product cost only (RTO cost recovered via supplier credit)
   //   Shipping = ALL dispatched orders
@@ -412,7 +412,7 @@ export default function AdminReportsPage() {
   }, [filteredOrders, filteredExpenses, serverSupplierCredit]);
 
   // Section 1: P&L Statement (includes active period summary row)
-  // Uses owner's formula: Revenue & COGS = Delivered only, Shipping = ALL dispatched
+  // Standard Delivered-Only Formula: Revenue & COGS = Delivered only, Shipping = ALL dispatched
   const displayPlData = useMemo(() => {
     const periodRow: PLRow = {
       period: `⚡ Active Period: ${activePeriodLabel}`,
@@ -568,7 +568,7 @@ export default function AdminReportsPage() {
       .filter((r) => r.spend > 0 || r.ordersCount > 0);
   }, [filteredOrders, filteredExpenses]);
 
-  // Section 4: Product Margins (Using Actual COGS, Owner's Formula)
+  // Section 4: Product Margins (Using Actual COGS and Proportional Freight Allocation)
   // Revenue & COGS = Delivered orders only, Shipping allocated proportionally
   const displayProductData = useMemo<ProductProfitRow[]>(() => {
     const statsMap = new Map<string, ProductProfitRow>();
@@ -1077,7 +1077,7 @@ export default function AdminReportsPage() {
               </div>
             </div>
 
-            {/* Tier 2: Cash Flow & Supplier Credit (Owner's Preference) */}
+            {/* Tier 2: Cash Flow & Supplier Credit (Bank Liquidity & Wholesale Assets) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-emerald-300 transition-all">
                 <div className="flex items-center justify-between">
@@ -1325,7 +1325,7 @@ export default function AdminReportsPage() {
                           Cash Flow & Supplier Credit Ledger
                         </h3>
                         <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
-                          Owner Business Model
+                          Core Financial Framework
                         </span>
                       </div>
                       <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -1342,7 +1342,7 @@ export default function AdminReportsPage() {
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors"
                       >
                         <HelpCircle className="w-4 h-4 text-indigo-600" />
-                        <span>Owner Formula Breakdown</span>
+                        <span>Calculation Breakdown</span>
                       </button>
                     </div>
                   </div>
@@ -1624,15 +1624,15 @@ export default function AdminReportsPage() {
                     </div>
                   </div>
 
-                  {/* Owner's 10-Order Reference Model vs Active Period Audit Table */}
+                  {/* Standard 10-Order Reference Model vs Active Period Audit Table */}
                   <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
                     <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                         <h4 className="font-bold text-slate-900 text-base">
-                          Owner Business Model: 10-Order Benchmark Comparison
+                          Standard 10-Order Benchmark Comparison
                         </h4>
                         <p className="text-xs text-slate-500 mt-0.5">
-                          Side-by-side verification: Compare the store owner's reference example against current store performance.
+                          Side-by-side verification: Compare a standard 10-order reference benchmark against active store performance.
                         </p>
                       </div>
                       <span className="text-xs font-semibold px-2.5 py-1 bg-orange-50 border border-orange-200 text-[#FF7A00] rounded-lg self-start sm:self-auto">
@@ -1645,9 +1645,9 @@ export default function AdminReportsPage() {
                         <thead className="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                           <tr>
                             <th className="py-3 px-5">Financial Metric</th>
-                            <th className="py-3 px-5 text-center">Owner 10-Order Model</th>
+                            <th className="py-3 px-5 text-center">Reference 10-Order Model</th>
                             <th className="py-3 px-5 text-center">Store Active Period</th>
-                            <th className="py-3 px-5 text-right">Calculation Rule & Owner Note</th>
+                            <th className="py-3 px-5 text-right">Calculation Rule & Accounting Note</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -2312,7 +2312,7 @@ export default function AdminReportsPage() {
                 <div className="space-y-5">
                   <div>
                     <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">
-                      1. Net Profit Calculation (Owner's Preference)
+                      1. Net Profit Calculation (Delivered-Only Method)
                     </h3>
                     <p className="text-slate-500">
                       Calculates the true bottom-line profitability of your dropshipping business. Revenue and COGS are counted <strong>only for delivered orders</strong>, while shipping is paid for all dispatches.
@@ -2374,7 +2374,7 @@ export default function AdminReportsPage() {
                   <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950">
                     <p className="font-bold mb-1 flex items-center gap-1.5 text-amber-900">
                       <Info className="w-4 h-4 text-amber-600" />
-                      Owner's Standard 10-Order Model Walkthrough:
+                      Standard 10-Order Reference Model Walkthrough:
                     </p>
                     <p className="text-xs leading-relaxed text-amber-900/90">
                       Assume 10 orders placed: <strong>7 Delivered</strong> and <strong>3 RTO</strong> (30% RTO rate).
@@ -2429,7 +2429,7 @@ export default function AdminReportsPage() {
                       Critical Distinction: Why Net Cash Flow is −₹850 while Net Profit is +₹650
                     </p>
                     <p className="text-xs leading-relaxed text-blue-900/90">
-                      In the owner's 10-order example:
+                      In this 10-order reference model:
                     </p>
                     <div className="font-mono text-xs bg-white/80 p-3 rounded-xl border border-blue-200/70 space-y-1 text-slate-800">
                       <p>Cash Inflow (From 7 delivered customers) = 7 × ₹800 = <strong>₹5,600</strong></p>
@@ -2459,12 +2459,12 @@ export default function AdminReportsPage() {
                 </div>
               )}
 
-              {/* SECTION 2: ORDER-WISE UNIT ECONOMICS */}
+              {/* SECTION 3: ORDER-WISE UNIT ECONOMICS */}
               {guideTab === "order_wise" && (
                 <div className="space-y-5">
                   <div>
                     <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">
-                      2. Order-Wise Unit Economics
+                      3. Order-Wise Unit Economics
                     </h3>
                     <p className="text-slate-500">
                       Audits every individual customer order as an isolated mini-business to uncover exactly how much profit or loss each order produced.
@@ -2512,12 +2512,12 @@ export default function AdminReportsPage() {
                 </div>
               )}
 
-              {/* SECTION 3: AD SPEND & ROAS */}
+              {/* SECTION 4: AD SPEND & ROAS */}
               {guideTab === "ad_spend" && (
                 <div className="space-y-5">
                   <div>
                     <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">
-                      3. Ad Spend & ROAS (Return On Ad Spend)
+                      4. Ad Spend & ROAS (Return On Ad Spend)
                     </h3>
                     <p className="text-slate-500">
                       Measures marketing acquisition efficiency, true blended ROAS, and customer acquisition cost (CPA).
@@ -2556,12 +2556,12 @@ export default function AdminReportsPage() {
                 </div>
               )}
 
-              {/* SECTION 4: PRODUCT MARGINS */}
+              {/* SECTION 5: PRODUCT MARGINS */}
               {guideTab === "product" && (
                 <div className="space-y-5">
                   <div>
                     <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">
-                      4. Product Margins & Contribution
+                      5. Product Margins & Contribution
                     </h3>
                     <p className="text-slate-500">
                       Evaluates SKU-level profitability, unit costs, and doorstep return vulnerability.
@@ -2594,12 +2594,12 @@ export default function AdminReportsPage() {
                 </div>
               )}
 
-              {/* SECTION 5: RTO & COURIERS */}
+              {/* SECTION 6: RTO & COURIERS */}
               {guideTab === "rto" && (
                 <div className="space-y-5">
                   <div>
                     <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">
-                      5. RTO Diagnostics & Courier Logistics
+                      6. RTO Diagnostics & Courier Logistics
                     </h3>
                     <p className="text-slate-500">
                       Tracks 3PL logistics partner performance, delivery success conversions, Non-Delivery Reports (NDR), and supplier credit recovery.
