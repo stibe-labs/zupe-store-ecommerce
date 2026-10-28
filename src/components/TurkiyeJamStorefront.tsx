@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,101 +9,127 @@ import {
   ShieldCheck,
   Truck,
   CheckCircle2,
-  Clock,
   Sparkles,
   Phone,
-  AlertTriangle,
-  RotateCcw,
   Star,
   ChevronDown,
   ShoppingBag,
-  CreditCard,
-  Gift,
-  Check,
   ArrowRight,
-  Lock,
+  ArrowLeft,
   Heart,
   Leaf,
   Award,
   Package,
   MessageCircle,
   HelpCircle,
+  Flame,
+  Check,
+  X,
+  Plus,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { TURKIYE_JAM_VARIANTS, TurkiyeJamVariant, DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { TURKIYE_JAM_VARIANTS, TurkiyeJamVariant } from "@/data/zupeProducts";
 
-const HERO_GALLERY = [
+// Furnexa Hero Products Carousel (Jar vs. Sachet Box)
+const HERO_PRODUCTS = [
   {
+    id: "tj-bottle-240g",
+    name: "Themra Epimedium Macun 240g",
+    subtitle: "Minimal Chic / Ottoman Herbal Macun",
+    price: 2899,
+    mrp: 4500,
+    offerText: "2 Free Strips Included",
     src: "/tj/turkiye-jam-gallery-6.jpeg",
-    title: "Themra 240g Jar & 14-Sachet Box on Marble Pedestal",
-    label: "Marble Pedestal Collection",
+    tag: "Royal Glass Jar",
+    hotspots: [
+      {
+        id: 1,
+        title: "Pure Anatolian Flower Honey",
+        subtitle: "100% Herbal Carrier Base",
+        desc: "Synergistic botanical base ensuring rapid bio-absorption within 30–45 mins without synthetic additives.",
+        top: "28%",
+        left: "34%",
+        direction: "left", // connecting line direction
+      },
+      {
+        id: 2,
+        title: "Epimedium Extract 0.79%",
+        subtitle: "Active Icariin Formulation",
+        desc: "Increases nitric oxide release and smooth pelvic blood circulation for sustained stamina and rock firmness.",
+        top: "48%",
+        left: "64%",
+        direction: "right",
+      },
+      {
+        id: 3,
+        title: "Red Ginseng & Royal Jelly",
+        subtitle: "Endurance & Vitality Blend",
+        desc: "Royal energy adaptogen combating fatigue, supporting healthy hormonal balance, and accelerating recovery.",
+        top: "68%",
+        left: "40%",
+        direction: "left",
+      },
+    ],
   },
   {
-    src: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
-    title: "240g Glass Jar & Sachet Strips",
-    label: "240g Jar & Strips",
-  },
-  {
-    src: "/products/turkiye-jam/turkiye-jam-box-strips.jpg",
-    title: "14-Sachet Sealed Box",
-    label: "14-Sachet Box",
-  },
-  {
+    id: "tj-box-12s",
+    name: "Themra 12+2 Travel Strip Box",
+    subtitle: "Pocket Discreet / 14 Single Servings",
+    price: 2899,
+    mrp: 4500,
+    offerText: "12 Strips + 2 Bonus Strips",
     src: "/tj/turkiye-jam-gallery-7.jpeg",
-    title: "Endurance & Stamina for Men",
-    label: "Vitality for Men",
-  },
-  {
-    src: "/tj/turkiye-jam-gallery-5.jpeg",
-    title: "Energy & Sensitivity for Women",
-    label: "Vitality for Women",
-  },
-  {
-    src: "/tj/turkiye-jam-gallery-3.jpeg",
-    title: "Botanical Herbal Macun Display",
-    label: "Pure Botanical Macun",
+    tag: "Discreet Travel Strips",
+    hotspots: [
+      {
+        id: 1,
+        title: "Single-Dose Sealed Sachets",
+        subtitle: "Guaranteed Freshness & Purity",
+        desc: "Individual 12g foil packs ready to consume anywhere with water—no spoon or refrigeration needed.",
+        top: "30%",
+        left: "36%",
+        direction: "left",
+      },
+      {
+        id: 2,
+        title: "Active Anatolian Epimedium",
+        subtitle: "Fast-Acting Male & Female Vitality",
+        desc: "Delivers rapid intimate surge and enhanced sensitivity within 30 to 45 minutes of consumption.",
+        top: "50%",
+        left: "66%",
+        direction: "right",
+      },
+      {
+        id: 3,
+        title: "Unused Strip Refund Guarantee",
+        subtitle: "100% Money-Back Protection",
+        desc: "Try risk-free. Return any unopened strips within 15 days for a 100% pro-rata refund to your account.",
+        top: "70%",
+        left: "44%",
+        direction: "left",
+      },
+    ],
   },
 ];
 
-const CAMPAIGN_HERO_SLIDES = [
-  {
-    id: "women",
-    tag: "For Her",
-    headline: "Heightened Libido & Deep Sensation",
-    subhead: "Natural Turkish Herbal Aphrodisiac for Women",
-    badge: "100% Botanical for Her",
-    src: "/tj/turkiye-jam-gallery-5.jpeg",
-    alt: "Turkiye Jam Herbal Vitality Campaign For Women",
-    benefits: [
-      "Naturally stimulates intimate arousal & sensitivity",
-      "Heightens climax response & natural lubrication",
-      "100% plant-based with zero synthetic additives",
-    ],
-  },
-  {
-    id: "men",
-    tag: "For Him",
-    headline: "Explosive Stamina & Sustained Power",
-    subhead: "Wild Epimedium Macun for Men's Performance",
-    badge: "Bioactive Icariin 48h Action",
-    src: "/tj/turkiye-jam-gallery-7.jpeg",
-    alt: "Turkiye Jam Herbal Vitality Campaign For Men",
-    benefits: [
-      "Extended physical stamina & rock-solid firmness",
-      "Faster recovery between intimate sessions",
-      "Natural surge of vitality lasting 24–48 hours",
-    ],
-  },
+const MARQUEE_ITEMS = [
+  "FREE EXPRESS SHIPPING ACROSS KERALA",
+  "50% OFF THIS WEEK",
+  "100% ORIGINAL FROM TURKEY",
+  "DISCREET PLAIN BOX PACKAGING",
+  "LIMITED STOCK AVAILABLE",
+  "MONEY BACK GUARANTEE ON UNUSED STRIPS",
+  "CASH ON DELIVERY & UPI PREPAID",
 ];
 
 const FAQS = [
   {
     q: "What is Themra Epimedium Herbal Macun (Turkiye Jam)?",
-    a: "Themra Epimedium Herbal Macun is a revered Turkish botanical paste formulated with Epimedium (Horny Goat Weed), Pure Flower Honey, Royal Jelly, Red Ginseng, Maca Root, and natural aphrodisiac spices. It has been used traditionally for generations to revitalize stamina, boost energy, and enhance intimate performance naturally.",
+    a: "Themra Epimedium Herbal Macun is an authentic Turkish botanical vitality paste crafted with Epimedium (Horny Goat Weed), Pure Flower Honey, Royal Jelly, Red Ginseng, Maca Root, and traditional aphrodisiac spices. It has been used for generations to revitalize stamina, boost energy, and enhance intimate performance naturally.",
   },
   {
     q: "How does it work for both men and women?",
-    a: "In men, the bioactive Icariin from Epimedium enhances peripheral blood circulation, supports healthy erectile firmness, and extends stamina while facilitating faster recovery between intimate sessions. In women, it naturally stimulates estrogenic blood flow, heightens sensitivity in intimate zones, and enhances libido and climax quality.",
+    a: "In men, bioactive Icariin from Epimedium enhances peripheral blood circulation, supports healthy erectile firmness, and extends stamina while facilitating faster recovery. In women, it naturally stimulates pelvic blood flow, heightens sensitivity in intimate zones, and enhances libido and climax quality.",
   },
   {
     q: "How long do the effects last and how do I consume it?",
@@ -123,633 +149,853 @@ const FAQS = [
   },
 ];
 
-const TESTIMONIALS = [
+const SPOTLIGHT_REVIEWS = [
   {
+    id: 1,
+    quote:
+      "Our intimate wellness finally feels energized and inspiring. Themra Macun delivers smooth, sustained vitality without any headaches or jittery chemical side effects. Highly recommended.",
     name: "Dr. Rahul M.",
+    role: "Verified Buyer",
     location: "Kochi, Kerala",
-    verified: "Verified Buyer",
-    rating: 5,
-    text: "The authentic Turkish formulation is remarkable. As someone who values botanical remedies, Themra Macun delivers smooth, sustained vitality without the headaches or jitters of chemical stimulants.",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80",
-    package: "240g Jar + 2 Free Strips",
+    package: "240g Glass Jar + 2 Free Strips",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+    productImg: "/tj/turkiye-jam-gallery-6.jpeg",
   },
   {
+    id: 2,
+    quote:
+      "Ordered the 14-sachet box. We both tried it together and the mutual intimate experience was truly incredible. Discrete plain packaging arrived in Kozhikode in less than 24 hours.",
     name: "Anas & Fathima",
+    role: "Verified Couple",
     location: "Kozhikode, Kerala",
-    verified: "Verified Couple",
-    rating: 5,
-    text: "Ordered the 14-sachet box. We both tried it together and the mutual intimate experience was truly incredible. Discrete plain packaging arrived in Kozhikode in less than 24 hours.",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80",
-    package: "14-Sachet Box",
+    package: "14-Sachet Travel Box",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+    productImg: "/tj/turkiye-jam-gallery-7.jpeg",
   },
   {
+    id: 3,
+    quote:
+      "I was skeptical about herbal products until I tried the 4-strip pack. The endurance difference is night and day. Re-ordered the 240g jar today. 100% original Themra product.",
     name: "Vignesh K.",
+    role: "Verified Buyer",
     location: "Trivandrum, Kerala",
-    verified: "Verified Buyer",
-    rating: 5,
-    text: "I was skeptical about herbal products until I tried the 4-strip pack. The endurance difference is night and day. Re-ordered the 240g jar today. 100% original Themra product.",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=80",
-    package: "240g Jar",
+    package: "240g Royal Glass Jar",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+    productImg: "/tj/turkiye-jam-gallery-6.jpeg",
   },
+];
+
+const INSTAGRAM_SHOWCASE = [
+  { src: "/tj/turkiye-jam-gallery-1.jpeg", alt: "Turkiye Jam Unboxing & Authenticity Seal" },
+  { src: "/tj/turkiye-jam-gallery-2.jpeg", alt: "100% Natural Turkish Botanicals" },
+  { src: "/tj/turkiye-jam-gallery-3.jpeg", alt: "Themra Macun 240g Jar & Sachet Strips" },
+  { src: "/tj/turkiye-jam-gallery-4.jpeg", alt: "Discreet Plain Box Packaging" },
+  { src: "/tj/turkiye-jam-gallery-5.jpeg", alt: "Couples Intimacy & Vitality" },
 ];
 
 export function TurkiyeJamStorefront() {
   const router = useRouter();
   const { addItem, openCart } = useCart();
 
+  // Carousel & Hotspot State
+  const [heroProductIndex, setHeroProductIndex] = useState<number>(0);
+  const [activeHotspot, setActiveHotspot] = useState<number | null>(null);
+
+  // Category Filter State
+  const [activeCategory, setActiveCategory] = useState<string>("all");
   const [selectedVariant, setSelectedVariant] = useState<TurkiyeJamVariant>(TURKIYE_JAM_VARIANTS[0]);
-  const [activeHeroImageIndex, setActiveHeroImageIndex] = useState<number>(0);
-  const [activeHeroSlide, setActiveHeroSlide] = useState<number>(0);
-  const [isSliderHovered, setIsSliderHovered] = useState<boolean>(false);
+
+  // Review Slider State
+  const [currentReviewIndex, setCurrentReviewIndex] = useState<number>(0);
+
+  // FAQ Accordion State
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-  const [activeTestimonial, setActiveTestimonial] = useState<number>(0);
-  const [quickOrderPhone, setQuickOrderPhone] = useState<string>("");
-  const [quickOrderSuccess, setQuickOrderSuccess] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (isSliderHovered) return;
-    const interval = setInterval(() => {
-      setActiveHeroSlide((prev) => (prev + 1) % CAMPAIGN_HERO_SLIDES.length);
-    }, 4500);
-    return () => clearInterval(interval);
-  }, [isSliderHovered]);
+  // Quick Order State
+  const [quickPhone, setQuickPhone] = useState<string>("");
+  const [quickSuccess, setQuickSuccess] = useState<boolean>(false);
 
-  const activeImage = HERO_GALLERY[activeHeroImageIndex]?.src || selectedVariant.image;
+  const currentHero = HERO_PRODUCTS[heroProductIndex];
 
-  const handleSelectVariant = (variant: TurkiyeJamVariant) => {
-    setSelectedVariant(variant);
-    // If the variant matches a specific image, switch gallery index
-    if (variant.id === "tj-bottle-240g") setActiveHeroImageIndex(0);
-    else if (variant.id === "tj-box-12s") setActiveHeroImageIndex(1);
-    else if (variant.id === "tj-strips-6") setActiveHeroImageIndex(2);
-    else if (variant.id === "tj-strips-4") setActiveHeroImageIndex(3);
+  const handleNextHero = () => {
+    setActiveHotspot(null);
+    setHeroProductIndex((prev) => (prev + 1) % HERO_PRODUCTS.length);
   };
 
-  const handleAddToCart = () => {
+  const handlePrevHero = () => {
+    setActiveHotspot(null);
+    setHeroProductIndex((prev) => (prev - 1 + HERO_PRODUCTS.length) % HERO_PRODUCTS.length);
+  };
+
+  const handleAddToCart = (variant: TurkiyeJamVariant = selectedVariant) => {
     addItem(
       {
-        id: `turkiye-jam-${selectedVariant.id}`,
-        name: `Turkiye Jam (${selectedVariant.name})`,
+        id: `turkiye-jam-${variant.id}`,
+        name: `Turkiye Jam (${variant.name})`,
         category: "Vitality & Wellness",
-        price: selectedVariant.price,
-        original_price: selectedVariant.mrp,
-        mrp: selectedVariant.mrp,
-        poster_image: selectedVariant.image,
-        color: selectedVariant.name,
+        price: variant.price,
+        original_price: variant.mrp,
+        mrp: variant.mrp,
+        poster_image: variant.image,
+        color: variant.name,
       },
       1
     );
     openCart();
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = (variant: TurkiyeJamVariant = selectedVariant) => {
     addItem(
       {
-        id: `turkiye-jam-${selectedVariant.id}`,
-        name: `Turkiye Jam (${selectedVariant.name})`,
+        id: `turkiye-jam-${variant.id}`,
+        name: `Turkiye Jam (${variant.name})`,
         category: "Vitality & Wellness",
-        price: selectedVariant.price,
-        original_price: selectedVariant.mrp,
-        mrp: selectedVariant.mrp,
-        poster_image: selectedVariant.image,
-        color: selectedVariant.name,
+        price: variant.price,
+        original_price: variant.mrp,
+        mrp: variant.mrp,
+        poster_image: variant.image,
+        color: variant.name,
       },
       1
     );
     router.push("/checkout");
   };
 
-  const buildWhatsAppOrderUrl = () => {
-    const text = `Hello! I would like to order Turkiye Jam:
-• Selected Package: ${selectedVariant.name} (₹${selectedVariant.price})
-• Free Offers: ${selectedVariant.badge || "Standard Dispatch"}
+  const filteredVariants = TURKIYE_JAM_VARIANTS.filter((v) => {
+    if (activeCategory === "all") return true;
+    if (activeCategory === "bottles") return v.id.includes("bottle");
+    if (activeCategory === "strips") return v.id.includes("strip") || v.id.includes("box");
+    if (activeCategory === "combos") return v.id.includes("240g") || v.id.includes("12s");
+    return true;
+  });
 
-Please confirm priority delivery details.`;
-    return `https://wa.me/919744122853?text=${encodeURIComponent(text)}`;
-  };
-
-  const handleQuickOrderSubmit = (e: React.FormEvent) => {
+  const handleQuickOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quickOrderPhone.trim()) return;
-    const cleanPhone = quickOrderPhone.replace(/\D/g, "");
+    if (!quickPhone.trim()) return;
+    const clean = quickPhone.replace(/\D/g, "");
     const waUrl = `https://wa.me/919744122853?text=${encodeURIComponent(
-      `Hi Turkiye Jam Care! I would like to quickly order ${selectedVariant.name} (₹${selectedVariant.price}). My contact number is: ${cleanPhone}`
+      `Hi Turkiye Jam Care! I would like to order ${selectedVariant.name} (₹${selectedVariant.price}). My WhatsApp number is: ${clean}`
     )}`;
-    setQuickOrderSuccess(true);
+    setQuickSuccess(true);
     setTimeout(() => {
       window.open(waUrl, "_blank");
-    }, 400);
+      setQuickSuccess(false);
+      setQuickPhone("");
+    }, 1200);
   };
 
   return (
-    <div className="relative bg-[#070709] text-stone-100 overflow-hidden selection:bg-[#cb0805] selection:text-white font-sans min-h-screen">
-      {/* Ambient Liquid Glowing Orbs */}
-      <div className="fixed top-1/4 -left-48 w-[650px] h-[650px] rounded-full bg-[#cb0805]/10 blur-[150px] pointer-events-none -z-10" />
-      <div className="fixed bottom-1/4 -right-48 w-[650px] h-[650px] rounded-full bg-[#cb0805]/10 blur-[150px] pointer-events-none -z-10" />
-      <div className="fixed top-2/3 left-1/3 w-[500px] h-[500px] rounded-full bg-amber-500/5 blur-[160px] pointer-events-none -z-10" />
-
+    <div className="min-h-screen bg-[#faf9f6] text-stone-900 font-sans selection:bg-[#cb0805] selection:text-white">
+      
       {/* ─────────────────────────────────────────────────────────────
-          1. HERO SECTION (Split Screen: Dark Left Content + Full Right Image Slider)
+          1. HERO SECTION (FURNEXA EXACT ARCHITECTURE)
       ───────────────────────────────────────────────────────────── */}
-      <section
-        className="relative bg-stone-950 text-white overflow-hidden border-b border-white/10"
-        onMouseEnter={() => setIsSliderHovered(true)}
-        onMouseLeave={() => setIsSliderHovered(false)}
-      >
-        {/* Preload other slide for zero-latency cross-fade */}
-        <div className="hidden" aria-hidden="true">
-          <Image
-            src="/tj/turkiye-jam-gallery-7.jpeg"
-            alt="Preload campaign"
-            width={10}
-            height={10}
-            priority
-          />
+      <section className="relative w-full min-h-[88vh] md:min-h-[94vh] flex flex-col justify-between overflow-hidden bg-[#ebe8e3] text-stone-900">
+        
+        {/* Furnexa Giant Background Typography */}
+        <div className="absolute inset-x-0 top-6 sm:top-10 md:top-14 flex items-center justify-center pointer-events-none select-none z-0">
+          <span className="furnexa-hero-title text-[15vw] tracking-tighter text-stone-800/20 sm:text-stone-800/15">
+            TURKIYE JAM
+          </span>
         </div>
 
-        <div className="flex flex-col lg:flex-row min-h-[680px] lg:min-h-[760px] lg:h-[calc(100vh-80px)] lg:max-h-[880px] w-full">
-          
-          {/* ── LEFT HALF: Ultra-Minimal Dark Left Side with Just Add to Cart ── */}
-          <div className="w-full lg:w-1/2 flex items-center justify-center lg:justify-end px-6 sm:px-10 lg:px-16 xl:px-20 py-16 lg:py-24 bg-stone-950/90 backdrop-blur-2xl relative z-10 order-2 lg:order-1">
-            <div className="w-full max-w-md space-y-6 text-center lg:text-left">
-              
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-widest text-[#ff807e] px-3 py-1 rounded-full bg-[#cb0805]/15 border border-[#cb0805]/30 inline-block">
-                  For Him &amp; Her • 48h Natural Action
-                </span>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mt-3 leading-tight font-sans">
-                  Natural Stamina &amp;{" "}
-                  <span className="text-[#ff807e] block sm:inline">Intimate Vitality</span>
-                </h1>
-                
-                <div className="flex items-baseline gap-3 mt-4 justify-center lg:justify-start">
-                  <span className="text-3xl sm:text-4xl font-extrabold text-white">
-                    ₹{selectedVariant.price.toLocaleString()}
-                  </span>
-                  <span className="text-base text-stone-500 line-through">
-                    ₹{selectedVariant.mrp.toLocaleString()}
-                  </span>
-                  <span className="text-xs font-bold text-[#ff807e] bg-[#cb0805]/20 px-2.5 py-0.5 rounded-full border border-[#cb0805]/30">
-                    Special Offer
-                  </span>
-                </div>
-              </div>
+        {/* Ambient Top Light Beam */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-96 bg-gradient-to-b from-white/60 to-transparent pointer-events-none blur-3xl z-0" />
 
-              {/* Just the Add to Cart Button */}
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  className="w-full sm:w-auto min-w-[240px] py-4 px-8 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-base tracking-wide shadow-xl shadow-[#cb0805]/30 hover:shadow-[#cb0805]/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer"
-                >
-                  <ShoppingBag className="w-5 h-5" />
-                  <span>Add to Cart</span>
-                </button>
-              </div>
-
-            </div>
-          </div>
-
-          {/* ── RIGHT HALF: Full Screen Campaign Image Slider ── */}
-          <div className="w-full lg:w-1/2 relative min-h-[460px] sm:min-h-[560px] lg:min-h-full overflow-hidden bg-black select-none order-1 lg:order-2">
+        {/* Center Stage: Product Display with Pedestal & Hotspots */}
+        <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-8 py-8 md:py-12">
+          <div className="relative w-full max-w-4xl h-[480px] sm:h-[540px] md:h-[620px] flex items-center justify-center">
             
-            {/* Cross-Fade Animated Poster Slide */}
             <AnimatePresence mode="wait">
               <motion.div
-                key={CAMPAIGN_HERO_SLIDES[activeHeroSlide].id}
-                initial={{ opacity: 0, scale: 1.02 }}
+                key={currentHero.id}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.99 }}
-                transition={{ duration: 0.65, ease: "easeInOut" }}
-                className="absolute inset-0 w-full h-full"
+                exit={{ opacity: 0, scale: 1.05 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="relative w-full h-full flex items-center justify-center"
               >
-                <Image
-                  src={CAMPAIGN_HERO_SLIDES[activeHeroSlide].src}
-                  alt={CAMPAIGN_HERO_SLIDES[activeHeroSlide].alt}
-                  fill
-                  priority
-                  className="object-cover object-center"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
-              </motion.div>
-            </AnimatePresence>
+                {/* Product Image */}
+                <div className="relative w-[85%] sm:w-[70%] md:w-[60%] h-[80%] drop-shadow-[0_35px_45px_rgba(0,0,0,0.22)]">
+                  <Image
+                    src={currentHero.src}
+                    alt={currentHero.name}
+                    fill
+                    priority
+                    className="object-contain rounded-3xl"
+                  />
+                </div>
 
-            {/* Subtle Gradient Overlays for Elegance */}
-            <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-stone-950 via-stone-950/50 to-transparent pointer-events-none hidden lg:block" />
-            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
-            <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
+                {/* ─── Interactive Hotspot Pins (Furnexa Signature) ─── */}
+                {currentHero.hotspots.map((hs) => {
+                  const isActive = activeHotspot === hs.id;
+                  const isRight = hs.direction === "right";
 
-            {/* Top Interactive Persona Switcher Pills (For Her / For Him) */}
-            <div className="absolute top-5 right-5 sm:right-8 z-20 flex items-center gap-2.5">
-              <div className="inline-flex p-1 rounded-full bg-black/60 backdrop-blur-md border border-white/25 shadow-xl">
-                {CAMPAIGN_HERO_SLIDES.map((slide, idx) => {
-                  const isActive = activeHeroSlide === idx;
                   return (
-                    <button
-                      key={slide.id}
-                      type="button"
-                      onClick={() => setActiveHeroSlide(idx)}
-                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                        isActive
-                          ? "bg-[#cb0805] text-white shadow-md"
-                          : "text-white/80 hover:text-white hover:bg-white/10"
-                      }`}
+                    <div
+                      key={hs.id}
+                      style={{ top: hs.top, left: hs.left }}
+                      className="absolute z-30"
                     >
-                      {slide.tag}
-                    </button>
+                      {/* Pulse Ring + Center Hotspot Target Button */}
+                      <button
+                        type="button"
+                        onClick={() => setActiveHotspot(isActive ? null : hs.id)}
+                        className="group relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-md shadow-lg border border-stone-300 hover:border-[#cb0805] hover:scale-110 transition-all cursor-pointer"
+                        aria-label={`Inspect ${hs.title}`}
+                      >
+                        <span className="absolute inset-0 rounded-full bg-[#cb0805]/30 animate-hotspot-ping" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#cb0805] transition-transform group-hover:scale-125" />
+                      </button>
+
+                      {/* Connecting Line + Label (Furnexa Style) */}
+                      <div
+                        className={`hidden sm:flex items-center absolute top-1/2 -translate-y-1/2 pointer-events-none ${
+                          isRight
+                            ? "left-full pl-3 flex-row"
+                            : "right-full pr-3 flex-row-reverse"
+                        }`}
+                      >
+                        {/* Connecting Line */}
+                        <div className="w-12 md:w-20 h-[1.5px] bg-stone-700/60" />
+                        {/* Dot Anchor */}
+                        <div className="w-1.5 h-1.5 rounded-full bg-stone-800" />
+                        {/* Label Pill */}
+                        <span className="mx-2 px-2.5 py-1 rounded-full bg-stone-900/80 backdrop-blur-md text-white text-[11px] font-medium tracking-wide whitespace-nowrap shadow-md">
+                          {hs.title}
+                        </span>
+                      </div>
+
+                      {/* Expanding Tooltip Card on Click/Hover */}
+                      <AnimatePresence>
+                        {isActive && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                            transition={{ duration: 0.25 }}
+                            className={`absolute z-40 w-64 sm:w-72 p-4 rounded-2xl bg-stone-950/95 text-white backdrop-blur-2xl border border-white/20 shadow-2xl ${
+                              isRight
+                                ? "left-0 mt-3 sm:left-10 sm:-top-6"
+                                : "right-0 mt-3 sm:right-10 sm:-top-6"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-1.5">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#ff807e]">
+                                {hs.subtitle}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveHotspot(null);
+                                }}
+                                className="text-stone-400 hover:text-white"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            <h4 className="font-bold text-sm text-white mb-1">
+                              {hs.title}
+                            </h4>
+                            <p className="text-xs text-stone-300 leading-relaxed">
+                              {hs.desc}
+                            </p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   );
                 })}
-              </div>
-            </div>
-
-            {/* Bottom Caption & Slide Dots */}
-            <div className="absolute bottom-5 inset-x-5 sm:inset-x-8 z-20 flex items-end justify-between text-white">
-              <div className="max-w-md">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#ff807e] bg-[#cb0805]/30 px-2.5 py-0.5 rounded-full border border-[#cb0805]/50 backdrop-blur-sm">
-                  {CAMPAIGN_HERO_SLIDES[activeHeroSlide].badge}
-                </span>
-                <h3 className="text-lg sm:text-xl font-bold text-white mt-1.5 leading-tight">
-                  {CAMPAIGN_HERO_SLIDES[activeHeroSlide].headline}
-                </h3>
-              </div>
-
-              {/* Slide Progress Dots */}
-              <div className="flex items-center gap-2 shrink-0 ml-4 mb-1">
-                {CAMPAIGN_HERO_SLIDES.map((slide, idx) => (
-                  <button
-                    key={slide.id}
-                    type="button"
-                    onClick={() => setActiveHeroSlide(idx)}
-                    className={`h-2 rounded-full transition-all cursor-pointer ${
-                      activeHeroSlide === idx
-                        ? "w-7 bg-[#cb0805]"
-                        : "w-2 bg-white/40 hover:bg-white/80"
-                    }`}
-                    aria-label={`Switch to ${slide.tag} slide`}
-                  />
-                ))}
-              </div>
-            </div>
-
+              </motion.div>
+            </AnimatePresence>
           </div>
-
         </div>
-      </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          2. STAT COUNTER BANNER (Floating Liquid Glass Strip)
-      ───────────────────────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 my-10 sm:my-14 relative z-10">
-        <div className="liquid-glass-elevated rounded-3xl p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-white/10">
+        {/* ─── Bottom Bar in Hero: Product Card & Carousel Arrows ─── */}
+        <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-8 pb-8 pt-4 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
           
-          <div className="pt-4 md:pt-0">
-            <div className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
-              25,356+
-            </div>
-            <div className="text-xs sm:text-sm text-stone-400 font-medium mt-1">
-              Happy Couples Across India
-            </div>
-          </div>
-
-          <div className="pt-4 md:pt-0">
-            <div className="text-3xl sm:text-4xl font-extrabold text-[#ff807e] tracking-tight font-sans">
-              6,050+
-            </div>
-            <div className="text-xs sm:text-sm text-stone-400 font-medium mt-1">
-              5-Star Verified Reviews
-            </div>
-          </div>
-
-          <div className="pt-4 md:pt-0">
-            <div className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
-              100%
-            </div>
-            <div className="text-xs sm:text-sm text-stone-400 font-medium mt-1">
-              Authentic Turkish Import
-            </div>
-          </div>
-
-          <div className="pt-4 md:pt-0">
-            <div className="text-3xl sm:text-4xl font-extrabold text-[#ff807e] tracking-tight font-sans">
-              98.7%
-            </div>
-            <div className="text-xs sm:text-sm text-stone-400 font-medium mt-1">
-              Satisfaction &amp; Re-Order Rate
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ─────────────────────────────────────────────────────────────
-          3. "WHY TURKIYE JAM?" (Apple-Style Liquid Bento Grid)
-      ───────────────────────────────────────────────────────────── */}
-      <section id="benefits" className="py-16 sm:py-24 relative">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-14">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#ff807e] bg-[#cb0805]/15 border border-[#cb0805]/30 px-3 py-1 rounded-full inline-block mb-3">
-            Pure Botanical Alchemy
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white font-sans">
-            Why Choose Turkiye Jam?
-          </h2>
-          <p className="text-sm sm:text-base text-stone-300 mt-3 max-w-2xl mx-auto leading-relaxed">
-            Crafted strictly according to traditional Ottoman herbal compounding, certified 100% natural without synthetic stimulants or chemical additives.
-          </p>
-        </div>
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          {/* Furnexa Bottom-Left Floating Product Card */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-stone-900/90 text-white backdrop-blur-xl border border-white/10 shadow-2xl max-w-sm w-full">
+            <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/15 text-stone-200 text-[10px] font-semibold tracking-wide uppercase mb-2">
+              {currentHero.subtitle}
+            </span>
+            <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white mb-1">
+              {currentHero.name}
+            </h3>
             
-            {/* Bento Card 1: 100% Natural Botanicals */}
-            <div className="liquid-glass-elevated rounded-3xl p-8 hover:border-[#cb0805]/50 transition-all group flex flex-col justify-between">
-              <div>
-                <div className="w-14 h-14 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 flex items-center justify-center text-[#ff807e] mb-6 shadow-[0_0_25px_rgba(203,8,5,0.3)] group-hover:scale-105 transition-transform">
-                  <Leaf className="w-7 h-7 stroke-[2]" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2.5">
-                  100% Natural Botanicals
-                </h3>
-                <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-                  Compounded with wild Epimedium, Red Ginseng, Ginkgo Biloba, Royal Jelly, and pure Anatolian blossom honey to promote organic, sustained energy.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-2 text-xs text-[#ff807e] font-semibold">
-                <CheckCircle2 className="w-4 h-4 text-[#cb0805]" />
-                <span>Zero Synthetic Stimulants</span>
-              </div>
+            <div className="flex items-baseline gap-2 mb-4">
+              <span className="text-2xl font-black text-white">
+                ₹{currentHero.price.toLocaleString("en-IN")}
+              </span>
+              <span className="text-xs text-stone-400 line-through">
+                ₹{currentHero.mrp.toLocaleString("en-IN")}
+              </span>
+              <span className="text-xs font-bold text-[#ff807e] ml-1">
+                ({currentHero.offerText})
+              </span>
             </div>
 
-            {/* Bento Card 2: Zero Side Effects */}
-            <div className="liquid-glass-elevated rounded-3xl p-8 hover:border-[#cb0805]/50 transition-all group flex flex-col justify-between">
-              <div>
-                <div className="w-14 h-14 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 flex items-center justify-center text-[#ff807e] mb-6 shadow-[0_0_25px_rgba(203,8,5,0.3)] group-hover:scale-105 transition-transform">
-                  <ShieldCheck className="w-7 h-7 stroke-[2]" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2.5">
-                  Zero Side Effects
-                </h3>
-                <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-                  Zero synthetic chemicals, pharmaceutical drugs, or harmful additives. Works gently and safely with your natural physiology for enduring stamina.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-2 text-xs text-[#ff807e] font-semibold">
-                <CheckCircle2 className="w-4 h-4 text-[#cb0805]" />
-                <span>Natural Endocrine Balance</span>
-              </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const target = TURKIYE_JAM_VARIANTS.find((v) => v.id === currentHero.id) || selectedVariant;
+                  handleBuyNow(target);
+                }}
+                className="flex-1 py-2.5 px-4 rounded-full bg-white text-stone-900 font-bold text-xs uppercase tracking-wider hover:bg-stone-200 transition-all active:scale-95 cursor-pointer text-center"
+              >
+                Shop Now
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  const target = TURKIYE_JAM_VARIANTS.find((v) => v.id === currentHero.id) || selectedVariant;
+                  handleAddToCart(target);
+                }}
+                className="py-2.5 px-4 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md shadow-[#cb0805]/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                aria-label="Add to cart"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Add</span>
+              </button>
             </div>
-
-            {/* Bento Card 3: 100% Turkish Import */}
-            <div className="liquid-glass-elevated rounded-3xl p-8 hover:border-[#cb0805]/50 transition-all group flex flex-col justify-between">
-              <div>
-                <div className="w-14 h-14 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 flex items-center justify-center text-[#ff807e] mb-6 shadow-[0_0_25px_rgba(203,8,5,0.3)] group-hover:scale-105 transition-transform">
-                  <Award className="w-7 h-7 stroke-[2]" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2.5">
-                  100% Turkish Import
-                </h3>
-                <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-                  Directly imported from Turkey with authentic Themra holographic security seal. Certified under Turkish Food Codex regulations for utmost purity.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-2 text-xs text-[#ff807e] font-semibold">
-                <CheckCircle2 className="w-4 h-4 text-[#cb0805]" />
-                <span>Themra Original Guarantee</span>
-              </div>
-            </div>
-
           </div>
+
+          {/* Furnexa Bottom-Right Pill Slider Controls (←) (→) */}
+          <div className="flex items-center gap-3 self-end sm:self-auto">
+            <span className="text-xs font-medium text-stone-600 hidden sm:inline">
+              {heroProductIndex + 1} / {HERO_PRODUCTS.length}
+            </span>
+            <div className="flex items-center gap-2 bg-stone-900/80 backdrop-blur-md p-1.5 rounded-full border border-white/10 shadow-lg">
+              <button
+                type="button"
+                onClick={handlePrevHero}
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
+                aria-label="Previous Showcase Product"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleNextHero}
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
+                aria-label="Next Showcase Product"
+              >
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          4. "OUR PACKAGES" (Liquid Glass Package Cards)
+          2. MARQUEE TICKER (EXACT FURNEXA POSITION)
       ───────────────────────────────────────────────────────────── */}
-      <section id="offers" className="py-16 sm:py-24 relative">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-14">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#ff807e] bg-[#cb0805]/15 border border-[#cb0805]/30 px-3 py-1 rounded-full inline-block mb-3">
-            Limited Promotional Offers
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight font-sans">
-            Select Your Package
+      <section className="relative w-full bg-[#151515] text-white py-4 overflow-hidden border-y border-white/10 select-none">
+        <div className="flex animate-marquee whitespace-nowrap">
+          {[0, 1].map((setIndex) => (
+            <div
+              key={setIndex}
+              className="flex items-center gap-10 sm:gap-16 pr-10 sm:pr-16 shrink-0 text-xs sm:text-sm font-semibold tracking-wider uppercase"
+              aria-hidden={setIndex === 1}
+            >
+              {MARQUEE_ITEMS.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-4">
+                  <span>{item}</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#cb0805]" />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          3. SHOP BY CATEGORIES / PACKAGES (FURNEXA PEDESTAL GRID)
+      ───────────────────────────────────────────────────────────── */}
+      <section id="offers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-stone-900 mb-4 font-display">
+            Shop by categories
           </h2>
-          <p className="text-sm sm:text-base text-stone-300 mt-2">
-            Choose between our high-value 240g Glass Jar or convenient single-dose sachet strip packs.
+          <p className="text-stone-600 text-sm sm:text-base leading-relaxed">
+            Sealed Turkish imports with guaranteed purity. Choose your ideal package below.
           </p>
+
+          {/* Category Filter Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
+            {[
+              { id: "all", label: "All Packages" },
+              { id: "bottles", label: "Royal Jars" },
+              { id: "strips", label: "Travel Strips" },
+              { id: "combos", label: "Value Boxes" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveCategory(tab.id)}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  activeCategory === tab.id
+                    ? "bg-stone-900 text-white shadow-md"
+                    : "bg-white text-stone-700 hover:bg-stone-100 border border-stone-200"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {TURKIYE_JAM_VARIANTS.map((variant) => {
-              const isSelected = selectedVariant.id === variant.id;
-              const savings = variant.mrp - variant.price;
-              const savingsPercent = Math.round((savings / variant.mrp) * 100);
+        {/* Furnexa Minimalist Product Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {filteredVariants.map((variant) => {
+            const isSelected = selectedVariant.id === variant.id;
 
-              return (
-                <div
-                  key={variant.id}
-                  onClick={() => handleSelectVariant(variant)}
-                  className={`cursor-pointer rounded-3xl p-6 sm:p-7 border transition-all relative flex flex-col justify-between ${
-                    isSelected
-                      ? "liquid-glass-red border-[#cb0805] shadow-[0_20px_60px_-10px_rgba(203,8,5,0.45)] ring-2 ring-[#cb0805]/40"
-                      : "liquid-glass-elevated hover:border-white/25"
-                  }`}
-                >
-                  {/* Top Badges */}
-                  <div className="flex items-center justify-between mb-4">
-                    {variant.badge ? (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-[#cb0805] text-white shadow-md shadow-[#cb0805]/30">
-                        <Gift className="w-3.5 h-3.5" />
-                        {variant.badge}
-                      </span>
-                    ) : (
-                      <span className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
-                        {variant.unitCount} {variant.format}
-                      </span>
-                    )}
-
-                    <span className="text-xs font-bold text-[#ff807e] bg-[#cb0805]/20 px-2.5 py-0.5 rounded-full border border-[#cb0805]/40">
-                      Save {savingsPercent}%
+            return (
+              <div
+                key={variant.id}
+                onClick={() => setSelectedVariant(variant)}
+                className={`furnexa-card group relative rounded-3xl bg-white border p-6 flex flex-col justify-between cursor-pointer transition-all ${
+                  isSelected
+                    ? "border-[#cb0805] shadow-xl ring-2 ring-[#cb0805]/20"
+                    : "border-stone-200/80 hover:border-stone-400"
+                }`}
+              >
+                {/* Top Badge */}
+                <div className="flex items-center justify-between mb-4">
+                  {variant.badge ? (
+                    <span className="px-3 py-1 rounded-full bg-[#cb0805]/10 text-[#cb0805] text-[11px] font-bold uppercase tracking-wider">
+                      {variant.badge}
                     </span>
-                  </div>
+                  ) : (
+                    <span className="px-3 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px] font-semibold">
+                      Turkish Import
+                    </span>
+                  )}
+                  {variant.savings && (
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                      {variant.savings}
+                    </span>
+                  )}
+                </div>
 
-                  {/* Product Visual */}
-                  <div className="relative w-full aspect-[4/3] flex items-center justify-center my-3">
+                {/* Clean Product Render on Pedestal */}
+                <div className="relative w-full h-56 sm:h-64 my-2 flex items-center justify-center">
+                  <div className="relative w-4/5 h-full transition-transform duration-500 group-hover:scale-105 drop-shadow-lg">
                     <Image
                       src={variant.image}
                       alt={variant.name}
-                      width={280}
-                      height={210}
-                      className="max-h-full w-auto object-contain hover:scale-105 transition-transform drop-shadow-2xl"
+                      fill
+                      className="object-contain"
                     />
                   </div>
+                </div>
 
-                  {/* Title & Description */}
-                  <div className="mt-3">
-                    <h3 className="text-lg font-extrabold text-white">
-                      {variant.name}
-                    </h3>
-                    <p className="text-xs text-stone-300 mt-1 line-clamp-2 leading-relaxed">
-                      {variant.description}
-                    </p>
+                {/* Product Info & Actions */}
+                <div className="pt-4 border-t border-stone-100">
+                  <h3 className="font-extrabold text-base sm:text-lg text-stone-900 mb-1 group-hover:text-[#cb0805] transition-colors">
+                    {variant.name}
+                  </h3>
+                  
+                  <div className="flex items-baseline gap-2 mb-4">
+                    <span className="text-2xl font-black text-stone-900">
+                      ₹{variant.price.toLocaleString("en-IN")}
+                    </span>
+                    <span className="text-xs text-stone-400 line-through">
+                      ₹{variant.mrp.toLocaleString("en-IN")}
+                    </span>
                   </div>
 
-                  {/* Pricing & CTA */}
-                  <div className="pt-5 mt-4 border-t border-white/10 flex items-center justify-between gap-4">
-                    <div>
-                      <div className="text-2xl font-black text-white">
-                        ₹{variant.price.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-stone-500 line-through">
-                        MRP ₹{variant.mrp.toLocaleString()}
-                      </div>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(variant);
+                      }}
+                      className="flex-1 py-2.5 px-4 rounded-full bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                      <span>Add to Cart</span>
+                    </button>
 
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleSelectVariant(variant);
-                        handleAddToCart();
+                        handleBuyNow(variant);
                       }}
-                      className={`px-5 py-2.5 rounded-full font-bold text-xs tracking-wide transition-all cursor-pointer ${
-                        isSelected
-                          ? "bg-[#cb0805] hover:bg-[#a80604] text-white shadow-lg shadow-[#cb0805]/40 hover:scale-105"
-                          : "bg-white/10 hover:bg-[#cb0805] text-white"
-                      }`}
+                      className="py-2.5 px-4 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs uppercase tracking-wider transition-all active:scale-95"
                     >
-                      {isSelected ? "Add to Cart" : "Select & Add"}
+                      Buy Now
                     </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          5. HERITAGE & SCIENCE (Liquid Showcase Bento)
+          4. FURNEXA ICONIC STATEMENT TYPOGRAPHY WITH INSET ICONS
       ───────────────────────────────────────────────────────────── */}
-      <section id="story" className="py-16 sm:py-24 relative overflow-hidden border-y border-white/10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+      <section className="bg-white border-y border-stone-200 py-24 sm:py-32 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto text-center space-y-12">
+          
+          <span className="inline-block px-3.5 py-1 rounded-full bg-stone-100 border border-stone-200 text-stone-600 text-xs font-bold uppercase tracking-widest">
+            Why Themra Epimedium
+          </span>
+
+          <p className="font-display text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-stone-900 leading-snug sm:leading-tight">
+            Experience timeless vitality,{" "}
+            <span className="inline-flex items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border border-stone-200 bg-stone-50 text-stone-900 align-middle mx-1 shadow-sm">
+              <Leaf className="w-5 h-5 sm:w-7 sm:h-7 text-emerald-600" />
+            </span>{" "}
+            exceptional stamina, and{" "}
+            <span className="inline-flex items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border border-stone-200 bg-stone-50 text-stone-900 align-middle mx-1 shadow-sm">
+              <Sparkles className="w-5 h-5 sm:w-7 sm:h-7 text-amber-500" />
+            </span>{" "}
+            pure botanical potency crafted to elevate intimate passion. Each{" "}
+            <span className="inline-flex items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border border-stone-200 bg-stone-50 text-stone-900 align-middle mx-1 shadow-sm">
+              <ShieldCheck className="w-5 h-5 sm:w-7 sm:h-7 text-[#cb0805]" />
+            </span>{" "}
+            spoonful is thoughtfully blended to ignite lasting energy{" "}
+            <span className="inline-flex items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border border-stone-200 bg-stone-50 text-stone-900 align-middle mx-1 shadow-sm">
+              <Heart className="w-5 h-5 sm:w-7 sm:h-7 text-rose-500" />
+            </span>
+            .
+          </p>
+
+          {/* 3 Bold Metrics */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 pt-10 border-t border-stone-100">
+            <div>
+              <span className="block font-display text-4xl sm:text-5xl font-black text-stone-900 mb-1">
+                100%
+              </span>
+              <p className="text-xs sm:text-sm text-stone-600 font-medium">
+                Certified Turkish Import with Pure Botanical Code
+              </p>
+            </div>
+            <div>
+              <span className="block font-display text-4xl sm:text-5xl font-black text-stone-900 mb-1">
+                24h
+              </span>
+              <p className="text-xs sm:text-sm text-stone-600 font-medium">
+                Express Delivery Across Kerala & Metros
+              </p>
+            </div>
+            <div>
+              <span className="block font-display text-4xl sm:text-5xl font-black text-stone-900 mb-1">
+                50K+
+              </span>
+              <p className="text-xs sm:text-sm text-stone-600 font-medium">
+                Couples Trusting Our Unused Strip Refund Guarantee
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          5. EDITORIAL BRAND STORY (FURNEXA ASYMMETRIC LAYOUT)
+      ───────────────────────────────────────────────────────────── */}
+      <section id="story" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          
+          <div className="lg:col-span-5 space-y-6">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805]">
+              Authentic Ottoman Heritage
+            </span>
+            <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-stone-900 leading-tight">
+              Formulated to transform intimate wellness, one moment, one feeling at a time.
+            </h2>
+            <p className="text-sm sm:text-base text-stone-600 leading-relaxed">
+              Crafted in Turkey following centuries-old Anatolian herbal traditions, Themra Epimedium Macun combines Epimedium, Ginseng, Royal Jelly, and Pure Anatolian Flower Honey to ignite vital energy naturally for both partners.
+            </p>
+
+            <div className="pt-2">
+              <a
+                href="#offers"
+                className="inline-flex items-center gap-2 text-sm font-bold text-stone-900 hover:text-[#cb0805] transition-colors group"
+              >
+                <span>OUR PACKAGES</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 text-[#cb0805]" />
+              </a>
+            </div>
+          </div>
+
+          {/* Dual Visual Feature Cards (For Men & For Women) */}
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
             
-            {/* Left Column: Narrative */}
-            <div className="lg:col-span-6 space-y-6">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#ff807e] bg-[#cb0805]/15 border border-[#cb0805]/30 px-3 py-1 rounded-full inline-block">
-                Ancient Heritage &bull; Modern Vitality
+            {/* For Men Card */}
+            <div className="rounded-3xl bg-white border border-stone-200/80 p-6 flex flex-col justify-between furnexa-card">
+              <div>
+                <div className="relative w-full h-52 mb-5 rounded-2xl overflow-hidden bg-stone-100">
+                  <Image
+                    src="/tj/turkiye-jam-gallery-7.jpeg"
+                    alt="Turkiye Jam For Men"
+                    fill
+                    className="object-cover"
+                  />
+                  <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-stone-950/80 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider">
+                    For Him
+                  </span>
+                </div>
+                <h3 className="font-extrabold text-lg text-stone-900 mb-2">
+                  Rock-Solid Stamina & Power
+                </h3>
+                <ul className="space-y-2 text-xs text-stone-600 mb-6">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Increases nitric oxide & firm blood flow</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Reduces mental fatigue and intimate anxiety</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Active stamina sustained for 24–48 hours</span>
+                  </li>
+                </ul>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleBuyNow()}
+                className="w-full py-2.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-900 font-bold text-xs uppercase tracking-wider transition-all"
+              >
+                Select Package
+              </button>
+            </div>
+
+            {/* For Women Card */}
+            <div className="rounded-3xl bg-white border border-stone-200/80 p-6 flex flex-col justify-between furnexa-card">
+              <div>
+                <div className="relative w-full h-52 mb-5 rounded-2xl overflow-hidden bg-stone-100">
+                  <Image
+                    src="/tj/turkiye-jam-gallery-5.jpeg"
+                    alt="Turkiye Jam For Women"
+                    fill
+                    className="object-cover"
+                  />
+                  <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-stone-950/80 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider">
+                    For Her
+                  </span>
+                </div>
+                <h3 className="font-extrabold text-lg text-stone-900 mb-2">
+                  Heightened Sensation & Libido
+                </h3>
+                <ul className="space-y-2 text-xs text-stone-600 mb-6">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Stimulates estrogenic blood circulation</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Enhances natural lubrication & intimate desire</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Deepens mutual climactic intensity</span>
+                  </li>
+                </ul>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleBuyNow()}
+                className="w-full py-2.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-900 font-bold text-xs uppercase tracking-wider transition-all"
+              >
+                Select Package
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          6. "TRUSTED BY COUPLES" (FURNEXA DARK SPOTLIGHT TESTIMONIAL)
+      ───────────────────────────────────────────────────────────── */}
+      <section id="reviews" className="relative w-full bg-[#0a0a0c] text-white py-24 sm:py-32 overflow-hidden">
+        
+        {/* Ambient Dark Spotlight Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#cb0805]/10 rounded-full blur-[140px] pointer-events-none" />
+
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center mb-16">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#ff807e]">
+              Customer Experiences
+            </span>
+            <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-white mt-2">
+              Trusted by Couples
+            </h2>
+          </div>
+
+          {/* Furnexa Spotlight Card with Giant Quote & Product Thumbnail */}
+          <div className="relative rounded-3xl bg-stone-900/60 backdrop-blur-2xl border border-white/10 p-8 sm:p-12 md:p-16 flex flex-col md:flex-row items-center justify-between gap-10">
+            
+            <div className="flex-1 space-y-6">
+              {/* Quote Mark */}
+              <span className="text-6xl sm:text-7xl font-serif text-[#cb0805] leading-none block -mb-4">
+                “
               </span>
 
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight font-sans">
-                About Themra Macun
-              </h2>
-
-              <p className="text-sm sm:text-base text-stone-300 leading-relaxed">
-                For centuries across the Ottoman Empire, revered herbal alchemists formulated natural botanical pastes known as <em>Macun</em>. These nutrient-dense compounds combined Anatolian mountain honey with potent aphrodisiac botanicals to invigorate the body, balance reproductive vitality, and fuel enduring physical stamina.
+              <p className="font-display text-xl sm:text-2xl md:text-3xl font-medium text-stone-100 leading-relaxed">
+                {SPOTLIGHT_REVIEWS[currentReviewIndex].quote}
               </p>
 
-              <p className="text-sm sm:text-base text-stone-300 leading-relaxed">
-                Today, Themra continues this royal botanical tradition. Our Epimedium Herbal Macun is revered by couples worldwide for its balanced dual-action effect: enhancing physical firmness and rapid recovery for men, while naturally heightening sensitivity and intimate pleasure for women.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  className="py-3.5 px-7 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-sm shadow-xl shadow-[#cb0805]/30 transition-all active:scale-95 cursor-pointer"
-                >
-                  Buy Now &bull; ₹{selectedVariant.price}
-                </button>
-
-                <a
-                  href="#usage"
-                  className="py-3.5 px-6 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-white font-semibold text-sm transition-colors"
-                >
-                  View Usage Guide
-                </a>
+              <div className="flex items-center gap-4 pt-4 border-t border-white/10">
+                <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20">
+                  <Image
+                    src={SPOTLIGHT_REVIEWS[currentReviewIndex].avatar}
+                    alt={SPOTLIGHT_REVIEWS[currentReviewIndex].name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-white">
+                    {SPOTLIGHT_REVIEWS[currentReviewIndex].name}
+                  </h4>
+                  <div className="flex items-center gap-2 text-xs text-stone-400">
+                    <span>{SPOTLIGHT_REVIEWS[currentReviewIndex].location}</span>
+                    <span>•</span>
+                    <span className="text-[#ff807e] font-semibold">
+                      {SPOTLIGHT_REVIEWS[currentReviewIndex].package}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Right Column: Liquid Pedestal Showcase */}
-            <div className="lg:col-span-6 relative flex justify-center items-center">
-              <div className="liquid-glass-elevated rounded-3xl p-6 sm:p-8 w-full max-w-[420px] flex flex-col items-center relative group">
-                <div className="relative w-full aspect-square flex items-center justify-center">
-                  <Image
-                    src="/tj/turkiye-jam-gallery-3.jpeg"
-                    alt="Themra Turkiye Jam Botanical Display"
-                    width={400}
-                    height={400}
-                    className="w-[90%] h-auto object-contain rounded-2xl drop-shadow-2xl z-10 group-hover:scale-105 transition-transform"
-                  />
-                </div>
-                <div className="mt-4 text-center">
-                  <div className="text-sm font-bold text-white">Authentic Botanical Composition</div>
-                  <div className="text-xs text-[#ff807e] font-semibold mt-0.5">Themra Turkey Certified Import</div>
-                </div>
+            {/* Product Thumbnail on Right */}
+            <div className="relative w-44 sm:w-56 h-44 sm:h-56 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-4 shrink-0">
+              <div className="relative w-full h-full drop-shadow-xl">
+                <Image
+                  src={SPOTLIGHT_REVIEWS[currentReviewIndex].productImg}
+                  alt="Review Product"
+                  fill
+                  className="object-contain"
+                />
               </div>
             </div>
 
           </div>
+
+          {/* Testimonial Arrow Controls */}
+          <div className="flex items-center justify-center gap-3 mt-8">
+            <button
+              type="button"
+              onClick={() =>
+                setCurrentReviewIndex((prev) =>
+                  prev === 0 ? SPOTLIGHT_REVIEWS.length - 1 : prev - 1
+                )
+              }
+              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
+              aria-label="Previous Review"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <span className="text-xs text-stone-400 px-2">
+              {currentReviewIndex + 1} / {SPOTLIGHT_REVIEWS.length}
+            </span>
+            <button
+              type="button"
+              onClick={() =>
+                setCurrentReviewIndex((prev) => (prev + 1) % SPOTLIGHT_REVIEWS.length)
+              }
+              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
+              aria-label="Next Review"
+            >
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          6. "TESTIMONIALS" (Liquid Glass Review Cards)
+          7. HOW TO USE (FURNEXA 3-STEP CLEAN TIMELINE)
       ───────────────────────────────────────────────────────────── */}
-      <section id="reviews" className="py-16 sm:py-24 relative">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-14">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#ff807e] bg-[#cb0805]/15 border border-[#cb0805]/30 px-3 py-1 rounded-full inline-block mb-3">
-            Real Customer Experiences
+      <section id="usage" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        <div className="text-center max-w-xl mx-auto mb-16">
+          <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805]">
+            Simple Dosage
           </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight font-sans">
-            What Customers Say
+          <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-stone-900 mt-2">
+            How to Consume
           </h2>
-          <p className="text-sm sm:text-base text-stone-300 mt-2">
-            Verified feedback from couples and wellness seekers across Kerala and India.
-          </p>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            {TESTIMONIALS.map((t) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              step: "01",
+              title: "Stir or Squeeze",
+              desc: "For the 240g Jar: Stir well from bottom to top with a dry wooden or plastic spoon. For Sachet Strips: Squeeze the full 12g pack directly into mouth.",
+            },
+            {
+              step: "02",
+              title: "Timing & Hydration",
+              desc: "Consume half a teaspoon (approx 8-12g) 30 to 45 minutes before intimate activity. Drink 1–2 glasses of lukewarm water right after.",
+            },
+            {
+              step: "03",
+              title: "24–48 Hour Action",
+              desc: "Enjoy sustained vitality, enhanced circulation, and rapid recovery. Effects naturally remain active in your system for up to 48 hours.",
+            },
+          ].map((item, idx) => (
+            <div
+              key={idx}
+              className="rounded-3xl bg-white border border-stone-200 p-8 furnexa-card relative"
+            >
+              <span className="font-display text-4xl sm:text-5xl font-black text-stone-200 block mb-4">
+                {item.step}
+              </span>
+              <h3 className="text-lg font-extrabold text-stone-900 mb-2">
+                {item.title}
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+                {item.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          8. FOLLOW @TURKIYEJAM (FURNEXA 5-PHOTO COMMUNITY SHOWCASE)
+      ───────────────────────────────────────────────────────────── */}
+      <section className="bg-stone-100 border-t border-stone-200 py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-8">
+            <span className="text-xs font-semibold uppercase tracking-widest text-stone-500">
+              Follow @turkiyejam
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            {INSTAGRAM_SHOWCASE.map((item, idx) => (
               <div
-                key={t.name}
-                className="liquid-glass-elevated rounded-3xl p-7 border border-white/10 flex flex-col justify-between hover:border-white/20 transition-all"
+                key={idx}
+                className="relative aspect-square rounded-2xl overflow-hidden bg-stone-200 group"
               >
-                <div>
-                  {/* Rating Stars & Quote Icon */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-1 text-amber-400">
-                      {[...Array(t.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
-                    <span className="text-2xl font-serif text-[#cb0805]/40 font-bold">
-                      &ldquo;&rdquo;
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-stone-300 leading-relaxed italic mb-6">
-                    &ldquo;{t.text}&rdquo;
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-white/10 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden relative shrink-0 border border-white/20">
-                    <Image
-                      src={t.avatar}
-                      alt={t.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-white">{t.name}</div>
-                    <div className="text-[11px] text-[#ff807e] font-medium flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3 text-[#cb0805]" />
-                      {t.location} &bull; {t.package}
-                    </div>
-                  </div>
+                <Image
+                  src={item.src}
+                  alt={item.alt}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">
+                  <span>View Details</span>
                 </div>
               </div>
             ))}
@@ -758,239 +1004,93 @@ Please confirm priority delivery details.`;
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          7. BRAND TRUST & CERTIFICATION RIBBON (Liquid Capsule)
+          9. FAQ ACCORDION
       ───────────────────────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 my-10 relative z-10">
-        <div className="liquid-glass rounded-full px-6 py-4 flex flex-wrap items-center justify-around gap-6 text-stone-300 text-xs sm:text-sm font-semibold uppercase tracking-wider">
-          <span className="inline-flex items-center gap-2">
-            <Award className="w-4 h-4 text-[#ff807e]" />
-            Halal Certified
+      <section id="faq" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        <div className="text-center mb-12">
+          <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805]">
+            Got Questions?
           </span>
-          <span className="inline-flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#ff807e]" />
-            ISO 22000 Standard
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#ff807e]" />
-            Turkish Food Codex
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <Leaf className="w-4 h-4 text-[#ff807e]" />
-            100% Herbal Formula
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <Package className="w-4 h-4 text-[#ff807e]" />
-            100% Discreet Packaging
-          </span>
-        </div>
-      </section>
-
-      {/* ─────────────────────────────────────────────────────────────
-          8. HOW TO USE TURKIYE JAM (3-Step Liquid Bento)
-      ───────────────────────────────────────────────────────────── */}
-      <section id="usage" className="py-16 sm:py-24 relative">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-14">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#ff807e] bg-[#cb0805]/15 border border-[#cb0805]/30 px-3 py-1 rounded-full inline-block mb-3">
-            Safe &bull; Effective &bull; Easy to Use
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight font-sans">
-            How to Use Turkiye Jam
+          <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-stone-900 mt-2">
+            Frequently Asked Questions
           </h2>
-          <p className="text-sm sm:text-base text-stone-300 mt-2">
-            Simple dosage instructions for optimal vitality and endurance.
-          </p>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            <div className="liquid-glass-elevated p-8 rounded-3xl">
-              <div className="w-12 h-12 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 text-[#ff807e] font-extrabold text-lg flex items-center justify-center mb-5 shadow-[0_0_20px_rgba(203,8,5,0.3)]">
-                1
-              </div>
-              <h3 className="font-bold text-white text-base mb-2">Recommended Dosage</h3>
-              <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-                Take <strong>half a teaspoon</strong> from the 240g jar (stir jar thoroughly before scooping) or <strong>1 single-dose sachet strip</strong>.
-              </p>
-            </div>
+        <div className="space-y-4">
+          {FAQS.map((faq, idx) => {
+            const isOpen = openFaqIndex === idx;
 
-            <div className="liquid-glass-elevated p-8 rounded-3xl">
-              <div className="w-12 h-12 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 text-[#ff807e] font-extrabold text-lg flex items-center justify-center mb-5 shadow-[0_0_20px_rgba(203,8,5,0.3)]">
-                2
-              </div>
-              <h3 className="font-bold text-white text-base mb-2">Timing &amp; Consumption</h3>
-              <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-                Consume <strong>30 to 45 minutes</strong> prior to intimate activity. Drink one full glass of warm water or milk after taking it.
-              </p>
-            </div>
-
-            <div className="liquid-glass-elevated p-8 rounded-3xl">
-              <div className="w-12 h-12 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 text-[#ff807e] font-extrabold text-lg flex items-center justify-center mb-5 shadow-[0_0_20px_rgba(203,8,5,0.3)]">
-                3
-              </div>
-              <h3 className="font-bold text-white text-base mb-2">Long-Lasting Vitality</h3>
-              <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-                Noticeable physical stamina, readiness, and intimate energy remain active for up to <strong>24 to 48 hours</strong>. Do not exceed 1 dose in 24 hours.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────────────────────────────────────────────────────────
-          9. QUICK ORDER & CONSULTATION (Liquid Card)
-      ───────────────────────────────────────────────────────────── */}
-      <section className="py-16 sm:py-20 relative">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="liquid-glass-elevated rounded-3xl p-8 sm:p-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border border-white/15">
-            
-            {/* Left: Product preview */}
-            <div className="lg:col-span-5 flex flex-col items-center justify-center">
-              <div className="relative w-64 h-56 flex items-center justify-center">
-                <Image
-                  src="/products/turkiye-jam/turkiye-jam-jar-and-box.jpg"
-                  alt="Turkiye Jam Quick Order"
-                  width={260}
-                  height={220}
-                  className="object-contain max-h-full z-10 drop-shadow-2xl"
-                />
-              </div>
-            </div>
-
-            {/* Right: Quick Order Form */}
-            <div className="lg:col-span-7 space-y-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#ff807e]">
-                Express Consultation &bull; 1-Click Ordering
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-sans">
-                Ready to Experience Turkiye Jam?
-              </h2>
-              <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-                Have questions regarding dosage or privacy? Enter your WhatsApp phone number for instant consultation with our discreet customer support team.
-              </p>
-
-              {quickOrderSuccess ? (
-                <div className="p-4 rounded-2xl bg-[#cb0805]/20 border border-[#cb0805]/40 text-white text-xs sm:text-sm font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-[#ff807e] shrink-0" />
-                  <span>Connecting you to WhatsApp care now...</span>
-                </div>
-              ) : (
-                <form onSubmit={handleQuickOrderSubmit} className="flex flex-col sm:flex-row gap-3 pt-2">
-                  <input
-                    type="tel"
-                    placeholder="Enter your 10-digit WhatsApp number"
-                    value={quickOrderPhone}
-                    onChange={(e) => setQuickOrderPhone(e.target.value)}
-                    required
-                    className="flex-1 px-5 py-3.5 rounded-full bg-white/5 border border-white/15 text-white placeholder-stone-500 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#cb0805] focus:border-transparent"
-                  />
-                  <button
-                    type="submit"
-                    className="py-3.5 px-7 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-sm transition-all shadow-lg shadow-[#cb0805]/30 flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Connect WhatsApp</span>
-                  </button>
-                </form>
-              )}
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────────────────────────────────────────────────────────
-          10. FREQUENTLY ASKED QUESTIONS (Liquid Glass Accordion)
-      ───────────────────────────────────────────────────────────── */}
-      <section id="faq" className="py-16 sm:py-24 relative">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#ff807e] bg-[#cb0805]/15 border border-[#cb0805]/30 px-3 py-1 rounded-full inline-block mb-2">
-              Got Questions?
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
-              Frequently Asked Questions
-            </h2>
-          </div>
-
-          <div className="space-y-3.5">
-            {FAQS.map((faq, index) => {
-              const isOpen = openFaqIndex === index;
-              return (
-                <div
-                  key={faq.q}
-                  className={`rounded-2xl border transition-all overflow-hidden ${
-                    isOpen
-                      ? "liquid-glass-red border-[#cb0805]/50 shadow-[0_10px_30px_rgba(203,8,5,0.2)]"
-                      : "liquid-glass-elevated border-white/10 hover:border-white/20"
-                  }`}
+            return (
+              <div
+                key={idx}
+                className="rounded-2xl bg-white border border-stone-200/90 overflow-hidden shadow-sm"
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                  className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-stone-900 cursor-pointer"
                 >
-                  <button
-                    type="button"
-                    onClick={() => setOpenFaqIndex(isOpen ? null : index)}
-                    className="w-full text-left px-6 py-4.5 flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-white hover:text-[#ff807e] transition-colors cursor-pointer"
-                  >
-                    <span>{faq.q}</span>
-                    <ChevronDown
-                      className={`w-4 h-4 text-stone-400 shrink-0 transition-transform duration-300 ${
-                        isOpen ? "rotate-180 text-[#ff807e]" : ""
-                      }`}
-                    />
-                  </button>
-
-                  <AnimatePresence>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="px-6 pb-5 pt-1 text-xs sm:text-sm text-stone-300 leading-relaxed border-t border-white/10">
-                          {faq.a}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
-          </div>
+                  <span>{faq.q}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-stone-500 transition-transform duration-200 ${
+                      isOpen ? "rotate-180 text-[#cb0805]" : ""
+                    }`}
+                  />
+                </button>
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="px-5 sm:px-6 pb-5 text-xs sm:text-sm text-stone-600 leading-relaxed border-t border-stone-100 pt-3"
+                    >
+                      {faq.a}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          11. STICKY MOBILE BOTTOM PURCHASE BAR (Floating Frosted Capsule)
+          10. STICKY MOBILE BOTTOM BAR
       ───────────────────────────────────────────────────────────── */}
-      <div className="md:hidden fixed bottom-3 left-3 right-3 z-40 liquid-glass-elevated rounded-full p-2.5 shadow-2xl flex items-center justify-between gap-3 border border-white/20">
-        <div className="pl-3">
-          <div className="text-[10px] font-bold text-stone-400 uppercase truncate max-w-[120px]">
-            {selectedVariant.name}
+      <div className="md:hidden fixed bottom-3 inset-x-3 z-40">
+        <div className="bg-stone-900/95 text-white backdrop-blur-2xl border border-white/15 rounded-full px-4 py-2.5 shadow-2xl flex items-center justify-between gap-3">
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] text-stone-400 truncate">
+              {selectedVariant.name}
+            </span>
+            <span className="text-sm font-black text-white">
+              ₹{selectedVariant.price.toLocaleString("en-IN")}
+            </span>
           </div>
-          <div className="text-base font-black text-white">
-            ₹{selectedVariant.price.toLocaleString()}
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => handleAddToCart(selectedVariant)}
+              className="py-2 px-3 rounded-full bg-white/15 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1 cursor-pointer"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>Add</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleBuyNow(selectedVariant)}
+              className="py-2 px-4 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs uppercase tracking-wider shadow-md cursor-pointer"
+            >
+              Buy Now
+            </button>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleAddToCart}
-            className="py-2.5 px-4 rounded-full bg-[#cb0805] text-white font-bold text-xs shadow-md shadow-[#cb0805]/40 flex items-center gap-1.5 cursor-pointer"
-          >
-            <ShoppingBag className="w-3.5 h-3.5" />
-            <span>Add to Cart</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleBuyNow}
-            className="py-2.5 px-4 rounded-full bg-white text-stone-900 font-bold text-xs shadow-md cursor-pointer"
-          >
-            Buy Now
-          </button>
         </div>
       </div>
+
     </div>
   );
 }

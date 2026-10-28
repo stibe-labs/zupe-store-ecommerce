@@ -971,6 +971,48 @@ body[style*="overflow: hidden"] {
   filter: blur(60px);
 }
 
+/* ─────────────────────────────────────────────────────────────
+   FURNEXA LUXURY SHOWROOM DESIGN TOKENS
+───────────────────────────────────────────────────────────── */
+.font-display {
+  font-family: 'Bricolage Grotesque', 'Outfit', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.font-body {
+  font-family: 'DM Sans', 'Inter', sans-serif;
+}
+
+/* Furnexa Giant Hero Typography */
+.furnexa-hero-title {
+  font-family: 'Bricolage Grotesque', 'Outfit', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  line-height: 0.85;
+}
+
+/* Furnexa Hotspot Pulse Animations */
+@keyframes hotspot-ping {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.animate-hotspot-ping {
+  animation: hotspot-ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Furnexa Smooth Card Hover */
+.furnexa-card {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.furnexa-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.12);
+}
+
 
 
 

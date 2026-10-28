@@ -15,11 +15,11 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 
 const TURKIYE_NAV_ITEMS = [
-  { label: "Products", href: "/#offers" },
-  { label: "Story", href: "/#story" },
-  { label: "Benefits", href: "/#benefits" },
-  { label: "How to Use", href: "/#usage" },
-  { label: "Reviews", href: "/#reviews" },
+  { label: "HOME", href: "/" },
+  { label: "SHOP", href: "/#offers" },
+  { label: "STORY", href: "/#story" },
+  { label: "REVIEWS", href: "/#reviews" },
+  { label: "USAGE", href: "/#usage" },
   { label: "FAQ", href: "/#faq" },
 ];
 
