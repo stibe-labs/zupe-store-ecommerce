@@ -35,86 +35,90 @@ import {
 import { useCart } from "@/context/CartContext";
 import { TURKIYE_JAM_VARIANTS, TurkiyeJamVariant } from "@/data/zupeProducts";
 
-// Furnexa × Skateshop Hero Product Showcase
+// Authentic Marketing Campaign Posters for Her & Him
 const HERO_PRODUCTS = [
   {
-    id: "tj-bottle-240g",
+    id: "tj-bottle-240g-her",
+    variantId: "tj-bottle-240g",
     name: "Themra Epimedium Macun 240g",
-    subtitle: "Royal Heritage / 240g Glass Jar",
+    subtitle: "For Her • Women's Intimate Sensitivity",
+    targetLabel: "For Her (വനിതകൾക്ക്)",
+    tag: "Women's Edition",
+    badge: "100% Botanical for Her",
     price: 2899,
     mrp: 4500,
     offerText: "2 Free Strips Included",
     servings: "Approx. 25–30 Doses",
-    src: "/tj/turkiye-jam-gallery-6.jpeg",
-    tag: "Flagship Bottle",
-    badge: "Most Popular",
+    src: "/tj/WhatsApp Image 2026-10-29 at 01.01.10.jpeg",
     hotspots: [
       {
         id: 1,
         title: "Pure Anatolian Flower Honey",
         subtitle: "100% Herbal Carrier Base",
-        desc: "Synergistic botanical honey carrier ensuring rapid bio-absorption within 30–45 mins without synthetic fillers.",
-        top: "28%",
-        left: "34%",
+        desc: "Wild Turkish floral honey ensures rapid bio-absorption within 30–45 mins without synthetic fillers or stomach discomfort.",
+        top: "48%",
+        left: "68%",
         direction: "left",
       },
       {
         id: 2,
         title: "Epimedium Extract 0.79%",
-        subtitle: "Active Icariin Bio-Complex",
-        desc: "Promotes nitric oxide release and smooth pelvic circulation for rock-firm stamina and heightened sensitivity.",
-        top: "48%",
-        left: "64%",
-        direction: "right",
+        subtitle: "Active Icariin for Women",
+        desc: "Promotes healthy pelvic blood circulation, stimulates natural lubrication, and heightens climax sensitivity.",
+        top: "58%",
+        left: "68%",
+        direction: "left",
       },
       {
         id: 3,
-        title: "Red Ginseng & Royal Jelly",
-        subtitle: "Endurance & Recovery Blend",
-        desc: "Revered Turkish adaptogen combating physical fatigue, supporting hormonal vitality, and boosting mutual drive.",
+        title: "Royal Jelly & Ginseng",
+        subtitle: "Hormonal Balance & Drive",
+        desc: "Adaptogenic Turkish botanical blend combating everyday exhaustion and awakening spontaneous intimate desire.",
         top: "68%",
-        left: "40%",
+        left: "68%",
         direction: "left",
       },
     ],
   },
   {
-    id: "tj-box-12s",
-    name: "Themra 12+2 Travel Strip Box",
-    subtitle: "Pocket Discreet / 14 Single Servings",
+    id: "tj-bottle-240g-him",
+    variantId: "tj-bottle-240g",
+    name: "Themra Epimedium Macun 240g",
+    subtitle: "For Him • Men's Sustained Stamina",
+    targetLabel: "For Him (പുരുഷന്മാർക്ക്)",
+    tag: "Men's Edition",
+    badge: "Bioactive Icariin 48h Action",
     price: 2899,
     mrp: 4500,
-    offerText: "12 Strips + 2 Bonus Strips",
-    servings: "14 Pre-measured 12g Strips",
-    src: "/tj/turkiye-jam-gallery-7.jpeg",
-    tag: "Travel Edition",
-    badge: "Best Value",
+    offerText: "2 Free Strips Included",
+    servings: "Approx. 25–30 Doses",
+    src: "/tj/WhatsApp Image 2026-10-29 at 00.42.29.jpeg",
     hotspots: [
       {
         id: 1,
-        title: "Single-Dose Sealed Sachets",
-        subtitle: "Guaranteed Purity & Hygiene",
-        desc: "Individual 12g foil packs ready to consume anywhere—no spoon, mixing, or refrigeration required.",
-        top: "30%",
-        left: "36%",
+        title: "Active Icariin 0.79%",
+        subtitle: "Nitric Oxide Catalyst",
+        desc: "Inhibits PDE-5 naturally to relax arterial walls, maximizing blood flow for rock-solid firmness and prolonged stamina.",
+        top: "44%",
+        left: "66%",
         direction: "left",
       },
       {
         id: 2,
-        title: "Instant Dual-Action Potency",
-        subtitle: "For Men & Women",
-        desc: "Delivers rapid intimate surge and enhanced sensation within 30 to 45 minutes of consumption.",
-        top: "50%",
+        title: "Panax Red Ginseng",
+        subtitle: "Endurance & Recovery",
+        desc: "Revered adaptogen supporting sustained endurance and significantly accelerating recovery time between intimate sessions.",
+        top: "54%",
         left: "66%",
-        direction: "right",
+        direction: "left",
       },
       {
         id: 3,
-        title: "Unused Strip Refund Guarantee",
-        subtitle: "100% Money-Back Protection",
-        desc: "Try risk-free. Return any unopened strips within 15 days for a 100% pro-rata refund directly to your UPI/bank.",
-        top: "70%",
-        left: "44%",
+        title: "Pure Honey & Royal Jelly",
+        subtitle: "48-Hour Vitality Surge",
+        desc: "Natural cellular fuel sustaining energy and confidence for up to 48 hours without synthetic chemicals or jitters.",
+        top: "65%",
+        left: "66%",
         direction: "left",
       },
     ],
@@ -365,31 +369,51 @@ export function TurkiyeJamStorefront() {
         {/* Ambient Top Light Beam */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4/5 h-96 bg-gradient-to-b from-white/70 to-transparent pointer-events-none blur-3xl z-0" />
 
-        {/* Center Stage: Product Display with Pedestal & Interactive Hotspots */}
-        <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-8 py-8 md:py-12">
-          <div className="relative w-full max-w-4xl h-[460px] sm:h-[520px] md:h-[600px] flex items-center justify-center">
+        {/* Center Stage: Authentic Campaign Poster Display with Interactive Hotspots */}
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-8 py-6 md:py-10">
+          
+          {/* Quick Gender Campaign Switcher Pills */}
+          <div className="flex items-center gap-2 mb-4 z-20">
+            {HERO_PRODUCTS.map((prod, idx) => (
+              <button
+                key={prod.id}
+                onClick={() => {
+                  setActiveHotspot(null);
+                  setHeroProductIndex(idx);
+                }}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  heroProductIndex === idx
+                    ? "bg-[#cb0805] text-white shadow-lg shadow-[#cb0805]/30 scale-105"
+                    : "bg-white/80 hover:bg-white text-stone-800 border border-stone-300/80 backdrop-blur-md"
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${heroProductIndex === idx ? "bg-white" : "bg-[#cb0805]"}`} />
+                <span>{prod.targetLabel}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="relative w-full max-w-4xl aspect-[16/9] max-h-[460px] sm:max-h-[520px] flex items-center justify-center">
             
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentHero.id}
-                initial={{ opacity: 0, scale: 0.96 }}
+                initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.04 }}
+                exit={{ opacity: 0, scale: 1.03 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="relative w-full h-full flex items-center justify-center"
+                className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl border border-stone-300/70 drop-shadow-[0_25px_40px_rgba(0,0,0,0.25)]"
               >
-                {/* Product Image Stage */}
-                <div className="relative w-[85%] sm:w-[70%] md:w-[60%] h-[82%] drop-shadow-[0_35px_45px_rgba(0,0,0,0.22)]">
-                  <Image
-                    src={currentHero.src}
-                    alt={currentHero.name}
-                    fill
-                    priority
-                    className="object-contain rounded-3xl"
-                  />
-                </div>
+                {/* 16:9 Authentic Campaign Poster */}
+                <Image
+                  src={currentHero.src}
+                  alt={currentHero.name}
+                  fill
+                  priority
+                  className="object-cover object-center"
+                />
 
-                {/* ─── Interactive SVG Hotspot Pins (Furnexa Precision) ─── */}
+                {/* ─── Interactive SVG Hotspot Pins on Poster Jar ─── */}
                 {currentHero.hotspots.map((hs) => {
                   const isActive = activeHotspot === hs.id;
                   const isRight = hs.direction === "right";
@@ -413,15 +437,15 @@ export function TurkiyeJamStorefront() {
 
                       {/* Hairline Connecting Vector + Label */}
                       <div
-                        className={`hidden sm:flex items-center absolute top-1/2 -translate-y-1/2 pointer-events-none ${
+                        className={`hidden md:flex items-center absolute top-1/2 -translate-y-1/2 pointer-events-none ${
                           isRight
                             ? "left-full pl-3 flex-row"
                             : "right-full pr-3 flex-row-reverse"
                         }`}
                       >
-                        <div className="w-12 md:w-20 h-[1.5px] bg-stone-700/60" />
-                        <div className="w-1.5 h-1.5 rounded-full bg-stone-800" />
-                        <span className="mx-2 px-3 py-1 rounded-full bg-stone-900/85 backdrop-blur-md text-white text-[11px] font-medium tracking-wide whitespace-nowrap shadow-md">
+                        <div className="w-12 md:w-16 h-[1.5px] bg-stone-900/80" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-stone-900" />
+                        <span className="mx-2 px-3 py-1 rounded-full bg-stone-950/90 backdrop-blur-md text-white text-[11px] font-semibold tracking-wide whitespace-nowrap shadow-lg">
                           {hs.title}
                         </span>
                       </div>
@@ -434,11 +458,7 @@ export function TurkiyeJamStorefront() {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 8, scale: 0.95 }}
                             transition={{ duration: 0.25 }}
-                            className={`absolute z-40 w-64 sm:w-76 p-4 rounded-2xl bg-stone-950/95 text-white backdrop-blur-2xl border border-white/20 shadow-2xl ${
-                              isRight
-                                ? "left-0 mt-3 sm:left-10 sm:-top-6"
-                                : "right-0 mt-3 sm:right-10 sm:-top-6"
-                            }`}
+                            className="absolute z-40 w-64 sm:w-76 p-4 rounded-2xl bg-stone-950/95 text-white backdrop-blur-2xl border border-white/20 shadow-2xl right-0 mt-3 sm:right-10 sm:-top-6"
                           >
                             <div className="flex items-center justify-between gap-2 mb-1.5">
                               <span className="text-[10px] font-bold uppercase tracking-wider text-[#ff807e]">
@@ -473,7 +493,7 @@ export function TurkiyeJamStorefront() {
         </div>
 
         {/* ─── Bottom Bar in Hero: Skateshop Product Card & Pill Carousel Controls ─── */}
-        <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-8 pb-8 pt-4 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
+        <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-8 pb-8 pt-2 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
           
           {/* Bottom-Left Floating Product Card */}
           <div className="p-5 sm:p-6 rounded-3xl bg-stone-900/90 text-white backdrop-blur-xl border border-white/10 shadow-2xl max-w-md w-full">
@@ -511,7 +531,7 @@ export function TurkiyeJamStorefront() {
               <button
                 type="button"
                 onClick={() => {
-                  const target = TURKIYE_JAM_VARIANTS.find((v) => v.id === currentHero.id) || selectedVariant;
+                  const target = TURKIYE_JAM_VARIANTS.find((v) => v.id === currentHero.variantId) || selectedVariant;
                   handleBuyNow(target);
                 }}
                 className="flex-1 py-3 px-4 rounded-full bg-white text-stone-900 font-bold text-xs uppercase tracking-wider hover:bg-stone-200 transition-all active:scale-95 cursor-pointer text-center shadow-md"
@@ -522,7 +542,7 @@ export function TurkiyeJamStorefront() {
               <button
                 type="button"
                 onClick={() => {
-                  const target = TURKIYE_JAM_VARIANTS.find((v) => v.id === currentHero.id) || selectedVariant;
+                  const target = TURKIYE_JAM_VARIANTS.find((v) => v.id === currentHero.variantId) || selectedVariant;
                   handleAddToCart(target);
                 }}
                 className="py-3 px-5 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md shadow-[#cb0805]/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
