@@ -68,9 +68,9 @@ export function Navbar() {
               <Menu className="w-6 h-6 stroke-[2]" />
             </button>
 
-            {/* Brand Logo & Signature Wordmark */}
-            <Link href="/" className="flex items-center gap-3 group" aria-label="Turkiye Jam Homepage">
-              <div className="relative h-9 sm:h-10 w-18 sm:w-20 shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform">
+            {/* Brand Logo (Prominent Standalone Logo Without Redundant Text) */}
+            <Link href="/" className="inline-flex items-center group py-0.5" aria-label="Turkiye Jam Homepage">
+              <div className="relative h-11 sm:h-12 w-24 sm:w-28 shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Image
                   src="/turkiye-jam-logo.png"
                   alt="Turkiye Jam Logo"
@@ -78,14 +78,6 @@ export function Navbar() {
                   className="object-contain"
                   priority
                 />
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-xl sm:text-2xl font-bold tracking-tight text-[#1A2E22] group-hover:text-[#3F6650] transition-colors leading-none font-sans">
-                  turkiye jam
-                </span>
-                <span className="text-[10px] text-[#3F6650] font-semibold tracking-widest uppercase mt-0.5">
-                  Themra Herbal Macun
-                </span>
               </div>
             </Link>
           </div>
@@ -152,18 +144,14 @@ export function Navbar() {
           <div className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col justify-between p-6 z-10">
             <div>
               <div className="flex items-center justify-between border-b border-stone-200 pb-4 mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="relative h-9 w-18 shrink-0 flex items-center justify-center">
+                <div className="flex items-center">
+                  <div className="relative h-11 w-24 shrink-0 flex items-center justify-center">
                     <Image
                       src="/turkiye-jam-logo.png"
                       alt="Turkiye Jam Logo"
                       fill
                       className="object-contain"
                     />
-                  </div>
-                  <div className="flex flex-col text-left">
-                    <span className="text-base font-bold text-[#1A2E22] font-sans">turkiye jam</span>
-                    <span className="text-[10px] text-[#3F6650] font-semibold tracking-wider">Original Turkish Paste</span>
                   </div>
                 </div>
                 <button

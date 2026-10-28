@@ -56,23 +56,15 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 lg:gap-16">
           {/* Brand */}
           <div className="md:col-span-2 space-y-5">
-            <Link href="/" className="inline-flex items-center gap-3.5 group">
-              <div className="relative h-11 sm:h-12 w-22 sm:w-24 flex items-center justify-center shrink-0">
+            <Link href="/" className="inline-flex items-center group" aria-label="Turkiye Jam">
+              <div className="relative h-13 sm:h-14 w-28 sm:w-32 flex items-center justify-center shrink-0">
                 <Image
                   src="/turkiye-jam-logo.png"
                   alt="Turkiye Jam"
-                  width={160}
-                  height={80}
+                  width={180}
+                  height={90}
                   className="h-full w-auto object-contain drop-shadow-md group-hover:scale-105 transition-transform"
                 />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-2xl tracking-tight text-white group-hover:text-[#A2C2B0] transition-colors font-sans">
-                  turkiye jam
-                </span>
-                <span className="text-xs text-amber-300 font-medium tracking-widest uppercase">
-                  Authentic Turkish Botanical Macun
-                </span>
               </div>
             </Link>
 
