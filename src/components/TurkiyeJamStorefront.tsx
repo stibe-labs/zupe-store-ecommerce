@@ -357,7 +357,7 @@ export function TurkiyeJamStorefront() {
       {/* ─────────────────────────────────────────────────────────────
           1. FULL-SCREEN HERO SECTION (PURE IMAGE + ADD TO CART ONLY)
       ───────────────────────────────────────────────────────────── */}
-      <section className="relative w-full h-[75vh] sm:h-[85vh] md:h-[calc(100vh-100px)] min-h-[520px] max-h-[920px] flex flex-col justify-between overflow-hidden bg-[#fabf00] text-stone-900 select-none">
+      <section className="relative w-full h-[calc(100vh-36px)] min-h-[620px] flex flex-col justify-between overflow-hidden bg-[#fabf00] text-stone-900 select-none pt-20 sm:pt-24 pb-8 sm:pb-12">
         
         {/* Full-Screen Edge-to-Edge Campaign Image (Switchable Her/Him) */}
         <div className="absolute inset-0 w-full h-full">
@@ -368,12 +368,12 @@ export function TurkiyeJamStorefront() {
             fill
             priority
             sizes="100vw"
-            className="object-contain md:object-cover object-center"
+            className="object-cover object-center"
           />
         </div>
 
         {/* Top-Right Minimal Gender Switcher Pill */}
-        <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-8 pt-4 flex items-center justify-end">
+        <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-8 flex items-center justify-end">
           <div className="flex items-center gap-1.5 p-1 rounded-full bg-black/65 backdrop-blur-xl border border-white/20 shadow-xl">
             {HERO_PRODUCTS.map((prod, idx) => (
               <button
@@ -393,7 +393,7 @@ export function TurkiyeJamStorefront() {
         </div>
 
         {/* Bottom Floating Bar: ONLY "Add to Cart" Button */}
-        <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-8 pb-8 sm:pb-12 flex items-center justify-center">
+        <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-8 pb-20 sm:pb-12 flex items-center justify-center">
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}

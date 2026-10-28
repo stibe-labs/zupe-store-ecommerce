@@ -54,9 +54,9 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-2 sm:top-3 z-40 px-3 sm:px-6 max-w-6xl mx-auto w-full transition-all duration-300">
+    <header className="sticky top-2 sm:top-3 z-40 px-3 sm:px-6 max-w-6xl mx-auto w-full transition-all duration-300 pointer-events-none -mb-16 sm:-mb-20">
       {/* Floating Apple-Style Liquid Frosted Glass Capsule */}
-      <div className="liquid-glass-elevated rounded-full px-4 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-4">
+      <div className="liquid-glass-elevated rounded-full px-4 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-4 pointer-events-auto">
         
         {/* Mobile Menu Toggle & Brand Logo */}
         <div className="flex items-center gap-3">
