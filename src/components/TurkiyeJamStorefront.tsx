@@ -26,36 +26,43 @@ import {
   Check,
   X,
   Plus,
+  Lock,
+  RotateCcw,
+  Clock,
+  Layers,
+  Zap,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { TURKIYE_JAM_VARIANTS, TurkiyeJamVariant } from "@/data/zupeProducts";
 
-// Furnexa Hero Products Carousel (Jar vs. Sachet Box)
+// Furnexa × Skateshop Hero Product Showcase
 const HERO_PRODUCTS = [
   {
     id: "tj-bottle-240g",
     name: "Themra Epimedium Macun 240g",
-    subtitle: "Minimal Chic / Ottoman Herbal Macun",
+    subtitle: "Royal Heritage / 240g Glass Jar",
     price: 2899,
     mrp: 4500,
     offerText: "2 Free Strips Included",
+    servings: "Approx. 25–30 Doses",
     src: "/tj/turkiye-jam-gallery-6.jpeg",
-    tag: "Royal Glass Jar",
+    tag: "Flagship Bottle",
+    badge: "Most Popular",
     hotspots: [
       {
         id: 1,
         title: "Pure Anatolian Flower Honey",
         subtitle: "100% Herbal Carrier Base",
-        desc: "Synergistic botanical base ensuring rapid bio-absorption within 30–45 mins without synthetic additives.",
+        desc: "Synergistic botanical honey carrier ensuring rapid bio-absorption within 30–45 mins without synthetic fillers.",
         top: "28%",
         left: "34%",
-        direction: "left", // connecting line direction
+        direction: "left",
       },
       {
         id: 2,
         title: "Epimedium Extract 0.79%",
-        subtitle: "Active Icariin Formulation",
-        desc: "Increases nitric oxide release and smooth pelvic blood circulation for sustained stamina and rock firmness.",
+        subtitle: "Active Icariin Bio-Complex",
+        desc: "Promotes nitric oxide release and smooth pelvic circulation for rock-firm stamina and heightened sensitivity.",
         top: "48%",
         left: "64%",
         direction: "right",
@@ -63,8 +70,8 @@ const HERO_PRODUCTS = [
       {
         id: 3,
         title: "Red Ginseng & Royal Jelly",
-        subtitle: "Endurance & Vitality Blend",
-        desc: "Royal energy adaptogen combating fatigue, supporting healthy hormonal balance, and accelerating recovery.",
+        subtitle: "Endurance & Recovery Blend",
+        desc: "Revered Turkish adaptogen combating physical fatigue, supporting hormonal vitality, and boosting mutual drive.",
         top: "68%",
         left: "40%",
         direction: "left",
@@ -78,23 +85,25 @@ const HERO_PRODUCTS = [
     price: 2899,
     mrp: 4500,
     offerText: "12 Strips + 2 Bonus Strips",
+    servings: "14 Pre-measured 12g Strips",
     src: "/tj/turkiye-jam-gallery-7.jpeg",
-    tag: "Discreet Travel Strips",
+    tag: "Travel Edition",
+    badge: "Best Value",
     hotspots: [
       {
         id: 1,
         title: "Single-Dose Sealed Sachets",
-        subtitle: "Guaranteed Freshness & Purity",
-        desc: "Individual 12g foil packs ready to consume anywhere with water—no spoon or refrigeration needed.",
+        subtitle: "Guaranteed Purity & Hygiene",
+        desc: "Individual 12g foil packs ready to consume anywhere—no spoon, mixing, or refrigeration required.",
         top: "30%",
         left: "36%",
         direction: "left",
       },
       {
         id: 2,
-        title: "Active Anatolian Epimedium",
-        subtitle: "Fast-Acting Male & Female Vitality",
-        desc: "Delivers rapid intimate surge and enhanced sensitivity within 30 to 45 minutes of consumption.",
+        title: "Instant Dual-Action Potency",
+        subtitle: "For Men & Women",
+        desc: "Delivers rapid intimate surge and enhanced sensation within 30 to 45 minutes of consumption.",
         top: "50%",
         left: "66%",
         direction: "right",
@@ -103,7 +112,7 @@ const HERO_PRODUCTS = [
         id: 3,
         title: "Unused Strip Refund Guarantee",
         subtitle: "100% Money-Back Protection",
-        desc: "Try risk-free. Return any unopened strips within 15 days for a 100% pro-rata refund to your account.",
+        desc: "Try risk-free. Return any unopened strips within 15 days for a 100% pro-rata refund directly to your UPI/bank.",
         top: "70%",
         left: "44%",
         direction: "left",
@@ -115,11 +124,81 @@ const HERO_PRODUCTS = [
 const MARQUEE_ITEMS = [
   "FREE EXPRESS SHIPPING ACROSS KERALA",
   "50% OFF THIS WEEK",
-  "100% ORIGINAL FROM TURKEY",
+  "100% ORIGINAL IMPORT FROM TURKEY",
   "DISCREET PLAIN BOX PACKAGING",
   "LIMITED STOCK AVAILABLE",
   "MONEY BACK GUARANTEE ON UNUSED STRIPS",
   "CASH ON DELIVERY & UPI PREPAID",
+];
+
+// Skateshop-Style Detailed Package Information
+const PACKAGE_DETAILS: Record<string, { doses: string; includes: string; badgeType: string }> = {
+  "tj-bottle-240g": {
+    doses: "25–30 Doses",
+    includes: "1x 240g Glass Jar + 2x Free Single Sachets",
+    badgeType: "Bestseller",
+  },
+  "tj-box-12s": {
+    doses: "14 Doses",
+    includes: "1x Box of 12 Sachets + 2x Bonus Sachets (14 Total)",
+    badgeType: "Best Value",
+  },
+  "tj-strips-6": {
+    doses: "6 Doses",
+    includes: "6x Individually Sealed 12g Sachet Strips",
+    badgeType: "Popular",
+  },
+  "tj-strips-4": {
+    doses: "4 Doses",
+    includes: "4x Individually Sealed 12g Sachet Strips",
+    badgeType: "Standard",
+  },
+  "tj-strips-3": {
+    doses: "3 Doses",
+    includes: "3x Individually Sealed 12g Sachet Strips",
+    badgeType: "Starter",
+  },
+  "tj-strips-2": {
+    doses: "2 Doses",
+    includes: "2x Individually Sealed 12g Sachet Strips",
+    badgeType: "Trial Pack",
+  },
+};
+
+// Anatolian Ingredient Science Bento
+const INGREDIENTS_BENTO = [
+  {
+    icon: Flame,
+    title: "Epimedium (0.79% Icariin)",
+    tag: "Bioactive Nitric Oxide Catalyst",
+    desc: "Revered in Anatolian herbal medicine. Bioactive Icariin inhibits PDE-5 naturally to stimulate nitric oxide release, relaxing arterial walls for sustained pelvic blood flow, rock-solid endurance, and heightened sensitivity.",
+    color: "text-[#cb0805]",
+    bg: "bg-[#cb0805]/5 border-[#cb0805]/20",
+  },
+  {
+    icon: Leaf,
+    title: "Pure Anatolian Flower Honey",
+    tag: "Natural Bio-Carrier Base",
+    desc: "Wild harvested Turkish floral honey acts as an active synergistic carrier, accelerating compound absorption into the bloodstream within 30 to 45 minutes without upsetting digestive balance.",
+    color: "text-amber-500",
+    bg: "bg-amber-500/5 border-amber-500/20",
+  },
+  {
+    icon: Zap,
+    title: "Panax Red Ginseng & Maca",
+    tag: "Endurance & Recovery Adaptogen",
+    desc: "Premium grade Ginsenosides combat physical fatigue, reduce performance anxiety, and significantly accelerate recovery time between intimate sessions for both partners.",
+    color: "text-emerald-600",
+    bg: "bg-emerald-500/5 border-emerald-500/20",
+  },
+  {
+    icon: Sparkles,
+    title: "Royal Jelly & Bee Pollen",
+    tag: "Cellular Vitality & Hormonal Balance",
+    desc: "Rich in amino acids, vitamin B-complex, and trace minerals to naturally elevate libido, boost stamina, and sustain vibrant physical energy for up to 48 hours.",
+    color: "text-rose-500",
+    bg: "bg-rose-500/5 border-rose-500/20",
+  },
 ];
 
 const FAQS = [
@@ -155,11 +234,12 @@ const SPOTLIGHT_REVIEWS = [
     quote:
       "Our intimate wellness finally feels energized and inspiring. Themra Macun delivers smooth, sustained vitality without any headaches or jittery chemical side effects. Highly recommended.",
     name: "Dr. Rahul M.",
-    role: "Verified Buyer",
+    role: "Verified Doctor & Buyer",
     location: "Kochi, Kerala",
     package: "240g Glass Jar + 2 Free Strips",
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
     productImg: "/tj/turkiye-jam-gallery-6.jpeg",
+    stars: 5,
   },
   {
     id: 2,
@@ -171,6 +251,7 @@ const SPOTLIGHT_REVIEWS = [
     package: "14-Sachet Travel Box",
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
     productImg: "/tj/turkiye-jam-gallery-7.jpeg",
+    stars: 5,
   },
   {
     id: 3,
@@ -182,6 +263,7 @@ const SPOTLIGHT_REVIEWS = [
     package: "240g Royal Glass Jar",
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
     productImg: "/tj/turkiye-jam-gallery-6.jpeg",
+    stars: 5,
   },
 ];
 
@@ -210,10 +292,6 @@ export function TurkiyeJamStorefront() {
 
   // FAQ Accordion State
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-
-  // Quick Order State
-  const [quickPhone, setQuickPhone] = useState<string>("");
-  const [quickSuccess, setQuickSuccess] = useState<boolean>(false);
 
   const currentHero = HERO_PRODUCTS[heroProductIndex];
 
@@ -269,54 +347,39 @@ export function TurkiyeJamStorefront() {
     return true;
   });
 
-  const handleQuickOrder = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!quickPhone.trim()) return;
-    const clean = quickPhone.replace(/\D/g, "");
-    const waUrl = `https://wa.me/919744122853?text=${encodeURIComponent(
-      `Hi Turkiye Jam Care! I would like to order ${selectedVariant.name} (₹${selectedVariant.price}). My WhatsApp number is: ${clean}`
-    )}`;
-    setQuickSuccess(true);
-    setTimeout(() => {
-      window.open(waUrl, "_blank");
-      setQuickSuccess(false);
-      setQuickPhone("");
-    }, 1200);
-  };
-
   return (
     <div className="min-h-screen bg-[#faf9f6] text-stone-900 font-sans selection:bg-[#cb0805] selection:text-white">
       
       {/* ─────────────────────────────────────────────────────────────
-          1. HERO SECTION (FURNEXA EXACT ARCHITECTURE)
+          1. HERO SECTION (FURNEXA LUXURY ARCHITECTURE)
       ───────────────────────────────────────────────────────────── */}
-      <section className="relative w-full min-h-[88vh] md:min-h-[94vh] flex flex-col justify-between overflow-hidden bg-[#ebe8e3] text-stone-900">
+      <section className="relative w-full min-h-[90vh] md:min-h-[95vh] flex flex-col justify-between overflow-hidden bg-[#ebe8e3] text-stone-900">
         
-        {/* Furnexa Giant Background Typography */}
-        <div className="absolute inset-x-0 top-6 sm:top-10 md:top-14 flex items-center justify-center pointer-events-none select-none z-0">
+        {/* Giant Furnexa Background Display Typography */}
+        <div className="absolute inset-x-0 top-4 sm:top-8 md:top-12 flex items-center justify-center pointer-events-none select-none z-0">
           <span className="furnexa-hero-title text-[15vw] tracking-tighter text-stone-800/20 sm:text-stone-800/15">
             TURKIYE JAM
           </span>
         </div>
 
         {/* Ambient Top Light Beam */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-96 bg-gradient-to-b from-white/60 to-transparent pointer-events-none blur-3xl z-0" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4/5 h-96 bg-gradient-to-b from-white/70 to-transparent pointer-events-none blur-3xl z-0" />
 
-        {/* Center Stage: Product Display with Pedestal & Hotspots */}
+        {/* Center Stage: Product Display with Pedestal & Interactive Hotspots */}
         <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-8 py-8 md:py-12">
-          <div className="relative w-full max-w-4xl h-[480px] sm:h-[540px] md:h-[620px] flex items-center justify-center">
+          <div className="relative w-full max-w-4xl h-[460px] sm:h-[520px] md:h-[600px] flex items-center justify-center">
             
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentHero.id}
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.05 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                exit={{ opacity: 0, scale: 1.04 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 className="relative w-full h-full flex items-center justify-center"
               >
-                {/* Product Image */}
-                <div className="relative w-[85%] sm:w-[70%] md:w-[60%] h-[80%] drop-shadow-[0_35px_45px_rgba(0,0,0,0.22)]">
+                {/* Product Image Stage */}
+                <div className="relative w-[85%] sm:w-[70%] md:w-[60%] h-[82%] drop-shadow-[0_35px_45px_rgba(0,0,0,0.22)]">
                   <Image
                     src={currentHero.src}
                     alt={currentHero.name}
@@ -326,7 +389,7 @@ export function TurkiyeJamStorefront() {
                   />
                 </div>
 
-                {/* ─── Interactive Hotspot Pins (Furnexa Signature) ─── */}
+                {/* ─── Interactive SVG Hotspot Pins (Furnexa Precision) ─── */}
                 {currentHero.hotspots.map((hs) => {
                   const isActive = activeHotspot === hs.id;
                   const isRight = hs.direction === "right";
@@ -337,18 +400,18 @@ export function TurkiyeJamStorefront() {
                       style={{ top: hs.top, left: hs.left }}
                       className="absolute z-30"
                     >
-                      {/* Pulse Ring + Center Hotspot Target Button */}
+                      {/* Pulsing Target Ring Button */}
                       <button
                         type="button"
                         onClick={() => setActiveHotspot(isActive ? null : hs.id)}
-                        className="group relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-md shadow-lg border border-stone-300 hover:border-[#cb0805] hover:scale-110 transition-all cursor-pointer"
+                        className="group relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/95 backdrop-blur-md shadow-lg border border-stone-300 hover:border-[#cb0805] hover:scale-110 transition-all cursor-pointer"
                         aria-label={`Inspect ${hs.title}`}
                       >
                         <span className="absolute inset-0 rounded-full bg-[#cb0805]/30 animate-hotspot-ping" />
                         <span className="w-2.5 h-2.5 rounded-full bg-[#cb0805] transition-transform group-hover:scale-125" />
                       </button>
 
-                      {/* Connecting Line + Label (Furnexa Style) */}
+                      {/* Hairline Connecting Vector + Label */}
                       <div
                         className={`hidden sm:flex items-center absolute top-1/2 -translate-y-1/2 pointer-events-none ${
                           isRight
@@ -356,17 +419,14 @@ export function TurkiyeJamStorefront() {
                             : "right-full pr-3 flex-row-reverse"
                         }`}
                       >
-                        {/* Connecting Line */}
                         <div className="w-12 md:w-20 h-[1.5px] bg-stone-700/60" />
-                        {/* Dot Anchor */}
                         <div className="w-1.5 h-1.5 rounded-full bg-stone-800" />
-                        {/* Label Pill */}
-                        <span className="mx-2 px-2.5 py-1 rounded-full bg-stone-900/80 backdrop-blur-md text-white text-[11px] font-medium tracking-wide whitespace-nowrap shadow-md">
+                        <span className="mx-2 px-3 py-1 rounded-full bg-stone-900/85 backdrop-blur-md text-white text-[11px] font-medium tracking-wide whitespace-nowrap shadow-md">
                           {hs.title}
                         </span>
                       </div>
 
-                      {/* Expanding Tooltip Card on Click/Hover */}
+                      {/* Expanding Tooltip Modal on Click/Hover */}
                       <AnimatePresence>
                         {isActive && (
                           <motion.div
@@ -374,7 +434,7 @@ export function TurkiyeJamStorefront() {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 8, scale: 0.95 }}
                             transition={{ duration: 0.25 }}
-                            className={`absolute z-40 w-64 sm:w-72 p-4 rounded-2xl bg-stone-950/95 text-white backdrop-blur-2xl border border-white/20 shadow-2xl ${
+                            className={`absolute z-40 w-64 sm:w-76 p-4 rounded-2xl bg-stone-950/95 text-white backdrop-blur-2xl border border-white/20 shadow-2xl ${
                               isRight
                                 ? "left-0 mt-3 sm:left-10 sm:-top-6"
                                 : "right-0 mt-3 sm:right-10 sm:-top-6"
@@ -412,27 +472,38 @@ export function TurkiyeJamStorefront() {
           </div>
         </div>
 
-        {/* ─── Bottom Bar in Hero: Product Card & Carousel Arrows ─── */}
+        {/* ─── Bottom Bar in Hero: Skateshop Product Card & Pill Carousel Controls ─── */}
         <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-8 pb-8 pt-4 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
           
-          {/* Furnexa Bottom-Left Floating Product Card */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-stone-900/90 text-white backdrop-blur-xl border border-white/10 shadow-2xl max-w-sm w-full">
-            <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/15 text-stone-200 text-[10px] font-semibold tracking-wide uppercase mb-2">
-              {currentHero.subtitle}
-            </span>
+          {/* Bottom-Left Floating Product Card */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-stone-900/90 text-white backdrop-blur-xl border border-white/10 shadow-2xl max-w-md w-full">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-stone-200 text-[10px] font-semibold tracking-wide uppercase">
+                {currentHero.subtitle}
+              </span>
+              <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                In Stock (Dispatches 24h)
+              </span>
+            </div>
+
             <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white mb-1">
               {currentHero.name}
             </h3>
             
-            <div className="flex items-baseline gap-2 mb-4">
-              <span className="text-2xl font-black text-white">
+            <p className="text-xs text-stone-300 mb-3">
+              {currentHero.servings} • {currentHero.offerText}
+            </p>
+
+            <div className="flex items-baseline gap-2.5 mb-4">
+              <span className="text-3xl font-black text-white">
                 ₹{currentHero.price.toLocaleString("en-IN")}
               </span>
               <span className="text-xs text-stone-400 line-through">
                 ₹{currentHero.mrp.toLocaleString("en-IN")}
               </span>
-              <span className="text-xs font-bold text-[#ff807e] ml-1">
-                ({currentHero.offerText})
+              <span className="text-xs font-bold text-[#ff807e] ml-1 bg-[#cb0805]/20 px-2 py-0.5 rounded">
+                Save 35%
               </span>
             </div>
 
@@ -443,9 +514,9 @@ export function TurkiyeJamStorefront() {
                   const target = TURKIYE_JAM_VARIANTS.find((v) => v.id === currentHero.id) || selectedVariant;
                   handleBuyNow(target);
                 }}
-                className="flex-1 py-2.5 px-4 rounded-full bg-white text-stone-900 font-bold text-xs uppercase tracking-wider hover:bg-stone-200 transition-all active:scale-95 cursor-pointer text-center"
+                className="flex-1 py-3 px-4 rounded-full bg-white text-stone-900 font-bold text-xs uppercase tracking-wider hover:bg-stone-200 transition-all active:scale-95 cursor-pointer text-center shadow-md"
               >
-                Shop Now
+                Buy Now
               </button>
               
               <button
@@ -454,7 +525,7 @@ export function TurkiyeJamStorefront() {
                   const target = TURKIYE_JAM_VARIANTS.find((v) => v.id === currentHero.id) || selectedVariant;
                   handleAddToCart(target);
                 }}
-                className="py-2.5 px-4 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md shadow-[#cb0805]/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                className="py-3 px-5 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md shadow-[#cb0805]/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
                 aria-label="Add to cart"
               >
                 <ShoppingBag className="w-3.5 h-3.5" />
@@ -463,16 +534,16 @@ export function TurkiyeJamStorefront() {
             </div>
           </div>
 
-          {/* Furnexa Bottom-Right Pill Slider Controls (←) (→) */}
+          {/* Pill Slider Controls (←) (→) */}
           <div className="flex items-center gap-3 self-end sm:self-auto">
-            <span className="text-xs font-medium text-stone-600 hidden sm:inline">
-              {heroProductIndex + 1} / {HERO_PRODUCTS.length}
+            <span className="text-xs font-semibold text-stone-600 hidden sm:inline">
+              0{heroProductIndex + 1} / 0{HERO_PRODUCTS.length}
             </span>
             <div className="flex items-center gap-2 bg-stone-900/80 backdrop-blur-md p-1.5 rounded-full border border-white/10 shadow-lg">
               <button
                 type="button"
                 onClick={handlePrevHero}
-                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
                 aria-label="Previous Showcase Product"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -480,7 +551,7 @@ export function TurkiyeJamStorefront() {
               <button
                 type="button"
                 onClick={handleNextHero}
-                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
                 aria-label="Next Showcase Product"
               >
                 <ArrowRight className="w-4 h-4" />
@@ -492,9 +563,9 @@ export function TurkiyeJamStorefront() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. MARQUEE TICKER (EXACT FURNEXA POSITION)
+          2. MARQUEE TICKER (DARK HIGH-CONTRAST)
       ───────────────────────────────────────────────────────────── */}
-      <section className="relative w-full bg-[#151515] text-white py-4 overflow-hidden border-y border-white/10 select-none">
+      <section className="relative w-full bg-[#121214] text-white py-4 overflow-hidden border-y border-white/10 select-none">
         <div className="flex animate-marquee whitespace-nowrap">
           {[0, 1].map((setIndex) => (
             <div
@@ -514,17 +585,20 @@ export function TurkiyeJamStorefront() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. SHOP BY CATEGORIES / PACKAGES (FURNEXA PEDESTAL GRID)
+          3. SHOP BY PACKAGES (SKATESHOP ARCHITECTURAL PRECISION)
       ───────────────────────────────────────────────────────────── */}
       <section id="offers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
         
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-stone-900 mb-4 font-display">
-            Shop by categories
+          <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805]">
+            Direct Import Packages
+          </span>
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-stone-900 mt-2 mb-4 font-display">
+            Select Your Package
           </h2>
           <p className="text-stone-600 text-sm sm:text-base leading-relaxed">
-            Sealed Turkish imports with guaranteed purity. Choose your ideal package below.
+            Sealed Turkish imports with tamper-proof packaging and 15-day unused strip refund guarantee.
           </p>
 
           {/* Category Filter Pills */}
@@ -550,63 +624,79 @@ export function TurkiyeJamStorefront() {
           </div>
         </div>
 
-        {/* Furnexa Minimalist Product Cards Grid */}
+        {/* Skateshop-Style High-Precision Product Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {filteredVariants.map((variant) => {
             const isSelected = selectedVariant.id === variant.id;
+            const details = PACKAGE_DETAILS[variant.id] || {
+              doses: "Multi-dose",
+              includes: variant.badge || "Standard Sealed Pack",
+              badgeType: "Original Import",
+            };
 
             return (
               <div
                 key={variant.id}
                 onClick={() => setSelectedVariant(variant)}
-                className={`furnexa-card group relative rounded-3xl bg-white border p-6 flex flex-col justify-between cursor-pointer transition-all ${
+                className={`furnexa-card group relative rounded-3xl bg-white border p-6 sm:p-7 flex flex-col justify-between cursor-pointer transition-all ${
                   isSelected
                     ? "border-[#cb0805] shadow-xl ring-2 ring-[#cb0805]/20"
-                    : "border-stone-200/80 hover:border-stone-400"
+                    : "border-stone-200/90 hover:border-stone-900"
                 }`}
               >
-                {/* Top Badge */}
-                <div className="flex items-center justify-between mb-4">
-                  {variant.badge ? (
-                    <span className="px-3 py-1 rounded-full bg-[#cb0805]/10 text-[#cb0805] text-[11px] font-bold uppercase tracking-wider">
-                      {variant.badge}
+                {/* Card Top: Badges & Savings */}
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-4">
+                    <span className="px-3 py-1 rounded-full bg-stone-900 text-white text-[11px] font-bold uppercase tracking-wider">
+                      {variant.badge || details.badgeType}
                     </span>
-                  ) : (
-                    <span className="px-3 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px] font-semibold">
-                      Turkish Import
-                    </span>
-                  )}
-                  {variant.savings && (
-                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
-                      {variant.savings}
-                    </span>
-                  )}
-                </div>
+                    {variant.savings && (
+                      <span className="text-xs font-black text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-0.5 rounded-full">
+                        {variant.savings}
+                      </span>
+                    )}
+                  </div>
 
-                {/* Clean Product Render on Pedestal */}
-                <div className="relative w-full h-56 sm:h-64 my-2 flex items-center justify-center">
-                  <div className="relative w-4/5 h-full transition-transform duration-500 group-hover:scale-105 drop-shadow-lg">
-                    <Image
-                      src={variant.image}
-                      alt={variant.name}
-                      fill
-                      className="object-contain"
-                    />
+                  {/* Clean Product Render on Pedestal */}
+                  <div className="relative w-full h-56 sm:h-64 my-3 flex items-center justify-center">
+                    <div className="relative w-4/5 h-full transition-transform duration-500 group-hover:scale-105 drop-shadow-md">
+                      <Image
+                        src={variant.image}
+                        alt={variant.name}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Title & Package Contents Breakdown */}
+                  <h3 className="font-extrabold text-lg text-stone-900 mb-1 group-hover:text-[#cb0805] transition-colors">
+                    {variant.name}
+                  </h3>
+
+                  <div className="space-y-1 mb-4 text-xs text-stone-500">
+                    <p className="flex items-center gap-1.5 font-medium text-stone-700">
+                      <Clock className="w-3.5 h-3.5 text-[#cb0805]" />
+                      <span>{details.doses}</span>
+                    </p>
+                    <p className="flex items-center gap-1.5">
+                      <Package className="w-3.5 h-3.5 text-stone-400" />
+                      <span>{details.includes}</span>
+                    </p>
                   </div>
                 </div>
 
-                {/* Product Info & Actions */}
+                {/* Pricing & Skateshop Dual Action Buttons */}
                 <div className="pt-4 border-t border-stone-100">
-                  <h3 className="font-extrabold text-base sm:text-lg text-stone-900 mb-1 group-hover:text-[#cb0805] transition-colors">
-                    {variant.name}
-                  </h3>
-                  
                   <div className="flex items-baseline gap-2 mb-4">
-                    <span className="text-2xl font-black text-stone-900">
+                    <span className="text-2xl sm:text-3xl font-black text-stone-900">
                       ₹{variant.price.toLocaleString("en-IN")}
                     </span>
                     <span className="text-xs text-stone-400 line-through">
                       ₹{variant.mrp.toLocaleString("en-IN")}
+                    </span>
+                    <span className="text-[11px] font-bold text-emerald-600 ml-auto">
+                      Free Kerala Express
                     </span>
                   </div>
 
@@ -617,7 +707,7 @@ export function TurkiyeJamStorefront() {
                         e.stopPropagation();
                         handleAddToCart(variant);
                       }}
-                      className="flex-1 py-2.5 px-4 rounded-full bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                      className="flex-1 py-3 px-4 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-900 font-bold text-xs uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5"
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
                       <span>Add to Cart</span>
@@ -629,7 +719,7 @@ export function TurkiyeJamStorefront() {
                         e.stopPropagation();
                         handleBuyNow(variant);
                       }}
-                      className="py-2.5 px-4 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs uppercase tracking-wider transition-all active:scale-95"
+                      className="flex-1 py-3 px-4 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs uppercase tracking-wider transition-all active:scale-95 text-center shadow-md shadow-[#cb0805]/20"
                     >
                       Buy Now
                     </button>
@@ -703,9 +793,57 @@ export function TurkiyeJamStorefront() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          5. EDITORIAL BRAND STORY (FURNEXA ASYMMETRIC LAYOUT)
+          5. ANATOLIAN BOTANICAL SCIENCE BENTO GRID
       ───────────────────────────────────────────────────────────── */}
-      <section id="story" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <span className="text-xs font-bold uppercase tracking-widest text-[#cb0805]">
+            Clinical Formulation
+          </span>
+          <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-stone-900 mt-2">
+            The Science of Anatolian Potency
+          </h2>
+          <p className="text-stone-600 text-sm sm:text-base mt-3">
+            Synergistic natural compounds blended to deliver sustained blood circulation, physical stamina, and mutual desire.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+          {INGREDIENTS_BENTO.map((item, idx) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={idx}
+                className="furnexa-card rounded-3xl bg-white border border-stone-200/90 p-8 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${item.bg}`}>
+                      <Icon className={`w-6 h-6 ${item.color}`} />
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block">
+                        {item.tag}
+                      </span>
+                      <h3 className="font-extrabold text-xl text-stone-900">
+                        {item.title}
+                      </h3>
+                    </div>
+                  </div>
+                  <p className="text-sm text-stone-600 leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          6. EDITORIAL BRAND STORY (FOR HIM & FOR HER)
+      ───────────────────────────────────────────────────────────── */}
+      <section id="story" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 border-t border-stone-200">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           
           <div className="lg:col-span-5 space-y-6">
@@ -724,7 +862,7 @@ export function TurkiyeJamStorefront() {
                 href="#offers"
                 className="inline-flex items-center gap-2 text-sm font-bold text-stone-900 hover:text-[#cb0805] transition-colors group"
               >
-                <span>OUR PACKAGES</span>
+                <span>EXPLORE PACKAGES</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 text-[#cb0805]" />
               </a>
             </div>
@@ -736,12 +874,12 @@ export function TurkiyeJamStorefront() {
             {/* For Men Card */}
             <div className="rounded-3xl bg-white border border-stone-200/80 p-6 flex flex-col justify-between furnexa-card">
               <div>
-                <div className="relative w-full h-52 mb-5 rounded-2xl overflow-hidden bg-stone-100">
+                <div className="relative w-full h-56 mb-5 rounded-2xl overflow-hidden bg-stone-100 shadow-sm">
                   <Image
-                    src="/tj/turkiye-jam-gallery-7.jpeg"
-                    alt="Turkiye Jam For Men"
+                    src="/tj/WhatsApp Image 2026-10-29 at 00.42.29.jpeg"
+                    alt="Turkiye Jam For Men - Sustained Stamina"
                     fill
-                    className="object-cover"
+                    className="object-cover object-top hover:scale-105 transition-transform duration-500"
                   />
                   <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-stone-950/80 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider">
                     For Him
@@ -768,7 +906,7 @@ export function TurkiyeJamStorefront() {
               <button
                 type="button"
                 onClick={() => handleBuyNow()}
-                className="w-full py-2.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-900 font-bold text-xs uppercase tracking-wider transition-all"
+                className="w-full py-2.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-900 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
               >
                 Select Package
               </button>
@@ -777,12 +915,12 @@ export function TurkiyeJamStorefront() {
             {/* For Women Card */}
             <div className="rounded-3xl bg-white border border-stone-200/80 p-6 flex flex-col justify-between furnexa-card">
               <div>
-                <div className="relative w-full h-52 mb-5 rounded-2xl overflow-hidden bg-stone-100">
+                <div className="relative w-full h-56 mb-5 rounded-2xl overflow-hidden bg-stone-100 shadow-sm">
                   <Image
-                    src="/tj/turkiye-jam-gallery-5.jpeg"
-                    alt="Turkiye Jam For Women"
+                    src="/tj/WhatsApp Image 2026-10-29 at 01.01.10.jpeg"
+                    alt="Turkiye Jam For Women - Sensation & Libido"
                     fill
-                    className="object-cover"
+                    className="object-cover object-top hover:scale-105 transition-transform duration-500"
                   />
                   <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-stone-950/80 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider">
                     For Her
@@ -809,7 +947,7 @@ export function TurkiyeJamStorefront() {
               <button
                 type="button"
                 onClick={() => handleBuyNow()}
-                className="w-full py-2.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-900 font-bold text-xs uppercase tracking-wider transition-all"
+                className="w-full py-2.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-900 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
               >
                 Select Package
               </button>
@@ -821,7 +959,7 @@ export function TurkiyeJamStorefront() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          6. "TRUSTED BY COUPLES" (FURNEXA DARK SPOTLIGHT TESTIMONIAL)
+          7. "TRUSTED BY COUPLES" (DARK SPOTLIGHT TESTIMONIAL)
       ───────────────────────────────────────────────────────────── */}
       <section id="reviews" className="relative w-full bg-[#0a0a0c] text-white py-24 sm:py-32 overflow-hidden">
         
@@ -839,11 +977,10 @@ export function TurkiyeJamStorefront() {
             </h2>
           </div>
 
-          {/* Furnexa Spotlight Card with Giant Quote & Product Thumbnail */}
+          {/* Spotlight Card with Giant Quote & Product Thumbnail */}
           <div className="relative rounded-3xl bg-stone-900/60 backdrop-blur-2xl border border-white/10 p-8 sm:p-12 md:p-16 flex flex-col md:flex-row items-center justify-between gap-10">
             
             <div className="flex-1 space-y-6">
-              {/* Quote Mark */}
               <span className="text-6xl sm:text-7xl font-serif text-[#cb0805] leading-none block -mb-4">
                 “
               </span>
@@ -905,7 +1042,7 @@ export function TurkiyeJamStorefront() {
               <ArrowLeft className="w-4 h-4" />
             </button>
             <span className="text-xs text-stone-400 px-2">
-              {currentReviewIndex + 1} / {SPOTLIGHT_REVIEWS.length}
+              0{currentReviewIndex + 1} / 0{SPOTLIGHT_REVIEWS.length}
             </span>
             <button
               type="button"
@@ -923,7 +1060,7 @@ export function TurkiyeJamStorefront() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          7. HOW TO USE (FURNEXA 3-STEP CLEAN TIMELINE)
+          8. HOW TO CONSUME (FURNEXA 3-STEP CLEAN TIMELINE)
       ───────────────────────────────────────────────────────────── */}
       <section id="usage" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
         <div className="text-center max-w-xl mx-auto mb-16">
@@ -972,7 +1109,7 @@ export function TurkiyeJamStorefront() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          8. FOLLOW @TURKIYEJAM (FURNEXA 5-PHOTO COMMUNITY SHOWCASE)
+          9. FOLLOW @TURKIYEJAM (5-PHOTO COMMUNITY SHOWCASE)
       ───────────────────────────────────────────────────────────── */}
       <section className="bg-stone-100 border-t border-stone-200 py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -1004,7 +1141,7 @@ export function TurkiyeJamStorefront() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          9. FAQ ACCORDION
+          10. FAQ ACCORDION
       ───────────────────────────────────────────────────────────── */}
       <section id="faq" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
         <div className="text-center mb-12">
@@ -1057,7 +1194,7 @@ export function TurkiyeJamStorefront() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          10. STICKY MOBILE BOTTOM BAR
+          11. STICKY MOBILE BOTTOM BAR
       ───────────────────────────────────────────────────────────── */}
       <div className="md:hidden fixed bottom-3 inset-x-3 z-40">
         <div className="bg-stone-900/95 text-white backdrop-blur-2xl border border-white/15 rounded-full px-4 py-2.5 shadow-2xl flex items-center justify-between gap-3">
