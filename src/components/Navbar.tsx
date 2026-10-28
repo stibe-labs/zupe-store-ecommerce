@@ -1,88 +1,43 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
-  Search,
   ShoppingBag,
   Heart,
   User,
   Menu,
-  ChevronDown,
   X,
-  SlidersHorizontal,
-  ArrowRight,
+  Phone,
+  ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { DEFAULT_PRODUCTS, doesCategoryMatch } from "@/data/zupeProducts";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
-import { useSearch } from "@/context/SearchContext";
 
-const CATEGORY_NAV = [
-  { label: "Home", href: "/" },
-  { label: "New Arrivals", href: "/products?filter=new" },
-  { label: "Best Sellers", href: "/products?filter=best" },
-  { label: "Tech & Gadgets", href: "/products?category=Tech+%26+Gadgets" },
-  { label: "Home Essentials", href: "/products?category=Home+Essentials" },
-  { label: "Personal Care", href: "/products?category=Personal+Care" },
-  { label: "Auto Essentials", href: "/products?category=Auto+Essentials" },
-  { label: "Fitness & Wellness", href: "/products?category=Fitness+%26+Wellness" },
-  { label: "Kids & Fun", href: "/products?category=Kids+%26+Fun" },
-  { label: "Deals & Offers", href: "/products?category=Deals+%26+Offers" },
-  { label: "Order Tracking", href: "/order-tracking" },
+const TURKIYE_NAV_ITEMS = [
+  { label: "ഓഫർ പാക്കേജുകൾ (Offers)", href: "/#offers" },
+  { label: "ഗുണങ്ങൾ (Benefits)", href: "/#benefits" },
+  { label: "ഉപയോഗം (How to Use)", href: "/#how-to-use" },
+  { label: "റീഫണ്ട് ഗ്യാരണ്ടി", href: "/#guarantee" },
+  { label: "കസ്റ്റമർ റിവ്യൂസ്", href: "/#reviews" },
+  { label: "ഓർഡർ ട്രാക്കിംഗ്", href: "/order-tracking" },
 ];
 
-function NavbarContent() {
+export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [navCategories, setNavCategories] = useState<{ label: string; href: string }[]>(CATEGORY_NAV);
 
-  useEffect(() => {
-    fetch("/api/content/categories")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
-          const activeNavCats = data.categories
-            .filter(
-              (c: any) =>
-                c.active !== false &&
-                c.showInNavbar !== false &&
-                c.id !== "all" &&
-                c.name?.toLowerCase() !== "all categories"
-            )
-            .map((c: any) => ({
-              label: c.name,
-              href: `/products?category=${encodeURIComponent(c.slug || c.name)}`,
-            }));
-
-          setNavCategories([
-            { label: "Home", href: "/" },
-            { label: "New Arrivals", href: "/products?filter=new" },
-            { label: "Best Sellers", href: "/products?filter=best" },
-            ...activeNavCats,
-            { label: "Order Tracking", href: "/order-tracking" },
-          ]);
-        }
-      })
-      .catch((err) => console.warn("Failed to fetch dynamic categories for navbar:", err));
-  }, []);
-
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.classList.add("modal-open");
-      document.documentElement.classList.add("modal-open");
       const prevOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
       return () => {
         document.body.classList.remove("modal-open");
-        document.documentElement.classList.remove("modal-open");
         document.body.style.overflow = prevOverflow;
       };
     }
@@ -91,345 +46,156 @@ function NavbarContent() {
   const { totalItems, openCart } = useCart();
   const { totalWishlistItems } = useWishlist();
   const { user, isAuthenticated } = useAuth();
-  const { openSearch } = useSearch();
 
   const handleAccountClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (isAuthenticated) {
       router.push("/account");
     } else {
-      router.push(
-        "/signin?redirect=/account&notice=Please sign in to view your profile and orders"
-      );
+      router.push("/signin?redirect=/account");
     }
-  };
-
-  const isItemActive = (href: string) => {
-    if (href === "/") {
-      return (
-        pathname === "/" &&
-        !searchParams?.get("filter") &&
-        !searchParams?.get("category")
-      );
-    }
-    if (href === "/order-tracking" || href === "/track-order") {
-      return pathname === "/order-tracking" || pathname === "/track-order";
-    }
-    if (!pathname.startsWith("/products")) return false;
-
-    const [_, targetQuery] = href.split("?");
-    if (!targetQuery) {
-      return (
-        pathname === "/products" &&
-        !searchParams?.get("filter") &&
-        !searchParams?.get("category")
-      );
-    }
-
-    const targetParams = new URLSearchParams(targetQuery);
-    const targetFilter = targetParams.get("filter");
-    const targetCategory = targetParams.get("category");
-
-    const currentFilter = searchParams?.get("filter");
-    const currentCategory = searchParams?.get("category");
-
-    if (targetFilter) {
-      if (targetFilter === "offers" || targetFilter === "deals") {
-        return currentFilter === "offers" || currentFilter === "deals";
-      }
-      return currentFilter?.toLowerCase() === targetFilter.toLowerCase();
-    }
-
-    if (targetCategory) {
-      if (currentCategory?.toLowerCase() === targetCategory.toLowerCase()) {
-        return true;
-      }
-      return doesCategoryMatch(currentCategory || "", targetCategory);
-    }
-
-    return false;
   };
 
   return (
-    <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
-      {/* Main Header Row */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-1.5 sm:py-2">
-        {/* Mobile View Header */}
-        <div className="flex sm:hidden items-center justify-between relative min-h-[46px]">
-          {/* Left: Hamburger Menu + Search Button */}
-          <div className="flex items-center gap-2">
+    <header className="w-full bg-white border-b border-rose-100 sticky top-0 z-40 shadow-xs">
+      {/* Main Header Container */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-2">
+        <div className="flex items-center justify-between gap-4 min-h-[50px]">
+          {/* Mobile Menu Toggle & Brand */}
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="p-1.5 -ml-1 text-gray-900 hover:text-[#FF7A00] transition-colors"
+              className="p-1.5 -ml-1 text-gray-800 hover:text-[#780016] md:hidden transition-colors"
               aria-label="Open Menu"
             >
               <Menu className="w-6 h-6 stroke-[2.2]" />
             </button>
 
-            <button
-              onClick={openSearch}
-              className="p-1.5 text-gray-900 hover:text-[#FF7A00] transition-colors cursor-pointer"
-              aria-label="Search"
-            >
-              <Search className="w-5 h-5 stroke-[2.2]" />
-            </button>
-          </div>
-
-          {/* Center: Only text label in mobile view navbar as requested */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <Link href="/" className="flex items-center justify-center" aria-label="Zupe Store">
-              <Image
-                src="/zupe-label.webp"
-                alt="Zupestore"
-                width={150}
-                height={40}
-                className="h-7.5 sm:h-8 w-auto object-contain"
-                priority
-              />
-            </Link>
-          </div>
-
-          {/* Right: Wishlist + Cart with tap micro-animations */}
-          <div className="flex items-center gap-3">
-            <Link
-              href="/wishlist"
-              className="relative p-1.5 text-gray-900 anim-tap-bounce active:text-[#FF3B30] transition-all cursor-pointer"
-              aria-label="Wishlist"
-            >
-              <Heart className="w-5 h-5 stroke-[2.2] active:fill-[#FF3B30]/30 active:scale-90 transition-all duration-150" />
-              {totalWishlistItems > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center leading-none shadow-sm">
-                  {totalWishlistItems}
+            {/* Brand Logo */}
+            <Link href="/" className="flex items-center gap-2 group" aria-label="Turkiye Jam">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#780016] to-[#4a000e] text-white flex items-center justify-center font-bold text-lg shadow-md group-hover:scale-105 transition-transform">
+                🇹🇷
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-base sm:text-xl font-black tracking-tight text-[#780016] group-hover:text-[#9e1b32] transition-colors leading-tight">
+                  TURKIYE JAM
                 </span>
-              )}
+                <span className="text-[10px] sm:text-[11px] text-amber-700 font-bold tracking-wider -mt-0.5">
+                  തുർക്കി ജാം • 100% ഒറിജിനൽ
+                </span>
+              </div>
             </Link>
+          </div>
 
+          {/* Desktop Nav Links */}
+          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-700">
+            {TURKIYE_NAV_ITEMS.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="hover:text-[#780016] transition-colors py-1 hover:border-b-2 hover:border-[#780016]"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
+          {/* Right Action Icons: WhatsApp Order, Account, Cart */}
+          <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
+            {/* WhatsApp Quick Order button */}
+            <a
+              href="https://wa.me/919744122853?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-xs transition-colors"
+            >
+              <Phone className="w-3.5 h-3.5" />
+              <span>WhatsApp Order</span>
+            </a>
+
+            {/* Account */}
+            <button
+              onClick={handleAccountClick}
+              className="p-2 text-gray-700 hover:text-[#780016] hover:bg-rose-50 rounded-full transition-colors cursor-pointer"
+              aria-label="Account"
+            >
+              <User className="w-5 h-5 stroke-[2]" />
+            </button>
+
+            {/* Cart Button */}
             <button
               onClick={openCart}
-              className="relative p-1.5 text-gray-900 anim-tap-bounce active:text-[#FF7A00] transition-all cursor-pointer"
-              aria-label="Shopping Cart"
+              className="relative p-2 text-gray-800 hover:text-[#780016] hover:bg-rose-50 rounded-full transition-colors cursor-pointer"
+              aria-label="View Shopping Cart"
             >
-              <ShoppingBag className="w-5 h-5 stroke-[2.2] active:rotate-12 active:scale-90 transition-all duration-150" />
+              <ShoppingBag className="w-5 h-5 stroke-[2.2]" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center leading-none shadow-sm">
+                <span className="absolute 0 top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#780016] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white shadow-xs">
                   {totalItems}
                 </span>
               )}
             </button>
           </div>
         </div>
-
-        {/* Desktop View Header */}
-        <div className="hidden sm:flex items-center justify-between gap-4 lg:gap-8">
-          {/* Brand: Text Label only */}
-          <Link href="/" className="flex items-center flex-shrink-0 group" aria-label="Zupe Store">
-            <Image
-              src="/zupe-label.webp"
-              alt="Zupestore"
-              width={175}
-              height={46}
-              className="h-8.5 sm:h-9 lg:h-9.5 w-auto object-contain transition-opacity group-hover:opacity-90"
-              priority
-            />
-          </Link>
-
-          {/* Search Bar (Center, Triggers Animated Search Modal with Collections) */}
-          <div
-            onClick={openSearch}
-            className="flex-1 max-w-2xl relative cursor-pointer group"
-          >
-            <div className="w-full relative flex items-center">
-              <Search className="absolute left-4 w-4 h-4 text-gray-400 group-hover:text-[#FF7A00] transition-colors pointer-events-none stroke-[2.2]" />
-              <input
-                type="text"
-                readOnly
-                placeholder="Search products, lamps, gadgets, collections..."
-                className="w-full pl-11 pr-24 py-2 rounded-full border border-gray-200 bg-[#FAFAFA] text-sm text-[#111111] placeholder:text-gray-400 cursor-pointer group-hover:border-[#FF7A00]/50 group-hover:bg-white transition-all shadow-inner select-none"
-              />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 rounded-full bg-orange-50 text-[#FF7A00] text-xs font-bold border border-[#FF7A00]/20 flex items-center gap-1 group-hover:bg-[#FF7A00] group-hover:text-white transition-all">
-                <span>Search</span>
-                <Sparkles className="w-3 h-3" />
-              </span>
-            </div>
-          </div>
-
-          {/* Right Action Icons: Account, Wishlist, Cart */}
-          <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0">
-            {/* Account (Redirects directly to /account like mobile view) */}
-            <button
-              onClick={handleAccountClick}
-              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors py-0.5 group/account cursor-pointer"
-              aria-label="Account"
-            >
-              <div className="relative p-1 rounded-full group-hover/account:bg-orange-50 transition-colors">
-                <User className="w-5 h-5 text-gray-700 group-hover/account:text-[#FF7A00] anim-user-hover transition-colors" />
-              </div>
-              <span className="hidden md:inline text-sm font-semibold">
-                {isAuthenticated ? (user?.name?.split(" ")[0] || "Account") : "Account"}
-              </span>
-            </button>
-
-            {/* Wishlist */}
-            <Link
-              href="/wishlist"
-              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors relative py-0.5 group/wishlist"
-            >
-              <div className="relative p-1 rounded-full group-hover/wishlist:bg-rose-50 transition-colors">
-                <Heart className="w-5 h-5 text-gray-700 group-hover/wishlist:text-[#FF3B30] group-hover/wishlist:fill-[#FF3B30]/20 anim-heart-hover transition-colors" />
-              </div>
-              <span className="hidden md:inline text-sm font-semibold">Wishlist</span>
-              {totalWishlistItems > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center transition-transform group-hover/wishlist:scale-110 shadow-xs">
-                  {totalWishlistItems}
-                </span>
-              )}
-            </Link>
-
-            {/* Cart */}
-            <button
-              onClick={openCart}
-              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-[#FF7A00] transition-colors relative py-0.5 group/cart cursor-pointer"
-              aria-label="View Cart"
-            >
-              <div className="relative p-1 rounded-full group-hover/cart:bg-orange-50 transition-colors">
-                <ShoppingBag className="w-5 h-5 text-gray-700 group-hover/cart:text-[#FF7A00] anim-cart-hover transition-colors" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[17px] h-[17px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white transition-transform group-hover/cart:scale-110 shadow-xs">
-                    {totalItems}
-                  </span>
-                )}
-              </div>
-              <span className="hidden md:inline text-sm font-bold">Cart</span>
-            </button>
-          </div>
-        </div>
       </div>
 
-      {/* Secondary Category Sub-Nav Row */}
-      <div className="border-t border-gray-100 hidden sm:block bg-white">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between text-[13.5px] font-semibold">
-            {/* All Categories Dropdown button */}
-            <Link
-              href="/products"
-              className={`flex items-center gap-2 py-2 px-3 font-bold transition-colors border-r border-gray-100 mr-4 text-[13.5px] ${
-                pathname === "/products" &&
-                !searchParams?.get("filter") &&
-                (!searchParams?.get("category") || searchParams?.get("category") === "All")
-                  ? "text-[#FF7A00]"
-                  : "text-gray-900 hover:text-[#FF7A00]"
-              }`}
-            >
-              <Menu className="w-4 h-4 text-current" />
-              <span>All Categories</span>
-            </Link>
-
-            {/* Navigation Links */}
-            <div className="flex items-center gap-6 lg:gap-7 overflow-x-auto scrollbar-none">
-              {navCategories.map((item) => {
-                const active = isItemActive(item.href);
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={`py-2 whitespace-nowrap transition-colors relative text-[13.5px] ${
-                      active
-                        ? "text-[#FF7A00] font-bold"
-                        : "text-gray-700 hover:text-[#FF7A00] font-medium"
-                    }`}
-                  >
-                    {item.label}
-                    {active && (
-                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF7A00] rounded-full" />
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Slide-in Menu */}
+      {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div data-lenis-prevent className="fixed inset-0 z-50 sm:hidden flex">
+        <div className="fixed inset-0 z-50 flex md:hidden">
           <div
-            className="fixed inset-0 bg-black/40"
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div data-lenis-prevent className="relative w-4/5 max-w-xs bg-white h-full z-10 p-5 flex flex-col justify-between overflow-y-auto overscroll-contain">
+          <div className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col justify-between p-5 z-10">
             <div>
-              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="relative w-8 h-8 flex items-center justify-center">
-                    <Image
-                      src="/zupe-logo.webp"
-                      alt="Zupe Store"
-                      width={32}
-                      height={32}
-                      className="object-contain"
-                    />
+              <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🇹🇷</span>
+                  <div className="flex flex-col text-left">
+                    <span className="text-base font-extrabold text-[#780016]">TURKIYE JAM</span>
+                    <span className="text-[10px] text-amber-700 font-semibold">തുർക്കി ജാം • ഒറിജിനൽ</span>
                   </div>
-                  <Image
-                    src="/zupe-label.webp"
-                    alt="Zupestore"
-                    width={130}
-                    height={34}
-                    className="h-7 sm:h-8 w-auto object-contain"
-                  />
                 </div>
-                <button onClick={() => setMobileMenuOpen(false)}>
-                  <X className="w-5 h-5 text-gray-500" />
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-1.5 text-gray-500 hover:text-black rounded-lg"
+                >
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="space-y-1">
-                {navCategories.map((item) => {
-                  const active = isItemActive(item.href);
-                  return (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`block py-2.5 px-3 rounded-xl text-sm font-semibold transition-colors ${
-                        active
-                          ? "bg-[#FF7A00]/10 text-[#FF7A00] font-bold"
-                          : "text-gray-700 hover:bg-[#FF7A00]/10 hover:text-[#FF7A00]"
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
+                {TURKIYE_NAV_ITEMS.map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-800 hover:bg-rose-50 hover:text-[#780016] transition-colors"
+                  >
+                    {item.label}
+                  </a>
+                ))}
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-100 text-xs text-gray-500">
-              <p>
-                Need Help?{" "}
-                <a
-                  href="tel:+919744122853"
-                  className="font-semibold text-gray-800 hover:text-[#FF7A00] transition-colors"
-                >
-                  +91 97441 22853
-                </a>
+            <div className="pt-4 border-t border-gray-100 space-y-3">
+              <a
+                href="https://wa.me/919744122853?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-600 text-white text-sm font-bold shadow-md hover:bg-emerald-700 transition-colors"
+              >
+                <Phone className="w-4 h-4" />
+                <span>WhatsApp വഴി ഓർഡർ ചെയ്യുക</span>
+              </a>
+
+              <p className="text-center text-xs text-gray-400">
+                100% Original Turkish Import • Kerala Fast Delivery
               </p>
             </div>
           </div>
         </div>
       )}
     </header>
-  );
-}
-
-export function Navbar() {
-  return (
-    <React.Suspense
-      fallback={
-        <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm h-14 sm:h-[82px]" />
-      }
-    >
-      <NavbarContent />
-    </React.Suspense>
   );
 }

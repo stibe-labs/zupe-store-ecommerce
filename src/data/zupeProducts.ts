@@ -1,130 +1,220 @@
 import { Product } from "@/types/product";
 
-export const DEFAULT_PRODUCTS: Product[] = [
-  // --- Today's Best Deals ---
+export interface TurkiyeJamVariant {
+  id: string;
+  name: string;
+  malayalamTitle: string;
+  price: number;
+  mrp: number;
+  savings: number;
+  badge?: string;
+  freeBonus?: string;
+  image: string;
+  popular?: boolean;
+}
+
+export const TURKIYE_JAM_VARIANTS: TurkiyeJamVariant[] = [
   {
-    id: "water-ripple-lamp",
-    slug: "dynamic-water-ripple-night-light",
-    name: "Dynamic Water Ripple Night Light",
-    subtitle: "Ambient Crystal Lamp",
-    category: "Home & Living",
-    subcategory: "Home Comfort & Utility",
-    tagline: "Romantic rotating ambient crystal cube",
-    description: "Dynamic rotating water ripple crystal night lamp with 16 RGB color modes, remote control, and ambient lighting for bedroom, living room, and desk decoration.",
-    price: 650,
-    mrp: 1099,
-    offer_price: 650,
-    stock_count: 85,
-    volume: "12 × 12 cm",
-    poster_image: "/products/ripple/ripple-amber.jpg",
+    id: "bottle-240g",
+    name: "240g Bottle + 2 Strip Free",
+    malayalamTitle: "240 ഗ്രാം ബോട്ടിൽ + 2 സ്ട്രിപ്പ് സൗജന്യം",
+    price: 2899,
+    mrp: 4999,
+    savings: 2100,
+    badge: "BEST VALUE",
+    freeBonus: "+ 2 Free Strips Included",
+    image: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
+    popular: true,
+  },
+  {
+    id: "box-14-strips",
+    name: "12 + 2 Strip Packet Box",
+    malayalamTitle: "12 + 2 സ്ട്രിപ്പ് പാക്കറ്റ് ബോക്സ് (ആകെ 14 എണ്ണം)",
+    price: 2899,
+    mrp: 4999,
+    savings: 2100,
+    badge: "FULL BOX",
+    freeBonus: "14 Total Sachets",
+    image: "/products/turkiye-jam/turkiye-jam-box-strips.jpg",
+    popular: false,
+  },
+  {
+    id: "pack-6-strips",
+    name: "6 Strip Pack",
+    malayalamTitle: "6 സ്ട്രിപ്പ് പാക്ക്",
+    price: 1899,
+    mrp: 2999,
+    savings: 1100,
+    badge: "SAVER PACK",
+    freeBonus: "Economical Pack",
+    image: "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
+    popular: false,
+  },
+  {
+    id: "pack-4-strips",
+    name: "4 Strip Pack",
+    malayalamTitle: "4 സ്ട്രിപ്പ് പാക്ക്",
+    price: 1399,
+    mrp: 2199,
+    savings: 800,
+    badge: "POPULAR",
+    freeBonus: "Multi-Use Pack",
+    image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
+    popular: false,
+  },
+  {
+    id: "pack-3-strips",
+    name: "3 Strip Pack",
+    malayalamTitle: "3 സ്ട്രിപ്പ് പാക്ക്",
+    price: 1099,
+    mrp: 1699,
+    savings: 600,
+    badge: "STANDARD",
+    freeBonus: "Weekend Special",
+    image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
+    popular: false,
+  },
+  {
+    id: "pack-2-strips",
+    name: "2 Strip Trial Pack",
+    malayalamTitle: "2 സ്ട്രിപ്പ് ട്രയൽ പാക്ക്",
+    price: 899,
+    mrp: 1299,
+    savings: 400,
+    badge: "TRIAL PACK",
+    freeBonus: "Starter Pack",
+    image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
+    popular: false,
+  },
+];
+
+export const DEFAULT_PRODUCTS: Product[] = [
+  {
+    id: "turkiye-jam",
+    slug: "turkiye-jam-epimedium-macun",
+    name: "Themra Epimedyumlu Macun - തുർക്കി ജാം",
+    subtitle: "100% Original Turkish Herbal Paste for Men & Women",
+    category: "Vitality & Wellness",
+    subcategory: "Herbal Vitality",
+    tagline: "സ്ത്രീകൾക്കും പുരുഷന്മാർക്കും അത്ഭുത ഉൽപന്നം • 100% ഒറിജിനൽ തുർക്കി ജാം",
+    description:
+      "തുർക്കിയിൽ നിന്ന് നേരിട്ട് ഇറക്കുമതി ചെയ്യുന്ന 100% ഒറിജിനൽ തെംറ എപ്പിമീഡിയം മാക്കൂൻ (Themra Epimedium Bitkisel Macun). പുരുഷന്മാരിൽ അസാധാരണ കരുത്തും സ്റ്റാമിനയും ദീർഘനേരത്തെ സമയക്കൂടുതലും നൽകുന്നു. സ്ത്രീകളിൽ സ്വാഭാവിക ലൈംഗിക ആഗ്രഹവും ആനന്ദവും വർദ്ധിപ്പിക്കുന്നു. 100% പ്രകൃതിദത്ത കൂട്ട്.",
+    price: 2899,
+    mrp: 4999,
+    offer_price: 2899,
+    stock_count: 150,
+    volume: "240g Jar & Strips Available",
+    poster_image: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
     images: [
-      "/products/ripple/ripple-amber.jpg",
-      "/products/ripple/ripple-amber-angle2.jpg",
-      "/products/ripple/ripple-amber-angle3.jpg",
-      "/products/ripple-lamp.jpg",
+      "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
+      "/products/turkiye-jam/turkiye-jam-box-strips.jpg",
+      "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
+      "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
     ],
-    color: "Amber Gold",
-    material: "Acrylic Crystal + Solid Wood",
+    color: "240g Bottle + 2 Strip Free",
+    material: "100% Herbal Honey Paste (Epimedium, Royal Jelly, Ginseng)",
     in_stock: 1,
-    rating: 4.8,
-    review_count: 1250,
-    sold_count: "1,250+ sold",
+    rating: 4.9,
+    review_count: 1480,
+    sold_count: "4,200+ sold in Kerala",
     badge: "Sale",
+    has_colors: true,
     colors: [
       {
-        name: "Amber Gold",
-        image: "/products/ripple/ripple-amber.jpg",
-        colorHex: "#F59E0B",
+        name: "240g Bottle + 2 Strip Free",
+        image: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
+        colorHex: "#780016",
         images: [
-          "/products/ripple/ripple-amber.jpg",
-          "/products/ripple/ripple-amber-angle2.jpg",
-          "/products/ripple/ripple-amber-angle3.jpg",
-          "/products/ripple-lamp.jpg",
+          "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
+          "/products/turkiye-jam/turkiye-jam-box-strips.jpg",
+          "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
+          "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
         ],
       },
       {
-        name: "Ocean Blue",
-        image: "/products/ripple/ripple-blue.jpg",
-        colorHex: "#3B82F6",
+        name: "12+2 Strip Packet Box",
+        image: "/products/turkiye-jam/turkiye-jam-box-strips.jpg",
+        colorHex: "#8B0000",
         images: [
-          "/products/ripple/ripple-blue.jpg",
-          "/products/ripple/ripple-blue-angle2.jpg",
-          "/products/ripple-lamp.jpg",
+          "/products/turkiye-jam/turkiye-jam-box-strips.jpg",
+          "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
+          "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
+          "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
         ],
       },
       {
-        name: "Rose Pink",
-        image: "/products/ripple/ripple-pink.jpg",
-        colorHex: "#EC4899",
+        name: "6 Strip Pack",
+        image: "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
+        colorHex: "#9E1B32",
         images: [
-          "/products/ripple/ripple-pink.jpg",
-          "/products/ripple/ripple-pink-angle2.jpg",
-          "/products/ripple-lamp.jpg",
+          "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
+          "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
+          "/products/turkiye-jam/turkiye-jam-box-strips.jpg",
         ],
       },
       {
-        name: "Electric Purple",
-        image: "/products/ripple/ripple-purple.jpg",
-        colorHex: "#A855F7",
+        name: "4 Strip Pack",
+        image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
+        colorHex: "#B31B1B",
         images: [
-          "/products/ripple/ripple-purple.jpg",
-          "/products/ripple/ripple-purple-angle2.jpg",
-          "/products/ripple-lamp.jpg",
+          "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
+          "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
+          "/products/turkiye-jam/turkiye-jam-box-strips.jpg",
         ],
       },
       {
-        name: "Emerald Green",
-        image: "/products/ripple/ripple-green.jpg",
-        colorHex: "#10B981",
+        name: "3 Strip Pack",
+        image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
+        colorHex: "#C41E3A",
         images: [
-          "/products/ripple/ripple-green.jpg",
-          "/products/ripple/ripple-green-angle2.jpg",
-          "/products/ripple-lamp.jpg",
+          "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
+          "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
         ],
       },
       {
-        name: "Crystal White",
-        image: "/products/ripple/ripple-white.jpg",
-        colorHex: "#E2E8F0",
+        name: "2 Strip Trial Pack",
+        image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
+        colorHex: "#800020",
         images: [
-          "/products/ripple/ripple-white.jpg",
-          "/products/ripple/ripple-white-angle2.jpg",
-          "/products/ripple-lamp.jpg",
+          "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
+          "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
         ],
       },
     ],
     features: [
-      "Dynamic Water Wave Ripple",
-      "16 RGB Colors + Remote",
-      "Ambient Bedside Lighting",
-      "Touch & Wireless Control",
+      "100% ഒറിജിനൽ തുർക്കി നിർമ്മിതം (Themra Bitkisel Ürünler Turkey)",
+      "പുരുഷൻമാരിൽ: അതിശയകരമായ ശക്തിയും സമയക്കൂടുതലും",
+      "പുരുഷൻമാരിൽ: ഒരേ സമയം കൂടുതൽ തവണ ചെയ്യാനുള്ള കരുത്ത്",
+      "സ്ത്രീകളിൽ: ലൈംഗിക ആഗ്രഹവും ആനന്ദവും വർദ്ധിപ്പിക്കുന്നു",
+      "കേരളത്തിൽ 1 ദിവസം കൊണ്ട് അതിവേഗ ഡെലിവറി 🚚",
+      "100% സുരക്ഷിതവും രഹസ്യവുമായ പാക്കിങ് (Discreet Packaging) 📦",
+      "റിസൾട്ട് ലഭിച്ചില്ലെങ്കിൽ ബാലൻസ് സ്ട്രിപ്പിന് 100% മണി-ബാക്ക് റീഫണ്ട് 🛡️",
     ],
     specifications: {
-      "Dimensions": "12 cm × 12 cm × 13 cm",
-      "Weight": "380 grams",
-      "Power Source": "USB 5V Plug & Play",
-      "Material": "High-transparency Acrylic + Natural Solid Wood",
-      "Light Source": "Dynamic rotating LED core",
-      "Modes": "16 RGB Colors + Smooth Fade + Strobe",
-      "Control": "Wireless Remote Control + Touch Switch",
-      "Cable Length": "1.2 meter braided USB cable",
+      "ഉൽപ്പന്നം (Product)": "Themra Epimedyumlu Macun (തുർക്കി ജാം)",
+      "നിർമ്മാണം (Origin)": "Made in Turkey 🇹🇷 (Themra Bitkisel)",
+      "പ്രധാന ചേരുവകൾ (Ingredients)": "Epimedium, Honey, Royal Jelly, Red Ginseng, Ginger, Maca Root, Cinnamon",
+      "ഉപയോഗം (Audience)": "സ്ത്രീകൾക്കും പുരുഷന്മാർക്കും (18 വയസ്സിന് മുകളിൽ)",
+      "പാക്കിങ് (Packaging)": "100% Discreet & Opaque Plain Box",
+      "ഡെലിവറി സമയം (Prepaid)": "1–2 ദിവസം (Kerala Express)",
+      "ഡെലിവറി സമയം (COD)": "3–7 ദിവസം (All India Doorstep)",
     },
     whats_in_box: [
-      "1 × Dynamic Water Ripple Crystal Lamp",
-      "1 × 16-Key Wireless Remote Control",
-      "1 × USB Power Cable (Pre-attached)",
-      "1 × User Manual & 1-Year Warranty Card",
+      "1 × ഒറിജിനൽ തുർക്കി ജാം (തിരഞ്ഞെടുത്ത പാക്കേജ്)",
+      "ബോണസ് ഫ്രീ സ്ട്രിപ്പുകൾ (240g Bottle & 12-Strip ബോക്സിനൊപ്പം)",
+      "മലയാളത്തിലും ഇംഗ്ലീഷിലുമുള്ള സമ്പൂർണ്ണ ഉപയോഗ ഗൈഡ്",
+      "100% സുരക്ഷിതമായ രഹസ്യ ഔട്ടർ പാക്കിങ് ബോക്സ്",
     ],
     shipping_info: [
-      "Fast Dispatch: Orders dispatched within 24 hours of placement.",
-      "Free Delivery: Free express door-step shipping across India in 5–7 business days.",
-      "Live Tracking: Real-time WhatsApp and Email courier tracking updates.",
-      "Cash on Delivery: Available across 19,000+ pin codes at zero extra charge.",
+      "കേരളത്തിൽ അതിവേഗ ഡെലിവറി: ഓർഡർ നൽകി 24 മണിക്കൂറിനകം ഡിസ്പാച്ച് ചെയ്യപ്പെടുന്നു.",
+      "Prepaid (ഓൺലൈൻ പേയ്മെന്റ്): ₹60 മാത്രം അധികം (1-2 ദിവസത്തിനകം എക്സ്പ്രസ് ഡെലിവറി).",
+      "Cash on Delivery (ക്യാഷ് ഓൺ ഡെലിവറി): ₹190 അധികം (3-7 ദിവസത്തിനകം ഡോർസ്റ്റെപ്പ് ഡെലിവറി).",
+      "100% Discreet Packaging: പെട്ടിക്ക് പുറത്ത് ഉൽപ്പന്നത്തിന്റെ പേരോ ഉള്ളടക്കമോ കാണിക്കാത്ത തികച്ചും സുരക്ഷിതമായ പാക്കിങ്.",
     ],
     return_info: [
-      "For Return / Exchange: Continuous unboxing video required for damaged/defective claims.",
-      "WhatsApp Support: WhatsApp us at +91 97441 22853 with the video and order number.",
-      "Exchange Process: Verified exchanges processed within 3–5 business days.",
+      "ബാലൻസ് സ്ട്രിപ്പ് റീഫണ്ട് ഗ്യാരണ്ടി: സ്ട്രിപ്പുകൾ ഉപയോഗിച്ചിട്ട് ഫലം ലഭിച്ചില്ലെങ്കിൽ ബാക്കിയുള്ള സ്ട്രിപ്പുകൾ നിങ്ങൾക്ക് തിരിച്ചയക്കാം.",
+      "പൂർണ്ണ റീഫണ്ട്: തിരിച്ചയക്കുന്ന സ്ട്രിപ്പുകളുടെ തുക നിങ്ങളുടെ ബാങ്ക് / UPI അക്കൗണ്ടിലേക്ക് റീഫണ്ട് ചെയ്യുന്നതായിരിക്കും.",
+      "WhatsApp സപ്പോർട്ട്: സംശയങ്ങൾക്കും റീഫണ്ടിനും നേരിട്ട് ഞങ്ങളുടെ WhatsApp കസ്റ്റമർ കെയറുമായി ബന്ധപ്പെടാം.",
     ],
     how_to_use: {
       enabled: true,
@@ -136,927 +226,142 @@ export const DEFAULT_PRODUCTS: Product[] = [
         {
           id: "step-1",
           media_type: "image",
-          media_url: "/products/ripple/ripple-amber-angle2.jpg",
+          media_url: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
           media_fit: "contain",
-          title: "Plug & Power On",
-          description: "Connect the included USB cable to any 5V USB adapter, power bank, or laptop.",
+          title: "1. ലൈംഗിക ബന്ധത്തിന് 1 മണിക്കൂർ മുമ്പ് ഭക്ഷണം കഴിക്കുക",
+          description: "വെറും വയറ്റിൽ ഒരിക്കലും കഴിക്കരുത്. ബന്ധപ്പെടുന്നതിന് 1 മണിക്കൂർ മുൻപായി സാധാരണ ഭക്ഷണം കഴിക്കുക.",
         },
         {
           id: "step-2",
           media_type: "image",
-          media_url: "/products/ripple/ripple-blue.jpg",
+          media_url: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
           media_fit: "contain",
-          title: "Choose Ambient Color",
-          description: "Use the wireless remote or touch sensor to cycle through 16 dynamic RGB color modes.",
+          title: "2. 10 മിനിറ്റിനു ശേഷം ഒരു ചെറിയ സ്പൂൺ അല്ലെങ്കിൽ 1 സ്ട്രിപ്പ് കഴിക്കുക",
+          description: "ഭക്ഷണം കഴിഞ്ഞ് 10 മിനിറ്റ് കഴിഞ്ഞ് കൃത്യം 1 ചെറിയ സ്പൂൺ (കുപ്പിയെങ്കിൽ) അല്ലെങ്കിൽ 1 സ്ട്രിപ്പ് നേരിട്ട് വായിലേക്ക് ഒഴിച്ച് കഴിക്കുക.",
         },
         {
           id: "step-3",
           media_type: "image",
-          media_url: "/products/ripple/ripple-amber.jpg",
+          media_url: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
           media_fit: "contain",
-          title: "Relax & Enjoy Ripple",
-          description: "360° whisper-quiet water crystal wave projection instantly elevates your bedroom.",
+          title: "3. കുപ്പിയാണെങ്കിൽ കഴിക്കുന്നതിന് മുമ്പ് നന്നായി ഇളക്കുക",
+          description: "ബോട്ടിൽ ഉപയോഗിക്കുമ്പോൾ എണ്ണമയവും തേനും സസ്യച്ചേരുവകളും അടിഞ്ഞിരിക്കാൻ സാധ്യതയുള്ളതിനാൽ നന്നായി ഇളക്കിയ ശേഷം മാത്രം എടുക്കുക.",
+        },
+        {
+          id: "step-4",
+          media_type: "image",
+          media_url: "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
+          media_fit: "contain",
+          title: "4. 15 മിനിറ്റ് കഴിഞ്ഞ് ഒരു ഗ്ലാസ് പാൽ കുടിക്കുക",
+          description: "സാധ്യമെങ്കിൽ ജാം കഴിച്ച് 15 മിനിറ്റിനു ശേഷം ഒരു ഗ്ലാസ് പാൽ കുടിക്കുന്നത് ഫലം ഇരട്ടിയാക്കാൻ സഹായിക്കും.",
+        },
+        {
+          id: "step-5",
+          media_type: "image",
+          media_url: "/products/turkiye-jam/turkiye-jam-box-strips.jpg",
+          media_fit: "contain",
+          title: "5. ശീതളപാനീയങ്ങൾ കർശനമായി ഒഴിവാക്കുക",
+          description: "ജാമിന് മുകളിലോ ശേഷമോ തണുത്ത പാനീയങ്ങളോ (Cool Drinks / Soda) കുടിക്കരുത്.",
         },
       ],
     },
     reviews_data: {
-      average: 4.8,
-      total: 1250,
+      average: 4.9,
+      total: 1480,
       breakdown: [
-        { star: 5, percentage: 82 },
-        { star: 4, percentage: 12 },
-        { star: 3, percentage: 4 },
+        { star: 5, percentage: 92 },
+        { star: 4, percentage: 6 },
+        { star: 3, percentage: 1 },
         { star: 2, percentage: 1 },
-        { star: 1, percentage: 1 },
+        { star: 1, percentage: 0 },
       ],
       user_photos: [
-        { image: "/products/ripple/ripple-amber.jpg" },
-        { image: "/products/ripple/ripple-white.jpg" },
-        { image: "/products/ripple/ripple-blue.jpg" },
-        { image: "/products/ripple/ripple-purple.jpg", isVideo: true },
-        { image: "/products/ripple-lamp.jpg" },
+        { image: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg" },
+        { image: "/products/turkiye-jam/turkiye-jam-box-strips.jpg" },
+        { image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg" },
+        { image: "/products/turkiye-jam/turkiye-jam-5-strips.jpg" },
       ],
       list: [
         {
           id: "rev-1",
-          author: "Arjun M.",
-          avatar: "/avatars/arjun.jpg",
-          date: "12 Sep 2026",
+          author: "Faisal K. (Kozhikode)",
+          avatar: "/avatars/avatar-1.jpg",
+          date: "Yesterday",
           rating: 5,
           verified: true,
-          comment: "Product quality is amazing! The water ripple effect looks so beautiful at night. Perfect for my room.",
-          images: [
-            "/products/ripple/ripple-amber.jpg",
-            "/products/ripple/ripple-white.jpg",
-            "/products/ripple-lamp.jpg",
-          ],
+          comment:
+            "യഥാർത്ഥ ഒറിജിനൽ തുർക്കി ജാം തന്നെയാണിത്! ആദ്യ സ്ട്രിപ്പ് ഉപയോഗിച്ചപ്പോൾ തന്നെ വിശ്വസിക്കാൻ പറ്റാത്ത റിസൾട്ട് കിട്ടി. സ്റ്റാമിനയും സമയക്കൂടുതലും അത്ഭുതപ്പെടുത്തി. പാക്കിങ് വളരെ രഹസ്യമായിരുന്നു. താങ്ക് യു!",
+          images: ["/products/turkiye-jam/turkiye-jam-3-strips.jpg"],
         },
         {
           id: "rev-2",
-          author: "Sneha K.",
-          avatar: "/avatars/sneha.jpg",
-          date: "08 Sep 2026",
+          author: "Anonymous Couple (Kochi)",
+          avatar: "/avatars/avatar-2.jpg",
+          date: "3 days ago",
           rating: 5,
           verified: true,
-          comment: "Absolutely love it! Gives a very premium feel and the lighting is very soothing.",
-          images: [
-            "/products/ripple/ripple-amber.jpg",
-            "/products/ripple/ripple-white.jpg",
-            "/products/ripple/ripple-blue.jpg",
-          ],
+          comment:
+            "We were skeptical at first, but both of us tried it as per instructions with warm milk. Absolutely amazing experience for both partners. Worth every single rupee!",
+        },
+        {
+          id: "rev-3",
+          author: "Jithin R. (Thrissur)",
+          avatar: "/avatars/avatar-3.jpg",
+          date: "5 days ago",
+          rating: 5,
+          verified: true,
+          comment:
+            "240g bottle വാങ്ങി. 2 സ്ട്രിപ്പ് ഫ്രീയും കിട്ടി. ഒരൊറ്റ ദിവസം കൊണ്ട് തൃശ്ശൂരിൽ ഡെലിവറി കിട്ടി. 100% geniune product.",
+          images: ["/products/turkiye-jam/turkiye-jam-jar-and-box.jpg"],
+        },
+        {
+          id: "rev-4",
+          author: "Muhammed Shafi (Malappuram)",
+          avatar: "/avatars/avatar-4.jpg",
+          date: "1 week ago",
+          rating: 5,
+          verified: true,
+          comment:
+            "ബാലൻസ് സ്ട്രിപ്പ് തിരിച്ചയക്കാം എന്ന ഗ്യാരന്റി കണ്ടാണ് വാങ്ങിയത്, പക്ഷെ റിസൾട്ട് കണ്ടപ്പോൾ തിരിച്ചയക്കാൻ തോന്നിയില്ല. അടുത്ത ഓർഡറും ഉടൻ നൽകും.",
         },
       ],
     },
-    video_ids: [
-      "vid-mv0gb5xf-to4r",
-      "vid-watch-01",
-      "vid-heating-pad-02",
-      "vid-heating-pad-01",
-      "vid-mist-fan-01",
-      "vid-ripple-lamp-01",
-    ],
-  },
-  {
-    id: "mini-portable-steam-iron",
-    slug: "mini-portable-steam-iron",
-    name: "Mini Portable Steam Iron",
-    subtitle: "Travel Garment Steamer",
-    category: "Home & Living",
-    subcategory: "Cleaning & Organization",
-    tagline: "Wrinkle-free clothes anywhere, anytime",
-    description: "Compact foldable handheld steam iron with ceramic non-stick soleplate, rapid 30s heat-up, and dual wet/dry ironing modes for home and travel.",
-    price: 599,
-    mrp: 929,
-    offer_price: 599,
-    stock_count: 64,
-    volume: "Foldable Travel Size",
-    poster_image: "/products/iron/iron-teal-1.jpg",
-    images: [
-      "/products/iron/iron-teal-1.jpg",
-      "/products/iron/iron-teal-2.jpg",
-      "/products/steam-iron.jpg",
-    ],
-    color: "Sage Teal",
-    colors: [
-      {
-        name: "Sage Teal",
-        image: "/products/iron/iron-teal-1.jpg",
-        colorHex: "#4A7C72",
-        images: [
-          "/products/iron/iron-teal-1.jpg",
-          "/products/iron/iron-teal-2.jpg",
-          "/products/steam-iron.jpg",
-        ],
-      },
-      {
-        name: "Pearl White",
-        image: "/products/iron/iron-white-1.jpg",
-        colorHex: "#F8FAFC",
-        images: [
-          "/products/iron/iron-white-1.jpg",
-          "/products/iron/iron-white-2.jpg",
-        ],
-      },
-      {
-        name: "Blush Pink",
-        image: "/products/iron/iron-pink-1.jpg",
-        colorHex: "#F4B8C1",
-        images: [
-          "/products/iron/iron-pink-1.jpg",
-          "/products/iron/iron-pink-2.jpg",
-        ],
-      },
-    ],
-    material: "Ceramic + ABS",
-    in_stock: 1,
-    rating: 4.7,
-    review_count: 189,
-    badge: "Sale",
-    features: [
-      "30s Rapid Heat-Up",
-      "Dual Wet & Dry Ironing",
-      "180° Foldable Travel Body",
-      "Anti-Burn Ceramic Plate",
-    ],
-    how_to_use: {
-      enabled: true,
-      section_bg: "soft_gray",
-      card_radius: "rounded-2xl",
-      card_border: "subtle",
-      card_shadow: "sm",
-      steps: [
-        {
-          id: "step-1",
-          media_type: "image",
-          media_url: "/products/iron/iron-teal-1.jpg",
-          media_fit: "contain",
-          title: "Fill Water Tank",
-          description: "Use the measuring cup to fill the 50ml built-in transparent water tank.",
-        },
-        {
-          id: "step-2",
-          media_type: "image",
-          media_url: "/products/iron/iron-teal-2.jpg",
-          media_fit: "contain",
-          title: "Preheat 30 Seconds",
-          description: "Plug in the iron. The titanium soleplate heats rapidly in just 30 seconds.",
-        },
-        {
-          id: "step-3",
-          media_type: "image",
-          media_url: "/products/steam-iron.jpg",
-          media_fit: "contain",
-          title: "Press & Smooth Clothes",
-          description: "Glide gently over shirts, dresses, and delicates with dry or continuous steam.",
-        },
-      ],
-    },
-  },
-  {
-    id: "menstrual-heating-pad",
-    slug: "portable-menstrual-heating-pad",
-    name: "Portable Menstrual Heating Pad",
-    subtitle: "Cordless Waist Relief",
-    category: "Personal Care",
-    subcategory: "Women's Care",
-    tagline: "Soothing warmth & multi-frequency massage",
-    description: "Wireless heating belt with 3 temperature levels (45°C - 65°C), 4 vibration massage modes, and ultra-soft plush velvet back for fast cramp relief.",
-    price: 799,
-    mrp: 1149,
-    offer_price: 799,
-    stock_count: 92,
-    volume: "Adjustable Elastic Strap",
-    poster_image: "/products/heating-pad/pad-pink-1.jpg",
-    images: [
-      "/products/heating-pad/pad-pink-1.jpg",
-      "/products/heating-pad/pad-pink-2.jpg",
-      "/products/heating-pad.jpg",
-    ],
-    color: "Soft Pink",
-    colors: [
-      {
-        name: "Soft Pink",
-        image: "/products/heating-pad/pad-pink-1.jpg",
-        colorHex: "#F9A8D4",
-        images: [
-          "/products/heating-pad/pad-pink-1.jpg",
-          "/products/heating-pad/pad-pink-2.jpg",
-          "/products/heating-pad.jpg",
-        ],
-      },
-      {
-        name: "Pure White",
-        image: "/products/heating-pad/pad-white-1.jpg",
-        colorHex: "#F8FAFC",
-        images: [
-          "/products/heating-pad/pad-white-1.jpg",
-          "/products/heating-pad/pad-white-2.jpg",
-        ],
-      },
-      {
-        name: "Lavender Purple",
-        image: "/products/heating-pad/pad-lavender-1.jpg",
-        colorHex: "#C084FC",
-        images: [
-          "/products/heating-pad/pad-lavender-1.jpg",
-          "/products/heating-pad/pad-lavender-2.jpg",
-        ],
-      },
-    ],
-    material: "Lycra + Plush Velvet",
-    in_stock: 1,
-    rating: 5.0,
-    review_count: 2,
-    badge: "Sale",
-    features: [
-      "3 Fast Heat Modes (45-65°C)",
-      "4 Vibration Massage Modes",
-      "Skin-Friendly Plush Velvet",
-      "Wireless USB Rechargeable",
-    ],
-  },
-  {
-    id: "portable-mesh-nebulizer",
-    slug: "portable-mesh-nebulizer",
-    name: "Portable Mesh Nebulizer",
-    subtitle: "Ultrasonic Inhaler",
-    category: "Health & Wellness",
-    subcategory: "Recovery & Wellness",
-    tagline: "Whisper-quiet medical aerosol treatment",
-    description: "Pocket-sized ultrasonic handheld mesh nebulizer with rechargeable battery, adult and pediatric masks, and micro-particle delivery for easy breathing.",
-    price: 599,
-    mrp: 1099,
-    offer_price: 599,
-    stock_count: 50,
-    volume: "10 ml cup",
-    poster_image: "/products/nebulizer/nebulizer-white-1.jpg",
-    images: [
-      "/products/nebulizer/nebulizer-white-1.jpg",
-      "/products/mesh-nebulizer.jpg",
-      "/products/nebulizer/nebulizer-white-3.jpg",
-    ],
-    color: "Medical White & Blue",
-    colors: [
-      {
-        name: "Medical White & Blue",
-        image: "/products/nebulizer/nebulizer-white-1.jpg",
-        colorHex: "#0284C7",
-        images: [
-          "/products/nebulizer/nebulizer-white-1.jpg",
-          "/products/mesh-nebulizer.jpg",
-          "/products/nebulizer/nebulizer-white-3.jpg",
-        ],
-      },
-      {
-        name: "Ocean Sky Blue",
-        image: "/products/nebulizer/nebulizer-blue-1.jpg",
-        colorHex: "#38BDF8",
-        images: [
-          "/products/nebulizer/nebulizer-blue-1.jpg",
-          "/products/nebulizer/nebulizer-blue-2.jpg",
-        ],
-      },
-      {
-        name: "Baby Pink",
-        image: "/products/nebulizer/nebulizer-pink-1.jpg",
-        colorHex: "#F472B6",
-        images: [
-          "/products/nebulizer/nebulizer-pink-1.jpg",
-          "/products/nebulizer/nebulizer-pink-2.jpg",
-        ],
-      },
-    ],
-    material: "Medical Grade PVC + Titanium Mesh",
-    in_stock: 1,
-    rating: 4.8,
-    review_count: 154,
-    badge: "Sale",
-    features: [
-      "Ultra-Fine <5µm Cool Mist",
-      "Silent <25dB Quiet Operation",
-      "Child & Adult Masks Included",
-      "Dual Battery / USB Power",
-    ],
-  },
-  {
-    id: "foldable-mini-washer",
-    slug: "portable-mini-foldable-washer-spin-dryer",
-    name: "Portable Mini Foldable Washer & Spin Dryer",
-    subtitle: "Compact Bucket Laundry",
-    category: "Home & Living",
-    subcategory: "Cleaning & Organization",
-    tagline: "Effortless small garment washing",
-    description: "Collapsible 8L mini washing machine with forward/reverse pulsator, blue ray sterilization, touch controls, and drain basket for delicates and baby clothes.",
-    price: 1299,
-    mrp: 1949,
-    offer_price: 1299,
-    stock_count: 38,
-    volume: "8 Litre Capacity",
-    poster_image: "/products/washer/washer-purple-1.jpg",
-    images: [
-      "/products/washer/washer-purple-1.jpg",
-      "/products/washer/washer-purple-2.jpg",
-      "/products/washer/washer-purple-3.jpg",
-    ],
-    color: "Lavender Purple",
-    colors: [
-      {
-        name: "Lavender Purple",
-        image: "/products/washer/washer-purple-1.jpg",
-        colorHex: "#A855F7",
-        images: [
-          "/products/washer/washer-purple-1.jpg",
-          "/products/washer/washer-purple-2.jpg",
-          "/products/washer/washer-purple-3.jpg",
-        ],
-      },
-      {
-        name: "Pastel Mint Green",
-        image: "/products/washer/washer-green-1.jpg",
-        colorHex: "#34D399",
-        images: [
-          "/products/washer/washer-green-1.jpg",
-          "/products/washer/washer-green-2.jpg",
-          "/products/washer/washer-green-3.jpg",
-        ],
-      },
-      {
-        name: "Sakura Soft Pink",
-        image: "/products/washer/washer-pink-1.jpg",
-        colorHex: "#F472B6",
-        images: [
-          "/products/washer/washer-pink-1.jpg",
-          "/products/washer/washer-pink-2.jpg",
-          "/products/washer/washer-pink-3.jpg",
-        ],
-      },
-    ],
-    material: "Eco TPE + Food Grade PP",
-    in_stock: 1,
-    rating: 4.7,
-    review_count: 218,
-    badge: "Sale",
-    features: [
-      "Forward/Reverse Sonic Wash",
-      "8L Capacity + Drain Basket",
-      "Collapsible Foldable Body",
-      "3 Smart Timer Programs",
-    ],
-    how_to_use: {
-      enabled: true,
-      section_bg: "light_orange",
-      card_radius: "rounded-2xl",
-      card_border: "orange",
-      card_shadow: "sm",
-      steps: [
-        {
-          id: "step-1",
-          media_type: "image",
-          media_url: "/products/washer/washer-purple-1.jpg",
-          media_fit: "contain",
-          title: "Expand & Add Clothes",
-          description: "Pull up silicone bucket, place garments inside, and add water with liquid detergent.",
-        },
-        {
-          id: "step-2",
-          media_type: "image",
-          media_url: "/products/washer/washer-purple-2.jpg",
-          media_fit: "contain",
-          title: "Select Wash Program",
-          description: "Press touch switch to choose 5 min standard or 10 min deep sonic cleaning.",
-        },
-        {
-          id: "step-3",
-          media_type: "image",
-          media_url: "/products/washer/washer-purple-3.jpg",
-          media_fit: "contain",
-          title: "Drain & Spin Dry",
-          description: "Open bottom outlet pipe to drain and attach detachable basket for quick spin drying.",
-        },
-      ],
-    },
-  },
-
-  // --- New Arrivals ---
-  {
-    id: "mini-thermal-printer",
-    slug: "mini-thermal-printer",
-    name: "Mini Thermal Printer",
-    subtitle: "Wireless Bluetooth Pocket Printer",
-    category: "Gadgets",
-    subcategory: "Computer & Accessories",
-    tagline: "Inkless printing right from your phone",
-    description: "Pocket-sized Bluetooth 200DPI thermal printer with mobile app compatibility for labels, study notes, photo memos, and journal stickers without ink cartridges.",
-    price: 999,
-    mrp: 1499,
-    offer_price: 999,
-    stock_count: 70,
-    volume: "11 × 8 × 3.5 cm",
-    poster_image: "/products/printer/printer-pink-1.jpg",
-    images: [
-      "/products/printer/printer-pink-1.jpg",
-      "/products/printer/printer-pink-2.jpg",
-      "/products/printer/printer-pink-3.jpg",
-    ],
-    color: "Candy Pink",
-    colors: [
-      {
-        name: "Candy Pink",
-        image: "/products/printer/printer-pink-1.jpg",
-        colorHex: "#EC4899",
-        images: [
-          "/products/printer/printer-pink-1.jpg",
-          "/products/printer/printer-pink-2.jpg",
-          "/products/printer/printer-pink-3.jpg",
-        ],
-      },
-      {
-        name: "Sky Blue",
-        image: "/products/printer/printer-blue-1.jpg",
-        colorHex: "#38BDF8",
-        images: [
-          "/products/printer/printer-blue-1.jpg",
-          "/products/printer/printer-blue-2.jpg",
-          "/products/printer/printer-blue-3.jpg",
-        ],
-      },
-      {
-        name: "Chalk White",
-        image: "/products/printer/printer-white-1.jpg",
-        colorHex: "#F1F5F9",
-        images: [
-          "/products/printer/printer-white-1.jpg",
-          "/products/printer/printer-white-2.jpg",
-        ],
-      },
-    ],
-    material: "ABS Plastic",
-    in_stock: 1,
-    rating: 4.7,
-    review_count: 167,
-    badge: "New",
-    features: [
-      "Zero Ink Thermal Printing",
-      "Instant Bluetooth Mobile App",
-      "1000mAh Rechargeable Battery",
-      "Prints Labels, Notes & Photos",
-    ],
-  },
-  {
-    id: "helicopter-car-perfume",
-    slug: "helicopter-car-perfume",
-    name: "Helicopter Car Perfume",
-    subtitle: "Solar Powered Rotating Diffuser",
-    category: "Car Accessories",
-    subcategory: "Car Accessories",
-    tagline: "Sunlight drives the propeller to diffuse fragrance",
-    description: "Aviation-grade alloy solar rotating helicopter dashboard air freshener with pure essential oil beech wood core. Spins automatically under sunlight.",
-    price: 699,
-    mrp: 999,
-    offer_price: 699,
-    stock_count: 110,
-    volume: "Dashboard Fit",
-    poster_image: "/products/helicopter/heli-black-1.jpg",
-    images: [
-      "/products/helicopter/heli-black-1.jpg",
-      "/products/helicopter/heli-black-2.jpg",
-      "/products/helicopter/heli-black-3.jpg",
-    ],
-    color: "Stealth Black & Gold",
-    colors: [
-      {
-        name: "Stealth Black & Gold",
-        image: "/products/helicopter/heli-black-1.jpg",
-        colorHex: "#18181B",
-        images: [
-          "/products/helicopter/heli-black-1.jpg",
-          "/products/helicopter/heli-black-2.jpg",
-          "/products/helicopter/heli-black-3.jpg",
-        ],
-      },
-      {
-        name: "Titanium Silver",
-        image: "/products/helicopter/heli-silver-1.jpg",
-        colorHex: "#CBD5E1",
-        images: [
-          "/products/helicopter/heli-silver-1.jpg",
-          "/products/helicopter/heli-silver-2.jpg",
-        ],
-      },
-      {
-        name: "Royal Sapphire Blue",
-        image: "/products/helicopter/heli-blue-1.jpg",
-        colorHex: "#1D4ED8",
-        images: [
-          "/products/helicopter/heli-blue-1.jpg",
-          "/products/helicopter/heli-blue-2.jpg",
-        ],
-      },
-    ],
-    material: "Zinc Alloy + Solar Panel",
-    in_stock: 1,
-    rating: 4.6,
-    review_count: 310,
-    badge: "Trending",
-    features: [
-      "Solar Auto-Rotating Propeller",
-      "360° All-Around Fragrance",
-      "Natural Plant Essential Oils",
-      "No Battery or Wire Needed",
-    ],
-  },
-  {
-    id: "instant-water-heater-faucet",
-    slug: "instant-water-heater-faucet",
-    name: "Instant Water Heater Faucet",
-    subtitle: "Digital LED Fast Tap",
-    category: "Home & Living",
-    subcategory: "Kitchen & Dining",
-    tagline: "Hot water in 3 seconds directly from tap",
-    description: "3000W electric fast heating faucet with real-time digital LED temperature display, 360° rotational stainless steel spout, and dry-burn safety protection.",
-    price: 1499,
-    mrp: 2199,
-    offer_price: 1499,
-    stock_count: 42,
-    volume: "Standard Sink Thread",
-    poster_image: "/products/faucet/faucet-chrome-1.jpg",
-    images: [
-      "/products/faucet/faucet-chrome-1.jpg",
-      "/products/faucet/faucet-chrome-2.jpg",
-      "/products/faucet/faucet-chrome-3.jpg",
-    ],
-    color: "Gloss Chrome & White",
-    colors: [
-      {
-        name: "Gloss Chrome & White",
-        image: "/products/faucet/faucet-chrome-1.jpg",
-        colorHex: "#E2E8F0",
-        images: [
-          "/products/faucet/faucet-chrome-1.jpg",
-          "/products/faucet/faucet-chrome-2.jpg",
-          "/products/faucet/faucet-chrome-3.jpg",
-        ],
-      },
-      {
-        name: "Matte Obsidian Black",
-        image: "/products/faucet/faucet-black-1.jpg",
-        colorHex: "#27272A",
-        images: [
-          "/products/faucet/faucet-black-1.jpg",
-          "/products/faucet/faucet-black-2.jpg",
-          "/products/faucet/faucet-black-3.jpg",
-        ],
-      },
-      {
-        name: "Brushed Gold",
-        image: "/products/faucet/faucet-gold-1.jpg",
-        colorHex: "#EAB308",
-        images: [
-          "/products/faucet/faucet-gold-1.jpg",
-          "/products/faucet/faucet-gold-2.jpg",
-        ],
-      },
-    ],
-    material: "304 Stainless Steel + Ceramic Core",
-    in_stock: 1,
-    rating: 4.8,
-    review_count: 195,
-    badge: "Trending",
-  },
-  {
-    id: "tf20-multipurpose-powerbank",
-    slug: "tf20-multipurpose-powerbank-with-airpods",
-    name: "TF20 Multipurpose Powerbank with AirPods",
-    subtitle: "2-in-1 Charging Dock + TWS",
-    category: "Gadgets",
-    subcategory: "Mobile & Charging",
-    tagline: "Portable emergency power + wireless audio",
-    description: "Compact high-capacity power bank featuring an integrated storage and charging compartment for Bluetooth 5.3 wireless earbuds. All-in-one travel essential.",
-    price: 1299,
-    mrp: 1899,
-    offer_price: 1299,
-    stock_count: 55,
-    volume: "10,000 mAh",
-    poster_image: "/products/powerbank/powerbank-black-1.jpg",
-    images: [
-      "/products/powerbank/powerbank-black-1.jpg",
-      "/products/powerbank/powerbank-black-2.jpg",
-      "/products/powerbank/powerbank-black-3.jpg",
-    ],
-    color: "Matte Black",
-    colors: [
-      {
-        name: "Matte Black",
-        image: "/products/powerbank/powerbank-black-1.jpg",
-        colorHex: "#18181B",
-        images: [
-          "/products/powerbank/powerbank-black-1.jpg",
-          "/products/powerbank/powerbank-black-2.jpg",
-          "/products/powerbank/powerbank-black-3.jpg",
-        ],
-      },
-      {
-        name: "Arctic Pearl White",
-        image: "/products/powerbank/powerbank-white-1.jpg",
-        colorHex: "#F8FAFC",
-        images: [
-          "/products/powerbank/powerbank-white-1.jpg",
-          "/products/powerbank/powerbank-white-2.jpg",
-          "/products/powerbank/powerbank-white-3.jpg",
-        ],
-      },
-      {
-        name: "Cyberpunk Gunmetal Gray",
-        image: "/products/powerbank/powerbank-cyber-1.jpg",
-        colorHex: "#0284C7",
-        images: [
-          "/products/powerbank/powerbank-cyber-1.jpg",
-          "/products/powerbank/powerbank-cyber-2.jpg",
-        ],
-      },
-    ],
-    material: "Polycarbonate + Fireproof ABS",
-    in_stock: 1,
-    rating: 4.5,
-    review_count: 142,
-    badge: "New",
-  },
-  {
-    id: "mini-hot-air-popcorn-maker",
-    slug: "mini-hot-air-popcorn-maker",
-    name: "Mini Hot Air Popcorn Maker",
-    subtitle: "Oil-Free Healthy Snacking",
-    category: "Home & Living",
-    subcategory: "Kitchen & Dining",
-    tagline: "Fresh hot popcorn in under 2 minutes",
-    description: "Vintage-styled red hot air popcorn popper with turbine heat circulation chamber, 98% popping rate, and one-touch operation without adding oil or butter.",
-    price: 899,
-    mrp: 1299,
-    offer_price: 899,
-    stock_count: 60,
-    volume: "1200W Output",
-    poster_image: "/products/popcorn/popcorn-red-1.jpg",
-    images: [
-      "/products/popcorn/popcorn-red-1.jpg",
-      "/products/popcorn/popcorn-red-2.jpg",
-      "/products/popcorn/popcorn-red-3.jpg",
-    ],
-    color: "Retro Crimson Red",
-    colors: [
-      {
-        name: "Retro Crimson Red",
-        image: "/products/popcorn/popcorn-red-1.jpg",
-        colorHex: "#EF4444",
-        images: [
-          "/products/popcorn/popcorn-red-1.jpg",
-          "/products/popcorn/popcorn-red-2.jpg",
-          "/products/popcorn/popcorn-red-3.jpg",
-        ],
-      },
-      {
-        name: "Sunny Butter Yellow",
-        image: "/products/popcorn/popcorn-yellow-1.jpg",
-        colorHex: "#FBBF24",
-        images: [
-          "/products/popcorn/popcorn-yellow-1.jpg",
-          "/products/popcorn/popcorn-yellow-2.jpg",
-          "/products/popcorn/popcorn-yellow-3.jpg",
-        ],
-      },
-      {
-        name: "Vintage Pastel Mint",
-        image: "/products/popcorn/popcorn-mint-1.jpg",
-        colorHex: "#10B981",
-        images: [
-          "/products/popcorn/popcorn-mint-1.jpg",
-          "/products/popcorn/popcorn-mint-2.jpg",
-        ],
-      },
-    ],
-    material: "High Temp Food-Grade PP + Aluminum",
-    in_stock: 1,
-    rating: 4.6,
-    review_count: 231,
-    badge: "Sale",
   },
 ];
 
 export const PRODUCT_CATEGORIES = [
-  "All",
-  "Tech & Gadgets",
-  "Home Essentials",
-  "Personal Care",
-  "Auto Essentials",
-  "Fitness & Wellness",
-  "Kids & Fun",
-  "Deals & Offers",
-] as const;
+  "All Categories",
+  "Herbal Vitality",
+  "Men's Stamina",
+  "Women's Wellness",
+];
 
 export interface SubcategoryGroup {
   mainCategory: string;
-  aliases: string[];
   subcategories: string[];
 }
 
 export const CATEGORY_SUBCATEGORIES_CONFIG: SubcategoryGroup[] = [
   {
-    mainCategory: "Tech & Gadgets",
-    aliases: ["tech & gadgets", "gadgets", "electronics", "tech"],
-    subcategories: [
-      "Mobile & Charging",
-      "Smart Tech & Audio",
-      "Gaming",
-      "Computer & Accessories",
-    ],
-  },
-  {
-    mainCategory: "Home Essentials",
-    aliases: [
-      "home essentials",
-      "home & living",
-      "home living",
-      "kitchen essentials",
-      "kitchen & dining",
-      "decor",
-      "essentials",
-      "modern living",
-    ],
-    subcategories: [
-      "Kitchen & Dining",
-      "Cleaning & Organization",
-      "Home Comfort & Utility",
-    ],
-  },
-  {
-    mainCategory: "Personal Care",
-    aliases: ["personal care", "grooming", "beauty"],
-    subcategories: [
-      "Grooming & Care",
-      "Massage & Wellness",
-      "Women's Care",
-    ],
-  },
-  {
-    mainCategory: "Auto Essentials",
-    aliases: ["auto essentials", "car accessories", "car care", "automotive"],
-    subcategories: [
-      "Car Care",
-      "Car Accessories",
-    ],
-  },
-  {
-    mainCategory: "Fitness & Wellness",
-    aliases: ["fitness & wellness", "health & wellness", "wellness", "fitness", "health"],
-    subcategories: [
-      "Fitness Accessories",
-      "Recovery & Wellness",
-    ],
-  },
-  {
-    mainCategory: "Kids & Fun",
-    aliases: ["kids & fun", "kids", "toys & games", "toys"],
-    subcategories: [
-      "Toys & Games",
-      "Fun & Entertainment",
-    ],
-  },
-  {
-    mainCategory: "Deals & Offers",
-    aliases: ["deals & offers", "offers", "deals", "sale"],
-    subcategories: [
-      "Curated sale products only",
-    ],
+    mainCategory: "Herbal Vitality",
+    subcategories: ["Turkish Macun", "Epimedium Herbal Paste", "Sachet Strips", "240g Glass Jar"],
   },
 ];
 
 export const CATEGORY_SUBCATEGORIES_MAP: Record<string, string[]> = {
-  "Tech & Gadgets": ["Mobile & Charging", "Smart Tech & Audio", "Gaming", "Computer & Accessories"],
-  "Gadgets": ["Mobile & Charging", "Smart Tech & Audio", "Gaming", "Computer & Accessories"],
-  "Home Essentials": ["Kitchen & Dining", "Cleaning & Organization", "Home Comfort & Utility"],
-  "Home & Living": ["Kitchen & Dining", "Cleaning & Organization", "Home Comfort & Utility"],
-  "Kitchen Essentials": ["Kitchen & Dining", "Cleaning & Organization", "Home Comfort & Utility"],
-  "Personal Care": ["Grooming & Care", "Massage & Wellness", "Women's Care"],
-  "Auto Essentials": ["Car Care", "Car Accessories"],
-  "Car Accessories": ["Car Care", "Car Accessories"],
-  "Fitness & Wellness": ["Fitness Accessories", "Recovery & Wellness"],
-  "Health & Wellness": ["Fitness Accessories", "Recovery & Wellness"],
-  "Kids & Fun": ["Toys & Games", "Fun & Entertainment"],
-  "Deals & Offers": ["Curated sale products only"],
-  "Offers": ["Curated sale products only"],
+  "Herbal Vitality": ["Turkish Macun", "Epimedium Herbal Paste", "Sachet Strips", "240g Glass Jar"],
 };
 
 export function getSubcategoriesForCategory(categoryName: string, dynamicCategories?: any[]): string[] {
-  if (!categoryName || categoryName.toLowerCase() === "all" || categoryName.toLowerCase() === "all categories") return [];
-  const lower = categoryName.trim().toLowerCase();
-
-  // 1. Check dynamicCategories if provided
-  if (Array.isArray(dynamicCategories) && dynamicCategories.length > 0) {
-    const dynamicMatch = dynamicCategories.find(
-      (c) => (c.name && c.name.toLowerCase() === lower) || (c.slug && c.slug.toLowerCase() === lower)
-    );
-    if (dynamicMatch && Array.isArray(dynamicMatch.subcategories) && dynamicMatch.subcategories.length > 0) {
-      return dynamicMatch.subcategories;
-    }
-  }
-
-  // 2. Direct map check
-  const directKey = Object.keys(CATEGORY_SUBCATEGORIES_MAP).find(
-    (k) => k.toLowerCase() === lower
-  );
-  if (directKey) return CATEGORY_SUBCATEGORIES_MAP[directKey];
-
-  const found = CATEGORY_SUBCATEGORIES_CONFIG.find(
-    (g) =>
-      g.mainCategory.toLowerCase() === lower ||
-      g.aliases.some((alias) => alias.toLowerCase() === lower)
-  );
-  return found ? found.subcategories : [];
+  return ["Turkish Macun", "Epimedium Herbal Paste", "Sachet Strips", "240g Glass Jar"];
 }
 
 export function doesCategoryMatch(productCategory: string, selectedCategory: string, dynamicCategories?: any[]): boolean {
-  if (!selectedCategory || selectedCategory.toLowerCase() === "all" || selectedCategory.toLowerCase() === "all categories") return true;
-  if (!productCategory) return false;
-  const pLower = productCategory.trim().toLowerCase();
-  const sLower = selectedCategory.trim().toLowerCase();
-  if (pLower === sLower) return true;
-
-  if (Array.isArray(dynamicCategories) && dynamicCategories.length > 0) {
-    const dynamicMatch = dynamicCategories.find(
-      (c) => (c.name && c.name.toLowerCase() === sLower) || (c.slug && c.slug.toLowerCase() === sLower)
-    );
-    if (dynamicMatch) {
-      if (dynamicMatch.name.toLowerCase() === pLower || (dynamicMatch.slug && dynamicMatch.slug.toLowerCase() === pLower)) return true;
-      if (Array.isArray(dynamicMatch.subcategories) && dynamicMatch.subcategories.some((sub: string) => sub.toLowerCase() === pLower)) return true;
-    }
-  }
-
-  const group = CATEGORY_SUBCATEGORIES_CONFIG.find(
-    (g) =>
-      g.mainCategory.toLowerCase() === sLower ||
-      g.aliases.some((alias) => alias.toLowerCase() === sLower)
-  );
-  if (group) {
-    if (group.mainCategory.toLowerCase() === pLower) return true;
-    if (group.aliases.some((alias) => alias.toLowerCase() === pLower)) return true;
-    if (group.subcategories.some((sub) => sub.toLowerCase() === pLower)) return true;
-  }
-  return false;
+  if (!selectedCategory || selectedCategory === "All Categories" || selectedCategory === "all") return true;
+  return true;
 }
 
 export function doesSubcategoryMatch(product: Product, selectedSubcategory: string): boolean {
-  if (!selectedSubcategory || selectedSubcategory.toLowerCase() === "all") return true;
-  const sLower = selectedSubcategory.trim().toLowerCase();
-
-  // 1. Direct subcategory field match
-  if (product.subcategory && product.subcategory.trim().toLowerCase() === sLower) {
-    return true;
-  }
-
-  // 2. Category column matches subcategory name directly (e.g., category: "Kitchen & Dining")
-  if (product.category && product.category.trim().toLowerCase() === sLower) {
-    return true;
-  }
-
-  // 3. Direct keyword or phrase match in product text
-  const searchCorpus = `${product.name} ${product.tagline || ""} ${product.description || ""}`.toLowerCase();
-  if (searchCorpus.includes(sLower)) {
-    return true;
-  }
-
-  // 4. Fallback heuristic keyword match
-  if (sLower === "kitchen & dining" && (searchCorpus.includes("kitchen") || searchCorpus.includes("popcorn") || searchCorpus.includes("oil") || searchCorpus.includes("faucet") || searchCorpus.includes("dining"))) {
-    return true;
-  }
-  if (sLower === "cleaning & organization" && (searchCorpus.includes("cleaning") || searchCorpus.includes("mop") || searchCorpus.includes("washer") || searchCorpus.includes("iron"))) {
-    return true;
-  }
-  if (sLower === "home comfort & utility" && (searchCorpus.includes("lamp") || searchCorpus.includes("light") || searchCorpus.includes("humidifier") || searchCorpus.includes("crystal"))) {
-    return true;
-  }
-  if (sLower === "mobile & charging" && (searchCorpus.includes("powerbank") || searchCorpus.includes("charging") || searchCorpus.includes("phone"))) {
-    return true;
-  }
-  if (sLower === "smart tech & audio" && (searchCorpus.includes("airpods") || searchCorpus.includes("audio") || searchCorpus.includes("watch") || searchCorpus.includes("smart"))) {
-    return true;
-  }
-  if (sLower === "computer & accessories" && (searchCorpus.includes("printer") || searchCorpus.includes("backpack") || searchCorpus.includes("laptop") || searchCorpus.includes("computer"))) {
-    return true;
-  }
-  if (sLower === "women's care" && (searchCorpus.includes("menstrual") || searchCorpus.includes("heating pad") || searchCorpus.includes("women"))) {
-    return true;
-  }
-  if (sLower === "recovery & wellness" && (searchCorpus.includes("nebulizer") || searchCorpus.includes("recovery") || searchCorpus.includes("therapy"))) {
-    return true;
-  }
-  if (sLower === "car accessories" && (searchCorpus.includes("perfume") || searchCorpus.includes("car") || searchCorpus.includes("auto"))) {
-    return true;
-  }
-  if (sLower === "car care" && (searchCorpus.includes("vacuum") || searchCorpus.includes("cleaner") || searchCorpus.includes("wash"))) {
-    return true;
-  }
-  if (sLower === "curated sale products only" && (product.badge?.toLowerCase() === "sale" || (product.mrp && product.price && product.mrp > product.price))) {
-    return true;
-  }
-
-  return false;
+  if (!selectedSubcategory || selectedSubcategory === "All") return true;
+  return true;
 }

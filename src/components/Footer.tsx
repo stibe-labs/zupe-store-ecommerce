@@ -1,27 +1,19 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { Instagram, Twitter, Mail, MapPin, Phone, ArrowUpRight } from "lucide-react";
-
-const SHOP_LINKS = [
-  { label: "All Products", href: "/products" },
-  { label: "Tech & Gadgets", href: "/products?category=Tech+%26+Gadgets" },
-  { label: "Home Essentials", href: "/products?category=Home+Essentials" },
-  { label: "Deals & Offers", href: "/products?category=Deals+%26+Offers" },
-];
+import { MessageCircle, Mail, MapPin, Phone, ShieldCheck, ArrowUpRight } from "lucide-react";
 
 const SUPPORT_LINKS = [
-  { label: "About Us", href: "/about" },
-  { label: "Track Order", href: "/order-tracking" },
-  { label: "WhatsApp Support", href: "https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20have%20an%20inquiry" },
-  { label: "Contact Us", href: "mailto:zupestoreonline@gmail.com" },
+  { label: "Track Your Order", href: "/order-tracking" },
+  { label: "WhatsApp Order & Care", href: "https://wa.me/919744122853?text=Hi%2C%20I%20have%20an%20inquiry%20about%20Turkiye%20Jam" },
+  { label: "Usage Guide (ഉപയോഗം)", href: "/#how-to-use" },
+  { label: "Customer Reviews", href: "/#reviews" },
 ];
 
 const LEGAL_LINKS = [
-  { label: "Return & Refund Policy", href: "/return" },
-  { label: "Shipping & Delivery", href: "/shipping-and-delivery" },
+  { label: "Refund & Return Policy", href: "/return" },
+  { label: "Shipping & Delivery Policy", href: "/shipping-and-delivery" },
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms & Conditions", href: "/terms-and-conditions" },
 ];
@@ -32,7 +24,9 @@ function FooterLink({ link }: { link: { label: string; href: string } }) {
     return (
       <a
         href={link.href}
-        className="text-sm text-gray-400 hover:text-[#FF7A00] transition-colors duration-200 inline-flex items-center gap-1 group py-0.5"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-sm text-gray-300 hover:text-amber-400 transition-colors duration-200 inline-flex items-center gap-1 group py-0.5"
       >
         {link.label}
         <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -42,7 +36,7 @@ function FooterLink({ link }: { link: { label: string; href: string } }) {
   return (
     <Link
       href={link.href}
-      className="text-sm text-gray-400 hover:text-[#FF7A00] transition-colors duration-200 inline-flex items-center gap-1 group py-0.5"
+      className="text-sm text-gray-300 hover:text-amber-400 transition-colors duration-200 inline-flex items-center gap-1 group py-0.5"
     >
       {link.label}
       <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -52,65 +46,53 @@ function FooterLink({ link }: { link: { label: string; href: string } }) {
 
 export function Footer() {
   return (
-    <footer
-      className="bg-[#0F172A] text-white relative overflow-hidden"
-      style={{ backgroundColor: "#0F172A" }}
-    >
-      {/* Decorative */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#FF7A00]/40 to-transparent" />
-      <div className="absolute top-20 right-20 w-64 h-64 bg-[#FF7A00]/5 rounded-full blur-3xl pointer-events-none" />
+    <footer className="bg-[#1a0508] text-white relative overflow-hidden border-t border-amber-900/40">
+      {/* Decorative Turkish gold & ruby accent line */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-rose-500 to-amber-600" />
+      <div className="absolute top-12 right-12 w-80 h-80 bg-rose-900/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-12 relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-12 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
-          <div className="col-span-2">
-            <Link href="/" className="flex items-center gap-3 mb-4">
-              <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-white p-0.5 shadow-md flex items-center justify-center">
-                <Image
-                  src="/zupe-logo.webp"
-                  alt="Zupe Store"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                />
+          <div className="md:col-span-2">
+            <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg font-bold text-red-950 text-xl">
+                🇹🇷
               </div>
-              <Image
-                src="/zupe-label-white.png"
-                alt="Zupestore"
-                width={120}
-                height={32}
-                className="h-7 w-auto object-contain"
-              />
+              <div className="flex flex-col">
+                <span className="font-extrabold text-2xl tracking-tight text-white group-hover:text-amber-400 transition-colors">
+                  Turkiye Jam
+                </span>
+                <span className="text-xs text-amber-400 font-medium -mt-1 tracking-wider">
+                  തുർക്കി ജാം • 100% ഒറിജിനൽ
+                </span>
+              </div>
             </Link>
-            <p className="text-sm text-gray-400 max-w-xs leading-relaxed mb-6">
-              Curated modern essentials for people who appreciate thoughtful design in everyday life.
+
+            <p className="text-sm text-gray-300 max-w-md leading-relaxed mb-6">
+              തുർക്കിയിൽ നിന്ന് നേരിട്ട് എത്തിക്കുന്ന 100% ഒറിജിനൽ തെംറ എപ്പിമീഡിയം മാക്കൂൻ (Themra Epimedium Herbal Macun). സ്ത്രീകളിലും പുരുഷന്മാരിലും ശാരീരിക ശക്തി, സ്റ്റാമിന, സമയക്കൂടുതൽ എന്നിവ വർദ്ധിപ്പിക്കുന്ന ലോകപ്രശസ്തമായ അത്ഭുത ഉൽപ്പന്നം.
             </p>
-            <div className="flex items-center gap-3">
-              {[
-                { icon: Instagram, href: "https://instagram.com" },
-                { icon: Twitter, href: "https://twitter.com" },
-                { icon: Mail, href: "mailto:zupestoreonline@gmail.com" },
-              ].map((social, i) => (
-                <a
-                  key={i}
-                  href={social.href}
-                  target={social.href.startsWith("http") ? "_blank" : undefined}
-                  rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="w-10 h-10 rounded-xl bg-white/5 hover:bg-[#FF7A00]/20 border border-white/10 flex items-center justify-center transition-all duration-300 hover:border-[#FF7A00]/30"
-                >
-                  <social.icon className="w-4 h-4 text-gray-400" />
-                </a>
-              ))}
+
+            <div className="flex flex-wrap items-center gap-3 text-xs text-amber-300 font-medium">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <ShieldCheck className="w-4 h-4 text-amber-400" /> 100% ഒറിജിനൽ & ഗ്യാരണ്ടി
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                📦 രഹസ്യമായ പാക്കിങ്
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                🚚 കേരളത്തിൽ 1-Day ഡെലിവറി
+              </span>
             </div>
           </div>
 
-          {/* Shop Column */}
-          <div className="col-span-1">
-            <h4 className="font-display font-semibold text-sm text-white mb-3 tracking-wide">
-              Shop
+          {/* Customer Care / Support */}
+          <div>
+            <h4 className="font-semibold text-sm text-amber-400 mb-3 tracking-wide uppercase">
+              Customer Support
             </h4>
             <ul className="space-y-2">
-              {SHOP_LINKS.map((link) => (
+              {SUPPORT_LINKS.map((link) => (
                 <li key={link.label}>
                   <FooterLink link={link} />
                 </li>
@@ -118,40 +100,10 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Support Column (on mobile includes Legal underneath to keep a neat 2-col balance) */}
-          <div className="col-span-1">
-            <div>
-              <h4 className="font-display font-semibold text-sm text-white mb-3 tracking-wide">
-                Support
-              </h4>
-              <ul className="space-y-2">
-                {SUPPORT_LINKS.map((link) => (
-                  <li key={link.label}>
-                    <FooterLink link={link} />
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Mobile-only Legal subsection in column 2 for perfect vertical balance */}
-            <div className="md:hidden mt-5 pt-4 border-t border-white/5">
-              <h4 className="font-display font-semibold text-sm text-white mb-2.5 tracking-wide">
-                Legal
-              </h4>
-              <ul className="space-y-2">
-                {LEGAL_LINKS.map((link) => (
-                  <li key={link.label}>
-                    <FooterLink link={link} />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Legal Column (Desktop view) */}
-          <div className="hidden md:block col-span-1">
-            <h4 className="font-display font-semibold text-sm text-white mb-3 tracking-wide">
-              Legal
+          {/* Legal / Policy */}
+          <div>
+            <h4 className="font-semibold text-sm text-amber-400 mb-3 tracking-wide uppercase">
+              Trust & Policies
             </h4>
             <ul className="space-y-2">
               {LEGAL_LINKS.map((link) => (
@@ -164,21 +116,23 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-12 pt-6 border-t border-amber-950 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} Zupe Store. All rights reserved.
+            © {new Date().getFullYear()} Turkiye Jam (turkiyejam.com). All rights reserved.
           </p>
-          <div className="flex items-center gap-4 text-xs text-gray-400">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-gray-300">
             <span className="flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-[#FF7A00]" />
-              India
+              <MapPin className="w-3.5 h-3.5 text-amber-400" />
+              Kerala, India
             </span>
             <a
-              href="tel:+919744122853"
-              className="flex items-center gap-1 hover:text-[#FF7A00] transition-colors"
+              href="https://wa.me/919744122853"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-amber-300 hover:text-white transition-colors"
             >
-              <Phone className="w-3 h-3 text-[#FF7A00]" />
-              +91 97441 22853
+              <Phone className="w-3.5 h-3.5 text-amber-400" />
+              +91 97441 22853 (WhatsApp Orders)
             </a>
           </div>
         </div>
