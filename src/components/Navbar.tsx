@@ -15,12 +15,12 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 
 const TURKIYE_NAV_ITEMS = [
-  { label: "Offers & Packages", href: "/#offers" },
-  { label: "Key Benefits", href: "/#benefits" },
+  { label: "Products", href: "/#offers" },
+  { label: "Story", href: "/#story" },
+  { label: "Benefits", href: "/#benefits" },
   { label: "How to Use", href: "/#usage" },
-  { label: "Guarantee", href: "/#guarantee" },
   { label: "Reviews", href: "/#reviews" },
-  { label: "Track Order", href: "/order-tracking" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 export function Navbar() {
@@ -62,15 +62,15 @@ export function Navbar() {
           <div className="flex items-center gap-3.5">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="p-2 -ml-1.5 text-stone-800 hover:text-[#780016] md:hidden transition-colors rounded-lg hover:bg-stone-100"
+              className="p-2 -ml-1.5 text-stone-800 hover:text-[#3F6650] md:hidden transition-colors rounded-lg hover:bg-stone-100"
               aria-label="Open Navigation Menu"
             >
               <Menu className="w-6 h-6 stroke-[2]" />
             </button>
 
-            {/* Brand Logo */}
+            {/* Brand Logo & Signature Wordmark */}
             <Link href="/" className="flex items-center gap-3 group" aria-label="Turkiye Jam Homepage">
-              <div className="relative h-11 w-14 sm:h-12 sm:w-16 shrink-0 overflow-hidden rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+              <div className="relative h-10 w-13 sm:h-11 sm:w-15 shrink-0 overflow-hidden rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Image
                   src="/turkiye-jam-logo.png"
                   alt="Turkiye Jam Logo"
@@ -80,23 +80,23 @@ export function Navbar() {
                 />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-lg sm:text-xl font-black tracking-wider text-[#780016] group-hover:text-[#9e1b32] transition-colors leading-tight font-serif">
-                  TURKIYE JAM
+                <span className="text-xl sm:text-2xl font-bold tracking-tight text-[#1A2E22] group-hover:text-[#3F6650] transition-colors leading-none font-sans">
+                  turkiye jam
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-amber-800 font-semibold tracking-widest uppercase -mt-0.5">
+                <span className="text-[10px] text-[#3F6650] font-semibold tracking-widest uppercase mt-0.5">
                   Themra Herbal Macun
                 </span>
               </div>
             </Link>
           </div>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-7 text-sm font-semibold text-stone-700">
+          {/* Desktop Nav Links (Clean, Centered, Matches Reference) */}
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-stone-700">
             {TURKIYE_NAV_ITEMS.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="hover:text-[#780016] transition-colors py-1 hover:border-b-2 hover:border-[#780016]"
+                className="hover:text-[#3F6650] transition-colors py-1 hover:border-b-2 hover:border-[#3F6650]"
               >
                 {item.label}
               </a>
@@ -104,36 +104,36 @@ export function Navbar() {
           </nav>
 
           {/* Right Action Icons: WhatsApp Order, Account, Cart */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* WhatsApp Quick Order button */}
             <a
               href="https://wa.me/919744122853?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden lg:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95"
+              className="hidden lg:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#3F6650] hover:bg-[#325240] text-white text-xs font-bold shadow-xs transition-all active:scale-95"
             >
               <Phone className="w-3.5 h-3.5" />
-              <span>WhatsApp Order</span>
+              <span>WhatsApp Care</span>
             </a>
 
             {/* Account */}
             <button
               onClick={handleAccountClick}
-              className="p-2.5 text-stone-700 hover:text-[#780016] hover:bg-rose-50 rounded-full transition-colors cursor-pointer"
+              className="p-2.5 text-stone-700 hover:text-[#3F6650] hover:bg-stone-100 rounded-full transition-colors cursor-pointer"
               aria-label="User Account"
             >
-              <User className="w-5 h-5 stroke-[2]" />
+              <User className="w-5 h-5 stroke-[1.8]" />
             </button>
 
             {/* Cart Button */}
             <button
               onClick={openCart}
-              className="relative p-2.5 text-stone-800 hover:text-[#780016] hover:bg-rose-50 rounded-full transition-colors cursor-pointer"
+              className="relative p-2.5 text-stone-800 hover:text-[#3F6650] hover:bg-stone-100 rounded-full transition-colors cursor-pointer"
               aria-label="View Shopping Cart"
             >
-              <ShoppingBag className="w-5 h-5 stroke-[2]" />
+              <ShoppingBag className="w-5 h-5 stroke-[1.8]" />
               {totalItems > 0 && (
-                <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#780016] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white shadow-xs">
+                <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#3F6650] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white shadow-xs">
                   {totalItems}
                 </span>
               )}
@@ -162,8 +162,8 @@ export function Navbar() {
                     />
                   </div>
                   <div className="flex flex-col text-left">
-                    <span className="text-base font-extrabold text-[#780016] font-serif">TURKIYE JAM</span>
-                    <span className="text-[10px] text-amber-800 font-semibold tracking-wider">Original Turkish Paste</span>
+                    <span className="text-base font-bold text-[#1A2E22] font-sans">turkiye jam</span>
+                    <span className="text-[10px] text-[#3F6650] font-semibold tracking-wider">Original Turkish Paste</span>
                   </div>
                 </div>
                 <button
@@ -180,7 +180,7 @@ export function Navbar() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3.5 py-3 rounded-xl text-sm font-semibold text-stone-800 hover:bg-rose-50 hover:text-[#780016] transition-colors"
+                    className="block px-3.5 py-3 rounded-xl text-sm font-semibold text-stone-800 hover:bg-[#EBF2EC] hover:text-[#3F6650] transition-colors"
                   >
                     {item.label}
                   </a>

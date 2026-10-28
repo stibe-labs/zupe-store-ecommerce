@@ -47,17 +47,17 @@ function FooterLink({ link }: { link: { label: string; href: string } }) {
 
 export function Footer() {
   return (
-    <footer className="bg-[#1c0408] text-white relative overflow-hidden border-t border-amber-950/60">
-      {/* Decorative Turkish gold & ruby accent line */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-rose-500 to-amber-600" />
-      <div className="absolute top-12 right-12 w-96 h-96 bg-rose-900/10 rounded-full blur-3xl pointer-events-none" />
+    <footer className="bg-[#16241C] text-white relative overflow-hidden border-t border-[#3F6650]/30">
+      {/* Decorative botanical gold accent line */}
+      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#3F6650] via-amber-400 to-[#3F6650]" />
+      <div className="absolute top-12 right-12 w-96 h-96 bg-[#3F6650]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 lg:gap-16">
           {/* Brand */}
           <div className="md:col-span-2 space-y-5">
             <Link href="/" className="inline-flex items-center gap-3.5 group">
-              <div className="relative h-12 w-16 sm:w-20 flex items-center justify-center rounded-xl bg-white/5 p-1 border border-amber-500/20 backdrop-blur-sm shadow-md">
+              <div className="relative h-12 w-16 sm:w-20 flex items-center justify-center rounded-xl bg-white/5 p-1 border border-white/10 backdrop-blur-sm shadow-md">
                 <Image
                   src="/turkiye-jam-logo.png"
                   alt="Turkiye Jam"
@@ -67,10 +67,10 @@ export function Footer() {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-2xl tracking-tight text-white group-hover:text-amber-400 transition-colors font-serif">
-                  Turkiye Jam
+                <span className="font-bold text-2xl tracking-tight text-white group-hover:text-[#A2C2B0] transition-colors font-sans">
+                  turkiye jam
                 </span>
-                <span className="text-xs text-amber-400 font-medium tracking-widest uppercase">
+                <span className="text-xs text-amber-300 font-medium tracking-widest uppercase">
                   Authentic Turkish Botanical Macun
                 </span>
               </div>
@@ -80,14 +80,14 @@ export function Footer() {
               Directly imported from Turkey, Themra Epimedium Herbal Macun is a revered natural vitality paste. Scientifically formulated with Epimedium, Ginseng, and Pure Flower Honey to enhance physical stamina, intimate desire, and performance for couples.
             </p>
 
-            <div className="flex flex-wrap items-center gap-3 text-xs text-amber-300/90 font-medium pt-1">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <ShieldCheck className="w-4 h-4 text-amber-400" /> 100% Genuine Import
+            <div className="flex flex-wrap items-center gap-3 text-xs text-stone-300 font-medium pt-1">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" /> 100% Genuine Import
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
                 📦 Discreet Plain Box Packaging
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
                 ⚡ 1–2 Day Express Delivery
               </span>
             </div>

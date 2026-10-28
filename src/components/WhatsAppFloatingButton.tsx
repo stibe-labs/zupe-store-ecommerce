@@ -13,7 +13,7 @@ export function WhatsAppFloatingButton() {
   }
 
   const phoneNumber = "919744122853";
-  const defaultMessage = encodeURIComponent("Hi Zupe Store, I have an inquiry about your products!");
+  const defaultMessage = encodeURIComponent("Hi Turkiye Jam Care, I have an inquiry about Turkiye Jam!");
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${defaultMessage}`;
 
   return (
@@ -30,7 +30,7 @@ export function WhatsAppFloatingButton() {
         }`}
       >
         <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
-        <span>Chat with us on WhatsApp</span>
+        <span>Chat with Turkiye Jam Care</span>
       </div>
 
       {/* Main Floating Button */}
@@ -38,7 +38,7 @@ export function WhatsAppFloatingButton() {
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Chat with Zupe Store on WhatsApp"
+        aria-label="Chat with Turkiye Jam on WhatsApp"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className="relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white shadow-[0_8px_25px_rgba(37,211,102,0.45)] hover:shadow-[0_12px_32px_rgba(37,211,102,0.65)] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer"
