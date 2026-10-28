@@ -14,6 +14,8 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  ArrowLeft,
+  LayoutGrid,
   Check,
   ChevronRight,
   ChevronDown,
@@ -36,6 +38,8 @@ import { useCart } from "@/context/CartContext";
 import { getClientProducts, getClientShowcase } from "@/lib/productsClientCache";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
+import { StoreCategory, DEFAULT_STORE_CATEGORIES } from "@/lib/storeContent";
+import { renderIconOrCustom } from "@/components/CategoryPills";
 
 function ProductsContent() {
   const router = useRouter();
@@ -52,7 +56,18 @@ function ProductsContent() {
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [activeFilter, setActiveFilter] = useState<string>(initialFilter);
   const [categoryList, setCategoryList] = useState<string[]>([...PRODUCT_CATEGORIES]);
-  const [dynamicCategories, setDynamicCategories] = useState<any[]>([]);
+  const [dynamicCategories, setDynamicCategories] = useState<StoreCategory[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("zupe_store_categories_cache_v2");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (_) {}
+    }
+    return DEFAULT_STORE_CATEGORIES;
+  });
 
   useEffect(() => {
     fetch("/api/content/categories")
@@ -140,9 +155,34 @@ function ProductsContent() {
     setActiveFilter(f || "");
   }, [searchParams]);
 
+  const isAllCategories =
+    !selectedCategory ||
+    selectedCategory.toLowerCase() === "all" ||
+    selectedCategory.toLowerCase() === "all categories";
+
+  const currentCategoryObj = useMemo(() => {
+    if (isAllCategories) return null;
+    const lower = selectedCategory.trim().toLowerCase();
+    return (
+      dynamicCategories.find(
+        (c) =>
+          (c.name && c.name.toLowerCase() === lower) ||
+          (c.slug && c.slug.toLowerCase() === lower)
+      ) || null
+    );
+  }, [dynamicCategories, selectedCategory, isAllCategories]);
+
   const availableSubcategories = useMemo(() => {
+    if (isAllCategories) return [];
+    if (
+      currentCategoryObj &&
+      Array.isArray(currentCategoryObj.subcategories) &&
+      currentCategoryObj.subcategories.length > 0
+    ) {
+      return currentCategoryObj.subcategories;
+    }
     return getSubcategoriesForCategory(selectedCategory, dynamicCategories);
-  }, [selectedCategory, dynamicCategories]);
+  }, [isAllCategories, currentCategoryObj, selectedCategory, dynamicCategories]);
 
   // Lock body scroll when mobile filter drawer is open
   useEffect(() => {
@@ -282,10 +322,11 @@ function ProductsContent() {
   }, [products, activeFilter, selectedCategory, selectedSubcategory, searchQuery, sortBy, maxPrice, onlyInStock, showcaseCollections]);
 
   const handleCategorySelect = (cat: string) => {
-    setSelectedCategory(cat);
+    const isTargetAll = !cat || cat.toLowerCase() === "all" || cat.toLowerCase() === "all categories";
+    setSelectedCategory(isTargetAll ? "All" : cat);
     setSelectedSubcategory("All");
     const params = new URLSearchParams();
-    if (cat !== "All") params.set("category", cat);
+    if (!isTargetAll) params.set("category", cat);
     if (activeFilter) params.set("filter", activeFilter);
     if (searchQuery.trim()) params.set("search", searchQuery.trim());
     const queryStr = params.toString();
@@ -295,8 +336,8 @@ function ProductsContent() {
   const handleSubcategorySelect = (subcat: string) => {
     setSelectedSubcategory(subcat);
     const params = new URLSearchParams();
-    if (selectedCategory !== "All") params.set("category", selectedCategory);
-    if (subcat !== "All") params.set("subcategory", subcat);
+    if (!isAllCategories) params.set("category", selectedCategory);
+    if (subcat && subcat.toLowerCase() !== "all") params.set("subcategory", subcat);
     if (activeFilter) params.set("filter", activeFilter);
     if (searchQuery.trim()) params.set("search", searchQuery.trim());
     const queryStr = params.toString();
@@ -306,8 +347,10 @@ function ProductsContent() {
   const handleClearActiveFilter = () => {
     setActiveFilter("");
     const params = new URLSearchParams();
-    if (selectedCategory !== "All") params.set("category", selectedCategory);
-    if (selectedSubcategory !== "All") params.set("subcategory", selectedSubcategory);
+    if (!isAllCategories) params.set("category", selectedCategory);
+    if (selectedSubcategory && selectedSubcategory.toLowerCase() !== "all") {
+      params.set("subcategory", selectedSubcategory);
+    }
     if (searchQuery.trim()) params.set("search", searchQuery.trim());
     const queryStr = params.toString();
     router.push(`/products${queryStr ? `?${queryStr}` : ""}`, { scroll: false });
@@ -542,7 +585,7 @@ function ProductsContent() {
       {/* Main Content Area */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-3 pb-8 sm:pt-4 sm:pb-10">
         {/* Active Filter Pill (if any) */}
-        {(activeFilter || (selectedCategory !== "All" && selectedSubcategory !== "All")) && (
+        {(activeFilter || (!isAllCategories && selectedSubcategory !== "All")) && (
           <div className="flex items-center gap-2 mb-4 flex-wrap">
             <span className="text-xs font-semibold text-gray-500">Filter applied:</span>
             {activeFilter && (
@@ -561,7 +604,7 @@ function ProductsContent() {
                 </button>
               </span>
             )}
-            {selectedCategory !== "All" && selectedSubcategory !== "All" && (
+            {!isAllCategories && selectedSubcategory !== "All" && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FF7A00]/10 text-[#FF7A00] border border-[#FF7A00]/25 shadow-sm">
                 <span>{selectedSubcategory}</span>
                 <button
@@ -577,7 +620,7 @@ function ProductsContent() {
             <button
               onClick={() => {
                 handleClearActiveFilter();
-                handleSubcategorySelect("All");
+                handleCategorySelect("All");
               }}
               className="text-xs text-gray-500 hover:text-[#FF7A00] font-semibold underline cursor-pointer ml-1"
             >
@@ -586,51 +629,166 @@ function ProductsContent() {
           </div>
         )}
 
-        {/* Category Pills & Controls Bar */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3 lg:gap-4 mb-3 sm:mb-4 lg:mb-6">
-          {/* Category Tabs / Subcategory Tabs */}
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-1.5 scrollbar-none">
-            {selectedCategory !== "All" && availableSubcategories.length > 0 ? (
-              // Inside each category: display subcategories instead of repeating navbar categories
-              ["All", ...availableSubcategories].map((subcat) => {
-                const isSelected = selectedSubcategory.toLowerCase() === subcat.toLowerCase();
-                return (
-                  <button
-                    key={subcat}
-                    onClick={() => handleSubcategorySelect(subcat)}
-                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                      isSelected
-                        ? "bg-[#FF7A00] text-white shadow-md shadow-[#FF7A00]/25 font-bold"
-                        : "bg-white text-[#636E72] hover:bg-gray-100 hover:text-gray-900 border border-gray-200/80"
-                    }`}
-                  >
-                    {subcat}
-                  </button>
-                );
-              })
-            ) : (
-              // All Products view: display categories list
-              categoryList.map((cat) => (
+        {/* Category & Subcategory 3D Icon Selector */}
+        <div className="mb-3.5 sm:mb-4.5">
+          <div className="flex items-start gap-2.5 sm:gap-3.5 overflow-x-auto pb-2 pt-1 px-1 scrollbar-none">
+            {!isAllCategories ? (
+              /* Inside an individual category: show subcategories */
+              <>
+                {/* 1. Quick Back / View All Categories Button */}
                 <button
-                  key={cat}
-                  onClick={() => handleCategorySelect(cat)}
-                  className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                    selectedCategory.toLowerCase() === cat.toLowerCase()
-                      ? "bg-[#FF7A00] text-white shadow-md shadow-[#FF7A00]/25 font-bold"
-                      : "bg-white text-[#636E72] hover:bg-gray-100 border border-gray-200/80"
-                  }`}
+                  type="button"
+                  onClick={() => handleCategorySelect("All")}
+                  className="flex flex-col items-center flex-shrink-0 group text-center min-w-[68px] sm:min-w-[80px] cursor-pointer"
+                  title="View All Categories"
                 >
-                  {cat}
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-[20px] bg-white border border-gray-200/90 text-gray-600 flex items-center justify-center transition-all duration-200 group-hover:scale-105 group-hover:border-[#FF7A00] group-hover:text-[#FF7A00] group-hover:shadow-sm mb-1.5 shadow-xs">
+                    <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </div>
+                  <span className="text-[11px] sm:text-xs font-semibold text-gray-500 group-hover:text-[#FF7A00] transition-colors leading-tight">
+                    All Categories
+                  </span>
                 </button>
-              ))
+
+                {/* 2. "All" (representing All of this Category) with Category's Icon & Selected Outline */}
+                {(() => {
+                  const isAllSelected = selectedSubcategory.toLowerCase() === "all" || !selectedSubcategory;
+                  const catShape = currentCategoryObj?.iconShape === "square" ? "rounded-2xl sm:rounded-[20px]" : "rounded-full";
+                  const bgColor = currentCategoryObj?.bgColor || "bg-[#EEF2FF]";
+                  const iconColor = currentCategoryObj?.iconColor || "text-[#3B82F6]";
+
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => handleSubcategorySelect("All")}
+                      className="flex flex-col items-center flex-shrink-0 group text-center min-w-[72px] sm:min-w-[84px] cursor-pointer"
+                    >
+                      <div
+                        className={`w-14 h-14 sm:w-16 sm:h-16 ${catShape} ${bgColor} ${iconColor} flex items-center justify-center transition-all duration-200 mb-1.5 overflow-hidden ${
+                          isAllSelected
+                            ? "ring-2 ring-[#FF7A00] ring-offset-2 ring-offset-[#F3F4F6] border-2 border-[#FF7A00] shadow-md shadow-[#FF7A00]/25 scale-105"
+                            : "border border-transparent group-hover:scale-105 group-hover:shadow-sm"
+                        }`}
+                      >
+                        {renderIconOrCustom({
+                          iconName: currentCategoryObj?.icon,
+                          customIcon: currentCategoryObj?.customIcon,
+                          iconSize: currentCategoryObj?.iconSize || 85,
+                          fallbackName: currentCategoryObj?.name || selectedCategory,
+                        })}
+                      </div>
+                      <span
+                        className={`text-[11px] sm:text-xs leading-tight transition-colors line-clamp-2 max-w-[82px] sm:max-w-[92px] ${
+                          isAllSelected
+                            ? "font-bold text-[#FF7A00]"
+                            : "font-semibold text-gray-700 group-hover:text-[#FF7A00]"
+                        }`}
+                      >
+                        All {currentCategoryObj?.name ? currentCategoryObj.name.split(" ")[0] : ""}
+                      </span>
+                    </button>
+                  );
+                })()}
+
+                {/* 3. Subcategories with their respective icons & selected outline */}
+                {availableSubcategories.map((subcat) => {
+                  const isSubSelected = selectedSubcategory.toLowerCase() === subcat.toLowerCase();
+                  const catShape = currentCategoryObj?.iconShape === "square" ? "rounded-2xl sm:rounded-[20px]" : "rounded-full";
+                  const subIconName = currentCategoryObj?.subcategoryIcons?.[subcat];
+                  const bgColor = currentCategoryObj?.bgColor || "bg-orange-50";
+                  const iconColor = currentCategoryObj?.iconColor || "text-[#FF7A00]";
+
+                  return (
+                    <button
+                      key={subcat}
+                      type="button"
+                      onClick={() => handleSubcategorySelect(subcat)}
+                      className="flex flex-col items-center flex-shrink-0 group text-center min-w-[72px] sm:min-w-[84px] cursor-pointer"
+                    >
+                      <div
+                        className={`w-14 h-14 sm:w-16 sm:h-16 ${catShape} ${bgColor} ${iconColor} flex items-center justify-center transition-all duration-200 mb-1.5 overflow-hidden ${
+                          isSubSelected
+                            ? "ring-2 ring-[#FF7A00] ring-offset-2 ring-offset-[#F3F4F6] border-2 border-[#FF7A00] shadow-md shadow-[#FF7A00]/25 scale-105"
+                            : "border border-transparent group-hover:scale-105 group-hover:shadow-sm"
+                        }`}
+                      >
+                        {renderIconOrCustom({
+                          iconName: subIconName,
+                          fallbackName: subcat,
+                        })}
+                      </div>
+                      <span
+                        className={`text-[11px] sm:text-xs leading-tight transition-colors line-clamp-2 max-w-[82px] sm:max-w-[92px] ${
+                          isSubSelected
+                            ? "font-bold text-[#FF7A00]"
+                            : "font-semibold text-gray-700 group-hover:text-[#FF7A00]"
+                        }`}
+                      >
+                        {subcat}
+                      </span>
+                    </button>
+                  );
+                })}
+              </>
+            ) : (
+              /* All Products view: display home page style category cards */
+              dynamicCategories
+                .filter((c) => c.active !== false && c.showInPills !== false)
+                .map((cat) => {
+                  const isCatAll = cat.id === "all" || (cat.name && cat.name.toLowerCase() === "all categories");
+                  const isCatSelected = isCatAll; // When on All Products view, "All Categories" is active
+                  const catShape = cat.iconShape === "square" ? "rounded-2xl sm:rounded-[20px]" : "rounded-full";
+                  const bgColor = cat.bgColor || (isCatAll ? "bg-[#EEF2FF]" : "bg-orange-50");
+                  const iconColor = cat.iconColor || (isCatAll ? "text-[#3B82F6]" : "text-[#FF7A00]");
+
+                  return (
+                    <button
+                      key={cat.id || cat.name}
+                      type="button"
+                      onClick={() => handleCategorySelect(isCatAll ? "All" : (cat.slug || cat.name))}
+                      className="flex flex-col items-center flex-shrink-0 group text-center min-w-[72px] sm:min-w-[84px] cursor-pointer"
+                    >
+                      <div
+                        className={`w-14 h-14 sm:w-16 sm:h-16 ${catShape} ${bgColor} ${iconColor} flex items-center justify-center transition-all duration-200 mb-1.5 overflow-hidden ${
+                          isCatSelected
+                            ? "ring-2 ring-[#FF7A00] ring-offset-2 ring-offset-[#F3F4F6] border-2 border-[#FF7A00] shadow-md shadow-[#FF7A00]/25 scale-105"
+                            : "border border-transparent group-hover:scale-105 group-hover:shadow-sm"
+                        }`}
+                      >
+                        {renderIconOrCustom({
+                          iconName: cat.icon,
+                          customIcon: cat.customIcon,
+                          iconSize: cat.iconSize || 85,
+                          fallbackName: cat.name,
+                        })}
+                      </div>
+                      <span
+                        className={`text-[11px] sm:text-xs leading-tight transition-colors line-clamp-2 max-w-[82px] sm:max-w-[92px] ${
+                          isCatSelected
+                            ? "font-bold text-[#FF7A00]"
+                            : "font-semibold text-gray-700 group-hover:text-[#FF7A00]"
+                        }`}
+                      >
+                        {cat.name}
+                      </span>
+                    </button>
+                  );
+                })
             )}
+          </div>
+        </div>
+
+        {/* Controls Bar: Results Count, Sort & Mobile Filters */}
+        <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4 lg:mb-5">
+          <div className="text-xs sm:text-sm font-semibold text-gray-500">
+            Showing <span className="font-bold text-gray-900">{filteredProducts.length}</span> {filteredProducts.length === 1 ? "product" : "products"}
           </div>
 
           {/* Sort & Mobile Filter Toggle */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 ml-auto">
             <button
               onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
-              className="lg:hidden flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-[#2D3436] shadow-sm hover:bg-gray-50 cursor-pointer"
+              className="lg:hidden flex items-center gap-2 px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-[#2D3436] shadow-sm hover:bg-gray-50 cursor-pointer"
             >
               <SlidersHorizontal className="w-3.5 h-3.5 text-[#FF7A00]" />
               <span>Filters</span>

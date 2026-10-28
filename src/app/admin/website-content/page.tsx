@@ -54,6 +54,11 @@ import { HeroBannerSlide, StoreCategory } from "@/lib/storeContent";
 import { getSubcategoriesForCategory } from "@/data/zupeProducts";
 import { PromoCardsCustomizer } from "@/components/admin/PromoCardsCustomizer";
 import { ShowcaseCollectionsCustomizer } from "@/components/admin/ShowcaseCollectionsCustomizer";
+import {
+  AVAILABLE_CATEGORY_ICONS,
+  getSubcategoryFallbackIcon,
+  renderIconOrCustom,
+} from "@/components/CategoryPills";
 
 const IMAGE_PRESETS = [
   { label: "🔥 Mega Sale Poster", url: "/banners/banner-mega-sale.jpg" },
@@ -148,6 +153,7 @@ export default function WebsiteContentPage() {
   const [categoryIconTab, setCategoryIconTab] = useState<"presets" | "custom">("presets");
   const [applyShapeToAll, setApplyShapeToAll] = useState(false);
   const [newSubcategoryInput, setNewSubcategoryInput] = useState("");
+  const [newSubcategoryIcon, setNewSubcategoryIcon] = useState("Smartphone");
   const [categoryForm, setCategoryForm] = useState({
     name: "",
     slug: "",
@@ -162,6 +168,7 @@ export default function WebsiteContentPage() {
     showInCollections: true,
     active: true,
     subcategories: [] as string[],
+    subcategoryIcons: {} as Record<string, string>,
   });
 
   // Delete confirmation modal state
@@ -435,8 +442,10 @@ export default function WebsiteContentPage() {
       showInCollections: true,
       active: true,
       subcategories: [],
+      subcategoryIcons: {},
     });
     setNewSubcategoryInput("");
+    setNewSubcategoryIcon("Smartphone");
     setCategoryModalOpen(true);
   };
 
@@ -447,6 +456,13 @@ export default function WebsiteContentPage() {
     const existingSubs = Array.isArray(c.subcategories) && c.subcategories.length > 0
       ? [...c.subcategories]
       : getSubcategoriesForCategory(c.name) || [];
+
+    const existingIcons: Record<string, string> = { ...(c.subcategoryIcons || {}) };
+    for (const sub of existingSubs) {
+      if (!existingIcons[sub]) {
+        existingIcons[sub] = getSubcategoryFallbackIcon(sub);
+      }
+    }
 
     setCategoryForm({
       name: c.name,
@@ -462,8 +478,10 @@ export default function WebsiteContentPage() {
       showInCollections: c.showInCollections !== false,
       active: c.active !== false,
       subcategories: existingSubs,
+      subcategoryIcons: existingIcons,
     });
     setNewSubcategoryInput("");
+    setNewSubcategoryIcon("Smartphone");
     setCategoryModalOpen(true);
   };
 
@@ -508,17 +526,37 @@ export default function WebsiteContentPage() {
       showToast("error", `Subcategory "${trimmed}" is already added`);
       return;
     }
+    const iconToUse = newSubcategoryIcon || getSubcategoryFallbackIcon(trimmed);
     setCategoryForm((prev) => ({
       ...prev,
       subcategories: [...prev.subcategories, trimmed],
+      subcategoryIcons: {
+        ...(prev.subcategoryIcons || {}),
+        [trimmed]: iconToUse,
+      },
     }));
     setNewSubcategoryInput("");
   };
 
   const handleRemoveSubcategory = (subToRemove: string) => {
+    setCategoryForm((prev) => {
+      const updatedIcons = { ...(prev.subcategoryIcons || {}) };
+      delete updatedIcons[subToRemove];
+      return {
+        ...prev,
+        subcategories: prev.subcategories.filter((s) => s !== subToRemove),
+        subcategoryIcons: updatedIcons,
+      };
+    });
+  };
+
+  const handleSubcategoryIconChange = (subcat: string, newIcon: string) => {
     setCategoryForm((prev) => ({
       ...prev,
-      subcategories: prev.subcategories.filter((s) => s !== subToRemove),
+      subcategoryIcons: {
+        ...(prev.subcategoryIcons || {}),
+        [subcat]: newIcon,
+      },
     }));
   };
 
@@ -529,9 +567,16 @@ export default function WebsiteContentPage() {
       return;
     }
     const combined = Array.from(new Set([...categoryForm.subcategories, ...defaults]));
+    const updatedIcons: Record<string, string> = { ...(categoryForm.subcategoryIcons || {}) };
+    for (const sub of combined) {
+      if (!updatedIcons[sub]) {
+        updatedIcons[sub] = getSubcategoryFallbackIcon(sub);
+      }
+    }
     setCategoryForm((prev) => ({
       ...prev,
       subcategories: combined,
+      subcategoryIcons: updatedIcons,
     }));
     showToast("success", `Loaded preset subcategories for ${categoryForm.name || "category"}`);
   };
@@ -1155,14 +1200,20 @@ export default function WebsiteContentPage() {
                                         }
                                         return (
                                           <>
-                                            {subs.slice(0, 3).map((sub) => (
-                                              <span
-                                                key={sub}
-                                                className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium"
-                                              >
-                                                {sub}
-                                              </span>
-                                            ))}
+                                            {subs.slice(0, 3).map((sub) => {
+                                              const subIcon = cat.subcategoryIcons?.[sub] || getSubcategoryFallbackIcon(sub);
+                                              return (
+                                                <span
+                                                  key={sub}
+                                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium"
+                                                >
+                                                  <span className="w-2.5 h-2.5 inline-flex items-center justify-center text-slate-500">
+                                                    {renderIconOrCustom({ iconName: subIcon, fallbackName: sub, iconSize: 70 })}
+                                                  </span>
+                                                  <span>{sub}</span>
+                                                </span>
+                                              );
+                                            })}
                                             {subs.length > 3 && (
                                               <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-orange-50 text-[#FF7A00] text-[10px] font-bold">
                                                 +{subs.length - 3} more
@@ -2087,7 +2138,7 @@ export default function WebsiteContentPage() {
                       Subcategories ({categoryForm.subcategories.length})
                     </label>
                     <p className="text-[10px] text-slate-500">
-                      Add subcategories that will appear live as filter pills under this category.
+                      Add subcategories with icons that will appear live as filter cards under this category.
                     </p>
                   </div>
                   <button
@@ -2099,21 +2150,38 @@ export default function WebsiteContentPage() {
                   </button>
                 </div>
 
-                {/* Subcategory Input + Add Button */}
+                {/* Subcategory Input + Icon Picker + Add Button */}
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
                     value={newSubcategoryInput}
-                    onChange={(e) => setNewSubcategoryInput(e.target.value)}
+                    onChange={(e) => {
+                      setNewSubcategoryInput(e.target.value);
+                      if (e.target.value.trim()) {
+                        setNewSubcategoryIcon(getSubcategoryFallbackIcon(e.target.value.trim()));
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
                         handleAddSubcategory();
                       }
                     }}
-                    placeholder="Type subcategory & press Enter or Add..."
+                    placeholder="Type subcategory name (e.g. Mobile & Charging)..."
                     className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   />
+                  <select
+                    value={newSubcategoryIcon}
+                    onChange={(e) => setNewSubcategoryIcon(e.target.value)}
+                    className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-2.5 py-2 focus:outline-none focus:border-[#FF7A00] cursor-pointer"
+                    title="Choose icon for new subcategory"
+                  >
+                    {AVAILABLE_CATEGORY_ICONS.map((iconName) => (
+                      <option key={iconName} value={iconName}>
+                        {iconName}
+                      </option>
+                    ))}
+                  </select>
                   <button
                     type="button"
                     onClick={handleAddSubcategory}
@@ -2124,25 +2192,53 @@ export default function WebsiteContentPage() {
                   </button>
                 </div>
 
-                {/* Subcategories Pills List */}
+                {/* Subcategories List with Icon Previews and Dropdown Selectors */}
                 {categoryForm.subcategories.length > 0 ? (
-                  <div className="flex flex-wrap gap-1.5 p-2 bg-white rounded-xl border border-slate-200/80 min-h-[42px] max-h-36 overflow-y-auto">
-                    {categoryForm.subcategories.map((sub) => (
-                      <span
-                        key={sub}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-50 border border-orange-200/60 text-xs font-semibold text-[#FF7A00] shadow-2xs group"
-                      >
-                        <span>{sub}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveSubcategory(sub)}
-                          className="text-orange-400 hover:text-red-600 p-0.5 rounded transition-colors cursor-pointer"
-                          title="Remove subcategory"
+                  <div className="space-y-1.5 p-2 bg-white rounded-xl border border-slate-200/80 min-h-[48px] max-h-48 overflow-y-auto">
+                    {categoryForm.subcategories.map((sub) => {
+                      const currentIcon = categoryForm.subcategoryIcons?.[sub] || getSubcategoryFallbackIcon(sub);
+                      return (
+                        <div
+                          key={sub}
+                          className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-slate-50/70 border border-slate-200/60 hover:border-[#FF7A00]/40 transition-colors"
                         >
-                          <X className="w-3 h-3 stroke-[2.5]" />
-                        </button>
-                      </span>
-                    ))}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="w-6 h-6 rounded-md bg-orange-50 text-[#FF7A00] flex items-center justify-center shrink-0 border border-orange-200/50">
+                              {renderIconOrCustom({
+                                iconName: currentIcon,
+                                fallbackName: sub,
+                                iconSize: 75,
+                              })}
+                            </div>
+                            <span className="text-xs font-bold text-slate-800 truncate">{sub}</span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <select
+                              value={currentIcon}
+                              onChange={(e) => handleSubcategoryIconChange(sub, e.target.value)}
+                              className="text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg px-2 py-0.5 focus:outline-none focus:border-[#FF7A00] cursor-pointer"
+                              title="Change subcategory icon"
+                            >
+                              {AVAILABLE_CATEGORY_ICONS.map((iconName) => (
+                                <option key={iconName} value={iconName}>
+                                  {iconName}
+                                </option>
+                              ))}
+                            </select>
+
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSubcategory(sub)}
+                              className="text-slate-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-colors cursor-pointer"
+                              title="Remove subcategory"
+                            >
+                              <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="p-3 bg-white/60 rounded-xl border border-dashed border-slate-200 text-center">

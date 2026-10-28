@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
       showInCollections,
       active,
       subcategories,
+      subcategoryIcons,
     } = body;
 
     if (!name || !name.trim()) {
@@ -99,6 +100,7 @@ export async function POST(req: NextRequest) {
       order: current.length + 1,
       active: active !== false,
       subcategories: cleanSubcategories,
+      subcategoryIcons: subcategoryIcons && typeof subcategoryIcons === "object" ? subcategoryIcons : {},
     };
 
     const updated = await saveCategories([...current, newCategory]);
@@ -140,6 +142,7 @@ export async function PUT(req: NextRequest) {
         subcategories: Array.isArray(cat.subcategories)
           ? Array.from(new Set(cat.subcategories.map((s: any) => String(s).trim()).filter(Boolean)))
           : [],
+        subcategoryIcons: cat.subcategoryIcons && typeof cat.subcategoryIcons === "object" ? cat.subcategoryIcons : {},
       }));
       const updated = await saveCategories(sanitized);
       return NextResponse.json({ success: true, categories: updated });
@@ -169,6 +172,16 @@ export async function PUT(req: NextRequest) {
       updates.subcategories = Array.from(
         new Set(updates.subcategories.map((s: any) => String(s).trim()).filter(Boolean))
       );
+    }
+
+    if (updates.subcategoryIcons && typeof updates.subcategoryIcons === "object") {
+      const cleanIcons: Record<string, string> = {};
+      for (const [subKey, subVal] of Object.entries(updates.subcategoryIcons)) {
+        if (typeof subVal === "string" && !subVal.startsWith("data:")) {
+          cleanIcons[subKey] = subVal;
+        }
+      }
+      updates.subcategoryIcons = cleanIcons;
     }
 
     // If applyShapeToAll is true, apply the selected shape to ALL categories

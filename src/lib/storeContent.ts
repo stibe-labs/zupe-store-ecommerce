@@ -40,6 +40,7 @@ export interface StoreCategory {
   order?: number;
   active: boolean;
   subcategories?: string[]; // Subcategories under this main category
+  subcategoryIcons?: Record<string, string>; // Subcategory name -> icon name or custom image URL
 }
 
 export const DEFAULT_HERO_BANNERS: HeroBannerSlide[] = [
@@ -100,6 +101,7 @@ export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
     iconShape: "round",
     iconSize: 85,
     subcategories: [],
+    subcategoryIcons: {},
   },
   {
     id: "tech-gadgets",
@@ -119,6 +121,12 @@ export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
       "Gaming",
       "Computer & Accessories",
     ],
+    subcategoryIcons: {
+      "Mobile & Charging": "Smartphone",
+      "Smart Tech & Audio": "Headphones",
+      "Gaming": "Gamepad2",
+      "Computer & Accessories": "Laptop",
+    },
   },
   {
     id: "home-essentials",
@@ -137,6 +145,11 @@ export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
       "Cleaning & Organization",
       "Home Comfort & Utility",
     ],
+    subcategoryIcons: {
+      "Kitchen & Dining": "UtensilsCrossed",
+      "Cleaning & Organization": "Sparkles",
+      "Home Comfort & Utility": "Armchair",
+    },
   },
   {
     id: "personal-care",
@@ -155,6 +168,11 @@ export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
       "Massage & Wellness",
       "Women's Care",
     ],
+    subcategoryIcons: {
+      "Grooming & Care": "Scissors",
+      "Massage & Wellness": "HeartPulse",
+      "Women's Care": "Sparkles",
+    },
   },
   {
     id: "auto-essentials",
@@ -172,6 +190,10 @@ export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
       "Car Care",
       "Car Accessories",
     ],
+    subcategoryIcons: {
+      "Car Care": "Car",
+      "Car Accessories": "Compass",
+    },
   },
   {
     id: "fitness-wellness",
@@ -189,6 +211,10 @@ export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
       "Fitness Accessories",
       "Recovery & Wellness",
     ],
+    subcategoryIcons: {
+      "Fitness Accessories": "Dumbbell",
+      "Recovery & Wellness": "HeartPulse",
+    },
   },
   {
     id: "kids-fun",
@@ -206,6 +232,10 @@ export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
       "Toys & Games",
       "Fun & Entertainment",
     ],
+    subcategoryIcons: {
+      "Toys & Games": "Gamepad2",
+      "Fun & Entertainment": "PartyPopper",
+    },
   },
   {
     id: "deals-offers",
@@ -223,6 +253,10 @@ export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
       "Flash Deals",
       "Curated Offers",
     ],
+    subcategoryIcons: {
+      "Flash Deals": "Zap",
+      "Curated Offers": "Tag",
+    },
   },
 ];
 
@@ -318,16 +352,26 @@ export async function getCategories(includeInactive = false): Promise<StoreCateg
               iconShape: "round",
               iconSize: 85,
               subcategories: [],
+              subcategoryIcons: {},
             };
             parsed.unshift(allCat);
           }
           // Strip giant base64 data URLs to prevent burning Worker CPU time (Cloudflare 10ms limit)
-          const sanitized = parsed.map((c: any) => ({
-            ...c,
-            customIcon: typeof c.customIcon === "string" && c.customIcon.startsWith("data:")
-              ? undefined
-              : c.customIcon,
-          }));
+          const sanitized = parsed.map((c: any) => {
+            const defaultCat = DEFAULT_STORE_CATEGORIES.find(
+              (dc) => dc.id === c.id || (dc.name && c.name && dc.name.toLowerCase() === c.name.toLowerCase())
+            );
+            return {
+              ...c,
+              subcategoryIcons: {
+                ...(defaultCat?.subcategoryIcons || {}),
+                ...(c.subcategoryIcons || {}),
+              },
+              customIcon: typeof c.customIcon === "string" && c.customIcon.startsWith("data:")
+                ? undefined
+                : c.customIcon,
+            };
+          });
           inMemoryCategories = sanitized;
         }
       }

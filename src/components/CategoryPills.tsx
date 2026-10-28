@@ -18,6 +18,22 @@ import {
   Watch,
   Heart,
   Gift,
+  Laptop,
+  Compass,
+  Dumbbell,
+  PartyPopper,
+  Zap,
+  Activity,
+  HeartPulse,
+  Scissors,
+  Sun,
+  Flame,
+  Shield,
+  Palette,
+  BatteryCharging,
+  Smile,
+  IndianRupee,
+  ShoppingBag,
 } from "lucide-react";
 import { StoreCategory, CategoryIconShape } from "@/lib/storeContent";
 
@@ -31,7 +47,7 @@ export interface CategoryItem {
   icon: React.ReactNode;
 }
 
-const ICON_MAP: Record<string, React.ReactNode> = {
+export const ICON_MAP: Record<string, React.ReactNode> = {
   Armchair: <Armchair className="w-5 h-5 sm:w-6 sm:h-6" />,
   Headphones: <Headphones className="w-5 h-5 sm:w-6 sm:h-6" />,
   Sparkles: <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />,
@@ -47,7 +63,105 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   Watch: <Watch className="w-5 h-5 sm:w-6 sm:h-6" />,
   Heart: <Heart className="w-5 h-5 sm:w-6 sm:h-6" />,
   Gift: <Gift className="w-5 h-5 sm:w-6 sm:h-6" />,
+  Laptop: <Laptop className="w-5 h-5 sm:w-6 sm:h-6" />,
+  Compass: <Compass className="w-5 h-5 sm:w-6 sm:h-6" />,
+  Dumbbell: <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6" />,
+  PartyPopper: <PartyPopper className="w-5 h-5 sm:w-6 sm:h-6" />,
+  Zap: <Zap className="w-5 h-5 sm:w-6 sm:h-6" />,
+  Activity: <Activity className="w-5 h-5 sm:w-6 sm:h-6" />,
+  HeartPulse: <HeartPulse className="w-5 h-5 sm:w-6 sm:h-6" />,
+  Scissors: <Scissors className="w-5 h-5 sm:w-6 sm:h-6" />,
+  Sun: <Sun className="w-5 h-5 sm:w-6 sm:h-6" />,
+  Flame: <Flame className="w-5 h-5 sm:w-6 sm:h-6" />,
+  Shield: <Shield className="w-5 h-5 sm:w-6 sm:h-6" />,
+  Palette: <Palette className="w-5 h-5 sm:w-6 sm:h-6" />,
+  BatteryCharging: <BatteryCharging className="w-5 h-5 sm:w-6 sm:h-6" />,
+  Smile: <Smile className="w-5 h-5 sm:w-6 sm:h-6" />,
+  IndianRupee: <IndianRupee className="w-5 h-5 sm:w-6 sm:h-6" />,
+  ShoppingBag: <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />,
 };
+
+export const AVAILABLE_CATEGORY_ICONS: string[] = [
+  "LayoutGrid",
+  "Headphones",
+  "Armchair",
+  "Sparkles",
+  "Leaf",
+  "Car",
+  "Gamepad2",
+  "Tag",
+  "Smartphone",
+  "Laptop",
+  "UtensilsCrossed",
+  "Scissors",
+  "HeartPulse",
+  "Compass",
+  "Dumbbell",
+  "PartyPopper",
+  "Zap",
+  "Gift",
+  "Watch",
+  "Heart",
+  "Sun",
+  "Flame",
+  "Shield",
+  "Palette",
+  "Activity",
+  "BatteryCharging",
+  "Smile",
+  "IndianRupee",
+  "ShoppingBag",
+];
+
+export function getSubcategoryFallbackIcon(subcatName: string): string {
+  const lower = subcatName.toLowerCase();
+  if (lower.includes("phone") || lower.includes("mobile") || lower.includes("charg")) return "Smartphone";
+  if (lower.includes("audio") || lower.includes("sound") || lower.includes("headphone") || lower.includes("ear")) return "Headphones";
+  if (lower.includes("game") || lower.includes("gaming") || lower.includes("toy")) return "Gamepad2";
+  if (lower.includes("laptop") || lower.includes("computer") || lower.includes("pc")) return "Laptop";
+  if (lower.includes("kitchen") || lower.includes("dining") || lower.includes("cook")) return "UtensilsCrossed";
+  if (lower.includes("clean") || lower.includes("organ") || lower.includes("beauty") || lower.includes("women")) return "Sparkles";
+  if (lower.includes("comfort") || lower.includes("home") || lower.includes("utility")) return "Armchair";
+  if (lower.includes("groom") || lower.includes("care") || lower.includes("hair") || lower.includes("trim")) return "Scissors";
+  if (lower.includes("massage") || lower.includes("therapy") || lower.includes("wellness") || lower.includes("health")) return "HeartPulse";
+  if (lower.includes("car") || lower.includes("auto")) return "Car";
+  if (lower.includes("fit") || lower.includes("gym") || lower.includes("exercise")) return "Dumbbell";
+  if (lower.includes("fun") || lower.includes("party")) return "PartyPopper";
+  if (lower.includes("flash") || lower.includes("deal") || lower.includes("offer") || lower.includes("sale")) return "Zap";
+  return "Tag";
+}
+
+export function renderIconOrCustom({
+  iconName,
+  customIcon,
+  iconSize = 85,
+  fallbackName = "",
+}: {
+  iconName?: string;
+  customIcon?: string;
+  iconSize?: number;
+  fallbackName?: string;
+}): React.ReactNode {
+  if (customIcon && typeof customIcon === "string" && customIcon.trim()) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={customIcon}
+        alt=""
+        style={{
+          width: `${iconSize}%`,
+          height: `${iconSize}%`,
+        }}
+        className="object-contain transition-transform duration-300"
+      />
+    );
+  }
+
+  const effectiveIcon = iconName || (fallbackName ? getSubcategoryFallbackIcon(fallbackName) : "Tag");
+  const node = ICON_MAP[effectiveIcon];
+  if (node) return node;
+  return getIconForCategory(fallbackName || effectiveIcon);
+}
 
 function getIconForCategory(name: string) {
   const lower = name.toLowerCase();

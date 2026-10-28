@@ -946,7 +946,7 @@ export const CATEGORY_SUBCATEGORIES_MAP: Record<string, string[]> = {
 };
 
 export function getSubcategoriesForCategory(categoryName: string, dynamicCategories?: any[]): string[] {
-  if (!categoryName || categoryName.toLowerCase() === "all") return [];
+  if (!categoryName || categoryName.toLowerCase() === "all" || categoryName.toLowerCase() === "all categories") return [];
   const lower = categoryName.trim().toLowerCase();
 
   // 1. Check dynamicCategories if provided
@@ -974,7 +974,7 @@ export function getSubcategoriesForCategory(categoryName: string, dynamicCategor
 }
 
 export function doesCategoryMatch(productCategory: string, selectedCategory: string, dynamicCategories?: any[]): boolean {
-  if (!selectedCategory || selectedCategory.toLowerCase() === "all") return true;
+  if (!selectedCategory || selectedCategory.toLowerCase() === "all" || selectedCategory.toLowerCase() === "all categories") return true;
   if (!productCategory) return false;
   const pLower = productCategory.trim().toLowerCase();
   const sLower = selectedCategory.trim().toLowerCase();
