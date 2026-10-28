@@ -57,13 +57,13 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-2 space-y-5">
             <Link href="/" className="inline-flex items-center gap-3.5 group">
-              <div className="relative h-12 w-16 sm:w-20 flex items-center justify-center rounded-xl bg-white/5 p-1 border border-white/10 backdrop-blur-sm shadow-md">
+              <div className="relative h-11 sm:h-12 w-22 sm:w-24 flex items-center justify-center shrink-0">
                 <Image
                   src="/turkiye-jam-logo.png"
                   alt="Turkiye Jam"
-                  width={140}
+                  width={160}
                   height={80}
-                  className="h-full w-auto object-contain"
+                  className="h-full w-auto object-contain drop-shadow-md group-hover:scale-105 transition-transform"
                 />
               </div>
               <div className="flex flex-col">

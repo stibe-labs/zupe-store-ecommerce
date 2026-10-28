@@ -70,7 +70,7 @@ export function Navbar() {
 
             {/* Brand Logo & Signature Wordmark */}
             <Link href="/" className="flex items-center gap-3 group" aria-label="Turkiye Jam Homepage">
-              <div className="relative h-10 w-13 sm:h-11 sm:w-15 shrink-0 overflow-hidden rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+              <div className="relative h-9 sm:h-10 w-18 sm:w-20 shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Image
                   src="/turkiye-jam-logo.png"
                   alt="Turkiye Jam Logo"
@@ -153,7 +153,7 @@ export function Navbar() {
             <div>
               <div className="flex items-center justify-between border-b border-stone-200 pb-4 mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="relative h-10 w-14 shrink-0 overflow-hidden rounded-md flex items-center justify-center">
+                  <div className="relative h-9 w-18 shrink-0 flex items-center justify-center">
                     <Image
                       src="/turkiye-jam-logo.png"
                       alt="Turkiye Jam Logo"

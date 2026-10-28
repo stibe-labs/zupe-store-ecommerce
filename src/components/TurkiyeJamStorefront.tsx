@@ -49,9 +49,14 @@ const HERO_GALLERY = [
     label: "14-Sachet Box",
   },
   {
+    src: "/tj/turkiye-jam-gallery-7.jpeg",
+    title: "Endurance & Stamina for Men",
+    label: "Vitality for Men",
+  },
+  {
     src: "/tj/turkiye-jam-gallery-5.jpeg",
-    title: "Authentic Turkiye Jam Vitality Experience",
-    label: "Vitality Experience",
+    title: "Energy & Sensitivity for Women",
+    label: "Vitality for Women",
   },
   {
     src: "/tj/turkiye-jam-gallery-3.jpeg",
