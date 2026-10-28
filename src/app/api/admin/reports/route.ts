@@ -10,7 +10,34 @@ export async function GET(req: NextRequest) {
       getRTOLedger(),
     ]);
 
-    // 1. Compute Monthly P&L Data
+    // =========================================================
+    // HELPER: Determine order fulfillment status
+    // =========================================================
+    const isOrderDelivered = (ord: any) => ord.delivery_status === "Delivered";
+    const isOrderRTO = (ord: any) =>
+      ord.delivery_status === "RTO Delivered" ||
+      ord.delivery_status === "RTO Initiated" ||
+      ord.delivery_status === "RTO In Transit" ||
+      ord.status === "Returned";
+    const isOrderCancelled = (ord: any) => ord.status === "Cancelled";
+    const isOrderDispatched = (ord: any) => !isOrderCancelled(ord); // All non-cancelled orders were shipped
+
+    // Helper to format date into "Month Year" (e.g., "October 2026")
+    const getPeriodKey = (dateStr?: string) => {
+      if (!dateStr) return "October 2026";
+      const d = new Date(dateStr.replace(" ", "T"));
+      if (isNaN(d.getTime())) return "October 2026";
+      return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    };
+
+    // =========================================================
+    // 1. MONTHLY P&L (Owner's Correct Formula)
+    //
+    // Revenue = Delivered orders' selling price ONLY
+    // COGS = Delivered orders' product cost ONLY (RTO cost recovered via supplier credit)
+    // Shipping = ALL dispatched orders (including those that become RTO)
+    // RTO Charges = Additional reverse freight surcharge
+    // =========================================================
     const monthlyMap = new Map<
       string,
       {
@@ -23,18 +50,16 @@ export async function GET(req: NextRequest) {
         other: number;
         netProfit: number;
         margin: string;
+        // Extended fields for owner's dashboard
+        totalOrders: number;
+        deliveredOrders: number;
+        rtoOrders: number;
+        totalProductInvoice: number;
+        newSupplierCredit: number;
       }
     >();
 
-    // Helper to format date into "Month Year" (e.g., "October 2026")
-    const getPeriodKey = (dateStr?: string) => {
-      if (!dateStr) return "October 2026";
-      const d = new Date(dateStr.replace(" ", "T"));
-      if (isNaN(d.getTime())) return "October 2026";
-      return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-    };
-
-    // Aggregate orders into months
+    // Aggregate orders into months using owner's formula
     for (const ord of orders) {
       const period = getPeriodKey(ord.created_at);
       if (!monthlyMap.has(period)) {
@@ -48,12 +73,44 @@ export async function GET(req: NextRequest) {
           other: 0,
           netProfit: 0,
           margin: "0.0%",
+          totalOrders: 0,
+          deliveredOrders: 0,
+          rtoOrders: 0,
+          totalProductInvoice: 0,
+          newSupplierCredit: 0,
         });
       }
       const p = monthlyMap.get(period)!;
-      p.grossSales += Number(ord.total_amount) || 0;
-      p.cogs += Number(ord.product_cost) || 0;
-      p.shipping += Number(ord.shipping_cost) || 0;
+
+      p.totalOrders += 1;
+
+      // Revenue: ONLY count delivered orders (RTO orders earned ₹0)
+      if (isOrderDelivered(ord)) {
+        p.grossSales += Number(ord.total_amount) || 0;
+        p.deliveredOrders += 1;
+      }
+
+      // COGS: ONLY deduct product cost for delivered orders
+      // RTO product cost is recovered via supplier credit, not a loss
+      if (isOrderDelivered(ord)) {
+        p.cogs += Number(ord.product_cost) || 0;
+      }
+
+      // Track total product invoice (all orders paid to supplier upfront)
+      p.totalProductInvoice += Number(ord.product_cost) || 0;
+
+      // Track RTO supplier credit earned
+      if (isOrderRTO(ord)) {
+        p.rtoOrders += 1;
+        p.newSupplierCredit += Number(ord.product_cost) || 0;
+      }
+
+      // Shipping: ALL dispatched orders pay forward shipping
+      if (isOrderDispatched(ord)) {
+        p.shipping += Number(ord.shipping_cost) || 0;
+      }
+
+      // RTO reverse freight: additional charge on RTO orders
       p.rtoCharges += Number(ord.rto_shipping_charge) || 0;
     }
 
@@ -71,6 +128,11 @@ export async function GET(req: NextRequest) {
           other: 0,
           netProfit: 0,
           margin: "0.0%",
+          totalOrders: 0,
+          deliveredOrders: 0,
+          rtoOrders: 0,
+          totalProductInvoice: 0,
+          newSupplierCredit: 0,
         });
       }
       const p = monthlyMap.get(period)!;
@@ -81,8 +143,9 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Finalize P&L rows
+    // Finalize P&L rows with owner's formula
     const plData = Array.from(monthlyMap.values()).map((row) => {
+      // Net Profit = Delivered Revenue - Delivered COGS - ALL Shipping - RTO Charges - Ad Spend - Overheads
       const net = row.grossSales - row.cogs - row.shipping - row.rtoCharges - row.adSpend - row.other;
       const margin = row.grossSales > 0 ? ((net / row.grossSales) * 100).toFixed(1) + "%" : "0.0%";
       return {
@@ -92,57 +155,95 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    // 2. Compute Product Profitability & Performance
+    // =========================================================
+    // 2. PRODUCT-WISE PROFITABILITY (Using Actual COGS)
+    // =========================================================
     const productStats = new Map<
       string,
       {
         name: string;
         sku: string;
         orders: number;
+        deliveredOrders: number;
         revenue: number;
         cogs: number;
+        shipping: number;
         netProfit: number;
         rtoCount: number;
         rtoRate: string;
+        supplierCreditEarned: number;
       }
     >();
 
     for (const ord of orders) {
-      const isRTO =
-        ord.delivery_status === "RTO Delivered" ||
-        ord.delivery_status === "RTO Initiated" ||
-        ord.status === "Returned";
+      const delivered = isOrderDelivered(ord);
+      const rto = isOrderRTO(ord);
+      const dispatched = isOrderDispatched(ord);
 
-      const items = ord.items && ord.items.length > 0 ? ord.items : [
-        { product_name: "Store Product", quantity: 1, unit_price: ord.total_amount }
-      ];
+      const items =
+        ord.items && ord.items.length > 0
+          ? ord.items
+          : [{ product_name: "Store Product", quantity: 1, unit_price: ord.total_amount }];
+
+      // Calculate order total for proportional shipping allocation
+      const orderTotal = items.reduce(
+        (sum: number, it: any) => sum + (Number(it.unit_price) || 0) * (it.quantity || 1),
+        0
+      );
+      const orderShipping = Number(ord.shipping_cost) || 0;
+      const orderRTOCharge = Number(ord.rto_shipping_charge) || 0;
+      const orderProductCost = Number(ord.product_cost) || 0;
 
       for (const it of items) {
         const pName = it.product_name || "General Product";
         const key = pName.toLowerCase().trim();
+        const qty = it.quantity || 1;
+        const itemRev = (Number(it.unit_price) || 0) * qty;
 
         if (!productStats.has(key)) {
-          const skuCode = `ZUPE-${key.substring(0, 4).toUpperCase()}-${Math.floor(10 + Math.random() * 90)}`;
+          const skuCode = `ZUPE-${key.substring(0, 4).toUpperCase()}-01`;
           productStats.set(key, {
             name: pName,
             sku: skuCode,
             orders: 0,
+            deliveredOrders: 0,
             revenue: 0,
             cogs: 0,
+            shipping: 0,
             netProfit: 0,
             rtoCount: 0,
             rtoRate: "0.0%",
+            supplierCreditEarned: 0,
           });
         }
 
         const stat = productStats.get(key)!;
-        stat.orders += it.quantity || 1;
-        const itemRev = (Number(it.unit_price) || 0) * (it.quantity || 1);
-        stat.revenue += itemRev;
-        const itemCost = Math.round(itemRev * 0.42);
-        stat.cogs += itemCost;
-        stat.netProfit += Math.round(itemRev * 0.32);
-        if (isRTO) {
+        stat.orders += qty;
+
+        // Proportional allocation of shared order-level costs to each item
+        const revenueShare = orderTotal > 0 ? itemRev / orderTotal : 1 / items.length;
+        const itemCostShare = Math.round(orderProductCost * revenueShare);
+        const itemShippingShare = Math.round(orderShipping * revenueShare);
+        const itemRTOChargeShare = Math.round(orderRTOCharge * revenueShare);
+
+        // Revenue & COGS: Only for delivered orders
+        if (delivered) {
+          stat.deliveredOrders += qty;
+          stat.revenue += itemRev;
+          stat.cogs += itemCostShare;
+          stat.netProfit += itemRev - itemCostShare - itemShippingShare;
+        } else if (rto) {
+          // RTO: Loss = forward shipping + reverse freight (product cost recovered via credit)
+          stat.netProfit -= (itemShippingShare + itemRTOChargeShare);
+          stat.supplierCreditEarned += itemCostShare;
+        }
+
+        // Shipping is paid for ALL dispatched orders
+        if (dispatched) {
+          stat.shipping += itemShippingShare;
+        }
+
+        if (rto) {
           stat.rtoCount += 1;
         }
       }
@@ -153,7 +254,9 @@ export async function GET(req: NextRequest) {
       rtoRate: p.orders > 0 ? ((p.rtoCount / p.orders) * 100).toFixed(1) + "%" : "0.0%",
     }));
 
-    // 3. Compute Real RTO Diagnostics
+    // =========================================================
+    // 3. RTO DIAGNOSTICS & COURIER ANALYSIS
+    // =========================================================
     const rtoOrders = orders.filter(
       (o) =>
         o.delivery_status === "RTO Delivered" ||
@@ -199,10 +302,10 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Recovery rate from RTO Ledger
+    // Recovery rate from Supplier Credit data
     const totalCreditsAdded = suppliers.reduce((sum, s) => sum + Number(s.total_credits_added || 0), 0);
-    const totalRTOCharge = orders.reduce((sum, o) => sum + Number(o.rto_shipping_charge || 0), 0) + (rtoOrders.length * 400);
-    const recoveryRate = totalRTOCharge > 0 ? Math.min(100, Math.round((totalCreditsAdded / totalRTOCharge) * 100)) : 95;
+    const totalRTOProductValue = rtoOrders.reduce((sum, o) => sum + Number(o.product_cost || 0), 0);
+    const recoveryRate = totalRTOProductValue > 0 ? Math.min(100, Math.round((totalCreditsAdded / totalRTOProductValue) * 100)) : 95;
 
     const courierBreakdown = Object.entries(courierDelivered).map(([courier, data]) => {
       const rtoCount = orders.filter(
@@ -226,11 +329,87 @@ export async function GET(req: NextRequest) {
       percentage: rtoOrders.length > 0 ? `${Math.round((count / rtoOrders.length) * 100)}%` : "0%",
     }));
 
-    const totalRevenue = plData.reduce((acc, r) => acc + r.grossSales, 0);
-    const totalNetProfit = plData.reduce((acc, r) => acc + r.netProfit, 0);
+    // =========================================================
+    // 4. SUMMARY KPIs (Owner's Correct Method)
+    // =========================================================
+    const deliveredOrders = orders.filter(isOrderDelivered);
+    const dispatchedOrders = orders.filter(isOrderDispatched);
+
+    // Revenue = Delivered orders only
+    const totalRevenue = deliveredOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+    // COGS = Delivered orders' product cost only
+    const totalDeliveredCOGS = deliveredOrders.reduce((sum, o) => sum + (Number(o.product_cost) || 0), 0);
+    // Shipping = ALL dispatched orders
+    const totalShipping = dispatchedOrders.reduce((sum, o) => sum + (Number(o.shipping_cost) || 0), 0);
+    // RTO reverse freight charges
+    const totalRTOCharges = orders.reduce((sum, o) => sum + (Number(o.rto_shipping_charge) || 0), 0);
+
+    // Expenses
+    const metaExpenses = expenses.filter((e) => e.category === "Meta Ads");
+    const otherExpenses = expenses.filter((e) => e.category !== "Meta Ads");
+    const totalAdSpend = metaExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    const totalOtherExpenses = otherExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+    // Net Profit = Delivered Revenue - Delivered COGS - ALL Shipping - RTO Charges - Ads - Overheads
+    const totalNetProfit = totalRevenue - totalDeliveredCOGS - totalShipping - totalRTOCharges - totalAdSpend - totalOtherExpenses;
     const avgMargin = totalRevenue > 0 ? ((totalNetProfit / totalRevenue) * 100).toFixed(1) + "%" : "0.0%";
 
-    // 4. Compute Order-Wise Unit Economics Report
+    // ROAS & CPA
+    const overallROAS = totalAdSpend > 0 ? (totalRevenue / totalAdSpend).toFixed(2) + "x" : (totalRevenue > 0 ? "Organic" : "0.00x");
+    const avgCPA = orders.length > 0 && totalAdSpend > 0 ? Math.round(totalAdSpend / orders.length) : 0;
+
+    // =========================================================
+    // 5. CASH FLOW CALCULATION (Owner's Requirement)
+    //
+    // Cash Inflow = Actual money received (Prepaid settled + COD remitted)
+    // Cash Outflow = Total product invoice + ALL shipping + RTO charges + Ads + Overheads
+    // Net Cash Flow = Cash Inflow - Cash Outflow
+    // =========================================================
+    
+    // Cash Inflow: Only money actually received
+    const prepaidSettled = deliveredOrders
+      .filter((o) => o.payment_method !== "COD" && (o.payment_status === "Completed" || o.payment_status === "Settled"))
+      .reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
+    const codRemitted = deliveredOrders
+      .filter((o) => o.payment_method === "COD" && (o.remittance_status === "Remitted" || o.remittance_status === "Settled"))
+      .reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
+    const codPendingRemittance = deliveredOrders
+      .filter((o) => o.payment_method === "COD" && o.remittance_status === "Pending")
+      .reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
+    const totalCashInflow = prepaidSettled + codRemitted;
+
+    // Cash Outflow: ALL money paid out
+    // Product invoice = ALL orders (you pay supplier for all products upfront, including RTO ones)
+    const totalProductInvoice = orders.reduce((s, o) => s + (Number(o.product_cost) || 0), 0);
+    const totalShippingPaid = totalShipping;
+    const totalRTOChargesPaid = totalRTOCharges;
+    const totalCashOutflow = totalProductInvoice + totalShippingPaid + totalRTOChargesPaid + totalAdSpend + totalOtherExpenses;
+
+    const netCashFlow = totalCashInflow - totalCashOutflow;
+
+    // =========================================================
+    // 6. SUPPLIER CREDIT CALCULATION (Owner's Requirement)
+    //
+    // Ending Credit = Opening Credit + New Eligible RTO Credit - Credit Used
+    // =========================================================
+    const totalCreditsUsed = suppliers.reduce((sum, s) => sum + Number(s.total_credits_used || 0), 0);
+    const availableBalance = suppliers.reduce((sum, s) => sum + Number(s.available_rto_balance || 0), 0);
+    const pendingCredits = suppliers.reduce((sum, s) => sum + Number(s.pending_credits || 0), 0);
+    
+    // New RTO credit earned = product cost of RTO orders (supplier gives credit for returned items)
+    const newRTOCreditEarned = rtoOrders.reduce((sum, o) => sum + (Number(o.product_cost) || 0), 0);
+
+    const supplierCredit = {
+      totalCreditsAdded,
+      totalCreditsUsed,
+      availableBalance,
+      pendingCredits,
+      newRTOCreditEarned,
+    };
+
+    // =========================================================
+    // 7. ORDER-WISE UNIT ECONOMICS (Owner's Correct Method)
+    // =========================================================
     const orderWiseData = orders.map((ord) => {
       const sellingPrice = Number(ord.total_amount) || 0;
       const cogs = Number(ord.product_cost) || 0;
@@ -238,22 +417,22 @@ export async function GET(req: NextRequest) {
       const rtoShipping = Number(ord.rto_shipping_charge) || 0;
       const adSpend = Number(ord.ad_spend_attributed) || 0;
 
-      const isRTO =
-        ord.delivery_status === "RTO Delivered" ||
-        ord.delivery_status === "RTO Initiated" ||
-        ord.delivery_status === "RTO In Transit" ||
-        ord.status === "Returned";
-      const isDelivered = ord.delivery_status === "Delivered";
-      const isCancelled = ord.status === "Cancelled";
+      const delivered = isOrderDelivered(ord);
+      const rto = isOrderRTO(ord);
+      const cancelled = isOrderCancelled(ord);
 
       let netProfit = 0;
-      if (isDelivered) {
+      if (delivered) {
+        // Delivered: Revenue - COGS - Shipping - Ad Spend
         netProfit = sellingPrice - cogs - shipping - adSpend;
-      } else if (isRTO) {
+      } else if (rto) {
+        // RTO: Loss = Forward shipping + Reverse freight + Ad spend (product cost recovered via credit)
         netProfit = 0 - shipping - rtoShipping - adSpend;
-      } else if (isCancelled) {
+      } else if (cancelled) {
+        // Cancelled before dispatch: No cost incurred
         netProfit = 0;
       } else {
+        // In Transit / Processing: Tentative profit (delivery pending)
         netProfit = sellingPrice - cogs - shipping - adSpend;
       }
 
@@ -280,10 +459,9 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    // 5. Compute Ad Spend & ROAS Report
-    const metaExpenses = expenses.filter((e) => e.category === "Meta Ads");
-    const totalAdSpend = metaExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-
+    // =========================================================
+    // 8. AD SPEND & ROAS REPORT
+    // =========================================================
     const adMap = new Map<string, { date: string; spend: number; notes: string }>();
     for (const exp of metaExpenses) {
       const d = exp.date ? exp.date.split(" ")[0] : "2026-10-01";
@@ -311,11 +489,12 @@ export async function GET(req: NextRequest) {
 
         const dateOrders = orders.filter((o) => (o.created_at || "").startsWith(dateStr));
         const ordersCount = dateOrders.length;
-        const deliveredOrders = dateOrders.filter((o) => o.delivery_status === "Delivered");
+        const dateDelivered = dateOrders.filter(isOrderDelivered);
+        // Use delivered revenue for ROAS (owner's preference)
         const grossRev = dateOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
-        const deliveredRev = deliveredOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+        const deliveredRev = dateDelivered.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
 
-        const roas = spend > 0 ? (grossRev / spend).toFixed(2) + "x" : grossRev > 0 ? "Organic" : "0.00x";
+        const roas = spend > 0 ? (deliveredRev / spend).toFixed(2) + "x" : grossRev > 0 ? "Organic" : "0.00x";
         const cpa = ordersCount > 0 && spend > 0 ? Math.round(spend / ordersCount) : 0;
         const orderNetProfits = dateOrders.reduce((sum, o) => sum + (Number(o.net_profit) || 0), 0);
 
@@ -324,7 +503,7 @@ export async function GET(req: NextRequest) {
           campaign,
           spend,
           ordersCount,
-          deliveredCount: deliveredOrders.length,
+          deliveredCount: dateDelivered.length,
           revenue: grossRev,
           deliveredRevenue: deliveredRev,
           roas,
@@ -334,18 +513,34 @@ export async function GET(req: NextRequest) {
       })
       .filter((r) => r.spend > 0 || r.ordersCount > 0);
 
-    const overallROAS = totalAdSpend > 0 ? (totalRevenue / totalAdSpend).toFixed(2) + "x" : "N/A";
-    const avgCPA = orders.length > 0 && totalAdSpend > 0 ? Math.round(totalAdSpend / orders.length) : 0;
-
+    // =========================================================
+    // 9. ASSEMBLE FINAL RESPONSE
+    // =========================================================
     const summaryKPIs = {
+      // Profit Calculation
       totalRevenue,
+      totalDeliveredCOGS,
       totalNetProfit,
       totalOrdersCount: orders.length,
+      deliveredOrdersCount: deliveredOrders.length,
       avgMargin,
       totalRTOOrders: rtoOrders.length,
       totalAdSpend,
       overallROAS,
       avgCPA,
+      totalShipping,
+      totalRTOCharges,
+      totalOtherExpenses,
+      // Cash Flow
+      cashInflow: totalCashInflow,
+      cashOutflow: totalCashOutflow,
+      netCashFlow,
+      prepaidSettled,
+      codRemitted,
+      codPendingRemittance,
+      totalProductInvoice,
+      // Supplier Credit
+      supplierCredit,
     };
 
     const rtoDiagnostics = {

@@ -1218,13 +1218,30 @@ export async function updateERPOrder(
       status: updates.status || (updates.delivery_status === "Delivered" ? "Delivered" : updates.delivery_status === "RTO Delivered" ? "Returned" : existing.status),
     };
 
-    // Recalculate profit if costs changed
+    // Recalculate profit if costs changed (Owner's correct formula)
     const total = Number(merged.total_amount) || 0;
     const prodCost = Number(merged.product_cost) || 0;
     const shipCost = Number(merged.shipping_cost) || 0;
     const rtoCharge = Number(merged.rto_shipping_charge) || 0;
     const adSpend = Number(merged.ad_spend_attributed) || 0;
-    merged.net_profit = total - prodCost - shipCost - rtoCharge - adSpend;
+    const isDelivered = merged.delivery_status === "Delivered";
+    const isRTO =
+      merged.delivery_status === "RTO Delivered" ||
+      merged.delivery_status === "RTO Initiated" ||
+      merged.delivery_status === "RTO In Transit" ||
+      merged.status === "Returned";
+    const isCancelled = merged.status === "Cancelled";
+
+    if (isDelivered) {
+      merged.net_profit = total - prodCost - shipCost - adSpend;
+    } else if (isRTO) {
+      // Owner formula: Revenue is 0, product cost is recovered via supplier credit
+      merged.net_profit = 0 - shipCost - rtoCharge - adSpend;
+    } else if (isCancelled) {
+      merged.net_profit = 0;
+    } else {
+      merged.net_profit = total - prodCost - shipCost - adSpend;
+    }
 
     inMemoryERPOrders[index] = merged;
     targetOrder = merged;
@@ -1255,7 +1272,23 @@ export async function updateERPOrder(
         const shipCost = Number(merged.shipping_cost) || 0;
         const rtoCharge = Number(merged.rto_shipping_charge) || 0;
         const adSpend = Number(merged.ad_spend_attributed) || 0;
-        merged.net_profit = total - prodCost - shipCost - rtoCharge - adSpend;
+        const isDelivered = merged.delivery_status === "Delivered";
+        const isRTO =
+          merged.delivery_status === "RTO Delivered" ||
+          merged.delivery_status === "RTO Initiated" ||
+          merged.delivery_status === "RTO In Transit" ||
+          merged.status === "Returned";
+        const isCancelled = merged.status === "Cancelled";
+
+        if (isDelivered) {
+          merged.net_profit = total - prodCost - shipCost - adSpend;
+        } else if (isRTO) {
+          merged.net_profit = 0 - shipCost - rtoCharge - adSpend;
+        } else if (isCancelled) {
+          merged.net_profit = 0;
+        } else {
+          merged.net_profit = total - prodCost - shipCost - adSpend;
+        }
 
         inMemoryERPOrders.unshift(merged);
         targetOrder = merged;
@@ -1406,6 +1439,31 @@ export async function updateERPOrder(
     }
   }
 
+  // Auto-record Supplier RTO Credit when an order status transitions to RTO Delivered
+  if (updates.delivery_status === "RTO Delivered" && targetOrder) {
+    try {
+      const orderId = targetOrder.shopify_order_id || targetOrder.id;
+      const existingEntries = await getRTOLedger(undefined, undefined, orderId);
+      const hasCredit = existingEntries.some((e) => e.order_id === orderId && e.type === "RTO Credit");
+      const rtoCost = Number(targetOrder.product_cost) || 0;
+      if (!hasCredit && rtoCost > 0) {
+        const supId = targetOrder.supplier_id || "sup-a";
+        const pName = targetOrder.items?.[0]?.product_name || "RTO Product";
+        await addRTOCredit({
+          supplier_id: supId,
+          order_id: orderId,
+          product_name: pName,
+          amount: rtoCost,
+          date: new Date().toISOString().split("T")[0],
+          status: "Credited",
+          notes: `Auto-credited upon RTO Delivered status for ${orderId}`,
+        });
+      }
+    } catch (rtoCreditErr) {
+      console.warn("Auto RTO credit error in updateERPOrder:", rtoCreditErr);
+    }
+  }
+
   return targetOrder;
 }
 
@@ -1474,13 +1532,19 @@ export async function getDashboardKPIs(
   const totalOrders = orders.length;
   const confirmedOrders = orders.filter((o) => o.status !== "Cancelled" && o.status !== "Returned").length;
   const shippedOrders = orders.filter((o) => o.delivery_status === "In Transit" || o.delivery_status === "Out for Delivery").length;
-  const deliveredOrders = orders.filter((o) => o.delivery_status === "Delivered").length;
+  const deliveredOrdList = orders.filter((o) => o.delivery_status === "Delivered");
+  const deliveredOrders = deliveredOrdList.length;
   const ndrOrders = orders.filter((o) => o.delivery_status === "NDR").length;
   const rtoOrders = orders.filter((o) => o.delivery_status === "RTO Delivered" || o.delivery_status === "RTO Initiated" || o.delivery_status === "RTO In Transit").length;
+  const isOrderDispatched = (o: any) => o.status !== "Cancelled";
 
-  const totalSales = orders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
-  const productCosts = orders.reduce((sum, o) => sum + (Number(o.product_cost) || 0), 0);
-  const shippingCosts = orders.reduce((sum, o) => sum + (Number(o.shipping_cost) || 0), 0);
+  // Owner's Preferred Formula:
+  // Revenue = Delivered orders only (RTO earned ₹0)
+  const totalSales = deliveredOrdList.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+  // COGS = Delivered orders only (RTO product cost recovered via supplier credit)
+  const productCosts = deliveredOrdList.reduce((sum, o) => sum + (Number(o.product_cost) || 0), 0);
+  // Shipping = ALL dispatched orders (forward freight paid for all)
+  const shippingCosts = orders.filter(isOrderDispatched).reduce((sum, o) => sum + (Number(o.shipping_cost) || 0), 0);
   const rtoCharges = orders.reduce((sum, o) => sum + (Number(o.rto_shipping_charge) || 0), 0);
   const adSpend = expenses.filter((e) => e.category === "Meta Ads").reduce((sum, e) => sum + Number(e.amount), 0);
   const otherExpenses = expenses.filter((e) => e.category !== "Meta Ads").reduce((sum, e) => sum + Number(e.amount), 0);
@@ -1489,6 +1553,18 @@ export async function getDashboardKPIs(
   const netProfit = grossProfit - shippingCosts - rtoCharges - adSpend - otherExpenses;
   const profitMargin = totalSales > 0 ? (netProfit / totalSales) * 100 : 0;
   const rtoPercentage = totalOrders > 0 ? (rtoOrders / totalOrders) * 100 : 0;
+
+  // Cash Flow Calculations
+  const prepaidSettled = deliveredOrdList
+    .filter((o) => (o.payment_method || "") !== "COD" && ((o.payment_status) === "Completed" || (o.payment_status) === "Settled"))
+    .reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
+  const codRemitted = deliveredOrdList
+    .filter((o) => (o.payment_method || "") === "COD" && ((o.remittance_status) === "Remitted" || (o.remittance_status) === "Settled"))
+    .reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
+  const cashInflow = prepaidSettled + codRemitted;
+  const totalProductInvoice = orders.reduce((s, o) => s + (Number(o.product_cost) || 0), 0);
+  const cashOutflow = totalProductInvoice + shippingCosts + rtoCharges + adSpend + otherExpenses;
+  const netCashFlow = cashInflow - cashOutflow;
 
   // Pending COD calculation: orders where payment_method is COD or Cash on Delivery, and remittance_status is Pending or not settled
   const pendingCODRemittance = orders
@@ -1635,6 +1711,11 @@ export async function getDashboardKPIs(
     rtoPercentage: Number(rtoPercentage.toFixed(1)),
     pendingCODRemittance,
     totalRTOBalance,
+    cashInflow,
+    cashOutflow,
+    netCashFlow,
+    prepaidSettled,
+    codRemitted,
     chartData: chartPoints,
   };
 }
