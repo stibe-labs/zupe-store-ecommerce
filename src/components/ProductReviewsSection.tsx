@@ -15,8 +15,6 @@ import {
   Upload,
   ArrowRight,
   ShieldCheck,
-  ShieldAlert,
-  Lock,
   Loader2,
   ImageIcon,
 } from "lucide-react";
@@ -55,10 +53,9 @@ export function ProductReviewsSection({
   const [sortBy, setSortBy] = useState<"newest" | "highest" | "helpful">("newest");
   const [lightboxData, setLightboxData] = useState<{ image: string; review?: ProductReview } | null>(null);
 
-  // Write Review Modal state (for direct submissions on product page)
-  const { user, openAuthModal } = useAuth();
+  // Write Review Modal state (anyone can review & rate)
+  const { user } = useAuth();
   const [writeModalOpen, setWriteModalOpen] = useState(false);
-  const [gateModalOpen, setGateModalOpen] = useState(false);
   const [checkingEligibility, setCheckingEligibility] = useState(false);
   const [verifiedOrder, setVerifiedOrder] = useState<{
     orderId: string;
@@ -165,53 +162,46 @@ export function ProductReviewsSection({
   };
 
   const handleOpenWriteReview = async () => {
-    // 1. If already verified in this session, open form directly
-    if (verifiedOrder) {
-      setWriteModalOpen(true);
-      return;
-    }
-
-    // 2. If not logged in, immediately show the clean warning alert
-    if (!user) {
-      setGateModalOpen(true);
-      return;
-    }
-
-    // 3. Automatically check if this user actually purchased this product
-    setCheckingEligibility(true);
-    try {
-      const query = new URLSearchParams({
-        productId,
-        productName: productName || "",
-        email: user.email || "",
-        phone: user.phone || "",
-      });
-
-      const res = await fetch(`/api/reviews/verify-buyer?${query.toString()}`);
-      const data = await res.json();
-
-      if (data.success && data.isVerified) {
-        // User actually purchased! Smoothly open the review form with zero interaction
-        setVerifiedOrder({
-          orderId: data.orderId,
-          customerName: data.customerName || user.name || "",
-          customerEmail: data.customerEmail || user.email || "",
-        });
-        if (data.customerName || user.name) {
-          setFormName(data.customerName || user.name || "");
-        }
-        setWriteModalOpen(true);
-        return;
-      } else {
-        // User didn't purchase -> Show clean warning alert explaining reason
-        setGateModalOpen(true);
+    // 1. If user is logged in, auto-fill name and check if they have a verified order in the background
+    if (user) {
+      if (user.name && !formName) {
+        setFormName(user.name);
+      } else if (!formName && user.email) {
+        const emailName = user.email.split("@")[0];
+        setFormName(emailName.charAt(0).toUpperCase() + emailName.slice(1));
       }
-    } catch (err) {
-      console.warn("Failed to check buyer verification:", err);
-      setGateModalOpen(true);
-    } finally {
-      setCheckingEligibility(false);
+
+      // If not yet verified in this session, try to attach their orderId
+      if (!verifiedOrder) {
+        try {
+          const query = new URLSearchParams({
+            productId,
+            productName: productName || "",
+            email: user.email || "",
+            phone: user.phone || "",
+          });
+
+          const res = await fetch(`/api/reviews/verify-buyer?${query.toString()}`);
+          const data = await res.json();
+
+          if (data.success && data.isVerified) {
+            setVerifiedOrder({
+              orderId: data.orderId,
+              customerName: data.customerName || user.name || "",
+              customerEmail: data.customerEmail || user.email || "",
+            });
+            if (data.customerName || user.name) {
+              setFormName(data.customerName || user.name || "");
+            }
+          }
+        } catch (err) {
+          console.warn("Could not check buyer verification:", err);
+        }
+      }
     }
+
+    // 2. Everyone can rate and review! Smoothly open review form without any gating popup
+    setWriteModalOpen(true);
   };
 
   const handleSubmitReview = async (e: React.FormEvent) => {
@@ -226,7 +216,7 @@ export function ProductReviewsSection({
         body: JSON.stringify({
           productId,
           orderId: verifiedOrder?.orderId,
-          userName: formName.trim() || verifiedOrder?.customerName || user?.name || "Verified Buyer",
+          userName: formName.trim() || verifiedOrder?.customerName || user?.name || "Customer",
           userEmail: verifiedOrder?.customerEmail || user?.email,
           rating: formRating,
           title: formTitle.trim(),
@@ -602,88 +592,7 @@ export function ProductReviewsSection({
         )}
       </div>
 
-      {/* ========================================================
-          MODAL: BUYER VERIFICATION GATE (ONLY VERIFIED BUYERS CAN REVIEW)
-         ======================================================== */}
-      {gateModalOpen && (
-        <div
-          data-lenis-prevent
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setGateModalOpen(false);
-          }}
-        >
-          <div
-            data-lenis-prevent
-            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative animate-scaleIn text-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setGateModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-              title="Close"
-            >
-              <X className="w-5 h-5" />
-            </button>
 
-            {/* Warning Shield Badge */}
-            <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 text-[#FF7A00] flex items-center justify-center mx-auto mb-4 shadow-xs">
-              <ShieldAlert className="w-7 h-7 stroke-[2.2]" />
-            </div>
-
-            <h3 className="text-xl font-bold text-gray-900 leading-snug">
-              Verified Purchase Required
-            </h3>
-
-            {user ? (
-              <div className="mt-3 space-y-3.5">
-                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                  You cannot submit a review for <strong className="text-gray-900">{productName}</strong> because we couldn&apos;t find a completed purchase for this item under your account.
-                </p>
-                <div className="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200/60 text-xs text-amber-900 text-left flex items-start gap-2.5">
-                  <div className="w-2 h-2 rounded-full bg-[#FF7A00] mt-1 shrink-0" />
-                  <p className="leading-relaxed">
-                    Signed in as <strong className="font-semibold">{user.email}</strong>. To guarantee 100% genuine reviews, only verified buyers who ordered this product can submit ratings &amp; feedback.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setGateModalOpen(false)}
-                  className="w-full mt-2 py-3 px-4 rounded-xl bg-[#111111] hover:bg-black active:scale-[0.98] text-white font-bold text-xs tracking-wide transition-all shadow-xs cursor-pointer"
-                >
-                  Understood
-                </button>
-              </div>
-            ) : (
-              <div className="mt-3 space-y-3.5">
-                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                  Only customers who have ordered <strong className="text-gray-900">{productName}</strong> can submit a rating and review. Please sign in to verify your purchase.
-                </p>
-                <div className="flex flex-col gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setGateModalOpen(false);
-                      openAuthModal("login", "Please sign in to verify your purchase and review");
-                    }}
-                    className="w-full py-3 px-4 rounded-xl bg-[#FF7A00] hover:bg-[#E04414] active:scale-[0.98] text-white font-bold text-xs tracking-wide transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <Lock className="w-3.5 h-3.5" />
-                    <span>Sign In to Review</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setGateModalOpen(false)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* ========================================================
           MODAL: WRITE A CUSTOMER REVIEW
