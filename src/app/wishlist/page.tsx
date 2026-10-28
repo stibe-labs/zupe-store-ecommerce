@@ -65,7 +65,7 @@ export default function WishlistPage() {
     <div className="min-h-screen bg-[#F3F4F6] text-[#111111]">
       <Navbar />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-12 sm:pb-16">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-5 sm:pt-8 pb-12 sm:pb-16">
         <div className="flex items-center justify-between mb-6 pb-3 border-b border-gray-200">
           <div>
             <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900">

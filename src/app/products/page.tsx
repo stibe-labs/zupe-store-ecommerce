@@ -459,7 +459,7 @@ function ProductsContent() {
       <Navbar />
 
       {/* Header Banner */}
-      <div className="pt-16 sm:pt-24 pb-6 sm:pb-8 bg-gradient-to-b from-[#FF7A00]/10 via-[#F3F4F6]/60 to-[#F3F4F6] border-b border-gray-100">
+      <div className="pt-3 sm:pt-5 pb-3 sm:pb-4 bg-gradient-to-b from-[#FF7A00]/10 via-[#F3F4F6]/60 to-[#F3F4F6] border-b border-gray-100">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-2 text-xs text-[#636E72] mb-2 sm:mb-3">
             <Link href="/" className="hover:text-[#FF7A00] transition-colors">
@@ -540,7 +540,7 @@ function ProductsContent() {
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-3 pb-8 sm:pt-4 sm:pb-10">
         {/* Active Filter Pill (if any) */}
         {(activeFilter || (selectedCategory !== "All" && selectedSubcategory !== "All")) && (
           <div className="flex items-center gap-2 mb-4 flex-wrap">
@@ -587,9 +587,9 @@ function ProductsContent() {
         )}
 
         {/* Category Pills & Controls Bar */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3 lg:gap-4 mb-3 sm:mb-4 lg:mb-6">
           {/* Category Tabs / Subcategory Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-1.5 scrollbar-none">
             {selectedCategory !== "All" && availableSubcategories.length > 0 ? (
               // Inside each category: display subcategories instead of repeating navbar categories
               ["All", ...availableSubcategories].map((subcat) => {

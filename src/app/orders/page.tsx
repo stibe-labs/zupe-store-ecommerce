@@ -478,7 +478,7 @@ function OrdersPageContent() {
     <div className="min-h-screen bg-[#F3F4F6] text-[#111111]">
       <Navbar />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-12 sm:pb-16">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-5 sm:pt-8 pb-12 sm:pb-16">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-3 border-b border-gray-200">
           <div>
             <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900 tracking-tight whitespace-nowrap">
