@@ -1495,34 +1495,43 @@ export async function getDashboardKPIs(
     orders = orders.filter((o) => isInCustomRange(o.created_at));
     expenses = expenses.filter((e) => isInCustomRange(e.date));
   } else if (timeframe && timeframe !== "all") {
-    const now = Date.now();
-    const oneDay = 24 * 60 * 60 * 1000;
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    const d = now.getDate();
 
-    let cutoffTime = 0;
+    let startMs = 0;
+    let endMs = Infinity;
+
     if (timeframe === "today") {
-      cutoffTime = now - oneDay;
+      startMs = new Date(y, m, d, 0, 0, 0, 0).getTime();
+      endMs = new Date(y, m, d, 23, 59, 59, 999).getTime();
     } else if (timeframe === "weekly") {
-      cutoffTime = now - 7 * oneDay;
+      const weekStart = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
+      startMs = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate(), 0, 0, 0, 0).getTime();
+      endMs = new Date(y, m, d, 23, 59, 59, 999).getTime();
     } else if (timeframe === "monthly") {
-      cutoffTime = now - 30 * oneDay;
+      startMs = new Date(y, m, 1, 0, 0, 0, 0).getTime();
+      const lastDay = new Date(y, m + 1, 0).getDate();
+      endMs = new Date(y, m, lastDay, 23, 59, 59, 999).getTime();
     } else if (timeframe === "yearly") {
-      cutoffTime = now - 365 * oneDay;
+      startMs = new Date(y, 0, 1, 0, 0, 0, 0).getTime();
+      endMs = new Date(y, 11, 31, 23, 59, 59, 999).getTime();
     }
 
-    if (cutoffTime > 0) {
-      const isAfterCutoff = (dateStr?: string) => {
+    if (startMs > 0) {
+      const isInRange = (dateStr?: string) => {
         if (!dateStr) return true;
         const t = new Date(dateStr.replace(" ", "T")).getTime();
-        return isNaN(t) || t >= cutoffTime;
+        return isNaN(t) || (t >= startMs && t <= endMs);
       };
 
-      const filteredOrders = orders.filter((o) => isAfterCutoff(o.created_at));
-      // Only apply timeframe if there are matches, otherwise fall back to all to prevent blank stats
+      const filteredOrders = orders.filter((o) => isInRange(o.created_at));
       if (filteredOrders.length > 0) {
         orders = filteredOrders;
       }
 
-      const filteredExpenses = expenses.filter((e) => isAfterCutoff(e.date));
+      const filteredExpenses = expenses.filter((e) => isInRange(e.date));
       if (filteredExpenses.length > 0) {
         expenses = filteredExpenses;
       }

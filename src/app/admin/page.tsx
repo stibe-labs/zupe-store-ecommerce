@@ -475,7 +475,7 @@ export default function AdminDashboardPage() {
               <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm hover:border-orange-300 transition-all flex flex-col justify-between">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                    Total Sales Revenue
+                    Delivered Sales Revenue
                   </span>
                   <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center">
                     <DollarSign className="w-4 h-4 stroke-[2.5]" />
@@ -487,7 +487,7 @@ export default function AdminDashboardPage() {
                   </p>
                 </div>
                 <div className="text-[11px] text-slate-500">
-                  <span>Gross sales from all orders</span>
+                  <span>Delivered orders only (Excludes RTO)</span>
                 </div>
               </div>
 
@@ -507,7 +507,7 @@ export default function AdminDashboardPage() {
                   </p>
                 </div>
                 <div className="text-[11px] text-slate-500">
-                  <span>COGS: <AnimatedCounter isCurrency value={kpis.productCosts} prefix="₹" /></span>
+                  <span>Delivered COGS: <AnimatedCounter isCurrency value={kpis.productCosts} prefix="₹" /></span>
                 </div>
               </div>
 
