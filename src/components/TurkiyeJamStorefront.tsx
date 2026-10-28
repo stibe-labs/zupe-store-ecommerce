@@ -365,7 +365,7 @@ export function TurkiyeJamStorefront() {
       {/* ─────────────────────────────────────────────────────────────
           1. FULL-SCREEN HERO SECTION (PURE IMAGE + ADD TO CART ONLY)
       ───────────────────────────────────────────────────────────── */}
-      <section className="relative w-full h-[calc(100vh-36px)] min-h-[620px] flex flex-col justify-end overflow-hidden bg-[#fabf00] text-stone-900 select-none pb-20 sm:pb-12">
+      <section className="relative w-full h-screen min-h-[620px] flex flex-col justify-end overflow-hidden bg-[#fabf00] text-stone-900 select-none pb-20 sm:pb-12">
         
         {/* Full-Screen Edge-to-Edge Campaign Images (Smooth Auto-Sliding Crossfade) */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">

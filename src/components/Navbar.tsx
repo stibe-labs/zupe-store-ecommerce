@@ -43,17 +43,8 @@ export function Navbar() {
           </div>
         </Link>
 
-        {/* Right Side: Profile & Cart Buttons ONLY */}
+        {/* Right Side: Cart Button & Profile Button (Profile on Right of Cart) */}
         <div className="flex items-center gap-2.5 sm:gap-3 pointer-events-auto shrink-0">
-          {/* User Account / Profile Button */}
-          <button
-            onClick={handleAccountClick}
-            className="p-2.5 rounded-full bg-black/60 hover:bg-black/85 backdrop-blur-md text-white border border-white/20 shadow-md transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
-            aria-label="User Account"
-          >
-            <User className="w-4 h-4 stroke-[2.2]" />
-          </button>
-
           {/* Cart Button */}
           <button
             onClick={openCart}
@@ -67,6 +58,15 @@ export function Navbar() {
                 {totalItems}
               </span>
             )}
+          </button>
+
+          {/* User Account / Profile Button (to the right of Cart) */}
+          <button
+            onClick={handleAccountClick}
+            className="p-2.5 rounded-full bg-black/60 hover:bg-black/85 backdrop-blur-md text-white border border-white/20 shadow-md transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
+            aria-label="User Account"
+          >
+            <User className="w-4 h-4 stroke-[2.2]" />
           </button>
         </div>
 
