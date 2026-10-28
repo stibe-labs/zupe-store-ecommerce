@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useEffect, useRef, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -320,8 +320,26 @@ function OrderTrackingContent() {
   const [copiedAWB, setCopiedAWB] = useState(false);
   const [copiedOrderId, setCopiedOrderId] = useState(false);
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
-  const fetchTracking = async (termToSearch: string) => {
+  const journeySectionRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToJourney = () => {
+    setTimeout(() => {
+      const el = document.getElementById("live-shipment-journey") || journeySectionRef.current;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const targetY = rect.top + scrollTop - 85;
+        window.scrollTo({
+          top: Math.max(0, targetY),
+          behavior: "smooth",
+        });
+      }
+    }, 150);
+  };
+
+  const fetchTracking = async (termToSearch: string, autoScroll = false) => {
     const trimmed = termToSearch.trim();
     if (!trimmed) {
       setErrorMessage("Please enter an Order ID, AWB number, or Phone/Email");
@@ -332,12 +350,9 @@ function OrderTrackingContent() {
     setLoading(true);
     setErrorMessage("");
     setErrorSupport(null);
-    setMatchedOrders([]);
-    setSelectedOrder(null);
-    setLiveTracking(null);
 
     try {
-      const res = await fetch(`/api/orders/track?query=${encodeURIComponent(trimmed)}`);
+      const res = await fetch(`/api/orders/track?query=${encodeURIComponent(trimmed)}&t=${Date.now()}`);
       const data = await res.json();
 
       if (data.success && Array.isArray(data.orders) && data.orders.length > 0) {
@@ -345,8 +360,23 @@ function OrderTrackingContent() {
         setSelectedOrder(data.orders[0]);
         if (data.live_tracking) {
           setLiveTracking(data.live_tracking);
+        } else {
+          setLiveTracking(null);
+        }
+        setLastUpdated(
+          new Date().toLocaleTimeString("en-IN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          })
+        );
+        if (autoScroll) {
+          scrollToJourney();
         }
       } else {
+        setMatchedOrders([]);
+        setSelectedOrder(null);
+        setLiveTracking(null);
         setErrorMessage(
           data.error || `No order found matching "${trimmed}". Please double check your order details.`
         );
@@ -365,7 +395,7 @@ function OrderTrackingContent() {
   useEffect(() => {
     if (urlQuery) {
       setInputTerm(urlQuery);
-      fetchTracking(urlQuery);
+      fetchTracking(urlQuery, typeof window !== "undefined" && window.location.hash.includes("live-shipment-journey"));
     }
   }, [urlQuery]);
 
@@ -373,14 +403,14 @@ function OrderTrackingContent() {
     e.preventDefault();
     if (inputTerm.trim()) {
       router.push(`/order-tracking?query=${encodeURIComponent(inputTerm.trim())}`);
-      fetchTracking(inputTerm.trim());
+      fetchTracking(inputTerm.trim(), true);
     }
   };
 
   const handleSelectSample = (sampleId: string) => {
     setInputTerm(sampleId);
     router.push(`/order-tracking?query=${encodeURIComponent(sampleId)}`);
-    fetchTracking(sampleId);
+    fetchTracking(sampleId, true);
   };
 
   const copyToClipboard = (text: string, type: "awb" | "id") => {
@@ -521,7 +551,7 @@ function OrderTrackingContent() {
                   {loading ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Tracking...</span>
+                      <span>Checking Status...</span>
                     </>
                   ) : (
                     <>
@@ -590,7 +620,10 @@ function OrderTrackingContent() {
                   return (
                     <button
                       key={ord.id}
-                      onClick={() => setSelectedOrder(ord)}
+                      onClick={() => {
+                        setSelectedOrder(ord);
+                        scrollToJourney();
+                      }}
                       className={`text-left p-4 rounded-2xl border transition-all ${
                         isSelected
                           ? "bg-orange-50/70 border-[#FF7A00] ring-2 ring-[#FF7A00]/20 shadow-sm"
@@ -694,10 +727,15 @@ function OrderTrackingContent() {
                           </span>
 
                           <button
-                            onClick={() => fetchTracking(selectedOrder.shopify_order_id || selectedOrder.id || inputTerm)}
+                            onClick={() =>
+                              fetchTracking(
+                                selectedOrder.shopify_order_id || selectedOrder.id || inputTerm,
+                                true
+                              )
+                            }
                             disabled={loading}
                             title="Refresh live status from Shiprocket"
-                            className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors border border-gray-200/80"
+                            className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors border border-gray-200/80 cursor-pointer"
                           >
                             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-[#FF7A00]" : ""}`} />
                           </button>
@@ -764,11 +802,23 @@ function OrderTrackingContent() {
                     })()}
 
                     {/* Step Visual Progress Bar */}
-                    <div className="p-6 sm:p-8 border-t border-gray-100">
-                      <h3 className="text-base font-bold text-gray-900 mb-6 flex items-center gap-2">
-                        <Truck className="w-5 h-5 text-[#FF7A00]" />
-                        <span>Live Shipment Journey</span>
-                      </h3>
+                    <div
+                      id="live-shipment-journey"
+                      ref={journeySectionRef}
+                      className="p-6 sm:p-8 border-t border-gray-100 scroll-mt-24"
+                    >
+                      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+                        <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                          <Truck className="w-5 h-5 text-[#FF7A00]" />
+                          <span>Live Shipment Journey</span>
+                        </h3>
+                        {lastUpdated && (
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shadow-2xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Live Status Updated • {lastUpdated}
+                          </span>
+                        )}
+                      </div>
 
                       {/* Stepper Timeline */}
                       <div className="relative pl-6 sm:pl-8 border-l-2 border-orange-200/70 space-y-8 my-4 ml-3">

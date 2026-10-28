@@ -58,21 +58,47 @@ export async function GET(req: NextRequest) {
           const { getShiprocketLiveTracking } = await import("@/lib/shiprocketService");
           liveTracking = await getShiprocketLiveTracking(awb);
           if (liveTracking?.success) {
-            if (liveTracking.delivery_status) target.delivery_status = liveTracking.delivery_status;
-            if (liveTracking.courier_name) target.courier_partner = liveTracking.courier_name;
+            let hasChanged = false;
+            const updates: Partial<ERPOrder> = {};
+            if (liveTracking.delivery_status && liveTracking.delivery_status !== target.delivery_status) {
+              target.delivery_status = liveTracking.delivery_status;
+              updates.delivery_status = liveTracking.delivery_status;
+              hasChanged = true;
+            }
+            if (liveTracking.courier_name && liveTracking.courier_name !== target.courier_partner) {
+              target.courier_partner = liveTracking.courier_name;
+              updates.courier_partner = liveTracking.courier_name;
+              hasChanged = true;
+            }
+            if (hasChanged) {
+              try {
+                const { updateERPOrder } = await import("@/lib/erpStore");
+                await updateERPOrder(target.id, updates);
+              } catch (saveErr) {
+                console.warn("Could not persist tracking update:", saveErr);
+              }
+            }
           }
         } catch (e) {
           console.warn("Live track fetch error:", e);
         }
       }
 
-      return NextResponse.json({
-        success: true,
-        source: "erp",
-        order: target,
-        orders: matchedErp,
-        live_tracking: liveTracking,
-      });
+      return NextResponse.json(
+        {
+          success: true,
+          source: "erp",
+          order: target,
+          orders: matchedErp,
+          live_tracking: liveTracking,
+          checked_at: new Date().toISOString(),
+        },
+        {
+          headers: {
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+          },
+        }
+      );
     }
 
     // 2. Check Storefront Orders Fallback
