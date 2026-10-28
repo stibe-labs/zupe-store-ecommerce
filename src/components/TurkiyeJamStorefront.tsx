@@ -244,10 +244,10 @@ Please confirm priority delivery details.`;
   return (
     <div className="relative bg-[#FAFBF9] text-[#1D2B22] overflow-hidden selection:bg-[#cb0805] selection:text-white font-sans">
       {/* ─────────────────────────────────────────────────────────────
-          1. HERO SECTION (Full-Bleed Campaign Image Background + Minimal Right-Side Purchase Card)
+          1. HERO SECTION (Split Screen: Dark Left Content + Full Right Image Slider)
       ───────────────────────────────────────────────────────────── */}
       <section
-        className="relative min-h-[660px] sm:min-h-[720px] lg:min-h-[780px] flex items-center overflow-hidden bg-stone-950 group"
+        className="relative bg-stone-950 text-white overflow-hidden"
         onMouseEnter={() => setIsSliderHovered(true)}
         onMouseLeave={() => setIsSliderHovered(false)}
       >
@@ -262,45 +262,161 @@ Please confirm priority delivery details.`;
           />
         </div>
 
-        {/* ── Background: Smooth Cross-Fade Image Slider ── */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={CAMPAIGN_HERO_SLIDES[activeHeroSlide].id}
-            initial={{ opacity: 0, scale: 1.04 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.7, ease: "easeInOut" }}
-            className="absolute inset-0 w-full h-full"
-          >
-            <Image
-              src={CAMPAIGN_HERO_SLIDES[activeHeroSlide].src}
-              alt={CAMPAIGN_HERO_SLIDES[activeHeroSlide].alt}
-              fill
-              priority
-              className="object-cover object-[30%_center] sm:object-[35%_center] lg:object-[28%_center]"
-              sizes="100vw"
-            />
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Gradient Overlays: Ensure Image is visible on left, high readability on right */}
-        <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-black/40 via-black/60 to-black/95 sm:via-40% sm:to-black/90 pointer-events-none" />
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-stone-950 via-stone-950/60 to-transparent pointer-events-none" />
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
-
-        {/* ── Hero Container ── */}
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 w-full relative z-10 py-12 sm:py-16">
-          <div className="flex flex-col lg:flex-row items-end lg:items-center justify-between gap-8 lg:gap-12">
-            
-            {/* Left Bottom Corner: Persona Badge & Slide Switcher */}
-            <div className="w-full lg:w-auto flex flex-col items-start space-y-3 order-2 lg:order-1">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white text-xs font-semibold shadow-lg">
-                <span className="text-sm">🇹🇷</span>
-                <span>Themra Turkey Certified • 48h Natural Action</span>
+        <div className="flex flex-col lg:flex-row min-h-[680px] lg:min-h-[760px] lg:h-[calc(100vh-80px)] lg:max-h-[880px] w-full">
+          
+          {/* ── LEFT HALF: Dark Background with Minimal Text & Add to Cart ── */}
+          <div className="w-full lg:w-1/2 flex items-center justify-center lg:justify-end px-6 sm:px-10 lg:px-14 xl:px-18 py-12 lg:py-16 bg-stone-950 relative z-10 order-2 lg:order-1">
+            <div className="w-full max-w-xl space-y-5 sm:space-y-6">
+              
+              {/* Top Origin & Persona Badge */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#cb0805]/15 border border-[#cb0805]/30 text-[#ff807e] text-xs font-semibold uppercase tracking-wider">
+                  <span className="w-2 h-2 rounded-full bg-[#cb0805] animate-pulse" />
+                  100% Authentic Anatolian Botanical Macun
+                </span>
+                <span className="text-xs text-stone-400 font-medium">🇹🇷 Themra Certified</span>
               </div>
 
-              {/* Persona Switcher Pills (For Her / For Him) */}
-              <div className="inline-flex p-1 rounded-full bg-black/70 backdrop-blur-md border border-white/20 shadow-xl">
+              {/* Minimal Headline */}
+              <div>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.08] font-sans">
+                  turkiye jam
+                </h1>
+                <p className="text-lg sm:text-xl font-semibold text-[#ff807e] mt-1.5">
+                  Natural Stamina &amp; Intimate Vitality
+                </p>
+              </div>
+
+              {/* Clean 2-Sentence Explanation */}
+              <p className="text-sm sm:text-base text-stone-300 leading-relaxed font-normal">
+                Handcrafted in Turkey with pure mountain blossom honey, wild Epimedium, royal jelly, and red ginseng. Formulated to naturally elevate physical endurance, stamina, and intimate vitality for both men and women without synthetic stimulants.
+              </p>
+
+              {/* Minimal Package Selector */}
+              <div className="pt-2">
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-stone-400">
+                    Select Size &amp; Package:
+                  </span>
+                  {selectedVariant.badge && (
+                    <span className="text-[11px] font-bold text-[#ff807e] bg-[#cb0805]/25 px-2.5 py-0.5 rounded-full border border-[#cb0805]/40">
+                      ★ {selectedVariant.badge}
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {TURKIYE_JAM_VARIANTS.map((v) => {
+                    const isSelected = selectedVariant.id === v.id;
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => handleSelectVariant(v)}
+                        className={`flex flex-col text-left p-2.5 rounded-xl border transition-all text-xs cursor-pointer ${
+                          isSelected
+                            ? "bg-white/15 border-[#cb0805] text-white ring-1 ring-[#cb0805] shadow-sm"
+                            : "bg-white/5 hover:bg-white/10 border-white/10 text-stone-300"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold truncate text-[11px]">{v.name}</span>
+                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#cb0805] shrink-0" />}
+                        </div>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="font-extrabold text-white text-sm">₹{v.price.toLocaleString()}</span>
+                          <span className="line-through text-stone-400 text-[10px]">₹{v.mrp.toLocaleString()}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Action Buttons: Add To Cart (Primary) + Buy Now + WhatsApp */}
+              <div className="pt-1 space-y-2.5">
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className="w-full py-4 px-6 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-sm tracking-wide shadow-lg shadow-[#cb0805]/30 hover:shadow-[#cb0805]/50 transition-all active:scale-[0.98] flex items-center justify-center gap-2.5 cursor-pointer"
+                >
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>Add to Cart • ₹{selectedVariant.price.toLocaleString()}</span>
+                </button>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={handleBuyNow}
+                    className="py-3 px-4 rounded-xl bg-white hover:bg-stone-100 text-stone-900 font-bold text-xs tracking-wide transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span>Buy Now</span>
+                  </button>
+
+                  <a
+                    href={buildWhatsAppOrderUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-3 px-4 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                    <span>Order on WhatsApp</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Guarantees Strip */}
+              <div className="flex flex-wrap items-center gap-y-2 gap-x-5 pt-3 border-t border-white/10 text-xs text-stone-300 font-medium">
+                <span className="inline-flex items-center gap-1.5">
+                  <Truck className="w-4 h-4 text-[#cb0805]" />
+                  1-Day Kerala Express
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#cb0805]" />
+                  100% Discreet Packaging
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <RotateCcw className="w-4 h-4 text-[#cb0805]" />
+                  15-Day Strip Refund
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+          {/* ── RIGHT HALF: Full Screen Campaign Image Slider ── */}
+          <div className="w-full lg:w-1/2 relative min-h-[460px] sm:min-h-[560px] lg:min-h-full overflow-hidden bg-black select-none order-1 lg:order-2">
+            
+            {/* Cross-Fade Animated Poster Slide */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={CAMPAIGN_HERO_SLIDES[activeHeroSlide].id}
+                initial={{ opacity: 0, scale: 1.02 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.99 }}
+                transition={{ duration: 0.65, ease: "easeInOut" }}
+                className="absolute inset-0 w-full h-full"
+              >
+                <Image
+                  src={CAMPAIGN_HERO_SLIDES[activeHeroSlide].src}
+                  alt={CAMPAIGN_HERO_SLIDES[activeHeroSlide].alt}
+                  fill
+                  priority
+                  className="object-cover object-center"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Subtle Gradient Overlays for Elegance */}
+            <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-stone-950 via-stone-950/50 to-transparent pointer-events-none hidden lg:block" />
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
+            <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
+
+            {/* Top Interactive Persona Switcher Pills (For Her / For Him) */}
+            <div className="absolute top-5 right-5 sm:right-8 z-20 flex items-center gap-2.5">
+              <div className="inline-flex p-1 rounded-full bg-black/60 backdrop-blur-md border border-white/25 shadow-xl">
                 {CAMPAIGN_HERO_SLIDES.map((slide, idx) => {
                   const isActive = activeHeroSlide === idx;
                   return (
@@ -319,147 +435,39 @@ Please confirm priority delivery details.`;
                   );
                 })}
               </div>
+            </div>
 
-              {/* Subtle Slide Indicators */}
-              <div className="flex items-center gap-2 pt-1">
+            {/* Bottom Caption & Slide Dots */}
+            <div className="absolute bottom-5 inset-x-5 sm:inset-x-8 z-20 flex items-end justify-between text-white">
+              <div className="max-w-md">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#ff807e] bg-[#cb0805]/30 px-2.5 py-0.5 rounded-full border border-[#cb0805]/50 backdrop-blur-sm">
+                  {CAMPAIGN_HERO_SLIDES[activeHeroSlide].badge}
+                </span>
+                <h3 className="text-lg sm:text-xl font-bold text-white mt-1.5 leading-tight">
+                  {CAMPAIGN_HERO_SLIDES[activeHeroSlide].headline}
+                </h3>
+              </div>
+
+              {/* Slide Progress Dots */}
+              <div className="flex items-center gap-2 shrink-0 ml-4 mb-1">
                 {CAMPAIGN_HERO_SLIDES.map((slide, idx) => (
                   <button
                     key={slide.id}
                     type="button"
                     onClick={() => setActiveHeroSlide(idx)}
-                    className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                    className={`h-2 rounded-full transition-all cursor-pointer ${
                       activeHeroSlide === idx
                         ? "w-7 bg-[#cb0805]"
-                        : "w-2 bg-white/40 hover:bg-white/70"
+                        : "w-2 bg-white/40 hover:bg-white/80"
                     }`}
-                    aria-label={`Slide to ${slide.tag}`}
+                    aria-label={`Switch to ${slide.tag} slide`}
                   />
                 ))}
-                <span className="text-[11px] text-white/60 font-medium ml-1">
-                  {CAMPAIGN_HERO_SLIDES[activeHeroSlide].headline}
-                </span>
-              </div>
-            </div>
-
-            {/* ── Right Side: Minimal Content Panel with Add to Cart Feature ── */}
-            <div className="w-full lg:max-w-[480px] order-1 lg:order-2">
-              <div className="rounded-3xl bg-black/65 backdrop-blur-2xl border border-white/15 p-6 sm:p-8 text-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)]">
-                
-                {/* Brand Category Tag */}
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#ff807e] bg-[#cb0805]/25 px-2.5 py-1 rounded-full border border-[#cb0805]/40">
-                    100% Botanical Vitality Macun
-                  </span>
-                  <span className="text-xs text-stone-300 font-medium">Unisex Formula</span>
-                </div>
-
-                {/* Minimal Headline */}
-                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight font-sans">
-                  turkiye jam
-                </h1>
-                <p className="text-sm font-semibold text-[#ff807e] mt-1">
-                  Natural Stamina &amp; Intimate Endurance
-                </p>
-
-                {/* Clean 2-Sentence Explanation */}
-                <p className="text-xs sm:text-sm text-stone-300 leading-relaxed mt-2.5 font-normal">
-                  Authentic Turkish Epimedium botanical paste infused with wild blossom honey, royal jelly, and red ginseng. Naturally elevates physical stamina, passion, and recovery for both partners.
-                </p>
-
-                {/* Minimal Package Selector */}
-                <div className="mt-5 pt-4 border-t border-white/10">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-xs font-bold uppercase tracking-wider text-stone-300">
-                      Select Package:
-                    </span>
-                    {selectedVariant.badge && (
-                      <span className="text-[11px] font-bold text-[#ff807e] bg-[#cb0805]/30 px-2 py-0.5 rounded-full border border-[#cb0805]/40">
-                        ★ {selectedVariant.badge}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    {TURKIYE_JAM_VARIANTS.map((v) => {
-                      const isSelected = selectedVariant.id === v.id;
-                      return (
-                        <button
-                          key={v.id}
-                          type="button"
-                          onClick={() => handleSelectVariant(v)}
-                          className={`flex flex-col text-left p-2.5 rounded-xl border transition-all text-xs cursor-pointer ${
-                            isSelected
-                              ? "bg-white/20 border-[#cb0805] text-white ring-1 ring-[#cb0805] shadow-sm"
-                              : "bg-white/5 hover:bg-white/10 border-white/10 text-stone-300"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold truncate text-[11px]">{v.name}</span>
-                            {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#cb0805] shrink-0" />}
-                          </div>
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="font-extrabold text-white text-sm">₹{v.price.toLocaleString()}</span>
-                            <span className="line-through text-stone-400 text-[10px]">₹{v.mrp.toLocaleString()}</span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Action Buttons: Add To Cart (Primary) + Buy Now + WhatsApp */}
-                <div className="mt-5 space-y-2.5">
-                  <button
-                    type="button"
-                    onClick={handleAddToCart}
-                    className="w-full py-4 px-6 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-sm tracking-wide shadow-lg shadow-[#cb0805]/30 hover:shadow-[#cb0805]/50 transition-all active:scale-[0.98] flex items-center justify-center gap-2.5 cursor-pointer"
-                  >
-                    <ShoppingBag className="w-4 h-4" />
-                    <span>Add to Cart • ₹{selectedVariant.price.toLocaleString()}</span>
-                  </button>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={handleBuyNow}
-                      className="py-3 px-4 rounded-xl bg-white hover:bg-stone-100 text-stone-900 font-bold text-xs tracking-wide transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <CreditCard className="w-3.5 h-3.5" />
-                      <span>Buy Now</span>
-                    </button>
-
-                    <a
-                      href={buildWhatsAppOrderUrl()}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="py-3 px-4 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
-                      <span>WhatsApp</span>
-                    </a>
-                  </div>
-                </div>
-
-                {/* Minimal Trust Guarantee Line */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-4 mt-4 border-t border-white/10 text-[11px] text-stone-300 font-medium">
-                  <span className="inline-flex items-center gap-1">
-                    <Truck className="w-3.5 h-3.5 text-[#cb0805]" />
-                    1-Day Kerala
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#cb0805]" />
-                    Discreet Pack
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <RotateCcw className="w-3.5 h-3.5 text-[#cb0805]" />
-                    15-Day Refund
-                  </span>
-                </div>
-
               </div>
             </div>
 
           </div>
+
         </div>
       </section>
 
