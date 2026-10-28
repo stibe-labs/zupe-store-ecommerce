@@ -395,9 +395,9 @@ function CheckoutContent() {
         key: data.key_id || RAZORPAY_KEY_ID,
         amount: Math.round(payableAmount * 100),
         currency: "INR",
-        name: "Zupe Store",
+        name: "Turkiye Jam",
         description: `Order ${switchOrder.display_id || switchOrder.id} - Switch to Prepaid (Save ₹49)`,
-        image: "/zupe-logo.webp",
+        image: "/turkiye-jam-logo.png",
         order_id: data.razorpay_order_id,
         prefill: {
           name: switchOrder.customer_name || "",
@@ -1143,11 +1143,11 @@ function CheckoutContent() {
         key: orderData.keyId || RAZORPAY_KEY_ID,
         amount: orderData.amount,
         currency: orderData.currency || "INR",
-        name: "Zupe Store",
+        name: "Turkiye Jam",
         description: isCod
-          ? `COD Order Confirmation Advance (₹10) - Zupe Store`
+          ? `COD Order Confirmation Advance (₹10) - Turkiye Jam`
           : `Payment for Order (${cart.length} item${cart.length === 1 ? "" : "s"})`,
-        image: "/zupe-logo.webp",
+        image: "/turkiye-jam-logo.png",
         order_id: orderData.orderId,
         prefill: {
           name: name.trim(),
@@ -1273,11 +1273,11 @@ function CheckoutContent() {
             <div className="max-w-4xl mx-auto px-4 flex items-center justify-center">
               <Link href="/" className="inline-block">
                 <Image
-                  src="/zupe-logo.webp"
-                  alt="Zupe Store"
-                  width={120}
-                  height={38}
-                  className="h-9 w-auto object-contain"
+                  src="/turkiye-jam-logo.png"
+                  alt="Turkiye Jam"
+                  width={140}
+                  height={45}
+                  className="h-10 w-auto object-contain"
                   priority
                 />
               </Link>
@@ -1346,7 +1346,7 @@ function CheckoutContent() {
           </main>
 
           <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-            © 2026 Zupe Store
+            © 2026 Turkiye Jam
           </footer>
         </div>
       );
@@ -1358,11 +1358,11 @@ function CheckoutContent() {
           <div className="max-w-4xl mx-auto px-4 flex items-center justify-between">
             <Link href="/" className="inline-block">
               <Image
-                src="/zupe-logo.webp"
-                alt="Zupe Store"
-                width={120}
-                height={38}
-                className="h-9 w-auto object-contain"
+                src="/turkiye-jam-logo.png"
+                alt="Turkiye Jam"
+                width={140}
+                height={45}
+                className="h-10 w-auto object-contain"
                 priority
               />
             </Link>
@@ -1592,11 +1592,11 @@ function CheckoutContent() {
           <div className="max-w-4xl mx-auto px-4 flex items-center justify-center">
             <Link href="/" className="inline-block">
               <Image
-                src="/zupe-logo.webp"
-                alt="Zupe Store"
-                width={120}
-                height={38}
-                className="h-9 w-auto object-contain"
+                src="/turkiye-jam-logo.png"
+                alt="Turkiye Jam"
+                width={140}
+                height={45}
+                className="h-10 w-auto object-contain"
                 priority
               />
             </Link>
@@ -1775,11 +1775,11 @@ function CheckoutContent() {
           <div className="max-w-5xl mx-auto px-4 flex items-center justify-center">
             <Link href="/" className="inline-block">
               <Image
-                src="/zupe-logo.webp"
-                alt="Zupe Store"
-                width={120}
-                height={38}
-                className="h-9 w-auto object-contain"
+                src="/turkiye-jam-logo.png"
+                alt="Turkiye Jam"
+                width={140}
+                height={45}
+                className="h-10 w-auto object-contain"
                 priority
               />
             </Link>
@@ -1801,7 +1801,7 @@ function CheckoutContent() {
         </main>
 
         <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-          © 2026 Zupe Store
+          © 2026 Turkiye Jam
         </footer>
       </div>
     );
@@ -1818,11 +1818,11 @@ function CheckoutContent() {
           {/* Centered Logo */}
           <Link href="/" className="inline-block transition-transform active:scale-95">
             <Image
-              src="/zupe-logo.webp"
-              alt="Zupe Store"
-              width={120}
-              height={38}
-              className="h-8 sm:h-9 w-auto object-contain mx-auto drop-shadow-2xs"
+              src="/turkiye-jam-logo.png"
+              alt="Turkiye Jam"
+              width={140}
+              height={45}
+              className="h-9 sm:h-10 w-auto object-contain mx-auto drop-shadow-2xs"
               priority
             />
           </Link>

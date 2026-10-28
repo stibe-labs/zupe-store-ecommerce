@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { MessageCircle, Mail, MapPin, Phone, ShieldCheck, ArrowUpRight } from "lucide-react";
 
 const SUPPORT_LINKS = [
@@ -55,9 +56,15 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 lg:gap-16">
           {/* Brand */}
           <div className="md:col-span-2 space-y-5">
-            <Link href="/" className="inline-flex items-center gap-3 group">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg font-bold text-red-950 text-xl border border-amber-200/30">
-                🇹🇷
+            <Link href="/" className="inline-flex items-center gap-3.5 group">
+              <div className="relative h-12 w-16 sm:w-20 flex items-center justify-center rounded-xl bg-white/5 p-1 border border-amber-500/20 backdrop-blur-sm shadow-md">
+                <Image
+                  src="/turkiye-jam-logo.png"
+                  alt="Turkiye Jam"
+                  width={140}
+                  height={80}
+                  className="h-full w-auto object-contain"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-2xl tracking-tight text-white group-hover:text-amber-400 transition-colors font-serif">

@@ -53,12 +53,12 @@ export function LoadingScreen() {
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white pointer-events-auto"
         >
           {/* Centered Logo */}
-          <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center select-none animate-pulse">
+          <div className="relative w-32 h-20 sm:w-36 sm:h-24 flex items-center justify-center select-none animate-pulse">
             <Image
-              src="/zupe-logo.webp"
-              alt="Zupe Store"
-              width={112}
-              height={112}
+              src="/turkiye-jam-logo.png"
+              alt="Turkiye Jam"
+              width={140}
+              height={90}
               priority
               className="object-contain w-full h-full drop-shadow-md"
             />

@@ -38,7 +38,7 @@ const STORE_BASE_URL =
   "https://zupe-store.stibelabs.workers.dev";
 
 function resolveImageUrl(img?: string): string {
-  if (!img) return `${STORE_BASE_URL}/zupe-logo.webp`;
+  if (!img) return `${STORE_BASE_URL}/turkiye-jam-logo.png`;
   if (img.startsWith("http://") || img.startsWith("https://")) return img;
   if (img.startsWith("/")) return `${STORE_BASE_URL}${img}`;
   return `${STORE_BASE_URL}/${img}`;
@@ -163,9 +163,10 @@ export async function sendOrderConfirmationEmail(
   }> = [];
 
   // Try attaching official text label logo inline
-  let logoImgSrc = `${STORE_BASE_URL}/zupe-label.png`;
+  let logoImgSrc = `${STORE_BASE_URL}/turkiye-jam-logo.png`;
   try {
     const candidateLogoPaths = [
+      path.join(process.cwd(), "public", "turkiye-jam-logo.png"),
       path.join(process.cwd(), "public", "zupe-email-label.png"),
       path.join(process.cwd(), "public", "zupe-label.png"),
       path.join(process.cwd(), "public", "zupe-label.webp"),

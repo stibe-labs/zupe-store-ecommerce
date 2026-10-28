@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import {
   ShoppingBag,
@@ -69,8 +70,14 @@ export function Navbar() {
 
             {/* Brand Logo */}
             <Link href="/" className="flex items-center gap-3 group" aria-label="Turkiye Jam Homepage">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#780016] to-[#42000c] text-white flex items-center justify-center font-bold text-xl shadow-md group-hover:scale-105 transition-transform border border-amber-500/20">
-                🇹🇷
+              <div className="relative h-11 w-14 sm:h-12 sm:w-16 shrink-0 overflow-hidden rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Image
+                  src="/turkiye-jam-logo.png"
+                  alt="Turkiye Jam Logo"
+                  fill
+                  className="object-contain"
+                  priority
+                />
               </div>
               <div className="flex flex-col text-left">
                 <span className="text-lg sm:text-xl font-black tracking-wider text-[#780016] group-hover:text-[#9e1b32] transition-colors leading-tight font-serif">
@@ -145,8 +152,15 @@ export function Navbar() {
           <div className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col justify-between p-6 z-10">
             <div>
               <div className="flex items-center justify-between border-b border-stone-200 pb-4 mb-5">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-2xl">🇹🇷</span>
+                <div className="flex items-center gap-3">
+                  <div className="relative h-10 w-14 shrink-0 overflow-hidden rounded-md flex items-center justify-center">
+                    <Image
+                      src="/turkiye-jam-logo.png"
+                      alt="Turkiye Jam Logo"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
                   <div className="flex flex-col text-left">
                     <span className="text-base font-extrabold text-[#780016] font-serif">TURKIYE JAM</span>
                     <span className="text-[10px] text-amber-800 font-semibold tracking-wider">Original Turkish Paste</span>

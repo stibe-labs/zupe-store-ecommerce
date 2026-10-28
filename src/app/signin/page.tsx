@@ -49,22 +49,14 @@ function SignInContent() {
       {/* Top Header */}
       <header className="w-full bg-white border-b border-gray-100 py-3 sm:py-4">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 w-full flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative w-9 h-9 flex items-center justify-center">
-              <Image
-                src="/zupe-logo.webp"
-                alt="Zupe Store"
-                width={36}
-                height={36}
-                className="object-contain group-hover:scale-105 transition-transform"
-              />
-            </div>
+          <Link href="/" className="flex items-center gap-2 group">
             <Image
-              src="/zupe-label.webp"
-              alt="Zupestore"
-              width={110}
-              height={28}
-              className="h-6 w-auto object-contain group-hover:opacity-90 transition-opacity"
+              src="/turkiye-jam-logo.png"
+              alt="Turkiye Jam"
+              width={130}
+              height={40}
+              className="h-8 sm:h-9 w-auto object-contain group-hover:scale-105 transition-transform"
+              priority
             />
           </Link>
 
