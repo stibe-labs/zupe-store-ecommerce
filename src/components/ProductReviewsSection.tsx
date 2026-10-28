@@ -298,7 +298,7 @@ export function ProductReviewsSection({
 
   // Live recommend percentage (synced with reviews rating >= 4)
   return (
-    <section id="reviews" className="w-full pt-12 pb-16 border-t border-gray-200 mt-14 bg-white/60">
+    <section id="reviews" className="w-full pt-6 pb-12 sm:pt-10 sm:pb-16 border-t border-gray-100 mt-2 sm:mt-6 bg-white/60">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
         {/* Section Header */}
         <div className="mb-6">

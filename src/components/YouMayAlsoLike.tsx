@@ -163,7 +163,7 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
   };
 
   return (
-    <section className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 py-10 sm:py-14 border-t border-gray-100">
+    <section className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 pt-6 pb-2 sm:pt-10 sm:pb-6 border-t border-gray-100">
       {/* Section Header */}
       <div className="flex items-center justify-between mb-5 sm:mb-7">
         <div>
@@ -209,7 +209,7 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
       {/* 1-Row Manually Moving / Swiping Product Track */}
       <div
         ref={scrollRef}
-        className="flex items-stretch overflow-x-auto gap-3 sm:gap-4.5 pb-4 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        className="flex items-stretch overflow-x-auto gap-3 sm:gap-4.5 pb-1.5 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
       >
         {matchingProducts.map((item) => {
           const discountPercent =
