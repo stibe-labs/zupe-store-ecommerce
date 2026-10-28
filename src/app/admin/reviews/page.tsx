@@ -1211,73 +1211,74 @@ export default function AdminReviewsPage() {
             <div className="space-y-6">
 
           {/* KPI Analytics Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+          {/* KPI Analytics Cards: 2 per row on mobile */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-xs flex flex-col justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
                 Total Reviews
               </span>
-              <div className="flex items-baseline justify-between mt-2">
-                <p className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              <div className="flex items-baseline justify-between mt-1 sm:mt-2">
+                <p className="text-lg sm:text-3xl font-bold text-slate-900 tracking-tight truncate">
                   {reviews.length}
                 </p>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                  <ShieldCheck className="w-3 h-3" /> Live
+                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-full shrink-0">
+                  <ShieldCheck className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> Live
                 </span>
               </div>
-              <span className="text-xs text-slate-400 mt-1 block">
-                Across all active catalog products
+              <span className="text-[10px] sm:text-xs text-slate-400 mt-1 block truncate">
+                Across all products
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-xs flex flex-col justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
                 Average Rating
               </span>
-              <div className="flex items-baseline justify-between mt-2">
-                <p className="text-2xl sm:text-3xl font-bold text-amber-500 tracking-tight flex items-center gap-1.5">
+              <div className="flex items-baseline justify-between mt-1 sm:mt-2">
+                <p className="text-lg sm:text-3xl font-bold text-amber-500 tracking-tight flex items-center gap-1">
                   <span>{metrics.avgRating}</span>
-                  <Star className="w-6 h-6 fill-current" />
+                  <Star className="w-4 h-4 sm:w-6 sm:h-6 fill-current" />
                 </p>
-                <span className="text-[11px] font-bold text-slate-500">
+                <span className="text-[9px] sm:text-[11px] font-bold text-slate-500 truncate">
                   {reviews.filter((r) => r.rating === 5).length} 5-Star
                 </span>
               </div>
-              <span className="text-xs text-slate-400 mt-1 block">
-                Based on verified shopper feedback
+              <span className="text-[10px] sm:text-xs text-slate-400 mt-1 block truncate">
+                Shopper feedback
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                Amazon / Flipkart Imports
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-xs flex flex-col justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
+                Imports
               </span>
-              <div className="flex items-baseline justify-between mt-2">
-                <p className="text-2xl sm:text-3xl font-bold text-blue-600 tracking-tight">
+              <div className="flex items-baseline justify-between mt-1 sm:mt-2">
+                <p className="text-lg sm:text-3xl font-bold text-blue-600 tracking-tight truncate">
                   {reviews.filter((r) => ["amazon", "flipkart", "meesho"].includes((r.source || "").toLowerCase())).length}
                 </p>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
-                  External E-Com
+                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[11px] font-bold text-blue-700 bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded-full shrink-0">
+                  External
                 </span>
               </div>
-              <span className="text-xs text-slate-400 mt-1 block">
-                Social proof imported via CSV
+              <span className="text-[10px] sm:text-xs text-slate-400 mt-1 block truncate">
+                Amazon / Flipkart CSV
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                Storefront Verified Orders
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-xs flex flex-col justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
+                Verified Orders
               </span>
-              <div className="flex items-baseline justify-between mt-2">
-                <p className="text-2xl sm:text-3xl font-bold text-emerald-600 tracking-tight">
+              <div className="flex items-baseline justify-between mt-1 sm:mt-2">
+                <p className="text-lg sm:text-3xl font-bold text-emerald-600 tracking-tight truncate">
                   {reviews.filter((r) => !r.source || r.source === "storefront").length}
                 </p>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                  Direct Orders
+                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[11px] font-bold text-emerald-700 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-full shrink-0">
+                  Direct
                 </span>
               </div>
-              <span className="text-xs text-slate-400 mt-1 block">
-                Submitted by genuine customers
+              <span className="text-[10px] sm:text-xs text-slate-400 mt-1 block truncate">
+                Genuine buyers
               </span>
             </div>
           </div>

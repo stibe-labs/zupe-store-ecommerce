@@ -247,72 +247,72 @@ export default function AdminSuppliersPage() {
           </div>
 
           {/* KPI Cards Strip */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-orange-300 transition-all">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-orange-300 transition-all flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Total Active Vendors
+                <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
+                  Active Vendors
                 </span>
-                <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center font-bold">
-                  <Building2 className="w-4 h-4" />
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center font-bold shrink-0">
+                  <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
-              <div className="mt-3">
-                <p className="text-2xl font-black text-slate-900">
+              <div className="mt-2 sm:mt-3">
+                <p className="text-base sm:text-2xl font-black text-slate-900 truncate">
                   {suppliers.length}
                 </p>
-                <span className="text-xs text-slate-500">Verified product suppliers</span>
+                <span className="text-[10px] sm:text-xs text-slate-500 truncate block">Verified suppliers</span>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-emerald-400 transition-all">
+            <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-emerald-400 transition-all flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Total Available RTO Balance
+                <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
+                  Available Balance
                 </span>
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <Wallet className="w-4 h-4" />
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
-              <div className="mt-3">
-                <p className="text-2xl font-black text-emerald-600">
+              <div className="mt-2 sm:mt-3">
+                <p className="text-base sm:text-2xl font-black text-emerald-600 truncate">
                   ₹{totalAvailableBalance.toLocaleString("en-IN")}
                 </p>
-                <span className="text-xs text-emerald-600 font-medium">Ready to offset inventory POs</span>
+                <span className="text-[10px] sm:text-xs text-emerald-600 font-medium truncate block">Ready to offset POs</span>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-purple-400 transition-all">
+            <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-purple-400 transition-all flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Cumulative Credits Added
+                <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
+                  Credits Added
                 </span>
-                <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-                  <RotateCcw className="w-4 h-4" />
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                  <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
-              <div className="mt-3">
-                <p className="text-2xl font-black text-purple-700">
+              <div className="mt-2 sm:mt-3">
+                <p className="text-base sm:text-2xl font-black text-purple-700 truncate">
                   ₹{totalCreditsClaimed.toLocaleString("en-IN")}
                 </p>
-                <span className="text-xs text-slate-500">Credited from doorstep return restocks</span>
+                <span className="text-[10px] sm:text-xs text-slate-500 truncate block">From return restocks</span>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-rose-400 transition-all">
+            <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-rose-400 transition-all flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Credits Reconciled / Used
+                <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
+                  Credits Used
                 </span>
-                <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
-                  <CreditCard className="w-4 h-4" />
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                  <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
-              <div className="mt-3">
-                <p className="text-2xl font-black text-slate-900">
+              <div className="mt-2 sm:mt-3">
+                <p className="text-base sm:text-2xl font-black text-slate-900 truncate">
                   ₹{totalCreditsUsed.toLocaleString("en-IN")}
                 </p>
-                <span className="text-xs text-slate-500">Deducted against new invoice orders</span>
+                <span className="text-[10px] sm:text-xs text-slate-500 truncate block">Deducted on invoices</span>
               </div>
             </div>
           </div>

@@ -202,45 +202,45 @@ export default function AdminPaymentsPage() {
           {activeTab === "cod" && (
             <>
               {/* 4 COD Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
+                <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                  <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
                     Total COD Collected
                   </p>
-                  <p className="text-2xl font-bold text-slate-900 mt-1">
+                  <p className="text-base sm:text-2xl font-bold text-slate-900 mt-1 truncate">
                     ₹{metrics.totalCollected.toLocaleString("en-IN")}
                   </p>
-                  <span className="text-xs text-slate-500 mt-1 block">Doorstep cash receipts</span>
+                  <span className="text-[10px] sm:text-xs text-slate-500 mt-1 block truncate">Doorstep cash receipts</span>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                  <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
                     Courier Charges Deducted
                   </p>
-                  <p className="text-2xl font-bold text-rose-600 mt-1">
+                  <p className="text-base sm:text-2xl font-bold text-rose-600 mt-1 truncate">
                     ₹{metrics.totalDeducted.toLocaleString("en-IN")}
                   </p>
-                  <span className="text-xs text-slate-500 mt-1 block">Freight & COD processing fees</span>
+                  <span className="text-[10px] sm:text-xs text-slate-500 mt-1 block truncate">Freight & processing fees</span>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                  <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
                     Net Remitted to Bank
                   </p>
-                  <p className="text-2xl font-bold text-emerald-600 mt-1">
+                  <p className="text-base sm:text-2xl font-bold text-emerald-600 mt-1 truncate">
                     ₹{metrics.totalRemitted.toLocaleString("en-IN")}
                   </p>
-                  <span className="text-xs text-emerald-600 font-semibold mt-1 block">Settled via NEFT / RTGS</span>
+                  <span className="text-[10px] sm:text-xs text-emerald-600 font-semibold mt-1 block truncate">Settled via NEFT / RTGS</span>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                  <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
                     Pending COD Remittance
                   </p>
-                  <p className="text-2xl font-bold text-amber-600 mt-1">
+                  <p className="text-base sm:text-2xl font-bold text-amber-600 mt-1 truncate">
                     ₹{metrics.pendingCODRemittance.toLocaleString("en-IN")}
                   </p>
-                  <span className="text-xs text-amber-700 font-semibold mt-1 block">Courier payout pipeline</span>
+                  <span className="text-[10px] sm:text-xs text-amber-700 font-semibold mt-1 block truncate">Courier payout pipeline</span>
                 </div>
               </div>
 
@@ -319,35 +319,35 @@ export default function AdminPaymentsPage() {
           {activeTab === "prepaid" && (
             <>
               {/* Prepaid KPI Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
-                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-5">
+                <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                  <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
                     Total Online Collections
                   </p>
-                  <p className="text-2xl font-bold text-emerald-600 mt-1">
+                  <p className="text-base sm:text-2xl font-bold text-emerald-600 mt-1 truncate">
                     ₹{metrics.totalPrepaidAmount.toLocaleString("en-IN")}
                   </p>
-                  <span className="text-xs text-slate-500 mt-1 block">Paid via Razorpay / UPI / Cards</span>
+                  <span className="text-[10px] sm:text-xs text-slate-500 mt-1 block truncate">Paid via UPI / Cards</span>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                  <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
                     Prepaid Orders Count
                   </p>
-                  <p className="text-2xl font-bold text-slate-900 mt-1">
+                  <p className="text-base sm:text-2xl font-bold text-slate-900 mt-1 truncate">
                     {prepaidOrders.length}
                   </p>
-                  <span className="text-xs text-emerald-600 font-medium mt-1 block">Zero RTO risk upfront</span>
+                  <span className="text-[10px] sm:text-xs text-emerald-600 font-medium mt-1 block truncate">Zero RTO risk upfront</span>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Gateway Settlement Status
+                <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm col-span-2 sm:col-span-1 flex flex-col justify-between">
+                  <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+                    Gateway Settlement
                   </p>
-                  <p className="text-2xl font-bold text-sky-700 mt-1">
+                  <p className="text-base sm:text-2xl font-bold text-sky-700 mt-1 truncate">
                     100% Settled
                   </p>
-                  <span className="text-xs text-slate-500 mt-1 block">T+1 bank payout schedule</span>
+                  <span className="text-[10px] sm:text-xs text-slate-500 mt-1 block truncate">T+1 bank payout schedule</span>
                 </div>
               </div>
 

@@ -1331,52 +1331,53 @@ export default function AdminProductsPage() {
           </div>
 
           {/* Catalog KPI Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+          {/* Catalog KPI Cards: 2 per row on mobile */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
                 Total Products
               </span>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2 tracking-tight">
+              <p className="text-lg sm:text-3xl font-bold text-slate-900 mt-1 sm:mt-2 tracking-tight truncate">
                 {totalProducts}
               </p>
-              <span className="text-xs text-slate-500 mt-1 block">
-                {totalUnits.toLocaleString("en-IN")} units in inventory
+              <span className="text-[10px] sm:text-xs text-slate-500 mt-1 block truncate">
+                {totalUnits.toLocaleString("en-IN")} units in stock
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                Inventory Retail Value
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
+                Retail Value
               </span>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2 tracking-tight">
+              <p className="text-lg sm:text-3xl font-bold text-slate-900 mt-1 sm:mt-2 tracking-tight truncate">
                 ₹{totalCatalogValue.toLocaleString("en-IN")}
               </p>
-              <span className="text-xs text-slate-500 mt-1 block">
-                Based on current selling prices
+              <span className="text-[10px] sm:text-xs text-slate-500 mt-1 block truncate">
+                At selling prices
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                Supplier Capital (COGS)
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
+                Capital (COGS)
               </span>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2 tracking-tight">
+              <p className="text-lg sm:text-3xl font-bold text-slate-900 mt-1 sm:mt-2 tracking-tight truncate">
                 ₹{totalCapitalInvested.toLocaleString("en-IN")}
               </p>
-              <span className="text-xs text-slate-500 mt-1 block">
-                Total capital tied in stock
+              <span className="text-[10px] sm:text-xs text-slate-500 mt-1 block truncate">
+                Capital tied in stock
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
                 Gross Margin
               </span>
-              <p className="text-2xl sm:text-3xl font-bold text-emerald-600 mt-2 tracking-tight">
+              <p className="text-lg sm:text-3xl font-bold text-emerald-600 mt-1 sm:mt-2 tracking-tight truncate">
                 {avgMargin}%
               </p>
-              <span className="text-xs text-slate-500 mt-1 block">
-                Average across active catalog
+              <span className="text-[10px] sm:text-xs text-slate-500 mt-1 block truncate">
+                Active catalog avg
               </span>
             </div>
           </div>

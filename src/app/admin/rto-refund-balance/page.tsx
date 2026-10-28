@@ -310,71 +310,71 @@ export default function RTORefundBalancePage() {
           </div>
 
           {/* 4 Top KPI Cards (Matching Image 3) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
             {/* Card 1: Total RTO Credits Added */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm flex items-center gap-4 hover:border-slate-300 transition-all">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-                <RotateCcw className="w-6 h-6 stroke-[2.2]" />
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 hover:border-slate-300 transition-all">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+                <RotateCcw className="w-4 h-4 sm:w-6 sm:h-6 stroke-[2.2]" />
               </div>
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Total RTO Credits Added
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+                  Total Credits Added
                 </p>
-                <p className="text-2xl font-bold text-slate-900 mt-0.5 tracking-tight">
+                <p className="text-base sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight truncate">
                   ₹{metrics.totalCreditsAdded.toLocaleString("en-IN")}
                 </p>
-                <p className="text-xs text-slate-500 mt-0.5">From 48 orders</p>
+                <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 truncate">From 48 orders</p>
               </div>
             </div>
 
             {/* Card 2: Total Credits Used */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm flex items-center gap-4 hover:border-slate-300 transition-all">
-              <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
-                <MinusCircle className="w-6 h-6 stroke-[2.2]" />
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 hover:border-slate-300 transition-all">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
+                <MinusCircle className="w-4 h-4 sm:w-6 sm:h-6 stroke-[2.2]" />
               </div>
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
                   Total Credits Used
                 </p>
-                <p className="text-2xl font-bold text-slate-900 mt-0.5 tracking-tight">
+                <p className="text-base sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight truncate">
                   ₹{metrics.totalCreditsUsed.toLocaleString("en-IN")}
                 </p>
-                <p className="text-xs text-slate-500 mt-0.5">Used for 36 orders</p>
+                <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 truncate">Used for 36 orders</p>
               </div>
             </div>
 
             {/* Card 3: Available RTO Balance */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm flex items-center gap-4 hover:border-slate-300 transition-all">
-              <div className="w-12 h-12 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center shrink-0 border border-orange-100">
-                <Wallet className="w-6 h-6 stroke-[2.2]" />
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 hover:border-slate-300 transition-all">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center shrink-0 border border-orange-100">
+                <Wallet className="w-4 h-4 sm:w-6 sm:h-6 stroke-[2.2]" />
               </div>
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Available RTO Balance
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+                  Available Balance
                 </p>
-                <p className="text-2xl font-bold text-slate-900 mt-0.5 tracking-tight">
+                <p className="text-base sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight truncate">
                   ₹{metrics.availableBalance.toLocaleString("en-IN")}
                 </p>
-                <div className="flex items-center gap-1 mt-0.5 text-xs text-[#FF7A00] font-medium">
+                <div className="flex items-center gap-1 mt-0.5 text-[10px] sm:text-xs text-[#FF7A00] font-medium truncate">
                   <span>Supplier Credit</span>
-                  <Info className="w-3.5 h-3.5 text-[#FF7A00]" />
+                  <Info className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#FF7A00] shrink-0" />
                 </div>
               </div>
             </div>
 
             {/* Card 4: Pending Supplier Credits */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm flex items-center gap-4 hover:border-slate-300 transition-all">
-              <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
-                <Clock className="w-6 h-6 stroke-[2.2]" />
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 hover:border-slate-300 transition-all">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
+                <Clock className="w-4 h-4 sm:w-6 sm:h-6 stroke-[2.2]" />
               </div>
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Pending Supplier Credits
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+                  Pending Credits
                 </p>
-                <p className="text-2xl font-bold text-slate-900 mt-0.5 tracking-tight">
+                <p className="text-base sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight truncate">
                   ₹{metrics.pendingCredits.toLocaleString("en-IN")}
                 </p>
-                <p className="text-xs text-slate-500 mt-0.5">From 6 orders</p>
+                <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 truncate">From 6 orders</p>
               </div>
             </div>
           </div>

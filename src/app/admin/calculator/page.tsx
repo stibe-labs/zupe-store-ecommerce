@@ -628,7 +628,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* LEFT COLUMN: 📦 Batch Details (Inputs Card) - 6 Cols */}
             <div className="lg:col-span-6 bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-sm space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                     <Package className="w-5 h-5 text-[#FF7A00]" />
@@ -640,11 +640,11 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                 </div>
 
                 {storeProducts.length > 0 && (
-                  <div className="relative">
+                  <div className="w-full sm:w-auto">
                     <select
                       value={selectedProductId}
                       onChange={(e) => handleSelectProduct(e.target.value)}
-                      className="text-xs font-semibold bg-orange-50 hover:bg-orange-100 text-[#FF7A00] border border-orange-200 rounded-xl px-3 py-1.5 focus:outline-none cursor-pointer"
+                      className="w-full sm:w-auto max-w-full text-xs font-semibold bg-orange-50 hover:bg-orange-100 text-[#FF7A00] border border-orange-200 rounded-xl px-3 py-2 sm:py-1.5 focus:outline-none cursor-pointer truncate"
                     >
                       <option value="">+ Fill from Store SKU</option>
                       {storeProducts.map((p) => (
@@ -662,26 +662,26 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
                   1. Orders & Pricing
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Total Shipped Orders
+                    <label className="block text-xs font-bold text-slate-700 mb-1 truncate">
+                      Shipped Orders
                     </label>
                     <input
                       type="number"
                       min="0"
                       value={orders}
                       onChange={(e) => setOrders(Math.max(0, parseInt(e.target.value) || 0))}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
                     />
-                    <span className="text-[11px] text-slate-400 mt-0.5 block">
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
                       Dispatched by courier
                     </span>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      RTO Orders (Returned)
+                    <label className="block text-xs font-bold text-slate-700 mb-1 truncate">
+                      RTO (Returned)
                     </label>
                     <input
                       type="number"
@@ -691,42 +691,42 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       onChange={(e) =>
                         setRto(Math.min(orders, Math.max(0, parseInt(e.target.value) || 0)))
                       }
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-rose-600 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-rose-600 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
                     />
-                    <span className="text-[11px] text-slate-400 mt-0.5 block">
-                      Customer doorstep refusals
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
+                      Doorstep refusals
                     </span>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Selling Price / Order (₹)
+                    <label className="block text-xs font-bold text-slate-700 mb-1 truncate">
+                      Selling Price (₹)
                     </label>
                     <input
                       type="number"
                       min="0"
                       value={sell}
                       onChange={(e) => setSell(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
                     />
-                    <span className="text-[11px] text-slate-400 mt-0.5 block">
-                      Delivered customer checkout price
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
+                      Checkout price
                     </span>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Product Sourcing Cost (₹)
+                    <label className="block text-xs font-bold text-slate-700 mb-1 truncate">
+                      Sourcing Cost (₹)
                     </label>
                     <input
                       type="number"
                       min="0"
                       value={cost}
                       onChange={(e) => setCost(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
                     />
-                    <span className="text-[11px] text-slate-400 mt-0.5 block">
-                      Wholesale purchase price / unit
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
+                      Wholesale cost / unit
                     </span>
                   </div>
                 </div>
@@ -737,41 +737,41 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
                   2. Logistics & Operating Expenses
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Forward Shipping / Order (₹)
+                    <label className="block text-xs font-bold text-slate-700 mb-1 truncate">
+                      Forward Ship / Order (₹)
                     </label>
                     <input
                       type="number"
                       min="0"
                       value={ship}
                       onChange={(e) => setShip(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
                     />
-                    <span className="text-[11px] text-slate-400 mt-0.5 block">
-                      Charged on all 10 dispatches (₹{calculations.shipping.toLocaleString("en-IN")})
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
+                      Total: ₹{calculations.shipping.toLocaleString("en-IN")}
                     </span>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      RTO Reverse Charge / Return (₹)
+                    <label className="block text-xs font-bold text-slate-700 mb-1 truncate">
+                      RTO Reverse Fee (₹)
                     </label>
                     <input
                       type="number"
                       min="0"
                       value={rtoFee}
                       onChange={(e) => setRtoFee(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
                     />
-                    <span className="text-[11px] text-slate-400 mt-0.5 block">
-                      Additional return courier fee (₹{calculations.rtoCost.toLocaleString("en-IN")})
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
+                      Total: ₹{calculations.rtoCost.toLocaleString("en-IN")}
                     </span>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-bold text-slate-700 mb-1 truncate">
                       Meta Ad Spend (₹)
                     </label>
                     <input
@@ -779,26 +779,26 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       min="0"
                       value={ads}
                       onChange={(e) => setAds(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-purple-700 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-purple-700 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
                     />
-                    <span className="text-[11px] text-slate-400 mt-0.5 block">
-                      Campaign ad budget for this batch
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
+                      Campaign ad budget
                     </span>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Other Operating Expenses (₹)
+                    <label className="block text-xs font-bold text-slate-700 mb-1 truncate">
+                      Other Expenses (₹)
                     </label>
                     <input
                       type="number"
                       min="0"
                       value={other}
                       onChange={(e) => setOther(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
                     />
-                    <span className="text-[11px] text-slate-400 mt-0.5 block">
-                      Packaging, gateways, software
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
+                      Packaging, gateways
                     </span>
                   </div>
                 </div>
@@ -819,15 +819,15 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1 truncate">
                       Select Supplier
                     </label>
                     <select
                       value={db.selected}
                       onChange={(e) => handleSelectSupplier(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all cursor-pointer"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all cursor-pointer truncate"
                     >
                       {Object.keys(db.suppliers).map((name) => (
                         <option key={name} value={name}>
@@ -837,25 +837,25 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Opening Credit Balance (₹)
+                  <div className="col-span-1">
+                    <label className="block text-xs font-bold text-slate-700 mb-1 truncate">
+                      Opening Credit (₹)
                     </label>
                     <input
                       type="number"
                       min="0"
                       value={opening}
                       onChange={(e) => setOpening(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-indigo-700 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-indigo-700 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
                     />
-                    <span className="text-[11px] text-slate-400 mt-0.5 block">
-                      Credit already available to deduct
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
+                      Available to deduct
                     </span>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      RTO Product Credit (%)
+                  <div className="col-span-1">
+                    <label className="block text-xs font-bold text-slate-700 mb-1 truncate">
+                      RTO Credit (%)
                     </label>
                     <input
                       type="number"
@@ -865,23 +865,23 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       onChange={(e) =>
                         setCreditPct(Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)))
                       }
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
                     />
-                    <span className="text-[11px] text-slate-400 mt-0.5 block">
-                      Supplier credit % on returned units
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
+                      Return credit rate
                     </span>
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Batch Note / Product Description (Optional)
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1 truncate">
+                      Batch Note (Optional)
                     </label>
                     <input
                       type="text"
                       placeholder="e.g. Mini Portable Air Cooler (Batch #4)"
                       value={batchNote}
                       onChange={(e) => setBatchNote(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
                     />
                   </div>
                 </div>
@@ -929,11 +929,11 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                   </span>
                 </div>
 
-                {/* 6 Key Metric Tiles */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {/* Metric 1: NET PROFIT (Featured) */}
+                {/* 6 Key Metric Tiles: 2 Cards per row on Mobile & Desktop */}
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
+                  {/* Metric 1: NET PROFIT (Featured Banner - spans full 2 columns) */}
                   <div
-                    className={`sm:col-span-2 p-5 rounded-2xl border transition-all ${
+                    className={`col-span-2 p-4 sm:p-5 rounded-2xl border transition-all ${
                       calculations.netProfit >= 0
                         ? "bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-white border-orange-200/90 shadow-sm"
                         : "bg-rose-50/60 border-rose-200"
@@ -954,72 +954,72 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       </span>
                     </div>
                     <p
-                      className={`text-3xl sm:text-4xl font-black tracking-tight mt-2 ${
+                      className={`text-2xl sm:text-4xl font-black tracking-tight mt-1.5 sm:mt-2 ${
                         calculations.netProfit >= 0 ? "text-emerald-700" : "text-rose-600"
                       }`}
                     >
                       {calculations.netProfit >= 0 ? "+" : ""}₹
                       {Math.round(calculations.netProfit).toLocaleString("en-IN")}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Delivered revenue − Delivered COGS − Dispatched shipping − RTO charges − Overheads
+                    <p className="text-[11px] sm:text-xs text-slate-500 mt-1 line-clamp-1">
+                      Delivered revenue − Delivered COGS − Dispatched shipping − RTO − Overheads
                     </p>
                   </div>
 
                   {/* Metric 2: NET CASH FLOW */}
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
+                  <div className="col-span-1 p-3 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between">
+                    <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 block truncate">
                       Net Cash Flow
                     </span>
                     <p
-                      className={`text-xl sm:text-2xl font-black mt-1 ${
+                      className={`text-lg sm:text-2xl font-black mt-1 ${
                         calculations.netCashFlow >= 0 ? "text-emerald-600" : "text-rose-600"
                       }`}
                     >
                       {calculations.netCashFlow >= 0 ? "+" : ""}₹
                       {Math.round(calculations.netCashFlow).toLocaleString("en-IN")}
                     </p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                      Physical cash inflow minus physical cash outflow
+                    <p className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">
+                      Inflow minus outflow
                     </p>
                   </div>
 
                   {/* Metric 3: CASH INFLOW */}
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                      Actual Cash Inflow
+                  <div className="col-span-1 p-3 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between">
+                    <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 block truncate">
+                      Cash Inflow
                     </span>
-                    <p className="text-xl sm:text-2xl font-black text-slate-900 mt-1">
+                    <p className="text-lg sm:text-2xl font-black text-slate-900 mt-1">
                       ₹{Math.round(calculations.cashInflow).toLocaleString("en-IN")}
                     </p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                      Collected from {calculations.d} delivered orders
+                    <p className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">
+                      From {calculations.d} delivered orders
                     </p>
                   </div>
 
                   {/* Metric 4: CASH OUTFLOW */}
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                      Actual Cash Outflow
+                  <div className="col-span-1 p-3 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between">
+                    <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 block truncate">
+                      Cash Outflow
                     </span>
-                    <p className="text-xl sm:text-2xl font-black text-slate-900 mt-1">
+                    <p className="text-lg sm:text-2xl font-black text-slate-900 mt-1">
                       ₹{Math.round(calculations.totalCashOutflow).toLocaleString("en-IN")}
                     </p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                      Supplier cash paid + logistics + ads + fees
+                    <p className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">
+                      Supplier + logistics + ads
                     </p>
                   </div>
 
                   {/* Metric 5: ENDING SUPPLIER CREDIT */}
-                  <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-200/80">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 block">
-                      Ending Supplier Credit
+                  <div className="col-span-1 p-3 sm:p-4 rounded-2xl bg-indigo-50/60 border border-indigo-200/80 flex flex-col justify-between">
+                    <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-indigo-900 block truncate">
+                      Ending Credit
                     </span>
-                    <p className="text-xl sm:text-2xl font-black text-indigo-700 mt-1">
+                    <p className="text-lg sm:text-2xl font-black text-indigo-700 mt-1">
                       ₹{Math.round(calculations.endingCredit).toLocaleString("en-IN")}
                     </p>
-                    <p className="text-[11px] text-indigo-800/80 mt-0.5">
-                      Available credit asset for next wholesale PO
+                    <p className="text-[10px] sm:text-[11px] text-indigo-800/80 mt-0.5 truncate">
+                      Asset for next PO
                     </p>
                   </div>
                 </div>

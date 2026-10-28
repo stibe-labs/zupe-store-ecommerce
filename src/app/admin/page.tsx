@@ -470,87 +470,87 @@ export default function AdminDashboardPage() {
           {/* Financial Intelligence: 2x2 KPI Cards (Left) + Compact Animated Bar Graph (Right) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
             {/* LEFT SIDE: 2x2 Primary Financial KPI Cards (col-span-5) */}
-            <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+            <div className="lg:col-span-5 grid grid-cols-2 gap-2.5 sm:gap-4">
               {/* Card 1: Total Sales Revenue */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm hover:border-orange-300 transition-all flex flex-col justify-between">
+              <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm hover:border-orange-300 transition-all flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">
                     Delivered Sales Revenue
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center">
-                    <DollarSign className="w-4 h-4 stroke-[2.5]" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center shrink-0">
+                    <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                   </div>
                 </div>
-                <div className="my-2">
-                  <p className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                <div className="my-1.5 sm:my-2">
+                  <p className="text-base sm:text-2xl font-bold text-slate-900 tracking-tight">
                     <AnimatedCounter isCurrency value={kpis.totalSales} prefix="₹" />
                   </p>
                 </div>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[10px] sm:text-[11px] text-slate-500 truncate">
                   <span>Delivered orders only (Excludes RTO)</span>
                 </div>
               </div>
 
               {/* Card 2: Gross Profit */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm hover:border-emerald-300 transition-all flex flex-col justify-between">
+              <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm hover:border-emerald-300 transition-all flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">
                     Gross Profit (Sales - COGS)
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 stroke-[2.5]" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                   </div>
                 </div>
-                <div className="my-2">
-                  <p className="text-xl sm:text-2xl font-bold text-emerald-600 tracking-tight">
+                <div className="my-1.5 sm:my-2">
+                  <p className="text-base sm:text-2xl font-bold text-emerald-600 tracking-tight">
                     <AnimatedCounter isCurrency value={kpis.grossProfit} prefix="₹" />
                   </p>
                 </div>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[10px] sm:text-[11px] text-slate-500 truncate">
                   <span>Delivered COGS: <AnimatedCounter isCurrency value={kpis.productCosts} prefix="₹" /></span>
                 </div>
               </div>
 
               {/* Card 3: True Net Profit */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border-2 border-emerald-500/30 bg-gradient-to-br from-white to-emerald-50/40 shadow-sm hover:border-emerald-500 transition-all flex flex-col justify-between">
+              <div className="bg-white rounded-2xl p-3.5 sm:p-5 border-2 border-emerald-500/30 bg-gradient-to-br from-white to-emerald-50/40 shadow-sm hover:border-emerald-500 transition-all flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-emerald-900 uppercase tracking-wider">
+                  <span className="text-[10px] sm:text-[11px] font-bold text-emerald-900 uppercase tracking-wider truncate">
                     True Net Profit
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-sm">
-                    <Sparkles className="w-4 h-4 stroke-[2.5]" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-sm shrink-0">
+                    <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                   </div>
                 </div>
-                <div className="my-2">
-                  <p className="text-xl sm:text-2xl font-black text-emerald-700 tracking-tight">
+                <div className="my-1.5 sm:my-2">
+                  <p className="text-base sm:text-2xl font-black text-emerald-700 tracking-tight">
                     <AnimatedCounter isCurrency value={kpis.netProfit} prefix="₹" />
                   </p>
                 </div>
-                <div className="flex items-center justify-between text-[11px]">
+                <div className="flex items-center justify-between text-[10px] sm:text-[11px]">
                   <span className="font-bold text-emerald-800">
-                    <AnimatedCounter value={kpis.profitMargin} decimals={1} suffix="% Profit Margin" />
+                    <AnimatedCounter value={kpis.profitMargin} decimals={1} suffix="% Margin" />
                   </span>
-                  <span className="text-slate-500">After Ads & Logistics</span>
+                  <span className="text-slate-500 truncate">After all costs</span>
                 </div>
               </div>
 
               {/* Card 4: Pending COD Remittance */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm hover:border-amber-300 transition-all flex flex-col justify-between">
+              <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm hover:border-amber-300 transition-all flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">
                     Pending COD Remittance
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                    <CreditCard className="w-4 h-4 stroke-[2.5]" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                    <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                   </div>
                 </div>
-                <div className="my-2">
-                  <p className="text-xl sm:text-2xl font-bold text-amber-600 tracking-tight">
+                <div className="my-1.5 sm:my-2">
+                  <p className="text-base sm:text-2xl font-bold text-amber-600 tracking-tight">
                     <AnimatedCounter isCurrency value={kpis.pendingCODRemittance} prefix="₹" />
                   </p>
                 </div>
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-500">Held by couriers</span>
+                <div className="flex items-center justify-between text-[10px] sm:text-[11px]">
+                  <span className="text-slate-500 truncate">In couriers</span>
                   <Link
                     href="/admin/payments"
                     className="text-[#FF7A00] font-semibold hover:underline"

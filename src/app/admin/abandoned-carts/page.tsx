@@ -361,77 +361,77 @@ export default function AbandonedCartsAdminPage() {
             </div>
           </div>
 
-          {/* 4 KPI Summary Cards (Identical to reference Orders & RTO pages) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {/* 4 KPI Summary Cards (2 per row on mobile) */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
             {/* Card 1: Potential Recoverable Revenue */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Recoverable Revenue
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+                  Recoverable
                 </p>
-                <div className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">
+                <div className="text-base sm:text-2xl font-extrabold text-slate-900 mt-0.5 sm:mt-1 truncate">
                   ₹{stats.potentialRevenue.toLocaleString("en-IN")}
                 </div>
-                <div className="text-[11px] text-amber-600 font-medium mt-0.5">
-                  {stats.abandonedCount} unrecovered carts
+                <div className="text-[10px] sm:text-[11px] text-amber-600 font-medium mt-0.5 truncate">
+                  {stats.abandonedCount} unrecovered
                 </div>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
-                <TrendingUp className="w-6 h-6 stroke-[2.2]" />
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100 ml-2">
+                <TrendingUp className="w-4 h-4 sm:w-6 sm:h-6 stroke-[2.2]" />
               </div>
             </div>
 
             {/* Card 2: Recovered Revenue */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Recovered Revenue
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+                  Recovered
                 </p>
-                <div className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">
+                <div className="text-base sm:text-2xl font-extrabold text-slate-900 mt-0.5 sm:mt-1 truncate">
                   ₹{stats.recoveredRevenue.toLocaleString("en-IN")}
                 </div>
-                <div className="text-[11px] text-emerald-600 font-medium mt-0.5">
-                  {stats.recoveredCount} orders completed
+                <div className="text-[10px] sm:text-[11px] text-emerald-600 font-medium mt-0.5 truncate">
+                  {stats.recoveredCount} orders done
                 </div>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-                <CheckCircle2 className="w-6 h-6 stroke-[2.2]" />
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 ml-2">
+                <CheckCircle2 className="w-4 h-4 sm:w-6 sm:h-6 stroke-[2.2]" />
               </div>
             </div>
 
             {/* Card 3: Captured Sessions */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Captured Sessions
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+                  Captured Carts
                 </p>
-                <div className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">
+                <div className="text-base sm:text-2xl font-extrabold text-slate-900 mt-0.5 sm:mt-1 truncate">
                   {stats.totalCount}
                 </div>
-                <div className="text-[11px] text-slate-500 font-medium mt-0.5">
-                  Phone captured at checkout
+                <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium mt-0.5 truncate">
+                  Phone captured
                 </div>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
-                <ShoppingCart className="w-6 h-6 stroke-[2.2]" />
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100 ml-2">
+                <ShoppingCart className="w-4 h-4 sm:w-6 sm:h-6 stroke-[2.2]" />
               </div>
             </div>
 
             {/* Card 4: Recovery Conversion Rate */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
                   Recovery Rate
                 </p>
-                <div className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">
+                <div className="text-base sm:text-2xl font-extrabold text-slate-900 mt-0.5 sm:mt-1 truncate">
                   {stats.recoveryRate}%
                 </div>
-                <div className="text-[11px] text-purple-600 font-medium mt-0.5">
-                  Cart to completed order
+                <div className="text-[10px] sm:text-[11px] text-purple-600 font-medium mt-0.5 truncate">
+                  Cart to order
                 </div>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100">
-                <Sparkles className="w-6 h-6 stroke-[2.2]" />
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100 ml-2">
+                <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 stroke-[2.2]" />
               </div>
             </div>
           </div>

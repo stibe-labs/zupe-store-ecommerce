@@ -997,165 +997,165 @@ export default function AdminReportsPage() {
           {/* KPI Executive Summary Strip (Tier 1: Profitability & Sourcing | Tier 2: Cash Flow & Supplier Credit) */}
           <div className="space-y-3">
             {/* Tier 1: Realized Profitability */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-orange-300 transition-all">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-orange-300 transition-all flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Delivered Sales Revenue
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
+                    Delivered Revenue
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center font-bold">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
                     ₹
                   </div>
                 </div>
-                <div className="mt-3">
-                  <p className="text-2xl font-black text-slate-900">
+                <div className="mt-2 sm:mt-3">
+                  <p className="text-base sm:text-2xl font-black text-slate-900 tracking-tight">
                     ₹{summaryKPIs.totalRevenue.toLocaleString("en-IN")}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1 text-xs text-emerald-600 font-medium">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    <span>{summaryKPIs.deliveredOrdersCount} of {summaryKPIs.totalOrdersCount} delivered (Excludes RTO)</span>
+                  <div className="flex items-center gap-1 mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-emerald-600 font-medium">
+                    <TrendingUp className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                    <span className="truncate">{summaryKPIs.deliveredOrdersCount}/{summaryKPIs.totalOrdersCount} delivered</span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-emerald-400 transition-all">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-emerald-400 transition-all flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Cumulative Net Profit
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
+                    Net Profit
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <DollarSign className="w-4 h-4" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                 </div>
-                <div className="mt-3">
-                  <p className="text-2xl font-black text-emerald-600">
+                <div className="mt-2 sm:mt-3">
+                  <p className={`text-base sm:text-2xl font-black tracking-tight ${summaryKPIs.totalNetProfit >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
                     ₹{summaryKPIs.totalNetProfit.toLocaleString("en-IN")}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-500">
-                    <span>Net margin: <strong className="text-slate-800">{summaryKPIs.avgMargin}</strong> (All costs deducted)</span>
+                  <div className="flex items-center gap-1 mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-slate-500">
+                    <span className="truncate">Margin: <strong className="text-slate-800">{summaryKPIs.avgMargin}</strong></span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-purple-400 transition-all">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-purple-400 transition-all flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
                     Meta Ads ROAS
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                    <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                 </div>
-                <div className="mt-3">
-                  <p className="text-2xl font-black text-purple-700">
+                <div className="mt-2 sm:mt-3">
+                  <p className="text-base sm:text-2xl font-black text-purple-700 tracking-tight">
                     {summaryKPIs.overallROAS || "0.00x"}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1 text-xs text-purple-600 font-medium">
-                    <span>Spend: ₹{(summaryKPIs.totalAdSpend || 0).toLocaleString("en-IN")} • CPA: ₹{summaryKPIs.avgCPA || 0}</span>
+                  <div className="flex items-center gap-1 mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-purple-600 font-medium">
+                    <span className="truncate">Spend: ₹{(summaryKPIs.totalAdSpend || 0).toLocaleString("en-IN")}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-amber-400 transition-all">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-amber-400 transition-all flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Dispatched Orders
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
+                    Dispatched
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                    <ShoppingBag className="w-4 h-4" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                    <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                 </div>
-                <div className="mt-3">
-                  <p className="text-2xl font-black text-slate-900">
-                    {summaryKPIs.totalOrdersCount} <span className="text-sm font-semibold text-slate-500">orders</span>
+                <div className="mt-2 sm:mt-3">
+                  <p className="text-base sm:text-2xl font-black text-slate-900 tracking-tight">
+                    {summaryKPIs.totalOrdersCount} <span className="text-xs font-semibold text-slate-500">orders</span>
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1 text-xs text-rose-500 font-medium">
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>{summaryKPIs.totalRTOOrders} RTO recorded ({summaryKPIs.totalOrdersCount > 0 ? ((summaryKPIs.totalRTOOrders / summaryKPIs.totalOrdersCount) * 100).toFixed(0) : 0}% RTO rate)</span>
+                  <div className="flex items-center gap-1 mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-rose-500 font-medium">
+                    <RotateCcw className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                    <span className="truncate">{summaryKPIs.totalRTOOrders} RTO recorded</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Tier 2: Cash Flow & Supplier Credit (Bank Liquidity & Wholesale Assets) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-emerald-300 transition-all">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-emerald-300 transition-all flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Actual Cash Inflow
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
+                    Cash Inflow
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <ArrowUpRight className="w-4 h-4" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                 </div>
-                <div className="mt-3">
-                  <p className="text-2xl font-black text-emerald-700">
+                <div className="mt-2 sm:mt-3">
+                  <p className="text-base sm:text-2xl font-black text-emerald-700 tracking-tight">
                     ₹{summaryKPIs.cashInflow.toLocaleString("en-IN")}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-500">
-                    <span>Prepaid ₹{summaryKPIs.prepaidSettled.toLocaleString("en-IN")} + COD ₹{summaryKPIs.codRemitted.toLocaleString("en-IN")}</span>
+                  <div className="flex items-center gap-1 mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-slate-500">
+                    <span className="truncate">Prepaid + COD Settled</span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-rose-300 transition-all">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-rose-300 transition-all flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Actual Cash Outflow
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
+                    Cash Outflow
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
-                    <ArrowDownRight className="w-4 h-4" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                    <ArrowDownRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                 </div>
-                <div className="mt-3">
-                  <p className="text-2xl font-black text-slate-900">
+                <div className="mt-2 sm:mt-3">
+                  <p className="text-base sm:text-2xl font-black text-slate-900 tracking-tight">
                     ₹{summaryKPIs.cashOutflow.toLocaleString("en-IN")}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1 text-xs text-rose-600 font-medium">
-                    <span>Invoices ₹{summaryKPIs.totalProductInvoice.toLocaleString("en-IN")} + Freight & Ops</span>
+                  <div className="flex items-center gap-1 mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-rose-600 font-medium">
+                    <span className="truncate">Invoices + Freight & Ops</span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-blue-400 transition-all">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-blue-400 transition-all flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
                     Net Cash Flow
                   </span>
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold ${
+                  <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 font-bold ${
                     summaryKPIs.netCashFlow >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
                   }`}>
-                    <Wallet className="w-4 h-4" />
+                    <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                 </div>
-                <div className="mt-3">
-                  <p className={`text-2xl font-black ${
+                <div className="mt-2 sm:mt-3">
+                  <p className={`text-base sm:text-2xl font-black tracking-tight ${
                     summaryKPIs.netCashFlow >= 0 ? "text-emerald-600" : "text-rose-600"
                   }`}>
                     {summaryKPIs.netCashFlow >= 0 ? "+" : ""}₹{summaryKPIs.netCashFlow.toLocaleString("en-IN")}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-500">
-                    <span>Inflow − Outflow (Pending COD: ₹{summaryKPIs.codPendingRemittance.toLocaleString("en-IN")})</span>
+                  <div className="flex items-center gap-1 mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-slate-500">
+                    <span className="truncate">Inflow − Outflow</span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-indigo-400 transition-all">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm relative overflow-hidden group hover:border-indigo-400 transition-all flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Supplier Credit Balance
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
+                    Supplier Credit
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                    <Coins className="w-4 h-4" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                    <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                 </div>
-                <div className="mt-3">
-                  <p className="text-2xl font-black text-indigo-700">
+                <div className="mt-2 sm:mt-3">
+                  <p className="text-base sm:text-2xl font-black text-indigo-700 tracking-tight">
                     ₹{(summaryKPIs.supplierCredit.availableBalance || 0).toLocaleString("en-IN")}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1 text-xs text-indigo-600 font-medium">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>+₹{summaryKPIs.supplierCredit.newRTOCreditEarned.toLocaleString("en-IN")} new RTO credit in period</span>
+                  <div className="flex items-center gap-1 mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-indigo-600 font-medium">
+                    <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                    <span className="truncate">+₹{summaryKPIs.supplierCredit.newRTOCreditEarned.toLocaleString("en-IN")} new RTO</span>
                   </div>
                 </div>
               </div>
@@ -1589,37 +1589,37 @@ export default function AdminReportsPage() {
                       </a>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-                        <p className="text-xs text-slate-500 font-medium">Available Credit Balance</p>
-                        <p className="text-2xl font-black text-indigo-700 mt-1">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+                      <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+                        <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate">Available Balance</p>
+                        <p className="text-base sm:text-2xl font-black text-indigo-700 mt-1 truncate">
                           ₹{(summaryKPIs.supplierCredit.availableBalance || 0).toLocaleString("en-IN")}
                         </p>
-                        <p className="text-[11px] text-slate-400 mt-1">Can be used as discount on next PO</p>
+                        <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">Discount on next PO</p>
                       </div>
 
-                      <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/40">
-                        <p className="text-xs text-emerald-800 font-medium">+ New RTO Credit in Period</p>
-                        <p className="text-2xl font-black text-emerald-700 mt-1">
+                      <div className="p-3.5 sm:p-4 rounded-xl border border-emerald-200 bg-emerald-50/40 flex flex-col justify-between">
+                        <p className="text-[10px] sm:text-xs text-emerald-800 font-medium truncate">+ New RTO Credit</p>
+                        <p className="text-base sm:text-2xl font-black text-emerald-700 mt-1 truncate">
                           +₹{summaryKPIs.supplierCredit.newRTOCreditEarned.toLocaleString("en-IN")}
                         </p>
-                        <p className="text-[11px] text-emerald-600/80 mt-1">From {summaryKPIs.totalRTOOrders} RTO packages returned</p>
+                        <p className="text-[10px] sm:text-[11px] text-emerald-600/80 mt-1 truncate">From {summaryKPIs.totalRTOOrders} RTO packages</p>
                       </div>
 
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-                        <p className="text-xs text-slate-500 font-medium">Historical Credits Used</p>
-                        <p className="text-2xl font-black text-slate-700 mt-1">
+                      <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+                        <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate">Credits Used</p>
+                        <p className="text-base sm:text-2xl font-black text-slate-700 mt-1 truncate">
                           ₹{summaryKPIs.supplierCredit.totalCreditsUsed.toLocaleString("en-IN")}
                         </p>
-                        <p className="text-[11px] text-slate-400 mt-1">Applied against wholesale inventory orders</p>
+                        <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">Applied against POs</p>
                       </div>
 
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
-                        <p className="text-xs text-slate-500 font-medium">Total Credits Earned (Lifetime)</p>
-                        <p className="text-2xl font-black text-slate-900 mt-1">
+                      <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+                        <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate">Lifetime Earned</p>
+                        <p className="text-base sm:text-2xl font-black text-slate-900 mt-1 truncate">
                           ₹{summaryKPIs.supplierCredit.totalCreditsAdded.toLocaleString("en-IN")}
                         </p>
-                        <p className="text-[11px] text-slate-400 mt-1">100% RTO cost recovery rate</p>
+                        <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">100% cost recovery</p>
                       </div>
                     </div>
                   </div>
@@ -2078,49 +2078,49 @@ export default function AdminReportsPage() {
               {/* TAB 5: RTO Diagnostics & Couriers */}
               {reportType === "rto" && (
                 <div className="space-y-6">
-                  {/* Top Insight Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm space-y-2">
+                  {/* Top Insight Cards: 2 per row on mobile */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4">
+                    <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm space-y-1.5 sm:space-y-2 flex flex-col justify-between">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                          Top Return Reason
+                        <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
+                          Top Reason
                         </span>
-                        <AlertTriangle className="w-4 h-4 text-amber-500" />
+                        <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
                       </div>
-                      <p className="text-lg font-bold text-slate-900">
+                      <p className="text-sm sm:text-lg font-bold text-slate-900 truncate">
                         {displayRtoDiagnostics.topReason}
                       </p>
-                      <p className="text-xs text-slate-500">
-                        Accounts for {displayRtoDiagnostics.topReasonPercent} of all recorded COD return events in this period.
+                      <p className="text-[10px] sm:text-xs text-slate-500 line-clamp-2">
+                        {displayRtoDiagnostics.topReasonPercent} of return events
                       </p>
                     </div>
 
-                    <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm space-y-2">
+                    <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm space-y-1.5 sm:space-y-2 flex flex-col justify-between">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                          Highest Delivering Partner
+                        <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
+                          Best Partner
                         </span>
-                        <Truck className="w-4 h-4 text-emerald-600" />
+                        <Truck className="w-4 h-4 text-emerald-600 shrink-0" />
                       </div>
-                      <p className="text-lg font-bold text-emerald-700">
+                      <p className="text-sm sm:text-lg font-bold text-emerald-700 truncate">
                         {displayRtoDiagnostics.bestCourier}
                       </p>
-                      <p className="text-xs text-slate-500">
-                        {displayRtoDiagnostics.bestCourierRate} delivery success rate across prepaid and COD routes.
+                      <p className="text-[10px] sm:text-xs text-slate-500 line-clamp-2">
+                        {displayRtoDiagnostics.bestCourierRate} delivery success
                       </p>
                     </div>
 
-                    <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm space-y-2">
+                    <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm space-y-1.5 sm:space-y-2 col-span-2 md:col-span-1 flex flex-col justify-between">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
                           RTO Credit Recovery Rate
                         </span>
-                        <ShieldCheck className="w-4 h-4 text-[#FF7A00]" />
+                        <ShieldCheck className="w-4 h-4 text-[#FF7A00] shrink-0" />
                       </div>
-                      <p className="text-lg font-bold text-[#FF7A00]">
+                      <p className="text-sm sm:text-lg font-bold text-[#FF7A00]">
                         {displayRtoDiagnostics.recoveryRate}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-[10px] sm:text-xs text-slate-500">
                         Supplier balance credited back for failed parcels via RTO Ledger.
                       </p>
                     </div>

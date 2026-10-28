@@ -195,52 +195,53 @@ export default function AdminCustomersPage() {
           </div>
 
           {/* Customer KPI Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                Total Unique Customers
+          {/* Customer KPI Cards: 2 per row on mobile */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
+                Total Customers
               </span>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2 tracking-tight">
+              <p className="text-lg sm:text-3xl font-bold text-slate-900 mt-1 sm:mt-2 tracking-tight truncate">
                 {metrics.totalCustomers}
               </p>
-              <span className="text-xs text-slate-500 mt-1 block">
-                Shoppers from store checkouts
+              <span className="text-[10px] sm:text-xs text-slate-500 mt-1 block truncate">
+                Store checkouts
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
                 Repeat Buyer Rate
               </span>
-              <p className="text-2xl sm:text-3xl font-bold text-[#FF7A00] mt-2 tracking-tight">
+              <p className="text-lg sm:text-3xl font-bold text-[#FF7A00] mt-1 sm:mt-2 tracking-tight truncate">
                 {metrics.repeatRate}%
               </p>
-              <span className="text-xs text-slate-500 mt-1 block">
-                {metrics.repeatCustomers} customers placed 2+ orders
+              <span className="text-[10px] sm:text-xs text-slate-500 mt-1 block truncate">
+                {metrics.repeatCustomers} bought 2+ orders
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                Average Customer LTV
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
+                Average LTV
               </span>
-              <p className="text-2xl sm:text-3xl font-bold text-emerald-600 mt-2 tracking-tight">
+              <p className="text-lg sm:text-3xl font-bold text-emerald-600 mt-1 sm:mt-2 tracking-tight truncate">
                 ₹{metrics.avgLtv.toLocaleString("en-IN")}
               </p>
-              <span className="text-xs text-slate-500 mt-1 block">
-                Lifetime spend per customer
+              <span className="text-[10px] sm:text-xs text-slate-500 mt-1 block truncate">
+                Spend per customer
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                Doorstep Reliability
+            <div className="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
+                Reliability
               </span>
-              <p className="text-2xl sm:text-3xl font-bold text-emerald-700 mt-2 tracking-tight">
+              <p className="text-lg sm:text-3xl font-bold text-emerald-700 mt-1 sm:mt-2 tracking-tight truncate">
                 {metrics.cleanCustomers} / {metrics.totalCustomers}
               </p>
-              <span className="text-xs text-emerald-700 font-semibold mt-1 block">
-                Clean accounts with 0% RTO rate
+              <span className="text-[10px] sm:text-xs text-emerald-700 font-semibold mt-1 block truncate">
+                0% RTO rate accounts
               </span>
             </div>
           </div>
