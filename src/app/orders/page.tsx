@@ -106,7 +106,14 @@ function OrdersPageContent() {
     if (cancelPromptHandledRef.current === cancelPromptParam) return;
 
     if (orders.length > 0) {
-      const targetOrd = orders.find((o) => o.id === cancelPromptParam);
+      const cleanParam = cancelPromptParam.replace(/^#/, "");
+      const targetOrd = orders.find(
+        (o) =>
+          o.id === cancelPromptParam ||
+          (o as any).shopify_order_id === cancelPromptParam ||
+          (o as any).shopify_order_id === `#${cleanParam}` ||
+          o.id.replace(/^ord_/, "") === cleanParam
+      );
       if (targetOrd) {
         cancelPromptHandledRef.current = cancelPromptParam;
         if (targetOrd.order_status === "cancelled" || targetOrd.whatsapp_confirm_status === "cancelled") {
@@ -118,7 +125,7 @@ function OrdersPageContent() {
             window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
           } catch {}
         } else {
-          setCancelPromptId(cancelPromptParam);
+          setCancelPromptId(targetOrd.id);
         }
       }
     }

@@ -31,8 +31,8 @@ export async function GET(req: NextRequest) {
       ord = await getOrderByToken(token);
     }
 
-    // 3. Dispatch the official order confirmation WhatsApp message
-    if (ord && ord.customer_phone) {
+    // 3. Dispatch the official order confirmation WhatsApp message (only if freshly confirmed, not duplicate)
+    if (ord && ord.customer_phone && !result.alreadyUsed) {
       try {
         const isCod =
           (ord.payment_method || "").toLowerCase().includes("cash on delivery") ||
@@ -44,10 +44,12 @@ export async function GET(req: NextRequest) {
           try { rawItems = JSON.parse(ord.items); } catch { rawItems = []; }
         }
 
+        const displayOrderId = ord.shopify_order_id || (ord as any).shopify_order_id || ord.id || resolvedOrderId;
+
         await sendOrderConfirmationWhatsApp({
           customerName: ord.customer_name || "Valued Customer",
           customerPhone: ord.customer_phone || "",
-          orderId: ord.id || (ord as any).shopify_order_id || resolvedOrderId,
+          orderId: displayOrderId,
           totalAmount: Number(ord.total_amount) || 0,
           paymentMethod: isCod ? "cod" : "prepaid",
           items: rawItems.map((it: any) => ({
@@ -81,8 +83,10 @@ export async function GET(req: NextRequest) {
             try { rawItems = JSON.parse(ord.items); } catch { rawItems = []; }
           }
 
+          const displayOrderId = ord.shopify_order_id || (ord as any).shopify_order_id || ord.id || resolvedOrderId;
+
           const emailRes = await sendOrderConfirmationEmail({
-            orderId: ord.id || (ord as any).shopify_order_id || resolvedOrderId,
+            orderId: displayOrderId,
             customerName: ord.customer_name || "Valued Customer",
             customerEmail,
             customerPhone: ord.customer_phone,

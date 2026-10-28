@@ -89,7 +89,7 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
 
   // 1. Synchronize to ERP Engine immediately so it appears on Admin Dashboard & Orders
   try {
-    await createERPOrder({
+    const erpOrder = await createERPOrder({
       id: order.id,
       customer_name: order.customer_name,
       guest_email: order.customer_email,
@@ -100,8 +100,8 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
       shipping_address: `${order.shipping_address}, ${order.city} ${order.postal_code}`,
       payment_method: order.payment_method === "Credit Card" ? "Prepaid" : order.payment_method,
       payment_status: order.payment_status === "paid" ? "Completed" : "Pending",
-      status: "Processing",
-      delivery_status: "Processing",
+      status: order.order_status === "shipped" ? "In Transit" : "Processing",
+      delivery_status: order.order_status === "shipped" ? "In Transit" : "Processing",
       whatsapp_confirm_status: order.whatsapp_confirm_status || "pending_whatsapp",
       whatsapp_confirm_token: order.whatsapp_confirm_token || "",
       whatsapp_token_used: order.whatsapp_token_used || false,
@@ -122,6 +122,9 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
       })),
       created_at: order.created_at,
     });
+    if (erpOrder && erpOrder.shopify_order_id) {
+      (order as any).shopify_order_id = erpOrder.shopify_order_id;
+    }
   } catch (err) {
     console.warn("Failed to sync storefront order to ERP:", err);
   }

@@ -316,7 +316,7 @@ export async function POST(req: NextRequest) {
       const waSent = await sendOrderPreConfirmationWhatsApp({
         customerName: customer_name,
         customerPhone: customer_phone || "",
-        orderId,
+        orderId: (newOrder as any).shopify_order_id || orderId,
         totalAmount: Number(total_amount),
         paymentMethod: isCod ? "cod" : "prepaid",
         token: confirmToken,

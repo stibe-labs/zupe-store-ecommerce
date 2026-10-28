@@ -72,6 +72,10 @@ export async function sendOrderPreConfirmationWhatsApp(
   const cancelUrl = `${STORE_BASE_URL}/api/orders/whatsapp-cancel?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
+  const codDoorstepDue = Math.max(0, totalAmount - 10);
+  const displayAmount = paymentMethod === "cod" ? codDoorstepDue : totalAmount;
+  const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
+
   // 1. Try official Meta Template with interactive buttons first (zupe_order_verify)
   let templateSent = false;
   try {
@@ -80,8 +84,8 @@ export async function sendOrderPreConfirmationWhatsApp(
       apiToken,
       digits,
       firstName,
-      orderId,
-      totalAmount,
+      displayOrderId,
+      displayAmount,
       paymentMethodLabel,
       confirmUrl,
       cancelUrl,
@@ -97,7 +101,6 @@ export async function sendOrderPreConfirmationWhatsApp(
   }
 
   // 2. Fallback to direct message only if template was not accepted
-  const codDoorstepDue = Math.max(0, totalAmount - 10);
   const paymentBreakdownText =
     paymentMethod === "cod"
       ? `💰 *Total Amount:* Rs ${totalAmount.toLocaleString("en-IN")}\n` +
@@ -108,7 +111,7 @@ export async function sendOrderPreConfirmationWhatsApp(
   const message =
     `*Order Verification — Zupe Store* 🛍️\n\n` +
     `Hi ${firstName}! Thank you for placing your order with Zupe Store.\n\n` +
-    `📦 *Order ID:* ${orderId}\n` +
+    `📦 *Order ID:* ${displayOrderId}\n` +
     `📋 *Items:*\n${itemLines}${more}\n\n` +
     paymentBreakdownText +
     `Please confirm your order below so we can pack and dispatch your shipment:\n\n` +
@@ -117,7 +120,7 @@ export async function sendOrderPreConfirmationWhatsApp(
     `Zupe Store Team`;
 
   await sendWhatsAppTextMessage(apiUrl, apiToken, digits, message);
-  console.log(`✅ [WA Pre-Confirm] Fallback verification message delivered to ${digits} for order ${orderId}`);
+  console.log(`✅ [WA Pre-Confirm] Fallback verification message delivered to ${digits} for order ${displayOrderId}`);
   return true;
 }
 
@@ -140,7 +143,9 @@ async function sendPreConfirmViaTemplate(
   //   Parameter 1: verificationToken (e.g. tok_xxx)
   // - Button 1 (Cancel Order): Dynamic URL configured with base:
   //   https://zupe-store.stibelabs.workers.dev/orders?cancelPrompt={{1}}
-  //   Parameter 1: orderId (e.g. ord_xxx)
+  //   Parameter 1: clean orderId (e.g. 1567 or ord_xxx)
+
+  const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
 
   const payload = {
     messaging_product: "whatsapp",
@@ -178,7 +183,7 @@ async function sendPreConfirmViaTemplate(
           parameters: [
             {
               type: "text",
-              text: orderId,
+              text: cleanButtonOrderId,
             },
           ],
         },
@@ -233,21 +238,23 @@ export async function sendOrderConfirmationWhatsApp(
   const switchPrepaidAmount = Math.max(1, doorstepBalance - 49);  // e.g. saves Rs 49 shipping fee
   const productSubtotal = totalAmount >= 49 ? totalAmount - 49 : totalAmount;
   const firstName = customerName.split(" ")[0] || customerName;
+  const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
+  const cleanUrlOrderId = orderId.replace(/^#/, "");
 
   const itemLines = items
     .slice(0, 3)
     .map(function(it) { return "  • " + it.name + " (x" + it.quantity + ")"; })
     .join("\n");
   const moreItems = items.length > 3 ? "\n  • ...and " + (items.length - 3) + " more" : "";
-  const trackUrl = STORE_BASE_URL + "/order-tracking?query=" + encodeURIComponent(orderId);
-  const payNowUrl = STORE_BASE_URL + "/checkout?method=prepaid&switch=cod&orderId=" + encodeURIComponent(orderId);
+  const trackUrl = STORE_BASE_URL + "/order-tracking?query=" + encodeURIComponent(cleanUrlOrderId);
+  const payNowUrl = STORE_BASE_URL + "/checkout?method=prepaid&switch=cod&orderId=" + encodeURIComponent(cleanUrlOrderId);
 
   let message: string;
   if (paymentMethod === "cod") {
     message =
       "✅ *Order Confirmed — Zupe Store!* 🛍️\n\n" +
       "Hi " + firstName + "! Your Cash on Delivery order is confirmed.\n\n" +
-      "📦 *Order ID:* " + orderId + "\n" +
+      "📦 *Order ID:* " + displayOrderId + "\n" +
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
       "💰 *Price Breakdown:*\n" +
       "  • Product Amount: Rs " + productSubtotal.toLocaleString("en-IN") + "\n" +
@@ -266,7 +273,7 @@ export async function sendOrderConfirmationWhatsApp(
     message =
       "✅ *Payment Successful — Zupe Store!* 🛍️\n\n" +
       "Hi " + firstName + "! Your prepaid order is confirmed.\n\n" +
-      "📦 *Order ID:* " + orderId + "\n" +
+      "📦 *Order ID:* " + displayOrderId + "\n" +
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
       "💰 *Amount Paid:* Rs " + totalAmount.toLocaleString("en-IN") + " (Online Prepaid)\n" +
       "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
@@ -287,7 +294,7 @@ export async function sendOrderConfirmationWhatsApp(
         token,
         digits,
         firstName,
-        orderId,
+        displayOrderId,
         doorstepBalance,
         switchPrepaidAmount
       );
@@ -303,7 +310,7 @@ export async function sendOrderConfirmationWhatsApp(
           token,
           digits,
           firstName,
-          orderId,
+          displayOrderId,
           totalAmount,
           paymentMethodLabel
         );
@@ -321,7 +328,7 @@ export async function sendOrderConfirmationWhatsApp(
         digits,
         paymentMethod,
         firstName,
-        orderId,
+        displayOrderId,
         totalAmount,
         switchPrepaidAmount
       );
@@ -336,7 +343,7 @@ export async function sendOrderConfirmationWhatsApp(
           token,
           digits,
           firstName,
-          orderId,
+          displayOrderId,
           totalAmount,
           paymentMethodLabel
         );
@@ -350,7 +357,7 @@ export async function sendOrderConfirmationWhatsApp(
   // This guarantees immediate delivery with full items list, delivery estimate, tracking link, and switch offer
   try {
     await sendWhatsAppTextMessage(apiUrl, token, digits, message);
-    console.log(`✅ [WA Order Confirm] Itemized confirmation delivered to ${digits} for order ${orderId}`);
+    console.log(`✅ [WA Order Confirm] Itemized confirmation delivered to ${digits} for order ${displayOrderId}`);
   } catch (err) {
     console.warn("[WA Order Confirm] Direct message dispatch error:", err);
   }
@@ -365,6 +372,8 @@ async function sendViaCodV2Template(
   totalAmount: number,
   discountedAmount: number
 ): Promise<boolean> {
+  const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
+
   const payload = {
     messaging_product: "whatsapp",
     recipient_type: "individual",
@@ -387,13 +396,13 @@ async function sendViaCodV2Template(
           type: "button",
           sub_type: "url",
           index: "0",
-          parameters: [{ type: "text", text: orderId }],
+          parameters: [{ type: "text", text: cleanButtonOrderId }],
         },
         {
           type: "button",
           sub_type: "url",
           index: "1",
-          parameters: [{ type: "text", text: orderId }],
+          parameters: [{ type: "text", text: cleanButtonOrderId }],
         },
       ],
     },
@@ -429,6 +438,8 @@ async function sendViaConfirmedUtilityTemplate(
   totalAmount: number,
   paymentMethodLabel: string
 ): Promise<boolean> {
+  const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
+
   const payload = {
     messaging_product: "whatsapp",
     recipient_type: "individual",
@@ -451,7 +462,7 @@ async function sendViaConfirmedUtilityTemplate(
           type: "button",
           sub_type: "url",
           index: "0",
-          parameters: [{ type: "text", text: orderId }],
+          parameters: [{ type: "text", text: cleanButtonOrderId }],
         },
       ],
     },
@@ -503,7 +514,8 @@ async function sendViaTemplate(
           { type: "text", text: "Rs " + totalAmount.toLocaleString("en-IN") },
         ];
 
-  const trackButtonParam = { type: "text", text: orderId };
+  const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
+  const trackButtonParam = { type: "text", text: cleanButtonOrderId };
 
   const components: any[] =
     paymentMethod === "cod"
