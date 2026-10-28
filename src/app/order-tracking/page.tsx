@@ -703,66 +703,6 @@ function OrderTrackingContent() {
                           </button>
                         </div>
                       </div>
-
-                      {/* Courier & AWB Details Bar */}
-                      <div className="mt-6 pt-6 border-t border-gray-200/60 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
-                          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
-                            Courier Partner
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <Truck className="w-4 h-4 text-[#FF7A00]" />
-                            <span className="text-sm font-bold text-gray-900">
-                              {selectedOrder.courier_partner || "Delhivery Logistics"}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
-                          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
-                            AWB / Waybill Number
-                          </span>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-mono font-bold text-gray-900">
-                              {selectedOrder.shiprocket_awb || "SR-AWB-PENDING"}
-                            </span>
-                            {selectedOrder.shiprocket_awb && (
-                              <button
-                                onClick={() =>
-                                  copyToClipboard(selectedOrder.shiprocket_awb!, "awb")
-                                }
-                                className="p-1 text-gray-400 hover:text-gray-700"
-                                title="Copy AWB"
-                              >
-                                {copiedAWB ? (
-                                  <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                ) : (
-                                  <Copy className="w-3.5 h-3.5" />
-                                )}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
-                          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
-                            External Tracking
-                          </span>
-                          <a
-                            href={
-                              selectedOrder.courier_partner?.toLowerCase().includes("bluedart")
-                                ? `https://www.bluedart.com/tracking`
-                                : `https://www.delhivery.com/track/package/${selectedOrder.shiprocket_awb || ""}`
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FF7A00] hover:underline"
-                          >
-                            <span>Open Courier Portal</span>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        </div>
-                      </div>
                     </div>
 
                     {/* Switch to Prepaid Offer Banner for COD orders */}
@@ -824,7 +764,7 @@ function OrderTrackingContent() {
                     })()}
 
                     {/* Step Visual Progress Bar */}
-                    <div className="p-6 sm:p-8">
+                    <div className="p-6 sm:p-8 border-t border-gray-100">
                       <h3 className="text-base font-bold text-gray-900 mb-6 flex items-center gap-2">
                         <Truck className="w-5 h-5 text-[#FF7A00]" />
                         <span>Live Shipment Journey</span>
@@ -879,6 +819,66 @@ function OrderTrackingContent() {
                             </div>
                           </div>
                         ))}
+                      </div>
+
+                      {/* Courier & AWB Details Bar (Moved Under Live Shipment Journey) */}
+                      <div className="mt-8 pt-6 border-t border-gray-200/60 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
+                          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
+                            Courier Partner
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <Truck className="w-4 h-4 text-[#FF7A00]" />
+                            <span className="text-sm font-bold text-gray-900">
+                              {selectedOrder.courier_partner || "Delhivery Logistics"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
+                          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
+                            AWB / Waybill Number
+                          </span>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-mono font-bold text-gray-900">
+                              {selectedOrder.shiprocket_awb || "SR-AWB-PENDING"}
+                            </span>
+                            {selectedOrder.shiprocket_awb && (
+                              <button
+                                onClick={() =>
+                                  copyToClipboard(selectedOrder.shiprocket_awb!, "awb")
+                                }
+                                className="p-1 text-gray-400 hover:text-gray-700 cursor-pointer"
+                                title="Copy AWB"
+                              >
+                                {copiedAWB ? (
+                                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                ) : (
+                                  <Copy className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
+                          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
+                            External Tracking
+                          </span>
+                          <a
+                            href={
+                              selectedOrder.courier_partner?.toLowerCase().includes("bluedart")
+                                ? `https://www.bluedart.com/tracking`
+                                : `https://www.delhivery.com/track/package/${selectedOrder.shiprocket_awb || ""}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FF7A00] hover:underline cursor-pointer"
+                          >
+                            <span>Open Courier Portal</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
                       </div>
                     </div>
                   </div>
