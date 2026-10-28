@@ -108,6 +108,10 @@ export const DEFAULT_PRODUCTS: Product[] = [
     images: [
       "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
       "/products/turkiye-jam/turkiye-jam-box-strips.jpg",
+      "/tj/turkiye-jam-gallery-1.jpeg",
+      "/tj/turkiye-jam-gallery-2.jpeg",
+      "/tj/turkiye-jam-gallery-3.jpeg",
+      "/tj/turkiye-jam-gallery-4.jpeg",
       "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
       "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
     ],
@@ -279,6 +283,10 @@ export const DEFAULT_PRODUCTS: Product[] = [
       user_photos: [
         { image: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg" },
         { image: "/products/turkiye-jam/turkiye-jam-box-strips.jpg" },
+        { image: "/tj/turkiye-jam-gallery-1.jpeg" },
+        { image: "/tj/turkiye-jam-gallery-2.jpeg" },
+        { image: "/tj/turkiye-jam-gallery-3.jpeg" },
+        { image: "/tj/turkiye-jam-gallery-4.jpeg" },
         { image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg" },
         { image: "/products/turkiye-jam/turkiye-jam-5-strips.jpg" },
       ],

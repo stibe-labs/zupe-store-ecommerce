@@ -41,6 +41,26 @@ const PRODUCT_IMAGES = [
     label: "Sealed Box",
   },
   {
+    src: "/tj/turkiye-jam-gallery-1.jpeg",
+    title: "Authentic Sachet Strips & Box Packaging",
+    label: "Package Overview",
+  },
+  {
+    src: "/tj/turkiye-jam-gallery-2.jpeg",
+    title: "Original Themra Import Certification",
+    label: "Import Proof",
+  },
+  {
+    src: "/tj/turkiye-jam-gallery-3.jpeg",
+    title: "Botanical Herbal Macun Display",
+    label: "Product Shots",
+  },
+  {
+    src: "/tj/turkiye-jam-gallery-4.jpeg",
+    title: "Premium Jar & Sachet Details",
+    label: "Bottle & Sachets",
+  },
+  {
     src: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
     title: "Individual Single-Dose Sachets",
     label: "Sachet Strips",
