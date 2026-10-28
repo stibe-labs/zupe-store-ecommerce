@@ -6,27 +6,27 @@ import { Truck, Banknote, Headphones, ShieldCheck, Sparkles, CheckCircle2 } from
 const ANNOUNCEMENT_ITEMS = [
   {
     icon: Sparkles,
-    text: "🇹🇷 100% Original Turkish Import (Themra Bitkisel)",
+    text: "🇹🇷 100% Authentic Turkish Import • Themra Herbal Paste",
   },
   {
     icon: Truck,
-    text: "🚚 കേരളത്തിൽ ഒരു ദിവസം കൊണ്ട് എക്സ്പ്രസ് ഡെലിവറി",
+    text: "⚡ 1–2 Day Superfast Express Delivery (Kerala & India)",
   },
   {
     icon: ShieldCheck,
-    text: "📦 100% സുരക്ഷിതവും രഹസ്യവുമായ പാക്കിങ് (Discreet Packaging)",
+    text: "📦 100% Discreet & Tamper-Proof Plain Box Packaging",
   },
   {
     icon: CheckCircle2,
-    text: "🛡️ റിസൾട്ട് ഇല്ലെങ്കിൽ ബാലൻസ് സ്ട്രിപ്പിന് 100% റീഫണ്ട് ഗ്യാരണ്ടി",
+    text: "🛡️ 100% Money-Back Guarantee on Unused Sachet Strips",
   },
   {
     icon: Banknote,
-    text: "💵 Cash on Delivery & Fast Prepaid Available",
+    text: "💵 Cash on Delivery & Express Prepaid Online Available",
   },
   {
     icon: Headphones,
-    text: "WhatsApp ഓർഡർ & സപ്പോർട്ട്: +91 97441 22853",
+    text: "WhatsApp Order & Inquiries: +91 97441 22853",
     href: "https://wa.me/919744122853?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam",
   },
 ];
@@ -35,11 +35,11 @@ export function TopBar() {
   return (
     <aside
       aria-label="Store Announcements"
-      className="relative bg-gradient-to-r from-[#3b000a] via-[#5c0011] to-[#3b000a] text-amber-100 text-[11px] sm:text-xs py-2 overflow-hidden border-b border-amber-500/20 select-none z-30"
+      className="relative bg-gradient-to-r from-[#2a0409] via-[#4a0812] to-[#2a0409] text-amber-100/90 text-[11px] sm:text-xs py-2 overflow-hidden border-b border-amber-500/20 select-none z-30"
     >
       {/* Edge gradient masks for smooth fade in/out */}
-      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-[#3b000a] to-transparent z-10" />
-      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-[#3b000a] to-transparent z-10" />
+      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-[#2a0409] to-transparent z-10" />
+      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-[#2a0409] to-transparent z-10" />
 
       {/* Marquee Track: Seamless Infinite Loop */}
       <div className="flex animate-topbar-ticker whitespace-nowrap">

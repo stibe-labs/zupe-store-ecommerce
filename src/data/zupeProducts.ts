@@ -3,7 +3,7 @@ import { Product } from "@/types/product";
 export interface TurkiyeJamVariant {
   id: string;
   name: string;
-  malayalamTitle: string;
+  packageDescription: string;
   price: number;
   mrp: number;
   savings: number;
@@ -16,20 +16,20 @@ export interface TurkiyeJamVariant {
 export const TURKIYE_JAM_VARIANTS: TurkiyeJamVariant[] = [
   {
     id: "bottle-240g",
-    name: "240g Bottle + 2 Strip Free",
-    malayalamTitle: "240 ഗ്രാം ബോട്ടിൽ + 2 സ്ട്രിപ്പ് സൗജന്യം",
+    name: "240g Glass Jar + 2 Free Strips",
+    packageDescription: "Full 240g Jar + 2 Bonus Sachet Strips Included",
     price: 2899,
     mrp: 4999,
     savings: 2100,
     badge: "BEST VALUE",
-    freeBonus: "+ 2 Free Strips Included",
+    freeBonus: "2 Free Sachets Included",
     image: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
     popular: true,
   },
   {
     id: "box-14-strips",
-    name: "12 + 2 Strip Packet Box",
-    malayalamTitle: "12 + 2 സ്ട്രിപ്പ് പാക്കറ്റ് ബോക്സ് (ആകെ 14 എണ്ണം)",
+    name: "14 Sachet Strips Box (12 + 2 Pack)",
+    packageDescription: "Complete Sealed Box with 14 Sachet Strips",
     price: 2899,
     mrp: 4999,
     savings: 2100,
@@ -40,49 +40,49 @@ export const TURKIYE_JAM_VARIANTS: TurkiyeJamVariant[] = [
   },
   {
     id: "pack-6-strips",
-    name: "6 Strip Pack",
-    malayalamTitle: "6 സ്ട്രിപ്പ് പാക്ക്",
+    name: "6 Sachet Strips Pack",
+    packageDescription: "Multi-Session Value Pack (6 Sachets)",
     price: 1899,
     mrp: 2999,
     savings: 1100,
     badge: "SAVER PACK",
-    freeBonus: "Economical Pack",
+    freeBonus: "Multi-Session Pack",
     image: "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
     popular: false,
   },
   {
     id: "pack-4-strips",
-    name: "4 Strip Pack",
-    malayalamTitle: "4 സ്ട്രിപ്പ് പാക്ക്",
+    name: "4 Sachet Strips Pack",
+    packageDescription: "Popular 4-Session Sachet Pack",
     price: 1399,
     mrp: 2199,
     savings: 800,
     badge: "POPULAR",
-    freeBonus: "Multi-Use Pack",
+    freeBonus: "4 Sachets",
     image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
     popular: false,
   },
   {
     id: "pack-3-strips",
-    name: "3 Strip Pack",
-    malayalamTitle: "3 സ്ട്രിപ്പ് പാക്ക്",
+    name: "3 Sachet Strips Pack",
+    packageDescription: "Standard 3-Session Sachet Pack",
     price: 1099,
     mrp: 1699,
     savings: 600,
     badge: "STANDARD",
-    freeBonus: "Weekend Special",
+    freeBonus: "3 Sachets",
     image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
     popular: false,
   },
   {
     id: "pack-2-strips",
-    name: "2 Strip Trial Pack",
-    malayalamTitle: "2 സ്ട്രിപ്പ് ട്രയൽ പാക്ക്",
+    name: "2 Sachet Strips Trial Pack",
+    packageDescription: "First-Time Discovery Trial Pack (2 Sachets)",
     price: 899,
     mrp: 1299,
     savings: 400,
     badge: "TRIAL PACK",
-    freeBonus: "Starter Pack",
+    freeBonus: "2 Sachets",
     image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
     popular: false,
   },
@@ -92,18 +92,18 @@ export const DEFAULT_PRODUCTS: Product[] = [
   {
     id: "turkiye-jam",
     slug: "turkiye-jam-epimedium-macun",
-    name: "Themra Epimedyumlu Macun - തുർക്കി ജാം",
-    subtitle: "100% Original Turkish Herbal Paste for Men & Women",
+    name: "Themra Epimedium Herbal Macun (Original Turkish Paste)",
+    subtitle: "100% Authentic Botanical Vitality Formula for Men & Women",
     category: "Vitality & Wellness",
     subcategory: "Herbal Vitality",
-    tagline: "സ്ത്രീകൾക്കും പുരുഷന്മാർക്കും അത്ഭുത ഉൽപന്നം • 100% ഒറിജിനൽ തുർക്കി ജാം",
+    tagline: "Natural Vitality, Peak Stamina & Intimate Performance for Couples",
     description:
-      "തുർക്കിയിൽ നിന്ന് നേരിട്ട് ഇറക്കുമതി ചെയ്യുന്ന 100% ഒറിജിനൽ തെംറ എപ്പിമീഡിയം മാക്കൂൻ (Themra Epimedium Bitkisel Macun). പുരുഷന്മാരിൽ അസാധാരണ കരുത്തും സ്റ്റാമിനയും ദീർഘനേരത്തെ സമയക്കൂടുതലും നൽകുന്നു. സ്ത്രീകളിൽ സ്വാഭാവിക ലൈംഗിക ആഗ്രഹവും ആനന്ദവും വർദ്ധിപ്പിക്കുന്നു. 100% പ്രകൃതിദത്ത കൂട്ട്.",
+      "Directly imported from Turkey, Themra Epimedium Herbal Macun is a globally acclaimed herbal honey paste crafted from centuries-old traditional recipes. Formulated with Epimedium (Horny Goat Weed), Pure Flower Honey, Royal Jelly, Red Ginseng, and botanical extracts, it delivers sustained physical stamina, heightened endurance, and sensual vitality for both men and women.",
     price: 2899,
     mrp: 4999,
     offer_price: 2899,
     stock_count: 150,
-    volume: "240g Jar & Strips Available",
+    volume: "240g Jar & Sachet Strips Available",
     poster_image: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
     images: [
       "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
@@ -111,17 +111,17 @@ export const DEFAULT_PRODUCTS: Product[] = [
       "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
       "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
     ],
-    color: "240g Bottle + 2 Strip Free",
-    material: "100% Herbal Honey Paste (Epimedium, Royal Jelly, Ginseng)",
+    color: "240g Glass Jar + 2 Free Strips",
+    material: "100% Natural Herbal Honey Paste (Epimedium, Royal Jelly, Ginseng)",
     in_stock: 1,
     rating: 4.9,
     review_count: 1480,
-    sold_count: "4,200+ sold in Kerala",
+    sold_count: "4,200+ delivered across India",
     badge: "Sale",
     has_colors: true,
     colors: [
       {
-        name: "240g Bottle + 2 Strip Free",
+        name: "240g Glass Jar + 2 Free Strips",
         image: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
         colorHex: "#780016",
         images: [
@@ -132,7 +132,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
         ],
       },
       {
-        name: "12+2 Strip Packet Box",
+        name: "14 Sachet Strips Box (12 + 2 Pack)",
         image: "/products/turkiye-jam/turkiye-jam-box-strips.jpg",
         colorHex: "#8B0000",
         images: [
@@ -143,7 +143,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
         ],
       },
       {
-        name: "6 Strip Pack",
+        name: "6 Sachet Strips Pack",
         image: "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
         colorHex: "#9E1B32",
         images: [
@@ -153,7 +153,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
         ],
       },
       {
-        name: "4 Strip Pack",
+        name: "4 Sachet Strips Pack",
         image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
         colorHex: "#B31B1B",
         images: [
@@ -163,7 +163,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
         ],
       },
       {
-        name: "3 Strip Pack",
+        name: "3 Sachet Strips Pack",
         image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
         colorHex: "#C41E3A",
         images: [
@@ -172,7 +172,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
         ],
       },
       {
-        name: "2 Strip Trial Pack",
+        name: "2 Sachet Strips Trial Pack",
         image: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
         colorHex: "#800020",
         images: [
@@ -182,39 +182,40 @@ export const DEFAULT_PRODUCTS: Product[] = [
       },
     ],
     features: [
-      "100% ഒറിജിനൽ തുർക്കി നിർമ്മിതം (Themra Bitkisel Ürünler Turkey)",
-      "പുരുഷൻമാരിൽ: അതിശയകരമായ ശക്തിയും സമയക്കൂടുതലും",
-      "പുരുഷൻമാരിൽ: ഒരേ സമയം കൂടുതൽ തവണ ചെയ്യാനുള്ള കരുത്ത്",
-      "സ്ത്രീകളിൽ: ലൈംഗിക ആഗ്രഹവും ആനന്ദവും വർദ്ധിപ്പിക്കുന്നു",
-      "കേരളത്തിൽ 1 ദിവസം കൊണ്ട് അതിവേഗ ഡെലിവറി 🚚",
-      "100% സുരക്ഷിതവും രഹസ്യവുമായ പാക്കിങ് (Discreet Packaging) 📦",
-      "റിസൾട്ട് ലഭിച്ചില്ലെങ്കിൽ ബാലൻസ് സ്ട്രിപ്പിന് 100% മണി-ബാക്ക് റീഫണ്ട് 🛡️",
+      "100% Authentic Turkish Import (Themra Bitkisel Ürünler Turkey)",
+      "For Men: Extended stamina, heightened endurance and peak physical control",
+      "For Men: Rapid post-session recovery enabling multiple intimate rounds",
+      "For Women: Stimulates natural sensual libido, arousal and climax intensity",
+      "Express 1–2 Day Priority Delivery across Kerala & India",
+      "100% Discreet & Opaque Plain Box Packaging for Complete Privacy",
+      "Money-Back Guarantee: Return unused sachet strips for a full pro-rata refund",
     ],
     specifications: {
-      "ഉൽപ്പന്നം (Product)": "Themra Epimedyumlu Macun (തുർക്കി ജാം)",
-      "നിർമ്മാണം (Origin)": "Made in Turkey 🇹🇷 (Themra Bitkisel)",
-      "പ്രധാന ചേരുവകൾ (Ingredients)": "Epimedium, Honey, Royal Jelly, Red Ginseng, Ginger, Maca Root, Cinnamon",
-      "ഉപയോഗം (Audience)": "സ്ത്രീകൾക്കും പുരുഷന്മാർക്കും (18 വയസ്സിന് മുകളിൽ)",
-      "പാക്കിങ് (Packaging)": "100% Discreet & Opaque Plain Box",
-      "ഡെലിവറി സമയം (Prepaid)": "1–2 ദിവസം (Kerala Express)",
-      "ഡെലിവറി സമയം (COD)": "3–7 ദിവസം (All India Doorstep)",
+      "Product Name": "Themra Epimedium Herbal Macun (Turkish Paste)",
+      "Country of Origin": "Made in Turkey 🇹🇷 (Themra Bitkisel)",
+      "Key Ingredients": "Epimedium (Horny Goat Weed), Pure Flower Honey, Royal Jelly, Red Ginseng, Ginger, Maca Root, Cinnamon",
+      "Form": "Herbal Honey Paste (Jar & Single-Use Sachets)",
+      "Target Audience": "Adult Men & Women (18+)",
+      "Packaging": "100% Discreet, Tamper-Proof Plain Box",
+      "Prepaid Shipping": "1–2 Days Superfast Express Delivery",
+      "COD Shipping": "3–7 Days Doorstep Delivery",
     },
     whats_in_box: [
-      "1 × ഒറിജിനൽ തുർക്കി ജാം (തിരഞ്ഞെടുത്ത പാക്കേജ്)",
-      "ബോണസ് ഫ്രീ സ്ട്രിപ്പുകൾ (240g Bottle & 12-Strip ബോക്സിനൊപ്പം)",
-      "മലയാളത്തിലും ഇംഗ്ലീഷിലുമുള്ള സമ്പൂർണ്ണ ഉപയോഗ ഗൈഡ്",
-      "100% സുരക്ഷിതമായ രഹസ്യ ഔട്ടർ പാക്കിങ് ബോക്സ്",
+      "1 × Authentic Themra Epimedium Turkish Macun (Selected Package)",
+      "Complimentary Bonus Sachets (Included with 240g Jar & 14-Strip Box)",
+      "Comprehensive Usage & Safety Guide",
+      "Discreet, Unmarked Outer Shipping Box",
     ],
     shipping_info: [
-      "കേരളത്തിൽ അതിവേഗ ഡെലിവറി: ഓർഡർ നൽകി 24 മണിക്കൂറിനകം ഡിസ്പാച്ച് ചെയ്യപ്പെടുന്നു.",
-      "Prepaid (ഓൺലൈൻ പേയ്മെന്റ്): ₹60 മാത്രം അധികം (1-2 ദിവസത്തിനകം എക്സ്പ്രസ് ഡെലിവറി).",
-      "Cash on Delivery (ക്യാഷ് ഓൺ ഡെലിവറി): ₹190 അധികം (3-7 ദിവസത്തിനകം ഡോർസ്റ്റെപ്പ് ഡെലിവറി).",
-      "100% Discreet Packaging: പെട്ടിക്ക് പുറത്ത് ഉൽപ്പന്നത്തിന്റെ പേരോ ഉള്ളടക്കമോ കാണിക്കാത്ത തികച്ചും സുരക്ഷിതമായ പാക്കിങ്.",
+      "Fast Dispatch: Orders dispatched within 24 hours from our regional fulfillment hub.",
+      "Prepaid Online: ₹60 Extra with 1–2 Days Superfast Priority Delivery.",
+      "Cash on Delivery: ₹190 Extra with 3–7 Days Verified Doorstep Delivery.",
+      "100% Discreet Packaging: Plain, neutral box with zero product mentions on the external shipping label.",
     ],
     return_info: [
-      "ബാലൻസ് സ്ട്രിപ്പ് റീഫണ്ട് ഗ്യാരണ്ടി: സ്ട്രിപ്പുകൾ ഉപയോഗിച്ചിട്ട് ഫലം ലഭിച്ചില്ലെങ്കിൽ ബാക്കിയുള്ള സ്ട്രിപ്പുകൾ നിങ്ങൾക്ക് തിരിച്ചയക്കാം.",
-      "പൂർണ്ണ റീഫണ്ട്: തിരിച്ചയക്കുന്ന സ്ട്രിപ്പുകളുടെ തുക നിങ്ങളുടെ ബാങ്ക് / UPI അക്കൗണ്ടിലേക്ക് റീഫണ്ട് ചെയ്യുന്നതായിരിക്കും.",
-      "WhatsApp സപ്പോർട്ട്: സംശയങ്ങൾക്കും റീഫണ്ടിനും നേരിട്ട് ഞങ്ങളുടെ WhatsApp കസ്റ്റമർ കെയറുമായി ബന്ധപ്പെടാം.",
+      "Unused Strip Guarantee: If you use sachet strips and do not experience results, return the remaining unopened strips.",
+      "Full Pro-Rata Refund: You will receive a direct refund for all returned strips to your UPI or bank account.",
+      "Dedicated WhatsApp Support: Friendly customer care available 7 days a week.",
     ],
     how_to_use: {
       enabled: true,
@@ -228,40 +229,40 @@ export const DEFAULT_PRODUCTS: Product[] = [
           media_type: "image",
           media_url: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
           media_fit: "contain",
-          title: "1. ലൈംഗിക ബന്ധത്തിന് 1 മണിക്കൂർ മുമ്പ് ഭക്ഷണം കഴിക്കുക",
-          description: "വെറും വയറ്റിൽ ഒരിക്കലും കഴിക്കരുത്. ബന്ധപ്പെടുന്നതിന് 1 മണിക്കൂർ മുൻപായി സാധാരണ ഭക്ഷണം കഴിക്കുക.",
+          title: "1. Eat a Light Meal 1 Hour Before",
+          description: "Never consume on an empty stomach. Have a normal light meal approximately one hour prior to intimate activity.",
         },
         {
           id: "step-2",
           media_type: "image",
           media_url: "/products/turkiye-jam/turkiye-jam-3-strips.jpg",
           media_fit: "contain",
-          title: "2. 10 മിനിറ്റിനു ശേഷം ഒരു ചെറിയ സ്പൂൺ അല്ലെങ്കിൽ 1 സ്ട്രിപ്പ് കഴിക്കുക",
-          description: "ഭക്ഷണം കഴിഞ്ഞ് 10 മിനിറ്റ് കഴിഞ്ഞ് കൃത്യം 1 ചെറിയ സ്പൂൺ (കുപ്പിയെങ്കിൽ) അല്ലെങ്കിൽ 1 സ്ട്രിപ്പ് നേരിട്ട് വായിലേക്ക് ഒഴിച്ച് കഴിക്കുക.",
+          title: "2. Take 1 Small Spoon or 1 Sachet Strip",
+          description: "Wait 10 minutes after your meal, then take exactly one small teaspoon (if from jar) or one complete sachet strip.",
         },
         {
           id: "step-3",
           media_type: "image",
           media_url: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg",
           media_fit: "contain",
-          title: "3. കുപ്പിയാണെങ്കിൽ കഴിക്കുന്നതിന് മുമ്പ് നന്നായി ഇളക്കുക",
-          description: "ബോട്ടിൽ ഉപയോഗിക്കുമ്പോൾ എണ്ണമയവും തേനും സസ്യച്ചേരുവകളും അടിഞ്ഞിരിക്കാൻ സാധ്യതയുള്ളതിനാൽ നന്നായി ഇളക്കിയ ശേഷം മാത്രം എടുക്കുക.",
+          title: "3. Stir Thoroughly (If Using the Jar)",
+          description: "Botanical extracts and honey naturally settle. Stir the jar well with a clean spoon before scooping your dose.",
         },
         {
           id: "step-4",
           media_type: "image",
           media_url: "/products/turkiye-jam/turkiye-jam-5-strips.jpg",
           media_fit: "contain",
-          title: "4. 15 മിനിറ്റ് കഴിഞ്ഞ് ഒരു ഗ്ലാസ് പാൽ കുടിക്കുക",
-          description: "സാധ്യമെങ്കിൽ ജാം കഴിച്ച് 15 മിനിറ്റിനു ശേഷം ഒരു ഗ്ലാസ് പാൽ കുടിക്കുന്നത് ഫലം ഇരട്ടിയാക്കാൻ സഹായിക്കും.",
+          title: "4. Drink a Glass of Warm Milk After 15 Mins",
+          description: "Drinking a glass of warm milk 15 minutes after taking the paste accelerates herbal absorption and doubles effectiveness.",
         },
         {
           id: "step-5",
           media_type: "image",
           media_url: "/products/turkiye-jam/turkiye-jam-box-strips.jpg",
           media_fit: "contain",
-          title: "5. ശീതളപാനീയങ്ങൾ കർശനമായി ഒഴിവാക്കുക",
-          description: "ജാമിന് മുകളിലോ ശേഷമോ തണുത്ത പാനീയങ്ങളോ (Cool Drinks / Soda) കുടിക്കരുത്.",
+          title: "5. Avoid Cold Carbonated Beverages",
+          description: "Refrain from drinking chilled soft drinks or cold sodas immediately before or after consuming the paste.",
         },
       ],
     },
@@ -290,18 +291,18 @@ export const DEFAULT_PRODUCTS: Product[] = [
           rating: 5,
           verified: true,
           comment:
-            "യഥാർത്ഥ ഒറിജിനൽ തുർക്കി ജാം തന്നെയാണിത്! ആദ്യ സ്ട്രിപ്പ് ഉപയോഗിച്ചപ്പോൾ തന്നെ വിശ്വസിക്കാൻ പറ്റാത്ത റിസൾട്ട് കിട്ടി. സ്റ്റാമിനയും സമയക്കൂടുതലും അത്ഭുതപ്പെടുത്തി. പാക്കിങ് വളരെ രഹസ്യമായിരുന്നു. താങ്ക് യു!",
+            "100% genuine Themra Turkish Macun. Noticed exceptional stamina and duration after the very first sachet. The discreet packaging gave me complete peace of mind.",
           images: ["/products/turkiye-jam/turkiye-jam-3-strips.jpg"],
         },
         {
           id: "rev-2",
-          author: "Anonymous Couple (Kochi)",
+          author: "Verified Couple (Kochi)",
           avatar: "/avatars/avatar-2.jpg",
           date: "3 days ago",
           rating: 5,
           verified: true,
           comment:
-            "We were skeptical at first, but both of us tried it as per instructions with warm milk. Absolutely amazing experience for both partners. Worth every single rupee!",
+            "Both my partner and I tried it following the instructions with warm milk. The mutual intimacy, energy, and satisfaction were unforgettable. Worth every rupee.",
         },
         {
           id: "rev-3",
@@ -311,18 +312,18 @@ export const DEFAULT_PRODUCTS: Product[] = [
           rating: 5,
           verified: true,
           comment:
-            "240g bottle വാങ്ങി. 2 സ്ട്രിപ്പ് ഫ്രീയും കിട്ടി. ഒരൊറ്റ ദിവസം കൊണ്ട് തൃശ്ശൂരിൽ ഡെലിവറി കിട്ടി. 100% geniune product.",
+            "Ordered the 240g jar and received 2 free sachets. Fast delivery in just 24 hours. Authentic seal and great taste.",
           images: ["/products/turkiye-jam/turkiye-jam-jar-and-box.jpg"],
         },
         {
           id: "rev-4",
-          author: "Muhammed Shafi (Malappuram)",
+          author: "Muhammed S. (Malappuram)",
           avatar: "/avatars/avatar-4.jpg",
           date: "1 week ago",
           rating: 5,
           verified: true,
           comment:
-            "ബാലൻസ് സ്ട്രിപ്പ് തിരിച്ചയക്കാം എന്ന ഗ്യാരന്റി കണ്ടാണ് വാങ്ങിയത്, പക്ഷെ റിസൾട്ട് കണ്ടപ്പോൾ തിരിച്ചയക്കാൻ തോന്നിയില്ല. അടുത്ത ഓർഡറും ഉടൻ നൽകും.",
+            "The refund guarantee on unused strips was what gave me confidence to try. But after testing, I will never return it — ordering another box today!",
         },
       ],
     },
@@ -330,9 +331,9 @@ export const DEFAULT_PRODUCTS: Product[] = [
 ];
 
 export const PRODUCT_CATEGORIES = [
-  "All Categories",
+  "All Products",
   "Herbal Vitality",
-  "Men's Stamina",
+  "Men's Performance",
   "Women's Wellness",
 ];
 
@@ -357,7 +358,7 @@ export function getSubcategoriesForCategory(categoryName: string, dynamicCategor
 }
 
 export function doesCategoryMatch(productCategory: string, selectedCategory: string, dynamicCategories?: any[]): boolean {
-  if (!selectedCategory || selectedCategory === "All Categories" || selectedCategory === "all") return true;
+  if (!selectedCategory || selectedCategory === "All Products" || selectedCategory === "all") return true;
   return true;
 }
 

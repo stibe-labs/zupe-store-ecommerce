@@ -5,25 +5,21 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import {
   ShoppingBag,
-  Heart,
   User,
   Menu,
   X,
   Phone,
-  ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 
 const TURKIYE_NAV_ITEMS = [
-  { label: "ഓഫർ പാക്കേജുകൾ (Offers)", href: "/#offers" },
-  { label: "ഗുണങ്ങൾ (Benefits)", href: "/#benefits" },
-  { label: "ഉപയോഗം (How to Use)", href: "/#how-to-use" },
-  { label: "റീഫണ്ട് ഗ്യാരണ്ടി", href: "/#guarantee" },
-  { label: "കസ്റ്റമർ റിവ്യൂസ്", href: "/#reviews" },
-  { label: "ഓർഡർ ട്രാക്കിംഗ്", href: "/order-tracking" },
+  { label: "Offers & Packages", href: "/#offers" },
+  { label: "Key Benefits", href: "/#benefits" },
+  { label: "How to Use", href: "/#usage" },
+  { label: "Guarantee", href: "/#guarantee" },
+  { label: "Reviews", href: "/#reviews" },
+  { label: "Track Order", href: "/order-tracking" },
 ];
 
 export function Navbar() {
@@ -38,13 +34,13 @@ export function Navbar() {
       document.body.style.overflow = "hidden";
       return () => {
         document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
         document.body.style.overflow = prevOverflow;
       };
     }
   }, [mobileMenuOpen]);
 
   const { totalItems, openCart } = useCart();
-  const { totalWishlistItems } = useWishlist();
   const { user, isAuthenticated } = useAuth();
 
   const handleAccountClick = (e: React.MouseEvent) => {
@@ -57,38 +53,38 @@ export function Navbar() {
   };
 
   return (
-    <header className="w-full bg-white border-b border-rose-100 sticky top-0 z-40 shadow-xs">
+    <header className="w-full bg-white/95 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-40 shadow-xs">
       {/* Main Header Container */}
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-2">
-        <div className="flex items-center justify-between gap-4 min-h-[50px]">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div className="flex items-center justify-between gap-6 min-h-[52px]">
           {/* Mobile Menu Toggle & Brand */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3.5">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="p-1.5 -ml-1 text-gray-800 hover:text-[#780016] md:hidden transition-colors"
-              aria-label="Open Menu"
+              className="p-2 -ml-1.5 text-stone-800 hover:text-[#780016] md:hidden transition-colors rounded-lg hover:bg-stone-100"
+              aria-label="Open Navigation Menu"
             >
-              <Menu className="w-6 h-6 stroke-[2.2]" />
+              <Menu className="w-6 h-6 stroke-[2]" />
             </button>
 
             {/* Brand Logo */}
-            <Link href="/" className="flex items-center gap-2 group" aria-label="Turkiye Jam">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#780016] to-[#4a000e] text-white flex items-center justify-center font-bold text-lg shadow-md group-hover:scale-105 transition-transform">
+            <Link href="/" className="flex items-center gap-3 group" aria-label="Turkiye Jam Homepage">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#780016] to-[#42000c] text-white flex items-center justify-center font-bold text-xl shadow-md group-hover:scale-105 transition-transform border border-amber-500/20">
                 🇹🇷
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-base sm:text-xl font-black tracking-tight text-[#780016] group-hover:text-[#9e1b32] transition-colors leading-tight">
+                <span className="text-lg sm:text-xl font-black tracking-wider text-[#780016] group-hover:text-[#9e1b32] transition-colors leading-tight font-serif">
                   TURKIYE JAM
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-amber-700 font-bold tracking-wider -mt-0.5">
-                  തുർക്കി ജാം • 100% ഒറിജിനൽ
+                <span className="text-[10px] sm:text-[11px] text-amber-800 font-semibold tracking-widest uppercase -mt-0.5">
+                  Themra Herbal Macun
                 </span>
               </div>
             </Link>
           </div>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-700">
+          <nav className="hidden md:flex items-center gap-7 text-sm font-semibold text-stone-700">
             {TURKIYE_NAV_ITEMS.map((item) => (
               <a
                 key={item.href}
@@ -101,13 +97,13 @@ export function Navbar() {
           </nav>
 
           {/* Right Action Icons: WhatsApp Order, Account, Cart */}
-          <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             {/* WhatsApp Quick Order button */}
             <a
               href="https://wa.me/919744122853?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-xs transition-colors"
+              className="hidden lg:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95"
             >
               <Phone className="w-3.5 h-3.5" />
               <span>WhatsApp Order</span>
@@ -116,8 +112,8 @@ export function Navbar() {
             {/* Account */}
             <button
               onClick={handleAccountClick}
-              className="p-2 text-gray-700 hover:text-[#780016] hover:bg-rose-50 rounded-full transition-colors cursor-pointer"
-              aria-label="Account"
+              className="p-2.5 text-stone-700 hover:text-[#780016] hover:bg-rose-50 rounded-full transition-colors cursor-pointer"
+              aria-label="User Account"
             >
               <User className="w-5 h-5 stroke-[2]" />
             </button>
@@ -125,12 +121,12 @@ export function Navbar() {
             {/* Cart Button */}
             <button
               onClick={openCart}
-              className="relative p-2 text-gray-800 hover:text-[#780016] hover:bg-rose-50 rounded-full transition-colors cursor-pointer"
+              className="relative p-2.5 text-stone-800 hover:text-[#780016] hover:bg-rose-50 rounded-full transition-colors cursor-pointer"
               aria-label="View Shopping Cart"
             >
-              <ShoppingBag className="w-5 h-5 stroke-[2.2]" />
+              <ShoppingBag className="w-5 h-5 stroke-[2]" />
               {totalItems > 0 && (
-                <span className="absolute 0 top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#780016] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white shadow-xs">
+                <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#780016] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white shadow-xs">
                   {totalItems}
                 </span>
               )}
@@ -146,19 +142,19 @@ export function Navbar() {
             className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col justify-between p-5 z-10">
+          <div className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col justify-between p-6 z-10">
             <div>
-              <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">🇹🇷</span>
+              <div className="flex items-center justify-between border-b border-stone-200 pb-4 mb-5">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">🇹🇷</span>
                   <div className="flex flex-col text-left">
-                    <span className="text-base font-extrabold text-[#780016]">TURKIYE JAM</span>
-                    <span className="text-[10px] text-amber-700 font-semibold">തുർക്കി ജാം • ഒറിജിനൽ</span>
+                    <span className="text-base font-extrabold text-[#780016] font-serif">TURKIYE JAM</span>
+                    <span className="text-[10px] text-amber-800 font-semibold tracking-wider">Original Turkish Paste</span>
                   </div>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-1.5 text-gray-500 hover:text-black rounded-lg"
+                  className="p-1.5 text-stone-500 hover:text-black rounded-lg"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -170,7 +166,7 @@ export function Navbar() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-800 hover:bg-rose-50 hover:text-[#780016] transition-colors"
+                    className="block px-3.5 py-3 rounded-xl text-sm font-semibold text-stone-800 hover:bg-rose-50 hover:text-[#780016] transition-colors"
                   >
                     {item.label}
                   </a>
@@ -178,19 +174,19 @@ export function Navbar() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-100 space-y-3">
+            <div className="pt-5 border-t border-stone-200 space-y-3">
               <a
                 href="https://wa.me/919744122853?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-600 text-white text-sm font-bold shadow-md hover:bg-emerald-700 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-md transition-colors"
               >
                 <Phone className="w-4 h-4" />
-                <span>WhatsApp വഴി ഓർഡർ ചെയ്യുക</span>
+                <span>Order via WhatsApp</span>
               </a>
 
-              <p className="text-center text-xs text-gray-400">
-                100% Original Turkish Import • Kerala Fast Delivery
+              <p className="text-center text-xs text-stone-500">
+                100% Authentic Turkish Import • Express Delivery
               </p>
             </div>
           </div>

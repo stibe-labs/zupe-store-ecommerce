@@ -13,9 +13,9 @@ import { AbandonedCartAutoChecker } from "@/components/AbandonedCartAutoChecker"
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Turkiye Jam | 100% Original Turkish Epimedium Macun - തുർക്കി ജാം",
+  title: "Turkiye Jam | 100% Authentic Turkish Epimedium Herbal Macun",
   description:
-    "സ്ത്രീകൾക്കും പുരുഷന്മാർക്കും അത്ഭുത പ്രകൃതിദത്ത ഉൽപ്പന്നം തുർക്കി ജാം (Themra Epimedium Herbal Macun). കേരളത്തിൽ 1 ദിവസം കൊണ്ട് അതിവേഗ ഡെലിവറി, 100% സുരക്ഷിത പാക്കിങ്, റീഫണ്ട് ഗ്യാരണ്ടി.",
+    "Experience 100% original Themra Epimedium Turkish Herbal Macun for men and women. Enhance physical stamina, natural vitality, and intimacy. Express 1–2 day discreet delivery with unused strip refund guarantee.",
 };
 
 export default function RootLayout({
@@ -30,11 +30,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap"
         />
       </head>
       <body
-        className="antialiased font-sans bg-[#FAF7F2] text-[#1A1A1A]"
+        className="antialiased font-sans bg-[#FCFBF8] text-[#1A1A1A]"
         suppressHydrationWarning
       >
         <LoadingScreen />
