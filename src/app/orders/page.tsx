@@ -891,7 +891,7 @@ function OrdersPageContent() {
                                 <span className="font-bold text-rose-950">Cancel Order? </span>
                                 {isCod ? (
                                   <span className="text-amber-800 font-medium">
-                                    Doorstep balance cancelled. (Note: ₹19 advance verification fee is non-refundable).
+                                    Doorstep balance cancelled. (Note: ₹10 advance verification fee is non-refundable).
                                   </span>
                                 ) : (
                                   <span className="text-emerald-800 font-medium">
@@ -952,7 +952,7 @@ function OrdersPageContent() {
                               <span className="font-bold text-rose-950">Are you sure you want to cancel this order? </span>
                               {isCod ? (
                                 <span className="block text-amber-900 font-medium text-[11px] mt-0.5">
-                                  ⚠️ Doorstep parcel delivery will be cancelled. Please note that the <strong>₹19 advance verification fee</strong> paid during checkout is <strong>non-refundable</strong>.
+                                  ⚠️ Doorstep parcel delivery will be cancelled. Please note that the <strong>₹10 advance verification fee</strong> paid during checkout is <strong>non-refundable</strong>.
                                 </span>
                               ) : (
                                 <span className="block text-emerald-900 font-medium text-[11px] mt-0.5">

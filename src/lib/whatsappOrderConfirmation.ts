@@ -97,11 +97,11 @@ export async function sendOrderPreConfirmationWhatsApp(
   }
 
   // 2. Fallback to direct message only if template was not accepted
-  const codDoorstepDue = Math.max(0, totalAmount - 19);
+  const codDoorstepDue = Math.max(0, totalAmount - 10);
   const paymentBreakdownText =
     paymentMethod === "cod"
       ? `💰 *Total Amount:* Rs ${totalAmount.toLocaleString("en-IN")}\n` +
-        `💳 *Advance Paid Online:* Rs 19 (Verified)\n` +
+        `💳 *Advance Paid Online:* Rs 10 (Verified)\n` +
         `📦 *Balance Due at Doorstep:* Rs ${codDoorstepDue.toLocaleString("en-IN")}\n\n`
       : `💰 *Amount Paid:* Rs ${totalAmount.toLocaleString("en-IN")} (Prepaid Online)\n\n`;
 
@@ -228,9 +228,9 @@ export async function sendOrderConfirmationWhatsApp(
   const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
   const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
 
-  const advancePaid = 19;
-  const doorstepBalance = Math.max(0, totalAmount - advancePaid); // e.g. 1048 - 19 = 1029
-  const switchPrepaidAmount = Math.max(1, doorstepBalance - 30);  // e.g. 1029 - 30 = 999 (Product amount only!)
+  const advancePaid = 10;
+  const doorstepBalance = Math.max(0, totalAmount - advancePaid); // e.g. 1048 - 10 = 1038
+  const switchPrepaidAmount = Math.max(1, doorstepBalance - 49);  // e.g. saves Rs 49 shipping fee
   const productSubtotal = totalAmount >= 49 ? totalAmount - 49 : totalAmount;
   const firstName = customerName.split(" ")[0] || customerName;
 
@@ -253,10 +253,10 @@ export async function sendOrderConfirmationWhatsApp(
       "  • Product Amount: Rs " + productSubtotal.toLocaleString("en-IN") + "\n" +
       "  • Shipping Charge: Rs 49\n" +
       "  • Total Amount: Rs " + totalAmount.toLocaleString("en-IN") + "\n" +
-      "  • Advance Paid Online: Rs 19 (Received)\n" +
+      "  • Advance Paid Online: Rs 10 (Received)\n" +
       "  • *Balance Due at Doorstep: Rs " + doorstepBalance.toLocaleString("en-IN") + "*\n\n" +
       "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
-      "⚡ *Switch to Prepaid & Save Rs 30!*\n" +
+      "⚡ *Switch to Prepaid & Save Rs 49!*\n" +
       "Pay online now — pay only *Rs " + switchPrepaidAmount.toLocaleString("en-IN") + "* instead of Rs " + doorstepBalance.toLocaleString("en-IN") + " at delivery:\n" +
       payNowUrl + "\n\n" +
       "📦 *Track Your Order:*\n" +
@@ -706,7 +706,7 @@ export async function sendOrderCancellationRefundWhatsApp(
       `🛍️ *Zupe Store — Order Cancelled*\n\n` +
       `Hi ${firstName}! Your Cash on Delivery order *#${orderId}* has been successfully cancelled.\n\n` +
       `📦 *Status:* Shipment cancelled. No payment will be collected at your doorstep.\n` +
-      `ℹ️ *Note:* The Rs 19 advance verification fee paid during order placement is non-refundable.\n\n` +
+      `ℹ️ *Note:* The Rs 10 advance verification fee paid during order placement is non-refundable.\n\n` +
       `If you need any assistance or wish to re-order, we are always here to help.\n\n` +
       `Thank you,\nZupe Store Team`;
   }

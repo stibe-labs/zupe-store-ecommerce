@@ -490,13 +490,13 @@ export async function sendOrderConfirmationEmail(
                         <tr>
                           <td style="padding: 4px 0; color: #059669; font-weight: 600;">Advance Paid:</td>
                           <td style="padding: 4px 0; text-align: right; font-weight: 700; color: #059669;">
-                            ₹19 (Paid)
+                            ₹10 (Paid)
                           </td>
                         </tr>
                         <tr>
                           <td style="padding: 6px 0 0 0; border-top: 1px dashed #fdba74; color: #9a3412; font-weight: 700;">Balance at Doorstep:</td>
                           <td style="padding: 6px 0 0 0; border-top: 1px dashed #fdba74; text-align: right; font-weight: 800; color: #9a3412;">
-                            ₹${Math.max(0, totalAmount - 19).toLocaleString("en-IN")}
+                            ₹${Math.max(0, totalAmount - 10).toLocaleString("en-IN")}
                           </td>
                         </tr>
                         `
@@ -690,7 +690,7 @@ export async function sendOrderCancellationEmail(
           Your Cash on Delivery order has been successfully cancelled. Your shipment will not be dispatched and no payment will be collected at your doorstep.
         </div>
         <div style="margin-top: 12px; background: #ffffff; border: 1px solid #fef3c7; border-radius: 10px; padding: 12px; font-size: 12px; color: #92400e; line-height: 1.5;">
-          <strong>ℹ️ Advance Fee Note:</strong> The <strong>₹19 advance verification fee</strong> paid during checkout covers anti-fraud address verification and carrier commitment, and is <strong>non-refundable</strong>.
+          <strong>ℹ️ Advance Fee Note:</strong> The <strong>₹10 advance verification fee</strong> paid during checkout covers anti-fraud address verification and carrier commitment, and is <strong>non-refundable</strong>.
         </div>
       </div>
     `;
@@ -789,7 +789,7 @@ EXPECTED CREDIT TIMELINE:
 • Debit / Credit Cards / Netbanking: Credited within 2 to 4 business days.`
     : `CASH ON DELIVERY ORDER CANCELLED:
 Your Cash on Delivery order has been successfully cancelled. No doorstep payment will be collected.
-Note: The ₹19 advance verification fee paid during checkout covers order verification and carrier reservation, and is non-refundable.`
+Note: The ₹10 advance verification fee paid during checkout covers order verification and carrier reservation, and is non-refundable.`
 }
 
 If you need any assistance, reply to this email at zupestoreonline@gmail.com.

@@ -45,9 +45,11 @@ export async function POST(req: NextRequest) {
       const { updateERPOrder, getOrderById } = await import("@/lib/erpStore");
       const existingOrder = await getOrderById(existingOrderId);
 
+      const advancePaid = Number(order_payload.advance_paid || (existingOrder as any)?.advance_paid) || 10;
+      const doorstepDue = Math.max(0, Number(existingOrder?.total_amount || 0) - advancePaid);
       const discountedAmount = Number(
         order_payload.discounted_amount ||
-          (existingOrder ? Math.max(1, (Number(existingOrder.total_amount) - 19) - 30) : 0)
+          (existingOrder ? Math.max(1, doorstepDue - 49) : 0)
       );
 
       const prodCost = Number(existingOrder?.product_cost || 0);
@@ -72,7 +74,7 @@ export async function POST(req: NextRequest) {
            SET payment_method = 'Prepaid',
                payment_status = 'Completed',
                total_amount = ?,
-               discount_amount = COALESCE(discount_amount, 0) + 30,
+               discount_amount = COALESCE(discount_amount, 0) + 49,
                shipping_cost = 0,
                remittance_status = 'Settled',
                net_profit = ?
@@ -238,9 +240,10 @@ export async function POST(req: NextRequest) {
     (newOrder as any).razorpay_order_id = razorpay_order_id;
     (newOrder as any).razorpay_payment_id = razorpay_payment_id;
     if (isCodPartial) {
-      (newOrder as any).advance_paid = 19;
+      const advance = Number(order_payload?.advance_amount) || 10;
+      (newOrder as any).advance_paid = advance;
       (newOrder as any).shipping_fee = 49;
-      (newOrder as any).balance_due = Math.max(0, Number(total_amount) - 19);
+      (newOrder as any).balance_due = Math.max(0, Number(total_amount) - advance);
     }
 
     await createOrder(newOrder);
@@ -352,7 +355,9 @@ export async function POST(req: NextRequest) {
           postalCode: postal_code || "",
           totalAmount: Number(total_amount),
           discountAmount: Number(discount_amount || 0),
-          paymentMethod: isCodPartial ? "Cash on Delivery (₹19 Advance Paid)" : (payment_method || "Prepaid (Online Payment)"),
+          paymentMethod: isCodPartial
+            ? `Cash on Delivery (₹${(newOrder as any).advance_paid || 10} Advance Paid)`
+            : (payment_method || "Prepaid (Online Payment)"),
           paymentStatus: orderPaymentStatus,
           items: items || [],
           createdAt: newOrder.created_at,

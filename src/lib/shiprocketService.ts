@@ -263,10 +263,11 @@ export async function dispatchShiprocketOrder(
     // 2. Live Shiprocket API ad-hoc order creation + courier AWB assignment
     try {
       const createOrderUrl = "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc";
-      const isCodPartial = Boolean((order as any).is_cod_partial || (order as any).advance_paid === 19);
+      const advancePaid = Number((order as any).advance_paid) || (Boolean((order as any).is_cod_partial) ? 10 : 0);
+      const isCodPartial = Boolean((order as any).is_cod_partial || advancePaid > 0);
       const codCollectableAmount = (order as any).balance_due !== undefined
         ? Number((order as any).balance_due)
-        : (isCodPartial ? Math.max(0, Number(order.total_amount) - 19) : Number(order.total_amount));
+        : (isCodPartial ? Math.max(0, Number(order.total_amount) - (advancePaid || 10)) : Number(order.total_amount));
 
       const effectiveShiprocketTotal = isCod ? codCollectableAmount : Number(order.total_amount);
 
