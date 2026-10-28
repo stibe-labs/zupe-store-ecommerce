@@ -666,8 +666,8 @@ function ProductsContent() {
                       <div
                         className={`w-14 h-14 sm:w-16 sm:h-16 ${catShape} ${bgColor} ${iconColor} flex items-center justify-center transition-all duration-200 mb-1.5 overflow-hidden ${
                           isAllSelected
-                            ? "ring-2 ring-[#FF7A00] ring-offset-2 ring-offset-[#F3F4F6] border-2 border-[#FF7A00] shadow-md shadow-[#FF7A00]/25 scale-105"
-                            : "border border-transparent group-hover:scale-105 group-hover:shadow-sm"
+                            ? "border-2 border-[#FF7A00] shadow-md shadow-[#FF7A00]/20 scale-105"
+                            : "border-2 border-transparent group-hover:scale-105 group-hover:shadow-sm"
                         }`}
                       >
                         {renderIconOrCustom({
@@ -708,8 +708,8 @@ function ProductsContent() {
                       <div
                         className={`w-14 h-14 sm:w-16 sm:h-16 ${catShape} ${bgColor} ${iconColor} flex items-center justify-center transition-all duration-200 mb-1.5 overflow-hidden ${
                           isSubSelected
-                            ? "ring-2 ring-[#FF7A00] ring-offset-2 ring-offset-[#F3F4F6] border-2 border-[#FF7A00] shadow-md shadow-[#FF7A00]/25 scale-105"
-                            : "border border-transparent group-hover:scale-105 group-hover:shadow-sm"
+                            ? "border-2 border-[#FF7A00] shadow-md shadow-[#FF7A00]/20 scale-105"
+                            : "border-2 border-transparent group-hover:scale-105 group-hover:shadow-sm"
                         }`}
                       >
                         {renderIconOrCustom({
@@ -751,8 +751,8 @@ function ProductsContent() {
                       <div
                         className={`w-14 h-14 sm:w-16 sm:h-16 ${catShape} ${bgColor} ${iconColor} flex items-center justify-center transition-all duration-200 mb-1.5 overflow-hidden ${
                           isCatSelected
-                            ? "ring-2 ring-[#FF7A00] ring-offset-2 ring-offset-[#F3F4F6] border-2 border-[#FF7A00] shadow-md shadow-[#FF7A00]/25 scale-105"
-                            : "border border-transparent group-hover:scale-105 group-hover:shadow-sm"
+                            ? "border-2 border-[#FF7A00] shadow-md shadow-[#FF7A00]/20 scale-105"
+                            : "border-2 border-transparent group-hover:scale-105 group-hover:shadow-sm"
                         }`}
                       >
                         {renderIconOrCustom({
