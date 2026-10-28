@@ -283,18 +283,6 @@ export function TurkiyeJamStorefront() {
   const router = useRouter();
   const { addItem, openCart } = useCart();
 
-  // Carousel State with Auto-Sliding
-  const [heroProductIndex, setHeroProductIndex] = useState<number>(0);
-  const [activeHotspot, setActiveHotspot] = useState<number | null>(null);
-
-  // Auto-slide hero campaign posters every 4.5 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setHeroProductIndex((prev) => (prev + 1) % HERO_PRODUCTS.length);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, []);
-
   // Category Filter State
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [selectedVariant, setSelectedVariant] = useState<TurkiyeJamVariant>(TURKIYE_JAM_VARIANTS[0]);
@@ -304,18 +292,6 @@ export function TurkiyeJamStorefront() {
 
   // FAQ Accordion State
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-
-  const currentHero = HERO_PRODUCTS[heroProductIndex];
-
-  const handleNextHero = () => {
-    setActiveHotspot(null);
-    setHeroProductIndex((prev) => (prev + 1) % HERO_PRODUCTS.length);
-  };
-
-  const handlePrevHero = () => {
-    setActiveHotspot(null);
-    setHeroProductIndex((prev) => (prev - 1 + HERO_PRODUCTS.length) % HERO_PRODUCTS.length);
-  };
 
   const handleAddToCart = (variant: TurkiyeJamVariant = selectedVariant) => {
     addItem(
@@ -367,25 +343,16 @@ export function TurkiyeJamStorefront() {
       ───────────────────────────────────────────────────────────── */}
       <section className="relative w-full h-screen min-h-[620px] flex flex-col justify-end overflow-hidden bg-[#fabf00] text-stone-900 select-none pb-20 sm:pb-12">
         
-        {/* Full-Screen Edge-to-Edge Campaign Images (Smooth Auto-Sliding Crossfade) */}
+        {/* Full-Screen Edge-to-Edge Campaign Image (Static Male Model Poster) */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-          {HERO_PRODUCTS.map((prod, idx) => (
-            <div
-              key={prod.id}
-              className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
-                heroProductIndex === idx ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-              }`}
-            >
-              <Image
-                src={prod.src}
-                alt={prod.name}
-                fill
-                priority={idx === 0}
-                sizes="100vw"
-                className="object-cover object-center"
-              />
-            </div>
-          ))}
+          <Image
+            src="/tj/turkiye-jam-model-male.jpeg"
+            alt="Turkiye Jam Themra Epimedium Macun 240g"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
+          />
         </div>
 
         {/* Bottom Floating Bar: ONLY "Add to Cart" Button */}
@@ -395,7 +362,7 @@ export function TurkiyeJamStorefront() {
             whileTap={{ scale: 0.96 }}
             type="button"
             onClick={() => {
-              const target = TURKIYE_JAM_VARIANTS.find((v) => v.id === currentHero.variantId) || selectedVariant;
+              const target = TURKIYE_JAM_VARIANTS.find((v) => v.id === "tj-bottle-240g") || selectedVariant;
               handleAddToCart(target);
             }}
             className="group px-8 sm:px-10 py-4 sm:py-4.5 rounded-full bg-[#cb0805] hover:bg-[#a80604] text-white font-black text-sm sm:text-base uppercase tracking-wider shadow-[0_20px_50px_rgba(203,8,5,0.45)] hover:shadow-[0_25px_60px_rgba(203,8,5,0.6)] flex items-center gap-3 transition-all cursor-pointer border border-white/20"
@@ -404,7 +371,7 @@ export function TurkiyeJamStorefront() {
             <ShoppingBag className="w-5 h-5 transition-transform group-hover:scale-110" />
             <span>Add to Cart</span>
             <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
-            <span className="text-white/90 font-extrabold">₹{currentHero.price.toLocaleString("en-IN")}</span>
+            <span className="text-white/90 font-extrabold">₹2,899</span>
             <span className="text-xs font-bold text-amber-200 hidden sm:inline">(+2 Free Strips)</span>
           </motion.button>
         </div>

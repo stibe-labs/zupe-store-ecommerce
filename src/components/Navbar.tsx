@@ -23,7 +23,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full transition-all duration-300 pointer-events-none -mb-18 sm:-mb-22">
+    <header className="fixed top-0 inset-x-0 z-40 w-full pointer-events-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
         
         {/* Left Side: Brand Logo ONLY */}
