@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -283,9 +283,17 @@ export function TurkiyeJamStorefront() {
   const router = useRouter();
   const { addItem, openCart } = useCart();
 
-  // Carousel & Hotspot State
+  // Carousel State with Auto-Sliding
   const [heroProductIndex, setHeroProductIndex] = useState<number>(0);
   const [activeHotspot, setActiveHotspot] = useState<number | null>(null);
+
+  // Auto-slide hero campaign posters every 4.5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroProductIndex((prev) => (prev + 1) % HERO_PRODUCTS.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
 
   // Category Filter State
   const [activeCategory, setActiveCategory] = useState<string>("all");
@@ -357,39 +365,27 @@ export function TurkiyeJamStorefront() {
       {/* ─────────────────────────────────────────────────────────────
           1. FULL-SCREEN HERO SECTION (PURE IMAGE + ADD TO CART ONLY)
       ───────────────────────────────────────────────────────────── */}
-      <section className="relative w-full h-[calc(100vh-36px)] min-h-[620px] flex flex-col justify-between overflow-hidden bg-[#fabf00] text-stone-900 select-none pt-20 sm:pt-24 pb-8 sm:pb-12">
+      <section className="relative w-full h-[calc(100vh-36px)] min-h-[620px] flex flex-col justify-end overflow-hidden bg-[#fabf00] text-stone-900 select-none pb-20 sm:pb-12">
         
-        {/* Full-Screen Edge-to-Edge Campaign Image (Switchable Her/Him) */}
-        <div className="absolute inset-0 w-full h-full">
-          <Image
-            key={currentHero.id}
-            src={currentHero.src}
-            alt={currentHero.name}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-center"
-          />
-        </div>
-
-        {/* Top-Right Minimal Gender Switcher Pill */}
-        <div className="relative z-20 max-w-7xl mx-auto w-full px-4 sm:px-8 flex items-center justify-end">
-          <div className="flex items-center gap-1.5 p-1 rounded-full bg-black/65 backdrop-blur-xl border border-white/20 shadow-xl">
-            {HERO_PRODUCTS.map((prod, idx) => (
-              <button
-                key={prod.id}
-                type="button"
-                onClick={() => setHeroProductIndex(idx)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                  heroProductIndex === idx
-                    ? "bg-[#cb0805] text-white shadow-md shadow-[#cb0805]/40"
-                    : "text-stone-300 hover:text-white hover:bg-white/10"
-                }`}
-              >
-                {prod.targetLabel}
-              </button>
-            ))}
-          </div>
+        {/* Full-Screen Edge-to-Edge Campaign Images (Smooth Auto-Sliding Crossfade) */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          {HERO_PRODUCTS.map((prod, idx) => (
+            <div
+              key={prod.id}
+              className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+                heroProductIndex === idx ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+              }`}
+            >
+              <Image
+                src={prod.src}
+                alt={prod.name}
+                fill
+                priority={idx === 0}
+                sizes="100vw"
+                className="object-cover object-center"
+              />
+            </div>
+          ))}
         </div>
 
         {/* Bottom Floating Bar: ONLY "Add to Cart" Button */}
