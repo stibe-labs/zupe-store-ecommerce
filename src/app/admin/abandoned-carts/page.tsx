@@ -59,6 +59,24 @@ interface AbandonedCheckout {
   updated_at: string;
 }
 
+function getProductThumbnail(item?: AbandonedItem): string {
+  if (!item) return "/products/ripple-lamp.jpg";
+  if (item.poster_image && item.poster_image.trim()) return item.poster_image;
+  if (item.image && item.image.trim()) return item.image;
+  const idOrName = `${item.id || ""} ${item.product_id || ""} ${item.name || ""} ${item.product_name || ""}`.toLowerCase();
+  if (idOrName.includes("ripple")) return "/products/ripple-lamp.jpg";
+  if (idOrName.includes("heating") || idOrName.includes("pad") || idOrName.includes("menstrual")) return "/products/heating-pad.jpg";
+  if (idOrName.includes("iron") || idOrName.includes("steam")) return "/products/steam-iron.jpg";
+  if (idOrName.includes("printer")) return "/products/thermal-printer.jpg";
+  if (idOrName.includes("faucet") || idOrName.includes("heater")) return "/products/faucet-heater.jpg";
+  if (idOrName.includes("washer")) return "/products/foldable-washer.jpg";
+  if (idOrName.includes("popcorn")) return "/products/popcorn-maker.jpg";
+  if (idOrName.includes("nebulizer")) return "/products/mesh-nebulizer.jpg";
+  if (idOrName.includes("powerbank") || idOrName.includes("earbuds")) return "/products/powerbank-earbuds.jpg";
+  if (idOrName.includes("helicopter") || idOrName.includes("perfume")) return "/products/helicopter-perfume.jpg";
+  return "/products/ripple-lamp.jpg";
+}
+
 interface Stats {
   totalCount: number;
   abandonedCount: number;
@@ -129,9 +147,47 @@ export default function AbandonedCartsAdminPage() {
     }, 4500);
   };
 
-  // 1-Click Manual Send
+  // 1-Click Manual Send (Opens WhatsApp Web / Mobile with recovery text and updates DB tracking)
   const handleSendWhatsApp = async (checkout: AbandonedCheckout) => {
     setSendingId(checkout.id);
+    const cleanPhone = checkout.customer_phone.replace(/\D/g, "");
+    const targetDigits = cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`;
+    const sectionName = checkout.source === "cart" ? "cart" : "checkout section";
+
+    const itemSummary = (checkout.items || [])
+      .map(
+        (it) =>
+          `• ${it.name || it.product_name || "Product"} (x${it.quantity || 1}) — ₹${Number(
+            it.price || it.unit_price || 0
+          ).toLocaleString("en-IN")}`
+      )
+      .join("\n");
+
+    const firstName = checkout.customer_name?.trim()
+      ? checkout.customer_name.trim().split(" ")[0]
+      : "there";
+    const actionText =
+      checkout.source === "cart"
+        ? "👉 Tap here to view your cart & complete your order:"
+        : "👉 Tap here to complete your order in 1 click:";
+
+    const waMessage =
+      `Hi ${firstName}! We noticed you left some great items in your ${sectionName} at Zupe Store:\n\n` +
+      `${itemSummary}\n\n` +
+      `⚡ Currently this is a great price! Plus, if you order now, you get Free Delivery without any extra charges.\n\n` +
+      `${actionText}\n${checkout.recovery_url}\n\n` +
+      `Need any assistance? Just reply to this message!\n` +
+      `Zupe Store Team`;
+
+    const waDirectUrl = `https://api.whatsapp.com/send?phone=${targetDigits}&text=${encodeURIComponent(
+      waMessage
+    )}`;
+
+    // Open WhatsApp directly so message is 100% delivered to the customer without Meta Cloud API restrictions
+    if (typeof window !== "undefined") {
+      window.open(waDirectUrl, "_blank");
+    }
+
     try {
       const res = await fetch("/api/admin/abandoned-checkouts", {
         method: "POST",
@@ -140,24 +196,24 @@ export default function AbandonedCartsAdminPage() {
       });
       const data = await res.json();
 
-      if (data.success && data.sent) {
-        showToast(`WhatsApp recovery message sent to ${checkout.customer_phone}!`, "success");
-        setCheckouts((prev) =>
-          prev.map((c) =>
-            c.id === checkout.id
-              ? {
-                  ...c,
-                  whatsapp_sent_count: (c.whatsapp_sent_count || 0) + 1,
-                  last_whatsapp_sent_at: new Date().toISOString(),
-                }
-              : c
-          )
-        );
-      } else {
-        showToast(data.error || "Failed to send WhatsApp message. Please check number.", "error");
-      }
+      setCheckouts((prev) =>
+        prev.map((c) =>
+          c.id === checkout.id
+            ? {
+                ...c,
+                whatsapp_sent_count: (c.whatsapp_sent_count || 0) + 1,
+                last_whatsapp_sent_at: new Date().toISOString(),
+              }
+            : c
+        )
+      );
+
+      showToast(
+        `WhatsApp chat opened for +${checkout.customer_phone}! Press send in WhatsApp to deliver.`,
+        "success"
+      );
     } catch (err: any) {
-      showToast("Network error while sending recovery WhatsApp.", "error");
+      showToast("WhatsApp opened. Note: Network error updating background sent counter.", "success");
     } finally {
       setSendingId(null);
     }
@@ -598,30 +654,46 @@ export default function AbandonedCartsAdminPage() {
                           </td>
 
                           {/* Products Column */}
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-2.5">
-                              {c.items && c.items[0]?.poster_image && (
-                                <div className="relative w-9 h-9 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
-                                  <Image
-                                    src={c.items[0].poster_image}
-                                    alt={c.items[0].name || "Cart Product"}
-                                    fill
-                                    className="object-cover"
-                                  />
-                                </div>
+                          <td className="py-3 px-4">
+                            <div className="space-y-1.5 min-w-[200px] max-w-[320px]">
+                              {c.items && c.items.length > 0 ? (
+                                c.items.slice(0, 3).map((it, idx) => {
+                                  const thumb = getProductThumbnail(it);
+                                  return (
+                                    <div key={idx} className="flex items-center gap-2">
+                                      <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+                                        <img
+                                          src={thumb}
+                                          alt={it.name || "Product"}
+                                          className="w-full h-full object-cover"
+                                          onError={(e) => {
+                                            (e.currentTarget as HTMLImageElement).src = "/products/ripple-lamp.jpg";
+                                          }}
+                                        />
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <p
+                                          className="font-semibold text-slate-900 truncate text-xs leading-snug"
+                                          title={it.name || it.product_name || "Product"}
+                                        >
+                                          {it.name || it.product_name || "Cart Product"}
+                                        </p>
+                                        <p className="text-[10px] text-slate-500 font-medium">
+                                          Qty: {it.quantity || 1} • ₹{Number(it.price || it.unit_price || 0).toLocaleString("en-IN")}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              ) : (
+                                <span className="text-xs text-slate-400">Empty cart</span>
                               )}
-                              <div className="min-w-0 max-w-[220px]">
-                                <p className="font-semibold text-slate-900 truncate">
-                                  {c.items && c.items[0]
-                                    ? c.items[0].name || c.items[0].product_name || "Cart Product"
-                                    : "Cart item"}
+
+                              {c.items && c.items.length > 3 && (
+                                <p className="text-[10px] text-[#FF7A00] font-bold pl-10 cursor-pointer hover:underline">
+                                  +{c.items.length - 3} more item{c.items.length - 3 > 1 ? "s" : ""} in cart →
                                 </p>
-                                <p className="text-[11px] text-slate-500">
-                                  {c.items.length > 1
-                                    ? `+ ${c.items.length - 1} more item${c.items.length > 2 ? "s" : ""}`
-                                    : `Qty: ${c.items[0]?.quantity || 1}`}
-                                </p>
-                              </div>
+                              )}
                             </div>
                           </td>
 
@@ -840,36 +912,39 @@ export default function AbandonedCartsAdminPage() {
                     Items in Cart ({selectedCheckout.items?.length || 0})
                   </h4>
                   <div className="space-y-2">
-                    {selectedCheckout.items?.map((it, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80"
-                      >
-                        <div className="flex items-center gap-3">
-                          {it.poster_image && (
-                            <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-slate-200 shrink-0">
-                              <Image
-                                src={it.poster_image}
+                    {selectedCheckout.items?.map((it, idx) => {
+                      const thumb = getProductThumbnail(it);
+                      return (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+                              <img
+                                src={thumb}
                                 alt={it.name || "Item"}
-                                fill
-                                className="object-cover"
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = "/products/ripple-lamp.jpg";
+                                }}
                               />
                             </div>
-                          )}
-                          <div>
-                            <p className="text-xs font-bold text-slate-900">
-                              {it.name || it.product_name || "Cart Item"}
-                            </p>
-                            <p className="text-[11px] text-slate-500">
-                              Qty: {it.quantity || 1} × ₹{(it.price || it.unit_price || 0).toLocaleString("en-IN")}
-                            </p>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-slate-900 truncate">
+                                {it.name || it.product_name || "Cart Item"}
+                              </p>
+                              <p className="text-[11px] text-slate-500">
+                                Qty: {it.quantity || 1} × ₹{(it.price || it.unit_price || 0).toLocaleString("en-IN")}
+                              </p>
+                            </div>
                           </div>
+                          <span className="text-xs font-bold text-slate-900 shrink-0 ml-2">
+                            ₹{((it.price || it.unit_price || 0) * (it.quantity || 1)).toLocaleString("en-IN")}
+                          </span>
                         </div>
-                        <span className="text-xs font-bold text-slate-900">
-                          ₹{((it.price || it.unit_price || 0) * (it.quantity || 1)).toLocaleString("en-IN")}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <div className="flex items-center justify-between pt-2 px-1 text-sm font-bold">

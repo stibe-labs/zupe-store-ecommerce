@@ -162,21 +162,20 @@ export async function POST(req: NextRequest) {
       source: (row.source === "cart" ? "cart" : "checkout") as "checkout" | "cart",
     });
 
-    if (sent) {
-      const now = new Date().toISOString();
-      await executeD1Query(
-        `UPDATE abandoned_checkouts
-         SET whatsapp_sent_count = whatsapp_sent_count + 1,
-             last_whatsapp_sent_at = ?
-         WHERE id = ?`,
-        [now, id]
-      );
-    }
+    const now = new Date().toISOString();
+    await executeD1Query(
+      `UPDATE abandoned_checkouts
+       SET whatsapp_sent_count = whatsapp_sent_count + 1,
+           last_whatsapp_sent_at = ?
+       WHERE id = ?`,
+      [now, id]
+    );
 
     return NextResponse.json({
       success: true,
-      message: sent ? "Recovery WhatsApp message sent!" : "Failed to send message",
-      sent,
+      message: sent ? "Recovery WhatsApp message sent via Cloud API!" : "WhatsApp recovery reminder logged & opened",
+      sent: true,
+      api_sent: Boolean(sent),
     });
   } catch (err: any) {
     console.error("Error in admin abandoned checkout POST:", err);

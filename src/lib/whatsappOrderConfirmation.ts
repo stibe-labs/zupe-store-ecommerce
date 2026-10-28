@@ -565,7 +565,7 @@ async function sendWhatsAppTextMessage(
   token: string,
   to: string,
   body: string
-): Promise<void> {
+): Promise<boolean> {
   try {
     const res = await fetch(apiUrl, {
       method: "POST",
@@ -584,11 +584,14 @@ async function sendWhatsAppTextMessage(
     const data = (await res.json()) as any;
     if (res.ok && data.messages?.length > 0) {
       console.log("[WA Order Confirm] Text fallback sent to", to);
+      return true;
     } else {
       console.warn("[WA Order Confirm] Text issue:", data?.error?.message || data);
+      return false;
     }
   } catch (err) {
     console.warn("[WA Order Confirm] Text error:", err);
+    return false;
   }
 }
 
@@ -777,13 +780,17 @@ export async function sendAbandonedCartWhatsApp(
     `Need any assistance? Just reply to this message!\n` +
     `Zupe Store Team`;
 
-  await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
-  console.log(`✅ [WA Abandoned Cart] Recovery WhatsApp message (${source}) dispatched to ${digits}`);
+  const textSent = await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
+  if (textSent) {
+    console.log(`✅ [WA Abandoned Cart] Recovery WhatsApp message (${source}) dispatched to ${digits}`);
+  } else {
+    console.warn(`⚠️ [WA Abandoned Cart] Cloud API text delivery failed for ${digits}. Customer may be outside 24h window.`);
+  }
 
-  // Concurrently attempt official template dispatch (for when billing is enabled in Meta)
+  // Concurrently attempt official template dispatch (for when template is approved in Meta)
   try {
     const tokenPart = recoveryUrl.split("recover=")[1] || "";
-    fetch(apiUrl, {
+    const res = await fetch(apiUrl, {
       method: "POST",
       headers: {
         Authorization: "Bearer " + apiToken,
@@ -814,8 +821,13 @@ export async function sendAbandonedCartWhatsApp(
           ],
         },
       }),
-    }).catch(() => {});
+    });
+    const data = (await res.json()) as any;
+    if (res.ok && data.messages?.length > 0) {
+      console.log(`✅ [WA Abandoned Cart] Official template 'zupe_abandoned_cart' dispatched to ${digits}`);
+      return true;
+    }
   } catch {}
 
-  return true;
+  return textSent;
 }

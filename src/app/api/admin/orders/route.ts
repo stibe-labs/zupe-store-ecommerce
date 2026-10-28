@@ -164,6 +164,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         sent,
+        order: ord,
         message: `WhatsApp verification message with Confirm & Cancel buttons dispatched to ${customerPhone}`,
       });
     }

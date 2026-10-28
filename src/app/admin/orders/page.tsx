@@ -298,16 +298,17 @@ function AdminOrdersContent() {
         }),
       });
       const data = await res.json();
-      if (res.ok && data.success && data.order) {
+      if (res.ok && data.success) {
+        const updatedOrder = data.order || ord;
         setOrders((prev) =>
-          prev.map((o) => (o.id === data.order.id ? { ...o, ...data.order } : o))
+          prev.map((o) => (o.id === ord.id ? { ...o, ...updatedOrder } : o))
         );
-        if (selectedOrder && selectedOrder.id === data.order.id) {
-          setSelectedOrder((prev) => (prev ? { ...prev, ...data.order } : null));
+        if (selectedOrder && selectedOrder.id === ord.id) {
+          setSelectedOrder((prev) => (prev ? { ...prev, ...updatedOrder } : null));
         }
         showToast(
           "success",
-          `WhatsApp message with Confirm & Cancel buttons sent to ${data.order.customer_phone || ord.customer_phone}!`
+          `WhatsApp message with Confirm & Cancel buttons sent to ${updatedOrder.customer_phone || ord.customer_phone}!`
         );
       } else {
         const errMsg = data.error || "Failed to resend WhatsApp buttons";
@@ -879,95 +880,115 @@ function AdminOrdersContent() {
                               <MoreVertical className="w-4 h-4" />
                             </button>
 
-                            {openMenuOrderId === ord.id && (
-                              <div
-                                className={`absolute right-0 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 text-left ${
-                                  idx >= orders.length - 2 && orders.length > 2
-                                    ? "bottom-full mb-1.5 origin-bottom-right"
-                                    : "top-full mt-1.5 origin-top-right"
-                                }`}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {/* 1. Resend WhatsApp Interactive Buttons */}
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setOpenMenuOrderId(null);
-                                    handleResendWAButtons(ord);
-                                  }}
-                                  disabled={actionLoadingId === ord.id}
-                                  className="w-full px-3.5 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2.5 transition-colors cursor-pointer text-left disabled:opacity-50"
+                            {openMenuOrderId === ord.id && (() => {
+                              const isOrdCancelled =
+                                ord.delivery_status === "Cancelled" ||
+                                ord.status === "Cancelled" ||
+                                ord.whatsapp_confirm_status === "cancelled";
+                              const isOrdDelivered =
+                                ord.delivery_status === "Delivered" ||
+                                ord.delivery_status === "RTO Delivered";
+                              const canResend = !isOrdCancelled && !isOrdDelivered && ord.whatsapp_confirm_status !== "confirmed";
+                              const canConfirm = !isOrdCancelled && !isOrdDelivered && ord.whatsapp_confirm_status !== "confirmed";
+                              const canCancel = !isOrdCancelled && !isOrdDelivered;
+                              const hasActionButtons = canResend || canConfirm || canCancel;
+
+                              return (
+                                <div
+                                  className={`absolute right-0 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 text-left ${
+                                    idx >= orders.length - 2 && orders.length > 2
+                                      ? "bottom-full mb-1.5 origin-bottom-right"
+                                      : "top-full mt-1.5 origin-top-right"
+                                  }`}
+                                  onClick={(e) => e.stopPropagation()}
                                 >
-                                  {actionLoadingId === ord.id && actionType === "resend" ? (
-                                    <RefreshCw className="w-4 h-4 animate-spin text-emerald-600 shrink-0" />
-                                  ) : (
-                                    <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                                  {/* 1. Resend WhatsApp Interactive Buttons */}
+                                  {canResend && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuOrderId(null);
+                                        handleResendWAButtons(ord);
+                                      }}
+                                      disabled={actionLoadingId === ord.id}
+                                      className="w-full px-3.5 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2.5 transition-colors cursor-pointer text-left disabled:opacity-50"
+                                    >
+                                      {actionLoadingId === ord.id && actionType === "resend" ? (
+                                        <RefreshCw className="w-4 h-4 animate-spin text-emerald-600 shrink-0" />
+                                      ) : (
+                                        <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                                      )}
+                                      <div>
+                                        <p className="font-bold text-slate-800">Resend WA Buttons</p>
+                                        <p className="text-[10px] text-slate-400 font-normal">Confirm & Cancel prompt</p>
+                                      </div>
+                                    </button>
                                   )}
-                                  <div>
-                                    <p className="font-bold text-slate-800">Resend WA Buttons</p>
-                                    <p className="text-[10px] text-slate-400 font-normal">Confirm & Cancel prompt</p>
-                                  </div>
-                                </button>
 
-                                {/* 2. Manually Confirm Order */}
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setOpenMenuOrderId(null);
-                                    handleManualConfirmOrder(ord);
-                                  }}
-                                  disabled={actionLoadingId === ord.id}
-                                  className="w-full px-3.5 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 flex items-center gap-2.5 transition-colors cursor-pointer text-left disabled:opacity-50"
-                                >
-                                  {actionLoadingId === ord.id && actionType === "confirm" ? (
-                                    <RefreshCw className="w-4 h-4 animate-spin text-blue-600 shrink-0" />
-                                  ) : (
-                                    <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
+                                  {/* 2. Manually Confirm Order */}
+                                  {canConfirm && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuOrderId(null);
+                                        handleManualConfirmOrder(ord);
+                                      }}
+                                      disabled={actionLoadingId === ord.id}
+                                      className="w-full px-3.5 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 flex items-center gap-2.5 transition-colors cursor-pointer text-left disabled:opacity-50"
+                                    >
+                                      {actionLoadingId === ord.id && actionType === "confirm" ? (
+                                        <RefreshCw className="w-4 h-4 animate-spin text-blue-600 shrink-0" />
+                                      ) : (
+                                        <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
+                                      )}
+                                      <div>
+                                        <p className="font-bold text-slate-800">Confirm Order</p>
+                                        <p className="text-[10px] text-slate-400 font-normal">Manual verify & notify</p>
+                                      </div>
+                                    </button>
                                   )}
-                                  <div>
-                                    <p className="font-bold text-slate-800">Confirm Order</p>
-                                    <p className="text-[10px] text-slate-400 font-normal">Manual verify & notify</p>
-                                  </div>
-                                </button>
 
-                                {/* 3. Cancel Order */}
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setOpenMenuOrderId(null);
-                                    setOrderToCancel(ord);
-                                    setCancelReason("Customer requested cancellation");
-                                    setCancelNotes("");
-                                  }}
-                                  disabled={actionLoadingId === ord.id}
-                                  className="w-full px-3.5 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 flex items-center gap-2.5 transition-colors cursor-pointer text-left disabled:opacity-50"
-                                >
-                                  <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                                  <div>
-                                    <p className="font-bold text-slate-800">Cancel Order</p>
-                                    <p className="text-[10px] text-slate-400 font-normal">Restock & refund if paid</p>
-                                  </div>
-                                </button>
+                                  {/* 3. Cancel Order */}
+                                  {canCancel && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuOrderId(null);
+                                        setOrderToCancel(ord);
+                                        setCancelReason("Customer requested cancellation");
+                                        setCancelNotes("");
+                                      }}
+                                      disabled={actionLoadingId === ord.id}
+                                      className="w-full px-3.5 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 flex items-center gap-2.5 transition-colors cursor-pointer text-left disabled:opacity-50"
+                                    >
+                                      <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                                      <div>
+                                        <p className="font-bold text-slate-800">Cancel Order</p>
+                                        <p className="text-[10px] text-slate-400 font-normal">Restock & refund if paid</p>
+                                      </div>
+                                    </button>
+                                  )}
 
-                                <div className="my-1 border-t border-slate-100" />
+                                  {hasActionButtons && <div className="my-1 border-t border-slate-100" />}
 
-                                {/* 4. Details Option */}
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setOpenMenuOrderId(null);
-                                    setSelectedOrder(ord);
-                                  }}
-                                  className="w-full px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-[#FF7A00] flex items-center gap-2.5 transition-colors cursor-pointer text-left"
-                                >
-                                  <Eye className="w-4 h-4 text-[#FF7A00] shrink-0" />
-                                  <div>
-                                    <p className="font-bold text-slate-800">Order 360° Details</p>
-                                    <p className="text-[10px] text-slate-400 font-normal">View items & logistics</p>
-                                  </div>
-                                </button>
-                              </div>
-                            )}
+                                  {/* 4. Details Option */}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setOpenMenuOrderId(null);
+                                      setSelectedOrder(ord);
+                                    }}
+                                    className="w-full px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-[#FF7A00] flex items-center gap-2.5 transition-colors cursor-pointer text-left"
+                                  >
+                                    <Eye className="w-4 h-4 text-[#FF7A00] shrink-0" />
+                                    <div>
+                                      <p className="font-bold text-slate-800">Order 360° Details</p>
+                                      <p className="text-[10px] text-slate-400 font-normal">View items & logistics</p>
+                                    </div>
+                                  </button>
+                                </div>
+                              );
+                            })()}
                           </div>
                         </td>
                       </tr>
@@ -1276,73 +1297,91 @@ function AdminOrdersContent() {
                 </div>
 
                 {/* Interactive Action Bar inside WhatsApp Card */}
-                {selectedOrder.whatsapp_confirm_status === "pending_whatsapp" && (
-                  <div className="pt-2.5 border-t border-amber-200/80 flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleResendWAButtons(selectedOrder)}
-                      disabled={actionLoadingId === selectedOrder.id}
-                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                      title="Resend WhatsApp message with interactive Confirm & Cancel buttons attached"
-                    >
-                      {actionLoadingId === selectedOrder.id && actionType === "resend" ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <MessageCircle className="w-3.5 h-3.5" />
-                      )}
-                      <span>Resend WA Buttons</span>
-                    </button>
+                {(() => {
+                  const isModalCancelled =
+                    selectedOrder.delivery_status === "Cancelled" ||
+                    selectedOrder.status === "Cancelled" ||
+                    selectedOrder.whatsapp_confirm_status === "cancelled";
+                  const isModalDelivered =
+                    selectedOrder.delivery_status === "Delivered" ||
+                    selectedOrder.delivery_status === "RTO Delivered";
 
-                    <button
-                      type="button"
-                      onClick={() => handleManualConfirmOrder(selectedOrder)}
-                      disabled={actionLoadingId === selectedOrder.id}
-                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                      title="Manually confirm order (sends normal WhatsApp confirmation to customer)"
-                    >
-                      {actionLoadingId === selectedOrder.id && actionType === "confirm" ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                      )}
-                      <span>Manually Confirm Order</span>
-                    </button>
+                  if (isModalCancelled || isModalDelivered) return null;
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setOrderToCancel(selectedOrder);
-                        setCancelReason("Customer requested cancellation");
-                        setCancelNotes("");
-                      }}
-                      disabled={actionLoadingId === selectedOrder.id}
-                      className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                      title="Cancel order, restock inventory, process refund if prepaid, and send cancellation notification"
-                    >
-                      <XCircle className="w-3.5 h-3.5" />
-                      <span>Cancel Order</span>
-                    </button>
-                  </div>
-                )}
+                  if (selectedOrder.whatsapp_confirm_status === "pending_whatsapp") {
+                    return (
+                      <div className="pt-2.5 border-t border-amber-200/80 flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleResendWAButtons(selectedOrder)}
+                          disabled={actionLoadingId === selectedOrder.id}
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                          title="Resend WhatsApp message with interactive Confirm & Cancel buttons attached"
+                        >
+                          {actionLoadingId === selectedOrder.id && actionType === "resend" ? (
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <MessageCircle className="w-3.5 h-3.5" />
+                          )}
+                          <span>Resend WA Buttons</span>
+                        </button>
 
-                {selectedOrder.whatsapp_confirm_status === "confirmed" && selectedOrder.delivery_status !== "Cancelled" && (
-                  <div className="pt-2 border-t border-emerald-200/80 flex items-center justify-between">
-                    <span className="text-[11px] text-emerald-800 font-medium">✓ Order confirmed and ready for fulfillment.</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setOrderToCancel(selectedOrder);
-                        setCancelReason("Customer requested cancellation");
-                        setCancelNotes("");
-                      }}
-                      disabled={actionLoadingId === selectedOrder.id}
-                      className="px-2.5 py-1 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
-                    >
-                      <XCircle className="w-3.5 h-3.5" />
-                      <span>Cancel Order</span>
-                    </button>
-                  </div>
-                )}
+                        <button
+                          type="button"
+                          onClick={() => handleManualConfirmOrder(selectedOrder)}
+                          disabled={actionLoadingId === selectedOrder.id}
+                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                          title="Manually confirm order (sends normal WhatsApp confirmation to customer)"
+                        >
+                          {actionLoadingId === selectedOrder.id && actionType === "confirm" ? (
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          )}
+                          <span>Manually Confirm Order</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOrderToCancel(selectedOrder);
+                            setCancelReason("Customer requested cancellation");
+                            setCancelNotes("");
+                          }}
+                          disabled={actionLoadingId === selectedOrder.id}
+                          className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                          title="Cancel order, restock inventory, process refund if prepaid, and send cancellation notification"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                          <span>Cancel Order</span>
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  if (selectedOrder.whatsapp_confirm_status === "confirmed") {
+                    return (
+                      <div className="pt-2 border-t border-emerald-200/80 flex items-center justify-between">
+                        <span className="text-[11px] text-emerald-800 font-medium">✓ Order confirmed and ready for fulfillment.</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOrderToCancel(selectedOrder);
+                            setCancelReason("Customer requested cancellation");
+                            setCancelNotes("");
+                          }}
+                          disabled={actionLoadingId === selectedOrder.id}
+                          className="px-2.5 py-1 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                          <span>Cancel Order</span>
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  return null;
+                })()}
               </div>
 
               {/* Shopify Sync Card */}
