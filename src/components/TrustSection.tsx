@@ -18,9 +18,9 @@ const TRUST_ITEMS = [
     accent: "#00D2D3",
   },
   {
-    icon: RotateCcw,
-    title: "Easy Returns",
-    desc: "7-day hassle-free returns",
+    icon: PackageCheck,
+    title: "Damage Protection",
+    desc: "Guaranteed replacement on defects",
     accent: "#FF6B6B",
   },
   {

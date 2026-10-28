@@ -428,7 +428,7 @@ export default function ProductDetailPage() {
           "Premium Quality Build",
           "Fast Doorstep Delivery",
           "Cash on Delivery Available",
-          "7-Day Easy Replacement",
+          "Damage Protection Guarantee",
         ];
         return [...clean, ...fallbacks.filter((fb) => !clean.includes(fb))].slice(0, 4);
       }
@@ -499,7 +499,7 @@ export default function ProductDetailPage() {
       product.tagline || "Premium Quality & Build",
       product.volume || "Verified Authentic Design",
       "Doorstep Express Courier",
-      "7-Day Easy Replacement",
+      "Damage Protection Guarantee",
     ];
   }, [product]);
 
@@ -1667,9 +1667,9 @@ export default function ProductDetailPage() {
                   subtitle: "On All Orders",
                 },
                 {
-                  icon: RotateCcw,
-                  title: "Easy Returns",
-                  subtitle: "7 Days Window",
+                  icon: ShieldCheck,
+                  title: "Quality Verified",
+                  subtitle: "100% Genuine",
                 },
                 {
                   icon: Banknote,

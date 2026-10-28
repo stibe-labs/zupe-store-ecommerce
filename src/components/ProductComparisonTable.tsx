@@ -57,7 +57,7 @@ export function ProductComparisonTable({
         { label: "Premium verified build quality & finish", zupe: true, other: false },
         { label: "Fast & intuitive one-touch operation", zupe: true, other: false },
         { label: "Ergonomic & durable modern design", zupe: true, other: false },
-        { label: "Backed by 7-day hassle-free replacement", zupe: true, other: false },
+        { label: "Verified genuine quality & secure packaging", zupe: true, other: false },
         { label: "100% genuine authentic Zupe verified product", zupe: true, other: false }
       );
     }

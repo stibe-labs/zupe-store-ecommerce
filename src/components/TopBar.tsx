@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Truck, Banknote, RotateCcw, Headphones, ShieldCheck, Sparkles } from "lucide-react";
+import { Truck, Banknote, Headphones, ShieldCheck, Sparkles } from "lucide-react";
 
 const ANNOUNCEMENT_ITEMS = [
   {
@@ -11,10 +11,6 @@ const ANNOUNCEMENT_ITEMS = [
   {
     icon: Banknote,
     text: "Cash on Delivery Available",
-  },
-  {
-    icon: RotateCcw,
-    text: "Easy Returns & 7-Day Replacements",
   },
   {
     icon: Headphones,

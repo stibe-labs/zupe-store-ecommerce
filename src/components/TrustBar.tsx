@@ -17,8 +17,8 @@ export function TrustBar() {
     },
     {
       icon: <Package className="w-6 h-6 text-gray-900" />,
-      title: "Easy Returns",
-      desc: "7 days hassle free",
+      title: "Quality Verified",
+      desc: "100% handpicked & checked",
     },
     {
       icon: <Headphones className="w-6 h-6 text-gray-900" />,
