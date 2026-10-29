@@ -436,7 +436,7 @@ export default function AdminProductsPage() {
     setFormWhatsInBox([
       "1 × Main Product Unit",
       "1 × Official User Manual & Operating Guide",
-      "1 × Zupe Store Quality Verification & Warranty Seal",
+      "1 × Turkiye Jam Quality Verification & Warranty Seal",
     ]);
     setNewBoxInput("");
 

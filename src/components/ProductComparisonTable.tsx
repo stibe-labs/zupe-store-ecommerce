@@ -58,7 +58,7 @@ export function ProductComparisonTable({
         { label: "Fast & intuitive one-touch operation", zupe: true, other: false },
         { label: "Ergonomic & durable modern design", zupe: true, other: false },
         { label: "Verified genuine quality & secure packaging", zupe: true, other: false },
-        { label: "100% genuine authentic Zupe verified product", zupe: true, other: false }
+        { label: "100% genuine authentic Turkiye Jam verified product", zupe: true, other: false }
       );
     }
   }
@@ -66,7 +66,7 @@ export function ProductComparisonTable({
   // Ensure exactly 4-5 rows
   while (featureList.length < 4) {
     featureList.push({
-      label: "Tested & verified authentic Zupe performance",
+      label: "Tested & verified authentic Turkiye Jam performance",
       zupe: true,
       other: false,
     });
@@ -98,11 +98,11 @@ export function ProductComparisonTable({
                 Features
               </th>
 
-              {/* Zupe Store Product Column (Orange Header) */}
-              <th className="w-[29%] p-2 sm:p-3 bg-gradient-to-b from-[#FF6A00] to-[#FF7A00] text-white text-center align-middle border-x border-orange-500/30">
+              {/* Turkiye Jam Product Column (Orange Header) */}
+              <th className="w-[29%] p-2 sm:p-3 bg-gradient-to-b from-[#cb0805] to-[#a80604] text-white text-center align-middle border-x border-red-500/30">
                 <div className="flex flex-col items-center justify-center gap-1">
                   <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider block leading-tight text-white line-clamp-1">
-                    Zupestore
+                    Turkiye Jam
                   </span>
                   <span className="text-[10px] sm:text-[11px] font-semibold text-orange-100 block leading-tight line-clamp-1">
                     {shortName}

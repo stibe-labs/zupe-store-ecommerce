@@ -1771,7 +1771,7 @@ export interface ERPIntegrationsSettings {
 
 let inMemorySettings: ERPIntegrationsSettings = {
   storeProfile: {
-    storeName: "Zupe Store India",
+    storeName: "Turkiye Jam",
     supportEmail: "zupestoreonline@gmail.com",
     supportPhone: "+91 97441 22853",
     currency: "INR (₹)",

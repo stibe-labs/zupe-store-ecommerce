@@ -18,9 +18,9 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
-  title: "Terms and Conditions | Zupe Store",
+  title: "Terms and Conditions | Turkiye Jam",
   description:
-    "Read the Terms and Conditions governing your use of the Zupe Store website, online shopping services, purchases, payments, orders, and returns in India.",
+    "Read the Terms and Conditions governing your use of the Turkiye Jam website, online shopping services, purchases, payments, orders, and returns in India.",
 };
 
 export default function TermsAndConditionsPage() {
@@ -32,7 +32,7 @@ export default function TermsAndConditionsPage() {
       icon: Sparkles,
       content: (
         <p>
-          By accessing or using <strong className="text-gray-900">www.zupestore.in</strong>, you agree to comply with these Terms and Conditions. You must be at least 18 years old or accessing the site under the supervision of a parent or legal guardian. You agree to use our website solely for lawful purposes and refrain from any actions that may harm, disrupt, or misuse the platform.
+          By accessing or using <strong className="text-gray-900">Turkiye Jam</strong>, you agree to comply with these Terms and Conditions. You must be at least 18 years old or accessing the site under the supervision of a parent or legal guardian. You agree to use our website solely for lawful purposes and refrain from any actions that may harm, disrupt, or misuse the platform.
         </p>
       ),
     },
@@ -44,12 +44,12 @@ export default function TermsAndConditionsPage() {
       content: (
         <div className="space-y-3">
           <p>
-            At <strong className="text-gray-900">Zupe Store</strong>, every product listed on our platform is <strong className="text-gray-900">handpicked, verified, and quality-tested</strong> to ensure you receive only the best. We take complete responsibility for product handling, packaging, and shipping to provide a premium customer experience.
+            At <strong className="text-gray-900">Turkiye Jam</strong>, every product listed on our platform is <strong className="text-gray-900">100% authentic, tamper-proof sealed, and directly imported from Turkey</strong> to ensure you receive only genuine herbal macun paste. We take complete responsibility for product handling, packaging, and discreet express shipping.
           </p>
           <ul className="list-disc list-inside space-y-1.5 pl-2 text-gray-700">
-            <li>Product descriptions, specifications, and images are provided for clarity. Actual appearance may slightly vary based on lighting or device screen settings.</li>
-            <li>We reserve the right to modify, update, or discontinue any product without prior notice.</li>
-            <li>Zupe Store shall not be held liable for minor variations that do not affect the product&apos;s overall usability or quality.</li>
+            <li>Product descriptions, dosage guidelines, and packaging options are provided for clarity.</li>
+            <li>We reserve the right to modify, update, or discontinue any package tier without prior notice.</li>
+            <li>Turkiye Jam guarantees authentic Themra herbal paste formulation with original holograms.</li>
           </ul>
         </div>
       ),
@@ -62,10 +62,10 @@ export default function TermsAndConditionsPage() {
       content: (
         <div className="space-y-3">
           <p>
-            All prices displayed on Zupe Store are in INR (₹) unless stated otherwise. We reserve the right to adjust pricing, apply offers, or make corrections in case of typographical errors. Payments must be made in full at the time of purchase using secure and verified payment gateways available on the website.
+            All prices displayed on Turkiye Jam are in INR (₹) inclusive of all applicable taxes. We reserve the right to adjust pricing, promotional discounts, or bundle offers. Payments can be completed online via UPI, Cards, Netbanking, or via Cash on Delivery (COD) across India.
           </p>
-          <p className="bg-orange-50/60 border border-orange-100 rounded-xl p-3 text-orange-950 font-medium text-sm">
-            Zupe Store ensures that all payment transactions are encrypted and processed safely to protect customer data.
+          <p className="bg-red-50/60 border border-red-100 rounded-xl p-3 text-red-950 font-medium text-sm">
+            Turkiye Jam ensures that all payment transactions are encrypted and processed safely through verified RBI-compliant gateways.
           </p>
         </div>
       ),
@@ -78,10 +78,10 @@ export default function TermsAndConditionsPage() {
       content: (
         <div className="space-y-3">
           <p>
-            Zupe Store directly manages the packaging and shipping of every order to ensure reliable and safe delivery. Shipping times may vary depending on your location, order size, and logistics factors. Estimated delivery timelines are provided during checkout for your convenience.
+            Turkiye Jam directly manages the packaging and shipping of every order to ensure reliable, discreet, and safe delivery. Shipping times typically range from 24 to 48 hours for express prepaid orders and 2–4 business days nationwide across India.
           </p>
           <p>
-            While we strive for on-time delivery, Zupe Store is not responsible for unforeseen delays caused by logistics partners, natural events, or regional restrictions.
+            While we strive for prompt dispatch, Turkiye Jam is not responsible for unforeseen delays caused by logistics partners, natural events, or regional restrictions.
           </p>
         </div>
       ),
@@ -94,17 +94,15 @@ export default function TermsAndConditionsPage() {
       content: (
         <div className="space-y-3">
           <p>
-            We stand by the quality of every product we deliver. However, in the unlikely event you receive a <strong className="text-gray-900">damaged, defective, or incorrect item</strong>, you may request a replacement or refund.
+            We stand by the quality of every product we deliver with our <strong className="text-gray-900">15-day unused strip refund guarantee</strong>.
           </p>
           <ul className="list-disc list-inside space-y-1.5 pl-2 text-gray-700">
-            <li>Refunds or replacements are only accepted if a clear <strong className="text-gray-900">unboxing video</strong> is provided as proof, recorded at the time of opening the package.</li>
-            <li>The issue must be reported to <strong className="text-gray-900">zupestoreonline@gmail.com</strong> within <strong className="text-gray-900">24 hours of delivery</strong>.</li>
+            <li>For damaged parcels, please report with an unboxing video to <strong className="text-gray-900">support@turkiyejam.in</strong> or WhatsApp within <strong className="text-gray-900">48 hours of delivery</strong>.</li>
             <li>Once reviewed and verified, our team will process the replacement or refund accordingly.</li>
-            <li>Products cannot be returned for reasons such as change of mind, size preferences, or personal choice.</li>
           </ul>
           <p className="pt-1">
             For more details, please visit our{" "}
-            <Link href="/return" className="text-[#FF7A00] font-semibold underline hover:text-[#e06b00]">
+            <Link href="/return" className="text-[#5b1420] font-bold underline hover:text-[#7d1c2e]">
               Return Policy
             </Link>{" "}
             page.
@@ -119,7 +117,7 @@ export default function TermsAndConditionsPage() {
       icon: Lock,
       content: (
         <p>
-          All content, including text, images, product designs, logos, and graphics on Zupe Store, is the intellectual property of <strong className="text-gray-900">Zupe Store</strong> and its licensors. Unauthorized use, reproduction, or modification of any material is strictly prohibited.
+          All content, including text, images, product designs, logos, and graphics on Turkiye Jam, is the intellectual property of <strong className="text-gray-900">Turkiye Jam</strong> and its licensors. Unauthorized use, reproduction, or modification of any material is strictly prohibited.
         </p>
       ),
     },
@@ -130,7 +128,7 @@ export default function TermsAndConditionsPage() {
       icon: UserCheck,
       content: (
         <p>
-          When creating an account on Zupe Store, you agree to provide accurate and current information. You are responsible for safeguarding your login credentials and for all activities under your account. Zupe Store reserves the right to suspend or terminate accounts found to be in violation of our policies or involved in fraudulent activities.
+          When creating an account on Turkiye Jam, you agree to provide accurate and current information. You are responsible for safeguarding your login credentials and for all activities under your account. Turkiye Jam reserves the right to suspend or terminate accounts found to be in violation of our policies or involved in fraudulent activities.
         </p>
       ),
     },
@@ -141,7 +139,7 @@ export default function TermsAndConditionsPage() {
       icon: AlertCircle,
       content: (
         <p>
-          Zupe Store shall not be held liable for any indirect, incidental, or consequential damages arising from the use of our website, products, or services, including but not limited to data loss, loss of profits, or delays beyond our control.
+          Turkiye Jam shall not be held liable for any indirect, incidental, or consequential damages arising from the use of our website, products, or services, including but not limited to data loss, loss of profits, or delays beyond our control.
         </p>
       ),
     },
@@ -152,7 +150,7 @@ export default function TermsAndConditionsPage() {
       icon: ShieldCheck,
       content: (
         <p>
-          Zupe Store reserves the right to revise, modify, or update these Terms &amp; Conditions at any time without prior notice. Continued use of the website after changes are posted constitutes your acceptance of the updated terms.
+          Turkiye Jam reserves the right to revise, modify, or update these Terms &amp; Conditions at any time without prior notice. Continued use of the website after changes are posted constitutes your acceptance of the updated terms.
         </p>
       ),
     },
@@ -168,18 +166,18 @@ export default function TermsAndConditionsPage() {
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <a
-              href="mailto:zupestoreonline@gmail.com"
-              className="inline-flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-950 font-semibold px-4 py-2 rounded-xl hover:bg-orange-100 transition-colors"
+              href="mailto:support@turkiyejam.in"
+              className="inline-flex items-center gap-2 bg-stone-100 border-2 border-stone-800 text-stone-900 font-bold px-4 py-2 rounded-xl hover:bg-stone-200 transition-colors shadow-[0_2px_0_0_#2b2b2b]"
             >
-              📧 zupestoreonline@gmail.com
+              📧 support@turkiyejam.in
             </a>
             <a
-              href="https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20have%20a%20question%20about%20your%20terms"
+              href="https://wa.me/917356765036?text=Hi%20Turkiye%20Jam%2C%20I%20have%20a%20question%20about%20your%20terms"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-950 font-semibold px-4 py-2 rounded-xl hover:bg-emerald-100 transition-colors"
+              className="inline-flex items-center gap-2 bg-[#d1fae5] border-2 border-stone-800 text-[#0e4a3b] font-bold px-4 py-2 rounded-xl hover:bg-emerald-200 transition-colors shadow-[0_2px_0_0_#2b2b2b]"
             >
-              💬 WhatsApp Support
+              💬 WhatsApp: +91 73567 65036
             </a>
           </div>
         </div>
@@ -188,49 +186,48 @@ export default function TermsAndConditionsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col font-sans">
+    <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14 w-full">
+      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-28 sm:pt-32 pb-16 w-full">
         {/* Navigation Breadcrumb */}
         <div className="mb-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#FF7A00] transition-colors mb-4 font-medium"
+            className="inline-flex items-center gap-2 text-sm text-stone-600 hover:text-[#5b1420] transition-colors mb-4 font-bold"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-[#FF7A00]">
+            <div className="w-12 h-12 rounded-2xl bg-[#f8bac5] border-2 border-stone-800 flex items-center justify-center text-[#5b1420] shadow-[0_3px_0_0_#2b2b2b]">
               <FileText className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-display font-bold text-gray-900 tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-tj-serif font-black text-stone-900 tracking-tight">
                 Terms and Conditions
               </h1>
-              <p className="text-xs sm:text-sm text-gray-500">
-                Official terms of use &amp; policies for Zupe Store
+              <p className="text-xs sm:text-sm text-stone-600 font-medium">
+                Official terms of use &amp; policies for Turkiye Jam
               </p>
             </div>
           </div>
         </div>
 
         {/* Content Container */}
-        <div className="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-gray-100 divide-y divide-gray-100">
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] divide-y divide-stone-200">
           {termsList.map((item) => {
-            const Icon = item.icon;
             return (
               <section key={item.id} className="py-7 first:pt-0 last:pb-0 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center font-bold text-sm flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#fed000] border-2 border-stone-800 text-stone-900 flex items-center justify-center font-black text-sm flex-shrink-0 shadow-[0_2px_0_0_#2b2b2b]">
                     {item.number}
                   </div>
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <h2 className="text-lg sm:text-xl font-bold font-tj-serif text-stone-900 flex items-center gap-2">
                     {item.title}
                   </h2>
                 </div>
-                <div className="text-sm sm:text-base text-gray-600 leading-relaxed pl-11">
+                <div className="text-sm sm:text-base text-stone-700 leading-relaxed pl-11">
                   {item.content}
                 </div>
               </section>

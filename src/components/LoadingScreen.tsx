@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 
 export function LoadingScreen() {
   const pathname = usePathname();
 
-  // Never block checkout, order, auth, or admin pages with a splash screen
+  // Excluded routes where splash screen is never shown
   const isExcludedRoute =
     pathname === "/signin" ||
     pathname === "/login" ||
@@ -18,60 +16,45 @@ export function LoadingScreen() {
     pathname?.startsWith("/order-tracking") ||
     pathname?.startsWith("/admin");
 
-  const [loading, setLoading] = useState(false);
-
   useEffect(() => {
+    const splashEl = document.getElementById("initial-splash-screen");
+    if (!splashEl) return;
+
     if (isExcludedRoute) {
-      setLoading(false);
+      splashEl.classList.add("splash-hidden");
+      document.documentElement.classList.add("splash-hidden");
       return;
     }
 
     try {
-      if (!sessionStorage.getItem("zp_splash_shown")) {
-        sessionStorage.setItem("zp_splash_shown", "1");
-        setLoading(true);
-
-        const timer = setTimeout(() => {
-          setLoading(false);
-        }, 700);
-
-        return () => clearTimeout(timer);
+      const alreadyShown = sessionStorage.getItem("zp_splash_shown");
+      if (alreadyShown) {
+        splashEl.classList.add("splash-hidden");
+        document.documentElement.classList.add("splash-hidden");
+        return;
       }
-    } catch (e) {
-      setLoading(false);
+
+      // Mark splash as shown for the current browser session
+      sessionStorage.setItem("zp_splash_shown", "1");
+
+      // Keep splash smoothly visible for 800ms, then trigger smooth CSS fade-out
+      const fadeTimer = setTimeout(() => {
+        splashEl.classList.add("splash-fade-out");
+
+        const removeTimer = setTimeout(() => {
+          splashEl.classList.add("splash-hidden");
+          document.documentElement.classList.add("splash-hidden");
+        }, 450);
+
+        return () => clearTimeout(removeTimer);
+      }, 800);
+
+      return () => clearTimeout(fadeTimer);
+    } catch {
+      splashEl.classList.add("splash-hidden");
+      document.documentElement.classList.add("splash-hidden");
     }
   }, [pathname, isExcludedRoute]);
 
-  if (isExcludedRoute || !loading) return null;
-
-  return (
-    <AnimatePresence>
-      {loading && (
-        <motion.div
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.4, ease: "easeInOut" } }}
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white pointer-events-auto"
-        >
-          {/* Centered Logo */}
-          <div className="relative w-32 h-20 sm:w-36 sm:h-24 flex items-center justify-center select-none animate-pulse">
-            <Image
-              src="/turkiye-jam-logo.png"
-              alt="Turkiye Jam"
-              width={140}
-              height={90}
-              priority
-              className="object-contain w-full h-full drop-shadow-md"
-            />
-          </div>
-
-          {/* Minimalist Loading Dots */}
-          <div className="flex items-center gap-2 mt-4">
-            <span className="w-2 h-2 rounded-full bg-black/80 animate-bounce [animation-delay:-0.3s]" />
-            <span className="w-2 h-2 rounded-full bg-black/80 animate-bounce [animation-delay:-0.15s]" />
-            <span className="w-2 h-2 rounded-full bg-black/80 animate-bounce" />
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
+  return null;
 }

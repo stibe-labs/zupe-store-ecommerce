@@ -35,7 +35,7 @@ export interface SendOrderConfirmationEmailParams {
 const STORE_BASE_URL =
   process.env.STORE_BASE_URL ||
   process.env.NEXT_PUBLIC_BASE_URL ||
-  "https://zupe-store.stibelabs.workers.dev";
+  "https://turkiyejam.stibelabs.workers.dev";
 
 function resolveImageUrl(img?: string): string {
   if (!img) return `${STORE_BASE_URL}/turkiye-jam-logo.png`;
@@ -329,7 +329,7 @@ export async function sendOrderConfirmationEmail(
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Order Confirmed — Zupe Store</title>
+      <title>Order Confirmed — Turkiye Jam</title>
       <style>
         body { margin: 0; padding: 0; background-color: #f4f6f8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
         table { border-collapse: collapse; }
@@ -343,7 +343,7 @@ export async function sendOrderConfirmationEmail(
         <tr>
           <td style="padding: 26px 32px 18px 32px; text-align: center; border-bottom: 1px solid #f3f4f6; background-color: #ffffff;">
             <a href="${STORE_BASE_URL}" target="_blank" style="text-decoration: none; display: inline-block;">
-              <img src="${logoImgSrc}" alt="Zupe Store" width="165" style="display: block; width: 165px; max-width: 165px; height: auto; margin: 0 auto; border: 0;" />
+              <img src="${logoImgSrc}" alt="Turkiye Jam" width="165" style="display: block; width: 165px; max-width: 165px; height: auto; margin: 0 auto; border: 0;" />
             </a>
             <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #9ca3af; margin-top: 8px; font-weight: 600;">
               Official Order Confirmation
@@ -549,13 +549,13 @@ export async function sendOrderConfirmationEmail(
         <tr>
           <td style="padding: 20px 32px; background-color: #111827; text-align: center; color: #9ca3af; font-size: 11px; line-height: 1.5;">
             <div style="color: #ffffff; font-weight: 700; margin-bottom: 4px;">
-              Zupe Store
+              Turkiye Jam
             </div>
             <div>
               100% Genuine Quality Products • Safe Packaging • Fast Delivery Across India
             </div>
             <div style="margin-top: 8px; color: #6b7280;">
-              © ${new Date().getFullYear()} Zupe Store. Sent to ${cleanEmail}.
+              © ${new Date().getFullYear()} Turkiye Jam. Sent to ${cleanEmail}.
             </div>
           </td>
         </tr>
@@ -567,7 +567,7 @@ export async function sendOrderConfirmationEmail(
 
   // 5. Build plain text fallback for spam scoring & text clients
   const textBody = `
-Zupe Store — Order Confirmed!
+Turkiye Jam — Order Confirmed!
 
 Hi ${firstName},
 
@@ -591,14 +591,14 @@ TRACK YOUR ORDER:
 ${trackingUrl}
 ${isCod ? `\nSWITCH TO PREPAID & SAVE ₹30:\n${payNowUrl}\n` : ""}
 
-Need assistance? Reply to this email at zupestoreonline@gmail.com.
+Need assistance? Reply to this email at support@turkiyejam.com.
   `.trim();
 
-  // 6. Send the email using Zupe Store mailer with inline attachments
+  // 6. Send the email using Turkiye Jam mailer with inline attachments
   try {
     const res = await sendEmail({
       to: cleanEmail,
-      subject: `Order Confirmed: #${orderId} — Zupe Store`,
+      subject: `Order Confirmed: #${orderId} — Turkiye Jam`,
       html,
       text: textBody,
       attachments: attachments.length > 0 ? attachments : undefined,
@@ -701,7 +701,7 @@ export async function sendOrderCancellationEmail(
     <html lang="en">
     <head>
       <meta charset="UTF-8">
-      <title>Order Cancelled — Zupe Store</title>
+      <title>Order Cancelled — Turkiye Jam</title>
     </head>
     <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
       <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 30px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
@@ -709,7 +709,7 @@ export async function sendOrderCancellationEmail(
         <tr>
           <td style="padding: 28px 32px; background: linear-gradient(135deg, #111827 0%, #1f2937 100%); text-align: center;">
             <div style="font-size: 24px; font-weight: 900; color: #FF7A00; letter-spacing: -0.5px;">
-              Zupe Store
+              Turkiye Jam
             </div>
             <div style="font-size: 12px; color: #9ca3af; margin-top: 4px; letter-spacing: 1px; text-transform: uppercase;">
               Order Cancellation Notice
@@ -749,7 +749,7 @@ export async function sendOrderCancellationEmail(
 
             <div style="text-align: center; margin: 28px 0 10px 0;">
               <a href="${STORE_BASE_URL}" target="_blank" style="display: inline-block; padding: 12px 28px; background-color: #FF7A00; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 10px;">
-                Continue Shopping on Zupe Store →
+                Continue Shopping on Turkiye Jam →
               </a>
             </div>
           </td>
@@ -758,14 +758,14 @@ export async function sendOrderCancellationEmail(
         <!-- Support Info -->
         <tr>
           <td style="padding: 20px 32px; background-color: #f9fafb; border-top: 1px solid #f3f4f6; text-align: center; font-size: 12px; color: #6b7280;">
-            Need help or have questions? Contact us anytime at <a href="mailto:zupestoreonline@gmail.com" style="color: #FF7A00; text-decoration: none; font-weight: 600;">zupestoreonline@gmail.com</a>.
+            Need help or have questions? Contact us anytime at <a href="mailto:support@turkiyejam.com" style="color: #FF7A00; text-decoration: none; font-weight: 600;">support@turkiyejam.com</a>.
           </td>
         </tr>
 
         <!-- Footer -->
         <tr>
           <td style="padding: 16px 32px; background-color: #111827; text-align: center; color: #9ca3af; font-size: 11px;">
-            © ${new Date().getFullYear()} Zupe Store. Sent to ${cleanEmail}.
+            © ${new Date().getFullYear()} Turkiye Jam. Sent to ${cleanEmail}.
           </td>
         </tr>
       </table>
@@ -774,7 +774,7 @@ export async function sendOrderCancellationEmail(
   `;
 
   const textBody = `
-Zupe Store — Order #${orderId} Cancelled
+Turkiye Jam — Order #${orderId} Cancelled
 
 Hi ${firstName},
 
@@ -793,16 +793,16 @@ Your Cash on Delivery order has been successfully cancelled. No doorstep payment
 Note: The ₹10 advance verification fee paid during checkout covers order verification and carrier reservation, and is non-refundable.`
 }
 
-If you need any assistance, reply to this email at zupestoreonline@gmail.com.
+If you need any assistance, reply to this email at support@turkiyejam.com.
 
-Zupe Store Team
+Turkiye Jam Team
 ${STORE_BASE_URL}
   `.trim();
 
   try {
     const res = await sendEmail({
       to: cleanEmail,
-      subject: `Order #${orderId} Cancelled & Refund Initiated — Zupe Store`,
+      subject: `Order #${orderId} Cancelled & Refund Initiated — Turkiye Jam`,
       html,
       text: textBody,
     });

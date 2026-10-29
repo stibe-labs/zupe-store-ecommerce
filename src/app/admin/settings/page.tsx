@@ -32,7 +32,7 @@ export default function AdminSettingsPage() {
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
 
   // Store Profile
-  const [storeName, setStoreName] = useState("Zupe Store India");
+  const [storeName, setStoreName] = useState("Turkiye Jam");
   const [supportEmail, setSupportEmail] = useState("zupestoreonline@gmail.com");
   const [testEmailAddress, setTestEmailAddress] = useState("zupestoreonline@gmail.com");
   const [supportPhone, setSupportPhone] = useState("+91 97441 22853");
@@ -70,7 +70,7 @@ export default function AdminSettingsPage() {
       if (data.success && data.settings) {
         const s: ERPIntegrationsSettings = data.settings;
         if (s.storeProfile) {
-          setStoreName(s.storeProfile.storeName || "Zupe Store India");
+          setStoreName(s.storeProfile.storeName || "Turkiye Jam");
           setSupportEmail(s.storeProfile.supportEmail || "zupestoreonline@gmail.com");
           setSupportPhone(s.storeProfile.supportPhone || "+91 97441 22853");
           setCurrency(s.storeProfile.currency || "INR (₹)");
@@ -501,7 +501,7 @@ export default function AdminSettingsPage() {
                   <div>
                     <p className="font-semibold text-slate-900 text-xs">Automatically Push Web Orders to Shopify</p>
                     <p className="text-[11px] text-slate-500">
-                      When customers place orders on Zupe Store, instantly post them to Shopify Admin API so fulfillment apps (Roposo/GlowRoad/DSers) can process them.
+                      When customers place orders on Turkiye Jam, instantly post them to Shopify Admin API so fulfillment apps (Roposo/GlowRoad/DSers) can process them.
                     </p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
@@ -728,7 +728,7 @@ export default function AdminSettingsPage() {
                       zupestoreonline@gmail.com
                     </div>
                     <p className="text-[11px] text-slate-500 leading-relaxed">
-                      All confirmation emails are addressed as <strong className="text-slate-700">&quot;Zupe Store&quot; &lt;zupestoreonline@gmail.com&gt;</strong>.
+                      All confirmation emails are addressed as <strong className="text-slate-700">&quot;Turkiye Jam&quot; &lt;zupestoreonline@gmail.com&gt;</strong>.
                     </p>
                   </div>
 

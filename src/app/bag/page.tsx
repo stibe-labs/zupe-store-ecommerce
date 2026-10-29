@@ -14,10 +14,10 @@ export default function BagPage() {
   }, [router, openCart]);
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] flex items-center justify-center">
+    <div className="min-h-screen tj-diamonds-cream flex items-center justify-center">
       <div className="text-center">
-        <div className="w-8 h-8 border-3 border-[#FF7A00]/20 border-t-[#FF7A00] rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-xs text-gray-500">Opening shopping bag...</p>
+        <div className="w-8 h-8 border-3 border-[#5b1420]/20 border-t-[#5b1420] rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-xs font-bold text-stone-700">Opening shopping bag...</p>
       </div>
     </div>
   );

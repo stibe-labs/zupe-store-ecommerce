@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 625" width="600" height="625" fill="none">
+  <!-- 3D Flight route wrapping around jar: behind shoulder, in front of body, to India -->
+  <!-- Back segment (behind jar) -->
+  <path
+    d="M 180 85 C 260 85, 370 110, 440 165 C 475 200, 480 250, 465 310"
+    stroke="#fed000"
+    stroke-width="3.2"
+    stroke-dasharray="10 8"
+    stroke-linecap="round"
+  />
+  <!-- Front segment (across front of jar) -->
+  <path
+    d="M 465 310 C 445 375, 350 405, 240 405 C 160 405, 145 440, 185 475 C 240 515, 340 528, 425 528"
+    stroke="#fed000"
+    stroke-width="3.2"
+    stroke-dasharray="10 8"
+    stroke-linecap="round"
+  />
+  <!-- Arrowhead pointing to India -->
+  <path
+    d="M 405 519 L 425 528 L 409 542"
+    stroke="#fed000"
+    stroke-width="3.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

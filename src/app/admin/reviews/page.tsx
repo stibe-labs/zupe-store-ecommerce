@@ -1318,7 +1318,7 @@ export default function AdminReviewsPage() {
                 className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#FF7A00]"
               >
                 <option value="all">All Sources</option>
-                <option value="storefront">Zupe Storefront</option>
+                <option value="storefront">Turkiye Jam Storefront</option>
                 <option value="amazon">Amazon India</option>
                 <option value="flipkart">Flipkart</option>
                 <option value="meesho">Meesho</option>
@@ -1940,7 +1940,7 @@ export default function AdminReviewsPage() {
                     <option value="meesho">Meesho</option>
                     <option value="judge.me">Shopify (Judge.me)</option>
                     <option value="loox">Shopify (Loox)</option>
-                    <option value="storefront">Zupe Storefront</option>
+                    <option value="storefront">Turkiye Jam Storefront</option>
                   </select>
                 </div>
               </div>

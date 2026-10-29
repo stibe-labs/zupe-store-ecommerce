@@ -144,29 +144,19 @@ export default function AdminSidebar({
         <div>
           <div className="h-16 flex items-center justify-between px-6 border-b border-white/[0.08]">
             <Link href="/admin" className="flex items-center gap-3 group">
-              <div className="relative w-9 h-9 rounded-xl bg-white p-1 shadow-md flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden flex-shrink-0">
+              <div className="relative h-9 w-28 flex items-center justify-start group-hover:scale-105 transition-transform overflow-hidden flex-shrink-0">
                 <Image
-                  src="/zupe-logo.webp"
-                  alt="Zupe Store"
-                  width={34}
-                  height={34}
-                  className="object-contain w-full h-full"
+                  src="/turkiye-jam-logo.svg"
+                  alt="Turkiye Jam"
+                  width={112}
+                  height={36}
+                  className="object-contain w-auto h-8"
                   priority
                 />
               </div>
               <div className="flex flex-col justify-center">
-                <div className="flex items-center">
-                  <Image
-                    src="/zupe-label-white.png"
-                    alt="Zupestore"
-                    width={115}
-                    height={28}
-                    className="h-6 w-auto object-contain"
-                    priority
-                  />
-                </div>
-                <span className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mt-0.5">
-                  Admin Panel
+                <span className="text-[10px] uppercase tracking-widest text-[#FF7A00] font-bold">
+                  Admin ERP
                 </span>
               </div>
             </Link>
@@ -254,10 +244,10 @@ export default function AdminSidebar({
           <div className="flex items-center justify-between px-1 pt-1">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded bg-[#FF7A00]/15 text-[#FF7A00] flex items-center justify-center text-xs font-bold">
-                Z
+                T
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-200">Zupe Store</p>
+                <p className="text-xs font-semibold text-slate-200">Turkiye Jam</p>
                 <p className="text-[10px] text-slate-500">Live Production ERP</p>
               </div>
             </div>

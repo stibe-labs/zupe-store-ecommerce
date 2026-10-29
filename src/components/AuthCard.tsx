@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Phone,
@@ -13,6 +14,8 @@ import {
   RotateCcw,
   MessageCircle,
   Clock,
+  Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -111,7 +114,7 @@ export function AuthCard({
       if (res.otp) {
         setOtp(res.otp);
       }
-      setSuccess("Verification code sent successfully!");
+      setSuccess("Verification code sent successfully to WhatsApp!");
     } else {
       setError(res.error || "Failed to send verification code. Please try again.");
     }
@@ -159,253 +162,293 @@ export function AuthCard({
 
   return (
     <div className="w-full relative">
-      {/* Notice Banner */}
+      {/* Notice Banner - matching Section 4 warning banner aesthetic */}
       {notice && (
         <motion.div
-          initial={{ opacity: 0, y: -8 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 sm:mb-5 p-3.5 sm:p-4 rounded-2xl bg-amber-50/95 border border-[#FF7A00]/30 shadow-xs flex items-start gap-3"
+          className="mb-4 sm:mb-5 p-3.5 sm:p-4 rounded-2xl bg-[#5b1420] text-white border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] flex items-start gap-3.5 relative overflow-hidden"
         >
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#FF7A00]/10 flex items-center justify-center flex-shrink-0 text-[#FF7A00] mt-0.5">
-            <AlertCircle className="w-4 h-4" />
+          <div className="w-8 h-8 rounded-full bg-[#fed000] text-black font-black text-base flex items-center justify-center shrink-0 border border-stone-900 shadow-sm mt-0.5">
+            !
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-[11px] sm:text-xs font-bold text-gray-900 uppercase tracking-wide">
-              Sign In Required
-            </h4>
-            <p className="text-xs text-gray-600 mt-0.5 leading-relaxed">{notice}</p>
+            <div className="flex items-center gap-1.5">
+              <h4 className="font-tj-serif text-xs font-black text-[#fed000] uppercase tracking-wider">
+                Sign In Required
+              </h4>
+              <span className="text-xs">🔒</span>
+            </div>
+            <p className="text-xs text-stone-200 mt-0.5 leading-relaxed font-medium">
+              {notice}
+            </p>
           </div>
         </motion.div>
       )}
 
-      {/* Main Form Card */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50 p-6 sm:p-8 relative overflow-hidden">
-        {/* Subtle decorative glow matching brand colors */}
-        <div className="absolute top-0 right-0 w-44 h-44 bg-[#FF7A00]/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-44 h-44 bg-orange-100/30 rounded-full blur-3xl pointer-events-none" />
+      {/* Main Form Card - Neo-brutalist Turkiye Jam retro card */}
+      <div className="bg-[#fffdfa] rounded-3xl border-2 border-stone-800 shadow-[0_10px_0_0_#2b2b2b] relative overflow-hidden transition-all duration-300">
+        {/* Brand Wine Top Header Banner */}
+        <div className="bg-[#5b1420] px-6 py-4 border-b-2 border-stone-800 relative flex items-center justify-center">
+          <div className="flex items-center justify-center py-0.5">
+            <Image
+              src="/turkiye-jam-logo.svg"
+              alt="Turkiye Jam"
+              width={140}
+              height={42}
+              className="h-8 w-auto object-contain drop-shadow-md"
+              priority
+            />
+          </div>
 
-        {/* Close Button for Modal */}
-        {isModal && onClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors z-20 cursor-pointer"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        )}
-
-        {/* Header */}
-        <div className="text-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900 tracking-tight">
-            {step === "phone" ? "Welcome to Zupe Store" : "Enter Verification Code"}
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1.5">
-            {step === "phone"
-              ? "Enter your 10-digit mobile number to sign in or create an account"
-              : `Enter the 6-digit code sent to +91 ${phone.length === 10 ? phone.slice(0, 5) + " " + phone.slice(5) : phone}`}
-          </p>
+          {/* Close Button for Modal */}
+          {isModal && onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-[#fed000] hover:bg-[#e6bc00] text-black border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none flex items-center justify-center transition-all cursor-pointer font-bold"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4 stroke-[2.5]" />
+            </button>
+          )}
         </div>
 
-        {/* Error & Success Alerts */}
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mb-5 p-3.5 rounded-2xl bg-red-50 text-red-600 text-xs font-medium flex items-center gap-2.5"
-          >
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>{error}</span>
-          </motion.div>
-        )}
+        {/* Card Body */}
+        <div className="p-6 sm:p-7 relative">
+          {/* Header */}
+          <div className="text-center mb-6">
+            <p className="font-tj-serif italic text-xs sm:text-sm text-[#8e1c2e] font-semibold">
+              {step === "phone" ? "authentic royal macun" : "quick verification"}
+            </p>
+            <h2 className="font-tj-serif text-2xl sm:text-3xl font-black text-stone-900 tracking-tight mt-0.5">
+              {step === "phone" ? (
+                <>
+                  Welcome to <span className="text-[#8e1c2e] italic">Turkiye Jam</span>
+                </>
+              ) : (
+                "Enter Verification Code"
+              )}
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-600 mt-1.5 font-medium leading-relaxed max-w-sm mx-auto">
+              {step === "phone"
+                ? "Enter your 10-digit mobile number to sign in or create an account"
+                : `Enter the 6-digit code sent to +91 ${phone.length === 10 ? phone.slice(0, 5) + " " + phone.slice(5) : phone}`}
+            </p>
+          </div>
 
-        {success && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mb-5 p-3.5 rounded-2xl bg-emerald-50 text-emerald-800 text-xs font-medium flex items-center gap-2.5"
-          >
-            <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600" />
-            <span>{success}</span>
-          </motion.div>
-        )}
+          {/* Error Alert */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-5 p-3.5 rounded-2xl bg-red-50 border-2 border-red-800 text-red-900 text-xs font-bold flex items-center gap-2.5 shadow-[0_2px_0_0_#991b1b]"
+            >
+              <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-600" />
+              <span>{error}</span>
+            </motion.div>
+          )}
 
-        {/* STEP 1: Phone Entry */}
-        {step === "phone" && (
-          <form onSubmit={handleSendOtp} className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Mobile Number
-                </label>
-                <span className="text-[11px] font-semibold text-gray-400">
-                  10-digit mobile number
+          {/* Success Alert */}
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-5 p-3.5 rounded-2xl bg-emerald-50 border-2 border-emerald-800 text-emerald-950 text-xs font-bold flex items-center gap-2.5 shadow-[0_2px_0_0_#065f46]"
+            >
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600" />
+              <span>{success}</span>
+            </motion.div>
+          )}
+
+          {/* STEP 1: Phone Entry */}
+          {step === "phone" && (
+            <form onSubmit={handleSendOtp} className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block font-tj-serif text-xs font-bold text-stone-800 uppercase tracking-wider">
+                    Mobile Number
+                  </label>
+                  <span className="text-[11px] font-semibold text-stone-400">
+                    10-digit mobile number
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <div className="inline-flex items-center gap-1.5 px-3.5 py-3 rounded-2xl border-2 border-stone-800 bg-[#fed000] text-black text-sm font-black select-none shrink-0 shadow-[0_2px_0_0_#2b2b2b]">
+                    <span>🇮🇳</span>
+                    <span>+91</span>
+                  </div>
+                  <div className="relative flex-1">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={10}
+                      required
+                      autoFocus
+                      placeholder="Enter 10-digit number"
+                      value={phone}
+                      onChange={handlePhoneChange}
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-stone-800 text-sm font-bold tracking-wide text-stone-900 bg-white placeholder:text-stone-400 placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-[#731a26] shadow-[0_2px_0_0_#2b2b2b] transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || phone.length !== 10}
+                className="btn-shimmer w-full mt-3 py-3.5 px-5 rounded-2xl bg-[#fed000] hover:bg-[#e6bc00] text-black font-extrabold font-tj-serif text-base border-2 border-stone-800 shadow-[0_5px_0_0_#2b2b2b] hover:shadow-[0_6px_0_0_#2b2b2b] active:translate-y-1 active:shadow-[0_1px_0_0_#2b2b2b] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-black" />
+                ) : (
+                  <>
+                    <span>Continue</span>
+                    <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                  </>
+                )}
+              </button>
+
+              {/* Trust badges footer */}
+              <div className="mt-6 pt-4 border-t-2 border-stone-200/80 flex items-center justify-center gap-2 flex-wrap">
+                <span className="px-2.5 py-1 rounded-full bg-[#f8bac5] border border-stone-800 text-stone-900 font-bold text-[10px] sm:text-[11px] shadow-xs">
+                  🌿 100% Herbal
+                </span>
+                <span className="px-2.5 py-1 rounded-full bg-[#b9e5e9] border border-stone-800 text-stone-900 font-bold text-[10px] sm:text-[11px] shadow-xs">
+                  📦 All-India Delivery
+                </span>
+                <span className="px-2.5 py-1 rounded-full bg-[#fed000] border border-stone-800 text-black font-bold text-[10px] sm:text-[11px] shadow-xs">
+                  🔒 Official Store
                 </span>
               </div>
-              <div className="flex gap-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-semibold select-none flex-shrink-0">
-                  <span className="text-base">🇮🇳</span>
-                  <span>+91</span>
+            </form>
+          )}
+
+          {/* STEP 2: OTP Verification */}
+          {step === "otp" && (
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
+              {/* Phone Info & Change button */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#fdf2f4] border-2 border-stone-800 text-xs shadow-[0_2px_0_0_#2b2b2b]">
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-[#731a26]" />
+                  <span className="font-tj-serif font-black text-stone-900 text-sm">
+                    +91 {phone.length === 10 ? `${phone.slice(0, 5)} ${phone.slice(5)}` : phone}
+                  </span>
                 </div>
-                <div className="relative flex-1">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("phone");
+                    setError(null);
+                    setSuccess(null);
+                  }}
+                  className="font-bold text-xs text-[#731a26] hover:underline cursor-pointer"
+                >
+                  Change
+                </button>
+              </div>
+
+              {/* OTP Input */}
+              <div>
+                <label className="block font-tj-serif text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5">
+                  Verification Code
+                </label>
+
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  required
+                  autoFocus
+                  maxLength={6}
+                  placeholder="• • • • • •"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/[^\d]/g, ""))}
+                  className="w-full px-4 py-3 rounded-2xl border-2 border-stone-800 text-center text-2xl font-mono tracking-[0.4em] font-black text-stone-900 bg-white placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-[#731a26] shadow-[0_2px_0_0_#2b2b2b] transition-all"
+                />
+
+                {/* 3-Minute Code Expiration Countdown */}
+                <div className="flex items-center justify-between text-xs px-1 pt-2.5 min-h-[28px]">
+                  {expiryCountdown > 0 ? (
+                    <div className="flex items-center gap-1.5 font-medium text-stone-700">
+                      <Clock className={`w-3.5 h-3.5 ${expiryCountdown > 30 ? "text-emerald-700" : "text-amber-600"}`} />
+                      <span>
+                        Code valid for:{" "}
+                        <strong className="text-stone-900 font-mono font-bold">
+                          {formatTime(expiryCountdown)}
+                        </strong>
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-red-600 font-bold">Code expired</span>
+                      <button
+                        type="button"
+                        onClick={() => handleSendOtp()}
+                        disabled={loading}
+                        className="text-xs font-extrabold text-[#731a26] hover:underline cursor-pointer flex items-center gap-1"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Resend code</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Optional Full Name */}
+              <div>
+                <label className="block font-tj-serif text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5">
+                  Your Full Name <span className="text-stone-400 font-normal lowercase">(optional)</span>
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                   <input
-                    type="tel"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={10}
-                    required
-                    autoFocus
-                    placeholder="Enter 10-digit number"
-                    value={phone}
-                    onChange={handlePhoneChange}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold tracking-wide text-gray-900 bg-white placeholder:text-gray-400 placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
+                    type="text"
+                    placeholder="e.g. Alex Johnson"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-stone-800 text-sm font-semibold text-stone-900 bg-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#731a26] shadow-[0_2px_0_0_#2b2b2b] transition-all"
                   />
                 </div>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading || phone.length !== 10}
-              className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-sm shadow-lg shadow-[#FF7A00]/25 transition-all flex items-center justify-center gap-2.5 disabled:opacity-50 cursor-pointer active:scale-[0.99]"
-            >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  <span>Continue</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-        )}
-
-        {/* STEP 2: OTP Verification */}
-        {step === "otp" && (
-          <form onSubmit={handleVerifyOtp} className="space-y-4">
-            {/* Phone Info & Change button */}
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-200 text-xs">
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-[#FF7A00]" />
-                <span className="font-bold text-gray-800">
-                  +91 {phone.length === 10 ? `${phone.slice(0, 5)} ${phone.slice(5)}` : phone}
-                </span>
-              </div>
+              {/* Submit CTA */}
               <button
-                type="button"
-                onClick={() => {
-                  setStep("phone");
-                  setError(null);
-                  setSuccess(null);
-                }}
-                className="text-[#FF7A00] font-bold hover:underline cursor-pointer"
+                type="submit"
+                disabled={loading || otp.length < 6 || expiryCountdown <= 0}
+                className="btn-shimmer w-full mt-2 py-3.5 px-4 rounded-2xl bg-[#fed000] hover:bg-[#e6bc00] text-black font-extrabold font-tj-serif text-base border-2 border-stone-800 shadow-[0_5px_0_0_#2b2b2b] hover:shadow-[0_6px_0_0_#2b2b2b] active:translate-y-1 active:shadow-[0_1px_0_0_#2b2b2b] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Change
-              </button>
-            </div>
-
-            {/* OTP Input */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                Verification Code
-              </label>
-
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                required
-                autoFocus
-                maxLength={6}
-                placeholder="• • • • • •"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/[^\d]/g, ""))}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-center text-xl font-mono tracking-[0.4em] font-bold text-gray-900 bg-white placeholder:text-gray-300 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
-              />
-
-              {/* 3-Minute Code Expiration Countdown -> Revealed Resend Code Button after 3 minutes */}
-              <div className="flex items-center justify-between text-xs px-1 pt-2 min-h-[28px]">
-                {expiryCountdown > 0 ? (
-                  <div className="flex items-center gap-1.5 font-medium text-gray-600">
-                    <Clock className={`w-3.5 h-3.5 ${expiryCountdown > 30 ? "text-emerald-600" : "text-amber-500"}`} />
-                    <span>
-                      Code valid for:{" "}
-                      <strong className="text-gray-900 font-mono font-bold">
-                        {formatTime(expiryCountdown)}
-                      </strong>
-                    </span>
-                  </div>
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-black" />
                 ) : (
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-red-600 font-bold">Code expired</span>
-                    <button
-                      type="button"
-                      onClick={() => handleSendOtp()}
-                      disabled={loading}
-                      className="text-xs font-bold text-[#FF7A00] hover:text-[#E66E00] hover:underline cursor-pointer flex items-center gap-1"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      <span>Resend code</span>
-                    </button>
-                  </div>
+                  <>
+                    <span>Verify & Continue</span>
+                    <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                  </>
                 )}
+              </button>
+
+              {/* WhatsApp helper */}
+              <div className="pt-2 text-center">
+                <a
+                  href="https://wa.me/919778137954?text=Hi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => {
+                    setExpiryCountdown(0);
+                  }}
+                  className="inline-flex items-center gap-1.5 text-xs text-emerald-950 font-bold bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-800 px-3.5 py-1.5 rounded-full shadow-[0_2px_0_0_#065f46] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Didn&apos;t get code? Tap to send &ldquo;Hi&rdquo; on WhatsApp</span>
+                </a>
               </div>
-            </div>
-
-            {/* Optional Full Name (for new customer personalization) */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                Your Full Name <span className="text-gray-400 font-normal lowercase">(optional)</span>
-              </label>
-              <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="e.g. Alex Johnson"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
-                />
-              </div>
-            </div>
-
-            {/* Submit CTA */}
-            <button
-              type="submit"
-              disabled={loading || otp.length < 6 || expiryCountdown <= 0}
-              className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-sm shadow-lg shadow-[#FF7A00]/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer active:scale-[0.99]"
-            >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  <span>Verify & Continue</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-
-            {/* Quick helper if user has not yet interacted with WhatsApp number */}
-            <div className="pt-2 text-center">
-              <a
-                href="https://wa.me/919778137954?text=Hi"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => {
-                  // After user opens WhatsApp to send Hi, immediately unlock the Resend code button
-                  setExpiryCountdown(0);
-                }}
-                className="inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:text-emerald-800 font-semibold bg-emerald-50 hover:bg-emerald-100/80 px-3 py-1.5 rounded-full transition-all cursor-pointer"
-              >
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Didn&apos;t get code? Tap to send &ldquo;Hi&rdquo; on WhatsApp</span>
-              </a>
-            </div>
-          </form>
-        )}
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

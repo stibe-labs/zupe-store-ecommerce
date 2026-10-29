@@ -121,7 +121,30 @@ export default function ProductDetailPage() {
             !(found.colors.length === 1 && found.colors[0].name.toLowerCase() === "standard")
           );
 
-    const initialColor = hasColors && found.colors && found.colors.length > 0 ? found.colors[0].name : "";
+    let initialColor = hasColors && found.colors && found.colors.length > 0 ? found.colors[0].name : "";
+
+    // Support deep-linking and variant navigation via URL query params (?color= or ?variant=)
+    if (hasColors && found.colors && typeof window !== "undefined") {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetParam = urlParams.get("color") || urlParams.get("variant");
+        if (targetParam) {
+          const decoded = decodeURIComponent(targetParam).toLowerCase();
+          const matched = found.colors.find(
+            (c) =>
+              c.name.toLowerCase() === decoded ||
+              c.name.toLowerCase().includes(decoded) ||
+              decoded.includes(c.name.toLowerCase())
+          );
+          if (matched) {
+            initialColor = matched.name;
+          }
+        }
+      } catch {
+        // Fallback to first color if parsing fails
+      }
+    }
+
     setSelectedColor(initialColor);
 
     const firstColorObj = hasColors
@@ -915,7 +938,7 @@ export default function ProductDetailPage() {
   const handleShare = async () => {
     const shareData = {
       title: product.name,
-      text: `Check out ${product.name} on Zupestore!`,
+      text: `Check out ${product.name} on Turkiye Jam!`,
       url: typeof window !== "undefined" ? window.location.href : "",
     };
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
@@ -956,11 +979,11 @@ export default function ProductDetailPage() {
 
   if (loadingProduct && !product) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] flex flex-col justify-between">
+      <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between">
         <Navbar />
         <div className="max-w-md mx-auto py-32 px-4 text-center">
-          <div className="w-12 h-12 mx-auto mb-4 rounded-full border-3 border-[#FF7A00] border-t-transparent animate-spin" />
-          <p className="text-sm font-semibold text-gray-600">Loading product details...</p>
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full border-3 border-[#5b1420] border-t-transparent animate-spin" />
+          <p className="text-sm font-bold text-stone-700">Loading product details...</p>
         </div>
         <Footer />
       </div>
@@ -969,17 +992,17 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] flex flex-col justify-between">
+      <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between">
         <Navbar />
         <div className="max-w-md mx-auto py-32 px-4 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center text-[#FF7A00]">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#f8bac5] border-2 border-stone-800 flex items-center justify-center text-[#5b1420] shadow-[0_4px_0_0_#2b2b2b]">
             <ShoppingBag className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-bold font-display text-gray-900 mb-2">Product Not Found</h2>
-          <p className="text-sm text-gray-500 mb-6">The product you are looking for may have been moved or is currently unavailable.</p>
+          <h2 className="text-2xl font-tj-serif font-black text-stone-900 mb-2">Product Not Found</h2>
+          <p className="text-sm text-stone-600 mb-6 font-medium">The product you are looking for may have been moved or is currently unavailable.</p>
           <Link
             href="/products"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#FF7A00] text-white font-semibold text-sm shadow-md"
+            className="btn-shimmer inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#fed000] text-stone-900 font-black border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b]"
           >
             Browse All Products
           </Link>
@@ -996,12 +1019,12 @@ export default function ProductDetailPage() {
       : 35;
 
   return (
-    <div className="min-h-screen bg-white text-[#1E1E1E] antialiased pb-28 lg:pb-16 selection:bg-[#FF7A00]/20 selection:text-[#FF7A00]">
+    <div className="min-h-screen tj-diamonds-cream text-stone-900 antialiased pb-28 lg:pb-16 selection:bg-[#fed000] selection:text-stone-900">
       {/* Top App Header */}
       <Navbar />
 
       {/* Main Container */}
-      <main className="max-w-[1600px] mx-auto px-0 sm:px-6 pt-0 sm:pt-6">
+      <main className="max-w-[1600px] mx-auto px-0 sm:px-6 pt-24 sm:pt-28 lg:pt-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-14 items-stretch">
           
           {/* ========================================================
@@ -1432,14 +1455,14 @@ export default function ProductDetailPage() {
                 <span>{isOutOfStock ? "Out of Stock" : "ADD TO CART"}</span>
               </button>
 
-              {/* 2. BUY NOW Button with Payment Badges & Chevron (Orange Theme) */}
+              {/* 2. BUY NOW Button with Payment Badges & Chevron (Turkiye Gold Theme) */}
               <button
                 onClick={handleBuyWithUpi}
                 disabled={isOutOfStock}
-                className={`w-full py-3.5 sm:py-4 px-4 rounded-xl font-black text-[15px] sm:text-[16px] uppercase tracking-wider flex items-center justify-center gap-2.5 transition-all ${
+                className={`w-full py-3.5 sm:py-4 px-4 rounded-2xl font-black text-[15px] sm:text-[16px] uppercase tracking-wider flex items-center justify-center gap-2.5 transition-all ${
                   isOutOfStock
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-70"
-                    : "bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] hover:brightness-105 active:scale-[0.99] text-white shadow-md shadow-[#FF7A00]/25"
+                    : "btn-shimmer bg-[#fed000] hover:bg-[#fab005] active:translate-y-0.5 text-stone-900 border-2 border-stone-800 shadow-[0_5px_0_0_#2b2b2b]"
                 }`}
               >
                 {isOutOfStock ? (
@@ -1917,7 +1940,7 @@ export default function ProductDetailPage() {
                           </li>
                           <li className="flex items-center gap-2">
                             <Check className="w-4 h-4 text-[#FF7A00]" />
-                            <span>1 × Zupe Store Quality Verification & Warranty Seal</span>
+                            <span>1 × Turkiye Jam Quality Verification & Warranty Seal</span>
                           </li>
                         </ul>
                       )}
@@ -2037,12 +2060,12 @@ export default function ProductDetailPage() {
                             <p className="text-xs text-gray-500 leading-relaxed mt-0.5">
                               Spotted an issue? WhatsApp us at{" "}
                               <a
-                                href="https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20have%20an%20unboxing%20video%20for%20return%2Fexchange"
+                                href="https://wa.me/917356765036?text=Hi%20Turkiye%20Jam%2C%20I%20have%20an%20unboxing%20video%20for%20return%2Fexchange"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-[#FF7A00] font-bold hover:underline"
                               >
-                                +91 97441 22853
+                                +91 73567 65036
                               </a>{" "}
                               with the video attached and your order number.
                             </p>
@@ -2071,7 +2094,7 @@ export default function ProductDetailPage() {
                       <div className="mt-4 p-3.5 rounded-xl bg-orange-50/80 border border-orange-200/90 text-xs text-orange-950 leading-relaxed flex items-start gap-2.5">
                         <AlertCircle className="w-4 h-4 text-[#FF7A00] shrink-0 mt-0.5" />
                         <div>
-                          A continuous unboxing video helps <strong className="font-bold text-[#FF7A00]">Zupe Store</strong> verify transit damage, missing contents, wrong products or initial defects faster.
+                          A continuous unboxing video helps <strong className="font-bold text-[#FF7A00]">Turkiye Jam</strong> verify transit damage, missing contents, wrong products or initial defects faster.
                         </div>
                       </div>
 
@@ -2166,10 +2189,10 @@ export default function ProductDetailPage() {
           <button
             onClick={handleBuyWithUpi}
             disabled={isOutOfStock}
-            className={`py-3 px-3 rounded-xl font-black text-[13px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${
+            className={`py-3 px-3 rounded-2xl font-black text-[13px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${
               isOutOfStock
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-70"
-                : "bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] text-white shadow-md shadow-[#FF7A00]/25 active:scale-95"
+                : "btn-shimmer bg-[#fed000] text-stone-900 border-2 border-stone-800 shadow-[0_3px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none"
             }`}
           >
             {isOutOfStock ? (

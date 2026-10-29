@@ -29,7 +29,7 @@ export async function sendEmail({
   const companyEmail = process.env.SMTP_USER || "zupestoreonline@gmail.com";
   const rawPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || "";
   const smtpPass = rawPass.replace(/\s+/g, "");
-  const fromAddress = from || `"Zupe Store" <${companyEmail}>`;
+  const fromAddress = from || `"Turkiye Jam" <${companyEmail}>`;
   const replyToAddress = replyTo || companyEmail;
 
   // 1. Check for Gmail SMTP if password is provided
@@ -81,7 +81,7 @@ export async function sendEmail({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          sender: { name: "Zupe Store", email: companyEmail },
+          sender: { name: "Turkiye Jam", email: companyEmail },
           to: [{ email: to }],
           subject,
           htmlContent: html,
@@ -103,7 +103,7 @@ export async function sendEmail({
   const resendApiKey = process.env.RESEND_API_KEY;
   if (resendApiKey) {
     try {
-      const fromEmail = process.env.EMAIL_FROM || `Zupe Store <${companyEmail}>`;
+      const fromEmail = process.env.EMAIL_FROM || `Turkiye Jam <${companyEmail}>`;
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {

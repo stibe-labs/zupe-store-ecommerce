@@ -93,7 +93,7 @@ function AdminLoginForm() {
             Admin Portal
           </h1>
           <p className="text-xs sm:text-sm text-gray-400 mt-1.5 font-medium">
-            Sign in with administrator credentials to manage Zupe Store
+            Sign in with administrator credentials to manage Turkiye Jam
           </p>
         </div>
 
@@ -197,20 +197,17 @@ export default function AdminLoginPage() {
       <header className="w-full border-b border-gray-900 bg-[#0d1017]/80 backdrop-blur-md py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative w-8 h-8 flex items-center justify-center">
+            <div className="relative h-8 w-24 flex items-center justify-start">
               <Image
-                src="/zupe-logo.webp"
-                alt="Zupe Store"
-                width={32}
+                src="/turkiye-jam-logo.svg"
+                alt="Turkiye Jam"
+                width={96}
                 height={32}
                 className="object-contain"
               />
             </div>
-            <span className="text-sm font-bold text-white tracking-wide">
-              ZUPE<span className="text-[#FF7A00]">STORE</span>
-              <span className="ml-2 text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-gray-800 text-gray-300">
-                ERP
-              </span>
+            <span className="text-xs uppercase font-mono px-1.5 py-0.5 rounded bg-gray-800 text-gray-300">
+              ERP
             </span>
           </Link>
 
@@ -239,7 +236,7 @@ export default function AdminLoginPage() {
 
       {/* Footer */}
       <footer className="w-full py-4 text-center text-[11px] text-gray-600 border-t border-gray-900 bg-[#090b10]">
-        Zupe Store Enterprise ERP System • Secure Management Console
+        Turkiye Jam Enterprise ERP System • Secure Management Console
       </footer>
     </div>
   );

@@ -498,14 +498,14 @@ function ProductsContent() {
   const currentSortOption = SORT_OPTIONS.find((o) => o.value === sortBy) || SORT_OPTIONS[0];
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] text-[#2D3436]">
+    <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between">
       <Navbar />
 
       {/* Header Banner */}
-      <div className="pt-3 sm:pt-5 pb-3 sm:pb-4 bg-gradient-to-b from-[#FF7A00]/10 via-[#F3F4F6]/60 to-[#F3F4F6] border-b border-gray-100">
+      <div className="pt-28 sm:pt-32 pb-6 bg-gradient-to-b from-[#fed000]/10 via-transparent to-transparent border-b border-stone-300">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
-          <div className="flex items-center gap-2 text-xs text-[#636E72] mb-2 sm:mb-3">
-            <Link href="/" className="hover:text-[#FF7A00] transition-colors">
+          <div className="flex items-center gap-2 text-xs text-stone-600 mb-2 sm:mb-3">
+            <Link href="/" className="hover:text-[#5b1420] transition-colors font-bold">
               Home
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -515,7 +515,7 @@ function ProductsContent() {
                 setActiveFilter("");
                 setSelectedCategory("All");
               }}
-              className="hover:text-[#FF7A00] transition-colors font-medium"
+              className="hover:text-[#5b1420] transition-colors font-bold"
             >
               Shop
             </Link>
@@ -526,46 +526,46 @@ function ProductsContent() {
                   <button
                     type="button"
                     onClick={() => handleSubcategorySelect("All")}
-                    className="hover:text-[#FF7A00] transition-colors font-medium cursor-pointer"
+                    className="hover:text-[#5b1420] transition-colors font-bold cursor-pointer"
                   >
                     {banner.breadcrumb}
                   </button>
                 ) : (
-                  <span className="text-[#FF7A00] font-semibold">{banner.breadcrumb}</span>
+                  <span className="text-[#5b1420] font-black">{banner.breadcrumb}</span>
                 )}
               </>
             )}
             {banner.subBreadcrumb && (
               <>
                 <ChevronRight className="w-3.5 h-3.5" />
-                <span className="text-[#FF7A00] font-semibold">{banner.subBreadcrumb}</span>
+                <span className="text-[#5b1420] font-black">{banner.subBreadcrumb}</span>
               </>
             )}
           </div>
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4">
             <div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FF7A00]/10 text-[#FF7A00] mb-1.5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-[#fed000] text-stone-900 border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b] mb-2">
                 {banner.icon}
                 <span>{banner.badge}</span>
               </span>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-extrabold text-[#111111]">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black font-tj-serif text-stone-900">
                 {banner.title}
               </h1>
-              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+              <p className="text-xs sm:text-sm text-stone-600 mt-1">
                 {banner.subtitle}
               </p>
             </div>
 
             {/* Search Input in Header */}
             <div className="relative w-full md:w-80">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-white border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] shadow-sm transition-all"
+                className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-white border-2 border-stone-800 text-sm font-medium text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#fed000] shadow-[0_3px_0_0_#2b2b2b] transition-all"
               />
               {searchQuery && (
                 <button

@@ -153,7 +153,7 @@ export async function GET(req: NextRequest) {
 
       return {
         ...v,
-        productName: matchedProd?.name || v.productName || "Zupe Store Featured Item",
+        productName: matchedProd?.name || v.productName || "Turkiye Jam Featured Item",
         productPrice:
           matchedProd?.price !== undefined
             ? Number(matchedProd.price)

@@ -87,7 +87,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
         timestamp: formatDate(72),
         completed: true,
         active: true,
-        description: "Package was handed over directly to recipient. Thank you for shopping with Zupe Store!",
+        description: "Package was handed over directly to recipient. Thank you for shopping with Turkiye Jam!",
       },
       {
         title: "Out for Delivery",
@@ -105,14 +105,14 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       },
       {
         title: "Dispatched & Handed to Courier",
-        location: "Zupe Fulfillment Center, Gurugram",
+        location: "Turkiye Jam Fulfillment Center, Gurugram",
         timestamp: formatDate(18),
         completed: true,
         description: `Package handed over to ${courier}. AWB: ${order.shiprocket_awb || "Generated"}.`,
       },
       {
         title: "Order Confirmed & Packed",
-        location: "Zupe Warehouse",
+        location: "Turkiye Jam Warehouse",
         timestamp: formatDate(6),
         completed: true,
         description: "Quality verification completed. Item packed in eco-friendly tamper-proof bag.",
@@ -160,7 +160,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       },
       {
         title: "Order Confirmed & Packed",
-        location: "Zupe Fulfillment",
+        location: "Turkiye Jam Fulfillment",
         timestamp: formatDate(4),
         completed: true,
         description: "Items picked and packaged securely.",
@@ -187,14 +187,14 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       },
       {
         title: "Dispatched by Logistics Hub",
-        location: "Zupe Hub, Gurugram",
+        location: "Turkiye Jam Hub, Gurugram",
         timestamp: formatDate(14),
         completed: true,
         description: `Package dispatched with ${courier}. Air/Surface manifest generated.`,
       },
       {
         title: "Packed & Tamper Sealed",
-        location: "Zupe Fulfillment Center",
+        location: "Turkiye Jam Fulfillment Center",
         timestamp: formatDate(5),
         completed: true,
         description: "Package sealed with tamper-evident security tape.",
@@ -247,7 +247,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
   return [
     {
       title: "Processing & Quality Check",
-      location: "Zupe Central Warehouse",
+      location: "Turkiye Jam Central Warehouse",
       timestamp: formatDate(4),
       completed: true,
       active: true,
@@ -493,36 +493,36 @@ function OrderTrackingContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FBFBFC] text-[#111111] flex flex-col justify-between">
+    <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between">
       <Navbar />
 
       <main className="flex-1 pb-20">
         {/* Hero Section */}
-        <div className="relative bg-gradient-to-b from-[#FFF5F1] via-[#FFF9F6] to-[#FBFBFC] pt-12 pb-16 px-4 sm:px-6 lg:px-8 border-b border-orange-100/50">
+        <div className="relative pt-28 sm:pt-32 pb-14 px-4 sm:px-6 lg:px-8 border-b border-stone-300">
           <div className="max-w-4xl mx-auto text-center">
             {/* Live Tracking Pill */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white shadow-sm border border-orange-200/60 mb-5">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fed000] text-stone-900 shadow-[0_2px_0_0_#2b2b2b] border-2 border-stone-800 mb-5">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF7A00] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#FF7A00]"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-600 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
               </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#FF7A00]">
+              <span className="text-xs font-black uppercase tracking-wider text-stone-900">
                 Live Shipment Tracking
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-display font-extrabold text-gray-900 tracking-tight leading-tight">
-              Track Your <span className="text-[#FF7A00]">Order</span>
+            <h1 className="text-3xl sm:text-5xl font-black font-tj-serif text-stone-900 tracking-tight leading-tight">
+              Track Your <span className="text-[#5b1420]">Order</span>
             </h1>
-            <p className="mt-3 text-sm sm:text-base text-gray-600 max-w-xl mx-auto">
+            <p className="mt-3 text-sm sm:text-base text-stone-600 max-w-xl mx-auto">
               Enter your Order Number, Shiprocket AWB, or registered Mobile Number to see instant, live courier updates.
             </p>
 
             {/* Tracking Search Input Card */}
-            <div className="mt-8 max-w-2xl mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-xl shadow-orange-950/5 border border-gray-100 p-2 sm:p-2.5">
+            <div className="mt-8 max-w-2xl mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-[0_8px_0_0_#2b2b2b] border-2 border-stone-800 p-2 sm:p-2.5">
               <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1 flex items-center">
-                  <div className="absolute left-4 text-gray-400">
+                  <div className="absolute left-4 text-stone-400">
                     <Search className="w-5 h-5" />
                   </div>
                   <input
@@ -530,13 +530,13 @@ function OrderTrackingContent() {
                     value={inputTerm}
                     onChange={(e) => setInputTerm(e.target.value)}
                     placeholder="Enter Order ID (#1054), AWB, or Phone..."
-                    className="w-full pl-12 pr-10 py-3.5 sm:py-4 text-sm sm:text-base bg-transparent text-gray-900 placeholder:text-gray-400 focus:outline-none"
+                    className="w-full pl-12 pr-10 py-3.5 sm:py-4 text-sm sm:text-base bg-transparent text-stone-900 placeholder:text-stone-400 focus:outline-none font-medium"
                   />
                   {inputTerm && (
                     <button
                       type="button"
                       onClick={() => setInputTerm("")}
-                      className="absolute right-3 p-1 text-gray-400 hover:text-gray-600 rounded-full"
+                      className="absolute right-3 p-1 text-stone-400 hover:text-stone-600 rounded-full cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -546,11 +546,11 @@ function OrderTrackingContent() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] active:scale-[0.98] text-white font-bold text-sm sm:text-base transition-all shadow-md shadow-[#FF7A00]/25 disabled:opacity-70 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl btn-shimmer bg-[#fed000] hover:bg-[#fab005] active:translate-y-0.5 active:shadow-none text-stone-900 font-black text-sm sm:text-base transition-all border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] disabled:opacity-70 cursor-pointer"
                 >
                   {loading ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <RefreshCw className="w-4 h-4 animate-spin text-stone-900" />
                       <span>Checking Status...</span>
                     </>
                   ) : (
@@ -600,7 +600,7 @@ function OrderTrackingContent() {
                       className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors shadow-xs"
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
-                      <span>Chat with Zupe Support on WhatsApp</span>
+                      <span>Chat with Turkiye Jam Support on WhatsApp</span>
                     </a>
                   </div>
                 )}
@@ -639,7 +639,7 @@ function OrderTrackingContent() {
                         </span>
                       </div>
                       <p className="text-xs text-gray-500 truncate">
-                        {ord.items?.[0]?.product_name || "Zupe Store Item"}
+                        {ord.items?.[0]?.product_name || "Turkiye Jam Item"}
                       </p>
                       <p className="text-xs font-semibold text-[#FF7A00] mt-2">
                         ₹{ord.total_amount?.toLocaleString()}
@@ -661,13 +661,13 @@ function OrderTrackingContent() {
                 const checkpoints = buildTrackingCheckpoints(selectedOrder, liveTracking);
 
                 return (
-                  <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="bg-white rounded-3xl border-2 border-stone-800 shadow-[0_8px_0_0_#2b2b2b] overflow-hidden">
                     {/* Header Strip */}
-                    <div className="p-6 sm:p-8 bg-gradient-to-r from-gray-50 via-white to-orange-50/30 border-b border-gray-100">
+                    <div className="p-6 sm:p-8 bg-gradient-to-r from-stone-50 via-white to-amber-50/20 border-b border-stone-200">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-3">
-                            <h2 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900 tracking-tight">
+                            <h2 className="text-2xl sm:text-3xl font-black font-tj-serif text-stone-900 tracking-tight">
                               Order {selectedOrder.shopify_order_id || selectedOrder.id}
                             </h2>
                             <button
@@ -981,7 +981,7 @@ function OrderTrackingContent() {
                           <Package className="w-8 h-8" />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-900">Curated Zupe Order</p>
+                          <p className="text-sm font-bold text-gray-900">Curated Turkiye Jam Order</p>
                           <p className="text-xs text-gray-500">1 Package</p>
                         </div>
                       </div>
@@ -1031,7 +1031,7 @@ function OrderTrackingContent() {
                     <div className="flex items-center gap-2 text-[#FF7A00] mb-2">
                       <ShieldCheck className="w-5 h-5" />
                       <span className="text-xs font-bold uppercase tracking-wider">
-                        Zupe Care Guarantee
+                        Turkiye Jam Care Guarantee
                       </span>
                     </div>
                     <h4 className="text-base font-bold mb-1">Need help with this shipment?</h4>
@@ -1041,8 +1041,8 @@ function OrderTrackingContent() {
 
                     <div className="space-y-2">
                       <a
-                        href={`https://wa.me/919744122853?text=${encodeURIComponent(
-                          `Hi Zupe Store, I need updates on my Order ${
+                        href={`https://wa.me/917356765036?text=${encodeURIComponent(
+                          `Hi Turkiye Jam, I need updates on my Order ${
                             selectedOrder.shopify_order_id || selectedOrder.id
                           }`
                         )}`}
@@ -1054,7 +1054,7 @@ function OrderTrackingContent() {
                         <span>Chat on WhatsApp</span>
                       </a>
                       <a
-                        href="tel:+919744122853"
+                        href="tel:+917356765036"
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
                       >
                         <Phone className="w-4 h-4" />

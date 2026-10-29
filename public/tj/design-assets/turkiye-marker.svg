@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="28" height="28" fill="none">
+  <!-- Outer glowing white ring -->
+  <circle cx="14" cy="14" r="12" fill="#cb0a05" stroke="#ffffff" stroke-width="2.5" />
+  <!-- Inner white ring / crescent dot detail -->
+  <circle cx="14" cy="14" r="5.5" fill="#ffffff" fill-opacity="0.25" />
+</svg>

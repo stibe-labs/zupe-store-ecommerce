@@ -482,30 +482,30 @@ function OrdersPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] text-[#111111]">
+    <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between">
       <Navbar />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-5 sm:pt-8 pb-12 sm:pb-16">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-3 border-b border-gray-200">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-28 sm:pt-32 pb-16 flex-1 w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-stone-300">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900 tracking-tight whitespace-nowrap">
+            <h1 className="text-2xl sm:text-3xl font-black font-tj-serif text-stone-900 tracking-tight whitespace-nowrap">
               My Orders
             </h1>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-stone-600 mt-1">
               Track packages, check shipping updates, rate & review delivered purchases
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => fetchOrders(false)}
               disabled={loading || isSilentSyncing}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition shadow-xs disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-stone-800 bg-white border-2 border-stone-800 rounded-xl hover:bg-stone-50 transition shadow-[0_2px_0_0_#2b2b2b] disabled:opacity-60 cursor-pointer"
               title="Refresh order statuses"
             >
               <RefreshCw
                 className={`w-3.5 h-3.5 ${
-                  loading || isSilentSyncing ? "animate-spin text-[#FF7A00]" : "text-gray-500"
+                  loading || isSilentSyncing ? "animate-spin text-[#5b1420]" : "text-stone-700"
                 }`}
               />
               <span>{isSilentSyncing ? "Syncing..." : "Refresh"}</span>
@@ -514,7 +514,7 @@ function OrdersPageContent() {
             {!isAuthenticated && (
               <Link
                 href="/signin?redirect=/orders&notice=Please sign in to view and track your orders"
-                className="text-xs font-semibold text-[#FF7A00] hover:underline ml-1"
+                className="text-xs font-black text-[#5b1420] hover:underline ml-1"
               >
                 Sign In
               </Link>
@@ -619,22 +619,24 @@ function OrdersPageContent() {
             Loading your orders...
           </div>
         ) : orders.length === 0 ? (
-          <div className="max-w-md mx-auto py-20 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-3xl bg-gray-100 flex items-center justify-center text-gray-400">
-              <Package className="w-8 h-8" />
+          <div className="max-w-md mx-auto py-16 text-center">
+            <div className="bg-white rounded-3xl p-8 border-2 border-stone-800 shadow-[0_8px_0_0_#2b2b2b]">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#f8bac5] border-2 border-stone-800 flex items-center justify-center text-[#5b1420] shadow-[0_3px_0_0_#2b2b2b]">
+                <Package className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold font-tj-serif text-stone-900 mb-2">
+                No orders placed yet
+              </h3>
+              <p className="text-xs text-stone-600 mb-6 leading-relaxed">
+                When you place an order, its details, tracking, and product reviews will appear here.
+              </p>
+              <Link
+                href="/products"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-xl btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 text-xs font-black border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none transition-all"
+              >
+                Start Shopping
+              </Link>
             </div>
-            <h3 className="text-xl font-bold font-display text-gray-900 mb-2">
-              No orders placed yet
-            </h3>
-            <p className="text-sm text-gray-500 mb-6">
-              When you place an order, its details, tracking, and product reviews will appear here.
-            </p>
-            <Link
-              href="/products"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#FF7A00] text-white text-xs font-semibold"
-            >
-              Start Shopping
-            </Link>
           </div>
         ) : (
           <div className="space-y-6">
@@ -663,11 +665,11 @@ function OrdersPageContent() {
               if (!rawItems || rawItems.length === 0) {
                 rawItems = [
                   {
-                    product_id: "ripple-lamp",
-                    name: "Dynamic Water Ripple Night Light",
-                    price: ord.total_amount || 749,
+                    product_id: "turkiye-jam",
+                    name: "Turkiye Jam - Authentic Turkish Epimedium Honey Herbal Paste",
+                    price: ord.total_amount || 1499,
                     quantity: 1,
-                    image: "/products/ripple-lamp.jpg",
+                    image: "/tj/turkiye-jam-jar-2-strips.png",
                   },
                 ];
               }
@@ -709,17 +711,17 @@ function OrdersPageContent() {
               return (
                 <div
                   key={ord.id}
-                  className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8"
+                  className="bg-white rounded-3xl border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] p-5 sm:p-8"
                 >
                   {/* Header row */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200 mb-6">
                     <div>
-                      <span className="text-[10px] text-gray-400 uppercase font-semibold block">Order Reference</span>
-                      <span className="font-mono text-sm font-bold text-gray-900">{ord.id}</span>
+                      <span className="text-[10px] text-stone-500 uppercase font-bold block">Order Reference</span>
+                      <span className="font-mono text-sm font-bold text-stone-900">{ord.id}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-gray-400 uppercase font-semibold block">Date Placed</span>
-                      <span className="text-xs text-gray-700">
+                      <span className="text-[10px] text-stone-500 uppercase font-bold block">Date Placed</span>
+                      <span className="text-xs text-stone-700 font-medium">
                         {new Date(ord.created_at).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -728,16 +730,16 @@ function OrdersPageContent() {
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-gray-400 uppercase font-semibold block">Total Amount</span>
-                      <span className="text-sm font-bold text-[#FF7A00]">
+                      <span className="text-[10px] text-stone-500 uppercase font-bold block">Total Amount</span>
+                      <span className="text-base font-black text-[#5b1420]">
                         ₹{displayedTotal.toLocaleString()}
                       </span>
                       {isRefunded ? (
-                        <span className="text-[10px] text-purple-600 font-semibold block">
+                        <span className="text-[10px] text-purple-700 font-bold block">
                           Refunded to Source
                         </span>
                       ) : isCod ? (
-                        <span className="text-[10px] text-gray-500 font-medium block">
+                        <span className="text-[10px] text-stone-500 font-medium block">
                           (₹{productSubtotal.toLocaleString()} + ₹49 COD)
                         </span>
                       ) : isPaid ? (
@@ -757,24 +759,24 @@ function OrdersPageContent() {
                         {isCod && ord.order_status !== "cancelled" ? (
                           <Link
                             href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(ord.id)}`}
-                            className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-xs font-black tracking-tight bg-[#FF7A00] hover:bg-[#E66E00] text-white shadow-xs hover:shadow-md hover:shadow-orange-500/25 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] w-full sm:w-auto text-center animate-pulse whitespace-nowrap"
+                            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-xs font-black tracking-tight btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 border-2 border-stone-800 shadow-[0_3px_0_0_#2b2b2b] transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none w-full sm:w-auto text-center whitespace-nowrap"
                           >
                             <Sparkles className="w-3.5 h-3.5 shrink-0" />
                             <span>Pay Now (Save ₹30)</span>
                           </Link>
                         ) : isRefunded ? (
-                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-purple-50 text-purple-700 border-2 border-stone-800 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
                             <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                             <span>Refunded</span>
                           </span>
                         ) : isPaid ? (
-                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
-                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-800 border-2 border-stone-800 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
                             <span>Prepaid (Paid)</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-slate-100/90 text-slate-700 border border-slate-200 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
-                            <ShoppingBag className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-stone-100 text-stone-800 border-2 border-stone-800 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+                            <ShoppingBag className="w-3.5 h-3.5 text-stone-600 shrink-0" />
                             <span>Cash on Delivery</span>
                           </span>
                         )}
@@ -785,8 +787,8 @@ function OrdersPageContent() {
                         <div className={`grid ${isCod ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-none"} sm:flex sm:items-center gap-2 w-full sm:w-auto`}>
                           {/* Cash on Delivery Badge in Row 2 Col 1 */}
                           {isCod && (
-                            <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-slate-100/90 text-slate-700 border border-slate-200 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
-                              <ShoppingBag className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                            <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-stone-100 text-stone-800 border-2 border-stone-800 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+                              <ShoppingBag className="w-3.5 h-3.5 text-stone-600 shrink-0" />
                               <span>Cash on Delivery</span>
                             </span>
                           )}
@@ -794,7 +796,7 @@ function OrdersPageContent() {
                           {/* Track Package Button in Row 2 Col 2 */}
                           <Link
                             href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
-                            className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-bold tracking-tight bg-white hover:bg-orange-50/90 text-[#FF7A00] border border-[#FF7A00]/40 hover:border-[#FF7A00] shadow-2xs hover:shadow-xs transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] w-full sm:w-auto text-center whitespace-nowrap"
+                            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-bold tracking-tight bg-white hover:bg-stone-50 text-stone-900 border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b] transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none w-full sm:w-auto text-center whitespace-nowrap"
                           >
                             <Truck className="w-3.5 h-3.5 shrink-0" />
                             <span>Track Package</span>
@@ -805,7 +807,7 @@ function OrdersPageContent() {
                             <button
                               type="button"
                               onClick={() => handleOpenReviewModal(ord, rawItems[0])}
-                              className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-bold tracking-tight bg-amber-500 hover:bg-amber-600 text-white shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] w-full sm:w-auto text-center cursor-pointer whitespace-nowrap"
+                              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-black tracking-tight btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b] transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none w-full sm:w-auto text-center cursor-pointer whitespace-nowrap"
                             >
                               <Star className="w-3.5 h-3.5 fill-current shrink-0" />
                               <span>Rate & Review</span>

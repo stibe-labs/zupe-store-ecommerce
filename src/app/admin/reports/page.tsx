@@ -2265,7 +2265,7 @@ export default function AdminReportsPage() {
                     BI & Financial Reports Calculation Guide
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-400">
-                    Transparent formula breakdowns and unit economics guide for Zupe Store administrators.
+                    Transparent formula breakdowns and unit economics guide for Turkiye Jam administrators.
                   </p>
                 </div>
               </div>
@@ -2622,7 +2622,7 @@ export default function AdminReportsPage() {
                     <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50">
                       <p className="font-bold text-slate-900">Integrated RTO Ledger Recovery</p>
                       <p className="text-xs text-slate-600 mt-1">
-                        When an order fails delivery, Zupe Store's RTO Ledger logs the parcel return back to the supplier. Once approved, the supplier issues an <strong>RTO Credit Balance</strong> which you apply against future wholesale inventory orders. A recovery rate above <strong>95%</strong> ensures you never lose money on unsold stock!
+                        When an order fails delivery, Turkiye Jam's RTO Ledger logs the parcel return back to the supplier. Once approved, the supplier issues an <strong>RTO Credit Balance</strong> which you apply against future wholesale inventory orders. A recovery rate above <strong>95%</strong> ensures you never lose money on unsold stock!
                       </p>
                     </div>
                   </div>

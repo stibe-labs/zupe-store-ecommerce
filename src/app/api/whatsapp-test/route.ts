@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
       type: "text",
       text: {
         preview_url: false,
-        body: "🧪 Zupe Store WhatsApp Test\n\nIf you received this message, WhatsApp messaging is working correctly!\n\nTimestamp: " + new Date().toISOString(),
+        body: "🧪 Turkiye Jam WhatsApp Test\n\nIf you received this message, WhatsApp messaging is working correctly!\n\nTimestamp: " + new Date().toISOString(),
       },
     };
 

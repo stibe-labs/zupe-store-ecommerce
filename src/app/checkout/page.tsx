@@ -42,31 +42,22 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 // Recommended Bump / Upsell Products
 const BUMP_PRODUCTS = [
   {
-    id: "water-ripple-lamp",
-    slug: "dynamic-water-ripple-night-light",
-    name: "Dynamic Water Ripple Night Light",
-    price: 650,
-    mrp: 1099,
-    poster_image: "/products/ripple/ripple-amber.jpg",
-    category: "Home & Living",
+    id: "pack-2-strips",
+    slug: "turkiye-jam-2-strips",
+    name: "2 Sachet Strips (Pocket Trial Pack)",
+    price: 799,
+    mrp: 1199,
+    poster_image: "/tj/turkiye-jam-2-strips.png",
+    category: "Herbal Paste",
   },
   {
-    id: "mini-portable-steam-iron",
-    slug: "mini-portable-steam-iron",
-    name: "Mini Portable Steam Iron",
-    price: 599,
-    mrp: 929,
-    poster_image: "/products/iron/iron-teal-1.jpg",
-    category: "Home & Living",
-  },
-  {
-    id: "helicopter-car-perfume",
-    slug: "helicopter-car-perfume",
-    name: "Helicopter Solar Rotating Perfume",
-    price: 699,
-    mrp: 999,
-    poster_image: "/products/helicopter/heli-black-1.jpg",
-    category: "Car Accessories",
+    id: "pack-6-strips",
+    slug: "turkiye-jam-6-strips",
+    name: "6 Sachet Strips (Multi-Session Pack)",
+    price: 1899,
+    mrp: 2999,
+    poster_image: "/tj/turkiye-jam-6-strips.png",
+    category: "Herbal Paste",
   },
 ];
 
@@ -1273,7 +1264,7 @@ function CheckoutContent() {
             <div className="max-w-4xl mx-auto px-4 flex items-center justify-center">
               <Link href="/" className="inline-block">
                 <Image
-                  src="/turkiye-jam-logo.png"
+                  src="/turkiye-jam-logo.svg"
                   alt="Turkiye Jam"
                   width={140}
                   height={45}
@@ -1358,7 +1349,7 @@ function CheckoutContent() {
           <div className="max-w-4xl mx-auto px-4 flex items-center justify-between">
             <Link href="/" className="inline-block">
               <Image
-                src="/turkiye-jam-logo.png"
+                src="/turkiye-jam-logo.svg"
                 alt="Turkiye Jam"
                 width={140}
                 height={45}
@@ -1577,7 +1568,7 @@ function CheckoutContent() {
         </main>
 
         <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-          © 2026 Zupe Store
+          © 2026 Turkiye Jam
         </footer>
       </div>
     );
@@ -1592,7 +1583,7 @@ function CheckoutContent() {
           <div className="max-w-4xl mx-auto px-4 flex items-center justify-center">
             <Link href="/" className="inline-block">
               <Image
-                src="/turkiye-jam-logo.png"
+                src="/turkiye-jam-logo.svg"
                 alt="Turkiye Jam"
                 width={140}
                 height={45}
@@ -1761,7 +1752,7 @@ function CheckoutContent() {
         </main>
 
         <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-          © 2026 Zupe Store
+          © 2026 Turkiye Jam
         </footer>
       </div>
     );
@@ -1775,7 +1766,7 @@ function CheckoutContent() {
           <div className="max-w-5xl mx-auto px-4 flex items-center justify-center">
             <Link href="/" className="inline-block">
               <Image
-                src="/turkiye-jam-logo.png"
+                src="/turkiye-jam-logo.svg"
                 alt="Turkiye Jam"
                 width={140}
                 height={45}
@@ -1808,51 +1799,46 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 antialiased">
-      {/* 1. TOP TRUST HEADER (Matches Reference Photo 3) */}
-      <header className="relative border-b border-rose-100/70 bg-gradient-to-b from-[#fff5f5]/90 via-[#fffafa]/60 to-white pt-4 pb-4 sm:pt-5 sm:pb-5 overflow-hidden">
-        {/* Soft glowing ambient arc in background */}
-        <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-32 bg-[#cb0805]/10 blur-3xl rounded-full" />
-
+    <div className="min-h-screen tj-diamonds-cream text-stone-900 antialiased selection:bg-[#fed000] selection:text-stone-900">
+      {/* 1. TOP TRUST HEADER */}
+      <header className="relative border-b-2 border-stone-800 bg-[#5b1420] pt-4 pb-4 sm:pt-5 sm:pb-5 overflow-hidden shadow-md">
         <div className="relative max-w-5xl mx-auto px-4 flex flex-col items-center text-center space-y-2">
           {/* Centered Logo */}
           <Link href="/" className="inline-block transition-transform active:scale-95">
             <Image
-              src="/turkiye-jam-logo.png"
+              src="/turkiye-jam-logo.svg"
               alt="Turkiye Jam"
               width={140}
               height={45}
-              className="h-9 sm:h-10 w-auto object-contain mx-auto drop-shadow-2xs"
+              className="h-9 sm:h-10 w-auto object-contain mx-auto drop-shadow-md"
               priority
             />
           </Link>
 
           {/* Secure Checkout Heading */}
           <div>
-            <div className="flex items-center justify-center gap-1.5 text-gray-900 font-extrabold text-base sm:text-lg">
-              <Lock className="w-4 h-4 text-[#cb0805]" />
-              <span>Secure Checkout</span>
+            <div className="flex items-center justify-center gap-1.5 text-white font-tj-serif font-black text-base sm:text-lg">
+              <Lock className="w-4 h-4 text-[#fed000]" />
+              <span>100% Encrypted Safe Checkout</span>
             </div>
-            <p className="text-[11px] sm:text-xs text-gray-400 font-medium mt-0.5">
-              Your order is almost ready
+            <p className="text-[11px] sm:text-xs text-stone-200 font-medium mt-0.5">
+              Direct import from Turkey • Tamper-proof packaging
             </p>
           </div>
 
-          {/* 3 Genuine Trust Badges in Reference Pill Design */}
-          <div className="flex items-center justify-center gap-1 sm:gap-2 flex-nowrap overflow-x-auto max-w-full px-1 pt-1 text-xs font-semibold scrollbar-none">
-            <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-[#FFF3E8] border border-[#FFE2CC] text-gray-800 text-[10px] sm:text-xs shadow-2xs whitespace-nowrap shrink-0">
-              <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#cb0805]" />
-              <span>Premium Quality</span>
+          {/* 3 Genuine Trust Badges in Neo-brutalist pill design */}
+          <div className="flex items-center justify-center gap-1 sm:gap-2 flex-nowrap overflow-x-auto max-w-full px-1 pt-1 text-xs font-bold scrollbar-none">
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#fed000] border-2 border-stone-800 text-stone-900 text-[10px] sm:text-xs shadow-[0_2px_0_0_#2b2b2b] whitespace-nowrap shrink-0">
+              <ShieldCheck className="w-3.5 h-3.5 text-stone-900" />
+              <span>100% Authentic Paste</span>
             </span>
-            <span className="text-gray-300 hidden sm:inline">•</span>
-            <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-[#FFF3E8] border border-[#FFE2CC] text-gray-800 text-[10px] sm:text-xs shadow-2xs whitespace-nowrap shrink-0">
-              <Truck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#cb0805]" />
-              <span>Fast Shipping</span>
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white border-2 border-stone-800 text-stone-900 text-[10px] sm:text-xs shadow-[0_2px_0_0_#2b2b2b] whitespace-nowrap shrink-0">
+              <Truck className="w-3.5 h-3.5 text-[#5b1420]" />
+              <span>Discreet Express Shipping</span>
             </span>
-            <span className="text-gray-300 hidden sm:inline">•</span>
-            <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-[#FFF3E8] border border-[#FFE2CC] text-gray-800 text-[10px] sm:text-xs shadow-2xs whitespace-nowrap shrink-0">
-              <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#cb0805]" />
-              <span>Secure Payments</span>
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#d1fae5] border-2 border-stone-800 text-[#0e4a3b] text-[10px] sm:text-xs shadow-[0_2px_0_0_#2b2b2b] whitespace-nowrap shrink-0">
+              <Lock className="w-3.5 h-3.5 text-[#0e4a3b]" />
+              <span>Cash on Delivery</span>
             </span>
           </div>
         </div>
@@ -2480,7 +2466,7 @@ function CheckoutContent() {
                     required
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    placeholder="Kerala"
+                    placeholder="State (e.g. Maharashtra)"
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#cb0805] focus:ring-1 focus:ring-[#cb0805] transition-all bg-white shadow-2xs"
                   />
                 </div>
@@ -2790,7 +2776,7 @@ function CheckoutContent() {
                         <div className="space-y-1.5 text-xs text-emerald-900 font-semibold pl-1">
                           <div className="flex items-center gap-2">
                             <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                            <span>1–2 Days Superfast Express Delivery (Kerala)</span>
+                            <span>1–2 Days Superfast Express Delivery (All-India)</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
@@ -3057,7 +3043,7 @@ function CheckoutContent() {
                     Terms &amp; Conditions
                   </Link>
                 </div>
-                <p className="text-xs text-gray-400">© 2026 Zupe Store</p>
+                <p className="text-xs text-gray-400">© 2026 Turkiye Jam</p>
               </div>
             </div>
           </div>
@@ -3346,7 +3332,7 @@ function CheckoutContent() {
 
       {/* Clean Bottom Footer */}
       <footer className="py-8 text-center text-xs text-gray-400 border-t border-gray-100 bg-white mt-12">
-        © 2026 Zupe Store
+        © 2026 Turkiye Jam
       </footer>
     </div>
   );

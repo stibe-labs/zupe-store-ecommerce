@@ -7,7 +7,7 @@ import { normalizePhoneNumber } from "@/lib/whatsappOtp";
 const DEFAULT_WA_TOKEN =
   "EAAY6t7MlMOIBSgAfMGRZAJsIudRT1lMXiZARDnHSvqKZAr5ZArjs6htxGbGBlnE1ZCAOvQiOM069AgyzkuZB4UAtMveTfv6gu3Ik2A3nbQDaRIkWB7yuZACwVNS2eDELePKcOJRRnjE3Nx2m728wvYld1VZCMN05fulca3ZA5COTRZB82a9AZAfsAFyrS2XP41f6dRVygZDZD";
 const DEFAULT_WA_PHONE_ID = "1434769426379176";
-const STORE_BASE_URL = "https://zupe-store.stibelabs.workers.dev";
+const STORE_BASE_URL = "https://turkiyejam.stibelabs.workers.dev";
 
 // Template names - must match exactly what you created in Meta Business Manager
 const TEMPLATE_PREPAID = "zupe_order_prepaid";
@@ -109,15 +109,15 @@ export async function sendOrderPreConfirmationWhatsApp(
       : `💰 *Amount Paid:* Rs ${totalAmount.toLocaleString("en-IN")} (Prepaid Online)\n\n`;
 
   const message =
-    `*Order Verification — Zupe Store* 🛍️\n\n` +
-    `Hi ${firstName}! Thank you for placing your order with Zupe Store.\n\n` +
+    `*Order Verification — Turkiye Jam* 🛍️\n\n` +
+    `Hi ${firstName}! Thank you for placing your order with Turkiye Jam.\n\n` +
     `📦 *Order ID:* ${displayOrderId}\n` +
     `📋 *Items:*\n${itemLines}${more}\n\n` +
     paymentBreakdownText +
     `Please confirm your order below so we can pack and dispatch your shipment:\n\n` +
     `✅ *Confirm Order:*\n${confirmUrl}\n\n` +
     `❌ *Cancel Order:*\n${cancelUrl}\n\n` +
-    `Zupe Store Team`;
+    `Turkiye Jam Team`;
 
   await sendWhatsAppTextMessage(apiUrl, apiToken, digits, message);
   console.log(`✅ [WA Pre-Confirm] Fallback verification message delivered to ${digits} for order ${displayOrderId}`);
@@ -252,7 +252,7 @@ export async function sendOrderConfirmationWhatsApp(
   let message: string;
   if (paymentMethod === "cod") {
     message =
-      "✅ *Order Confirmed — Zupe Store!* 🛍️\n\n" +
+      "✅ *Order Confirmed — Turkiye Jam!* 🛍️\n\n" +
       "Hi " + firstName + "! Your Cash on Delivery order is confirmed.\n\n" +
       "📦 *Order ID:* " + displayOrderId + "\n" +
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
@@ -268,10 +268,10 @@ export async function sendOrderConfirmationWhatsApp(
       payNowUrl + "\n\n" +
       "📦 *Track Your Order:*\n" +
       trackUrl + "\n\n" +
-      "Thank you for shopping with Zupe Store!";
+      "Thank you for shopping with Turkiye Jam!";
   } else {
     message =
-      "✅ *Payment Successful — Zupe Store!* 🛍️\n\n" +
+      "✅ *Payment Successful — Turkiye Jam!* 🛍️\n\n" +
       "Hi " + firstName + "! Your prepaid order is confirmed.\n\n" +
       "📦 *Order ID:* " + displayOrderId + "\n" +
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
@@ -279,7 +279,7 @@ export async function sendOrderConfirmationWhatsApp(
       "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
       "📦 *Track Your Order:*\n" +
       trackUrl + "\n\n" +
-      "Thank you for shopping with Zupe Store!";
+      "Thank you for shopping with Turkiye Jam!";
   }
 
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
@@ -707,7 +707,7 @@ export async function sendOrderCancellationRefundWhatsApp(
   let body = "";
   if (isPrepaid && refundAmount) {
     body =
-      `🛍️ *Zupe Store — Order Cancelled & Refund Initiated*\n\n` +
+      `🛍️ *Turkiye Jam — Order Cancelled & Refund Initiated*\n\n` +
       `Hi ${firstName}! Your order *#${orderId}* has been successfully cancelled.\n\n` +
       `💰 *Refund Amount:* Rs ${refundAmount.toLocaleString("en-IN")}\n` +
       `💳 *Refund Reference:* ${refundId || "Initiated via Razorpay"}\n` +
@@ -715,15 +715,15 @@ export async function sendOrderCancellationRefundWhatsApp(
       `⏱️ *Expected Credit Timeline:*\n` +
       `• UPI (GPay, PhonePe, Paytm): Usually credited within 2 to 4 hours (or up to 24 hours depending on the issuing bank)\n` +
       `• Debit / Credit Cards / Netbanking: Credited within 2 to 4 business days\n\n` +
-      `Thank you for shopping with Zupe Store!`;
+      `Thank you for shopping with Turkiye Jam!`;
   } else {
     body =
-      `🛍️ *Zupe Store — Order Cancelled*\n\n` +
+      `🛍️ *Turkiye Jam — Order Cancelled*\n\n` +
       `Hi ${firstName}! Your Cash on Delivery order *#${orderId}* has been successfully cancelled.\n\n` +
       `📦 *Status:* Shipment cancelled. No payment will be collected at your doorstep.\n` +
       `ℹ️ *Note:* The Rs 10 advance verification fee paid during order placement is non-refundable.\n\n` +
       `If you need any assistance or wish to re-order, we are always here to help.\n\n` +
-      `Thank you,\nZupe Store Team`;
+      `Thank you,\nTurkiye Jam Team`;
   }
 
   await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
@@ -773,12 +773,12 @@ export async function sendAbandonedCartWhatsApp(
     : "👉 Tap here to complete your order in 1 click:";
 
   const body =
-    `Hi ${firstName}! We noticed you left some great items in your ${sectionName} at Zupe Store:\n\n` +
+    `Hi ${firstName}! We noticed you left some great items in your ${sectionName} at Turkiye Jam:\n\n` +
     `${itemLines}${more}\n\n` +
     `⚡ Currently this is a great price! Plus, if you order now, you get Free Delivery without any extra charges.\n\n` +
     `${actionText}\n${recoveryUrl}\n\n` +
     `Need any assistance? Just reply to this message!\n` +
-    `Zupe Store Team`;
+    `Turkiye Jam Team`;
 
   const textSent = await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
   if (textSent) {

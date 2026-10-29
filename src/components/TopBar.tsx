@@ -10,7 +10,7 @@ const ANNOUNCEMENT_ITEMS = [
   },
   {
     icon: Truck,
-    text: "⚡ 1–2 Day Superfast Express Delivery (Kerala & India)",
+    text: "⚡ 1–2 Day Superfast Express Delivery (All-India Delivery)",
   },
   {
     icon: ShieldCheck,
@@ -26,8 +26,8 @@ const ANNOUNCEMENT_ITEMS = [
   },
   {
     icon: Headphones,
-    text: "WhatsApp Order & Inquiries: +91 97441 22853",
-    href: "https://wa.me/919744122853?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam",
+    text: "WhatsApp Order & Inquiries: +91 73567 65036",
+    href: "https://wa.me/917356765036?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam",
   },
 ];
 

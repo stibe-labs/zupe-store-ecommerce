@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 54" width="32" height="54" fill="none">
+  <!-- Elegant botanical leaf -->
+  <path
+    d="M 16 2 C 28 14, 30 36, 16 52 C 2 36, 4 14, 16 2 Z"
+    fill="#1d533d"
+    stroke="#0e291e"
+    stroke-width="1.8"
+  />
+  <!-- Central Leaf Vein -->
+  <line x1="16" y1="6" x2="16" y2="48" stroke="#0e291e" stroke-width="1.5" stroke-linecap="round" />
+</svg>

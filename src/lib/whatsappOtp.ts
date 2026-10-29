@@ -253,7 +253,7 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
 
             // Also dispatch direct text message: if user sent "Hi" in last 24h, this delivers 100% instantly!
             try {
-              const directBody = `🛍️ *Zupe Store Verification Code*\n\nYour one-time login code is: *${otp}*\n\nValid for 3 minutes.\n\n_For your safety, never share this code with anyone._`;
+              const directBody = `🛍️ *Turkiye Jam Verification Code*\n\nYour one-time login code is: *${otp}*\n\nValid for 3 minutes.\n\n_For your safety, never share this code with anyone._`;
               await fetch(url, {
                 method: "POST",
                 headers: {
@@ -300,7 +300,7 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
     );
 
     // 2. Fallback: Direct text message
-    const messageBody = `🛍️ *Zupe Store Verification Code*\n\nYour one-time login code is: *${otp}*\n\nUse this code to access your Zupe Store account. Valid for 3 minutes.\n\n_For your safety, never share this code with anyone._`;
+    const messageBody = `🛍️ *Turkiye Jam Verification Code*\n\nYour one-time login code is: *${otp}*\n\nUse this code to access your Turkiye Jam account. Valid for 3 minutes.\n\n_For your safety, never share this code with anyone._`;
 
     const response = await fetch(url, {
       method: "POST",

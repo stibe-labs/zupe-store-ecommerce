@@ -582,7 +582,7 @@ export default function AbandonedCartsAdminPage() {
                         .map((it) => `• ${it.name || it.product_name || "Product"} — ₹${Number(it.price || it.unit_price || 0).toLocaleString("en-IN")}`)
                         .join("\n");
                       const waChatUrl = `https://wa.me/${cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`}?text=${encodeURIComponent(
-                        `Hi ${c.customer_name || "there"}! We noticed you left some great items in your ${sectionName} at Zupe Store:\n\n${itemSummary}\n\n⚡ Currently this is a great price! Plus, if you order now, you get Free Delivery without any extra charges.\n\n👉 Complete your order here: ${c.recovery_url}`
+                        `Hi ${c.customer_name || "there"}! We noticed you left some great items in your ${sectionName} at Turkiye Jam:\n\n${itemSummary}\n\n⚡ Currently this is a great price! Plus, if you order now, you get Free Delivery without any extra charges.\n\n👉 Complete your order here: ${c.recovery_url}`
                       )}`;
 
                       return (

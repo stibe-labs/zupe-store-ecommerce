@@ -613,7 +613,7 @@ export function ProductReviewsSection({
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
               <div>
                 <h3 className="text-base font-bold text-gray-900">Write a Product Review</h3>
-                <p className="text-xs text-gray-500">Share your experience with verified Zupe Store shoppers</p>
+                <p className="text-xs text-gray-500">Share your experience with verified Turkiye Jam shoppers</p>
               </div>
               <button
                 onClick={() => setWriteModalOpen(false)}

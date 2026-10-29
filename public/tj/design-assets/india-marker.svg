@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="28" height="28" fill="none">
+  <!-- Outer glowing white ring with saffron gold center -->
+  <circle cx="14" cy="14" r="12" fill="#e5a823" stroke="#ffffff" stroke-width="2.5" />
+  <circle cx="14" cy="14" r="5" fill="#fdf0cd" fill-opacity="0.5" />
+</svg>

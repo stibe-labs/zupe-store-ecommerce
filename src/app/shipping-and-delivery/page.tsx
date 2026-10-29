@@ -23,42 +23,42 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
-  title: "Shipping & Delivery Policy | Zupe Store",
+  title: "Shipping & Delivery Policy | Turkiye Jam",
   description:
-    "Learn about Zupe Store shipping and delivery across India, including order processing times, delivery timelines, shipping charges, tracking, delivery attempts, and order support.",
+    "Learn about Turkiye Jam shipping and delivery across India, including order processing times, delivery timelines, express shipping, discreet plain packaging, and support.",
 };
 
 export default function ShippingAndDeliveryPage() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col font-sans">
+    <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14 w-full">
+      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-28 sm:pt-32 pb-16 w-full">
         {/* Navigation Breadcrumb */}
-        <div className="mb-6">
+        <div className="mb-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#FF7A00] transition-colors mb-4 font-medium"
+            className="inline-flex items-center gap-2 text-sm text-stone-600 hover:text-[#5b1420] transition-colors mb-4 font-bold"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-[#FF7A00]">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#f8bac5] border-2 border-stone-800 flex items-center justify-center text-[#5b1420] shadow-[0_3px_0_0_#2b2b2b]">
               <Truck className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-display font-bold text-gray-900 tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-black font-tj-serif text-stone-900 tracking-tight">
                 Shipping and Delivery
               </h1>
-              <p className="text-xs sm:text-sm text-gray-500">
-                Nationwide express delivery and shipping policy
+              <p className="text-xs sm:text-sm text-stone-600">
+                Discreet plain-box nationwide express delivery policy
               </p>
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm text-sm sm:text-base text-gray-600 leading-relaxed">
-            At <strong className="text-gray-900">Zupe Store</strong>, we ensure every order is handled with care — from packaging to doorstep delivery. All our products are <strong className="text-gray-900">handpicked, quality-checked, and shipped directly from our fulfillment centers</strong> to ensure a smooth and reliable experience for our customers.
+          <div className="bg-white border-2 border-stone-800 rounded-3xl p-6 shadow-[0_4px_0_0_#2b2b2b] text-sm sm:text-base text-stone-700 leading-relaxed">
+            At <strong className="text-stone-900">Turkiye Jam</strong>, we ensure every order is handled with maximum privacy and care — from tamper-proof plain box packaging to express doorstep delivery. All our products are <strong className="text-stone-900">100% authentic Turkish Themra Epimedium Macun imports</strong> with genuine verification seals.
           </div>
         </div>
 
@@ -137,7 +137,7 @@ export default function ShippingAndDeliveryPage() {
               </li>
             </ul>
             <p className="text-xs sm:text-sm bg-gray-50 border border-gray-200/80 rounded-xl p-3 text-gray-600">
-              <strong className="text-gray-900">Note:</strong> Delivery times are estimates and may vary due to logistics delays, weather conditions, or regional restrictions. Zupe Store always strives to ensure timely deliveries through trusted courier partners.
+              <strong className="text-gray-900">Note:</strong> Delivery times are estimates and may vary due to logistics delays, weather conditions, or regional restrictions. Turkiye Jam always strives to ensure timely deliveries through trusted courier partners.
             </p>
           </section>
 
@@ -231,7 +231,7 @@ export default function ShippingAndDeliveryPage() {
               <h2>Damaged, Missing, or Lost Orders</h2>
             </div>
             <p>
-              All parcels are securely packed and checked before dispatch. In the rare case that your order arrives damaged, incomplete, or appears lost in transit, please contact us within <strong className="text-gray-900">24 hours of delivery</strong> at <strong className="text-gray-900">zupestoreonline@gmail.com</strong>.
+              All parcels are securely packed and checked before dispatch. In the rare case that your order arrives damaged, incomplete, or appears lost in transit, please contact us within <strong className="text-gray-900">24 hours of delivery</strong> at <strong className="text-gray-900">support@turkiyejam.com</strong>.
             </p>
             <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 text-amber-950 flex items-start gap-3">
               <Video className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -251,7 +251,7 @@ export default function ShippingAndDeliveryPage() {
               <h2>Customs, Duties &amp; Taxes</h2>
             </div>
             <p>
-              All prices shown on Zupe Store are inclusive of applicable Indian taxes. If any regional tax or surcharge applies at the delivery location, it will be calculated at checkout. Zupe Store is not responsible for any additional local charges imposed by authorities post-shipment.
+              All prices shown on Turkiye Jam are inclusive of applicable Indian taxes. If any regional tax or surcharge applies at the delivery location, it will be calculated at checkout. Turkiye Jam is not responsible for any additional local charges imposed by authorities post-shipment.
             </p>
           </section>
 
@@ -262,7 +262,7 @@ export default function ShippingAndDeliveryPage() {
               <h2>Our Commitment</h2>
             </div>
             <p>
-              We value your time and trust. Zupe Store is committed to providing fast, reliable, and safe delivery for every order. From packaging to tracking, our dedicated team ensures your products reach you in perfect condition.
+              We value your time and trust. Turkiye Jam is committed to providing fast, reliable, and safe delivery for every order. From packaging to tracking, our dedicated team ensures your products reach you in perfect condition.
             </p>
           </section>
 
@@ -277,13 +277,13 @@ export default function ShippingAndDeliveryPage() {
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <a
-                href="mailto:zupestoreonline@gmail.com"
+                href="mailto:support@turkiyejam.com"
                 className="inline-flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-950 font-semibold px-4 py-2 rounded-xl hover:bg-orange-100 transition-colors"
               >
-                📧 zupestoreonline@gmail.com
+                📧 support@turkiyejam.com
               </a>
               <a
-                href="https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20have%20an%20inquiry%20about%20shipping"
+                href="https://wa.me/917356765036?text=Hi%20Turkiye%20Jam%2C%20I%20have%20an%20inquiry%20about%20shipping"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-950 font-semibold px-4 py-2 rounded-xl hover:bg-emerald-100 transition-colors"

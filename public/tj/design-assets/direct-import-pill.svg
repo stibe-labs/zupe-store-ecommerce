@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 42" width="150" height="42" fill="none">
+  <!-- Pill background with border -->
+  <rect x="2" y="2" width="146" height="38" rx="19" fill="#fed000" stroke="#161616" stroke-width="2.5" />
+  <!-- Text -->
+  <text
+    x="75"
+    y="25"
+    text-anchor="middle"
+    fill="#161616"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    font-size="15"
+    font-weight="800"
+    letter-spacing="-0.2px"
+  >Direct import</text>
+</svg>

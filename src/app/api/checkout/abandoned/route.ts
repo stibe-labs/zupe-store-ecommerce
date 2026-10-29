@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const recoveryUrl = `https://zupe-store.stibelabs.workers.dev/checkout?recover=${encodeURIComponent(recoveryToken)}`;
+    const recoveryUrl = `https://turkiyejam.stibelabs.workers.dev/checkout?recover=${encodeURIComponent(recoveryToken)}`;
 
     if (existingId) {
       // Update existing record

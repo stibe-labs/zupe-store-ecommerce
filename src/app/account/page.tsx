@@ -412,10 +412,10 @@ export default function AccountPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FBFBFC] text-[#111111] flex flex-col justify-between">
+      <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center py-24">
-          <div className="w-10 h-10 border-4 border-[#cb0805]/20 border-t-[#cb0805] rounded-full animate-spin" />
+        <div className="flex-1 flex items-center justify-center py-32">
+          <div className="w-10 h-10 border-4 border-stone-800/20 border-t-[#5b1420] rounded-full animate-spin" />
         </div>
         <Footer />
       </div>
@@ -424,29 +424,31 @@ export default function AccountPage() {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="min-h-screen bg-[#FBFBFC] text-[#111111] flex flex-col justify-between">
+      <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between">
         <Navbar />
-        <div className="max-w-md mx-auto px-4 py-24 text-center">
-          <div className="w-16 h-16 rounded-full bg-rose-50 text-[#cb0805] flex items-center justify-center mx-auto mb-4">
-            <User className="w-8 h-8" />
-          </div>
-          <h2 className="text-2xl font-bold font-display text-gray-900 mb-2">Sign in to your account</h2>
-          <p className="text-sm text-gray-500 mb-6">
-            View your orders, manage saved delivery addresses, and track shipments in real-time.
-          </p>
-          <div className="space-y-3">
-            <Link
-              href="/signin?redirect=/account"
-              className="w-full inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-[#cb0805] text-white font-bold text-sm shadow-md shadow-[#cb0805]/20 hover:bg-[#a80604] transition-all"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/signin?mode=signup&redirect=/account"
-              className="w-full inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-white border border-gray-200 text-gray-800 font-bold text-sm hover:bg-gray-50 transition-all"
-            >
-              Create New Account
-            </Link>
+        <div className="max-w-md mx-auto px-4 pt-32 pb-24 text-center">
+          <div className="bg-white rounded-3xl p-8 border-2 border-stone-800 shadow-[0_8px_0_0_#2b2b2b]">
+            <div className="w-16 h-16 rounded-2xl bg-[#f8bac5] text-[#5b1420] border-2 border-stone-800 flex items-center justify-center mx-auto mb-4 shadow-[0_3px_0_0_#2b2b2b]">
+              <User className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-black font-tj-serif text-stone-900 mb-2">Sign In to Your Account</h2>
+            <p className="text-xs sm:text-sm text-stone-600 mb-6 leading-relaxed">
+              View your orders, manage saved delivery addresses, and track shipments in real-time.
+            </p>
+            <div className="space-y-3">
+              <Link
+                href="/signin?redirect=/account"
+                className="w-full inline-flex items-center justify-center px-6 py-3.5 rounded-2xl btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 font-black text-sm border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none transition-all"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/signin?mode=signup&redirect=/account"
+                className="w-full inline-flex items-center justify-center px-6 py-3.5 rounded-2xl bg-white border-2 border-stone-800 text-stone-800 font-bold text-sm hover:bg-stone-50 transition-all shadow-xs"
+              >
+                Create New Account
+              </Link>
+            </div>
           </div>
         </div>
         <Footer />
@@ -457,75 +459,75 @@ export default function AccountPage() {
   const initial = user.name ? user.name.charAt(0).toUpperCase() : "U";
 
   return (
-    <div className="min-h-screen bg-[#FBFBFC] text-[#111111] flex flex-col justify-between pb-24 sm:pb-0">
+    <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between pb-24 sm:pb-0">
       <Navbar />
 
-      <main className="flex-1 max-w-[1600px] mx-auto w-full px-4 sm:px-6 py-8 sm:py-12">
+      <main className="flex-1 max-w-[1600px] mx-auto w-full px-4 sm:px-6 pt-28 sm:pt-32 pb-16">
         {/* Profile Header Banner */}
-        <div className="bg-gradient-to-r from-[#111111] via-[#1C1F26] to-[#111111] text-white rounded-3xl p-6 sm:p-8 shadow-xl mb-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-72 h-72 bg-[#cb0805]/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="bg-[#5b1420] text-amber-50 rounded-3xl p-6 sm:p-8 border-2 border-stone-800 shadow-[0_8px_0_0_#2b2b2b] mb-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-[#fed000]/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div className="flex items-center gap-4 sm:gap-5">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#cb0805] to-[#FFA07A] text-white flex items-center justify-center font-display font-extrabold text-2xl sm:text-3xl shadow-lg shadow-[#cb0805]/25 flex-shrink-0">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#fed000] text-stone-900 border-2 border-stone-800 flex items-center justify-center font-tj-serif font-black text-2xl sm:text-3xl shadow-[0_4px_0_0_#2b2b2b] flex-shrink-0">
                 {initial}
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-xl sm:text-2xl font-bold font-display text-white truncate">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <h1 className="text-xl sm:text-2xl font-black font-tj-serif text-amber-100 truncate">
                     {user.name}
                   </h1>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-wide uppercase border border-emerald-500/30">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#0e4a3b]/60 text-emerald-300 text-[10px] font-bold tracking-wide uppercase border border-emerald-400/50">
                     <ShieldCheck className="w-3 h-3" />
                     Verified
                   </span>
                   {isSuperAdmin && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#cb0805]/20 text-[#FF9E40] text-[10px] font-bold tracking-wide uppercase border border-[#cb0805]/40 shadow-xs">
-                      <Shield className="w-3 h-3 text-[#cb0805]" />
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#fed000]/20 text-[#fed000] text-[10px] font-bold tracking-wide uppercase border border-[#fed000]/40">
+                      <Shield className="w-3 h-3 text-[#fed000]" />
                       Super Admin
                     </span>
                   )}
                 </div>
 
                 {user.phone ? (
-                  <p className="text-xs sm:text-sm text-gray-200 flex items-center gap-2 truncate">
+                  <p className="text-xs sm:text-sm text-amber-100/90 flex items-center gap-2 truncate">
                     <Phone className="w-3.5 h-3.5 text-[#25D366] flex-shrink-0" />
                     <span className="font-semibold">{user.phone}</span>
-                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                    <span className="text-[10px] text-emerald-300 font-bold bg-[#0e4a3b]/70 px-1.5 py-0.5 rounded border border-emerald-400/40">
                       WhatsApp Verified
                     </span>
                   </p>
                 ) : user.email ? (
-                  <p className="text-xs sm:text-sm text-gray-300 flex items-center gap-2 truncate">
-                    <Mail className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                  <p className="text-xs sm:text-sm text-amber-200/80 flex items-center gap-2 truncate">
+                    <Mail className="w-3.5 h-3.5 text-amber-300/70 flex-shrink-0" />
                     <span className="truncate">{user.email}</span>
                   </p>
                 ) : null}
 
                 {user.email && !user.email.includes("@customer.zupestore.com") && (
-                  <p className="text-xs text-gray-400 flex items-center gap-2 truncate mt-0.5">
-                    <Mail className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                  <p className="text-xs text-amber-200/70 flex items-center gap-2 truncate mt-0.5">
+                    <Mail className="w-3 h-3 text-amber-300/60 flex-shrink-0" />
                     <span className="truncate">{user.email}</span>
                   </p>
                 )}
 
                 {/* Profile Actions */}
-                <div className="flex flex-wrap items-center gap-2 mt-2">
+                <div className="flex flex-wrap items-center gap-2 mt-2.5">
                   <button
                     type="button"
                     onClick={handleOpenProfileModal}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-gray-200 hover:text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-amber-100 text-xs font-bold border border-white/20 transition-colors cursor-pointer"
                   >
-                    <Edit2 className="w-3 h-3 text-[#cb0805]" />
+                    <Edit2 className="w-3 h-3 text-[#fed000]" />
                     <span>Edit Profile Details</span>
                   </button>
 
                   {isSuperAdmin && (
                     <Link
                       href="/admin"
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#cb0805]/20 hover:bg-[#cb0805]/30 text-[#FF9E40] hover:text-white text-xs font-bold border border-[#cb0805]/40 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#fed000]/20 hover:bg-[#fed000]/30 text-[#fed000] text-xs font-bold border border-[#fed000]/40 transition-colors cursor-pointer"
                     >
-                      <LayoutDashboard className="w-3 h-3 text-[#cb0805]" />
+                      <LayoutDashboard className="w-3 h-3 text-[#fed000]" />
                       <span>Admin Portal</span>
                       <ArrowRight className="w-3 h-3" />
                     </Link>
@@ -538,7 +540,7 @@ export default function AccountPage() {
               {isSuperAdmin && (
                 <Link
                   href="/admin"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#cb0805] to-[#a80604] hover:from-[#a80604] hover:to-[#8c0503] text-xs font-bold text-white shadow-lg shadow-[#cb0805]/25 transition-all cursor-pointer border border-[#cb0805]/50 active:scale-95"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#fed000] hover:bg-[#fab005] text-xs font-black text-stone-900 border-2 border-stone-800 shadow-[0_3px_0_0_#2b2b2b] transition-all cursor-pointer active:translate-y-0.5 active:shadow-none"
                 >
                   <Shield className="w-3.5 h-3.5" />
                   <span>Admin Portal</span>
@@ -550,7 +552,7 @@ export default function AccountPage() {
                   logout();
                   router.push("/");
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-gray-200 hover:text-white transition-colors cursor-pointer border border-white/10"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-amber-100 border border-white/20 transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Sign Out</span>
@@ -561,34 +563,34 @@ export default function AccountPage() {
 
         {/* Global Toast Notice */}
         {addressNotice && (
-          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2 shadow-[0_3px_0_0_#2b2b2b]">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
             <span>{addressNotice}</span>
           </div>
         )}
 
         {/* Core Account Navigation Cards (My Orders, Order Tracking, Wishlist) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
           {/* 1. My Orders */}
           <Link
             href="/orders"
-            className="group bg-white rounded-3xl p-6 border border-gray-100 hover:border-[#cb0805]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+            className="group bg-white rounded-3xl p-6 border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] hover:shadow-[0_8px_0_0_#2b2b2b] hover:-translate-y-0.5 transition-all flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-[#cb0805] flex items-center justify-center group-hover:scale-105 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-[#f8bac5] text-[#5b1420] border-2 border-stone-800 flex items-center justify-center group-hover:scale-105 transition-transform shadow-[0_2px_0_0_#2b2b2b]">
                   <Package className="w-6 h-6" />
                 </div>
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider group-hover:text-[#cb0805] transition-colors flex items-center gap-1">
+                <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider group-hover:text-[#5b1420] transition-colors flex items-center gap-1">
                   View <ChevronRight className="w-3.5 h-3.5" />
                 </span>
               </div>
-              <h3 className="text-base font-bold text-gray-900 mb-1">My Orders</h3>
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <h3 className="text-lg font-bold font-tj-serif text-stone-900 mb-1">My Orders</h3>
+              <p className="text-xs text-stone-600 leading-relaxed">
                 Track delivery status, rate & review delivered products, and upload photos.
               </p>
             </div>
-            <div className="mt-5 pt-3 border-t border-gray-50 flex items-center text-xs font-semibold text-[#cb0805]">
+            <div className="mt-5 pt-3 border-t border-stone-100 flex items-center text-xs font-black text-[#5b1420]">
               <span>Go to Orders</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -597,26 +599,26 @@ export default function AccountPage() {
           {/* 2. Order Tracking */}
           <Link
             href="/order-tracking"
-            className="group bg-white rounded-3xl p-6 border border-gray-100 hover:border-[#cb0805]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
+            className="group bg-white rounded-3xl p-6 border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] hover:shadow-[0_8px_0_0_#2b2b2b] hover:-translate-y-0.5 transition-all flex flex-col justify-between relative overflow-hidden"
           >
-            <div className="absolute top-3 right-3">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#cb0805]/10 text-[#cb0805] text-[10px] font-bold uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#cb0805] animate-ping" />
+            <div className="absolute top-4 right-4">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#fed000] text-stone-900 text-[10px] font-bold uppercase tracking-wider border border-stone-800">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping" />
                 Live Tracker
               </span>
             </div>
             <div>
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-[#cb0805] flex items-center justify-center group-hover:scale-105 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-[#fed000] text-stone-900 border-2 border-stone-800 flex items-center justify-center group-hover:scale-105 transition-transform shadow-[0_2px_0_0_#2b2b2b]">
                   <Truck className="w-6 h-6" />
                 </div>
               </div>
-              <h3 className="text-base font-bold text-gray-900 mb-1">Order Tracking</h3>
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <h3 className="text-lg font-bold font-tj-serif text-stone-900 mb-1">Order Tracking</h3>
+              <p className="text-xs text-stone-600 leading-relaxed">
                 Live courier updates, AWB lookup, and real-time shipment milestone timeline.
               </p>
             </div>
-            <div className="mt-5 pt-3 border-t border-gray-50 flex items-center text-xs font-semibold text-[#cb0805]">
+            <div className="mt-5 pt-3 border-t border-stone-100 flex items-center text-xs font-black text-[#5b1420]">
               <span>Track Live Package</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -625,25 +627,25 @@ export default function AccountPage() {
           {/* 3. My Wishlist */}
           <Link
             href="/wishlist"
-            className="group bg-white rounded-3xl p-6 border border-gray-100 hover:border-rose-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+            className="group bg-white rounded-3xl p-6 border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] hover:shadow-[0_8px_0_0_#2b2b2b] hover:-translate-y-0.5 transition-all flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-[#b9e5e9] text-[#0e4a3b] border-2 border-stone-800 flex items-center justify-center group-hover:scale-105 transition-transform shadow-[0_2px_0_0_#2b2b2b]">
                   <Heart className="w-6 h-6" />
                 </div>
                 {totalWishlistItems > 0 && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-xs font-bold">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#f8bac5] text-[#5b1420] text-xs font-bold border border-stone-800">
                     {totalWishlistItems} saved
                   </span>
                 )}
               </div>
-              <h3 className="text-base font-bold text-gray-900 mb-1">My Wishlist</h3>
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <h3 className="text-lg font-bold font-tj-serif text-stone-900 mb-1">My Wishlist</h3>
+              <p className="text-xs text-stone-600 leading-relaxed">
                 Favorite items saved for later. Quick 1-click add to cart with live price updates.
               </p>
             </div>
-            <div className="mt-5 pt-3 border-t border-gray-50 flex items-center text-xs font-semibold text-rose-600">
+            <div className="mt-5 pt-3 border-t border-stone-100 flex items-center text-xs font-black text-[#5b1420]">
               <span>View Wishlist</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -651,21 +653,21 @@ export default function AccountPage() {
         </div>
 
         {/* ─── Delivery Addresses Management Section ─── */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-stone-200">
             <div>
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-rose-50 text-[#cb0805] flex items-center justify-center">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#f8bac5] text-[#5b1420] border-2 border-stone-800 flex items-center justify-center shadow-[0_2px_0_0_#2b2b2b]">
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold font-display text-gray-900 flex items-center gap-2">
+                  <h2 className="text-lg sm:text-xl font-bold font-tj-serif text-stone-900 flex items-center gap-2">
                     <span>Delivery Addresses</span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-300">
                       1-Click Checkout Synced
                     </span>
                   </h2>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-stone-600 mt-0.5">
                     Saved addresses automatically fill your checkout form for faster purchasing.
                   </p>
                 </div>
@@ -675,7 +677,7 @@ export default function AccountPage() {
             <button
               type="button"
               onClick={handleOpenAddAddress}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#cb0805] text-white text-xs font-bold shadow-md shadow-[#cb0805]/20 hover:bg-[#a80604] transition-all cursor-pointer whitespace-nowrap self-start sm:self-center"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 text-xs font-black border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer whitespace-nowrap self-start sm:self-center"
             >
               <Plus className="w-4 h-4" />
               <span>Add New Address</span>
@@ -686,23 +688,23 @@ export default function AccountPage() {
           <div className="pt-6">
             {loadingAddresses ? (
               <div className="py-12 flex items-center justify-center">
-                <Loader2 className="w-7 h-7 text-[#cb0805] animate-spin" />
+                <Loader2 className="w-7 h-7 text-[#5b1420] animate-spin" />
               </div>
             ) : addresses.length === 0 ? (
-              <div className="text-center py-10 px-4 rounded-2xl bg-gray-50 border border-dashed border-gray-200">
-                <div className="w-12 h-12 rounded-full bg-rose-50 text-[#cb0805] flex items-center justify-center mx-auto mb-3">
+              <div className="text-center py-10 px-4 rounded-2xl bg-stone-50 border-2 border-dashed border-stone-300">
+                <div className="w-12 h-12 rounded-2xl bg-[#f8bac5] text-[#5b1420] border-2 border-stone-800 flex items-center justify-center mx-auto mb-3 shadow-[0_2px_0_0_#2b2b2b]">
                   <MapPin className="w-6 h-6" />
                 </div>
-                <h3 className="text-sm font-bold text-gray-900 mb-1">No Delivery Addresses Saved Yet</h3>
-                <p className="text-xs text-gray-500 max-w-md mx-auto mb-4 leading-relaxed">
+                <h3 className="text-sm font-bold font-tj-serif text-stone-900 mb-1">No Delivery Addresses Saved Yet</h3>
+                <p className="text-xs text-stone-600 max-w-md mx-auto mb-4 leading-relaxed">
                   Add your home or office address now, or when you complete your next order at checkout it will be automatically synced here.
                 </p>
                 <button
                   type="button"
                   onClick={handleOpenAddAddress}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-300 text-gray-800 text-xs font-bold hover:bg-gray-100 transition-colors shadow-sm cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#fed000] hover:bg-[#fab005] text-stone-900 border-2 border-stone-800 text-xs font-bold shadow-[0_2px_0_0_#2b2b2b] cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5 text-[#cb0805]" />
+                  <Plus className="w-3.5 h-3.5" />
                   <span>Add First Address</span>
                 </button>
               </div>
@@ -711,18 +713,18 @@ export default function AccountPage() {
                 {addresses.map((addr) => (
                   <div
                     key={addr.id}
-                    className={`rounded-2xl p-5 border transition-all relative flex flex-col justify-between ${
+                    className={`rounded-2xl p-5 border-2 border-stone-800 transition-all relative flex flex-col justify-between ${
                       addr.is_default
-                        ? "border-[#cb0805]/50 bg-rose-50/20 shadow-sm ring-1 ring-[#cb0805]/20"
-                        : "border-gray-200 bg-white hover:border-gray-300"
+                        ? "bg-[#fed000]/10 shadow-[0_4px_0_0_#2b2b2b]"
+                        : "bg-white hover:bg-stone-50/50 shadow-[0_3px_0_0_#2b2b2b]"
                     }`}
                   >
                     <div>
                       {/* Address Badges */}
                       <div className="flex items-center justify-between gap-2 mb-3">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-gray-900">{addr.recipient_name}</span>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700 border border-gray-200">
+                          <span className="font-bold text-sm text-stone-900">{addr.recipient_name}</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-stone-100 text-stone-800 border border-stone-300">
                             {addr.tag === "Work" ? (
                               <Building className="w-2.5 h-2.5" />
                             ) : (
@@ -733,15 +735,15 @@ export default function AccountPage() {
                         </div>
 
                         {addr.is_default ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#cb0805]/10 text-[#cb0805] text-[10px] font-bold border border-[#cb0805]/20">
-                            <Star className="w-3 h-3 fill-[#cb0805]" />
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#5b1420] text-amber-200 text-[10px] font-bold border border-stone-800">
+                            <Star className="w-3 h-3 fill-amber-300" />
                             Default
                           </span>
                         ) : (
                           <button
                             type="button"
                             onClick={() => handleSetDefaultAddress(addr.id)}
-                            className="text-[11px] font-medium text-gray-400 hover:text-[#cb0805] hover:underline cursor-pointer"
+                            className="text-[11px] font-semibold text-stone-500 hover:text-[#5b1420] hover:underline cursor-pointer"
                           >
                             Set Default
                           </button>
@@ -750,29 +752,29 @@ export default function AccountPage() {
 
                       {/* Phone */}
                       {addr.phone && (
-                        <p className="text-xs text-gray-600 flex items-center gap-1.5 mb-2 font-medium">
-                          <Phone className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                        <p className="text-xs text-stone-700 flex items-center gap-1.5 mb-2 font-medium">
+                          <Phone className="w-3.5 h-3.5 text-stone-500 flex-shrink-0" />
                           <span>{addr.phone}</span>
                         </p>
                       )}
 
                       {/* Full Street Address */}
-                      <p className="text-xs text-gray-600 leading-relaxed mb-4">
+                      <p className="text-xs text-stone-600 leading-relaxed mb-4">
                         {addr.street}
                         <br />
-                        <span className="font-semibold text-gray-800">
+                        <span className="font-semibold text-stone-900">
                           {addr.city}
                           {addr.state ? `, ${addr.state}` : ""} - {addr.postal_code}
                         </span>
                         <br />
-                        <span className="text-gray-400">{addr.country || "India"}</span>
+                        <span className="text-stone-400">{addr.country || "India"}</span>
                       </p>
                     </div>
 
                     {/* Action buttons */}
-                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-emerald-600 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" />
+                    <div className="pt-3 border-t border-stone-200 flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                         <span>Ready for checkout</span>
                       </span>
 
@@ -780,7 +782,7 @@ export default function AccountPage() {
                         <button
                           type="button"
                           onClick={() => handleOpenEditAddress(addr)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-stone-700 hover:bg-stone-100 hover:text-stone-900 transition-colors cursor-pointer"
                         >
                           <Edit2 className="w-3 h-3" />
                           <span>Edit</span>
@@ -788,7 +790,7 @@ export default function AccountPage() {
                         <button
                           type="button"
                           onClick={() => handleDeleteAddress(addr.id)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-3 h-3" />
                           <span>Delete</span>
@@ -805,58 +807,58 @@ export default function AccountPage() {
         {/* Secondary Services & Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Shopping Bag Card */}
-          <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+          <div className="bg-white rounded-3xl p-6 border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b]">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-rose-50 text-[#cb0805] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-[#fed000] text-stone-900 border-2 border-stone-800 flex items-center justify-center shadow-[0_2px_0_0_#2b2b2b]">
                   <ShoppingBag className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-gray-900">Shopping Bag</h4>
-                  <p className="text-xs text-gray-500">{totalItems} item{totalItems === 1 ? "" : "s"} in cart</p>
+                  <h4 className="text-base font-bold font-tj-serif text-stone-900">Shopping Bag</h4>
+                  <p className="text-xs text-stone-500">{totalItems} item{totalItems === 1 ? "" : "s"} in cart</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={openCart}
-                className="px-3.5 py-1.5 rounded-xl bg-[#cb0805] text-white text-xs font-bold hover:bg-[#a80604] transition-colors cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-[#fed000] hover:bg-[#fab005] text-stone-900 text-xs font-black border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b] transition-all cursor-pointer"
               >
                 Open Bag
               </button>
             </div>
-            <p className="text-xs text-gray-500 leading-relaxed">
+            <p className="text-xs text-stone-600 leading-relaxed">
               Items in your cart are reserved with express checkout and free shipping offers.
             </p>
           </div>
 
           {/* Customer Support Card */}
-          <div className="lg:col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-3xl p-6 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="lg:col-span-2 bg-[#5b1420] text-amber-50 rounded-3xl p-6 border-2 border-stone-800 shadow-[0_8px_0_0_#2b2b2b] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 text-[#cb0805] mb-1">
+              <div className="flex items-center gap-2 text-[#fed000] mb-1">
                 <Sparkles className="w-4 h-4" />
                 <span className="text-[11px] font-bold uppercase tracking-wider">
                   24/7 Dedicated Support
                 </span>
               </div>
-              <h4 className="text-base font-bold">Need help with an order or address change?</h4>
-              <p className="text-xs text-gray-300 mt-1 max-w-md">
+              <h4 className="text-base font-bold font-tj-serif text-amber-100">Need help with an order or address change?</h4>
+              <p className="text-xs text-amber-200/80 mt-1 max-w-md">
                 Our support concierge is standing by to resolve courier deliveries, returns, or order modifications.
               </p>
             </div>
 
-            <div className="flex flex-wrap sm:flex-nowrap gap-2">
+            <div className="flex flex-wrap sm:flex-nowrap gap-2.5">
               <a
-                href="https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20need%20help%20with%20my%20order%20or%20account"
+                href="https://wa.me/917356765036?text=Hi%20Turkiye%20Jam%2C%20I%20need%20help%20with%20my%20order%20or%20account"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors whitespace-nowrap shadow-xs hover:shadow-md cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-stone-900 text-xs font-black transition-colors whitespace-nowrap border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] cursor-pointer"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span>WhatsApp</span>
               </a>
               <a
-                href="tel:+919744122853"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors whitespace-nowrap cursor-pointer"
+                href="tel:+917356765036"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-amber-100 text-xs font-bold transition-colors whitespace-nowrap border border-white/20 cursor-pointer"
               >
                 <Phone className="w-3.5 h-3.5" />
                 <span>Call Us</span>
@@ -869,32 +871,32 @@ export default function AccountPage() {
       {/* ─── Modal 1: Add / Edit Delivery Address ─── */}
       {isAddressModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div data-lenis-prevent className="bg-white rounded-3xl w-full max-w-lg p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto overscroll-contain">
+          <div data-lenis-prevent className="bg-white rounded-3xl w-full max-w-lg p-6 sm:p-8 border-2 border-stone-800 shadow-[0_12px_0_0_#2b2b2b] relative max-h-[90vh] overflow-y-auto overscroll-contain">
             <button
               type="button"
               onClick={() => setIsAddressModalOpen(false)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 hover:text-stone-900 flex items-center justify-center transition-colors border border-stone-300 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-2xl bg-rose-50 text-[#cb0805] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-[#f8bac5] text-[#5b1420] border-2 border-stone-800 flex items-center justify-center shadow-[0_2px_0_0_#2b2b2b]">
                 <MapPin className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold font-display text-gray-900">
+                <h3 className="text-lg font-bold font-tj-serif text-stone-900">
                   {editingAddressId ? "Edit Delivery Address" : "Add New Delivery Address"}
                 </h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-stone-600">
                   This address will be available for 1-click checkout.
                 </p>
               </div>
             </div>
 
             {addressError && (
-              <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-500" />
+              <div className="mb-4 p-3 rounded-xl bg-red-50 border-2 border-red-300 text-red-800 text-xs font-bold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-600" />
                 <span>{addressError}</span>
               </div>
             )}
@@ -902,7 +904,7 @@ export default function AccountPage() {
             <form onSubmit={handleSaveAddress} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                  <label className="block text-xs font-bold text-stone-800 mb-1">
                     Recipient Full Name *
                   </label>
                   <input
@@ -911,12 +913,12 @@ export default function AccountPage() {
                     value={recipientName}
                     onChange={(e) => setRecipientName(e.target.value)}
                     placeholder="e.g. John Doe"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
+                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-800 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#fed000]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                  <label className="block text-xs font-bold text-stone-800 mb-1">
                     Mobile Phone *
                   </label>
                   <input
@@ -925,13 +927,13 @@ export default function AccountPage() {
                     value={addressPhone}
                     onChange={(e) => setAddressPhone(e.target.value)}
                     placeholder="10-digit mobile number"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
+                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-800 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#fed000]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
+                <label className="block text-xs font-bold text-stone-800 mb-1">
                   Street Address / House No. / Area *
                 </label>
                 <input
@@ -940,13 +942,13 @@ export default function AccountPage() {
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
                   placeholder="Flat / House No., Apartment, Street, Landmark"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
+                  className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-800 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#fed000]"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                  <label className="block text-xs font-bold text-stone-800 mb-1">
                     City *
                   </label>
                   <input
@@ -955,12 +957,12 @@ export default function AccountPage() {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="City"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
+                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-800 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#fed000]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                  <label className="block text-xs font-bold text-stone-800 mb-1">
                     State
                   </label>
                   <input
@@ -968,12 +970,12 @@ export default function AccountPage() {
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     placeholder="State"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
+                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-800 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#fed000]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                  <label className="block text-xs font-bold text-stone-800 mb-1">
                     PIN Code *
                   </label>
                   <input
@@ -982,14 +984,14 @@ export default function AccountPage() {
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
                     placeholder="6-digit PIN"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
+                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-800 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#fed000]"
                   />
                 </div>
               </div>
 
               {/* Address Tag Selector */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                <label className="block text-xs font-bold text-stone-800 mb-1.5">
                   Address Type
                 </label>
                 <div className="flex items-center gap-3">
@@ -998,10 +1000,10 @@ export default function AccountPage() {
                       key={t}
                       type="button"
                       onClick={() => setTag(t)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border-2 border-stone-800 ${
                         tag === t
-                          ? "bg-[#cb0805] text-white shadow-sm"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          ? "bg-[#fed000] text-stone-900 shadow-[0_2px_0_0_#2b2b2b]"
+                          : "bg-stone-100 text-stone-700 hover:bg-stone-200"
                       }`}
                     >
                       {t === "Home" && <Home className="w-3.5 h-3.5" />}
@@ -1019,9 +1021,9 @@ export default function AccountPage() {
                   type="checkbox"
                   checked={isDefault}
                   onChange={(e) => setIsDefault(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#cb0805] focus:ring-[#cb0805] cursor-pointer"
+                  className="w-4 h-4 rounded text-[#5b1420] focus:ring-[#fed000] cursor-pointer"
                 />
-                <span className="text-xs font-medium text-gray-700">
+                <span className="text-xs font-semibold text-stone-700">
                   Make this my default delivery address
                 </span>
               </label>
@@ -1030,14 +1032,14 @@ export default function AccountPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddressModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition-colors cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition-colors cursor-pointer border border-stone-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={addressSaving}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white text-xs font-bold shadow-md shadow-[#cb0805]/25 transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 text-xs font-black border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] transition-all cursor-pointer disabled:opacity-50"
                 >
                   {addressSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>Save Address</span>
@@ -1051,38 +1053,38 @@ export default function AccountPage() {
       {/* ─── Modal 2: Edit Profile & Phone Number ─── */}
       {isProfileModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div data-lenis-prevent className="bg-white rounded-3xl w-full max-w-md p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto overscroll-contain">
+          <div data-lenis-prevent className="bg-white rounded-3xl w-full max-w-md p-6 sm:p-8 border-2 border-stone-800 shadow-[0_12px_0_0_#2b2b2b] relative max-h-[90vh] overflow-y-auto overscroll-contain">
             <button
               type="button"
               onClick={() => setIsProfileModalOpen(false)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 hover:text-stone-900 flex items-center justify-center transition-colors border border-stone-300 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-2xl bg-rose-50 text-[#cb0805] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-[#f8bac5] text-[#5b1420] border-2 border-stone-800 flex items-center justify-center shadow-[0_2px_0_0_#2b2b2b]">
                 <User className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold font-display text-gray-900">
+                <h3 className="text-lg font-bold font-tj-serif text-stone-900">
                   Update Profile Details
                 </h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-stone-600">
                   Manage your name and phone number for delivery updates.
                 </p>
               </div>
             </div>
 
             {profileError && (
-              <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-500" />
+              <div className="mb-4 p-3 rounded-xl bg-red-50 border-2 border-red-300 text-red-800 text-xs font-bold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-600" />
                 <span>{profileError}</span>
               </div>
             )}
 
             {profileSuccess && (
-              <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
+              <div className="mb-4 p-3 rounded-xl bg-emerald-50 border-2 border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-600" />
                 <span>Profile updated successfully!</span>
               </div>
@@ -1090,7 +1092,7 @@ export default function AccountPage() {
 
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
+                <label className="block text-xs font-bold text-stone-800 mb-1">
                   Full Name *
                 </label>
                 <input
@@ -1099,12 +1101,12 @@ export default function AccountPage() {
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
                   placeholder="Your full name"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
+                  className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-800 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#fed000]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
+                <label className="block text-xs font-bold text-stone-800 mb-1">
                   Mobile Phone Number
                 </label>
                 <input
@@ -1112,24 +1114,24 @@ export default function AccountPage() {
                   value={profilePhone}
                   onChange={(e) => setProfilePhone(e.target.value)}
                   placeholder="e.g. 9876543210"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#cb0805]/30"
+                  className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-800 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#fed000]"
                 />
-                <p className="text-[11px] text-gray-400 mt-1">
+                <p className="text-[11px] text-stone-500 mt-1">
                   Used for order tracking SMS, courier OTP, and delivery coordination.
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
+                <label className="block text-xs font-bold text-stone-800 mb-1">
                   Email Address
                 </label>
                 <input
                   type="email"
                   disabled
                   value={user?.email || ""}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-100 bg-gray-50 text-gray-500 text-xs font-medium cursor-not-allowed"
+                  className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-300 bg-stone-100 text-stone-500 text-xs font-medium cursor-not-allowed"
                 />
-                <p className="text-[11px] text-gray-400 mt-1">
+                <p className="text-[11px] text-stone-500 mt-1">
                   Email is locked to your verified account credentials.
                 </p>
               </div>
@@ -1138,14 +1140,14 @@ export default function AccountPage() {
                 <button
                   type="button"
                   onClick={() => setIsProfileModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition-colors cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition-colors cursor-pointer border border-stone-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={profileSaving || profileSuccess}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white text-xs font-bold shadow-md shadow-[#cb0805]/25 transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 text-xs font-black border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] transition-all cursor-pointer disabled:opacity-50"
                 >
                   {profileSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>Save Changes</span>

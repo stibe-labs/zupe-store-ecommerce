@@ -14,8 +14,8 @@ import {
   Heart,
   CheckCircle2,
   PackageCheck,
-  Lightbulb,
-  Compass,
+  Flame,
+  Award,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -75,64 +75,63 @@ function CountUpNumber({
   }, [hasStarted, target, duration]);
 
   return (
-    <div ref={ref} className="text-3xl sm:text-4xl font-display font-bold text-gray-900 tracking-tight">
+    <div ref={ref} className="text-3xl sm:text-4xl font-tj-serif font-black text-stone-900 tracking-tight">
       {count.toLocaleString()}
       {suffix}
     </div>
   );
 }
 
-// Voices of Trust testimonials data
+// Authentic Turkiye Jam customer reviews
 const VOICES_OF_TRUST = [
   {
     id: 1,
     quote:
-      "The Dynamic Water Ripple Lamp completely redefined the ambient mood in our bedroom. Outstanding acrylic crystal finish, calming ocean wave glow, and the 16-color remote works like magic.",
-    author: "Rohit Sharma",
-    location: "Mumbai, Maharashtra",
-    product: "Dynamic Water Ripple Lamp",
+      "The natural stamina and surge of energy is remarkable. Within 45 minutes of a single spoonful in warm water, you feel a deep, warm vitality that stays with you all evening. Original Turkish Themra seal verified!",
+    author: "Rajesh K.",
+    location: "Bangalore, Karnataka",
+    product: "240g Glass Jar + 2 Free Strips",
     rating: 5,
   },
   {
     id: 2,
     quote:
-      "Bought the Portable Steam Iron for my work travels. Heats up in literally 30 seconds and straightens cotton shirts effortlessly without scorching delicate fabrics. 10/10 innovation.",
-    author: "Kavita Rao",
-    location: "Bangalore, Karnataka",
-    product: "Mini Portable Steam Iron",
+      "Discreet packaging was my top priority and Turkiye Jam delivered flawlessly. Plain brown box with no sensitive product labels. The paste has an authentic rich honey and botanical herbal taste.",
+    author: "Vivek M.",
+    location: "Mumbai, Maharashtra",
+    product: "14 Sachet Strips Box",
     rating: 5,
   },
   {
     id: 3,
     quote:
-      "The Multipurpose Powerbank with built-in wireless earbuds is a stroke of genius. Both daily essentials stay charged in one pocket-friendly body. Sturdy build and fast dispatch.",
-    author: "Arjun Nair",
-    location: "Kochi, Kerala",
-    product: "TF20 Powerbank with Airpods",
+      "My husband and I noticed a genuine revival in marital closeness and evening energy. Completely natural herbal ingredients with zero synthetic jitters or headaches. Very glad we chose the real Turkish paste.",
+    author: "Anjali & Rohan",
+    location: "Pune, Maharashtra",
+    product: "240g Glass Jar + 2 Free Strips",
     rating: 5,
   },
   {
     id: 4,
     quote:
-      "Customer support is exceptionally responsive. Had a small inquiry about delivery tracking and their WhatsApp team resolved it within two minutes. Zupe Store has earned my complete trust.",
-    author: "Pooja Sharma",
-    location: "Pune, Maharashtra",
-    product: "Menstrual Heating Pad",
+      "Customer support on WhatsApp is lightning-fast and courteous. They gave clear dosage advice before my order arrived. Delivery reached Hyderabad in under 3 days with Cash on Delivery.",
+    author: "Harish P.",
+    location: "Hyderabad, Telangana",
+    product: "6 Sachet Strips Pack",
     rating: 5,
   },
   {
     id: 5,
     quote:
-      "Zupe Store doesn't sell ordinary commodities. Every product feels like a curated discovery designed to bring genuine convenience and aesthetic warmth into modern homes.",
-    author: "Sneha Kapoor",
-    location: "New Delhi",
-    product: "Curated Collection",
+      "Genuine Ottoman herbal formulation. You can instantly tell this is authentic strained Anatolian flower honey combined with Epimedium and Royal Jelly. Worth every single rupee.",
+    author: "Tariq A.",
+    location: "Kochi, Kerala",
+    product: "240g Glass Jar + 2 Free Strips",
     rating: 5,
   },
 ];
 
 // Looped array with clones at both ends for infinite peek sliding
-// [last item, item 0, item 1, item 2, item 3, item 4, item 0]
 const EXTENDED_VOICES = [
   VOICES_OF_TRUST[VOICES_OF_TRUST.length - 1],
   ...VOICES_OF_TRUST,
@@ -140,8 +139,6 @@ const EXTENDED_VOICES = [
 ];
 
 export default function AboutPage() {
-  // Carousel State
-  // Index 1 corresponds to real VOICES_OF_TRUST[0]
   const [currentIndex, setCurrentIndex] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(true);
   const [isInteracting, setIsInteracting] = useState(false);
@@ -164,8 +161,6 @@ export default function AboutPage() {
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // Card dimensions: Active card occupies ~76% on desktop, ~82% on mobile
-  // Leaving small peek portions visible on both left and right sides
   const cardWidth = Math.max(
     280,
     containerWidth > 640
@@ -176,7 +171,6 @@ export default function AboutPage() {
   const centerOffset = containerWidth > 0 ? (containerWidth - cardWidth) / 2 : 0;
   const trackTranslateX = centerOffset - currentIndex * (cardWidth + cardGap);
 
-  // Auto-switch navigation functions
   const nextSlide = useCallback(() => {
     setIsTransitioning(true);
     setCurrentIndex((prev) => prev + 1);
@@ -187,18 +181,14 @@ export default function AboutPage() {
     setCurrentIndex((prev) => prev - 1);
   }, []);
 
-  // Rock-solid 3-second auto switch timer
   useEffect(() => {
     if (isInteracting) return;
-
     const timer = setInterval(() => {
       nextSlide();
-    }, 3200);
-
+    }, 3600);
     return () => clearInterval(timer);
   }, [isInteracting, nextSlide, currentIndex]);
 
-  // Safety timer: guarantees auto-switch resumes if touch or hover gets stuck
   const pauseTemporarily = () => {
     setIsInteracting(true);
     if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
@@ -212,20 +202,16 @@ export default function AboutPage() {
     setIsInteracting(false);
   };
 
-  // Seamless infinite loop snap handler
   const handleTransitionEnd = () => {
     if (currentIndex === EXTENDED_VOICES.length - 1) {
-      // Reached clone of first item at the end -> silently snap to real index 1
       setIsTransitioning(false);
       setCurrentIndex(1);
     } else if (currentIndex === 0) {
-      // Reached clone of last item at beginning -> silently snap to real index 5
       setIsTransitioning(false);
       setCurrentIndex(EXTENDED_VOICES.length - 2);
     }
   };
 
-  // Re-enable CSS transitions right after silent snap
   useEffect(() => {
     if (!isTransitioning) {
       const raf1 = requestAnimationFrame(() => {
@@ -238,7 +224,6 @@ export default function AboutPage() {
     }
   }, [isTransitioning]);
 
-  // Touch Swipe handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     pauseTemporarily();
     touchStartXRef.current = e.touches[0].clientX;
@@ -259,25 +244,24 @@ export default function AboutPage() {
     resumeImmediately();
   };
 
-  // Map extended index to active 0..4 dot index
   const realActiveIndex =
     ((currentIndex - 1) % VOICES_OF_TRUST.length + VOICES_OF_TRUST.length) %
     VOICES_OF_TRUST.length;
 
   return (
-    <div className="min-h-screen bg-white text-[#1E1E1E] flex flex-col selection:bg-[#FF7A00]/20 selection:text-[#FF7A00]">
+    <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between selection:bg-[#fed000] selection:text-stone-900">
       <Navbar />
 
       <main className="flex-1">
         {/* ========================================================
-            1. HERO SECTION: BRAND INTRODUCTION (MATCHED SCALE)
+            1. HERO SECTION: BRAND INTRODUCTION
            ======================================================== */}
-        <section className="pt-6 pb-10 sm:pt-10 sm:pb-14 bg-gradient-to-b from-orange-50/30 via-white to-white">
+        <section className="pt-28 sm:pt-32 pb-12 sm:pb-16 border-b-2 border-stone-800">
           <div className="max-w-4xl mx-auto px-4 sm:px-6">
             {/* Back to Home Breadcrumb */}
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 hover:text-[#FF7A00] transition-colors mb-5"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-stone-600 hover:text-[#5b1420] transition-colors mb-6 font-bold"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Home</span>
@@ -285,44 +269,53 @@ export default function AboutPage() {
 
             <div className="text-center">
               {/* Tagline Badge */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-100 text-xs font-semibold text-[#FF7A00] uppercase tracking-wider mb-3">
-                <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />
-                <span>The Zupe Story</span>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#fed000] border-2 border-stone-800 text-xs font-black text-stone-900 uppercase tracking-wider mb-4 shadow-[0_3px_0_0_#2b2b2b]">
+                <Sparkles className="w-3.5 h-3.5 text-stone-900" />
+                <span>Centuries of Anatolian Wisdom</span>
               </div>
 
-              {/* Title matched to store proportions */}
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-gray-900 tracking-tight leading-snug max-w-2xl mx-auto">
-                Elevating Everyday Living Through Thoughtful Design
+              {/* Title */}
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-tj-serif font-black text-stone-900 tracking-tight leading-tight max-w-3xl mx-auto">
+                The Authentic Turkiye Jam Story
               </h1>
 
               {/* Subtitle */}
-              <p className="mt-3 text-sm sm:text-base text-gray-600 max-w-xl mx-auto leading-relaxed">
-                We curate modern home decor, ambient lighting, and smart lifestyle innovations
-                engineered to transform ordinary daily routines into moments of comfort, calm, and joy.
+              <p className="mt-4 text-sm sm:text-base md:text-lg text-stone-700 max-w-2xl mx-auto leading-relaxed font-medium">
+                We bring 100% genuine Turkish Epimedium Honey Herbal Paste (Themra Macun)
+                directly from Turkey to Indian homes. Pure strained flower honey blended with
+                Epimedium, Royal Jelly, and time-tested Anatolian botanicals.
               </p>
             </div>
           </div>
         </section>
 
         {/* ========================================================
-            2. INTRO COUNTED METRICS: ONLY 4+ YEARS & 100% SATISFACTION
+            2. INTRO COUNTED METRICS
            ======================================================== */}
-        <section className="py-8 sm:py-10 border-y border-gray-100 bg-[#FAFAFA]">
-          <div className="max-w-xl mx-auto px-4 sm:px-6">
-            <div className="grid grid-cols-2 gap-4 sm:gap-8 text-center">
-              {/* Stat 1: 4+ Years Experience */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-xs flex flex-col items-center justify-center">
+        <section className="py-10 sm:py-12 border-b-2 border-stone-800 bg-white/70">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-3 gap-3 sm:gap-6 text-center">
+              {/* Stat 1: 4+ Years Direct Import */}
+              <div className="bg-white rounded-3xl border-2 border-stone-800 p-4 sm:p-6 shadow-[0_4px_0_0_#2b2b2b] flex flex-col items-center justify-center">
                 <CountUpNumber target={4} suffix="+" duration={1600} />
-                <span className="mt-1.5 text-xs sm:text-sm font-semibold uppercase tracking-wider text-gray-500">
-                  Years Experience
+                <span className="mt-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-stone-600">
+                  Years In India
                 </span>
               </div>
 
-              {/* Stat 2: 100% Client Satisfaction */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-xs flex flex-col items-center justify-center">
+              {/* Stat 2: 100% Authentic */}
+              <div className="bg-white rounded-3xl border-2 border-stone-800 p-4 sm:p-6 shadow-[0_4px_0_0_#2b2b2b] flex flex-col items-center justify-center">
                 <CountUpNumber target={100} suffix="%" duration={1800} />
-                <span className="mt-1.5 text-xs sm:text-sm font-semibold uppercase tracking-wider text-gray-500">
-                  Client Satisfaction
+                <span className="mt-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-stone-600">
+                  Authentic Formula
+                </span>
+              </div>
+
+              {/* Stat 3: 15,000+ Verified Customers */}
+              <div className="bg-white rounded-3xl border-2 border-stone-800 p-4 sm:p-6 shadow-[0_4px_0_0_#2b2b2b] flex flex-col items-center justify-center">
+                <CountUpNumber target={15000} suffix="+" duration={2000} />
+                <span className="mt-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-stone-600">
+                  Happy Customers
                 </span>
               </div>
             </div>
@@ -330,87 +323,82 @@ export default function AboutPage() {
         </section>
 
         {/* ========================================================
-            3. THE ZUPE STUDY: PURPOSEFUL RESEARCH & PHILOSOPHY
+            3. THREE PILLARS OF AUTHENTIC PURITY
            ======================================================== */}
         <section className="py-12 sm:py-16 max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-gray-900 tracking-tight">
-              The Zupe Study: Why We Exist
+            <h2 className="text-2xl sm:text-3xl font-tj-serif font-black text-stone-900 tracking-tight">
+              Why Discerning Buyers Choose Turkiye Jam
             </h2>
-            <p className="mt-2 text-xs sm:text-sm text-gray-500 leading-relaxed">
-              We studied everyday modern living and recognized a pervasive frustration: consumers are
-              forced to pick between flimsy generic gadgets or overpriced luxury decor.
+            <p className="mt-2 text-xs sm:text-sm text-stone-600 leading-relaxed font-medium">
+              In a market full of imitation pastes and diluted remedies, we maintain direct, uncompromised sourcing from Turkey with verifiable tamper seals.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Pillar 1 */}
-            <div className="p-6 rounded-2xl bg-white border border-gray-100 shadow-xs hover:shadow-md transition-all group">
-              <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                <Compass className="w-5 h-5" />
+            <div className="p-6 rounded-3xl bg-white border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] hover:translate-y-[-2px] transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-[#f8bac5] border-2 border-stone-800 text-[#5b1420] flex items-center justify-center mb-4 shadow-[0_2px_0_0_#2b2b2b]">
+                <Award className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-bold text-gray-900 mb-2 font-display">
-                1. Thoughtful Aesthetics
+              <h3 className="text-lg font-bold font-tj-serif text-stone-900 mb-2">
+                1. 100% Genuine Import
               </h3>
-              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                Form and function must exist in harmony. Every item in our collection features clean,
-                minimalist contours and premium finishes that elevate contemporary interiors.
+              <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
+                Imported directly from Turkish certified herbal facilities. Every glass jar features original Themra holograms and authentic batch verification codes.
               </p>
             </div>
 
             {/* Pillar 2 */}
-            <div className="p-6 rounded-2xl bg-white border border-gray-100 shadow-xs hover:shadow-md transition-all group">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                <Lightbulb className="w-5 h-5" />
+            <div className="p-6 rounded-3xl bg-white border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] hover:translate-y-[-2px] transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-[#fed000] border-2 border-stone-800 text-stone-900 flex items-center justify-center mb-4 shadow-[0_2px_0_0_#2b2b2b]">
+                <Flame className="w-6 h-6 text-[#5b1420]" />
               </div>
-              <h3 className="text-base font-bold text-gray-900 mb-2 font-display">
-                2. Problem-Solving Utility
+              <h3 className="text-lg font-bold font-tj-serif text-stone-900 mb-2">
+                2. Ancient Botanical Blend
               </h3>
-              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                We only develop products that solve genuine everyday needs—from quick 30-second garment
-                steaming to multi-port wireless chargers and portable wellness heating pads.
+              <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
+                Pure Anatolian strained flower honey, royal jelly, epimedium (horny goat weed), red ginseng, and ginkgo biloba. No synthetic drugs or chemicals.
               </p>
             </div>
 
             {/* Pillar 3 */}
-            <div className="p-6 rounded-2xl bg-white border border-gray-100 shadow-xs hover:shadow-md transition-all group">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                <PackageCheck className="w-5 h-5" />
+            <div className="p-6 rounded-3xl bg-white border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] hover:translate-y-[-2px] transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-[#d1fae5] border-2 border-stone-800 text-[#0e4a3b] flex items-center justify-center mb-4 shadow-[0_2px_0_0_#2b2b2b]">
+                <PackageCheck className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-bold text-gray-900 mb-2 font-display">
-                3. Zero-Compromise Standards
+              <h3 className="text-lg font-bold font-tj-serif text-stone-900 mb-2">
+                3. Discreet &amp; Safe Delivery
               </h3>
-              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                Every shipment undergoes strict quality vetting before dispatch. With Cash on Delivery,
-                prompt door fulfillment across India, and direct WhatsApp support, trust is our core currency.
+              <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
+                Shipped in 100% discreet brown corrugated boxes without any sensitive naming. Includes fast nationwide express dispatch and Cash on Delivery.
               </p>
             </div>
           </div>
         </section>
 
         {/* ========================================================
-            4. VOICES OF TRUST: NORMAL STORE BG + CENTER PEEK CAROUSEL
+            4. VOICES OF TRUST: CENTER PEEK CAROUSEL
            ======================================================== */}
-        <section className="py-12 sm:py-16 bg-[#FAFAFA] border-y border-gray-100 overflow-hidden">
+        <section className="py-12 sm:py-16 border-y-2 border-stone-800 bg-white/60 overflow-hidden">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            {/* Header with normal store background & balanced typography */}
             <div className="text-center mb-8 max-w-xl mx-auto">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold uppercase tracking-wider mb-2.5 border border-emerald-100">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>100% Authentic Customer Experiences</span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fed000] border-2 border-stone-800 text-stone-900 text-xs font-black uppercase tracking-wider mb-3 shadow-[0_2px_0_0_#2b2b2b]">
+                <ShieldCheck className="w-3.5 h-3.5 text-stone-900" />
+                <span>Verified Buyer Reviews</span>
               </div>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-gray-900 tracking-tight">
-                Voices of Trust
+              <h2 className="text-2xl sm:text-3xl font-tj-serif font-black text-stone-900 tracking-tight">
+                Voices of Trust Across India
               </h2>
-              <p className="mt-1.5 text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
-                Real feedback from verified buyers across India experiencing Zupe Store innovations.
+              <p className="mt-1.5 text-xs sm:text-sm text-stone-600 max-w-md mx-auto font-medium">
+                Real customer feedback from men and couples experiencing authentic Turkish herbal vitality.
               </p>
             </div>
 
-            {/* Carousel Container with Peek Effect on Left & Right */}
+            {/* Carousel Container */}
             <div
               ref={containerRef}
-              className="relative w-full overflow-hidden py-3"
+              className="relative w-full overflow-hidden py-4"
               onMouseEnter={pauseTemporarily}
               onMouseLeave={resumeImmediately}
               onTouchStart={handleTouchStart}
@@ -418,7 +406,6 @@ export default function AboutPage() {
               onTouchEnd={handleTouchEnd}
               onTouchCancel={handleTouchEnd}
             >
-              {/* Sliding Track containing all cards */}
               <div
                 className="flex will-change-transform"
                 style={{
@@ -440,50 +427,45 @@ export default function AboutPage() {
                           setCurrentIndex(idx);
                         }
                       }}
-                      className={`rounded-2xl sm:rounded-3xl p-6 sm:p-7 transition-all duration-520 select-none flex flex-col justify-between shrink-0 ${
+                      className={`rounded-3xl p-6 sm:p-7 transition-all duration-520 select-none flex flex-col justify-between shrink-0 border-2 border-stone-800 ${
                         isCurrent
-                          ? "bg-white border-2 border-orange-200/90 shadow-md ring-1 ring-orange-100/60 scale-100 opacity-100"
-                          : "bg-white/85 border border-gray-200/70 shadow-xs scale-[0.92] sm:scale-95 opacity-55 hover:opacity-80 cursor-pointer"
+                          ? "bg-white shadow-[0_8px_0_0_#2b2b2b] scale-100 opacity-100"
+                          : "bg-white/80 shadow-[0_3px_0_0_#2b2b2b] scale-[0.92] sm:scale-95 opacity-55 hover:opacity-80 cursor-pointer"
                       }`}
                       style={{
                         width: `${cardWidth}px`,
                         marginRight: `${cardGap}px`,
                       }}
                     >
-                      {/* Top Bar: Stars & Quote Icon */}
                       <div>
                         <div className="flex items-center justify-between mb-3.5">
-                          {/* 5-Star Rating */}
-                          <div className="flex items-center gap-1 text-amber-400">
+                          <div className="flex items-center gap-1 text-amber-500">
                             {[...Array(item.rating)].map((_, s) => (
-                              <Star key={s} className="w-3.5 h-3.5 fill-current" />
+                              <Star key={s} className="w-4 h-4 fill-current" />
                             ))}
                           </div>
-                          {/* Quote Icon */}
-                          <Quote className="w-5 h-5 text-orange-200 rotate-180" />
+                          <Quote className="w-6 h-6 text-[#f8bac5] rotate-180" />
                         </div>
 
-                        {/* Quote Text */}
-                        <p className="text-xs sm:text-sm md:text-base text-gray-700 leading-relaxed font-normal">
+                        <p className="text-xs sm:text-sm md:text-base text-stone-800 leading-relaxed font-normal">
                           &ldquo;{item.quote}&rdquo;
                         </p>
                       </div>
 
-                      {/* Footer: Author Info & Tagged Product */}
-                      <div className="mt-5 pt-3.5 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="mt-5 pt-3.5 border-t border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-gray-900 text-xs sm:text-sm">
+                            <span className="font-black text-stone-900 text-xs sm:text-sm">
                               {item.author}
                             </span>
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/50">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#d1fae5] border border-emerald-300 text-[#0e4a3b]">
                               <CheckCircle2 className="w-2.5 h-2.5" /> Verified
                             </span>
                           </div>
-                          <span className="text-[11px] text-gray-400">{item.location}</span>
+                          <span className="text-[11px] text-stone-500 font-medium">{item.location}</span>
                         </div>
 
-                        <span className="text-[11px] font-semibold text-[#FF7A00] bg-orange-50 border border-orange-100 px-2.5 py-1 rounded-full self-start sm:self-auto">
+                        <span className="text-[11px] font-bold text-[#5b1420] bg-[#f8bac5]/60 border border-stone-800 px-3 py-1 rounded-full self-start sm:self-auto">
                           {item.product}
                         </span>
                       </div>
@@ -493,10 +475,9 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* Carousel Controls: Dot Pagination & Prev/Next Chevrons */}
-            <div className="mt-5 flex items-center justify-between max-w-md mx-auto px-2">
-              {/* Pagination Dots */}
-              <div className="flex items-center gap-1.5">
+            {/* Carousel Controls */}
+            <div className="mt-6 flex items-center justify-between max-w-md mx-auto px-2">
+              <div className="flex items-center gap-2">
                 {VOICES_OF_TRUST.map((_, dotIdx) => (
                   <button
                     key={dotIdx}
@@ -504,28 +485,27 @@ export default function AboutPage() {
                       setIsTransitioning(true);
                       setCurrentIndex(dotIdx + 1);
                     }}
-                    className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                    className={`h-2 rounded-full transition-all cursor-pointer border border-stone-800 ${
                       dotIdx === realActiveIndex
-                        ? "w-6 bg-[#FF7A00]"
-                        : "w-1.5 bg-gray-300 hover:bg-gray-400"
+                        ? "w-8 bg-[#fed000]"
+                        : "w-2 bg-stone-300 hover:bg-stone-400"
                     }`}
                     aria-label={`Go to slide ${dotIdx + 1}`}
                   />
                 ))}
               </div>
 
-              {/* Prev / Next Arrows */}
               <div className="flex items-center gap-2">
                 <button
                   onClick={prevSlide}
-                  className="w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-600 hover:text-[#FF7A00] hover:border-orange-200 shadow-xs flex items-center justify-center transition-all cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-white border-2 border-stone-800 text-stone-900 hover:bg-[#fed000] shadow-[0_2px_0_0_#2b2b2b] flex items-center justify-center transition-all cursor-pointer"
                   aria-label="Previous review"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={nextSlide}
-                  className="w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-600 hover:text-[#FF7A00] hover:border-orange-200 shadow-xs flex items-center justify-center transition-all cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-white border-2 border-stone-800 text-stone-900 hover:bg-[#fed000] shadow-[0_2px_0_0_#2b2b2b] flex items-center justify-center transition-all cursor-pointer"
                   aria-label="Next review"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -536,26 +516,25 @@ export default function AboutPage() {
         </section>
 
         {/* ========================================================
-            5. FINAL CALL TO ACTION (MATCHED SCALE)
+            5. FINAL CALL TO ACTION
            ======================================================== */}
         <section className="py-12 sm:py-16 text-center max-w-xl mx-auto px-4 sm:px-6">
-          <div className="w-10 h-10 rounded-xl bg-orange-100 text-[#FF7A00] flex items-center justify-center mx-auto mb-3.5">
-            <Heart className="w-5 h-5 fill-current text-[#FF7A00]" />
+          <div className="w-12 h-12 rounded-2xl bg-[#f8bac5] border-2 border-stone-800 text-[#5b1420] flex items-center justify-center mx-auto mb-4 shadow-[0_3px_0_0_#2b2b2b]">
+            <Heart className="w-6 h-6 fill-current text-[#5b1420]" />
           </div>
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-gray-900 tracking-tight">
-            Discover What Thoughtful Design Feels Like
+          <h2 className="text-2xl sm:text-3xl font-tj-serif font-black text-stone-900 tracking-tight">
+            Ready to Experience Authentic Vitality?
           </h2>
-          <p className="mt-2 text-xs sm:text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
-            Explore our curated catalog of smart decor and everyday problem solvers. Backed by fast
-            shipping, Cash on Delivery, and hassle-free returns.
+          <p className="mt-2 text-xs sm:text-sm text-stone-700 max-w-md mx-auto leading-relaxed font-medium">
+            Order your 240g glass jar with 2 free bonus sachets today. Backed by tamper-proof seals, 100% discreet packaging, and Cash on Delivery.
           </p>
-          <div className="mt-5 flex items-center justify-center">
+          <div className="mt-6 flex items-center justify-center">
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#111111] text-white text-xs font-bold hover:bg-[#FF7A00] transition-all shadow-xs hover:shadow-md cursor-pointer"
+              className="btn-shimmer inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-[#fed000] hover:bg-[#fab005] text-stone-900 text-sm font-black border-2 border-stone-800 shadow-[0_5px_0_0_#2b2b2b] hover:translate-y-[-1px] transition-all cursor-pointer"
             >
-              <span>Explore Collection</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>Order Turkiye Jam Now</span>
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </section>

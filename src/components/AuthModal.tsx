@@ -38,7 +38,7 @@ export function AuthModal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeAuthModal}
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs cursor-pointer"
+            className="fixed inset-0 bg-stone-950/65 backdrop-blur-xs cursor-pointer"
           />
 
           {/* Modal Dialog Container */}

@@ -4,16 +4,23 @@ import React, { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 
+declare global {
+  interface Window {
+    __lenis?: Lenis | null;
+  }
+}
+
 export function SmoothScrollProvider({ children }: { children: React.ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
-    // Disable Lenis smooth scroll on admin dashboard routes so all modals, tables, and sidebars scroll natively without interception
+    // Disable Lenis smooth scroll on admin dashboard routes
     if (pathname?.startsWith("/admin")) {
       if (lenisRef.current) {
         lenisRef.current.destroy();
         lenisRef.current = null;
+        window.__lenis = null;
       }
       if (typeof document !== "undefined") {
         document.documentElement.classList.remove("lenis");
@@ -25,11 +32,11 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
     const isTouch = typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0);
 
     const lenis = new Lenis({
-      duration: isTouch ? 0.6 : 0.85,
+      duration: isTouch ? 0.75 : 1.2,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      touchMultiplier: isTouch ? 1 : 1.5,
+      touchMultiplier: isTouch ? 1.2 : 1.5,
+      infinite: false,
       prevent: (node: HTMLElement) => {
-        // Prevent Lenis from intercepting scroll whenever node or any ancestor is inside a modal or has data-lenis-prevent
         return Boolean(
           node.hasAttribute("data-lenis-prevent") ||
           node.closest?.("[data-lenis-prevent]") ||
@@ -40,6 +47,27 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
     });
 
     lenisRef.current = lenis;
+    window.__lenis = lenis;
+
+    // Intercept in-page anchor links for buttery-smooth scrolling
+    const handleAnchorClick = (e: MouseEvent) => {
+      const link = (e.target as HTMLElement)?.closest?.("a");
+      if (!link) return;
+      const href = link.getAttribute("href");
+      if (href && href.startsWith("#") && href.length > 1) {
+        const targetElement = document.querySelector(href);
+        if (targetElement) {
+          e.preventDefault();
+          lenis.scrollTo(targetElement as HTMLElement, {
+            offset: -75,
+            duration: 1.2,
+            easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+          });
+        }
+      }
+    };
+
+    document.addEventListener("click", handleAnchorClick);
 
     // Monitor for modal openings to freeze window scroll completely
     const checkModalState = () => {
@@ -55,7 +83,6 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
       }
     };
 
-    // Only observe body attributes (classes & styles) without choking the main thread with childList & subtree
     const observer = new MutationObserver(checkModalState);
     observer.observe(document.body, {
       attributes: true,
@@ -71,10 +98,12 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
     rafId = requestAnimationFrame(raf);
 
     return () => {
+      document.removeEventListener("click", handleAnchorClick);
       cancelAnimationFrame(rafId);
       observer.disconnect();
       lenis.destroy();
       lenisRef.current = null;
+      window.__lenis = null;
     };
   }, [pathname]);
 

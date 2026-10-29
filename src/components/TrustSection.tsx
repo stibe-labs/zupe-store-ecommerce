@@ -55,9 +55,9 @@ export function TrustSection() {
           className="text-center mb-14"
         >
           <h2 className="text-3xl sm:text-4xl font-display font-bold text-[#2D3436] mb-3">
-            Why Choose Zupe?
+            Why Choose Turkiye Jam?
           </h2>
-          <p className="text-base text-[#636E72]">The Zupe promise, delivered with every order</p>
+          <p className="text-base text-[#636E72]">The Turkiye Jam promise, delivered with every order</p>
         </motion.div>
 
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
