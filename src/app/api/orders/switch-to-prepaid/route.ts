@@ -93,7 +93,7 @@ export async function GET(req: NextRequest) {
       }
       const advancePaid = Number((sfMatched as any).advance_paid) || 10;
       const doorstepBalance = Math.max(0, originalTotal - advancePaid);
-      const discountedAmount = Math.max(1, doorstepBalance - 49);
+      const discountedAmount = Math.max(1, doorstepBalance - 30);
 
       return NextResponse.json({
         success: true,
@@ -113,7 +113,7 @@ export async function GET(req: NextRequest) {
           discounted_amount: discountedAmount,
           items: sfMatched.items,
         },
-        discount: 49,
+        discount: 30,
         doorstep_balance: doorstepBalance,
         discounted_amount: discountedAmount,
       });
@@ -152,7 +152,7 @@ export async function GET(req: NextRequest) {
     }
     const advancePaid = Number((matched as any).advance_paid) || 10;
     const doorstepBalance = Math.max(0, originalTotal - advancePaid);
-    const discountedAmount = Math.max(1, doorstepBalance - 49);
+    const discountedAmount = Math.max(1, doorstepBalance - 30);
 
     return NextResponse.json({
       success: true,
@@ -171,7 +171,7 @@ export async function GET(req: NextRequest) {
         discounted_amount: discountedAmount,
         items: matched.items || [],
       },
-      discount: 49,
+      discount: 30,
       doorstep_balance: doorstepBalance,
       discounted_amount: discountedAmount,
     });
@@ -232,8 +232,8 @@ export async function POST(req: NextRequest) {
     // Doorstep balance was originalTotal - advancePaid
     const advancePaid = Number((order as any)?.advance_paid) || 10;
     const doorstepBalance = Math.max(0, originalTotal - advancePaid);
-    // Apply the Rs 49 discount from doorstep balance for switching to prepaid (removes shipping fee)
-    const payableAmount = Math.max(1, doorstepBalance - 49);
+    // Apply the Rs 30 discount from doorstep balance for switching to prepaid
+    const payableAmount = Math.max(1, doorstepBalance - 30);
 
     // Initialize Razorpay order
     const rzpOrder = await createRazorpayOrder({
@@ -243,7 +243,7 @@ export async function POST(req: NextRequest) {
       notes: {
         switch_from_cod: "true",
         original_order_id: orderId,
-        discount_applied: "49",
+        discount_applied: "30",
         doorstep_balance: doorstepBalance.toString(),
       },
     });

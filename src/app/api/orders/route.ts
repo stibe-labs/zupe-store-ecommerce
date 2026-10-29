@@ -140,11 +140,15 @@ export async function GET(req: NextRequest) {
           city: "",
           postal_code: "",
           payment_method: o.payment_method || (isPaid ? "Prepaid" : "Cash on Delivery"),
-          payment_status: (o.payment_status || "").toLowerCase() === "refunded"
-            ? "refunded"
-            : isPaid
-            ? "paid"
-            : "pending",
+          payment_status: (() => {
+            const rawStatus = (o.payment_status || "").toLowerCase();
+            if (rawStatus === "refunded") return "refunded";
+            if (rawStatus.includes("reject")) return "refund_rejected";
+            if (rawStatus.includes("refund_pending") || rawStatus === "refund pending" || (rawStatus.includes("pending") && ((o.delivery_status || "").toLowerCase() === "cancelled" || (o.status || "").toLowerCase() === "cancelled"))) {
+              return "refund_pending";
+            }
+            return isPaid ? "paid" : "pending";
+          })(),
           order_status: (o.delivery_status === "Cancelled" || o.status === "Cancelled" || (o.whatsapp_confirm_status || "").toLowerCase() === "cancelled")
             ? "cancelled"
             : isDelivered

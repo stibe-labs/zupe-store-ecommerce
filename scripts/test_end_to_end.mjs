@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
-const BASE_URL = "https://zupe-store.stibelabs.workers.dev";
-const RAZORPAY_KEY_SECRET = "cmw5Lw6uCwUPwyf48Jxdz5Pt";
+const BASE_URL = process.env.BASE_URL || "https://zupestore.in";
+const RAZORPAY_KEY_SECRET = "LxiqYWXJS4LUSoyqS89n90zz";
 
 const reports = [];
 

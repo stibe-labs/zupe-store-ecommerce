@@ -376,7 +376,7 @@ export default function AdminShipmentsPage() {
                         {item.shopify_order_id}
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-slate-800 whitespace-nowrap">
-                        {item.courier_partner || "Delhivery"}
+                        {item.courier_partner || "Awaiting Dispatch"}
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <p className="font-semibold text-slate-900">{item.customer_name}</p>

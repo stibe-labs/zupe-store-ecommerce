@@ -438,7 +438,7 @@ export async function processShopifyOrder(shopifyOrder: any): Promise<{
     payment_status: paymentStatus,
     shipping_address: shippingAddress,
     shiprocket_awb: "",
-    courier_partner: "Delhivery",
+    courier_partner: "",
     delivery_status: deliveryStatus,
     ndr_status: "None",
     rto_status: "None",

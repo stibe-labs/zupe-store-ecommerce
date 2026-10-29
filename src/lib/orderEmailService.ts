@@ -35,7 +35,7 @@ export interface SendOrderConfirmationEmailParams {
 const STORE_BASE_URL =
   process.env.STORE_BASE_URL ||
   process.env.NEXT_PUBLIC_BASE_URL ||
-  "https://zupe-store.stibelabs.workers.dev";
+  "https://zupestore.in";
 
 function resolveImageUrl(img?: string): string {
   if (!img) return `${STORE_BASE_URL}/zupe-logo.webp`;
@@ -690,7 +690,7 @@ export async function sendOrderCancellationEmail(
           Your Cash on Delivery order has been successfully cancelled. Your shipment will not be dispatched and no payment will be collected at your doorstep.
         </div>
         <div style="margin-top: 12px; background: #ffffff; border: 1px solid #fef3c7; border-radius: 10px; padding: 12px; font-size: 12px; color: #92400e; line-height: 1.5;">
-          <strong>ℹ️ Advance Fee Note:</strong> The <strong>₹10 advance verification fee</strong> paid during checkout covers anti-fraud address verification and carrier commitment, and is <strong>non-refundable</strong>.
+          <strong>💰 Advance Fee Refund:</strong> The <strong>₹10 advance confirmation fee</strong> paid during checkout is <strong>100% refundable</strong> and is being processed to your original payment account via our WhatsApp billing desk (+91 97441 22853).
         </div>
       </div>
     `;
@@ -789,7 +789,7 @@ EXPECTED CREDIT TIMELINE:
 • Debit / Credit Cards / Netbanking: Credited within 2 to 4 business days.`
     : `CASH ON DELIVERY ORDER CANCELLED:
 Your Cash on Delivery order has been successfully cancelled. No doorstep payment will be collected.
-Note: The ₹10 advance verification fee paid during checkout covers order verification and carrier reservation, and is non-refundable.`
+Advance Fee Refund: The ₹10 advance confirmation fee paid during checkout is 100% refundable and will be credited to your payment account via our WhatsApp billing desk (+91 97441 22853).`
 }
 
 If you need any assistance, reply to this email at zupestoreonline@gmail.com.

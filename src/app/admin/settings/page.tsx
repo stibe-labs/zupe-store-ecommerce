@@ -491,7 +491,7 @@ export default function AdminSettingsPage() {
                     <input
                       type="text"
                       readOnly
-                      value="https://zupe-store.stibelabs.workers.dev/api/admin/sync/shopify"
+                      value="https://zupestore.in/api/admin/sync/shopify"
                       className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-mono text-xs text-slate-600 cursor-not-allowed"
                     />
                   </div>
@@ -621,7 +621,7 @@ export default function AdminSettingsPage() {
                   <input
                     type="text"
                     readOnly
-                    value="https://zupe-store.stibelabs.workers.dev/api/admin/sync/shiprocket"
+                    value="https://zupestore.in/api/admin/sync/shiprocket"
                     className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-mono text-xs text-slate-600 cursor-not-allowed"
                   />
                 </div>

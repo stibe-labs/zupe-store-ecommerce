@@ -14,6 +14,7 @@ import { AbandonedCartAutoChecker } from "@/components/AbandonedCartAutoChecker"
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://zupestore.in"),
   title: "Zupe Store | Modern Decor, Accessories & Everyday Essentials",
   description:
     "Discover beautifully curated decor, modern accessories, and everyday essentials designed to elevate your space and simplify your life.",

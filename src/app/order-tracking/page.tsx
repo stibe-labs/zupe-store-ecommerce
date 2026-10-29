@@ -51,40 +51,62 @@ function getProductImageFallback(productName: string): string {
   return "/products/ripple/ripple-amber.jpg";
 }
 
+function getCourierTrackingUrl(courier?: string, awb?: string): string {
+  if (!awb || awb.startsWith("SR-AWB-")) return "#";
+  const c = (courier || "").toLowerCase();
+  if (c.includes("dtdc")) {
+    return `https://www.dtdc.in/`;
+  }
+  if (c.includes("blue")) {
+    return `https://www.bluedart.com/tracking`;
+  }
+  if (c.includes("delhivery")) {
+    return `https://www.delhivery.com/track/package/${encodeURIComponent(awb)}`;
+  }
+  if (c.includes("xpress")) {
+    return `https://www.xpressbees.com/shipment/tracking?awb=${encodeURIComponent(awb)}`;
+  }
+  if (c.includes("shadow")) {
+    return `https://tracker.shadowfax.in/#/track?awb=${encodeURIComponent(awb)}`;
+  }
+  // Shiprocket Universal Tracking
+  return `https://shiprocket.co/tracking/${encodeURIComponent(awb)}`;
+}
+
 function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): TrackingCheckpoint[] {
-  // If live carrier scan activities returned from Shiprocket API, render real-time events
-  if (liveTracking?.activities && Array.isArray(liveTracking.activities) && liveTracking.activities.length > 0) {
+  // 1. If live carrier scan activities returned from Shiprocket API, render real-time events
+  if (liveTracking?.activities && Array.isArray(liveTracking.activities) && liveTracking.activities.length > 0 && !liveTracking.isSimulated) {
     return liveTracking.activities.map((act: any, idx: number) => ({
       title: act.activity || act.status || "Package Scanned",
       location: act.location || "Logistics Hub",
       timestamp: act.date || "",
       completed: true,
       active: idx === 0,
-      description: `Carrier update from ${order.courier_partner || liveTracking.courier_name || "Logistics"}: ${act.activity || act.status}.`,
+      description: `Carrier update from ${order.courier_partner || liveTracking.courier_name || "Courier Partner"}: ${act.activity || act.status}.`,
     }));
   }
 
+  // 2. Truthful, order-age-aware lifecycle checkpoints anchored strictly to order.created_at
   const dateObj = new Date(order.created_at || Date.now());
-  const formatDate = (offsetHours: number) => {
-    const d = new Date(dateObj.getTime() + offsetHours * 3600000);
-    return d.toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const formatPlacedDate = dateObj.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-  const status = order.delivery_status || "Processing";
   const city = order.shipping_address?.split(",")?.slice(-2)?.[0]?.trim() || "Destination City";
-  const courier = order.courier_partner || "Delhivery";
+  const hasAwb = Boolean(order.shiprocket_awb && !order.shiprocket_awb.startsWith("SR-AWB-"));
+  const courier = order.courier_partner || (hasAwb ? "Courier Partner" : "");
+  const status = (order.delivery_status || "Processing").toLowerCase();
 
-  if (status === "Delivered") {
+  // If order is Delivered
+  if (status.includes("delivered") && !status.includes("rto")) {
     return [
       {
         title: "Delivered Successfully",
         location: `${city} Delivery Address`,
-        timestamp: formatDate(72),
+        timestamp: "Delivered",
         completed: true,
         active: true,
         description: "Package was handed over directly to recipient. Thank you for shopping with Zupe Store!",
@@ -92,173 +114,155 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       {
         title: "Out for Delivery",
         location: `${city} Logistics Hub`,
-        timestamp: formatDate(64),
+        timestamp: "Destination Route",
         completed: true,
-        description: `Executive out for delivery. OTP verification confirmed.`,
+        description: `Shipment departed destination facility via ${courier || "courier delivery partner"}.`,
       },
       {
-        title: "In Transit - Arrived at Regional Hub",
-        location: `${city} Distribution Center`,
-        timestamp: formatDate(48),
+        title: "In Transit Across Hubs",
+        location: "Central Freight Network",
+        timestamp: "Surface Express",
         completed: true,
-        description: `Package arrived at ${city} sorting facility via ${courier}.`,
+        description: `Package processed through transit facilities to ${city}.`,
       },
       {
-        title: "Dispatched & Handed to Courier",
-        location: "Zupe Fulfillment Center, Gurugram",
-        timestamp: formatDate(18),
+        title: "Dispatched from Warehouse",
+        location: "Zupe Fulfillment Warehouse",
+        timestamp: formatPlacedDate,
         completed: true,
-        description: `Package handed over to ${courier}. AWB: ${order.shiprocket_awb || "Generated"}.`,
+        description: `Handed over to ${courier || "courier partner"}. AWB: ${order.shiprocket_awb || "Dispatched"}.`,
       },
       {
-        title: "Order Confirmed & Packed",
-        location: "Zupe Warehouse",
-        timestamp: formatDate(6),
-        completed: true,
-        description: "Quality verification completed. Item packed in eco-friendly tamper-proof bag.",
-      },
-      {
-        title: "Order Placed & Payment Verified",
+        title: "Order Placed & Verified",
         location: "Online Storefront",
-        timestamp: formatDate(0),
-        completed: true,
-        description: "Order has been received and verified by our system.",
-      },
-    ];
-  }
-
-  if (status === "Out for Delivery") {
-    return [
-      {
-        title: "Out for Delivery",
-        location: `${city} Local Hub`,
-        timestamp: formatDate(48),
-        completed: true,
-        active: true,
-        description: `Your shipment is out for delivery today via ${courier}. Please keep your phone reachable.`,
-      },
-      {
-        title: "Arrived at Destination Hub",
-        location: `${city} Hub`,
-        timestamp: formatDate(36),
-        completed: true,
-        description: `Shipment arrived at destination facility and processed for final route.`,
-      },
-      {
-        title: "In Transit Across States",
-        location: "Central Freight Hub",
-        timestamp: formatDate(24),
-        completed: true,
-        description: `Moving between courier terminals via surface express.`,
-      },
-      {
-        title: "Handed over to Courier",
-        location: "Gurugram Warehouse",
-        timestamp: formatDate(12),
-        completed: true,
-        description: `Dispatched with ${courier} (AWB: ${order.shiprocket_awb || "Generated"}).`,
-      },
-      {
-        title: "Order Confirmed & Packed",
-        location: "Zupe Fulfillment",
-        timestamp: formatDate(4),
-        completed: true,
-        description: "Items picked and packaged securely.",
-      },
-      {
-        title: "Order Placed",
-        location: "Online Storefront",
-        timestamp: formatDate(0),
-        completed: true,
-        description: "Order received successfully.",
-      },
-    ];
-  }
-
-  if (status === "In Transit") {
-    return [
-      {
-        title: "In Transit",
-        location: "Main Express Corridor",
-        timestamp: formatDate(24),
-        completed: true,
-        active: true,
-        description: `Package is on route to ${city} sorting center via ${courier}.`,
-      },
-      {
-        title: "Dispatched by Logistics Hub",
-        location: "Zupe Hub, Gurugram",
-        timestamp: formatDate(14),
-        completed: true,
-        description: `Package dispatched with ${courier}. Air/Surface manifest generated.`,
-      },
-      {
-        title: "Packed & Tamper Sealed",
-        location: "Zupe Fulfillment Center",
-        timestamp: formatDate(5),
-        completed: true,
-        description: "Package sealed with tamper-evident security tape.",
-      },
-      {
-        title: "Order Confirmed",
-        location: "Online Storefront",
-        timestamp: formatDate(0),
+        timestamp: formatPlacedDate,
         completed: true,
         description: "Order placed and acknowledged.",
       },
     ];
   }
 
-  if (status.includes("RTO") || order.status === "Returned") {
+  // If Out for Delivery
+  if (status.includes("out for delivery")) {
     return [
       {
-        title: status === "RTO Delivered" ? "Returned to Warehouse" : "Return to Origin Initiated",
-        location: "Warehouse Inspection Hub",
-        timestamp: formatDate(48),
+        title: "Out for Delivery",
+        location: `${city} Local Delivery Hub`,
+        timestamp: "Today",
         completed: true,
         active: true,
-        description: `Return reason: ${order.ndr_status || "Customer unreachable after 3 delivery attempts"}.`,
+        description: `Your shipment is out for delivery today via ${courier || "courier partner"}. Please keep your phone reachable.`,
       },
       {
-        title: "Delivery Unsuccessful",
-        location: `${city} Delivery Center`,
-        timestamp: formatDate(36),
+        title: "Arrived at Destination Hub",
+        location: `${city} Distribution Center`,
+        timestamp: "In Transit",
         completed: true,
-        description: "Courier could not deliver package to recipient address.",
+        description: `Shipment arrived at destination facility and assigned to local delivery courier.`,
       },
       {
-        title: "Dispatched to Destination",
-        location: "Origin Transit Hub",
-        timestamp: formatDate(18),
+        title: "Handed over to Courier",
+        location: "Zupe Fulfillment Warehouse",
+        timestamp: formatPlacedDate,
         completed: true,
-        description: `Shipped via ${courier} under AWB ${order.shiprocket_awb || "N/A"}.`,
+        description: `Dispatched with ${courier || "assigned courier"} (AWB: ${order.shiprocket_awb || "Active"}).`,
       },
       {
-        title: "Order Placed",
+        title: "Order Placed & Verified",
         location: "Online Storefront",
-        timestamp: formatDate(0),
+        timestamp: formatPlacedDate,
         completed: true,
-        description: "Initial order placement.",
+        description: "Order placed and confirmed.",
       },
     ];
   }
 
-  // Default: Processing
+  // If In Transit
+  if (status.includes("in transit") || status.includes("shipped")) {
+    return [
+      {
+        title: "Package In Transit",
+        location: "Express Logistics Corridor",
+        timestamp: "Active",
+        completed: true,
+        active: true,
+        description: `Package is on route to ${city} sorting center via ${courier || "courier partner"}.`,
+      },
+      {
+        title: "Dispatched & Manifested",
+        location: "Zupe Fulfillment Center",
+        timestamp: formatPlacedDate,
+        completed: true,
+        description: `Package handed over to ${courier || "courier partner"}. AWB: ${order.shiprocket_awb || "Active"}.`,
+      },
+      {
+        title: "Order Verified & Packed",
+        location: "Fulfillment Center",
+        timestamp: formatPlacedDate,
+        completed: true,
+        description: "Package sealed in tamper-evident packaging and prepared for dispatch.",
+      },
+      {
+        title: "Order Placed & Confirmed",
+        location: "Online Storefront",
+        timestamp: formatPlacedDate,
+        completed: true,
+        description: "Order received and confirmed.",
+      },
+    ];
+  }
+
+  // If AWB has been assigned, but awaiting courier pickup scan
+  if (hasAwb) {
+    return [
+      {
+        title: "AWB Assigned & Ready for Courier Pickup",
+        location: "Zupe Fulfillment Center",
+        timestamp: "Preparing Handover",
+        completed: true,
+        active: true,
+        description: `Courier partner ${courier} assigned with AWB: ${order.shiprocket_awb}. Waiting for carrier pickup scan.`,
+      },
+      {
+        title: "Packed & Tamper Sealed",
+        location: "Zupe Warehouse",
+        timestamp: formatPlacedDate,
+        completed: true,
+        description: "Package sealed and shipping label affixed.",
+      },
+      {
+        title: "Order Placed & Verified",
+        location: "Online Storefront",
+        timestamp: formatPlacedDate,
+        completed: true,
+        description: "Order placed and confirmed successfully.",
+      },
+    ];
+  }
+
+  // Default: Processing / Order Confirmed / Waiting for Ship Now in Shiprocket
+  const isWaConfirmed = (order.whatsapp_confirm_status || "").toLowerCase() === "confirmed";
+
   return [
     {
-      title: "Processing & Quality Check",
-      location: "Zupe Central Warehouse",
-      timestamp: formatDate(4),
+      title: "Warehouse Fulfillment & Packaging",
+      location: "Zupe Fulfillment Warehouse",
+      timestamp: "In Progress",
       completed: true,
       active: true,
-      description: "Our fulfillment specialists are carefully assembling and inspecting your items.",
+      description: isWaConfirmed
+        ? "Order verified via WhatsApp. Our warehouse team is picking, inspecting, and packing your items for courier handover."
+        : "Order placed. Our team is verifying your delivery details and packing your items.",
     },
     {
-      title: "Order Placed & Verified",
+      title: isWaConfirmed ? "Order Confirmed via WhatsApp" : "Order Placed & Payment Acknowledged",
       location: "Online Storefront",
-      timestamp: formatDate(0),
+      timestamp: formatPlacedDate,
       completed: true,
-      description: "Order successfully confirmed. Warehouse notification dispatched.",
+      active: false,
+      description: isWaConfirmed
+        ? `Order verified and confirmed via WhatsApp on ${formatPlacedDate}.`
+        : `Order placed on ${formatPlacedDate}.`,
     },
   ];
 }
@@ -880,7 +884,7 @@ function OrderTrackingContent() {
                           <div className="flex items-center gap-2">
                             <Truck className="w-4 h-4 text-[#FF7A00]" />
                             <span className="text-sm font-bold text-gray-900">
-                              {selectedOrder.courier_partner || "Delhivery Logistics"}
+                              {selectedOrder.courier_partner || "Assigned upon dispatch"}
                             </span>
                           </div>
                         </div>
@@ -891,9 +895,11 @@ function OrderTrackingContent() {
                           </span>
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-mono font-bold text-gray-900">
-                              {selectedOrder.shiprocket_awb || "SR-AWB-PENDING"}
+                              {selectedOrder.shiprocket_awb && !selectedOrder.shiprocket_awb.startsWith("SR-AWB-")
+                                ? selectedOrder.shiprocket_awb
+                                : "Pending Dispatch"}
                             </span>
-                            {selectedOrder.shiprocket_awb && (
+                            {selectedOrder.shiprocket_awb && !selectedOrder.shiprocket_awb.startsWith("SR-AWB-") && (
                               <button
                                 onClick={() =>
                                   copyToClipboard(selectedOrder.shiprocket_awb!, "awb")
@@ -915,19 +921,21 @@ function OrderTrackingContent() {
                           <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
                             External Tracking
                           </span>
-                          <a
-                            href={
-                              selectedOrder.courier_partner?.toLowerCase().includes("bluedart")
-                                ? `https://www.bluedart.com/tracking`
-                                : `https://www.delhivery.com/track/package/${selectedOrder.shiprocket_awb || ""}`
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FF7A00] hover:underline cursor-pointer"
-                          >
-                            <span>Open Courier Portal</span>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
+                          {selectedOrder.shiprocket_awb && !selectedOrder.shiprocket_awb.startsWith("SR-AWB-") ? (
+                            <a
+                              href={getCourierTrackingUrl(selectedOrder.courier_partner, selectedOrder.shiprocket_awb)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FF7A00] hover:underline cursor-pointer"
+                            >
+                              <span>Open Courier Portal</span>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          ) : (
+                            <span className="text-xs text-gray-400 font-medium italic block pt-0.5">
+                              Available once dispatched
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

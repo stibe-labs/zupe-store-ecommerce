@@ -59,7 +59,7 @@ function AdminOrdersContent() {
 
   // Edit order modal form state
   const [editDeliveryStatus, setEditDeliveryStatus] = useState<string>("Processing");
-  const [editCourier, setEditCourier] = useState<string>("Delhivery");
+  const [editCourier, setEditCourier] = useState<string>("");
   const [editAWB, setEditAWB] = useState<string>("");
   const [editPaymentStatus, setEditPaymentStatus] = useState<string>("Completed");
   const [editRemittance, setEditRemittance] = useState<string>("Pending");
@@ -67,12 +67,13 @@ function AdminOrdersContent() {
   const [isCreditingSupplier, setIsCreditingSupplier] = useState<boolean>(false);
   const [isPushingToShopify, setIsPushingToShopify] = useState<boolean>(false);
   const [isGeneratingAWB, setIsGeneratingAWB] = useState<boolean>(false);
+  const [isSyncingShiprocket, setIsSyncingShiprocket] = useState<boolean>(false);
   const [orderModalMsg, setOrderModalMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
   // Quick WhatsApp / Manual Confirm / Cancel Action states
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
-  const [actionType, setActionType] = useState<"resend" | "confirm" | "cancel" | null>(null);
+  const [actionType, setActionType] = useState<"resend" | "confirm" | "cancel" | "refund_update" | null>(null);
   const [orderToCancel, setOrderToCancel] = useState<ERPOrder | null>(null);
   const [cancelReason, setCancelReason] = useState<string>("Customer requested via phone call");
   const [cancelNotes, setCancelNotes] = useState<string>("");
@@ -125,7 +126,7 @@ function AdminOrdersContent() {
   useEffect(() => {
     if (selectedOrder) {
       setEditDeliveryStatus(selectedOrder.delivery_status || "Processing");
-      setEditCourier(selectedOrder.courier_partner || "Delhivery");
+      setEditCourier(selectedOrder.courier_partner || "");
       setEditAWB(selectedOrder.shiprocket_awb || "");
       setEditPaymentStatus(selectedOrder.payment_status || "Pending");
       setEditRemittance(selectedOrder.remittance_status || "Pending");
@@ -285,6 +286,24 @@ function AdminOrdersContent() {
     }
   };
 
+  const handleSyncShiprocketAll = async () => {
+    setIsSyncingShiprocket(true);
+    try {
+      const res = await fetch("/api/admin/sync/shiprocket");
+      const data = await res.json();
+      if (data.success) {
+        showToast("success", data.message || "Shiprocket orders synced successfully!");
+        await fetchOrders();
+      } else {
+        showToast("error", data.error || "Failed to sync with Shiprocket");
+      }
+    } catch (e: any) {
+      showToast("error", e.message || "Error syncing with Shiprocket");
+    } finally {
+      setIsSyncingShiprocket(false);
+    }
+  };
+
   const handleResendWAButtons = async (ord: ERPOrder) => {
     setActionLoadingId(ord.id);
     setActionType("resend");
@@ -401,6 +420,44 @@ function AdminOrdersContent() {
       }
     } catch (err: any) {
       showToast("error", err.message || "Network error while cancelling order");
+    } finally {
+      setActionLoadingId(null);
+      setActionType(null);
+    }
+  };
+
+  const handleUpdateRefundStatus = async (
+    ord: ERPOrder,
+    newStatus: "Refund Pending" | "Refunded" | "Refund Rejected"
+  ) => {
+    setActionLoadingId(ord.id);
+    setActionType("refund_update");
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_refund_status",
+          order_id: ord.id,
+          refund_status: newStatus,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === ord.id ? { ...o, payment_status: newStatus } : o))
+        );
+        if (selectedOrder && selectedOrder.id === ord.id) {
+          setSelectedOrder((prev) => (prev ? { ...prev, payment_status: newStatus } : null));
+          setEditPaymentStatus(newStatus);
+        }
+        showToast("success", `Refund status for Order #${ord.shopify_order_id || ord.id} updated to "${newStatus}"!`);
+      } else {
+        const errMsg = data.error || "Failed to update refund status";
+        showToast("error", errMsg);
+      }
+    } catch (err: any) {
+      showToast("error", err.message || "Network error while updating refund status");
     } finally {
       setActionLoadingId(null);
       setActionType(null);
@@ -578,6 +635,15 @@ function AdminOrdersContent() {
             </div>
 
             <div className="flex items-center gap-2.5">
+              <button
+                onClick={handleSyncShiprocketAll}
+                disabled={isSyncingShiprocket}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-orange-50 border border-orange-200 hover:bg-orange-100 text-[#FF7A00] text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                title="Sync AWB, couriers, and live tracking status directly from Shiprocket"
+              >
+                <RefreshCw className={`w-4 h-4 text-[#FF7A00] ${isSyncingShiprocket ? "animate-spin" : ""}`} />
+                <span>{isSyncingShiprocket ? "Syncing..." : "Sync Shiprocket"}</span>
+              </button>
               <button
                 onClick={handleExportCSV}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm"
@@ -775,8 +841,16 @@ function AdminOrdersContent() {
                           </span>
                           <span className="block text-[10px] font-semibold mt-0.5">
                             {ord.payment_status?.toLowerCase() === "refunded" ? (
-                              <span className="inline-flex items-center gap-1 text-purple-700 font-extrabold bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
-                                <RotateCcw className="w-3 h-3" /> Refunded
+                              <span className="inline-flex items-center gap-1 text-emerald-700 font-extrabold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Refunded
+                              </span>
+                            ) : ord.payment_status?.toLowerCase().includes("reject") ? (
+                              <span className="inline-flex items-center gap-1 text-rose-700 font-extrabold bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                                <XCircle className="w-3 h-3 text-rose-600" /> Refund Rejected
+                              </span>
+                            ) : ord.payment_status === "Refund Pending" || ord.payment_status === "refund_pending" ? (
+                              <span className="inline-flex items-center gap-1 text-amber-700 font-extrabold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                                <Clock className="w-3 h-3 text-amber-600" /> Refund Processing
                               </span>
                             ) : ord.payment_status === "Completed" || ord.payment_status === "paid" ? (
                               <span className="text-emerald-600 font-bold">✓ Paid</span>
@@ -804,9 +878,11 @@ function AdminOrdersContent() {
                             </div>
                           ) : (
                             <>
-                              <p className="font-semibold text-slate-800">{ord.courier_partner || "Delhivery"}</p>
+                              <p className="font-semibold text-slate-800">
+                                {ord.courier_partner || (ord.shiprocket_awb && !ord.shiprocket_awb.startsWith("SR-AWB-") ? "Assigned" : "Awaiting Dispatch")}
+                              </p>
                               <span className="font-mono text-[11px] text-slate-600">
-                                {ord.shiprocket_awb || "Pending"}
+                                {ord.shiprocket_awb && !ord.shiprocket_awb.startsWith("SR-AWB-") ? ord.shiprocket_awb : "Pending AWB"}
                               </span>
                             </>
                           )}
@@ -817,9 +893,24 @@ function AdminOrdersContent() {
                               <Clock className="w-3.5 h-3.5 text-amber-600" /> Awaiting WA
                             </span>
                           ) : (ord.whatsapp_confirm_status === "cancelled" || ord.delivery_status === "Cancelled" || ord.status === "Cancelled") ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
-                              <X className="w-3.5 h-3.5" /> Cancelled
-                            </span>
+                            <div>
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
+                                <X className="w-3.5 h-3.5" /> Cancelled
+                              </span>
+                              {ord.payment_status === "Refunded" ? (
+                                <span className="block text-[9.5px] font-bold text-emerald-700 mt-0.5">
+                                  ✓ Refunded
+                                </span>
+                              ) : ord.payment_status === "Refund Rejected" ? (
+                                <span className="block text-[9.5px] font-bold text-rose-600 mt-0.5">
+                                  ✕ Refund Rejected
+                                </span>
+                              ) : (
+                                <span className="block text-[9.5px] font-bold text-amber-600 mt-0.5">
+                                  ⏳ Refund Pending
+                                </span>
+                              )}
+                            </div>
                           ) : ord.delivery_status === "Delivered" ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">
                               <CheckCircle2 className="w-3.5 h-3.5" /> Delivered
@@ -967,6 +1058,78 @@ function AdminOrdersContent() {
                                         <p className="text-[10px] text-slate-400 font-normal">Restock & refund if paid</p>
                                       </div>
                                     </button>
+                                  )}
+
+                                  {/* Manual Refund Status Actions (Only for Cancelled Orders) */}
+                                  {isOrdCancelled && (
+                                    <div className="border-b border-slate-100 pb-1 mb-1">
+                                      <div className="px-3.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                                        <span>Refund Status</span>
+                                        <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded ${
+                                          ord.payment_status === "Refunded"
+                                            ? "bg-emerald-100 text-emerald-800"
+                                            : ord.payment_status === "Refund Rejected"
+                                            ? "bg-rose-100 text-rose-800"
+                                            : "bg-amber-100 text-amber-800"
+                                        }`}>
+                                          {ord.payment_status || "Pending"}
+                                        </span>
+                                      </div>
+
+                                      {ord.payment_status !== "Refunded" && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setOpenMenuOrderId(null);
+                                            handleUpdateRefundStatus(ord, "Refunded");
+                                          }}
+                                          disabled={actionLoadingId === ord.id}
+                                          className="w-full px-3.5 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2 transition-colors cursor-pointer text-left"
+                                        >
+                                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                          <div>
+                                            <p className="font-bold text-slate-800">Mark as Refunded</p>
+                                            <p className="text-[9.5px] text-slate-400 font-normal">Customer sees "Refunded"</p>
+                                          </div>
+                                        </button>
+                                      )}
+
+                                      {ord.payment_status !== "Refund Pending" && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setOpenMenuOrderId(null);
+                                            handleUpdateRefundStatus(ord, "Refund Pending");
+                                          }}
+                                          disabled={actionLoadingId === ord.id}
+                                          className="w-full px-3.5 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-50 flex items-center gap-2 transition-colors cursor-pointer text-left"
+                                        >
+                                          <RotateCcw className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                          <div>
+                                            <p className="font-bold text-slate-800">Set Refund Processing</p>
+                                            <p className="text-[9.5px] text-slate-400 font-normal">Customer sees "Processing"</p>
+                                          </div>
+                                        </button>
+                                      )}
+
+                                      {ord.payment_status !== "Refund Rejected" && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setOpenMenuOrderId(null);
+                                            handleUpdateRefundStatus(ord, "Refund Rejected");
+                                          }}
+                                          disabled={actionLoadingId === ord.id}
+                                          className="w-full px-3.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50 flex items-center gap-2 transition-colors cursor-pointer text-left"
+                                        >
+                                          <XCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                                          <div>
+                                            <p className="font-bold text-slate-800">Reject Refund</p>
+                                            <p className="text-[9.5px] text-slate-400 font-normal">Mark refund ineligible</p>
+                                          </div>
+                                        </button>
+                                      )}
+                                    </div>
                                   )}
 
                                   {hasActionButtons && <div className="my-1 border-t border-slate-100" />}
@@ -1210,32 +1373,152 @@ function AdminOrdersContent() {
                 );
               })()}
 
-              {/* Razorpay Refund Status Card */}
-              {(selectedOrder.payment_status?.toLowerCase() === "refunded" ||
-                (selectedOrder.delivery_status === "Cancelled" &&
-                  (selectedOrder.payment_method?.toLowerCase().includes("prepaid") ||
-                   selectedOrder.payment_method?.toLowerCase().includes("online")))) && (
-                <div className="bg-purple-50/80 p-3.5 rounded-xl border border-purple-200 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
-                      <RotateCcw className="w-4 h-4 stroke-[2.2]" />
+              {/* Manual Refund Status & Payment Coordination Card (Only for Cancelled Orders) */}
+              {(selectedOrder.delivery_status === "Cancelled" ||
+                selectedOrder.status === "Cancelled" ||
+                selectedOrder.whatsapp_confirm_status === "cancelled" ||
+                selectedOrder.payment_status?.toLowerCase().includes("refund")) && (() => {
+                const isCod =
+                  (selectedOrder.payment_method || "").toLowerCase().includes("cash on delivery") ||
+                  (selectedOrder.payment_method || "").toUpperCase() === "COD" ||
+                  (selectedOrder.payment_method || "").toLowerCase().includes("partial");
+
+                const refundAmount = isCod ? 10 : selectedOrder.total_amount;
+                const isStatusRefunded = selectedOrder.payment_status === "Refunded";
+                const isStatusRejected = selectedOrder.payment_status === "Refund Rejected";
+                const isStatusPending = !isStatusRefunded && !isStatusRejected;
+
+                return (
+                  <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-xs">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                          isStatusRefunded
+                            ? "bg-emerald-100 text-emerald-700"
+                            : isStatusRejected
+                            ? "bg-rose-100 text-rose-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}>
+                          {isStatusRefunded ? (
+                            <CheckCircle2 className="w-4 h-4 stroke-[2.2]" />
+                          ) : isStatusRejected ? (
+                            <XCircle className="w-4 h-4 stroke-[2.2]" />
+                          ) : (
+                            <RotateCcw className="w-4 h-4 stroke-[2.2]" />
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                            Customer Refund Management
+                          </h4>
+                          <p className="text-[11px] text-slate-500">
+                            {isCod ? "COD ₹10 Advance Fee (100% Refundable)" : "Prepaid Online Order Refund"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Current Status Pill */}
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-extrabold ${
+                        isStatusRefunded
+                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                          : isStatusRejected
+                          ? "bg-rose-100 text-rose-800 border border-rose-300"
+                          : "bg-amber-100 text-amber-800 border border-amber-300 animate-pulse"
+                      }`}>
+                        {isStatusRefunded ? "✓ Refund Completed" : isStatusRejected ? "✕ Refund Rejected" : "⏳ Refund Processing"}
+                      </span>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                          Payment Refund:
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-200 text-purple-900">
-                          Refunded (₹{selectedOrder.total_amount}) via Razorpay
+
+                    {/* Payment & Refund Financial Details */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                      <div className="p-2.5 rounded-xl bg-white border border-slate-200/80">
+                        <span className="text-[10px] text-slate-400 font-semibold block uppercase">Refundable Amount</span>
+                        <span className="font-bold text-slate-900 text-sm">
+                          ₹{refundAmount}
+                          {isCod && <span className="text-[10px] text-amber-700 font-medium block">(₹10 COD Advance)</span>}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        Automated refund initiated to customer original payment source. Order cancelled before dispatch.
-                      </p>
+
+                      <div className="p-2.5 rounded-xl bg-white border border-slate-200/80">
+                        <span className="text-[10px] text-slate-400 font-semibold block uppercase">Payment ID</span>
+                        <span className="font-mono font-bold text-slate-800 text-[11px] truncate block" title={selectedOrder.razorpay_payment_id || "N/A"}>
+                          {selectedOrder.razorpay_payment_id || "Recorded at Checkout"}
+                        </span>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 col-span-2 sm:col-span-1">
+                        <span className="text-[10px] text-slate-400 font-semibold block uppercase">Customer Phone</span>
+                        <span className="font-bold text-slate-800 text-xs">
+                          {selectedOrder.customer_phone || "N/A"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="text-[11px] text-slate-600 bg-white/70 p-2.5 rounded-xl border border-slate-200/60 leading-relaxed">
+                      💡 <strong>Customer Visibility:</strong> The customer storefront shows <strong>"{isStatusRefunded ? "Refunded" : isStatusRejected ? "Refund Ineligible" : "Refund Processing"}"</strong>. Update status below after manually completing payment or review.
+                    </div>
+
+                    {/* Status Updater Buttons */}
+                    <div className="pt-1 flex items-center gap-2 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateRefundStatus(selectedOrder, "Refunded")}
+                        disabled={actionLoadingId === selectedOrder.id}
+                        className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          isStatusRefunded
+                            ? "bg-emerald-600 text-white shadow-xs"
+                            : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300"
+                        }`}
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Mark as Refunded</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateRefundStatus(selectedOrder, "Refund Pending")}
+                        disabled={actionLoadingId === selectedOrder.id}
+                        className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          isStatusPending
+                            ? "bg-amber-500 text-white shadow-xs"
+                            : "bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-300"
+                        }`}
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Set to Refund Processing</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateRefundStatus(selectedOrder, "Refund Rejected")}
+                        disabled={actionLoadingId === selectedOrder.id}
+                        className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          isStatusRejected
+                            ? "bg-rose-600 text-white shadow-xs"
+                            : "bg-rose-50 text-rose-800 hover:bg-rose-100 border border-rose-300"
+                        }`}
+                      >
+                        <XCircle className="w-3.5 h-3.5" />
+                        <span>Reject Refund</span>
+                      </button>
+
+                      {selectedOrder.customer_phone && (
+                        <a
+                          href={`https://wa.me/${selectedOrder.customer_phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                            `Hello ${selectedOrder.customer_name},\nRegarding your canceled order ${selectedOrder.shopify_order_id || selectedOrder.id}:\nYour refund of ₹${refundAmount} has been verified.`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold bg-[#25D366] hover:bg-[#1EBE5D] text-white ml-auto transition shadow-xs"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>WhatsApp Customer</span>
+                        </a>
+                      )}
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* WhatsApp Order Verification Status Card */}
               <div
@@ -1682,9 +1965,9 @@ function AdminOrdersContent() {
                 <div className="p-3.5 bg-purple-50 rounded-xl border border-purple-200 flex items-start gap-2.5">
                   <RotateCcw className="w-4 h-4 text-purple-700 mt-0.5 shrink-0" />
                   <div className="text-xs text-purple-900">
-                    <p className="font-bold">Automated Full Refund (₹{orderToCancel.total_amount})</p>
+                    <p className="font-bold">Refund Coordination (₹{orderToCancel.total_amount})</p>
                     <p className="mt-0.5 text-purple-700 text-[11px] leading-relaxed">
-                      This is a prepaid order. Cancelling will automatically initiate a full refund back to the customer's original payment method via Razorpay, update payment status to Refunded, and restock inventory.
+                      This is a prepaid order. Cancelling will mark the order as Cancelled, restock product inventory, and retrieve customer payment details for refund processing.
                     </p>
                   </div>
                 </div>

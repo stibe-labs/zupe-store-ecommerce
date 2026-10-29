@@ -183,32 +183,23 @@ export async function testShiprocketConnection(credentials?: {
 }
 
 /**
- * 100% Automated Instant Dispatch to Shiprocket.
- * Creates adhoc shipment, generates AWB tracking number, and schedules pickup.
+ * Pushes order to Shiprocket as 'NEW' so it appears on the Shiprocket dashboard with the "Ship Now" button.
+ * The order remains in 'Processing' status without fake AWBs or forced 'In Transit'.
+ * When the store Admin clicks "Ship Now" in Shiprocket, they select their preferred courier (DTDC, Delhivery, Bluedart, etc.).
  */
 export async function dispatchShiprocketOrder(
   order: ERPOrder | OrderRecord,
-  options?: { preferredCourier?: string }
+  options?: { preferredCourier?: string; assignAwb?: boolean }
 ): Promise<ShiprocketAWBResult> {
   try {
     const settings = await getSettings();
     const config = settings.shiprocket || ({} as any);
 
     const token = await getShiprocketToken();
-    const preferredCourier =
-      options?.preferredCourier || config?.preferredCourier || "Delhivery Priority";
     const pickupLocation =
       (config?.pickup_location && config.pickup_location !== "Primary")
         ? config.pickup_location
         : process.env.SHIPROCKET_PICKUP_LOCATION || "jv ecom";
-
-    const cleanCourier = preferredCourier.includes("Blue")
-      ? "Bluedart"
-      : preferredCourier.includes("Xpress")
-      ? "Xpressbees"
-      : preferredCourier.includes("Shadow")
-      ? "Shadowfax"
-      : "Delhivery";
 
     const isMock = !token;
 
@@ -222,45 +213,17 @@ export async function dispatchShiprocketOrder(
     const isCod = ((order as any).payment_method || "").toLowerCase().includes("cod") ||
                   ((order as any).payment_method || "").toLowerCase().includes("cash on delivery");
 
-    // 1. If Sandbox or Test Mode, generate instant compliant carrier AWB
+    // 1. If Sandbox or Test Mode without live token
     if (isMock) {
-      const prefix = cleanCourier === "Bluedart" ? "BLU" : cleanCourier === "Xpressbees" ? "XPR" : cleanCourier === "Shadowfax" ? "SHD" : "DEL";
-      const awbNumber = `${prefix}-${Date.now().toString().slice(-8)}`;
-      const shipmentId = `SR-SHP-${Date.now().toString().slice(-6)}`;
-
-      try {
-        await executeD1Query(
-          `UPDATE orders 
-           SET shiprocket_awb = ?,
-               tracking_number = ?,
-               courier_partner = ?,
-               delivery_status = 'In Transit',
-               status = 'In Transit'
-           WHERE id = ? OR shopify_order_id = ?;`,
-          [awbNumber, awbNumber, cleanCourier, order.id, (order as any).shopify_order_id || order.id]
-        );
-      } catch (dbErr) {
-        console.warn("Could not save simulated AWB to D1:", dbErr);
-      }
-
-      (order as any).shiprocket_awb = awbNumber;
-      (order as any).tracking_number = awbNumber;
-      (order as any).courier_partner = cleanCourier;
-      (order as any).delivery_status = "In Transit";
-      (order as any).status = "In Transit";
-
       return {
         success: true,
-        awb: awbNumber,
-        courier: cleanCourier,
-        shipmentId,
-        delivery_status: "In Transit",
+        delivery_status: "Processing",
         isSimulated: true,
-        message: `Auto-generated AWB ${awbNumber} with ${cleanCourier}. Status set to In Transit.`,
+        message: "Order placed and awaiting fulfillment. Shiprocket API credentials not configured.",
       };
     }
 
-    // 2. Live Shiprocket API ad-hoc order creation + courier AWB assignment
+    // 2. Live Shiprocket API ad-hoc order creation
     try {
       const createOrderUrl = "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc";
       const advancePaid = Number((order as any).advance_paid) || (Boolean((order as any).is_cod_partial) ? 10 : 0);
@@ -322,114 +285,76 @@ export async function dispatchShiprocketOrder(
       });
 
       const orderData = (await orderRes.json()) as any;
+      const shipmentId = orderData.shipment_id || orderData.order_id;
 
-      if (!orderRes.ok || !orderData.shipment_id) {
-        throw new Error(orderData.message || orderData.error || "Failed to create shipment in Shiprocket");
-      }
-
-      const shipmentId = orderData.shipment_id;
-
-      // 2b. Assign AWB for created shipment
-      const awbUrl = "https://apiv2.shiprocket.in/v1/external/courier/assign/awb";
-      const awbRes = await fetch(awbUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          shipment_id: shipmentId,
-        }),
-        signal: AbortSignal.timeout(10000),
-      });
-
-      const awbData = (await awbRes.json()) as any;
-      const awbCode = awbData?.response?.data?.awb_code;
-      const courierName = awbData?.response?.data?.courier_name || cleanCourier;
-
-      if (!awbCode) {
-        const errorMsg =
-          awbData?.response?.data?.awb_assign_error ||
-          awbData?.message ||
-          "Shiprocket could not assign courier AWB code";
-        throw new Error(errorMsg);
-      }
-
-      // 2c. Auto-schedule carrier pickup (best effort)
-      try {
-        const pickupUrl = "https://apiv2.shiprocket.in/v1/external/courier/generate/pickup";
-        await fetch(pickupUrl, {
+      // Only assign AWB immediately if explicitly requested by Admin action
+      if (options?.assignAwb && shipmentId) {
+        const awbUrl = "https://apiv2.shiprocket.in/v1/external/courier/assign/awb";
+        const awbRes = await fetch(awbUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ shipment_id: [shipmentId] }),
+          body: JSON.stringify({
+            shipment_id: shipmentId,
+            ...(options.preferredCourier ? { courier_partner_id: options.preferredCourier } : {}),
+          }),
+          signal: AbortSignal.timeout(10000),
         });
-      } catch (pickupErr) {
-        // Non-fatal
+
+        const awbData = (await awbRes.json()) as any;
+        const awbCode = awbData?.response?.data?.awb_code;
+        const courierName = awbData?.response?.data?.courier_name;
+
+        if (awbCode) {
+          await executeD1Query(
+            `UPDATE orders 
+             SET shiprocket_awb = ?,
+                 tracking_number = ?,
+                 courier_partner = ?,
+                 delivery_status = 'Processing',
+                 status = 'Processing'
+             WHERE id = ? OR shopify_order_id = ?;`,
+            [awbCode, awbCode, courierName || "", order.id, (order as any).shopify_order_id || order.id]
+          );
+
+          (order as any).shiprocket_awb = awbCode;
+          (order as any).tracking_number = awbCode;
+          (order as any).courier_partner = courierName;
+
+          return {
+            success: true,
+            awb: awbCode,
+            courier: courierName,
+            shipmentId,
+            delivery_status: "Processing",
+            isSimulated: false,
+            message: `Live AWB ${awbCode} generated via ${courierName}. Ready for dispatch.`,
+          };
+        }
       }
 
-      // Update in D1
-      await executeD1Query(
-        `UPDATE orders 
-         SET shiprocket_awb = ?,
-             tracking_number = ?,
-             courier_partner = ?,
-             delivery_status = 'In Transit',
-             status = 'In Transit'
-         WHERE id = ? OR shopify_order_id = ?;`,
-        [awbCode, awbCode, courierName, order.id, (order as any).shopify_order_id || order.id]
-      );
-
-      (order as any).shiprocket_awb = awbCode;
-      (order as any).tracking_number = awbCode;
-      (order as any).courier_partner = courierName;
-      (order as any).delivery_status = "In Transit";
-      (order as any).status = "In Transit";
-
+      // Default: Order is created in Shiprocket, sitting in dashboard with "Ship Now" button
       return {
         success: true,
-        awb: awbCode,
-        courier: courierName,
         shipmentId,
-        delivery_status: "In Transit",
+        delivery_status: "Processing",
         isSimulated: false,
-        message: `Live AWB ${awbCode} generated via ${courierName}. Status updated to In Transit.`,
+        message: "Order created in Shiprocket. Waiting for courier selection & dispatch via 'Ship Now'.",
       };
     } catch (apiErr: any) {
-      console.warn("[Shiprocket Live API] Dispatch failed, using fallback:", apiErr.message || apiErr);
-
-      // Safe fallback so operational workflow continues without blocking customer
-      const fallbackAwb = `SR-AWB-${Date.now().toString().slice(-8)}`;
-      await executeD1Query(
-        `UPDATE orders 
-         SET shiprocket_awb = ?,
-             tracking_number = ?,
-             courier_partner = ?,
-             delivery_status = 'In Transit',
-             status = 'In Transit'
-         WHERE id = ? OR shopify_order_id = ?;`,
-        [fallbackAwb, fallbackAwb, cleanCourier, order.id, (order as any).shopify_order_id || order.id]
-      );
-
-      (order as any).shiprocket_awb = fallbackAwb;
-      (order as any).courier_partner = cleanCourier;
-      (order as any).delivery_status = "In Transit";
-      (order as any).status = "In Transit";
-
+      console.warn("[Shiprocket Live API] Order creation notice:", apiErr.message || apiErr);
       return {
-        success: true,
-        awb: fallbackAwb,
-        courier: cleanCourier,
-        delivery_status: "In Transit",
-        isSimulated: true,
-        message: `Dispatched with fallback AWB ${fallbackAwb} (${apiErr.message || "API offline"}).`,
+        success: false,
+        delivery_status: "Processing",
+        error: apiErr.message || "Failed to push order to Shiprocket",
       };
     }
   } catch (err: any) {
     return {
       success: false,
+      delivery_status: "Processing",
       error: err.message || "Failed to dispatch order to Shiprocket",
     };
   }
@@ -440,9 +365,112 @@ export async function dispatchShiprocketOrder(
  */
 export async function generateShiprocketAWB(
   order: ERPOrder | OrderRecord,
-  options?: { preferredCourier?: string }
+  options?: { preferredCourier?: string; assignAwb?: boolean }
 ): Promise<ShiprocketAWBResult> {
-  return dispatchShiprocketOrder(order, options);
+  return dispatchShiprocketOrder(order, { ...options, assignAwb: true });
+}
+
+/**
+ * Queries Shiprocket API by order ID to check if Admin has clicked "Ship Now"
+ * and assigned a courier & AWB. Synchronizes live state back to Cloudflare D1.
+ */
+export async function syncShiprocketOrderById(orderId: string): Promise<{
+  success: boolean;
+  awb?: string;
+  courier?: string;
+  status?: string;
+  delivery_status?: string;
+  message: string;
+}> {
+  if (!orderId || !orderId.trim()) {
+    return { success: false, message: "Missing order ID" };
+  }
+
+  const cleanId = orderId.trim();
+  const token = await getShiprocketToken();
+  if (!token) {
+    return { success: false, message: "Shiprocket API not connected" };
+  }
+
+  try {
+    const searchUrl = `https://apiv2.shiprocket.in/v1/external/orders?order_id=${encodeURIComponent(cleanId)}`;
+    const res = await fetch(searchUrl, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!res.ok) {
+      return { success: false, message: `Shiprocket API returned status ${res.status}` };
+    }
+
+    const data = (await res.json()) as any;
+    const orderList = data?.data;
+    if (!Array.isArray(orderList) || orderList.length === 0) {
+      return { success: false, message: `Order ${cleanId} not found in Shiprocket` };
+    }
+
+    const srOrder = orderList[0];
+    const shipment = srOrder?.shipments?.[0] || srOrder?.shipments || {};
+    const awbCode = (shipment?.awb || srOrder?.awb_code || "").toString().trim();
+    const courierName = (shipment?.courier_name || shipment?.courier || srOrder?.courier_name || "").toString().trim();
+    const rawStatus = (shipment?.current_status || srOrder?.status || "").toString().trim();
+    const statusCode = shipment?.current_status_id || srOrder?.status_code;
+
+    const mapped = mapShiprocketStatus(rawStatus, statusCode);
+
+    if (awbCode && !awbCode.startsWith("SR-AWB-")) {
+      try {
+        await executeD1Query(
+          `UPDATE orders
+           SET shiprocket_awb = ?,
+               tracking_number = ?,
+               courier_partner = ?,
+               delivery_status = ?,
+               status = ?
+           WHERE id = ? OR shopify_order_id = ?;`,
+          [awbCode, awbCode, courierName, mapped.deliveryStatus, mapped.orderStatus, cleanId, cleanId]
+        );
+      } catch (dbErr) {
+        console.warn("Could not sync Shiprocket order to D1:", dbErr);
+      }
+
+      try {
+        const { updateERPOrder } = await import("@/lib/erpStore");
+        await updateERPOrder(cleanId, {
+          shiprocket_awb: awbCode,
+          courier_partner: courierName,
+          delivery_status: mapped.deliveryStatus,
+          status: mapped.orderStatus,
+        });
+      } catch (erpErr) {
+        // Non-fatal
+      }
+
+      return {
+        success: true,
+        awb: awbCode,
+        courier: courierName,
+        status: rawStatus,
+        delivery_status: mapped.deliveryStatus,
+        message: `Synced with Shiprocket: Courier ${courierName}, AWB ${awbCode}, Status ${mapped.deliveryStatus}`,
+      };
+    }
+
+    return {
+      success: true,
+      status: rawStatus || "NEW",
+      delivery_status: mapped.deliveryStatus,
+      message: `Order in Shiprocket is ${rawStatus || "NEW"} (waiting for Ship Now courier selection).`,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message || "Failed to sync order from Shiprocket",
+    };
+  }
 }
 
 /**
@@ -450,15 +478,15 @@ export async function generateShiprocketAWB(
  * Fetches actual carrier checkpoints, expected delivery date, and synchronizes status to D1.
  */
 export async function getShiprocketLiveTracking(awb: string): Promise<ShiprocketLiveTrackingResult> {
-  if (!awb || awb.trim() === "") {
+  if (!awb || awb.trim() === "" || awb.startsWith("SR-AWB-")) {
     return { success: false, awb: "", activities: [] };
   }
 
   const cleanAwb = awb.trim();
   const token = await getShiprocketToken();
 
-  // If live token is available and this is a live AWB, query Shiprocket carrier tracking API
-  if (token && !cleanAwb.startsWith("SR-AWB-") && !cleanAwb.startsWith("DEL-") && !cleanAwb.startsWith("BLU-") && !cleanAwb.startsWith("XPR-") && !cleanAwb.startsWith("SHD-")) {
+  // If live token is available and this is a real carrier AWB, query Shiprocket carrier tracking API
+  if (token) {
     try {
       const trackRes = await fetch(
         `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${cleanAwb}`,
@@ -483,7 +511,7 @@ export async function getShiprocketLiveTracking(awb: string): Promise<Shiprocket
             location: act.location || "Logistics Hub",
           }));
 
-          const courierName = shipmentTrack.courier_name || tracking.courier_name || "Delhivery";
+          const courierName = shipmentTrack.courier_name || tracking.courier_name || "";
           const currentStatusRaw = shipmentTrack.current_status || tracking.current_status || "In Transit";
           const statusId = tracking.shipment_status;
           const mapped = mapShiprocketStatus(currentStatusRaw, statusId);
@@ -494,7 +522,7 @@ export async function getShiprocketLiveTracking(awb: string): Promise<Shiprocket
               `UPDATE orders
                SET delivery_status = ?,
                    status = ?,
-                   courier_partner = ?
+                   courier_partner = COALESCE(NULLIF(?, ''), courier_partner)
                WHERE shiprocket_awb = ? OR tracking_number = ?;`,
               [mapped.deliveryStatus, mapped.orderStatus, courierName, cleanAwb, cleanAwb]
             );
@@ -519,48 +547,15 @@ export async function getShiprocketLiveTracking(awb: string): Promise<Shiprocket
     }
   }
 
-  // Realistic checkpoints fallback for test/simulated shipments or offline
-  const now = new Date();
-  const formatTime = (offsetHours: number) =>
-    new Date(now.getTime() - offsetHours * 3600000).toLocaleString("en-IN", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
+  // If carrier tracking data is not yet available, return clean honest empty activities without overriding current order status
   return {
-    success: true,
+    success: false,
     awb: cleanAwb,
-    courier_name: cleanAwb.startsWith("BLU") ? "Bluedart" : cleanAwb.startsWith("XPR") ? "Xpressbees" : cleanAwb.startsWith("SHD") ? "Shadowfax" : "Delhivery",
-    current_status: "In Transit",
-    delivery_status: "In Transit",
-    edd: new Date(now.getTime() + 48 * 3600000).toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }),
-    activities: [
-      {
-        date: formatTime(2),
-        status: "In Transit",
-        activity: "Package scanned at Central Logistics Sorting Facility",
-        location: "Express Corridor Hub",
-      },
-      {
-        date: formatTime(6),
-        status: "Manifested",
-        activity: "Manifest generated & handed over to courier partner",
-        location: "Zupe Fulfillment Warehouse",
-      },
-      {
-        date: formatTime(10),
-        status: "Order Confirmed",
-        activity: "Order verified & packed for immediate courier dispatch",
-        location: "Primary Warehouse",
-      },
-    ],
-    isSimulated: true,
+    courier_name: "",
+    current_status: "",
+    delivery_status: undefined,
+    activities: [],
+    isSimulated: false,
   };
 }
 
@@ -662,8 +657,11 @@ export function mapShiprocketStatus(statusRaw?: string, statusId?: number | stri
 
   // 6. In Transit / Shipped / Picked Up
   if (
+    idNum === 15 ||
+    idNum === 16 ||
     idNum === 17 ||
     idNum === 18 ||
+    idNum === 22 ||
     norm.includes("IN TRANSIT") ||
     norm.includes("SHIPPED") ||
     norm.includes("PICKED UP") ||
@@ -777,11 +775,68 @@ export async function processShiprocketWebhook(payload: any): Promise<Shiprocket
   // Handle NDR
   if (mapped.isNDR) {
     updates.ndr_status = ndrReason;
+    if (previousStatus !== "NDR" && targetOrder.customer_phone) {
+      try {
+        const { sendDeliveryAttemptFailedWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+        const firstItem = targetOrder.items?.[0];
+        sendDeliveryAttemptFailedWhatsApp({
+          customerName: targetOrder.customer_name,
+          customerPhone: targetOrder.customer_phone,
+          orderId: targetOrder.shopify_order_id || targetOrder.id,
+          productName: firstItem?.product_name || "Your Order Item",
+        }).catch((e) => console.warn("[Shiprocket] WhatsApp NDR error:", e));
+      } catch (e) {}
+    }
   } else if (mapped.isDelivered) {
     updates.ndr_status = "Resolved (Delivered)";
     // If COD, set remittance status to Pending
     if (targetOrder.payment_method === "COD" && targetOrder.remittance_status !== "Remitted") {
       updates.remittance_status = "Pending";
+    }
+    // Automatically send WhatsApp customer review request
+    if (previousStatus !== "Delivered" && targetOrder.customer_phone) {
+      try {
+        const { sendOrderDeliveredFeedbackWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+        const firstItem = targetOrder.items?.[0];
+        const productName = firstItem?.product_name || "Your Purchased Item";
+        const productIdOrSlug = firstItem?.product_id || (firstItem as any)?.slug || "mini-portable-steam-iron";
+        sendOrderDeliveredFeedbackWhatsApp({
+          customerName: targetOrder.customer_name,
+          customerPhone: targetOrder.customer_phone,
+          productName,
+          productIdOrSlug,
+        }).catch((e) => console.warn("[Shiprocket] WhatsApp delivered feedback error:", e));
+      } catch (e) {
+        console.warn("[Shiprocket] Error loading WhatsApp feedback module:", e);
+      }
+    }
+  } else if (mapped.deliveryStatus === "Out for Delivery") {
+    if (previousStatus !== "Out for Delivery" && targetOrder.customer_phone) {
+      try {
+        const { sendOutForDeliveryWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+        const isCod = (targetOrder.payment_method || "").toUpperCase() === "COD";
+        const advancePaid = Number((targetOrder as any).advance_paid) || (isCod ? 10 : 0);
+        const amountToPay = isCod ? Math.max(0, targetOrder.total_amount - advancePaid) : 0;
+        sendOutForDeliveryWhatsApp({
+          customerName: targetOrder.customer_name,
+          customerPhone: targetOrder.customer_phone,
+          orderId: targetOrder.shopify_order_id || targetOrder.id,
+          amountToPay,
+        }).catch((e) => console.warn("[Shiprocket] WhatsApp OFD error:", e));
+      } catch (e) {}
+    }
+  } else if (mapped.deliveryStatus === "In Transit") {
+    if (previousStatus !== "In Transit" && previousStatus !== "Shipped" && targetOrder.customer_phone) {
+      try {
+        const { sendOrderShippedWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+        sendOrderShippedWhatsApp({
+          customerName: targetOrder.customer_name,
+          customerPhone: targetOrder.customer_phone,
+          orderId: targetOrder.shopify_order_id || targetOrder.id,
+          courierName: courierName || targetOrder.courier_partner || "Express Courier",
+          trackingId: awb || targetOrder.shiprocket_awb || "1425893021",
+        }).catch((e) => console.warn("[Shiprocket] WhatsApp Shipped error:", e));
+      } catch (e) {}
     }
   }
 
@@ -875,17 +930,37 @@ export async function syncShiprocketTrackingForActiveOrders(): Promise<{
   const token = await getShiprocketToken();
   const isMock = !token;
 
-  // Filter orders that have an AWB and are not yet in final terminal state
-  const activeOrders = orders.filter(
-    (o) =>
-      Boolean(o.shiprocket_awb) &&
-      o.delivery_status !== "Delivered" &&
-      o.delivery_status !== "RTO Delivered"
-  );
-
   let updatedCount = 0;
   let rtoCreditsTriggered = 0;
   const details: any[] = [];
+
+  // 1. Check orders awaiting AWB assignment to see if Admin clicked "Ship Now" on Shiprocket
+  const unassignedOrders = orders.filter(
+    (o) =>
+      (!o.shiprocket_awb || o.shiprocket_awb.startsWith("SR-AWB-")) &&
+      o.delivery_status !== "Delivered" &&
+      o.delivery_status !== "Cancelled" &&
+      o.delivery_status !== "RTO Delivered"
+  );
+
+  for (const ord of unassignedOrders) {
+    if (!isMock) {
+      const syncRes = await syncShiprocketOrderById(ord.id);
+      if (syncRes.success && syncRes.awb) {
+        updatedCount++;
+        details.push(syncRes);
+      }
+    }
+  }
+
+  // 2. Filter orders that have an AWB and are not yet in final terminal state
+  const activeOrders = orders.filter(
+    (o) =>
+      Boolean(o.shiprocket_awb) &&
+      !o.shiprocket_awb.startsWith("SR-AWB-") &&
+      o.delivery_status !== "Delivered" &&
+      o.delivery_status !== "RTO Delivered"
+  );
 
   for (const ord of activeOrders) {
     if (!ord.shiprocket_awb) continue;

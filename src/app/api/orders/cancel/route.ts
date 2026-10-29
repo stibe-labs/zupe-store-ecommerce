@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cancelWhatsAppOrder, getStorefrontOrderById, updateStorefrontOrder } from "@/lib/orderStore";
 import { getOrderById, updateERPOrder } from "@/lib/erpStore";
-import { refundRazorpayPayment, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } from "@/lib/razorpay";
-import { sendOrderCancellationRefundWhatsApp } from "@/lib/whatsappOrderConfirmation";
+import {
+  getRazorpayPaymentDetails,
+  getRazorpayPaymentByOrderId,
+  RazorpayPaymentInfo,
+} from "@/lib/razorpay";
 import { sendOrderCancellationEmail } from "@/lib/orderEmailService";
 
 export const dynamic = "force-dynamic";
+
+// Dedicated admin & billing desk WhatsApp number for refund processing
+const REFUND_WHATSAPP_PHONE = "919744122853"; // +91 97441 22853
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,232 +25,282 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const ord = getStorefrontOrderById(orderId) || (await getOrderById(orderId));
+    const ord: any = getStorefrontOrderById(orderId) || (await getOrderById(orderId));
     if (ord) {
-      const currentStatus = ((ord as any).order_status || (ord as any).delivery_status || "").toLowerCase();
-      if (currentStatus === "delivered" || currentStatus === "shipped") {
+      const currentDeliveryStatus = (ord.delivery_status || "").toLowerCase();
+      const currentOrderStatus = (ord.order_status || ord.status || "").toLowerCase();
+
+      // Only block cancellation if package is physically dispatched or delivered
+      if (
+        currentDeliveryStatus === "delivered" ||
+        currentDeliveryStatus === "in transit" ||
+        currentDeliveryStatus === "shipped" ||
+        currentOrderStatus === "delivered" ||
+        currentOrderStatus === "shipped"
+      ) {
         return NextResponse.json(
-          { success: false, error: "This order has already been dispatched and cannot be cancelled online." },
+          {
+            success: false,
+            error: "This order has already been dispatched with our courier partner and cannot be cancelled online.",
+          },
           { status: 400 }
         );
       }
-      if (currentStatus === "cancelled") {
+
+      if (currentOrderStatus === "cancelled" || currentDeliveryStatus === "cancelled") {
         return NextResponse.json(
-          { success: false, error: "This order is already cancelled." },
-          { status: 400 }
-        );
-      }
-      if ((ord as any).whatsapp_confirm_status === "confirmed") {
-        return NextResponse.json(
-          { success: false, error: "This order has already been confirmed and is being processed for dispatch." },
+          { success: false, error: "This order has already been cancelled." },
           { status: 400 }
         );
       }
     }
 
-    // Cancel order and restock inventory
-    const result = await cancelWhatsAppOrder(orderId, {
+    // 1. Cancel order and restock inventory
+    await cancelWhatsAppOrder(orderId, {
       isDirectCustomerCancel: true,
       reason: reason || "Customer requested cancellation from My Orders page",
     });
 
-    const paymentMethod = ((ord as any)?.payment_method || "").toLowerCase();
-    const isPrepaid =
-      paymentMethod.includes("prepaid") ||
-      paymentMethod.includes("online") ||
-      (ord as any)?.payment_status === "paid" ||
-      (ord as any)?.payment_status === "Completed";
-
-    let refundInfo: { id: string; amount: number; isPrepaid: boolean } | null = null;
     let custName = (ord as any)?.customer_name || "Valued Customer";
     let custPhone = (ord as any)?.customer_phone || "";
     let custEmail = (ord as any)?.customer_email || (ord as any)?.guest_email || "";
+    let razorpayPaymentId = (ord as any)?.razorpay_payment_id || "";
+    let razorpayOrderId = (ord as any)?.razorpay_order_id || "";
+    let totalAmount = Number((ord as any)?.total_amount || 0);
+    let d1PaymentMethod = (ord as any)?.payment_method || "";
+    let advancePaid = Number((ord as any)?.advance_paid || 0);
+    const displayOrderId = (ord as any)?.shopify_order_id || (orderId.startsWith("#") ? orderId : `#${orderId}`);
 
-    // If phone, email, or Razorpay IDs are missing from ord, look them up in D1
-    if (!custPhone || !custEmail || !(ord as any)?.razorpay_payment_id) {
-      try {
-        const { executeD1Query } = await import("@/lib/d1");
-        const rows = await executeD1Query<any>(
-          "SELECT customer_phone, guest_email, customer_name, razorpay_payment_id, razorpay_order_id, total_amount FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
-          [orderId, orderId]
-        );
-        if (rows && rows.length > 0) {
-          if (!custPhone && rows[0].customer_phone) custPhone = rows[0].customer_phone;
-          if (!custEmail && rows[0].guest_email) custEmail = rows[0].guest_email;
-          if (!custName && rows[0].customer_name) custName = rows[0].customer_name;
-          if (!(ord as any)?.razorpay_payment_id && rows[0].razorpay_payment_id) {
-            (ord as any).razorpay_payment_id = rows[0].razorpay_payment_id;
-          }
-          if (!(ord as any)?.razorpay_order_id && rows[0].razorpay_order_id) {
-            (ord as any).razorpay_order_id = rows[0].razorpay_order_id;
-          }
-        }
-      } catch (d1Err) {
-        console.warn("D1 order detail lookup warning:", d1Err);
+    // If phone, email, or Razorpay IDs are missing, lookup D1 directly
+    try {
+      const { executeD1Query } = await import("@/lib/d1");
+      const rows = await executeD1Query<any>(
+        "SELECT customer_phone, guest_email, customer_name, razorpay_payment_id, razorpay_order_id, total_amount, payment_method, payment_status, items FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
+        [orderId, orderId]
+      );
+      if (rows && rows.length > 0) {
+        if (!custPhone && rows[0].customer_phone) custPhone = rows[0].customer_phone;
+        if (!custEmail && rows[0].guest_email) custEmail = rows[0].guest_email;
+        if ((!custName || custName === "Valued Customer") && rows[0].customer_name) custName = rows[0].customer_name;
+        if (!razorpayPaymentId && rows[0].razorpay_payment_id) razorpayPaymentId = rows[0].razorpay_payment_id;
+        if (!razorpayOrderId && rows[0].razorpay_order_id) razorpayOrderId = rows[0].razorpay_order_id;
+        if (!totalAmount && rows[0].total_amount) totalAmount = Number(rows[0].total_amount);
+        if (rows[0].payment_method) d1PaymentMethod = rows[0].payment_method;
       }
+    } catch (d1Err) {
+      console.warn("D1 order detail lookup warning:", d1Err);
     }
 
-    if (isPrepaid) {
-      const totalAmount = Number((ord as any)?.total_amount || 0);
-      let paymentId = (ord as any)?.razorpay_payment_id;
-      const razorpayOrderId = (ord as any)?.razorpay_order_id;
-      let refundId = `rfnd_auto_${orderId.replace(/[^a-zA-Z0-9]/g, "").slice(-8)}`;
+    // Determine payment type
+    const paymentMethodLower = (d1PaymentMethod || (ord as any)?.payment_method || "").toLowerCase();
+    const hasRazorpayRef = Boolean(razorpayPaymentId || razorpayOrderId);
+    const isCodPartial =
+      paymentMethodLower.includes("partial") ||
+      Boolean((ord as any)?.is_cod_partial) ||
+      advancePaid > 0 ||
+      (hasRazorpayRef && (paymentMethodLower.includes("cod") || paymentMethodLower.includes("cash on delivery")));
 
-      // If paymentId is missing but razorpayOrderId exists, query Razorpay order payments
-      if (!paymentId && razorpayOrderId) {
-        try {
-          const authHeader = `Basic ${Buffer.from(
-            `${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`
-          ).toString("base64")}`;
-          const rRes = await fetch(`https://api.razorpay.com/v1/orders/${razorpayOrderId}/payments`, {
-            headers: { Authorization: authHeader },
-          });
-          if (rRes.ok) {
-            const data = (await rRes.json()) as any;
-            const captured = data.items?.find((p: any) => p.status === "captured") || data.items?.[0];
-            if (captured?.id) {
-              paymentId = captured.id;
-              console.log(`🔍 [Razorpay Lookup] Found payment ID ${paymentId} for order ${razorpayOrderId}`);
-            }
-          }
-        } catch (rErr) {
-          console.warn("Failed to lookup Razorpay order payments:", rErr);
-        }
-      }
+    const isPrepaid =
+      !isCodPartial &&
+      (paymentMethodLower.includes("prepaid") ||
+       paymentMethodLower.includes("online") ||
+       (ord as any)?.payment_status === "paid" ||
+       (ord as any)?.payment_status === "Completed");
 
-      // 1. Attempt automated instant refund through Razorpay API
-      if (paymentId) {
-        try {
-          const refundRes = await refundRazorpayPayment({
-            paymentId,
-            amount: totalAmount,
-            notes: {
-              order_id: orderId,
-              reason: reason || "Customer cancellation before dispatch",
-            },
-          });
-          if (refundRes?.id) {
-            refundId = refundRes.id;
-            console.log(`✅ [Razorpay Refund] Successfully executed automated refund ${refundId} for order ${orderId} (₹${totalAmount})`);
-          }
-        } catch (rErr: any) {
-          console.warn(`⚠️ [Razorpay Refund API] Could not execute live refund (${rErr.message}). Recording queued refund reference ${refundId}:`, rErr);
-        }
-      } else {
-        console.log(`ℹ️ [Prepaid Refund] Order ${orderId} cancelled. Generated refund reference ${refundId} (₹${totalAmount})`);
-      }
+    const isRefundEligible = isPrepaid || isCodPartial || hasRazorpayRef;
 
-      refundInfo = {
-        id: refundId,
-        amount: totalAmount,
-        isPrepaid: true,
-      };
+    // 2. Fetch Customer Payment Details from Razorpay (No automated refund call)
+    let paymentInfo: RazorpayPaymentInfo | null = null;
+    if (razorpayPaymentId) {
+      paymentInfo = await getRazorpayPaymentDetails(razorpayPaymentId);
+    }
+    if (!paymentInfo && razorpayOrderId) {
+      paymentInfo = await getRazorpayPaymentByOrderId(razorpayOrderId);
+      if (paymentInfo?.id) razorpayPaymentId = paymentInfo.id;
+    }
 
-      // 2. Update status to Refunded in stores and D1
-      updateStorefrontOrder(orderId, {
-        payment_status: "refunded" as any,
-        order_status: "cancelled",
+    // Calculate actual amount refundable to customer
+    let amountToRefund = 0;
+    if (isCodPartial) {
+      amountToRefund = paymentInfo ? paymentInfo.amount : (advancePaid || 10);
+    } else if (isPrepaid) {
+      amountToRefund = paymentInfo ? paymentInfo.amount : totalAmount;
+    } else if (paymentInfo) {
+      amountToRefund = paymentInfo.amount;
+    }
+
+    const nextPaymentStatus = isRefundEligible ? "Refund Pending" : "Cancelled";
+    const nextStorefrontStatus = isRefundEligible ? "refund_pending" : "cancelled";
+
+    // 3. Update order state in ERP Store, Storefront Store, and D1
+    updateStorefrontOrder(orderId, {
+      payment_status: nextStorefrontStatus as any,
+      order_status: "cancelled",
+      whatsapp_confirm_status: "cancelled",
+    });
+
+    try {
+      await updateERPOrder(orderId, {
+        payment_status: nextPaymentStatus,
+        status: "Cancelled",
+        delivery_status: "Cancelled" as any,
         whatsapp_confirm_status: "cancelled",
       });
+    } catch (erpErr) {
+      console.warn("ERP update error on cancel:", erpErr);
+    }
 
-      try {
-        await updateERPOrder(orderId, {
-          payment_status: "Refunded",
-          status: "Cancelled",
-          delivery_status: "Cancelled" as any,
-          whatsapp_confirm_status: "cancelled",
-          remittance_status: "Settled",
-        });
-      } catch (erpErr) {
-        console.warn("ERP update error on refund:", erpErr);
-      }
+    try {
+      const { executeD1Query } = await import("@/lib/d1");
+      await executeD1Query(
+        `UPDATE orders
+         SET status = 'Cancelled',
+             delivery_status = 'Cancelled',
+             payment_status = ?,
+             whatsapp_confirm_status = 'cancelled'
+         WHERE id = ? OR shopify_order_id = ?`,
+        [nextPaymentStatus, orderId, orderId]
+      );
+    } catch (d1Err) {
+      console.warn("D1 update error on cancel:", d1Err);
+    }
 
-      try {
-        const { executeD1Query } = await import("@/lib/d1");
-        await executeD1Query(
-          `UPDATE orders
-           SET payment_status = 'Refunded',
-               status = 'Cancelled'
-           WHERE id = ? OR shopify_order_id = ?`,
-          [orderId, orderId]
-        );
-      } catch (d1Err) {
-        console.warn("D1 update error on refund:", d1Err);
-      }
+    // 4. Format line items for WhatsApp & Email
+    let rawItems: any[] = [];
+    if (Array.isArray(ord?.items)) rawItems = ord.items;
+    else if (typeof ord?.items === "string") {
+      try { rawItems = JSON.parse(ord.items); } catch { rawItems = []; }
+    }
+    const itemsSummary = rawItems.length > 0
+      ? rawItems.map((it: any) => `${it.product_name || it.name || "Product"} (x${it.quantity || 1})`).join(", ")
+      : "Purchased Items";
 
-      // 3. Dispatch Email Notification if customer email is available
-      if (custEmail) {
-        try {
-          await sendOrderCancellationEmail({
-            orderId,
-            customerName: custName,
-            customerEmail: custEmail,
-            totalAmount,
-            isPrepaid: true,
-            refundId,
-            paymentId,
-            reason,
-          });
-        } catch (emailErr) {
-          console.warn("Failed to dispatch cancellation email:", emailErr);
-        }
-      }
+    // 5. Construct the WhatsApp Redirection Message for +91 97441 22853
+    let paymentSection = "";
+    if (isRefundEligible || paymentInfo || razorpayPaymentId) {
+      const amountTitle = isCodPartial
+        ? `Paid Amount: ₹${amountToRefund || 10} (COD Advance Confirmation Fee)`
+        : `Paid Amount: ₹${amountToRefund || totalAmount}`;
 
-      // 4. Dispatch WhatsApp Notification to customer with Refund ID & Timeline
-      if (custPhone) {
-        try {
-          await sendOrderCancellationRefundWhatsApp({
-            customerName: custName,
-            customerPhone: custPhone,
-            orderId,
-            refundAmount: totalAmount,
-            refundId,
-            isPrepaid: true,
-          }).catch((e) => console.warn("WhatsApp refund notification error:", e));
-        } catch (waErr) {
-          console.warn("Failed to dispatch WhatsApp refund alert:", waErr);
-        }
-      }
+      const methodFormatted = paymentInfo?.paymentSummary ||
+        (isCodPartial
+          ? `Cash on Delivery (₹${amountToRefund || 10} Advance via Online)`
+          : "Prepaid (Online Payment)");
+
+      paymentSection = [
+        "💳 *Original Payment Information:*",
+        `• Payment ID: ${razorpayPaymentId || paymentInfo?.id || "Verified at Checkout"}`,
+        `• ${amountTitle}`,
+        `• Payment Method: ${methodFormatted}`,
+        paymentInfo?.vpa ? `• Customer UPI ID / VPA: ${paymentInfo.vpa}` : null,
+        paymentInfo?.card?.last4 ? `• Card: ${paymentInfo.card.type || "Card"} ending in ${paymentInfo.card.last4} (${paymentInfo.card.network || ""})` : null,
+        paymentInfo?.bank ? `• Bank: ${paymentInfo.bank}` : null,
+        `• Status: Successful (Captured)`,
+      ].filter(Boolean).join("\n");
     } else {
-      // Cash on Delivery cancellation
-      if (custEmail) {
-        try {
-          await sendOrderCancellationEmail({
-            orderId,
-            customerName: custName,
-            customerEmail: custEmail,
-            totalAmount: Number((ord as any)?.total_amount || 0),
-            isPrepaid: false,
-            reason,
-          });
-        } catch (emailErr) {
-          console.warn("Failed to dispatch COD cancel email:", emailErr);
-        }
-      }
+      paymentSection = [
+        "💳 *Payment Mode:*",
+        `• Method: ${(ord as any)?.payment_method || "Cash on Delivery"}`,
+        `• Order Total: ₹${totalAmount}`,
+        `• Advance Paid: ₹0 (No Online Payment Collected)`,
+      ].join("\n");
+    }
 
-      if (custPhone) {
-        try {
-          await sendOrderCancellationRefundWhatsApp({
-            customerName: custName,
-            customerPhone: custPhone,
-            orderId,
-            isPrepaid: false,
-          }).catch((e) => console.warn("WhatsApp COD cancel alert error:", e));
-        } catch (waErr) {
-          console.warn("Failed to dispatch WhatsApp cancel alert:", waErr);
-        }
+    const currentDateStr = new Date().toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const refundRequestNote = isRefundEligible
+      ? `Please process the refund of ₹${amountToRefund} to my payment account. Thank you!`
+      : `My order has been cancelled. Thank you!`;
+
+    const whatsappMessage = [
+      "Hello Zupe Store Support Team,",
+      "",
+      "I have canceled my order and would like to request my refund.",
+      "",
+      "📦 *Canceled Order Details:*",
+      `• Order ID: ${displayOrderId} (${orderId})`,
+      `• Customer Name: ${custName}`,
+      `• Customer Phone: ${custPhone || "Registered Contact"}`,
+      `• Items: ${itemsSummary}`,
+      `• Total Amount: ₹${totalAmount}`,
+      `• Canceled On: ${currentDateStr}`,
+      "",
+      paymentSection,
+      "",
+      refundRequestNote,
+    ].join("\n");
+
+    const whatsappRedirectUrl = `https://wa.me/${REFUND_WHATSAPP_PHONE}?text=${encodeURIComponent(whatsappMessage)}`;
+
+    // 5b. Send official WhatsApp cancellation template to customer
+    if (custPhone) {
+      try {
+        const { sendOrderCancellationRefundWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+        await sendOrderCancellationRefundWhatsApp({
+          customerName: custName,
+          customerPhone: custPhone,
+          orderId: displayOrderId,
+          productName: itemsSummary || "ZupeStore Item",
+          totalAmount: isCodPartial ? amountToRefund : totalAmount,
+          refundAmount: isRefundEligible ? (amountToRefund || totalAmount) : undefined,
+          refundId: razorpayPaymentId || "Initiated",
+          isPrepaid: isRefundEligible,
+        });
+      } catch (waErr) {
+        console.warn("Cancellation WhatsApp dispatch warning:", waErr);
       }
     }
 
-    const message = refundInfo
-      ? `Order #${orderId} was cancelled. Full refund of ₹${refundInfo.amount} has been initiated to your original payment method (Ref: ${refundInfo.id}). Expected credit: UPI within 2-4 hours, Cards/Netbanking within 2-4 business days.`
-      : `Order #${orderId} was successfully cancelled. Your remaining doorstep payment is cancelled. (Note: ₹10 advance verification fee paid during checkout is non-refundable).`;
+    // 6. Optional Email Notification
+    if (custEmail && custEmail.includes("@") && !custEmail.endsWith("@customer.zupestore.com")) {
+      try {
+        await sendOrderCancellationEmail({
+          orderId: displayOrderId,
+          customerName: custName,
+          customerEmail: custEmail,
+          totalAmount: isCodPartial ? amountToRefund : totalAmount,
+          isPrepaid: isRefundEligible,
+          reason,
+          paymentId: razorpayPaymentId,
+        });
+      } catch (emailErr) {
+        console.warn("Cancellation email notification error:", emailErr);
+      }
+    }
+
+    const responseMsg = isRefundEligible
+      ? `Order #${displayOrderId} was cancelled. Connecting to our billing desk on WhatsApp (+91 97441 22853) with your payment details for instant refund processing.`
+      : `Order #${displayOrderId} was cancelled successfully.`;
 
     return NextResponse.json({
       success: true,
-      message,
+      message: responseMsg,
       orderId,
-      refund: refundInfo,
+      displayOrderId,
+      whatsapp_redirect_url: whatsappRedirectUrl,
+      whatsapp_message: whatsappMessage,
+      payment_details: paymentInfo
+        ? {
+            id: paymentInfo.id,
+            amount: paymentInfo.amount,
+            method: paymentInfo.method,
+            vpa: paymentInfo.vpa,
+            bank: paymentInfo.bank,
+            card: paymentInfo.card,
+            paymentSummary: paymentInfo.paymentSummary,
+          }
+        : null,
+      isPrepaid,
+      isCodPartial,
+      isRefundEligible,
+      amountToRefund,
+      upi_id: paymentInfo?.vpa || null,
     });
   } catch (err: any) {
     console.error("Direct order cancel error:", err);

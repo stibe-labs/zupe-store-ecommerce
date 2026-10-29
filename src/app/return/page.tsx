@@ -180,13 +180,13 @@ export default function ReturnPolicyPage() {
                 Prepaid Online Orders (100% Refund)
               </h4>
               <p className="text-xs sm:text-sm text-emerald-800 leading-relaxed">
-                When you cancel a prepaid order before dispatch, a <strong className="text-emerald-950">100% full refund</strong> is automatically initiated to your original payment method (UPI, Debit/Credit Card, or Netbanking) via our verified payment gateway partner (Razorpay).
+                When you cancel a prepaid order before dispatch, a <strong className="text-emerald-950">100% full refund</strong> is processed directly to your original payment source (UPI, Debit/Credit Card, or Netbanking). For priority verification, our billing desk coordinates directly via WhatsApp (<strong className="text-emerald-950">+91 97441 22853</strong>) with your order and payment details to ensure immediate credit.
               </p>
               <div className="bg-white/80 rounded-xl p-3 border border-emerald-200 text-xs sm:text-sm space-y-1 text-emerald-900">
                 <div className="font-semibold text-emerald-950">Expected Credit Timeline:</div>
                 <div className="flex items-start gap-2">
                   <span className="font-bold text-emerald-700">•</span>
-                  <span><strong>UPI (GPay, PhonePe, Paytm):</strong> Usually credited within <strong>2 to 4 hours</strong> (or up to 24 hours depending on the issuing bank).</span>
+                  <span><strong>UPI (GPay, PhonePe, Paytm):</strong> Usually credited within <strong>2 to 4 hours</strong>.</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="font-bold text-emerald-700">•</span>
@@ -198,14 +198,14 @@ export default function ReturnPolicyPage() {
             {/* Cash on Delivery Policy Box */}
             <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 sm:p-5 space-y-2.5 text-amber-950">
               <h4 className="font-bold text-sm sm:text-base flex items-center gap-2 text-amber-900">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                Cash on Delivery (COD) Orders &amp; ₹10 Advance Fee
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                Cash on Delivery (COD) Orders &amp; ₹10 Advance Fee (100% Refundable)
               </h4>
               <p className="text-xs sm:text-sm text-amber-800 leading-relaxed">
-                When you cancel a Cash on Delivery order, the remaining balance due at doorstep is completely canceled, and our logistics partner will not deliver the parcel.
+                When you cancel a Cash on Delivery order before dispatch, the remaining balance due at doorstep is completely canceled, and our logistics partner will not deliver the parcel.
               </p>
               <div className="bg-white/80 rounded-xl p-3 border border-amber-200 text-xs sm:text-sm text-amber-900 leading-relaxed">
-                <strong>Important Note:</strong> The <strong>₹10 advance verification fee</strong> paid during checkout covers courier dispatch reservation, automated fraud prevention, and parcel allocation, and is <strong className="text-red-700">strictly non-refundable</strong> upon order cancellation.
+                <strong>Refund Guarantee:</strong> The <strong>₹10 advance confirmation fee</strong> paid during checkout is <strong>100% refundable</strong> upon order cancellation before courier dispatch. Our billing desk verifies your cancellation and coordinates the ₹10 refund directly back to your original UPI account or payment method via WhatsApp (<strong className="text-amber-950">+91 97441 22853</strong>).
               </div>
             </div>
           </section>

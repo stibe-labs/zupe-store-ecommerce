@@ -126,6 +126,44 @@ export function ProductReviewsSection({
     }
   }, [productId]);
 
+  // Auto-scroll to reviews section and open write modal if redirected from WhatsApp review link
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash;
+    const params = new URLSearchParams(window.location.search);
+    const shouldOpenModal = hash === "#write-review" || params.get("review") === "true";
+    const shouldScroll = hash === "#reviews" || shouldOpenModal;
+
+    if (shouldScroll) {
+      const scrollTimer = setTimeout(() => {
+        const el = document.getElementById("reviews");
+        if (el) {
+          const navbarOffset = 70;
+          const bodyRect = document.body.getBoundingClientRect().top;
+          const elementRect = el.getBoundingClientRect().top;
+          const elementPosition = elementRect - bodyRect;
+          const offsetPosition = elementPosition - navbarOffset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth",
+          });
+        }
+      }, 500);
+
+      const modalTimer = shouldOpenModal
+        ? setTimeout(() => {
+            setWriteModalOpen(true);
+          }, 900)
+        : null;
+
+      return () => {
+        clearTimeout(scrollTimer);
+        if (modalTimer) clearTimeout(modalTimer);
+      };
+    }
+  }, [productId]);
+
   // Lock background scroll when review modal or lightbox is open
   useEffect(() => {
     if (writeModalOpen || Boolean(lightboxData)) {

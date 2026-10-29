@@ -886,7 +886,7 @@ export default function AdminDashboardPage() {
                         </span>
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <p className="font-semibold text-slate-800">{ord.courier_partner || "Delhivery"}</p>
+                        <p className="font-semibold text-slate-800">{ord.courier_partner || "Awaiting Dispatch"}</p>
                         <p className="text-[11px] text-slate-500 font-mono">{ord.shiprocket_awb || "AWB Pending"}</p>
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">

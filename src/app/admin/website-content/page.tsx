@@ -1431,7 +1431,7 @@ export default function WebsiteContentPage() {
                         </div>
                         <div className="ml-2 px-3 py-0.5 bg-slate-950/80 rounded-md text-[10px] font-mono text-slate-400 flex items-center gap-1.5 border border-slate-800">
                           <span className="text-emerald-400 font-bold">🔒 https://</span>
-                          <span>zupe-store.stibelabs.workers.dev</span>
+                          <span>zupestore.in</span>
                         </div>
                       </div>
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">

@@ -2,9 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyRazorpaySignature } from "@/lib/razorpay";
 import { createOrder, OrderRecord } from "@/lib/orderStore";
 
+export async function GET() {
+  return NextResponse.json({
+    status: "ok",
+    service: "Razorpay Payment Verification & Webhook Endpoint",
+    url: "https://zupestore.in/api/razorpay/verify-payment",
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+
+    // 1. Support Razorpay server-side webhooks & ping tests
+    if (body.event || body.entity === "event") {
+      console.log(`[Razorpay Webhook] Ingested event: ${body.event}`);
+      return NextResponse.json({
+        success: true,
+        status: "ok",
+        message: "Razorpay webhook acknowledged successfully",
+      });
+    }
+
     const {
       razorpay_order_id,
       razorpay_payment_id,
@@ -258,36 +277,36 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Instant Automated Dispatch to Shiprocket on Payment Confirmation ONLY for prepaid orders.
-    // COD orders are held until the customer confirms via WhatsApp interactive buttons.
+    // Push prepaid order to Shiprocket as 'NEW' so it appears on Shiprocket dashboard with "Ship Now" button
     let liveAwb: string | undefined;
     let liveCourier: string | undefined;
     if (!isCodPartial) {
       try {
         const { dispatchShiprocketOrder } = await import("@/lib/shiprocketService");
         const dispatchResult = await dispatchShiprocketOrder(newOrder);
-        if (dispatchResult.success && dispatchResult.awb) {
+        if (dispatchResult.success && dispatchResult.awb && !dispatchResult.isSimulated) {
           liveAwb = dispatchResult.awb;
           liveCourier = dispatchResult.courier;
           (newOrder as any).shiprocket_awb = liveAwb;
           (newOrder as any).tracking_number = liveAwb;
           (newOrder as any).courier_partner = liveCourier;
-          (newOrder as any).delivery_status = "In Transit";
-          newOrder.order_status = "shipped";
-
-          const { updateERPOrder } = await import("@/lib/erpStore");
-          await updateERPOrder(orderId, {
-            whatsapp_confirm_status: "confirmed",
-            whatsapp_token_used: true,
-            status: "In Transit",
-            delivery_status: "In Transit",
-            shiprocket_awb: liveAwb,
-            tracking_number: liveAwb,
-            courier_partner: liveCourier,
-          });
         }
+
+        (newOrder as any).delivery_status = "Processing";
+        newOrder.order_status = "processing";
+
+        const { updateERPOrder } = await import("@/lib/erpStore");
+        await updateERPOrder(orderId, {
+          whatsapp_confirm_status: "confirmed",
+          whatsapp_token_used: true,
+          status: "Processing",
+          delivery_status: "Processing",
+          shiprocket_awb: liveAwb || "",
+          tracking_number: liveAwb || "",
+          courier_partner: liveCourier || "",
+        });
       } catch (dispatchErr) {
-        console.warn("[Verify Payment] Instant Shiprocket dispatch error:", dispatchErr);
+        console.warn("[Verify Payment] Shiprocket push error:", dispatchErr);
       }
     }
 

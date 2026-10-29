@@ -52,15 +52,35 @@ export async function GET(req: NextRequest) {
 
     if (matchedErp.length > 0) {
       const target = matchedErp[0];
+
+      // If AWB is not yet present, query Shiprocket to check if Admin clicked "Ship Now"
+      if (!target.shiprocket_awb || target.shiprocket_awb.startsWith("SR-AWB-")) {
+        try {
+          const { syncShiprocketOrderById } = await import("@/lib/shiprocketService");
+          const syncRes = await syncShiprocketOrderById(target.id);
+          if (syncRes.success && syncRes.awb) {
+            target.shiprocket_awb = syncRes.awb;
+            if (syncRes.courier) target.courier_partner = syncRes.courier;
+            if (syncRes.delivery_status) target.delivery_status = syncRes.delivery_status as any;
+          }
+        } catch (syncErr) {
+          console.warn("Live order sync from Shiprocket error:", syncErr);
+        }
+      }
+
       const awb = (target.shiprocket_awb || (target as any).tracking_number || "").trim();
-      if (awb) {
+      if (awb && !awb.startsWith("SR-AWB-")) {
         try {
           const { getShiprocketLiveTracking } = await import("@/lib/shiprocketService");
           liveTracking = await getShiprocketLiveTracking(awb);
           if (liveTracking?.success) {
             let hasChanged = false;
             const updates: Partial<ERPOrder> = {};
-            if (liveTracking.delivery_status && liveTracking.delivery_status !== target.delivery_status) {
+            if (
+              liveTracking.delivery_status &&
+              liveTracking.delivery_status !== target.delivery_status &&
+              (liveTracking.activities?.length > 0 || liveTracking.current_status)
+            ) {
               target.delivery_status = liveTracking.delivery_status;
               updates.delivery_status = liveTracking.delivery_status;
               hasChanged = true;
@@ -135,8 +155,8 @@ export async function GET(req: NextRequest) {
         payment_method: so.payment_method === "Credit Card" ? "Prepaid" : so.payment_method,
         payment_status: so.payment_status === "paid" ? "Completed" : "Pending",
         shipping_address: `${so.shipping_address}, ${so.city} ${so.postal_code}`,
-        shiprocket_awb: (so as any).shiprocket_awb || `SR-AWB-${Math.abs(so.id.split("").reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0)).toString().slice(0, 7)}`,
-        courier_partner: (so as any).courier_partner || "Delhivery",
+        shiprocket_awb: (so as any).shiprocket_awb || "",
+        courier_partner: (so as any).courier_partner || "",
         delivery_status:
           so.order_status === "delivered"
             ? "Delivered"
@@ -158,7 +178,7 @@ export async function GET(req: NextRequest) {
 
       const target = mappedOrders[0];
       const awb = (target.shiprocket_awb || (target as any).tracking_number || "").trim();
-      if (awb) {
+      if (awb && !awb.startsWith("SR-AWB-")) {
         try {
           const { getShiprocketLiveTracking } = await import("@/lib/shiprocketService");
           liveTracking = await getShiprocketLiveTracking(awb);

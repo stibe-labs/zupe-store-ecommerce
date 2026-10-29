@@ -51,7 +51,7 @@ interface BatchEntry {
 }
 
 interface SupplierRecord {
-  name: string;
+  name?: string;
   opening: number;
   batches: BatchEntry[];
 }
@@ -522,9 +522,9 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
   };
 
   // Active supplier history
-  const activeSupplierRecord = db.suppliers[db.selected] || { opening: 0, batches: [] };
-  const lifetimeCreditUsed = activeSupplierRecord.batches.reduce((sum, b) => sum + b.creditUsed, 0);
-  const lifetimeCreditEarned = activeSupplierRecord.batches.reduce((sum, b) => sum + b.newCredit, 0);
+  const activeSupplierRecord: SupplierRecord = db.suppliers[db.selected] || { opening: 0, batches: [] };
+  const lifetimeCreditUsed = (activeSupplierRecord.batches || []).reduce((sum: number, b: BatchEntry) => sum + (Number(b.creditUsed) || 0), 0);
+  const lifetimeCreditEarned = (activeSupplierRecord.batches || []).reduce((sum: number, b: BatchEntry) => sum + (Number(b.newCredit) || 0), 0);
 
   return (
     <div className="min-h-screen bg-[#F4F6FA] text-slate-800 font-sans">

@@ -26,6 +26,8 @@
     }
   ],
   "vars": {
+    "STORE_BASE_URL": "https://zupestore.in",
+    "NEXT_PUBLIC_BASE_URL": "https://zupestore.in",
     "SMTP_HOST": "smtp.gmail.com",
     "SMTP_PORT": "465",
     "SMTP_USER": "zupestoreonline@gmail.com",
@@ -35,9 +37,9 @@
     "CLOUDFLARE_D1_DATABASE_ID": "1ebc3c22-07be-4f35-b437-5292d137d246",
     "ADMIN_EMAIL": "admin@zupestore.com",
     "ADMIN_PASSWORD": "ZupeAdmin@2026",
-    "NEXT_PUBLIC_RAZORPAY_KEY_ID": "rzp_test_TaEJzNfBmA5jmF",
-    "RAZORPAY_KEY_ID": "rzp_test_TaEJzNfBmA5jmF",
-    "RAZORPAY_KEY_SECRET": "cmw5Lw6uCwUPwyf48Jxdz5Pt",
+    "NEXT_PUBLIC_RAZORPAY_KEY_ID": "rzp_test_TtfV4hJwr48ruO",
+    "RAZORPAY_KEY_ID": "rzp_test_TtfV4hJwr48ruO",
+    "RAZORPAY_KEY_SECRET": "LxiqYWXJS4LUSoyqS89n90zz",
     "WHATSAPP_TOKEN": "EAAY6t7MlMOIBSgAfMGRZAJsIudRT1lMXiZARDnHSvqKZAr5ZArjs6htxGbGBlnE1ZCAOvQiOM069AgyzkuZB4UAtMveTfv6gu3Ik2A3nbQDaRIkWB7yuZACwVNS2eDELePKcOJRRnjE3Nx2m728wvYld1VZCMN05fulca3ZA5COTRZB82a9AZAfsAFyrS2XP41f6dRVygZDZD",
     "WHATSAPP_PHONE_NUMBER_ID": "1434769426379176",
     "WHATSAPP_TEMPLATE_NAME": "zupe_login_otp",

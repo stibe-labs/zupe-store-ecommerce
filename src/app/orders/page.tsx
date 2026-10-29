@@ -26,6 +26,7 @@ import {
   RotateCcw,
   RefreshCw,
   Check,
+  MessageCircle,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -45,6 +46,15 @@ function OrdersPageContent() {
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [cancelPromptId, setCancelPromptId] = useState<string | null>(null);
   const [cancelSuccessMsg, setCancelSuccessMsg] = useState<string | null>(null);
+  const [cancellationModalData, setCancellationModalData] = useState<{
+    orderId: string;
+    displayOrderId: string;
+    whatsappUrl: string;
+    amount: number;
+    paymentSummary?: string;
+    upiId?: string | null;
+    isCodPartial?: boolean;
+  } | null>(null);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [autoConfirmedOrderId, setAutoConfirmedOrderId] = useState<string | null>(null);
@@ -403,7 +413,7 @@ function OrdersPageContent() {
                   ...o,
                   order_status: "cancelled",
                   whatsapp_confirm_status: "cancelled",
-                  payment_status: data.refund ? ("refunded" as any) : o.payment_status,
+                  payment_status: (data.isRefundEligible || data.isPrepaid || data.amountToRefund > 0) ? ("refund_pending" as any) : o.payment_status,
                 }
               : o
           )
@@ -418,6 +428,28 @@ function OrdersPageContent() {
           url.searchParams.delete("cancel");
           window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
         } catch {}
+
+        if (data.whatsapp_redirect_url) {
+          setCancellationModalData({
+            orderId,
+            displayOrderId: data.displayOrderId || orderId,
+            whatsappUrl: data.whatsapp_redirect_url,
+            amount: data.amountToRefund || 0,
+            paymentSummary: data.payment_details?.paymentSummary,
+            upiId: data.upi_id || data.payment_details?.vpa,
+            isCodPartial: data.isCodPartial,
+          });
+
+          // Automatically open WhatsApp with customer's refund and payment details
+          try {
+            const w = window.open(data.whatsapp_redirect_url, "_blank");
+            if (!w || w.closed || typeof w.closed === "undefined") {
+              window.location.href = data.whatsapp_redirect_url;
+            }
+          } catch {
+            window.location.href = data.whatsapp_redirect_url;
+          }
+        }
       } else {
         alert(data.error || "Failed to cancel order.");
       }
@@ -672,9 +704,18 @@ function OrdersPageContent() {
                 ];
               }
 
-              const isRefunded =
-                ord.payment_status === "refunded" ||
-                (ord as any).payment_status === "Refunded";
+              const paymentStatusStr = ((ord as any).payment_status || "").toLowerCase();
+              const isRefundCompleted = paymentStatusStr === "refunded";
+              const isRefundRejected = paymentStatusStr.includes("reject");
+              const isRefundProcessing =
+                !isRefundCompleted &&
+                !isRefundRejected &&
+                (paymentStatusStr === "refund_pending" ||
+                 paymentStatusStr === "refund pending" ||
+                 (ord.order_status === "cancelled" &&
+                  (paymentStatusStr.includes("pending") || (ord as any).payment_status === "Refund Pending")));
+
+              const isRefunded = isRefundCompleted || isRefundProcessing || isRefundRejected;
 
               const isPaid =
                 !isRefunded &&
@@ -692,9 +733,7 @@ function OrdersPageContent() {
                 0
               );
 
-              // Authoritative total amount:
-              // For Cash on Delivery orders: product amount + 49 (matching checkout order summary)
-              // When switched to prepaid: reflects the online prepaid amount
+              // Authoritative total amount
               let displayedTotal = Number(ord.total_amount) || 0;
               if (isCod) {
                 if (productSubtotal > 0 && displayedTotal <= productSubtotal) {
@@ -705,6 +744,16 @@ function OrdersPageContent() {
               } else if ((isPaid || isRefunded) && displayedTotal <= 0 && productSubtotal > 0) {
                 displayedTotal = productSubtotal;
               }
+
+              const isCodOrder =
+                Boolean(ord.payment_method?.toLowerCase().includes("cash on delivery")) ||
+                Boolean(ord.payment_method?.toUpperCase() === "COD") ||
+                Boolean(ord.payment_method?.toLowerCase().includes("partial"));
+
+              const codAdvancePaid = Number((ord as any).advance_paid) || 10;
+              const refundAmountLabel = isCodOrder
+                ? `₹${codAdvancePaid} (COD Advance Fee)`
+                : `₹${displayedTotal.toLocaleString()}`;
 
               return (
                 <div
@@ -732,9 +781,17 @@ function OrdersPageContent() {
                       <span className="text-sm font-bold text-[#FF7A00]">
                         ₹{displayedTotal.toLocaleString()}
                       </span>
-                      {isRefunded ? (
-                        <span className="text-[10px] text-purple-600 font-semibold block">
+                      {isRefundCompleted ? (
+                        <span className="text-[10px] text-emerald-600 font-semibold block">
                           Refunded to Source
+                        </span>
+                      ) : isRefundProcessing ? (
+                        <span className="text-[10px] text-amber-600 font-semibold block">
+                          Refund Processing
+                        </span>
+                      ) : isRefundRejected ? (
+                        <span className="text-[10px] text-rose-600 font-semibold block">
+                          Refund Ineligible
                         </span>
                       ) : isCod ? (
                         <span className="text-[10px] text-gray-500 font-medium block">
@@ -746,14 +803,13 @@ function OrdersPageContent() {
                         </span>
                       ) : null}
                     </div>
-                    {/* Status Badges & Action Buttons: 2 Symmetrical Rows (Row 1: Status & Pay Now, Row 2: Cash on Delivery & Track) */}
+                    {/* Status Badges & Action Buttons */}
                     <div className="flex flex-col gap-2.5 w-full sm:w-auto">
-                      {/* Row 1: Status Badge & Pay Now (Save ₹30) Button */}
                       <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
-                        {/* Status Badge (e.g. Awaiting WhatsApp Confirmation) */}
+                        {/* Status Badge */}
                         {getStatusBadge(isDelivered ? "delivered" : ord.order_status, ord.whatsapp_confirm_status)}
 
-                        {/* Top Right Position: Pay Now (Save ₹30) Button for COD, or Payment Badge for Prepaid */}
+                        {/* Top Right Position */}
                         {isCod && ord.order_status !== "cancelled" ? (
                           <Link
                             href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(ord.id)}`}
@@ -762,10 +818,20 @@ function OrdersPageContent() {
                             <Sparkles className="w-3.5 h-3.5 shrink-0" />
                             <span>Pay Now (Save ₹30)</span>
                           </Link>
-                        ) : isRefunded ? (
-                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
-                            <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                        ) : isRefundCompleted ? (
+                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                             <span>Refunded</span>
+                          </span>
+                        ) : isRefundProcessing ? (
+                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+                            <RotateCcw className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                            <span>Refund Processing</span>
+                          </span>
+                        ) : isRefundRejected ? (
+                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+                            <XCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                            <span>Refund Ineligible</span>
                           </span>
                         ) : isPaid ? (
                           <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
@@ -783,7 +849,6 @@ function OrdersPageContent() {
                       {/* Row 2: Cash on Delivery Badge & Track Package Button */}
                       {ord.order_status !== "cancelled" && (
                         <div className={`grid ${isCod ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-none"} sm:flex sm:items-center gap-2 w-full sm:w-auto`}>
-                          {/* Cash on Delivery Badge in Row 2 Col 1 */}
                           {isCod && (
                             <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-slate-100/90 text-slate-700 border border-slate-200 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
                               <ShoppingBag className="w-3.5 h-3.5 text-slate-500 shrink-0" />
@@ -791,7 +856,6 @@ function OrdersPageContent() {
                             </span>
                           )}
 
-                          {/* Track Package Button in Row 2 Col 2 */}
                           <Link
                             href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
                             className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-bold tracking-tight bg-white hover:bg-orange-50/90 text-[#FF7A00] border border-[#FF7A00]/40 hover:border-[#FF7A00] shadow-2xs hover:shadow-xs transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] w-full sm:w-auto text-center whitespace-nowrap"
@@ -800,7 +864,6 @@ function OrdersPageContent() {
                             <span>Track Package</span>
                           </Link>
 
-                          {/* Rate & Review Button (Delivered) */}
                           {isDelivered && (
                             <button
                               type="button"
@@ -816,24 +879,85 @@ function OrdersPageContent() {
                     </div>
                   </div>
 
-                  {/* Automated Refund Alert Banner on Card */}
-                  {isRefunded && (
-                    <div className="mb-6 p-4 rounded-2xl bg-purple-50 border border-purple-200 text-purple-950 flex items-start gap-3 shadow-xs">
-                      <div className="w-9 h-9 rounded-full bg-purple-100 border border-purple-200 text-purple-700 flex items-center justify-center shrink-0">
-                        <RotateCcw className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-extrabold text-purple-900">
-                            Automated Refund Initiated (₹{displayedTotal.toLocaleString()})
-                          </span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-200 text-purple-900">
-                            Razorpay Instant
-                          </span>
+                  {/* Refund Processing Alert Banner */}
+                  {isRefundProcessing && (
+                    <div className="mb-6 p-4 rounded-2xl bg-amber-50/90 border border-amber-200 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-full bg-amber-100 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
+                          <RotateCcw className="w-4 h-4 animate-spin-slow" />
                         </div>
-                        <p className="text-[11px] text-purple-800 mt-0.5">
-                          Your order was cancelled before dispatch. The full payment of <strong>₹{displayedTotal.toLocaleString()}</strong> has been initiated back to your original payment method (UPI / Card). Expected credit within 2 to 4 hours for UPI or 2 to 4 business days for Cards.
-                        </p>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-extrabold text-amber-900">
+                              Refund Processing ({refundAmountLabel})
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-900">
+                              Billing Desk Verification
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-amber-800 mt-0.5">
+                            Order cancelled before dispatch. Refund of <strong>{refundAmountLabel}</strong> is being coordinated directly to your original payment account.
+                          </p>
+                        </div>
+                      </div>
+                      <a
+                        href={`https://wa.me/919744122853?text=${encodeURIComponent(
+                          `Hello Zupe Store Support,\n\nI am following up on my refund for canceled Order ${(ord as any).shopify_order_id || ord.id}.\n• Customer Name: ${ord.customer_name || 'Valued Customer'}\n• Refund Amount: ${refundAmountLabel}\n\nPlease check and process my refund to my payment account. Thank you!`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-xs shrink-0 self-end sm:self-center"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>WhatsApp Billing Desk</span>
+                      </a>
+                    </div>
+                  )}
+
+                  {/* Refund Completed Alert Banner */}
+                  {isRefundCompleted && (
+                    <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-extrabold text-emerald-900">
+                              Refund Completed ({refundAmountLabel})
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900">
+                              Verified &amp; Credited
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-emerald-800 mt-0.5">
+                            Your refund of <strong>{refundAmountLabel}</strong> has been successfully transferred back to your original payment account. Thank you!
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Refund Rejected Alert Banner */}
+                  {isRefundRejected && (
+                    <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-full bg-rose-100 border border-rose-200 text-rose-700 flex items-center justify-center shrink-0 mt-0.5">
+                          <XCircle className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-extrabold text-rose-900">
+                              Refund Ineligible
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-200 text-rose-900">
+                              Desk Closed
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-rose-800 mt-0.5">
+                            This cancellation is not eligible for refund. Please contact our support desk on WhatsApp (+91 97441 22853) if you have any questions.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -877,7 +1001,7 @@ function OrdersPageContent() {
                             <p className={`text-[11px] text-amber-800 leading-snug mt-1 ${isExpanded ? "leading-relaxed" : "line-clamp-1 sm:line-clamp-none"}`}>
                               {isExpanded ? (
                                 <>
-                                  We sent a verification message to <strong>{ord.customer_phone || "your WhatsApp"}</strong> with interactive <strong>[Confirm Order]</strong> and <strong>[Cancel]</strong> buttons. Please tap <strong>Confirm Order</strong> in WhatsApp so our logistics team can generate your Delhivery courier tracking and dispatch your package immediately.
+                                  We sent a verification message to <strong>{ord.customer_phone || "your WhatsApp"}</strong> with interactive <strong>[Confirm Order]</strong> and <strong>[Cancel]</strong> buttons. Please tap <strong>Confirm Order</strong> in WhatsApp so our logistics team can generate your courier tracking and dispatch your package immediately.
                                 </>
                               ) : (
                                 <>
@@ -898,11 +1022,11 @@ function OrdersPageContent() {
                                 <span className="font-bold text-rose-950">Cancel Order? </span>
                                 {isCod ? (
                                   <span className="text-amber-800 font-medium">
-                                    Doorstep balance cancelled. (Note: ₹10 advance verification fee is non-refundable).
+                                    Doorstep balance cancelled. The ₹10 advance confirmation fee is 100% refundable to your original payment account.
                                   </span>
                                 ) : (
                                   <span className="text-emerald-800 font-medium">
-                                    Full ₹{displayedTotal} refund to original payment source (UPI 2-4 hrs, Cards 2-4 days).
+                                    Full ₹{displayedTotal} refund will be coordinated directly to your original payment account via WhatsApp (+91 97441 22853).
                                   </span>
                                 )}
                               </div>
@@ -958,12 +1082,12 @@ function OrdersPageContent() {
                             <div className="text-xs text-rose-900 leading-relaxed">
                               <span className="font-bold text-rose-950">Are you sure you want to cancel this order? </span>
                               {isCod ? (
-                                <span className="block text-amber-900 font-medium text-[11px] mt-0.5">
-                                  ⚠️ Doorstep parcel delivery will be cancelled. Please note that the <strong>₹10 advance verification fee</strong> paid during checkout is <strong>non-refundable</strong>.
+                                <span className="block text-emerald-900 font-medium text-[11px] mt-0.5">
+                                  ✓ Doorstep parcel delivery will be cancelled. The <strong>₹10 advance confirmation fee</strong> paid during checkout is <strong>100% refundable</strong> and will be processed back to your original payment account.
                                 </span>
                               ) : (
                                 <span className="block text-emerald-900 font-medium text-[11px] mt-0.5">
-                                  ✓ Full refund of <strong>₹{displayedTotal}</strong> will be initiated to your original payment method. Expected timeline: UPI within 2–4 hours, Cards/Netbanking within 2–4 days.
+                                  ✓ Full refund of <strong>₹{displayedTotal}</strong> will be coordinated directly to your original payment account. You will be connected to our billing desk on WhatsApp (+91 97441 22853) with your payment details for priority credit.
                                 </span>
                               )}
                             </div>
@@ -1448,6 +1572,80 @@ function OrdersPageContent() {
                   )}
                 </form>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Post-Cancellation WhatsApp Redirection Modal */}
+      {cancellationModalData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-gray-100 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-gray-900">Order Canceled</h3>
+                  <p className="text-xs text-gray-500">Order {cancellationModalData.displayOrderId}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCancellationModalData(null)}
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 space-y-2 text-emerald-950">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-emerald-800">
+                  {cancellationModalData.isCodPartial ? "Refund Amount (COD Advance Fee):" : "Refund Amount:"}
+                </span>
+                <span className="text-sm font-extrabold text-emerald-950">₹{cancellationModalData.amount}</span>
+              </div>
+              {cancellationModalData.upiId && (
+                <div className="flex items-center justify-between text-xs text-emerald-800">
+                  <span className="font-semibold">Customer UPI ID:</span>
+                  <span className="font-mono font-bold text-emerald-950 bg-emerald-100 px-2 py-0.5 rounded">
+                    {cancellationModalData.upiId}
+                  </span>
+                </div>
+              )}
+              {cancellationModalData.paymentSummary && (
+                <div className="flex items-center justify-between text-xs text-emerald-800">
+                  <span className="font-semibold">Payment Details:</span>
+                  <span className="font-medium text-emerald-900">{cancellationModalData.paymentSummary}</span>
+                </div>
+              )}
+            </div>
+
+            <p className="text-xs text-gray-600 leading-relaxed">
+              We have prepared your cancellation details. Tap the button below to send your refund request with your payment details to our accounts desk on WhatsApp (<strong>+91 97441 22853</strong>) for instant processing.
+            </p>
+
+            <div className="space-y-2 pt-2">
+              <a
+                href={cancellationModalData.whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setCancellationModalData(null)}
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-[#25D366] hover:bg-[#1EBE5D] text-white font-extrabold text-sm transition-all shadow-md hover:shadow-lg hover:scale-[1.01]"
+              >
+                <MessageCircle className="w-5 h-5" />
+                <span>Open WhatsApp to Send Refund Details</span>
+              </a>
+
+              <button
+                type="button"
+                onClick={() => setCancellationModalData(null)}
+                className="w-full py-2.5 text-center text-xs font-bold text-gray-500 hover:text-gray-800 transition cursor-pointer"
+              >
+                Close &amp; View Orders
+              </button>
             </div>
           </div>
         </div>

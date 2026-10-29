@@ -5,6 +5,11 @@ import { sendAbandonedCartWhatsApp } from "@/lib/whatsappOrderConfirmation";
 
 export const dynamic = "force-dynamic";
 
+const STORE_BASE_URL =
+  process.env.STORE_BASE_URL ||
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  "https://zupestore.in";
+
 export interface AbandonedCheckoutRecord {
   id: string;
   customer_name?: string;
@@ -102,7 +107,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const recoveryUrl = `https://zupe-store.stibelabs.workers.dev/checkout?recover=${encodeURIComponent(recoveryToken)}`;
+    const recoveryUrl = `${STORE_BASE_URL}/checkout?recover=${encodeURIComponent(recoveryToken)}`;
 
     if (existingId) {
       // Update existing record

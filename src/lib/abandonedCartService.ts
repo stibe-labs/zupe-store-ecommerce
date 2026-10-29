@@ -32,7 +32,11 @@ export async function processOverdueAbandonedCarts(): Promise<number> {
           }
         }
 
-        const recoveryUrl = `https://zupe-store.stibelabs.workers.dev/checkout?recover=${encodeURIComponent(
+        const baseUrl =
+          process.env.STORE_BASE_URL ||
+          process.env.NEXT_PUBLIC_BASE_URL ||
+          "https://zupestore.in";
+        const recoveryUrl = `${baseUrl}/checkout?recover=${encodeURIComponent(
           row.recovery_token
         )}`;
         const source = (row.source === "checkout" ? "checkout" : "cart") as "checkout" | "cart";

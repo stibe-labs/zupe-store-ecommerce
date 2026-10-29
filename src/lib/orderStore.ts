@@ -358,39 +358,35 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
     }
   }
 
-  // Instant Automated Dispatch to Shiprocket on WhatsApp Confirmation
+  // Push order to Shiprocket as 'NEW' so it appears on Shiprocket dashboard with "Ship Now" button
   const targetOrder: any = ord || erpOrd || (await getOrderById(normId));
-  let finalAwb = targetOrder?.shiprocket_awb;
-  let finalCourier = targetOrder?.courier_partner || "Delhivery";
+  let finalAwb = targetOrder?.shiprocket_awb || "";
+  let finalCourier = targetOrder?.courier_partner || "";
 
   try {
     const { dispatchShiprocketOrder } = await import("@/lib/shiprocketService");
     const dispatchRes = await dispatchShiprocketOrder(targetOrder);
-    if (dispatchRes.success && dispatchRes.awb) {
+    if (dispatchRes.success && dispatchRes.awb && !dispatchRes.isSimulated) {
       finalAwb = dispatchRes.awb;
       finalCourier = dispatchRes.courier || finalCourier;
     }
   } catch (dispatchErr) {
-    console.warn("Instant Shiprocket dispatch on WhatsApp confirm error:", dispatchErr);
-  }
-
-  if (!finalAwb) {
-    finalAwb = `SR-AWB-${Math.floor(1000000 + Math.random() * 9000000)}`;
+    console.warn("Shiprocket push on WhatsApp confirm error:", dispatchErr);
   }
 
   if (ord) {
-    ord.order_status = "shipped";
+    ord.order_status = "processing";
     (ord as any).shiprocket_awb = finalAwb;
     (ord as any).courier_partner = finalCourier;
-    (ord as any).delivery_status = "In Transit";
+    (ord as any).delivery_status = "Processing";
   }
 
   try {
     await updateERPOrder(normId, {
       whatsapp_confirm_status: "confirmed",
       whatsapp_token_used: true,
-      status: "In Transit",
-      delivery_status: "In Transit",
+      status: "Processing",
+      delivery_status: "Processing",
       shiprocket_awb: finalAwb,
       courier_partner: finalCourier,
     });
@@ -403,7 +399,7 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
 
   return {
     success: true,
-    message: "Order confirmed and automatically dispatched for shipping!",
+    message: "Order confirmed via WhatsApp! Package is being prepared for dispatch.",
     order: (finalOrd as any) || undefined,
   };
 }

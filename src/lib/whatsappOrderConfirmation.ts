@@ -6,8 +6,10 @@ import { normalizePhoneNumber } from "@/lib/whatsappOtp";
 
 const DEFAULT_WA_TOKEN =
   "EAAY6t7MlMOIBSgAfMGRZAJsIudRT1lMXiZARDnHSvqKZAr5ZArjs6htxGbGBlnE1ZCAOvQiOM069AgyzkuZB4UAtMveTfv6gu3Ik2A3nbQDaRIkWB7yuZACwVNS2eDELePKcOJRRnjE3Nx2m728wvYld1VZCMN05fulca3ZA5COTRZB82a9AZAfsAFyrS2XP41f6dRVygZDZD";
-const DEFAULT_WA_PHONE_ID = "1434769426379176";
-const STORE_BASE_URL = "https://zupe-store.stibelabs.workers.dev";
+const STORE_BASE_URL =
+  process.env.STORE_BASE_URL ||
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  "https://zupestore.in";
 
 // Template names - must match exactly what you created in Meta Business Manager
 const TEMPLATE_PREPAID = "zupe_order_prepaid";
@@ -72,11 +74,12 @@ export async function sendOrderPreConfirmationWhatsApp(
   const cancelUrl = `${STORE_BASE_URL}/api/orders/whatsapp-cancel?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
-  const codDoorstepDue = Math.max(0, totalAmount - 10);
-  const displayAmount = paymentMethod === "cod" ? codDoorstepDue : totalAmount;
+  const amountPayable = paymentMethod === "cod" ? Math.max(0, totalAmount - 10) : 0;
+  const amountPaid = paymentMethod === "cod" ? 10 : totalAmount;
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
+  const firstProductName = items && items[0]?.name ? items[0].name : "Zupe Store Selection";
 
-  // 1. Try official Meta Template with interactive buttons first (zupe_order_verify)
+  // 1. Try official Meta Template with interactive buttons (zupe_order_verify)
   let templateSent = false;
   try {
     templateSent = await sendPreConfirmViaTemplate(
@@ -85,10 +88,9 @@ export async function sendOrderPreConfirmationWhatsApp(
       digits,
       firstName,
       displayOrderId,
-      displayAmount,
-      paymentMethodLabel,
-      confirmUrl,
-      cancelUrl,
+      firstProductName,
+      amountPayable,
+      amountPaid,
       token
     );
   } catch (err) {
@@ -96,28 +98,24 @@ export async function sendOrderPreConfirmationWhatsApp(
   }
 
   if (templateSent) {
-    console.log(`✅ [WA Pre-Confirm] Official template '${TEMPLATE_VERIFY}' with buttons dispatched for ${digits}`);
+    console.log(`✅ [WA Pre-Confirm] Official unified template 'zupe_order_verify' dispatched for ${digits}`);
     return true;
   }
 
-  // 2. Fallback to direct message only if template was not accepted
-  const paymentBreakdownText =
-    paymentMethod === "cod"
-      ? `💰 *Total Amount:* Rs ${totalAmount.toLocaleString("en-IN")}\n` +
-        `💳 *Advance Paid Online:* Rs 10 (Verified)\n` +
-        `📦 *Balance Due at Doorstep:* Rs ${codDoorstepDue.toLocaleString("en-IN")}\n\n`
-      : `💰 *Amount Paid:* Rs ${totalAmount.toLocaleString("en-IN")} (Prepaid Online)\n\n`;
-
+  // 2. Fallback to direct message formatted exactly as requested
   const message =
-    `*Order Verification — Zupe Store* 🛍️\n\n` +
-    `Hi ${firstName}! Thank you for placing your order with Zupe Store.\n\n` +
-    `📦 *Order ID:* ${displayOrderId}\n` +
-    `📋 *Items:*\n${itemLines}${more}\n\n` +
-    paymentBreakdownText +
-    `Please confirm your order below so we can pack and dispatch your shipment:\n\n` +
-    `✅ *Confirm Order:*\n${confirmUrl}\n\n` +
-    `❌ *Cancel Order:*\n${cancelUrl}\n\n` +
-    `Zupe Store Team`;
+    `Hi ${firstName}! 👋🏻\n\n` +
+    `😊Thank you for ordering from ZupeStore🛒\n\n` +
+    `⁉️Please confirm your order📦\n\n` +
+    `📦 Order ID: ${displayOrderId}\n` +
+    `🛍️ Product: ${firstProductName}\n` +
+    `💰 Amount Payable: ₹${amountPayable.toLocaleString("en-IN")}\n` +
+    `💰 Amount Paid: ₹${amountPaid.toLocaleString("en-IN")}\n\n` +
+    `📣Please confirm whether you would like to proceed with your order.💬\n\n` +
+    `✅ Confirm Order:\n${confirmUrl}\n\n` +
+    `❌ Cancel Order:\n${cancelUrl}\n\n` +
+    `Thank you,❤️\n` +
+    `Team ZupeStore`;
 
   await sendWhatsAppTextMessage(apiUrl, apiToken, digits, message);
   console.log(`✅ [WA Pre-Confirm] Fallback verification message delivered to ${digits} for order ${displayOrderId}`);
@@ -130,89 +128,81 @@ async function sendPreConfirmViaTemplate(
   to: string,
   firstName: string,
   orderId: string,
-  totalAmount: number,
-  paymentMethodLabel: string,
-  confirmUrl: string,
-  cancelUrl: string,
+  productName: string,
+  amountPayable: number,
+  amountPaid: number,
   verificationToken: string
 ): Promise<boolean> {
-  // The zupe_order_verify template in Meta Business Manager:
-  // - Body with 4 parameters: {{1}}=firstName, {{2}}=orderId, {{3}}=amount, {{4}}=paymentMethod
-  // - Button 0 (Confirm Order): Dynamic URL configured with base:
-  //   https://zupe-store.stibelabs.workers.dev/api/orders/whatsapp-confirm?token={{1}}
-  //   Parameter 1: verificationToken (e.g. tok_xxx)
-  // - Button 1 (Cancel Order): Dynamic URL configured with base:
-  //   https://zupe-store.stibelabs.workers.dev/orders?cancelPrompt={{1}}
-  //   Parameter 1: clean orderId (e.g. 1567 or ord_xxx)
-
   const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
+  const templateNamesToTry = ["zupe_order_verify", "zupe_order_verify_cod"];
 
-  const payload = {
-    messaging_product: "whatsapp",
-    recipient_type: "individual",
-    to,
-    type: "template",
-    template: {
-      name: TEMPLATE_VERIFY,
-      language: { code: TEMPLATE_LANG },
-      components: [
-        {
-          type: "body",
-          parameters: [
-            { type: "text", text: firstName },
-            { type: "text", text: orderId },
-            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
-            { type: "text", text: paymentMethodLabel },
-          ],
-        },
-        {
-          type: "button",
-          sub_type: "url",
-          index: "0",
-          parameters: [
-            {
-              type: "text",
-              text: verificationToken,
-            },
-          ],
-        },
-        {
-          type: "button",
-          sub_type: "url",
-          index: "1",
-          parameters: [
-            {
-              type: "text",
-              text: cleanButtonOrderId,
-            },
-          ],
-        },
-      ],
-    },
-  };
-
-  try {
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+  for (const templateName of templateNamesToTry) {
+    const payload = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to,
+      type: "template",
+      template: {
+        name: templateName,
+        language: { code: TEMPLATE_LANG },
+        components: [
+          {
+            type: "body",
+            parameters: [
+              { type: "text", text: firstName },
+              { type: "text", text: orderId },
+              { type: "text", text: productName },
+              { type: "text", text: amountPayable.toLocaleString("en-IN") },
+              { type: "text", text: amountPaid.toLocaleString("en-IN") },
+            ],
+          },
+          {
+            type: "button",
+            sub_type: "url",
+            index: "0",
+            parameters: [
+              {
+                type: "text",
+                text: verificationToken,
+              },
+            ],
+          },
+          {
+            type: "button",
+            sub_type: "url",
+            index: "1",
+            parameters: [
+              {
+                type: "text",
+                text: cleanButtonOrderId,
+              },
+            ],
+          },
+        ],
       },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(6000),
-    });
+    };
 
-    const data = (await res.json()) as any;
-    if (res.ok && data.messages?.length > 0) {
-      console.log(
-        `✅ [WA Pre-Confirm] Official template '${TEMPLATE_VERIFY}' delivered to Meta queue for ${to}, messageId: ${data.messages[0].id}`
-      );
-      return true;
+    try {
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(6000),
+      });
+
+      const data = (await res.json()) as any;
+      if (res.ok && data.messages?.length > 0) {
+        console.log(
+          `✅ [WA Pre-Confirm] Official template '${templateName}' delivered to Meta queue for ${to}, messageId: ${data.messages[0].id}`
+        );
+        return true;
+      }
+    } catch (err) {
+      // try fallback template name
     }
-
-    console.warn(`[WA Pre-Confirm] Template rejected by Meta:`, data?.error || data);
-  } catch (err) {
-    console.warn(`[WA Pre-Confirm] Template send error:`, err);
   }
 
   return false;
@@ -235,7 +225,7 @@ export async function sendOrderConfirmationWhatsApp(
 
   const advancePaid = 10;
   const doorstepBalance = Math.max(0, totalAmount - advancePaid); // e.g. 1048 - 10 = 1038
-  const switchPrepaidAmount = Math.max(1, doorstepBalance - 49);  // e.g. saves Rs 49 shipping fee
+  const switchPrepaidAmount = Math.max(1, doorstepBalance - 30);  // Flat Rs 30 OFF switch to prepaid
   const productSubtotal = totalAmount >= 49 ? totalAmount - 49 : totalAmount;
   const firstName = customerName.split(" ")[0] || customerName;
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
@@ -263,7 +253,7 @@ export async function sendOrderConfirmationWhatsApp(
       "  • Advance Paid Online: Rs 10 (Received)\n" +
       "  • *Balance Due at Doorstep: Rs " + doorstepBalance.toLocaleString("en-IN") + "*\n\n" +
       "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
-      "⚡ *Switch to Prepaid & Save Rs 49!*\n" +
+      "⚡ *Special Offer: Switch to Prepaid & Save Rs 30!*\n" +
       "Pay online now — pay only *Rs " + switchPrepaidAmount.toLocaleString("en-IN") + "* instead of Rs " + doorstepBalance.toLocaleString("en-IN") + " at delivery:\n" +
       payNowUrl + "\n\n" +
       "📦 *Track Your Order:*\n" +
@@ -285,8 +275,8 @@ export async function sendOrderConfirmationWhatsApp(
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
   if (paymentMethod === "cod") {
-    // 1. For COD: Send approved Utility template 'zupe_order_cod_v2' which includes BOTH buttons:
-    // [Pay Online (Save Rs 30)] and [Track Order]
+    // 1. For COD: Send approved Utility template 'zupe_cod_switch_prepaid' / 'zupe_order_cod_v2' which includes BOTH buttons:
+    // [Pay Now & Save Rs 30] and [Track Order]
     let codV2Sent = false;
     try {
       codV2Sent = await sendViaCodV2Template(
@@ -294,12 +284,12 @@ export async function sendOrderConfirmationWhatsApp(
         token,
         digits,
         firstName,
-        displayOrderId,
+        cleanUrlOrderId,
         doorstepBalance,
         switchPrepaidAmount
       );
     } catch (err) {
-      console.warn("[WA Order Confirm] COD V2 template attempt:", err);
+      console.warn("[WA Order Confirm] COD switch template attempt:", err);
     }
 
     // 2. If V2 template failed, fallback to generic confirmed utility template
@@ -374,57 +364,61 @@ async function sendViaCodV2Template(
 ): Promise<boolean> {
   const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
 
-  const payload = {
-    messaging_product: "whatsapp",
-    recipient_type: "individual",
-    to,
-    type: "template",
-    template: {
-      name: "zupe_order_cod_v2",
-      language: { code: TEMPLATE_LANG },
-      components: [
-        {
-          type: "body",
-          parameters: [
-            { type: "text", text: firstName },
-            { type: "text", text: orderId },
-            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
-            { type: "text", text: `Rs ${discountedAmount.toLocaleString("en-IN")}` },
-          ],
-        },
-        {
-          type: "button",
-          sub_type: "url",
-          index: "0",
-          parameters: [{ type: "text", text: cleanButtonOrderId }],
-        },
-        {
-          type: "button",
-          sub_type: "url",
-          index: "1",
-          parameters: [{ type: "text", text: cleanButtonOrderId }],
-        },
-      ],
-    },
-  };
+  const templateNamesToTry = ["zupe_cod_switch_prepaid", "zupe_order_cod_v2"];
 
-  try {
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer " + token,
-        "Content-Type": "application/json",
+  for (const templateName of templateNamesToTry) {
+    const payload = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to,
+      type: "template",
+      template: {
+        name: templateName,
+        language: { code: TEMPLATE_LANG },
+        components: [
+          {
+            type: "body",
+            parameters: [
+              { type: "text", text: firstName },
+              { type: "text", text: cleanButtonOrderId },
+              { type: "text", text: totalAmount.toLocaleString("en-IN") },
+              { type: "text", text: discountedAmount.toLocaleString("en-IN") },
+            ],
+          },
+          {
+            type: "button",
+            sub_type: "url",
+            index: "0",
+            parameters: [{ type: "text", text: cleanButtonOrderId }],
+          },
+          {
+            type: "button",
+            sub_type: "url",
+            index: "1",
+            parameters: [{ type: "text", text: cleanButtonOrderId }],
+          },
+        ],
       },
-      body: JSON.stringify(payload),
-    });
-    const data = (await res.json()) as any;
-    if (res.ok && data.messages?.length > 0) {
-      console.log(`✅ [WA Order Confirm] Utility template 'zupe_order_cod_v2' with Pay Online and Track buttons dispatched to ${to}`);
-      return true;
+    };
+
+    try {
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = (await res.json()) as any;
+      if (res.ok && data.messages?.length > 0) {
+        console.log(`✅ [WA Order Confirm] COD Switch template '${templateName}' dispatched to ${to}`);
+        return true;
+      }
+      console.warn(`[WA Order Confirm] COD template '${templateName}' response:`, data?.error?.message || data?.error || data);
+    } catch (err) {
+      console.warn(`[WA Order Confirm] COD template '${templateName}' error:`, err);
     }
-    console.warn("[WA Order Confirm] COD V2 template rejected:", data?.error || data);
-  } catch (err) {
-    console.warn("[WA Order Confirm] COD V2 template error:", err);
   }
   return false;
 }
@@ -599,6 +593,8 @@ export interface OrderCancellationRefundParams {
   customerName: string;
   customerPhone: string;
   orderId: string;
+  productName?: string;
+  totalAmount?: number;
   refundAmount?: number;
   refundId?: string;
   isPrepaid: boolean;
@@ -607,7 +603,7 @@ export interface OrderCancellationRefundParams {
 export async function sendOrderCancellationRefundWhatsApp(
   params: OrderCancellationRefundParams
 ): Promise<boolean> {
-  const { customerName, customerPhone, orderId, refundAmount, refundId, isPrepaid } = params;
+  const { customerName, customerPhone, orderId, productName, totalAmount, refundAmount, refundId, isPrepaid } = params;
 
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) return false;
@@ -617,8 +613,59 @@ export async function sendOrderCancellationRefundWhatsApp(
   const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
 
   const firstName = customerName.split(" ")[0] || customerName;
+  const cleanOrderId = (orderId || "").replace(/^#/, "");
+  const prodName = productName || "ZupeStore Item";
+  const displayAmount = totalAmount || refundAmount || 0;
+  const refundNote = isPrepaid
+    ? `If prepaid, your refund of ₹${displayAmount.toLocaleString("en-IN")} has been initiated to your original payment method.`
+    : `Your Cash on Delivery order has been cancelled. No amount will be collected at delivery.`;
 
-  // 1. Try official Meta utility template first (guaranteed delivery outside 24h window once approved)
+  // 1. Try official active template 'zupe_order_cancelled' (5 parameters)
+  try {
+    const payload = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: digits,
+      type: "template",
+      template: {
+        name: "zupe_order_cancelled",
+        language: { code: TEMPLATE_LANG },
+        components: [
+          {
+            type: "body",
+            parameters: [
+              { type: "text", text: firstName },
+              { type: "text", text: cleanOrderId },
+              { type: "text", text: prodName },
+              { type: "text", text: displayAmount.toLocaleString("en-IN") },
+              { type: "text", text: refundNote },
+            ],
+          },
+        ],
+      },
+    };
+
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + apiToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(6000),
+    });
+
+    const data = (await res.json()) as any;
+    if (res.ok && data.messages?.length > 0) {
+      console.log(`✅ [WA Cancel] Official template 'zupe_order_cancelled' dispatched for order ${orderId} to ${digits}`);
+      return true;
+    }
+    console.warn("[WA Cancel] zupe_order_cancelled response:", data?.error?.message || data?.error || data);
+  } catch (tErr) {
+    console.warn("[WA Cancel] zupe_order_cancelled error:", tErr);
+  }
+
+  // 2. Try previous specific templates if configured
   if (isPrepaid && refundAmount) {
     try {
       const payload = {
@@ -721,7 +768,7 @@ export async function sendOrderCancellationRefundWhatsApp(
       `🛍️ *Zupe Store — Order Cancelled*\n\n` +
       `Hi ${firstName}! Your Cash on Delivery order *#${orderId}* has been successfully cancelled.\n\n` +
       `📦 *Status:* Shipment cancelled. No payment will be collected at your doorstep.\n` +
-      `ℹ️ *Note:* The Rs 10 advance verification fee paid during order placement is non-refundable.\n\n` +
+      `💰 *Advance Fee Refund:* Your Rs 10 advance confirmation fee is 100% refundable and is being processed back to your payment account by our billing desk (+91 97441 22853).\n\n` +
       `If you need any assistance or wish to re-order, we are always here to help.\n\n` +
       `Thank you,\nZupe Store Team`;
   }
@@ -790,6 +837,7 @@ export async function sendAbandonedCartWhatsApp(
   // Concurrently attempt official template dispatch (for when template is approved in Meta)
   try {
     const tokenPart = recoveryUrl.split("recover=")[1] || "";
+    const primaryProduct = (items && items[0]?.name) ? items[0].name.slice(0, 60) : "Your Cart Items";
     const res = await fetch(apiUrl, {
       method: "POST",
       headers: {
@@ -809,7 +857,7 @@ export async function sendAbandonedCartWhatsApp(
               type: "body",
               parameters: [
                 { type: "text", text: firstName },
-                { type: "text", text: "Rs " + totalAmount.toLocaleString("en-IN") },
+                { type: "text", text: primaryProduct },
               ],
             },
             {
@@ -830,4 +878,443 @@ export async function sendAbandonedCartWhatsApp(
   } catch {}
 
   return textSent;
+}
+
+// ==========================================
+// ADDITIONAL LIFECYCLE WHATSAPP NOTIFICATIONS
+// ==========================================
+
+export async function sendPaymentSuccessfulWhatsApp(params: {
+  customerName: string;
+  customerPhone: string;
+  orderId: string;
+  paidAmount: number;
+}): Promise<boolean> {
+  const { customerName, customerPhone, orderId, paidAmount } = params;
+  const { digits, isValid } = normalizePhoneNumber(customerPhone);
+  if (!isValid) return false;
+
+  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+
+  const firstName = customerName.split(" ")[0] || customerName;
+  const cleanOrderId = (orderId || "").replace(/^#/, "");
+
+  // 1. Try template
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + apiToken, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: digits,
+        type: "template",
+        template: {
+          name: "zupe_payment_successful",
+          language: { code: TEMPLATE_LANG },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: firstName },
+                { type: "text", text: cleanOrderId },
+                { type: "text", text: paidAmount.toLocaleString("en-IN") },
+              ],
+            },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [{ type: "text", text: cleanOrderId }],
+            },
+          ],
+        },
+      }),
+    });
+    const data = await res.json() as any;
+    if (res.ok && data.messages?.length > 0) return true;
+  } catch {}
+
+  // 2. Direct message fallback
+  const body =
+    `🎉 Payment Successful!\n\n` +
+    `Hi ${firstName}! 🧡 Your payment is confirmed.\n\n` +
+    `📦 Order ID: #${cleanOrderId}\n` +
+    `💰 Paid: ₹${paidAmount.toLocaleString("en-IN")}\n\n` +
+    `Sit back and relax! Your order updates are on the way. 🚀\n\n` +
+    `👇 View Order:\n${STORE_BASE_URL}/orders?query=${encodeURIComponent(cleanOrderId)}`;
+
+  return await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
+}
+
+export async function sendOrderShippedWhatsApp(params: {
+  customerName: string;
+  customerPhone: string;
+  orderId: string;
+  courierName: string;
+  trackingId: string;
+  trackingUrl?: string;
+}): Promise<boolean> {
+  const { customerName, customerPhone, orderId, courierName, trackingId, trackingUrl } = params;
+  const { digits, isValid } = normalizePhoneNumber(customerPhone);
+  if (!isValid) return false;
+
+  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+
+  const firstName = customerName.split(" ")[0] || customerName;
+  const liveTrackingLink = trackingUrl || `${STORE_BASE_URL}/order-tracking?awb=${encodeURIComponent(trackingId)}`;
+
+  // 1. Try template
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + apiToken, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: digits,
+        type: "template",
+        template: {
+          name: "zupe_order_shipped",
+          language: { code: TEMPLATE_LANG },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: firstName },
+                { type: "text", text: orderId },
+                { type: "text", text: courierName },
+                { type: "text", text: trackingId },
+                { type: "text", text: liveTrackingLink },
+              ],
+            },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [{ type: "text", text: trackingId }],
+            },
+          ],
+        },
+      }),
+    });
+    const data = await res.json() as any;
+    if (res.ok && data.messages?.length > 0) return true;
+  } catch {}
+
+  // 2. Direct message fallback
+  const body =
+    `Hi ${firstName}!\n\n` +
+    `🥳Congratulations! Your ZupeStore order is on its way...✅\n\n` +
+    `📦 Order ID: ${orderId}\n` +
+    `🚚 Courier: ${courierName}\n` +
+    `🔎 Tracking ID: ${trackingId}\n\n` +
+    `ℹ️Track your shipment here:\n${liveTrackingLink}\n\n` +
+    `•Please keep your phone available for delivery updates.⚠️\n\n` +
+    `😊Thank you for shopping with ZupeStore❤️`;
+
+  return await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
+}
+
+export async function sendOutForDeliveryWhatsApp(params: {
+  customerName: string;
+  customerPhone: string;
+  orderId: string;
+  amountToPay: number;
+}): Promise<boolean> {
+  const { customerName, customerPhone, orderId, amountToPay } = params;
+  const { digits, isValid } = normalizePhoneNumber(customerPhone);
+  if (!isValid) return false;
+
+  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+
+  const firstName = customerName.split(" ")[0] || customerName;
+  const cleanOrderId = (orderId || "").replace(/^#/, "");
+
+  // 1. Try template
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + apiToken, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: digits,
+        type: "template",
+        template: {
+          name: "zupe_out_for_delivery",
+          language: { code: TEMPLATE_LANG },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: firstName },
+                { type: "text", text: cleanOrderId },
+                { type: "text", text: amountToPay.toLocaleString("en-IN") },
+              ],
+            },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [{ type: "text", text: cleanOrderId }],
+            },
+          ],
+        },
+      }),
+    });
+    const data = await res.json() as any;
+    if (res.ok && data.messages?.length > 0) return true;
+  } catch {}
+
+  // 2. Direct message fallback
+  const body =
+    `Hi ${firstName}! 👋\n\n` +
+    `*Your order is out for delivery!*🛵📦\n\n` +
+    `🧾 Order ID: #${cleanOrderId}\n` +
+    `💰 Amount to Pay: ₹${amountToPay.toLocaleString("en-IN")}\n\n` +
+    `Please ensure someone is available to receive your package.\n\n` +
+    `💵 COD orders: Keep the payable amount ready.\n\n` +
+    `Enjoy your new find! 🧡`;
+
+  return await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
+}
+
+export async function sendDeliveryAttemptFailedWhatsApp(params: {
+  customerName: string;
+  customerPhone: string;
+  orderId: string;
+  productName: string;
+}): Promise<boolean> {
+  const { customerName, customerPhone, orderId, productName } = params;
+  const { digits, isValid } = normalizePhoneNumber(customerPhone);
+  if (!isValid) return false;
+
+  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+
+  const firstName = customerName.split(" ")[0] || customerName;
+  const cleanOrderId = (orderId || "").replace(/^#/, "");
+
+  // 1. Try template
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + apiToken, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: digits,
+        type: "template",
+        template: {
+          name: "zupe_delivery_attempt_failed",
+          language: { code: TEMPLATE_LANG },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: firstName },
+                { type: "text", text: cleanOrderId },
+                { type: "text", text: productName },
+              ],
+            },
+          ],
+        },
+      }),
+    });
+    const data = await res.json() as any;
+    if (res.ok && data.messages?.length > 0) return true;
+  } catch {}
+
+  // 2. Direct message fallback
+  const body =
+    `Hi ${firstName}! 👋\n\n` +
+    `⚠️ Delivery Attempt Failed‼️\n\n` +
+    `We couldn’t deliver your ZupeStore order. 📦\n\n` +
+    `🧾 Order ID: #${cleanOrderId}\n` +
+    `🛍️ Product: ${productName}\n\n` +
+    `We’d like to help you receive your package.\n\n` +
+    `ℹ️Please reply to let us know if you need assistance with your delivery address or another delivery attempt💬\n\n` +
+    `We’re here to help! 🧡\n\n` +
+    `Team ZupeStore🛒`;
+
+  return await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
+}
+
+export async function sendRefundUpdateWhatsApp(params: {
+  customerName: string;
+  customerPhone: string;
+  orderId: string;
+  refundAmount: number;
+  status: string;
+}): Promise<boolean> {
+  const { customerName, customerPhone, orderId, refundAmount, status } = params;
+  const { digits, isValid } = normalizePhoneNumber(customerPhone);
+  if (!isValid) return false;
+
+  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+
+  const firstName = customerName.split(" ")[0] || customerName;
+  const cleanOrderId = (orderId || "").replace(/^#/, "");
+
+  // 1. Try template
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + apiToken, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: digits,
+        type: "template",
+        template: {
+          name: "zupe_refund_update",
+          language: { code: TEMPLATE_LANG },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: firstName },
+                { type: "text", text: cleanOrderId },
+                { type: "text", text: refundAmount.toLocaleString("en-IN") },
+                { type: "text", text: status },
+              ],
+            },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [{ type: "text", text: cleanOrderId }],
+            },
+          ],
+        },
+      }),
+    });
+    const data = await res.json() as any;
+    if (res.ok && data.messages?.length > 0) return true;
+  } catch {}
+
+  // 2. Direct message fallback
+  const body =
+    `Hi ${firstName}! 👋\n\n` +
+    `ℹ️Here’s an update on your ZupeStore refund. 💰\n\n` +
+    `🧾 Order ID: #${cleanOrderId}\n` +
+    `💵 Refund Amount: ₹${refundAmount.toLocaleString("en-IN")}\n` +
+    `📌 Status: ${status}\n\n` +
+    `We’ll share further updates when available.✅\n\n` +
+    `Thank you for your patience! 🧡\n\n` +
+    `Team ZupeStore`;
+
+  return await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
+}
+
+export async function sendOrderDeliveredFeedbackWhatsApp(params: {
+  customerName: string;
+  customerPhone: string;
+  productName: string;
+  productIdOrSlug?: string;
+  feedbackUrl?: string;
+}): Promise<boolean> {
+  const { customerName, customerPhone, productName, productIdOrSlug, feedbackUrl } = params;
+  const { digits, isValid } = normalizePhoneNumber(customerPhone);
+  if (!isValid) return false;
+
+  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+
+  const firstName = customerName.split(" ")[0] || customerName;
+  const productKey = (productIdOrSlug || "mini-portable-steam-iron").replace(/^\//, "");
+  const reviewLink = feedbackUrl || `${STORE_BASE_URL}/products/${productKey}#reviews`;
+  const buttonParam = `${productKey}#reviews`;
+
+  // 1. Try template with button
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + apiToken, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: digits,
+        type: "template",
+        template: {
+          name: "zupe_order_delivered_feedback",
+          language: { code: TEMPLATE_LANG },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: firstName },
+                { type: "text", text: productName },
+                { type: "text", text: reviewLink },
+              ],
+            },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [{ type: "text", text: buttonParam }],
+            },
+          ],
+        },
+      }),
+    });
+    const data = await res.json() as any;
+    if (res.ok && data.messages?.length > 0) return true;
+
+    // Retry with 2-variable body (if user created template without {{3}} in body)
+    const res2 = await fetch(apiUrl, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + apiToken, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: digits,
+        type: "template",
+        template: {
+          name: "zupe_order_delivered_feedback",
+          language: { code: TEMPLATE_LANG },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: firstName },
+                { type: "text", text: productName },
+              ],
+            },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [{ type: "text", text: buttonParam }],
+            },
+          ],
+        },
+      }),
+    });
+    const data2 = await res2.json() as any;
+    if (res2.ok && data2.messages?.length > 0) return true;
+  } catch {}
+
+  // 2. Direct message fallback
+  const body =
+    `Hi ${firstName}! 👋\n\n` +
+    `😊Thank you for shopping with ZupeStore! 🧡\n\n` +
+    `🙌🏻We’d love to hear about your experience with ${productName}. 🛍️\n\n` +
+    `⭐ How was your purchase?\n` +
+    `💬 What did you like about it?\n\n` +
+    `👇 Share your feedback:\n${reviewLink}\n\n` +
+    `Your feedback helps us serve you better. ✨`;
+
+  return await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
 }

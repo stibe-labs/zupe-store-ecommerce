@@ -8,7 +8,12 @@ import {
   sendOrderCancellationRefundWhatsApp,
 } from "@/lib/whatsappOrderConfirmation";
 import { restockInventory } from "@/lib/inventoryService";
-import { refundRazorpayPayment, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } from "@/lib/razorpay";
+import {
+  getRazorpayPaymentDetails,
+  getRazorpayPaymentByOrderId,
+  RAZORPAY_KEY_ID,
+  RAZORPAY_KEY_SECRET,
+} from "@/lib/razorpay";
 import { sendOrderConfirmationEmail, sendOrderCancellationEmail } from "@/lib/orderEmailService";
 
 export const dynamic = "force-dynamic";
@@ -202,13 +207,9 @@ export async function POST(req: NextRequest) {
       const targetId = ord.id || order_id;
       const orderDisplayId = ord.shopify_order_id || ord.id || order_id;
 
-      // Assign AWB if not present
-      const existingAwb = ord.shiprocket_awb;
-      const finalAwb =
-        existingAwb && existingAwb.trim() !== ""
-          ? existingAwb
-          : `SR-AWB-${Math.floor(1000000 + Math.random() * 9000000)}`;
-      const finalCourier = ord.courier_partner || "Delhivery";
+      // Keep existing AWB and courier partner without generating fake placeholders
+      const finalAwb = (ord.shiprocket_awb || "").trim();
+      const finalCourier = ord.courier_partner || "";
 
       // 1. Update ERP Store
       const updatedERP = await updateERPOrder(targetId, {
@@ -330,6 +331,82 @@ export async function POST(req: NextRequest) {
     }
 
     // ========================================================
+    // ACTION 4: UPDATE MANUAL REFUND STATUS (ADMIN)
+    // ========================================================
+    if (body.action === "update_refund_status") {
+      const { order_id, refund_status } = body;
+      if (!order_id || !refund_status) {
+        return NextResponse.json(
+          { success: false, error: "Missing required fields: order_id and refund_status" },
+          { status: 400 }
+        );
+      }
+
+      // Valid statuses: 'Refund Pending', 'Refunded', 'Refund Rejected'
+      const normalizedStatus =
+        refund_status === "Refunded" || refund_status === "refunded"
+          ? "Refunded"
+          : refund_status === "Refund Rejected" || refund_status === "refund_rejected"
+          ? "Refund Rejected"
+          : "Refund Pending";
+
+      let ord: any = await getOrderById(order_id);
+      if (!ord) {
+        try {
+          const rows = await executeD1Query<any>(
+            "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
+            [order_id, order_id]
+          );
+          if (rows && rows.length > 0) ord = rows[0];
+        } catch {}
+      }
+
+      if (!ord) {
+        return NextResponse.json(
+          { success: false, error: `Order ${order_id} not found` },
+          { status: 404 }
+        );
+      }
+
+      const targetId = ord.id || order_id;
+      const orderDisplayId = ord.shopify_order_id || ord.id || order_id;
+
+      // Update ERP store
+      const updatedERP = await updateERPOrder(targetId, {
+        payment_status: normalizedStatus,
+      });
+
+      // Update Storefront store
+      const storefrontStatus =
+        normalizedStatus === "Refunded"
+          ? "refunded"
+          : normalizedStatus === "Refund Rejected"
+          ? "refund_rejected"
+          : "refund_pending";
+
+      updateStorefrontOrder(targetId, {
+        payment_status: storefrontStatus as any,
+      });
+
+      // Update D1
+      try {
+        await executeD1Query(
+          `UPDATE orders SET payment_status = ? WHERE id = ? OR shopify_order_id = ?`,
+          [normalizedStatus, targetId, targetId]
+        );
+      } catch (d1Err) {
+        console.warn("D1 refund status update error:", d1Err);
+      }
+
+      return NextResponse.json({
+        success: true,
+        order: updatedERP || ord,
+        refund_status: normalizedStatus,
+        message: `Refund status for Order #${orderDisplayId} updated to "${normalizedStatus}".`,
+      });
+    }
+
+    // ========================================================
     // ACTION 3: MANUALLY CANCEL ORDER (ADMIN)
     // ========================================================
     if (body.action === "manual_cancel") {
@@ -384,69 +461,53 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 2. Check if prepaid & initiate Razorpay refund
+      // 2. Check payment type & fetch Razorpay info
       const paymentMethod = ((ord as any)?.payment_method || "").toLowerCase();
-      const isPrepaid =
-        paymentMethod.includes("prepaid") ||
-        paymentMethod.includes("online") ||
-        (ord as any)?.payment_status === "paid" ||
-        (ord as any)?.payment_status === "Completed";
+      const hasRazorpay = Boolean((ord as any)?.razorpay_payment_id || (ord as any)?.razorpay_order_id);
+      const isCodPartial =
+        paymentMethod.includes("partial") ||
+        Boolean((ord as any)?.is_cod_partial) ||
+        Boolean((ord as any)?.advance_paid) ||
+        (hasRazorpay && (paymentMethod.includes("cod") || paymentMethod.includes("cash on delivery")));
 
-      let refundId: string | undefined = undefined;
+      const isPrepaid =
+        !isCodPartial &&
+        (paymentMethod.includes("prepaid") ||
+         paymentMethod.includes("online") ||
+         (ord as any)?.payment_status === "paid" ||
+         (ord as any)?.payment_status === "Completed");
+
+      const isEligibleForRefund = isPrepaid || isCodPartial || hasRazorpay;
+      const initialPaymentStatus = isEligibleForRefund ? "Refund Pending" : (ord.payment_status || "Cancelled");
+      const storefrontPaymentStatus = isEligibleForRefund ? "refund_pending" : ((ord as any).payment_status || "cancelled");
+
+      let paymentInfo: any = null;
       const totalAmount = Number((ord as any)?.total_amount || 0);
 
-      if (isPrepaid) {
-        let paymentId = (ord as any)?.razorpay_payment_id;
-        const razorpayOrderId = (ord as any)?.razorpay_order_id;
-        refundId = `rfnd_adm_${targetId.replace(/[^a-zA-Z0-9]/g, "").slice(-8)}`;
+      // Fetch payment details from Razorpay for manual admin refund coordination
+      let paymentId = (ord as any)?.razorpay_payment_id;
+      const razorpayOrderId = (ord as any)?.razorpay_order_id;
 
-        if (!paymentId && razorpayOrderId) {
-          try {
-            const authHeader = `Basic ${Buffer.from(
-              `${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`
-            ).toString("base64")}`;
-            const rRes = await fetch(`https://api.razorpay.com/v1/orders/${razorpayOrderId}/payments`, {
-              headers: { Authorization: authHeader },
-            });
-            if (rRes.ok) {
-              const rData = (await rRes.json()) as any;
-              const captured = rData.items?.find((p: any) => p.status === "captured") || rData.items?.[0];
-              if (captured?.id) paymentId = captured.id;
-            }
-          } catch (e) {
-            console.warn("Razorpay lookup warning on cancel:", e);
-          }
-        }
-
-        if (paymentId) {
-          try {
-            const refundRes = await refundRazorpayPayment({
-              paymentId,
-              amount: totalAmount,
-              notes: {
-                order_id: targetId,
-                reason: cancelReason,
-              },
-            });
-            if (refundRes?.id) refundId = refundRes.id;
-          } catch (rErr) {
-            console.warn("Razorpay refund error on manual cancel:", rErr);
-          }
-        }
+      if (paymentId) {
+        paymentInfo = await getRazorpayPaymentDetails(paymentId);
+      }
+      if (!paymentInfo && razorpayOrderId) {
+        paymentInfo = await getRazorpayPaymentByOrderId(razorpayOrderId);
+        if (paymentInfo?.id) paymentId = paymentInfo.id;
       }
 
       // 3. Update status in ERP store, Storefront store, and D1
       const updatedERP = await updateERPOrder(targetId, {
         delivery_status: "Cancelled" as any,
         status: "Cancelled",
-        payment_status: isPrepaid ? "Refunded" : (ord.payment_status || "Pending"),
+        payment_status: initialPaymentStatus,
         whatsapp_confirm_status: "cancelled",
         whatsapp_token_used: true,
       });
 
       updateStorefrontOrder(targetId, {
         order_status: "cancelled",
-        payment_status: isPrepaid ? ("refunded" as any) : ((ord as any).payment_status || "pending"),
+        payment_status: storefrontPaymentStatus as any,
         whatsapp_confirm_status: "cancelled",
         whatsapp_token_used: true,
       });
@@ -460,7 +521,7 @@ export async function POST(req: NextRequest) {
             whatsapp_confirm_status = 'cancelled',
             whatsapp_token_used = 1
            WHERE id = ? OR shopify_order_id = ?`,
-          [isPrepaid ? "Refunded" : (ord.payment_status || "Pending"), targetId, targetId]
+          [initialPaymentStatus, targetId, targetId]
         );
       } catch (d1Err) {
         console.warn("D1 cancel update error on manual cancel:", d1Err);
@@ -468,12 +529,17 @@ export async function POST(req: NextRequest) {
 
       // 4. Send official cancellation WhatsApp message to customer (COD or Prepaid refund template)
       const customerPhone = ord.customer_phone;
+      const refundId = paymentInfo?.id || paymentId || "Initiated";
       if (customerPhone) {
         try {
+          const firstItem = Array.isArray(ord.items) ? ord.items[0] : null;
+          const firstItemName = firstItem?.product_name || firstItem?.name || "Purchased Product";
           await sendOrderCancellationRefundWhatsApp({
             customerName: ord.customer_name || "Valued Customer",
             customerPhone,
             orderId: orderDisplayId,
+            productName: firstItemName,
+            totalAmount,
             refundAmount: isPrepaid ? totalAmount : undefined,
             refundId,
             isPrepaid,
@@ -506,12 +572,13 @@ export async function POST(req: NextRequest) {
       }
 
       const successMsg = isPrepaid
-        ? `Order #${orderDisplayId} cancelled & refunded (₹${totalAmount}). Customer notified via WhatsApp.`
+        ? `Order #${orderDisplayId} cancelled. Refund of ₹${totalAmount} is pending manual transfer.`
         : `Order #${orderDisplayId} cancelled successfully! Customer notified via WhatsApp.`;
 
       return NextResponse.json({
         success: true,
         order: updatedERP || ord,
+        payment_details: paymentInfo,
         message: successMsg,
       });
     }
