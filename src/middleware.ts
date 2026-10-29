@@ -18,13 +18,102 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
 }
 
 export async function middleware(req: NextRequest) {
-  const host = req.headers.get("host") || "";
+  const rawHost = req.headers.get("host") || "";
+  const host = rawHost.toLowerCase().split(":")[0];
   const url = req.nextUrl.clone();
   const { pathname } = url;
 
-  // -- 1. Protect Admin Portal Pages (/admin, /admin/*) --
+  const isAdminSubdomain =
+    host.startsWith("admin.") || host.startsWith("admin.localhost");
+
+  // =========================================================================
+  // 1. ADMIN SUBDOMAIN STRICT PROTECTION & ROUTING (e.g. admin.zupestore.in)
+  // =========================================================================
+  if (isAdminSubdomain) {
+    // 1A. API Routes on Admin Subdomain
+    if (pathname.startsWith("/api")) {
+      const isAuthExempt = pathname.startsWith("/api/admin/auth");
+      const isSyncWebhook =
+        req.method === "POST" && pathname.startsWith("/api/admin/sync");
+
+      if (pathname.startsWith("/api/admin") && !isAuthExempt && !isSyncWebhook) {
+        const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+        if (!adminToken) {
+          return applySecurityHeaders(
+            NextResponse.json(
+              { success: false, error: "Unauthorized: Admin authentication required" },
+              { status: 401 }
+            )
+          );
+        }
+        const session = await verifyAdminSessionToken(adminToken);
+        if (!session.valid) {
+          return applySecurityHeaders(
+            NextResponse.json(
+              { success: false, error: "Invalid or expired admin session token" },
+              { status: 401 }
+            )
+          );
+        }
+      }
+      return applySecurityHeaders(NextResponse.next());
+    }
+
+    // 1B. Admin Login Page (/login or /admin/login)
+    const isLoginPage = pathname === "/login" || pathname === "/admin/login";
+    const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+
+    if (isLoginPage) {
+      if (adminToken) {
+        const session = await verifyAdminSessionToken(adminToken);
+        if (session.valid) {
+          url.pathname = "/";
+          url.search = "";
+          return applySecurityHeaders(NextResponse.redirect(url));
+        }
+      }
+      if (pathname === "/login") {
+        url.pathname = "/admin/login";
+        return applySecurityHeaders(NextResponse.rewrite(url));
+      }
+      return applySecurityHeaders(NextResponse.next());
+    }
+
+    // 1C. ALL Other Pages on Admin Subdomain MUST REQUIRE AUTHENTICATION
+    if (!adminToken) {
+      const loginUrl = new URL("/admin/login", req.url);
+      loginUrl.searchParams.set("redirect", pathname + (url.search || ""));
+      return applySecurityHeaders(NextResponse.redirect(loginUrl));
+    }
+
+    const session = await verifyAdminSessionToken(adminToken);
+    if (!session.valid) {
+      const loginUrl = new URL("/admin/login", req.url);
+      loginUrl.searchParams.set("redirect", pathname + (url.search || ""));
+      loginUrl.searchParams.set("notice", "Admin session expired. Please sign in again.");
+      const res = NextResponse.redirect(loginUrl);
+      res.cookies.delete(ADMIN_COOKIE_NAME);
+      return applySecurityHeaders(res);
+    }
+
+    // 1D. Authenticated Subdomain Path Rewriting
+    if (pathname === "/" || pathname === "") {
+      url.pathname = "/admin";
+      return applySecurityHeaders(NextResponse.rewrite(url));
+    }
+
+    if (!pathname.startsWith("/admin")) {
+      url.pathname = `/admin${pathname}`;
+      return applySecurityHeaders(NextResponse.rewrite(url));
+    }
+
+    return applySecurityHeaders(NextResponse.next());
+  }
+
+  // =========================================================================
+  // 2. MAIN DOMAIN ADMIN PORTAL PROTECTION (/admin, /admin/*)
+  // =========================================================================
   if (pathname.startsWith("/admin")) {
-    // Dedicated Admin Login Page
     if (pathname === "/admin/login") {
       const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
       if (adminToken) {
@@ -59,9 +148,10 @@ export async function middleware(req: NextRequest) {
     return applySecurityHeaders(NextResponse.next());
   }
 
-  // -- 2. Protect Admin Internal APIs (/api/admin/*) --
+  // =========================================================================
+  // 3. MAIN DOMAIN ADMIN INTERNAL APIS (/api/admin/*)
+  // =========================================================================
   if (pathname.startsWith("/api/admin")) {
-    // Only exempt admin login/auth routes and incoming external POST webhooks (Shiprocket/Shopify)
     const isExempt =
       pathname.startsWith("/api/admin/auth") ||
       (req.method === "POST" && pathname.startsWith("/api/admin/sync"));
@@ -91,7 +181,9 @@ export async function middleware(req: NextRequest) {
     return applySecurityHeaders(NextResponse.next());
   }
 
-  // -- 3. Protect Customer Account Pages (/account, /orders) --
+  // =========================================================================
+  // 4. CUSTOMER ACCOUNT PAGES (/account, /orders)
+  // =========================================================================
   if (pathname === "/account" || pathname === "/orders") {
     const userToken = req.cookies.get(USER_COOKIE_NAME)?.value;
     const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
@@ -108,7 +200,6 @@ export async function middleware(req: NextRequest) {
       if (userSession.valid) hasValidSession = true;
     }
 
-    // If no valid session cookie found, redirect to signin with return URL
     if (!hasValidSession) {
       url.pathname = "/signin";
       url.searchParams.set("redirect", pathname);
@@ -119,17 +210,6 @@ export async function middleware(req: NextRequest) {
     }
 
     return applySecurityHeaders(NextResponse.next());
-  }
-
-  // -- 4. Admin Subdomain Routing (e.g. admin.zupestore.com) --
-  const isAdminSubdomain =
-    host.startsWith("admin.") || host.startsWith("admin.localhost");
-
-  if (isAdminSubdomain) {
-    if (pathname === "/" || pathname === "") {
-      url.pathname = "/admin";
-      return applySecurityHeaders(NextResponse.rewrite(url));
-    }
   }
 
   return applySecurityHeaders(NextResponse.next());

@@ -1,5 +1,6 @@
 import React from "react";
 import { AdminThemeProvider } from "@/context/AdminThemeContext";
+import AdminAuthGuard from "@/components/admin/AdminAuthGuard";
 
 export const metadata = {
   title: "Zupe Store — Live Production ERP & Admin Panel",
@@ -26,7 +27,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           `,
         }}
       />
-      <AdminThemeProvider>{children}</AdminThemeProvider>
+      <AdminThemeProvider>
+        <AdminAuthGuard>{children}</AdminAuthGuard>
+      </AdminThemeProvider>
     </>
   );
 }

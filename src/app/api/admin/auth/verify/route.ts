@@ -13,13 +13,17 @@ export async function GET(req: NextRequest) {
     const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
     const userToken = req.cookies.get(USER_COOKIE_NAME)?.value;
 
+    const configuredEmail = (process.env.ADMIN_EMAIL || SUPER_ADMIN_EMAIL).toLowerCase().trim();
+    const isEmailValid = (email?: string | null) => {
+      if (!email) return false;
+      const normalized = email.toLowerCase().trim();
+      return normalized === configuredEmail || normalized === SUPER_ADMIN_EMAIL.toLowerCase();
+    };
+
     // 1. Check dedicated admin token
     if (adminToken) {
       const adminSession = await verifyAdminSessionToken(adminToken);
-      if (
-        adminSession.valid &&
-        adminSession.email?.toLowerCase().trim() === SUPER_ADMIN_EMAIL
-      ) {
+      if (adminSession.valid && isEmailValid(adminSession.email)) {
         return NextResponse.json({
           isSuperAdmin: true,
           email: adminSession.email,
@@ -34,7 +38,7 @@ export async function GET(req: NextRequest) {
       if (
         userSession.valid &&
         userSession.user?.role === "admin" &&
-        userSession.user?.email?.toLowerCase().trim() === SUPER_ADMIN_EMAIL
+        isEmailValid(userSession.user?.email)
       ) {
         return NextResponse.json({
           isSuperAdmin: true,
@@ -44,8 +48,8 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ isSuperAdmin: false }, { status: 200 });
+    return NextResponse.json({ isSuperAdmin: false }, { status: 401 });
   } catch (err: any) {
-    return NextResponse.json({ isSuperAdmin: false }, { status: 200 });
+    return NextResponse.json({ isSuperAdmin: false, error: err.message }, { status: 401 });
   }
 }

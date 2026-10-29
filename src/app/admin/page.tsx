@@ -132,24 +132,24 @@ export default function AdminDashboardPage() {
     totalRTOBalance: number;
     chartData?: ChartPoint[];
   }>({
-    totalOrders: 29,
-    confirmedOrders: 25,
-    shippedOrders: 4,
-    deliveredOrders: 6,
-    ndrOrders: 1,
-    rtoOrders: 3,
-    totalSales: 33512,
-    productCosts: 13974,
-    shippingCosts: 2260,
-    rtoCharges: 125,
-    adSpend: 4500,
-    otherExpenses: 9169,
-    grossProfit: 19538,
-    netProfit: 3484,
-    profitMargin: 10.4,
-    rtoPercentage: 10.3,
-    pendingCODRemittance: 7794,
-    totalRTOBalance: 8320,
+    totalOrders: 0,
+    confirmedOrders: 0,
+    shippedOrders: 0,
+    deliveredOrders: 0,
+    ndrOrders: 0,
+    rtoOrders: 0,
+    totalSales: 0,
+    productCosts: 0,
+    shippingCosts: 0,
+    rtoCharges: 0,
+    adSpend: 0,
+    otherExpenses: 0,
+    grossProfit: 0,
+    netProfit: 0,
+    profitMargin: 0,
+    rtoPercentage: 0,
+    pendingCODRemittance: 0,
+    totalRTOBalance: 0,
     chartData: [],
   });
 
@@ -166,6 +166,12 @@ export default function AdminDashboardPage() {
         fetch(statsUrl, { cache: "no-store" }),
         fetch("/api/admin/orders", { cache: "no-store" }),
       ]);
+
+      if (statsRes.status === 401 || ordersRes.status === 401) {
+        window.location.href = "/admin/login?notice=Please+sign+in+to+access+the+admin+dashboard";
+        return;
+      }
+
       const statsData = await statsRes.json();
       const ordersData = await ordersRes.json();
 
