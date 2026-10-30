@@ -33,6 +33,11 @@ import {
   Play,
   Edit,
   ChevronDown,
+  ChevronUp,
+  ChevronRight,
+  Package,
+  List,
+  Camera,
   Ban,
   Home,
   ArrowUp,
@@ -41,6 +46,7 @@ import {
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { ProductReview } from "@/lib/reviewStore";
 import { ProductVideo } from "@/lib/videoStore";
+import { resolveProductMatch, normalizeImageUrl } from "@/lib/productMatcher";
 
 // Robust client-side CSV Parser supporting quoted fields, escaped commas & line breaks
 function parseCSV(text: string): Array<Record<string, string>> {
@@ -120,6 +126,11 @@ export default function AdminReviewsPage() {
   const [selectedSourceFilter, setSelectedSourceFilter] = useState("all");
   const [selectedRatingFilter, setSelectedRatingFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Review presentation layout: "grouped" (arranges reviews under each product) vs "flat" (all reviews table)
+  const [viewMode, setViewMode] = useState<"grouped" | "flat">("grouped");
+  const [collapsedProducts, setCollapsedProducts] = useState<Set<string>>(new Set());
+  const [photoLightbox, setPhotoLightbox] = useState<{ image: string; review?: ProductReview } | null>(null);
 
   // Modals
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -780,7 +791,7 @@ export default function AdminReviewsPage() {
     );
   }, [videos, selectorSearch]);
 
-  // Product helper lookup
+  // Product helper lookup with intelligent matching
   const getProductInfo = (prodSlug: string) => {
     const norm = (prodSlug || "").toLowerCase().trim();
     if (!norm || norm === "none" || norm === "all") {
@@ -788,20 +799,149 @@ export default function AdminReviewsPage() {
         name: norm === "all" ? "All Products (Storewide)" : "None (No product attached)",
         image: "",
         slug: "",
+        price: 0,
+        category: "",
       };
     }
-    const found = productsList.find(
-      (p) =>
-        p.slug?.toLowerCase() === norm ||
-        p.id?.toLowerCase() === norm ||
-        norm.includes(p.slug?.toLowerCase() || "") ||
-        norm.includes(p.id?.toLowerCase() || "")
-    );
+    const matchResult = resolveProductMatch(norm, productsList);
+    const found = matchResult.matchedProduct;
     return {
       name: found?.name || prodSlug || "Unknown Product",
-      image: found ? getProductThumbnail(found) : "",
-      slug: found?.slug || prodSlug,
+      image: found ? getProductThumbnail(found) : "/images/placeholder.png",
+      slug: found?.slug || matchResult.resolvedSlug || prodSlug,
+      price: found?.price || 0,
+      category: found?.category || "",
     };
+  };
+
+  // Group filtered reviews under each product for arranged layout
+  const reviewsByProduct = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        product: any;
+        reviews: ProductReview[];
+        avgRating: number;
+        photosCount: number;
+        sources: Record<string, number>;
+      }
+    >();
+
+    // 1. Seed all products from catalog
+    productsList.forEach((p) => {
+      const pid = p.slug || p.id;
+      if (
+        selectedProductFilter !== "all" &&
+        selectedProductFilter !== pid &&
+        !pid.includes(selectedProductFilter)
+      ) {
+        return;
+      }
+      map.set(pid, {
+        product: p,
+        reviews: [],
+        avgRating: 5.0,
+        photosCount: 0,
+        sources: {},
+      });
+    });
+
+    // 2. Distribute reviews into their matched product bucket
+    filteredReviews.forEach((rev) => {
+      const prodInfo = getProductInfo(rev.productId);
+      const targetKey = prodInfo.slug || rev.productId || "unknown";
+
+      if (!map.has(targetKey)) {
+        map.set(targetKey, {
+          product: {
+            id: targetKey,
+            slug: targetKey,
+            name: prodInfo.name || targetKey,
+            images: prodInfo.image ? [prodInfo.image] : [],
+            price: prodInfo.price,
+            category: prodInfo.category,
+          },
+          reviews: [],
+          avgRating: 5.0,
+          photosCount: 0,
+          sources: {},
+        });
+      }
+
+      const entry = map.get(targetKey)!;
+      entry.reviews.push(rev);
+      const src = rev.source || "storefront";
+      entry.sources[src] = (entry.sources[src] || 0) + 1;
+      if (rev.images && rev.images.length > 0) {
+        entry.photosCount++;
+      }
+    });
+
+    // 3. Calculate summary metrics per product
+    const list: Array<{
+      productId: string;
+      product: any;
+      reviews: ProductReview[];
+      avgRating: number;
+      photosCount: number;
+      sources: Record<string, number>;
+    }> = [];
+
+    map.forEach((val, key) => {
+      // If a search query or source/rating filter is active, only show products with matching reviews
+      if (
+        (searchQuery.trim() ||
+          selectedRatingFilter !== "all" ||
+          selectedSourceFilter !== "all") &&
+        val.reviews.length === 0
+      ) {
+        return;
+      }
+
+      const revCount = val.reviews.length;
+      const sum = val.reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0);
+      const avg = revCount > 0 ? Number((sum / revCount).toFixed(1)) : 5.0;
+
+      list.push({
+        productId: key,
+        product: val.product,
+        reviews: val.reviews,
+        avgRating: avg,
+        photosCount: val.photosCount,
+        sources: val.sources,
+      });
+    });
+
+    // Sort: products with reviews first (most to least), then products without reviews
+    return list.sort((a, b) => b.reviews.length - a.reviews.length);
+  }, [
+    filteredReviews,
+    productsList,
+    selectedProductFilter,
+    searchQuery,
+    selectedRatingFilter,
+    selectedSourceFilter,
+  ]);
+
+  const toggleProductCollapse = (pid: string) => {
+    setCollapsedProducts((prev) => {
+      const next = new Set(prev);
+      if (next.has(pid)) {
+        next.delete(pid);
+      } else {
+        next.add(pid);
+      }
+      return next;
+    });
+  };
+
+  const expandAllProducts = () => {
+    setCollapsedProducts(new Set());
+  };
+
+  const collapseAllProducts = () => {
+    const allIds = new Set(reviewsByProduct.map((g) => g.productId));
+    setCollapsedProducts(allIds);
   };
 
   // Selected attached product in modal
@@ -950,18 +1090,26 @@ export default function AdminReviewsPage() {
         const text = event.target?.result as string;
         const rows = parseCSV(text);
 
-        // Normalize rows mapping standard & Shopify Judge.me / Loox formats
+        // Normalize rows mapping standard, Judge.me, Loox, and user CSV formats
         const mapped = rows.map((r) => {
-          const productSlug =
-            r.productslug ||
+          const rawProduct = (
+            r.product_name ||
+            r.productname ||
             r.product_slug ||
-            r.productid ||
-            r.product_id ||
-            r.producthandle ||
-            r.product_handle ||
-            r.handle ||
+            r.productslug ||
+            r.product_title ||
+            r.producttitle ||
+            r.title_product ||
             r.product ||
-            "";
+            r.product_id ||
+            r.productid ||
+            r.product_handle ||
+            r.producthandle ||
+            r.handle ||
+            r.item ||
+            r.item_name ||
+            ""
+          ).toString().trim();
 
           const rating = Number(r.rating || r.score || r.stars || r.star_rating) || 5;
 
@@ -991,20 +1139,58 @@ export default function AdminReviewsPage() {
 
           const createdAt = r.createdat || r.created_at || r.reviewdate || r.review_date || r.date || "";
 
-          const images = r.images || r.photos || r.pictureurls || r.picture_urls || r.imgurl || r.img_url || "";
+          // Support customer_product_photo and all review photos variations
+          const rawImages =
+            r.customer_product_photo ||
+            r.customerproductphoto ||
+            r.customer_product_photos ||
+            r.customer_photos ||
+            r.customer_photo ||
+            r.product_photo ||
+            r.product_photos ||
+            r.review_photo ||
+            r.review_photos ||
+            r.images ||
+            r.photos ||
+            r.pictureurls ||
+            r.picture_urls ||
+            r.imgurl ||
+            r.img_url ||
+            "";
 
-          const source = r.source || r.platform || r.channel || defaultImportSource || "import";
+          const rawReviewerPhoto =
+            r.reviewer_photo ||
+            r.reviewerphoto ||
+            r.reviewer_avatar ||
+            r.revieweravatar ||
+            r.user_photo ||
+            r.userphoto ||
+            r.user_avatar ||
+            r.avatar ||
+            "";
+
+          // Intelligently resolve product
+          const matchResult = resolveProductMatch(rawProduct, productsList);
+          const resolvedSlug = matchResult.resolvedSlug || rawProduct;
+          const matchedProductName = matchResult.matchedProduct?.name || "";
+          const matchedProductThumb = matchResult.matchedProduct
+            ? getProductThumbnail(matchResult.matchedProduct)
+            : "";
 
           return {
-            productSlug,
+            rawProduct,
+            productSlug: resolvedSlug,
+            matchedProductName,
+            matchedProductThumb,
             rating,
             userName,
             title,
             comment,
             createdAt,
-            images,
-            source,
-            isValid: Boolean(comment.trim() && (productSlug.trim() || defaultImportProduct !== "auto")),
+            images: rawImages,
+            reviewerPhoto: rawReviewerPhoto,
+            source: r.source || r.platform || r.channel || defaultImportSource || "import",
+            isValid: Boolean(comment.trim() && (resolvedSlug.trim() || defaultImportProduct !== "auto")),
           };
         });
 
@@ -1026,13 +1212,14 @@ export default function AdminReviewsPage() {
     const validRows = parsedRows.filter((r) => r.isValid || defaultImportProduct !== "auto");
 
     const payload = validRows.map((r) => ({
-      productId: defaultImportProduct !== "auto" ? defaultImportProduct : r.productSlug,
+      productId: defaultImportProduct !== "auto" ? defaultImportProduct : r.productSlug || r.rawProduct,
       userName: r.userName,
       rating: r.rating,
       title: r.title,
       comment: r.comment,
       createdAt: r.createdAt || new Date().toISOString(),
       images: r.images,
+      reviewerPhoto: r.reviewerPhoto,
       source: r.source || defaultImportSource,
       verifiedPurchase: true,
     }));
@@ -1397,195 +1584,566 @@ export default function AdminReviewsPage() {
             </div>
           </div>
 
-          {/* Reviews Table / List */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-slate-500" />
-                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Review Entries ({filteredReviews.length})
-                </span>
-              </div>
-              <span className="text-xs text-slate-400">
-                Sorted by most recent
-              </span>
+          {/* View Mode Switcher Toolbar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs">
+            <div className="flex items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setViewMode("grouped")}
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === "grouped"
+                    ? "bg-white text-slate-900 shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Package className="w-3.5 h-3.5 text-[#FF7A00]" />
+                <span>Group by Product ({reviewsByProduct.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setViewMode("flat")}
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === "flat"
+                    ? "bg-white text-slate-900 shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <List className="w-3.5 h-3.5 text-blue-600" />
+                <span>All Reviews List ({filteredReviews.length})</span>
+              </button>
             </div>
 
-            {loading ? (
-              <div className="py-20 flex flex-col items-center justify-center gap-3">
-                <Loader2 className="w-8 h-8 animate-spin text-[#FF7A00]" />
-                <span className="text-xs font-semibold text-slate-500">Loading reviews database...</span>
-              </div>
-            ) : filteredReviews.length === 0 ? (
-              <div className="py-20 px-4 text-center max-w-sm mx-auto">
-                <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-3">
-                  <Star className="w-6 h-6 fill-current" />
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+              {viewMode === "grouped" && (
+                <>
+                  <button
+                    type="button"
+                    onClick={expandAllProducts}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  >
+                    <ChevronDown className="w-3.5 h-3.5" />
+                    <span>Expand All</span>
+                  </button>
+                  <span className="text-slate-300">•</span>
+                  <button
+                    type="button"
+                    onClick={collapseAllProducts}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  >
+                    <ChevronUp className="w-3.5 h-3.5" />
+                    <span>Collapse All</span>
+                  </button>
+                </>
+              )}
+              {viewMode === "flat" && (
+                <span>Showing {filteredReviews.length} reviews sorted by most recent</span>
+              )}
+            </div>
+          </div>
+
+          {/* ========================================================
+              VIEW 1: GROUPED BY PRODUCT (Arranged under each product)
+             ======================================================== */}
+          {viewMode === "grouped" && (
+            <div className="space-y-4">
+              {loading ? (
+                <div className="bg-white rounded-2xl border border-slate-200/90 p-16 text-center shadow-xs">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#FF7A00] mx-auto mb-2" />
+                  <span className="text-xs font-semibold text-slate-500">Loading reviews grouped by product...</span>
                 </div>
-                <h3 className="text-sm font-bold text-slate-900">No reviews found</h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  No reviews match your current filter. Import reviews from Amazon/Flipkart via CSV or clear search filters.
-                </p>
-                <button
-                  onClick={() => {
-                    setSelectedProductFilter("all");
-                    setSelectedSourceFilter("all");
-                    setSelectedRatingFilter("all");
-                    setSearchQuery("");
-                  }}
-                  className="mt-4 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors"
-                >
-                  Clear All Filters
-                </button>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-slate-50/80 border-b border-slate-200/70 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
-                      <th className="py-3.5 px-4">Product</th>
-                      <th className="py-3.5 px-4">Reviewer</th>
-                      <th className="py-3.5 px-4">Rating</th>
-                      <th className="py-3.5 px-4">Review & Comment</th>
-                      <th className="py-3.5 px-4">Source</th>
-                      <th className="py-3.5 px-4">Date</th>
-                      <th className="py-3.5 px-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {filteredReviews.map((rev) => {
-                      const prodInfo = getProductInfo(rev.productId);
-                      return (
-                        <tr key={rev.id} className="hover:bg-slate-50/50 transition-colors">
-                          {/* Product */}
-                          <td className="py-3 px-4 max-w-[220px]">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-slate-100 overflow-hidden relative shrink-0 border border-slate-200/60">
-                                <Image
-                                  src={prodInfo.image}
-                                  alt={prodInfo.name}
-                                  fill
-                                  className="object-cover"
-                                  unoptimized
-                                />
+              ) : reviewsByProduct.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-slate-200/90 p-16 text-center shadow-xs">
+                  <Star className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+                  <h3 className="text-sm font-bold text-slate-900">No products matching current filter</h3>
+                  <p className="text-xs text-slate-400 mt-1">Try clearing filters or search query.</p>
+                </div>
+              ) : (
+                reviewsByProduct.map((group) => {
+                  const isCollapsed = collapsedProducts.has(group.productId);
+                  const prodThumb = getProductThumbnail(group.product);
+
+                  return (
+                    <div
+                      key={group.productId}
+                      className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden transition-all"
+                    >
+                      {/* Product Header Bar */}
+                      <div className="p-4 bg-slate-50/70 border-b border-slate-200/70 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          {/* Product Thumbnail */}
+                          <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 overflow-hidden shrink-0 shadow-xs">
+                            <img
+                              src={prodThumb}
+                              alt={group.product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="font-bold text-slate-900 text-sm truncate" title={group.product.name}>
+                                {group.product.name}
+                              </h3>
+                              <span className="font-mono text-[10px] text-slate-400 bg-white px-2 py-0.5 rounded-md border border-slate-200 truncate">
+                                {group.productId}
+                              </span>
+                            </div>
+
+                            {/* Metrics pills under title */}
+                            <div className="flex flex-wrap items-center gap-2 mt-1.5 text-[11px]">
+                              {/* Rating badge */}
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold bg-amber-50 text-amber-800 border border-amber-200 shadow-xs">
+                                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                <span>{group.reviews.length > 0 ? group.avgRating.toFixed(1) : "No rating"}</span>
+                              </span>
+
+                              {/* Reviews count badge */}
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                <span>{group.reviews.length} {group.reviews.length === 1 ? "Review" : "Reviews"}</span>
+                              </span>
+
+                              {/* Photos count badge */}
+                              {group.photosCount > 0 && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold bg-orange-50 text-orange-700 border border-orange-200">
+                                  <Camera className="w-3 h-3 text-[#FF7A00]" />
+                                  <span>{group.photosCount} with photos</span>
+                                </span>
+                              )}
+
+                              {/* Source breakdown pills */}
+                              {Object.entries(group.sources).map(([src, count]) => (
+                                <span key={src} className="text-[10px] text-slate-500 font-semibold bg-slate-100 px-2 py-0.5 rounded-md">
+                                  {src}: {count}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right Actions */}
+                        <div className="flex items-center gap-1.5 shrink-0 self-end md:self-auto">
+                          <Link
+                            href={`/products/${group.product.slug || group.productId}#reviews`}
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                            title="Open storefront product page"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            <span className="hidden sm:inline">Storefront</span>
+                          </Link>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setManualForm({
+                                ...manualForm,
+                                productId: group.product.slug || group.productId,
+                              });
+                              setManualModalOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                            title="Add manual review for this product"
+                          >
+                            <Plus className="w-3 h-3 text-[#FF7A00]" />
+                            <span className="hidden sm:inline">Add Review</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDefaultImportProduct(group.product.slug || group.productId);
+                              setImportModalOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-orange-50 text-[#FF7A00] border border-orange-200 hover:bg-orange-100 text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                            title="Import CSV specifically for this product"
+                          >
+                            <Upload className="w-3 h-3" />
+                            <span>Import CSV</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => toggleProductCollapse(group.productId)}
+                            className="p-1.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer ml-1"
+                            title={isCollapsed ? "Expand reviews" : "Collapse reviews"}
+                          >
+                            {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Product Reviews Body */}
+                      {!isCollapsed && (
+                        <div>
+                          {group.reviews.length === 0 ? (
+                            <div className="p-8 text-center bg-white">
+                              <Star className="w-6 h-6 text-slate-300 mx-auto mb-1.5" />
+                              <p className="text-xs font-bold text-slate-700">No reviews yet for this product</p>
+                              <p className="text-[11px] text-slate-400 mt-0.5">
+                                Import customer reviews from Amazon or Flipkart CSV, or add a verified buyer review.
+                              </p>
+                              <div className="mt-3 flex items-center justify-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setManualForm({
+                                      ...manualForm,
+                                      productId: group.product.slug || group.productId,
+                                    });
+                                    setManualModalOpen(true);
+                                  }}
+                                  className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
+                                >
+                                  + Add Review
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setDefaultImportProduct(group.product.slug || group.productId);
+                                    setImportModalOpen(true);
+                                  }}
+                                  className="px-3 py-1.5 rounded-lg bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold transition-colors cursor-pointer"
+                                >
+                                  Import CSV
+                                </button>
                               </div>
-                              <div className="min-w-0">
-                                <p className="font-bold text-slate-900 truncate" title={prodInfo.name}>
-                                  {prodInfo.name}
-                                </p>
-                                <span className="text-[10px] text-slate-400 font-mono truncate block">
-                                  {rev.productId}
+                            </div>
+                          ) : (
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-left border-collapse text-xs">
+                                <thead>
+                                  <tr className="bg-slate-50/50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                                    <th className="py-2.5 px-4">Reviewer</th>
+                                    <th className="py-2.5 px-4">Rating</th>
+                                    <th className="py-2.5 px-4">Review & Comment</th>
+                                    <th className="py-2.5 px-4">Source</th>
+                                    <th className="py-2.5 px-4">Date</th>
+                                    <th className="py-2.5 px-4 text-right">Actions</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                  {group.reviews.map((rev) => (
+                                    <tr key={rev.id} className="hover:bg-slate-50/60 transition-colors">
+                                      {/* Reviewer */}
+                                      <td className="py-3 px-4 whitespace-nowrap">
+                                        <div className="flex items-center gap-2.5">
+                                          {rev.reviewerPhoto ? (
+                                            <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
+                                              <img
+                                                src={normalizeImageUrl(rev.reviewerPhoto)}
+                                                alt={rev.userName}
+                                                className="w-full h-full object-cover"
+                                              />
+                                            </div>
+                                          ) : (
+                                            <div className="w-8 h-8 rounded-full bg-orange-100 text-[#FF7A00] font-extrabold flex items-center justify-center text-xs shrink-0">
+                                              {rev.userName ? rev.userName.charAt(0).toUpperCase() : "U"}
+                                            </div>
+                                          )}
+                                          <div>
+                                            <p className="font-bold text-slate-900">{rev.userName}</p>
+                                            {rev.verifiedPurchase && (
+                                              <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-0.5">
+                                                <CheckCircle2 className="w-2.5 h-2.5" /> Verified Buyer
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </td>
+
+                                      {/* Rating */}
+                                      <td className="py-3 px-4 whitespace-nowrap">
+                                        <div className="flex items-center gap-1 text-amber-400">
+                                          {[...Array(5)].map((_, i) => (
+                                            <Star
+                                              key={i}
+                                              className={`w-3.5 h-3.5 ${
+                                                i < rev.rating ? "fill-current text-amber-400" : "text-slate-200"
+                                              }`}
+                                            />
+                                          ))}
+                                          <span className="ml-1 text-[11px] font-bold text-slate-700">
+                                            {rev.rating}.0
+                                          </span>
+                                        </div>
+                                      </td>
+
+                                      {/* Comment & Photos */}
+                                      <td className="py-3 px-4 max-w-[380px]">
+                                        {rev.title && (
+                                          <p className="font-bold text-slate-900 text-xs mb-0.5 truncate">
+                                            {rev.title}
+                                          </p>
+                                        )}
+                                        <p className="text-slate-600 line-clamp-2 leading-relaxed">
+                                          {rev.comment}
+                                        </p>
+
+                                        {/* Attached Customer Product Photos Gallery */}
+                                        {rev.images && rev.images.length > 0 && (
+                                          <div className="flex items-center gap-2 mt-2">
+                                            {rev.images.map((img, idx) => (
+                                              <button
+                                                key={idx}
+                                                type="button"
+                                                onClick={() => setPhotoLightbox({ image: normalizeImageUrl(img), review: rev })}
+                                                className="w-10 h-10 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 relative group cursor-pointer hover:ring-2 hover:ring-[#FF7A00] transition-all shadow-2xs"
+                                                title="Click to zoom customer photo"
+                                              >
+                                                <img
+                                                  src={normalizeImageUrl(img)}
+                                                  alt="Customer product photo"
+                                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                                />
+                                              </button>
+                                            ))}
+                                            <span className="text-[10px] text-slate-400 font-semibold">
+                                              ({rev.images.length} {rev.images.length === 1 ? "photo" : "photos"})
+                                            </span>
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Source */}
+                                      <td className="py-3 px-4 whitespace-nowrap">
+                                        {renderSourceBadge(rev.source)}
+                                      </td>
+
+                                      {/* Date */}
+                                      <td className="py-3 px-4 whitespace-nowrap text-slate-400 text-[11px]">
+                                        {rev.createdAt
+                                          ? new Date(rev.createdAt).toLocaleDateString("en-IN", {
+                                              day: "numeric",
+                                              month: "short",
+                                              year: "numeric",
+                                            })
+                                          : "Recent"}
+                                      </td>
+
+                                      {/* Actions */}
+                                      <td className="py-3 px-4 whitespace-nowrap text-right">
+                                        <div className="flex items-center justify-end gap-1">
+                                          <Link
+                                            href={`/products/${group.product.slug || group.productId}#reviews`}
+                                            target="_blank"
+                                            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                                            title="View on storefront"
+                                          >
+                                            <ExternalLink className="w-3.5 h-3.5" />
+                                          </Link>
+                                          <button
+                                            onClick={() => setDeleteConfirmId(rev.id)}
+                                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                            title="Delete review"
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+
+          {/* ========================================================
+              VIEW 2: FLAT ALL REVIEWS LIST
+             ======================================================== */}
+          {viewMode === "flat" && (
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+              <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-slate-500" />
+                  <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Review Entries ({filteredReviews.length})
+                  </span>
+                </div>
+                <span className="text-xs text-slate-400">
+                  Sorted by most recent
+                </span>
+              </div>
+
+              {loading ? (
+                <div className="py-20 flex flex-col items-center justify-center gap-3">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#FF7A00]" />
+                  <span className="text-xs font-semibold text-slate-500">Loading reviews database...</span>
+                </div>
+              ) : filteredReviews.length === 0 ? (
+                <div className="py-20 px-4 text-center max-w-sm mx-auto">
+                  <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-3">
+                    <Star className="w-6 h-6 fill-current" />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900">No reviews found</h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    No reviews match your current filter. Import reviews from Amazon/Flipkart via CSV or clear search filters.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSelectedProductFilter("all");
+                      setSelectedSourceFilter("all");
+                      setSelectedRatingFilter("all");
+                      setSearchQuery("");
+                    }}
+                    className="mt-4 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors"
+                  >
+                    Clear All Filters
+                  </button>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50/80 border-b border-slate-200/70 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                        <th className="py-3.5 px-4">Product</th>
+                        <th className="py-3.5 px-4">Reviewer</th>
+                        <th className="py-3.5 px-4">Rating</th>
+                        <th className="py-3.5 px-4">Review & Comment</th>
+                        <th className="py-3.5 px-4">Source</th>
+                        <th className="py-3.5 px-4">Date</th>
+                        <th className="py-3.5 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {filteredReviews.map((rev) => {
+                        const prodInfo = getProductInfo(rev.productId);
+                        return (
+                          <tr key={rev.id} className="hover:bg-slate-50/50 transition-colors">
+                            {/* Product */}
+                            <td className="py-3 px-4 max-w-[220px]">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-slate-100 overflow-hidden relative shrink-0 border border-slate-200/60">
+                                  <img
+                                    src={prodInfo.image}
+                                    alt={prodInfo.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-bold text-slate-900 truncate" title={prodInfo.name}>
+                                    {prodInfo.name}
+                                  </p>
+                                  <span className="text-[10px] text-slate-400 font-mono truncate block">
+                                    {rev.productId}
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Reviewer */}
+                            <td className="py-3 px-4 whitespace-nowrap">
+                              <p className="font-bold text-slate-900">{rev.userName}</p>
+                              {rev.orderId ? (
+                                <span className="text-[10px] text-emerald-600 font-mono block">
+                                  Order: {rev.orderId}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-slate-400">
+                                  {rev.userEmail || "Verified Buyer"}
+                                </span>
+                              )}
+                            </td>
+
+                            {/* Rating */}
+                            <td className="py-3 px-4 whitespace-nowrap">
+                              <div className="flex items-center gap-1 text-amber-400">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`w-3.5 h-3.5 ${
+                                      i < rev.rating ? "fill-current text-amber-400" : "text-slate-200"
+                                    }`}
+                                  />
+                                ))}
+                                <span className="ml-1 text-[11px] font-bold text-slate-700">
+                                  {rev.rating}.0
                                 </span>
                               </div>
-                            </div>
-                          </td>
+                            </td>
 
-                          {/* Reviewer */}
-                          <td className="py-3 px-4 whitespace-nowrap">
-                            <p className="font-bold text-slate-900">{rev.userName}</p>
-                            {rev.orderId ? (
-                              <span className="text-[10px] text-emerald-600 font-mono block">
-                                Order: {rev.orderId}
-                              </span>
-                            ) : (
-                              <span className="text-[10px] text-slate-400">
-                                {rev.userEmail || "Verified Buyer"}
-                              </span>
-                            )}
-                          </td>
-
-                          {/* Rating */}
-                          <td className="py-3 px-4 whitespace-nowrap">
-                            <div className="flex items-center gap-1 text-amber-400">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`w-3.5 h-3.5 ${
-                                    i < rev.rating ? "fill-current text-amber-400" : "text-slate-200"
-                                  }`}
-                                />
-                              ))}
-                              <span className="ml-1 text-[11px] font-bold text-slate-700">
-                                {rev.rating}.0
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Comment & Photos */}
-                          <td className="py-3 px-4 max-w-[340px]">
-                            {rev.title && (
-                              <p className="font-bold text-slate-800 text-xs mb-0.5 truncate">
-                                {rev.title}
+                            {/* Comment & Photos */}
+                            <td className="py-3 px-4 max-w-[340px]">
+                              {rev.title && (
+                                <p className="font-bold text-slate-800 text-xs mb-0.5 truncate">
+                                  {rev.title}
+                                </p>
+                              )}
+                              <p className="text-slate-600 line-clamp-2 leading-relaxed">
+                                {rev.comment}
                               </p>
-                            )}
-                            <p className="text-slate-600 line-clamp-2 leading-relaxed">
-                              {rev.comment}
-                            </p>
-                            {rev.images && rev.images.length > 0 && (
-                              <div className="flex items-center gap-1.5 mt-2">
-                                {rev.images.slice(0, 3).map((img, idx) => (
-                                  <a
-                                    key={idx}
-                                    href={img}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-7 h-7 rounded-lg bg-slate-100 overflow-hidden relative border border-slate-200 block"
-                                  >
-                                    <Image src={img} alt="review pic" fill className="object-cover" unoptimized />
-                                  </a>
-                                ))}
-                                {rev.images.length > 3 && (
+                              {rev.images && rev.images.length > 0 && (
+                                <div className="flex items-center gap-1.5 mt-2">
+                                  {rev.images.map((img, idx) => (
+                                    <button
+                                      key={idx}
+                                      type="button"
+                                      onClick={() => setPhotoLightbox({ image: normalizeImageUrl(img), review: rev })}
+                                      className="w-8 h-8 rounded-lg bg-slate-100 overflow-hidden relative border border-slate-200 block hover:ring-2 hover:ring-[#FF7A00] transition-all cursor-pointer"
+                                    >
+                                      <img src={normalizeImageUrl(img)} alt="review pic" className="w-full h-full object-cover" />
+                                    </button>
+                                  ))}
                                   <span className="text-[10px] font-bold text-slate-400">
-                                    +{rev.images.length - 3}
+                                    {rev.images.length} {rev.images.length === 1 ? "photo" : "photos"}
                                   </span>
-                                )}
+                                </div>
+                              )}
+                            </td>
+
+                            {/* Source */}
+                            <td className="py-3 px-4 whitespace-nowrap">
+                              {renderSourceBadge(rev.source)}
+                            </td>
+
+                            {/* Date */}
+                            <td className="py-3 px-4 whitespace-nowrap text-slate-400 text-[11px]">
+                              {rev.createdAt
+                                ? new Date(rev.createdAt).toLocaleDateString("en-IN", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                  })
+                                : "Recent"}
+                            </td>
+
+                            {/* Actions */}
+                            <td className="py-3 px-4 whitespace-nowrap text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <Link
+                                  href={`/products/${prodInfo.slug}#reviews`}
+                                  target="_blank"
+                                  className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                                  title="View on storefront"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </Link>
+                                <button
+                                  onClick={() => setDeleteConfirmId(rev.id)}
+                                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                  title="Delete review"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
                               </div>
-                            )}
-                          </td>
-
-                          {/* Source */}
-                          <td className="py-3 px-4 whitespace-nowrap">
-                            {renderSourceBadge(rev.source)}
-                          </td>
-
-                          {/* Date */}
-                          <td className="py-3 px-4 whitespace-nowrap text-slate-400 text-[11px]">
-                            {rev.createdAt
-                              ? new Date(rev.createdAt).toLocaleDateString("en-IN", {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric",
-                                })
-                              : "Recent"}
-                          </td>
-
-                          {/* Actions */}
-                          <td className="py-3 px-4 whitespace-nowrap text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <Link
-                                href={`/products/${prodInfo.slug}#reviews`}
-                                target="_blank"
-                                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                                title="View on storefront"
-                              >
-                                <ExternalLink className="w-3.5 h-3.5" />
-                              </Link>
-                              <button
-                                onClick={() => setDeleteConfirmId(rev.id)}
-                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                                title="Delete review"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -1984,10 +2542,10 @@ export default function AdminReviewsPage() {
                     onChange={(e) => setDefaultImportProduct(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
                   >
-                    <option value="auto">Auto-detect from CSV 'product_slug'</option>
+                    <option value="auto">⚡ Auto-detect from CSV (Product Name / Slug)</option>
                     {productsList.map((p) => (
                       <option key={p.id} value={p.slug || p.id}>
-                        {p.name.slice(0, 32)}...
+                        {p.name} ({p.slug || p.id})
                       </option>
                     ))}
                   </select>
@@ -2059,36 +2617,62 @@ export default function AdminReviewsPage() {
                       <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
                         {parsedRows.filter((r) => r.isValid || defaultImportProduct !== "auto").length} Valid
                       </span>
+                      {parsedRows.filter((r) => r.images).length > 0 && (
+                        <span className="text-[10px] font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Camera className="w-3 h-3" />
+                          {parsedRows.filter((r) => r.images).length} With Photos
+                        </span>
+                      )}
                       {parsedRows.filter((r) => !r.isValid && defaultImportProduct === "auto").length > 0 && (
                         <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full">
-                          {parsedRows.filter((r) => !r.isValid && defaultImportProduct === "auto").length} Missing Product Slug
+                          {parsedRows.filter((r) => !r.isValid && defaultImportProduct === "auto").length} Unassigned
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="max-h-48 overflow-y-auto border border-slate-100 rounded-xl">
+                  <div className="max-h-56 overflow-y-auto border border-slate-100 rounded-xl">
                     <table className="w-full text-[11px] text-left">
                       <thead className="bg-slate-50 text-slate-500 font-bold sticky top-0">
                         <tr>
-                          <th className="p-2">Product</th>
-                          <th className="p-2">User</th>
+                          <th className="p-2">Target Product</th>
+                          <th className="p-2">Reviewer</th>
                           <th className="p-2">Rating</th>
                           <th className="p-2">Comment</th>
+                          <th className="p-2">Photos</th>
                           <th className="p-2">Source</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
                         {parsedRows.slice(0, 10).map((r, i) => (
                           <tr key={i} className="hover:bg-slate-50/50">
-                            <td className="p-2 font-mono text-[10px] max-w-[120px] truncate text-slate-600">
-                              {defaultImportProduct !== "auto" ? defaultImportProduct : r.productSlug || "Missing"}
+                            <td className="p-2 max-w-[150px]">
+                              {defaultImportProduct !== "auto" ? (
+                                <span className="font-mono text-[10px] text-slate-700 font-bold">{defaultImportProduct}</span>
+                              ) : r.productSlug ? (
+                                <div>
+                                  <span className="font-bold text-slate-800 text-[11px] block truncate">{r.matchedProductName || r.productSlug}</span>
+                                  <span className="font-mono text-[10px] text-emerald-600 block truncate">Slug: {r.productSlug}</span>
+                                </div>
+                              ) : (
+                                <span className="text-rose-500 font-bold text-[10px]">Missing Product</span>
+                              )}
                             </td>
                             <td className="p-2 font-bold text-slate-800 whitespace-nowrap">{r.userName}</td>
                             <td className="p-2 whitespace-nowrap font-bold text-amber-500">
                               {r.rating}★
                             </td>
                             <td className="p-2 max-w-[180px] truncate text-slate-600">{r.comment}</td>
+                            <td className="p-2 whitespace-nowrap">
+                              {r.images ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                                  <Camera className="w-2.5 h-2.5" />
+                                  <span>Attached</span>
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-slate-400">None</span>
+                              )}
+                            </td>
                             <td className="p-2 whitespace-nowrap text-slate-500">{r.source || defaultImportSource}</td>
                           </tr>
                         ))}
@@ -3137,6 +3721,90 @@ export default function AdminReviewsPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Customer Review Photo Lightbox Modal */}
+      {photoLightbox && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn"
+          onClick={() => setPhotoLightbox(null)}
+        >
+          <div
+            className="relative max-w-4xl max-h-[90vh] bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Bar */}
+            <div className="p-4 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between text-white">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="p-1.5 rounded-lg bg-orange-500/20 text-[#FF7A00]">
+                  <Camera className="w-4 h-4" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold truncate">
+                    {photoLightbox.review?.userName
+                      ? `Photo by ${photoLightbox.review.userName}`
+                      : "Customer Review Photo"}
+                  </p>
+                  {photoLightbox.review && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5">
+                      <span className="font-semibold text-slate-300">
+                        {getProductInfo(photoLightbox.review.productId).name}
+                      </span>
+                      <span>•</span>
+                      <div className="flex items-center text-amber-400">
+                        <Star className="w-3 h-3 fill-current" />
+                        <span className="ml-0.5 font-bold">{photoLightbox.review.rating}.0</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href={photoLightbox.image}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                  title="Open image in new tab"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setPhotoLightbox(null)}
+                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                  title="Close (Esc)"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Photo Viewer Container */}
+            <div className="flex-1 min-h-0 bg-black flex items-center justify-center p-4 overflow-auto">
+              <img
+                src={photoLightbox.image}
+                alt="Customer review photo zoom"
+                className="max-h-[68vh] max-w-full w-auto h-auto object-contain rounded-xl shadow-lg"
+              />
+            </div>
+
+            {/* Review Comment Snippet Footer if available */}
+            {photoLightbox.review && (photoLightbox.review.title || photoLightbox.review.comment) && (
+              <div className="p-3.5 bg-slate-950/90 border-t border-slate-800 text-white text-xs">
+                {photoLightbox.review.title && (
+                  <p className="font-bold text-amber-400 mb-0.5">
+                    "{photoLightbox.review.title}"
+                  </p>
+                )}
+                <p className="text-slate-300 line-clamp-2 leading-relaxed">
+                  {photoLightbox.review.comment}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

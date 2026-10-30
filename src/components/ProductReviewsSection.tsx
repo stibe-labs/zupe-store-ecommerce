@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { ProductReview } from "@/lib/reviewStore";
 import { useAuth } from "@/context/AuthContext";
+import { normalizeImageUrl } from "@/lib/productMatcher";
 
 interface ProductReviewsSectionProps {
   productId: string;
@@ -430,14 +431,13 @@ export function ProductReviewsSection({
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setLightboxData({ image: photoUrl, review: matchingReview })}
-                    className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-gray-200 group hover:ring-2 hover:ring-[#FF7A00] transition-all shadow-xs cursor-pointer bg-white"
+                    onClick={() => setLightboxData({ image: normalizeImageUrl(photoUrl), review: matchingReview })}
+                    className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-gray-200 group hover:ring-2 hover:ring-[#FF7A00] transition-all shadow-xs cursor-pointer bg-slate-50"
                   >
-                    <Image
-                      src={photoUrl}
+                    <img
+                      src={normalizeImageUrl(photoUrl)}
                       alt={`Customer photo ${idx + 1}`}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">
                       Zoom
@@ -541,10 +541,20 @@ export function ProductReviewsSection({
                 {/* Header: User Info + Rating + Verified Badge */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                   <div className="flex items-center gap-3">
-                    {/* User Avatar Circle with Initials */}
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-100 to-amber-200 text-amber-800 font-extrabold flex items-center justify-center text-sm shadow-xs shrink-0">
-                      {rev.userName ? rev.userName.charAt(0).toUpperCase() : "U"}
-                    </div>
+                    {/* User Avatar Circle with Initials or Photo */}
+                    {rev.reviewerPhoto ? (
+                      <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-amber-200 bg-slate-100">
+                        <img
+                          src={normalizeImageUrl(rev.reviewerPhoto)}
+                          alt={rev.userName}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-100 to-amber-200 text-amber-800 font-extrabold flex items-center justify-center text-sm shadow-xs shrink-0">
+                        {rev.userName ? rev.userName.charAt(0).toUpperCase() : "U"}
+                      </div>
+                    )}
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-sm text-gray-900">{rev.userName}</span>
@@ -590,15 +600,17 @@ export function ProductReviewsSection({
                       <button
                         key={imgIdx}
                         type="button"
-                        onClick={() => setLightboxData({ image: imgUrl, review: rev })}
-                        className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 hover:ring-2 hover:ring-[#FF7A00] transition-all cursor-pointer shadow-xs"
+                        onClick={() => setLightboxData({ image: normalizeImageUrl(imgUrl), review: rev })}
+                        className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 hover:ring-2 hover:ring-[#FF7A00] transition-all cursor-pointer shadow-xs bg-slate-50 group"
                       >
-                        <Image
-                          src={imgUrl}
+                        <img
+                          src={normalizeImageUrl(imgUrl)}
                           alt="Customer product photo"
-                          fill
-                          className="object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                         />
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
+                          Zoom
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -856,7 +868,7 @@ export function ProductReviewsSection({
             {/* Photo */}
             <div className="relative w-full h-80 sm:h-96 bg-black flex items-center justify-center">
               <img
-                src={lightboxData.image}
+                src={normalizeImageUrl(lightboxData.image)}
                 alt="Enlarged customer photo"
                 className="max-w-full max-h-full object-contain"
               />

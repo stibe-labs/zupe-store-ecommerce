@@ -11,6 +11,7 @@ export interface ProductReview {
   title?: string;
   comment: string;
   images?: string[]; // Array of image URLs / Data URLs
+  reviewerPhoto?: string; // Reviewer avatar image URL / Data URL
   verifiedPurchase: boolean;
   createdAt: string;
   helpfulCount?: number;
@@ -158,15 +159,41 @@ export async function ensureReviewTable(): Promise<void> {
         title TEXT,
         comment TEXT NOT NULL,
         images TEXT,
+        reviewer_photo TEXT,
         verified_purchase INTEGER DEFAULT 1,
         helpful_count INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         source TEXT DEFAULT 'storefront'
       );
     `);
+    // Attempt adding column to existing table if not present
+    await executeD1Query(`ALTER TABLE product_reviews ADD COLUMN reviewer_photo TEXT;`).catch(() => {});
   } catch (err) {
     console.warn("Could not ensure product_reviews table in D1:", err);
   }
+}
+
+/**
+ * Safely parse review images from DB (handles JSON array, data URLs, or comma-separated strings)
+ */
+function parseReviewImages(imagesRaw: any): string[] {
+  if (!imagesRaw) return [];
+  if (Array.isArray(imagesRaw)) return imagesRaw.filter(Boolean);
+  if (typeof imagesRaw === "string") {
+    const trimmed = imagesRaw.trim();
+    if (!trimmed) return [];
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return parsed.filter(Boolean);
+    } catch {
+      // Not JSON, check if single data URL or comma separated
+      if (trimmed.startsWith("data:image/")) {
+        return [trimmed];
+      }
+      return trimmed.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+  }
+  return [];
 }
 
 /**
@@ -189,6 +216,8 @@ export async function getReviewsByProduct(productId: string): Promise<ProductRev
 
     // Known alias mappings
     const aliases: Record<string, string[]> = {
+      "hot-weels": ["hot-wheels", "hot wheels", "hot weels", "hot-wheels-assorted-car-set", "hot wheels assorted car set", "assorted car set"],
+      "hot-wheels": ["hot-weels", "hot wheels", "hot weels", "hot-wheels-assorted-car-set", "hot wheels assorted car set"],
       "mini-portable-steam-iron": ["mini-steam-iron", "steam-iron", "mini steam iron", "portable steam iron"],
       "mini-steam-iron": ["mini-portable-steam-iron", "steam-iron", "mini portable steam iron", "portable steam iron"],
       "dynamic-water-ripple-night-light": ["ripple-lamp", "water-ripple-lamp", "ripple light"],
@@ -229,31 +258,22 @@ export async function getReviewsByProduct(productId: string): Promise<ProductRev
     if (rows && rows.length > 0) {
       const d1Reviews: ProductReview[] = rows
         .filter((r) => isMatching(String(r.product_id)))
-        .map((r) => {
-          let parsedImages: string[] = [];
-          if (r.images) {
-            try {
-              parsedImages = typeof r.images === "string" ? JSON.parse(r.images) : r.images;
-            } catch {
-              parsedImages = [];
-            }
-          }
-          return {
-            id: String(r.id),
-            productId: String(r.product_id),
-            orderId: r.order_id || undefined,
-            userName: r.user_name || "Verified Customer",
-            userEmail: r.user_email || undefined,
-            rating: Number(r.rating) || 5,
-            title: r.title || undefined,
-            comment: r.comment || "",
-            images: Array.isArray(parsedImages) ? parsedImages : [],
-            verifiedPurchase: r.verified_purchase !== 0,
-            createdAt: r.created_at || new Date().toISOString(),
-            helpfulCount: Number(r.helpful_count) || 0,
-            source: r.source || "storefront",
-          };
-        });
+        .map((r) => ({
+          id: String(r.id),
+          productId: String(r.product_id),
+          orderId: r.order_id || undefined,
+          userName: r.user_name || "Verified Customer",
+          userEmail: r.user_email || undefined,
+          rating: Number(r.rating) || 5,
+          title: r.title || undefined,
+          comment: r.comment || "",
+          images: parseReviewImages(r.images),
+          reviewerPhoto: r.reviewer_photo || r.reviewerPhoto || undefined,
+          verifiedPurchase: r.verified_purchase !== 0,
+          createdAt: r.created_at || new Date().toISOString(),
+          helpfulCount: Number(r.helpful_count) || 0,
+          source: r.source || "storefront",
+        }));
 
       // Merge with memory reviews (user-submitted reviews take priority)
       const existingIds = new Set(d1Reviews.map((r) => r.id));
@@ -290,31 +310,22 @@ export async function getAllReviews(options?: {
     );
 
     if (rows && rows.length > 0) {
-      const d1Reviews: ProductReview[] = rows.map((r) => {
-        let parsedImages: string[] = [];
-        if (r.images) {
-          try {
-            parsedImages = typeof r.images === "string" ? JSON.parse(r.images) : r.images;
-          } catch {
-            parsedImages = [];
-          }
-        }
-        return {
-          id: String(r.id),
-          productId: String(r.product_id),
-          orderId: r.order_id || undefined,
-          userName: r.user_name || "Verified Customer",
-          userEmail: r.user_email || undefined,
-          rating: Number(r.rating) || 5,
-          title: r.title || undefined,
-          comment: r.comment || "",
-          images: Array.isArray(parsedImages) ? parsedImages : [],
-          verifiedPurchase: r.verified_purchase !== 0,
-          createdAt: r.created_at || new Date().toISOString(),
-          helpfulCount: Number(r.helpful_count) || 0,
-          source: r.source || "storefront",
-        };
-      });
+      const d1Reviews: ProductReview[] = rows.map((r) => ({
+        id: String(r.id),
+        productId: String(r.product_id),
+        orderId: r.order_id || undefined,
+        userName: r.user_name || "Verified Customer",
+        userEmail: r.user_email || undefined,
+        rating: Number(r.rating) || 5,
+        title: r.title || undefined,
+        comment: r.comment || "",
+        images: parseReviewImages(r.images),
+        reviewerPhoto: r.reviewer_photo || r.reviewerPhoto || undefined,
+        verifiedPurchase: r.verified_purchase !== 0,
+        createdAt: r.created_at || new Date().toISOString(),
+        helpfulCount: Number(r.helpful_count) || 0,
+        source: r.source || "storefront",
+      }));
 
       const existingIds = new Set(d1Reviews.map((r) => r.id));
       const memoryUnique = inMemoryReviews.filter((r) => !existingIds.has(r.id));
@@ -367,6 +378,7 @@ export async function addReview(newRev: {
   title?: string;
   comment: string;
   images?: string[];
+  reviewerPhoto?: string;
   verifiedPurchase?: boolean;
   createdAt?: string;
   source?: string;
@@ -381,6 +393,7 @@ export async function addReview(newRev: {
     title: (newRev.title || "").trim(),
     comment: newRev.comment.trim(),
     images: Array.isArray(newRev.images) ? newRev.images.filter(Boolean) : [],
+    reviewerPhoto: (newRev.reviewerPhoto || "").trim() || undefined,
     verifiedPurchase: newRev.verifiedPurchase !== false,
     createdAt: newRev.createdAt || new Date().toISOString(),
     helpfulCount: 0,
@@ -394,8 +407,8 @@ export async function addReview(newRev: {
   try {
     await executeD1Query(
       `INSERT INTO product_reviews 
-       (id, product_id, order_id, user_name, user_email, rating, title, comment, images, verified_purchase, helpful_count, created_at, source)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+       (id, product_id, order_id, user_name, user_email, rating, title, comment, images, reviewer_photo, verified_purchase, helpful_count, created_at, source)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
       [
         review.id,
         review.productId,
@@ -406,13 +419,37 @@ export async function addReview(newRev: {
         review.title || null,
         review.comment,
         JSON.stringify(review.images || []),
+        review.reviewerPhoto || null,
         review.verifiedPurchase ? 1 : 0,
         review.createdAt,
         review.source,
       ]
     );
   } catch (err) {
-    console.warn("Failed to insert review into D1 product_reviews:", err);
+    // Fallback if reviewer_photo column doesn't exist yet
+    try {
+      await executeD1Query(
+        `INSERT INTO product_reviews 
+         (id, product_id, order_id, user_name, user_email, rating, title, comment, images, verified_purchase, helpful_count, created_at, source)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+        [
+          review.id,
+          review.productId,
+          review.orderId || null,
+          review.userName,
+          review.userEmail || null,
+          review.rating,
+          review.title || null,
+          review.comment,
+          JSON.stringify(review.images || []),
+          review.verifiedPurchase ? 1 : 0,
+          review.createdAt,
+          review.source,
+        ]
+      );
+    } catch (insertErr) {
+      console.warn("Failed to insert review into D1 product_reviews:", insertErr);
+    }
   }
 
   return review;
@@ -430,6 +467,7 @@ export async function bulkAddReviews(
     title?: string;
     comment: string;
     images?: string[];
+    reviewerPhoto?: string;
     verifiedPurchase?: boolean;
     createdAt?: string;
     source?: string;
@@ -452,6 +490,7 @@ export async function bulkAddReviews(
         title: item.title,
         comment: item.comment,
         images: item.images,
+        reviewerPhoto: item.reviewerPhoto,
         verifiedPurchase: item.verifiedPurchase !== false,
         createdAt: item.createdAt,
         source: item.source || "import",
