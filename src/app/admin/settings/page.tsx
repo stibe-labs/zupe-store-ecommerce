@@ -33,8 +33,8 @@ export default function AdminSettingsPage() {
 
   // Store Profile
   const [storeName, setStoreName] = useState("Turkiye Jam");
-  const [supportEmail, setSupportEmail] = useState("zupestoreonline@gmail.com");
-  const [testEmailAddress, setTestEmailAddress] = useState("zupestoreonline@gmail.com");
+  const [supportEmail, setSupportEmail] = useState("support@turkiyejam.com");
+  const [testEmailAddress, setTestEmailAddress] = useState("support@turkiyejam.com");
   const [supportPhone, setSupportPhone] = useState("+91 97441 22853");
   const [currency, setCurrency] = useState("INR (₹)");
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("499");
@@ -71,7 +71,7 @@ export default function AdminSettingsPage() {
         const s: ERPIntegrationsSettings = data.settings;
         if (s.storeProfile) {
           setStoreName(s.storeProfile.storeName || "Turkiye Jam");
-          setSupportEmail(s.storeProfile.supportEmail || "zupestoreonline@gmail.com");
+          setSupportEmail(s.storeProfile.supportEmail || "support@turkiyejam.com");
           setSupportPhone(s.storeProfile.supportPhone || "+91 97441 22853");
           setCurrency(s.storeProfile.currency || "INR (₹)");
           setFreeShippingThreshold(String(s.storeProfile.freeShippingThreshold ?? 499));
@@ -704,7 +704,7 @@ export default function AdminSettingsPage() {
                     <div>
                       <h3 className="font-bold text-slate-900 text-base">Automated Order Confirmation Emails</h3>
                       <p className="text-xs text-slate-500">
-                        Dispatches branded emails from <strong className="text-slate-800">zupestoreonline@gmail.com</strong> when customer fills optional checkout email
+                        Dispatches branded emails from <strong className="text-slate-800">support@turkiyejam.com</strong> when customer fills optional checkout email
                       </p>
                     </div>
                   </div>
@@ -725,10 +725,10 @@ export default function AdminSettingsPage() {
                       </span>
                     </div>
                     <div className="font-mono text-xs font-bold text-slate-900">
-                      zupestoreonline@gmail.com
+                      support@turkiyejam.com
                     </div>
                     <p className="text-[11px] text-slate-500 leading-relaxed">
-                      All confirmation emails are addressed as <strong className="text-slate-700">&quot;Turkiye Jam&quot; &lt;zupestoreonline@gmail.com&gt;</strong>.
+                      All confirmation emails are addressed as <strong className="text-slate-700">&quot;Turkiye Jam&quot; &lt;support@turkiyejam.com&gt;</strong>.
                     </p>
                   </div>
 
@@ -755,7 +755,7 @@ export default function AdminSettingsPage() {
                       type="email"
                       value={testEmailAddress}
                       onChange={(e) => setTestEmailAddress(e.target.value)}
-                      placeholder="Enter recipient email (e.g. zupestoreonline@gmail.com)"
+                      placeholder="Enter recipient email (e.g. support@turkiyejam.com)"
                       className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
                     />
                     <button

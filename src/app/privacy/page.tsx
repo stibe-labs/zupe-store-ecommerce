@@ -137,8 +137,8 @@ export default function PrivacyPolicyPage() {
         <div className="space-y-2">
           <p>
             We retain your Order Information for our records unless and until you request us to delete it. You may request data removal at any time by contacting{" "}
-            <a href="mailto:zupestoreonline@gmail.com" className="text-[#FF7A00] font-semibold underline">
-              zupestoreonline@gmail.com
+            <a href="mailto:support@turkiyejam.com" className="text-[#FF7A00] font-semibold underline">
+              support@turkiyejam.com
             </a>.
           </p>
         </div>

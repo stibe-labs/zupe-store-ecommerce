@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
         if (res.success && !res.skipped) {
           return NextResponse.json({
             success: true,
-            message: `Test order confirmation email dispatched from zupestoreonline@gmail.com to ${testTo}!`,
+            message: `Test order confirmation email dispatched from support@turkiyejam.com to ${testTo}!`,
           });
         } else {
           return NextResponse.json({

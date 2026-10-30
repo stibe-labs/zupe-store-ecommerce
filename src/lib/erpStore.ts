@@ -1772,7 +1772,7 @@ export interface ERPIntegrationsSettings {
 let inMemorySettings: ERPIntegrationsSettings = {
   storeProfile: {
     storeName: "Turkiye Jam",
-    supportEmail: "zupestoreonline@gmail.com",
+    supportEmail: "support@turkiyejam.com",
     supportPhone: "+91 97441 22853",
     currency: "INR (₹)",
     freeShippingThreshold: 499,

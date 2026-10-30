@@ -26,11 +26,10 @@
     }
   ],
   "vars": {
-    "SMTP_HOST": "smtp.gmail.com",
+    "SMTP_HOST": "mail.stibe.in",
     "SMTP_PORT": "465",
-    "SMTP_USER": "zupestoreonline@gmail.com",
-    "SMTP_PASS": "wwgfnukdhczwknba",
-    "GMAIL_APP_PASSWORD": "wwgfnukdhczwknba",
+    "SMTP_USER": "support@turkiyejam.com",
+    "SMTP_PASS": "ippFiRreBn2P",
     "CLOUDFLARE_ACCOUNT_ID": "4eed09d0032a07881825f4e926cb997f",
     "CLOUDFLARE_D1_DATABASE_ID": "3a7891a3-6e90-4eab-b448-7c33aaec0c5f",
     "ADMIN_EMAIL": "admin@turkiyejam.com",

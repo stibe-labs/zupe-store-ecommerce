@@ -26,18 +26,18 @@ export async function sendEmail({
   replyTo,
   attachments,
 }: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
-  const companyEmail = process.env.SMTP_USER || "zupestoreonline@gmail.com";
+  const companyEmail = process.env.SMTP_USER || "support@turkiyejam.com";
   const rawPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || "";
   const smtpPass = rawPass.replace(/\s+/g, "");
   const fromAddress = from || `"Turkiye Jam" <${companyEmail}>`;
   const replyToAddress = replyTo || companyEmail;
 
-  // 1. Check for Gmail SMTP if password is provided
+  // 1. Check for SMTP if password is provided
   if (smtpPass) {
     try {
       const port = Number(process.env.SMTP_PORT) || 465;
       const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        host: process.env.SMTP_HOST || "mail.stibe.in",
         port,
         secure: port === 465,
         auth: {

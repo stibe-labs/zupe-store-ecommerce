@@ -540,7 +540,7 @@ export async function sendOrderConfirmationEmail(
               Need help with this order?
             </div>
             <div style="font-size: 12px; color: #6b7280; line-height: 1.5;">
-              Simply reply directly to this email at <a href="mailto:zupestoreonline@gmail.com" style="color: #FF7A00; text-decoration: none; font-weight: 600;">zupestoreonline@gmail.com</a>. Our support team is ready to assist you.
+              Simply reply directly to this email at <a href="mailto:support@turkiyejam.com" style="color: #FF7A00; text-decoration: none; font-weight: 600;">support@turkiyejam.com</a>. Our support team is ready to assist you.
             </div>
           </td>
         </tr>
