@@ -13,7 +13,7 @@ export function WhatsAppFloatingButton() {
     return null;
   }
 
-  const phoneNumber = "917356765036";
+  const phoneNumber = "916238165935";
   const defaultMessage = encodeURIComponent(
     "Hi Turkiye Jam Care, I have an inquiry about ordering Themra Epimedium Macun!"
   );

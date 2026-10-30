@@ -35,7 +35,7 @@ export default function AdminSettingsPage() {
   const [storeName, setStoreName] = useState("Turkiye Jam");
   const [supportEmail, setSupportEmail] = useState("support@turkiyejam.com");
   const [testEmailAddress, setTestEmailAddress] = useState("support@turkiyejam.com");
-  const [supportPhone, setSupportPhone] = useState("+91 97441 22853");
+  const [supportPhone, setSupportPhone] = useState("+91 62381 65935");
   const [currency, setCurrency] = useState("INR (₹)");
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("499");
   const [standardShippingFee, setStandardShippingFee] = useState("49");
@@ -72,7 +72,7 @@ export default function AdminSettingsPage() {
         if (s.storeProfile) {
           setStoreName(s.storeProfile.storeName || "Turkiye Jam");
           setSupportEmail(s.storeProfile.supportEmail || "support@turkiyejam.com");
-          setSupportPhone(s.storeProfile.supportPhone || "+91 97441 22853");
+          setSupportPhone(s.storeProfile.supportPhone || "+91 62381 65935");
           setCurrency(s.storeProfile.currency || "INR (₹)");
           setFreeShippingThreshold(String(s.storeProfile.freeShippingThreshold ?? 499));
           setStandardShippingFee(String(s.storeProfile.standardShippingFee ?? 49));

@@ -15,18 +15,7 @@ export interface UserRecord {
 const inMemoryUsers: Map<string, UserRecord> = new Map();
 const inMemoryPhoneUsers: Map<string, UserRecord> = new Map();
 
-// Seed default demo user
-const demoUser: UserRecord = {
-  id: "usr_demo",
-  name: "Demo Customer",
-  email: "demo@zupestore.com",
-  password_hash: Buffer.from("Zupe1234").toString("base64"),
-  phone: "+91 97781 37954",
-  role: "customer",
-  created_at: new Date().toISOString(),
-};
-inMemoryUsers.set("demo@zupestore.com", demoUser);
-inMemoryPhoneUsers.set("919778137954", demoUser);
+// Seed default demo user (none)
 
 export function findUserByEmail(email: string): UserRecord | null {
   const normalized = email.toLowerCase().trim();

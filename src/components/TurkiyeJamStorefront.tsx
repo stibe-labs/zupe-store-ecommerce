@@ -1248,7 +1248,7 @@ export function TurkiyeJamStorefront() {
                   Pick Pack
                 </a>
                 <a
-                  href="https://wa.me/917356765036?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam"
+                  href="https://wa.me/916238165935?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition-transform"

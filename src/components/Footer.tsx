@@ -7,7 +7,7 @@ import { MessageCircle, Mail, MapPin, Phone, ShieldCheck, ArrowUpRight, Sparkles
 
 const SUPPORT_LINKS = [
   { label: "Track Your Order", href: "/order-tracking" },
-  { label: "WhatsApp Order & Care", href: "https://wa.me/917356765036?text=Hi%2C%20I%20have%20an%20inquiry%20about%20Turkiye%20Jam" },
+  { label: "WhatsApp Order & Care", href: "https://wa.me/916238165935?text=Hi%2C%20I%20have%20an%20inquiry%20about%20Turkiye%20Jam" },
   { label: "How to Use & Dosage", href: "/#usage" },
   { label: "Customer Reviews", href: "/#reviews" },
   { label: "Authenticity & Heritage", href: "/#about" },
@@ -123,22 +123,22 @@ export function Footer() {
             <ul className="space-y-2.5 text-sm text-stone-200">
               <li>
                 <a
-                  href="https://wa.me/917356765036"
+                  href="https://wa.me/916238165935"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 hover:text-[#fed000] transition-colors"
                 >
                   <Phone className="w-4 h-4 text-[#fed000]" />
-                  <span>+91 73567 65036</span>
+                  <span>+91 62381 65935</span>
                 </a>
               </li>
               <li>
                 <a
-                  href="mailto:stibelabs@gmail.com"
+                  href="mailto:support@turkiyejam.com"
                   className="inline-flex items-center gap-2 hover:text-[#fed000] transition-colors"
                 >
                   <Mail className="w-4 h-4 text-[#fed000]" />
-                  <span>stibelabs@gmail.com</span>
+                  <span>support@turkiyejam.com</span>
                 </a>
               </li>
               <li className="flex items-center gap-2 text-stone-300">

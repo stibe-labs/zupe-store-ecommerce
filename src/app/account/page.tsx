@@ -848,7 +848,7 @@ export default function AccountPage() {
 
             <div className="flex flex-wrap sm:flex-nowrap gap-2.5">
               <a
-                href="https://wa.me/917356765036?text=Hi%20Turkiye%20Jam%2C%20I%20need%20help%20with%20my%20order%20or%20account"
+                href="https://wa.me/916238165935?text=Hi%20Turkiye%20Jam%2C%20I%20need%20help%20with%20my%20order%20or%20account"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-stone-900 text-xs font-black transition-colors whitespace-nowrap border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] cursor-pointer"
@@ -857,7 +857,7 @@ export default function AccountPage() {
                 <span>WhatsApp</span>
               </a>
               <a
-                href="tel:+917356765036"
+                href="tel:+916238165935"
                 className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-amber-100 text-xs font-bold transition-colors whitespace-nowrap border border-white/20 cursor-pointer"
               >
                 <Phone className="w-3.5 h-3.5" />

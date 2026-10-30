@@ -5,8 +5,8 @@
 import { normalizePhoneNumber } from "@/lib/whatsappOtp";
 
 const DEFAULT_WA_TOKEN =
-  "EAAY6t7MlMOIBSgAfMGRZAJsIudRT1lMXiZARDnHSvqKZAr5ZArjs6htxGbGBlnE1ZCAOvQiOM069AgyzkuZB4UAtMveTfv6gu3Ik2A3nbQDaRIkWB7yuZACwVNS2eDELePKcOJRRnjE3Nx2m728wvYld1VZCMN05fulca3ZA5COTRZB82a9AZAfsAFyrS2XP41f6dRVygZDZD";
-const DEFAULT_WA_PHONE_ID = "1434769426379176";
+  "EAATwm2s3GMYBS7KhJQ2MDiAyAGFS6OwFHiXZAFvfPlyMUg4Jf3wV5e8TPj0PKC8rkE6x9vkzuZANllpjCUHvJaXYAZB6Ursyzc26l0SDJrBEEPJYB4ZB8rjEQ2qTSBI6tEYgZBOTJ47DAmVNAhuyaQAoryvhYiO6vRpAFdE0H61gFXCkwttX5sZCCSyR20kCwOOQZDZD";
+const DEFAULT_WA_PHONE_ID = "1477900698733187";
 const STORE_BASE_URL = "https://turkiyejam.stibelabs.workers.dev";
 
 // Template names - must match exactly what you created in Meta Business Manager
@@ -53,7 +53,7 @@ export async function sendOrderPreConfirmationWhatsApp(
   }
 
   // Meta API does not permit sending messages from the business account to its own number
-  if (digits === "919778137954" || digits === "9778137954") {
+  if (digits === "916238165935" || digits === "6238165935") {
     console.warn("⚠️ [WA Pre-Confirm] Recipient phone is the business's own WhatsApp number. Meta requires testing with an external customer mobile number.");
   }
 

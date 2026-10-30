@@ -233,7 +233,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Self-send check
-  if (digits === "919778137954") {
+  if (digits === "916238165935") {
     diagnosis.push("⚠️ WARNING: You are trying to send a message TO THE SAME NUMBER as your WhatsApp Business Account. Meta does NOT allow a business to send messages to its own number. Use a DIFFERENT phone number for testing!");
   }
 

@@ -247,7 +247,7 @@ export async function GET(req: NextRequest) {
     <p>
       Thank you for confirming! Your order has been verified and updated in our system. Our fulfillment team is now preparing your parcel for prompt dispatch.
     </p>
-    <a class="btn-wa" id="wa-btn" href="https://wa.me/919778137954">
+    <a class="btn-wa" id="wa-btn" href="https://wa.me/916238165935">
       <span>💬 Return to WhatsApp</span>
     </a>
     <p id="countdown" style="font-size: 12px; color: #64748b; margin-bottom: 18px;">
@@ -265,7 +265,7 @@ export async function GET(req: NextRequest) {
       if (secEl) secEl.innerText = timeLeft;
       if (timeLeft <= 0) {
         clearInterval(timer);
-        window.location.href = "https://wa.me/919778137954";
+        window.location.href = "https://wa.me/916238165935";
       }
     }, 1000);
   </script>

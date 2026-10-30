@@ -283,7 +283,7 @@ export default function ShippingAndDeliveryPage() {
                 📧 support@turkiyejam.com
               </a>
               <a
-                href="https://wa.me/917356765036?text=Hi%20Turkiye%20Jam%2C%20I%20have%20an%20inquiry%20about%20shipping"
+                href="https://wa.me/916238165935?text=Hi%20Turkiye%20Jam%2C%20I%20have%20an%20inquiry%20about%20shipping"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-950 font-semibold px-4 py-2 rounded-xl hover:bg-emerald-100 transition-colors"

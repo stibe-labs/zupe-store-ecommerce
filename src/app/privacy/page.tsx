@@ -224,18 +224,18 @@ export default function PrivacyPolicyPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <a
-              href="mailto:support@turkiyejam.in"
+              href="mailto:support@turkiyejam.com"
               className="btn-shimmer inline-flex items-center gap-2 bg-[#fed000] hover:bg-[#fab005] text-stone-900 text-sm font-black px-4 py-2.5 rounded-xl border-2 border-stone-800 shadow-[0_3px_0_0_#2b2b2b] transition-all"
             >
               <Mail className="w-4 h-4 text-stone-900" />
-              support@turkiyejam.in
+              support@turkiyejam.com
             </a>
             <a
-              href="tel:+917356765036"
+              href="tel:+916238165935"
               className="inline-flex items-center gap-2 bg-white hover:bg-stone-50 text-stone-900 border-2 border-stone-800 text-sm font-bold px-4 py-2.5 rounded-xl shadow-[0_3px_0_0_#2b2b2b] transition-all"
             >
               <Phone className="w-4 h-4 text-[#5b1420]" />
-              +91 73567 65036
+              +91 62381 65935
             </a>
           </div>
         </div>

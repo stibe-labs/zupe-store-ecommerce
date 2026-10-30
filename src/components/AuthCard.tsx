@@ -434,7 +434,7 @@ export function AuthCard({
               {/* WhatsApp helper */}
               <div className="pt-2 text-center">
                 <a
-                  href="https://wa.me/919778137954?text=Hi"
+                  href="https://wa.me/916238165935?text=Hi"
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => {

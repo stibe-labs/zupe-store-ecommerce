@@ -1535,7 +1535,7 @@ let inMemorySettings: ERPIntegrationsSettings = {
   storeProfile: {
     storeName: "Turkiye Jam",
     supportEmail: "support@turkiyejam.com",
-    supportPhone: "+91 97441 22853",
+    supportPhone: "+91 62381 65935",
     currency: "INR (₹)",
     freeShippingThreshold: 499,
     standardShippingFee: 49,

@@ -2060,12 +2060,12 @@ export default function ProductDetailPage() {
                             <p className="text-xs text-gray-500 leading-relaxed mt-0.5">
                               Spotted an issue? WhatsApp us at{" "}
                               <a
-                                href="https://wa.me/917356765036?text=Hi%20Turkiye%20Jam%2C%20I%20have%20an%20unboxing%20video%20for%20return%2Fexchange"
+                                href="https://wa.me/916238165935?text=Hi%20Turkiye%20Jam%2C%20I%20have%20an%20unboxing%20video%20for%20return%2Fexchange"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-[#FF7A00] font-bold hover:underline"
                               >
-                                +91 73567 65036
+                                +91 62381 65935
                               </a>{" "}
                               with the video attached and your order number.
                             </p>

@@ -189,10 +189,10 @@ export async function GET(req: NextRequest) {
           "Ensure you entered the 10-digit mobile number used during checkout.",
           "Newly placed orders may take up to 10-15 minutes to reflect in courier tracking systems.",
         ],
-        support_whatsapp: `https://wa.me/917356765036?text=${encodeURIComponent(
+        support_whatsapp: `https://wa.me/916238165935?text=${encodeURIComponent(
           `Hi Turkiye Jam, I need help tracking my order with query "${query}".`
         )}`,
-        support_phone: "+91 73567 65036",
+        support_phone: "+91 62381 65935",
       },
       { status: 404 }
     );

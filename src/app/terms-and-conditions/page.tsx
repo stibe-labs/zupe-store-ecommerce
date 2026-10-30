@@ -169,15 +169,15 @@ export default function TermsAndConditionsPage() {
               href="mailto:support@turkiyejam.in"
               className="inline-flex items-center gap-2 bg-stone-100 border-2 border-stone-800 text-stone-900 font-bold px-4 py-2 rounded-xl hover:bg-stone-200 transition-colors shadow-[0_2px_0_0_#2b2b2b]"
             >
-              📧 support@turkiyejam.in
+              📧 support@turkiyejam.com
             </a>
             <a
-              href="https://wa.me/917356765036?text=Hi%20Turkiye%20Jam%2C%20I%20have%20a%20question%20about%20your%20terms"
+              href="https://wa.me/916238165935?text=Hi%20Turkiye%20Jam%2C%20I%20have%20a%20question%20about%20your%20terms"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#d1fae5] border-2 border-stone-800 text-[#0e4a3b] font-bold px-4 py-2 rounded-xl hover:bg-emerald-200 transition-colors shadow-[0_2px_0_0_#2b2b2b]"
             >
-              💬 WhatsApp: +91 73567 65036
+              💬 WhatsApp: +91 62381 65935
             </a>
           </div>
         </div>
