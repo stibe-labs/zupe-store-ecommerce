@@ -398,6 +398,26 @@ export async function POST(req: NextRequest) {
         console.warn("D1 refund status update error:", d1Err);
       }
 
+      // Dispatch official refund update WhatsApp message to customer
+      if (ord.customer_phone) {
+        try {
+          const { sendRefundUpdateWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+          const refundStatusLabel =
+            normalizedStatus === "Refunded"
+              ? "Refunded to original payment method (Processed)"
+              : normalizedStatus;
+          sendRefundUpdateWhatsApp({
+            customerName: ord.customer_name || "Valued Customer",
+            customerPhone: ord.customer_phone,
+            orderId: orderDisplayId,
+            refundAmount: Number(ord.total_amount) || 0,
+            status: refundStatusLabel,
+          }).catch((e) => console.warn("Failed to dispatch refund update WhatsApp message:", e));
+        } catch (rfWaErr) {
+          console.warn("Failed to import sendRefundUpdateWhatsApp:", rfWaErr);
+        }
+      }
+
       return NextResponse.json({
         success: true,
         order: updatedERP || ord,

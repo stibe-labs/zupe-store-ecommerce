@@ -868,14 +868,7 @@ export async function sendAbandonedCartWhatsApp(
     `Need any assistance? Just reply to this message!\n` +
     `Zupe Store Team`;
 
-  const textSent = await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
-  if (textSent) {
-    console.log(`✅ [WA Abandoned Cart] Recovery WhatsApp message (${source}) dispatched to ${digits}`);
-  } else {
-    console.warn(`⚠️ [WA Abandoned Cart] Cloud API text delivery failed for ${digits}. Customer may be outside 24h window.`);
-  }
-
-  // Concurrently attempt official template dispatch (for when template is approved in Meta)
+  // 1. Try approved Meta template 'zupe_abandoned_cart' first (bypasses 24h customer window)
   try {
     const tokenPart = recoveryUrl.split("recover=")[1] || "";
     const primaryProduct = (items && items[0]?.name) ? items[0].name.slice(0, 60) : "Your Cart Items";
@@ -916,7 +909,18 @@ export async function sendAbandonedCartWhatsApp(
       console.log(`✅ [WA Abandoned Cart] Official template 'zupe_abandoned_cart' dispatched to ${digits}`);
       return true;
     }
-  } catch {}
+    console.warn("[WA Abandoned Cart] Template response:", data?.error?.message || data);
+  } catch (err) {
+    console.warn("[WA Abandoned Cart] Template error:", err);
+  }
+
+  // 2. Direct message fallback if template is rejected or unavailable
+  const textSent = await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
+  if (textSent) {
+    console.log(`✅ [WA Abandoned Cart] Fallback recovery WhatsApp message (${source}) dispatched to ${digits}`);
+  } else {
+    console.warn(`⚠️ [WA Abandoned Cart] Cloud API text delivery failed for ${digits}. Customer may be outside 24h window.`);
+  }
 
   return textSent;
 }
