@@ -902,7 +902,17 @@ function OrdersPageContent() {
                       </div>
                       <a
                         href={`https://wa.me/919744122853?text=${encodeURIComponent(
-                          `Hello Zupe Store Support,\n\nI am following up on my refund for canceled Order ${(ord as any).shopify_order_id || ord.id}.\n• Customer Name: ${ord.customer_name || 'Valued Customer'}\n• Refund Amount: ${refundAmountLabel}\n\nPlease check and process my refund to my payment account. Thank you!`
+                          `👋 Hello Zupe Store Support Team!\n\n` +
+                          `ℹ️ REFUND STATUS INQUIRY\n\n` +
+                          `I am following up on the refund for my cancelled order.\n\n` +
+                          `📦 ORDER DETAILS\n` +
+                          `━━━━━━━━━━━━━━━\n` +
+                          `🆔 Order ID: ${(ord as any).shopify_order_id || (ord.id.startsWith("#") ? ord.id : `#${ord.id}`)}\n` +
+                          `👤 Customer Name: ${ord.customer_name || 'Valued Customer'}\n` +
+                          `💰 Refund Amount: ${refundAmountLabel}\n` +
+                          `━━━━━━━━━━━━━━━\n\n` +
+                          `Please check and process the refund to my payment account. Thank you!\n\n` +
+                          `🧡 Team Zupe Store\n✨ Smart Finds. Better Living.`
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"

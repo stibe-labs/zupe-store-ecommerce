@@ -172,68 +172,169 @@ export async function POST(req: NextRequest) {
       try { rawItems = JSON.parse(ord.items); } catch { rawItems = []; }
     }
     const itemsSummary = rawItems.length > 0
-      ? rawItems.map((it: any) => `${it.product_name || it.name || "Product"} (x${it.quantity || 1})`).join(", ")
-      : "Purchased Items";
+      ? rawItems.map((it: any) => `${it.product_name || it.name || "Product"} × ${it.quantity || 1}`).join(", ")
+      : "Zupe Store Selection";
 
     // 5. Construct the WhatsApp Redirection Message for +91 97441 22853
-    let paymentSection = "";
-    if (isRefundEligible || paymentInfo || razorpayPaymentId) {
-      const amountTitle = isCodPartial
-        ? `Paid Amount: ₹${amountToRefund || 10} (COD Advance Confirmation Fee)`
-        : `Paid Amount: ₹${amountToRefund || totalAmount}`;
-
-      const methodFormatted = paymentInfo?.paymentSummary ||
-        (isCodPartial
-          ? `Cash on Delivery (₹${amountToRefund || 10} Advance via Online)`
-          : "Prepaid (Online Payment)");
-
-      paymentSection = [
-        "💳 *Original Payment Information:*",
-        `• Payment ID: ${razorpayPaymentId || paymentInfo?.id || "Verified at Checkout"}`,
-        `• ${amountTitle}`,
-        `• Payment Method: ${methodFormatted}`,
-        paymentInfo?.vpa ? `• Customer UPI ID / VPA: ${paymentInfo.vpa}` : null,
-        paymentInfo?.card?.last4 ? `• Card: ${paymentInfo.card.type || "Card"} ending in ${paymentInfo.card.last4} (${paymentInfo.card.network || ""})` : null,
-        paymentInfo?.bank ? `• Bank: ${paymentInfo.bank}` : null,
-        `• Status: Successful (Captured)`,
-      ].filter(Boolean).join("\n");
-    } else {
-      paymentSection = [
-        "💳 *Payment Mode:*",
-        `• Method: ${(ord as any)?.payment_method || "Cash on Delivery"}`,
-        `• Order Total: ₹${totalAmount}`,
-        `• Advance Paid: ₹0 (No Online Payment Collected)`,
-      ].join("\n");
+    function formatIndianMobile(raw: string): string {
+      if (!raw) return "+91 80897 32385";
+      const digits = raw.replace(/\D/g, "");
+      if (digits.length === 10) {
+        return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
+      }
+      if (digits.length === 12 && digits.startsWith("91")) {
+        const main = digits.slice(2);
+        return `+91 ${main.slice(0, 5)} ${main.slice(5)}`;
+      }
+      return raw.startsWith("+") ? raw : `+${raw}`;
     }
 
-    const currentDateStr = new Date().toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
+    const now = new Date();
+    const cancellationDate = now.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "long",
       year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+      timeZone: "Asia/Kolkata",
     });
+    const cancellationTime = now.toLocaleTimeString("en-IN", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: "Asia/Kolkata",
+    }).toUpperCase();
 
-    const refundRequestNote = isRefundEligible
-      ? `Please process the refund of ₹${amountToRefund} to my payment account. Thank you!`
-      : `My order has been cancelled. Thank you!`;
+    let paymentDetailsLines: string[] = [];
+    let confirmationLines: string[] = [];
+
+    if (!isRefundEligible || (amountToRefund === 0 && !hasRazorpayRef)) {
+      // Pure COD with no advance paid
+      paymentDetailsLines = [
+        "💳 PAYMENT & REFUND DETAILS",
+        "━━━━━━━━━━━━━━━",
+        "💵 Payment Method: Cash on Delivery (COD)",
+        `💰 Order Amount: ₹${totalAmount.toLocaleString("en-IN")}`,
+        "✅ Amount Paid: ₹0",
+        "💸 Refund Amount: ₹0",
+        "📌 Refund Status: No refund required, as no online payment was made.",
+        "━━━━━━━━━━━━━━━",
+      ];
+
+      confirmationLines = [
+        "📌 CANCELLATION CONFIRMATION",
+        "",
+        "✅ My order has been cancelled successfully.",
+        "💳 No refund is applicable because I have not made any advance payment.",
+      ];
+    } else {
+      // Online Payment (Prepaid or COD Advance Fee)
+      const paidAmount = isCodPartial ? (amountToRefund || 10) : (amountToRefund || totalAmount);
+      const isUpi = paymentInfo?.method === "upi" || Boolean(paymentInfo?.vpa);
+      const isCard = paymentInfo?.method === "card" || Boolean(paymentInfo?.card?.last4);
+      const isNetbanking = paymentInfo?.method === "netbanking" || Boolean(paymentInfo?.bank);
+      const isWallet = paymentInfo?.method === "wallet" || Boolean(paymentInfo?.wallet);
+
+      let methodLabel = "";
+      if (isCodPartial) {
+        methodLabel = `Cash on Delivery (COD) + ₹${paidAmount} Advance Paid Online`;
+      } else if (isUpi) {
+        methodLabel = "UPI Instant Payment";
+      } else if (isCard) {
+        const cardType = paymentInfo?.card?.type
+          ? (paymentInfo.card.type.toLowerCase() === "credit" ? "Credit Card" : "Debit Card")
+          : "Credit / Debit Card";
+        const network = paymentInfo?.card?.network ? ` (${paymentInfo.card.network})` : "";
+        methodLabel = `${cardType}${network}`;
+      } else if (isNetbanking) {
+        methodLabel = `Netbanking (${paymentInfo?.bank || "Bank Transfer"})`;
+      } else if (isWallet) {
+        methodLabel = `Wallet (${paymentInfo?.wallet || "E-Wallet"})`;
+      } else {
+        methodLabel = paymentInfo?.paymentSummary || "Prepaid (Online Payment)";
+      }
+
+      const refundStatusText = isCodPartial
+        ? `Refund of ₹${amountToRefund.toLocaleString("en-IN")} advance confirmation fee requested to original payment source.`
+        : `100% full refund requested to original payment source.`;
+
+      paymentDetailsLines = [
+        "💳 PAYMENT & REFUND DETAILS",
+        "━━━━━━━━━━━━━━━",
+        `💵 Payment Method: ${methodLabel}`,
+        `💰 Order Amount: ₹${totalAmount.toLocaleString("en-IN")}`,
+        `✅ Amount Paid: ₹${paidAmount.toLocaleString("en-IN")}${isCodPartial ? " (Advance Confirmation Fee)" : ""}`,
+        `💸 Refund Amount: ₹${amountToRefund.toLocaleString("en-IN")}`,
+        `📌 Refund Status: ${refundStatusText}`,
+        `🆔 Payment ID: ${razorpayPaymentId || paymentInfo?.id || "Verified at Checkout"}`,
+      ];
+
+      let refundSourceDescriptor = "my original payment account";
+
+      // If client paid via UPI, mention UPI ID:
+      if (paymentInfo?.vpa) {
+        paymentDetailsLines.push(`📱 UPI ID: ${paymentInfo.vpa}`);
+        refundSourceDescriptor = `my UPI ID (${paymentInfo.vpa})`;
+      } else if (isUpi) {
+        paymentDetailsLines.push(`📱 Payment Mode: UPI Instant`);
+        refundSourceDescriptor = `my original UPI payment account`;
+      }
+
+      // If client paid via Credit/Debit card, mention Card Details:
+      if (paymentInfo?.card?.last4) {
+        const cardType = paymentInfo?.card?.type
+          ? (paymentInfo.card.type.toLowerCase() === "credit" ? "Credit Card" : "Debit Card")
+          : "Card";
+        const network = paymentInfo?.card?.network ? ` (${paymentInfo.card.network})` : "";
+        paymentDetailsLines.push(`💳 Card Details: ${cardType} ending in ${paymentInfo.card.last4}${network}`);
+        refundSourceDescriptor = `my ${cardType} ending in ${paymentInfo.card.last4}`;
+      }
+
+      if (paymentInfo?.bank) {
+        paymentDetailsLines.push(`🏦 Bank: ${paymentInfo.bank}`);
+        if (!paymentInfo?.vpa && !paymentInfo?.card?.last4) {
+          refundSourceDescriptor = `my ${paymentInfo.bank} account`;
+        }
+      }
+
+      if (paymentInfo?.wallet) {
+        paymentDetailsLines.push(`👛 Wallet: ${paymentInfo.wallet}`);
+      }
+
+      paymentDetailsLines.push("━━━━━━━━━━━━━━━");
+
+      confirmationLines = [
+        "📌 CANCELLATION CONFIRMATION",
+        "",
+        "✅ My order has been cancelled successfully.",
+        `💳 Please process the refund of ₹${amountToRefund.toLocaleString("en-IN")} directly to ${refundSourceDescriptor}.`,
+      ];
+    }
 
     const whatsappMessage = [
-      "Hello Zupe Store Support Team,",
+      "👋 Hello Zupe Store Support Team!",
       "",
-      "I have canceled my order and would like to request my refund.",
+      "❌ ORDER CANCELLATION REQUEST",
       "",
-      "📦 *Canceled Order Details:*",
-      `• Order ID: ${displayOrderId} (${orderId})`,
-      `• Customer Name: ${custName}`,
-      `• Customer Phone: ${custPhone || "Registered Contact"}`,
-      `• Items: ${itemsSummary}`,
-      `• Total Amount: ₹${totalAmount}`,
-      `• Canceled On: ${currentDateStr}`,
+      "⚠️I have successfully cancelled my order and would like to confirm the cancellation details.",
       "",
-      paymentSection,
+      "📦 CANCELLED ORDER DETAILS",
+      "━━━━━━━━━━━━━━━",
+      `🆔 Order ID: ${displayOrderId}`,
+      `👤 Customer Name: ${custName}`,
+      `📱 Mobile Number: ${formatIndianMobile(custPhone)}`,
+      `🛍️ Product: ${itemsSummary}`,
+      `💰 Total Order Value: ₹${totalAmount.toLocaleString("en-IN")}`,
+      `📅 Cancellation Date: ${cancellationDate}`,
+      `⏰ Cancellation Time: ${cancellationTime}`,
+      "━━━━━━━━━━━━━━━",
       "",
-      refundRequestNote,
+      ...paymentDetailsLines,
+      "",
+      ...confirmationLines,
+      "",
+      "🙏 Thank you for your support!",
+      "",
+      "🧡 Team Zupe Store",
+      "✨ Smart Finds. Better Living.",
     ].join("\n");
 
     const whatsappRedirectUrl = `https://wa.me/${REFUND_WHATSAPP_PHONE}?text=${encodeURIComponent(whatsappMessage)}`;
