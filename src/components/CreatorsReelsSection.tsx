@@ -27,7 +27,7 @@ const SEED_CREATOR_VIDEOS: ProductVideo[] = [
     title: "Titan Minimalist Watch Hands-on",
     videoUrl:
       "https://pub-abec22fbfdb8446490341e69eabe6a1c.r2.dev/videos/1791519244046-VID_20260913_013314_447-9d231d.mp4",
-    posterUrl: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800",
+    posterUrl: "",
     viewsText: "28.4k",
     badge: "POPULAR",
     productName: "Titan Minimalist Analog Watch",
@@ -35,7 +35,7 @@ const SEED_CREATOR_VIDEOS: ProductVideo[] = [
     productMrp: 2999,
     productSlug: "watch",
     productImage:
-      "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=600",
+      "https://www.titan.co.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw429f4592/images/Titan/Catalog/10011NM01_1.jpg?sw=600&sh=600",
     active: true,
     createdAt: "2026-03-08T12:00:00.000Z",
   },
@@ -110,7 +110,8 @@ export function CreatorsReelsSection() {
   const { user, openAuthModal } = useAuth();
   const { addToCart, addItem } = useCart();
 
-  const [videos, setVideos] = useState<ProductVideo[]>(SEED_CREATOR_VIDEOS);
+  const [videos, setVideos] = useState<ProductVideo[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
@@ -145,12 +146,16 @@ export function CreatorsReelsSection() {
       })
       .catch((err) => {
         console.warn("Failed to load home creator reels:", err);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
   const totalItems = videos.length;
-  // Triplicate array to guarantee continuous, infinite wrap-around
-  const extendedVideos = [...videos, ...videos, ...videos];
+  // Only triplicate if we have 3 or more videos for continuous infinite marquee.
+  // If 1 or 2 videos, never repeat/triplicate them!
+  const extendedVideos = totalItems >= 3 ? [...videos, ...videos, ...videos] : videos;
 
   // Measure card width + gap dynamically
   const measureStepWidth = useCallback(() => {
@@ -378,7 +383,10 @@ export function CreatorsReelsSection() {
           ref={trackRef}
           onTransitionEnd={handleTransitionEnd}
           style={{
-            transform: `translate3d(-${currentIndex * stepWidth}px, 0, 0)`,
+            transform:
+              totalItems <= 1
+                ? "none"
+                : `translate3d(-${currentIndex * stepWidth}px, 0, 0)`,
             transition: isTransitioning
               ? "transform 0.65s cubic-bezier(0.25, 1, 0.5, 1)"
               : "none",
@@ -386,10 +394,7 @@ export function CreatorsReelsSection() {
           className="flex items-stretch gap-2.5 sm:gap-3.5 md:gap-4 will-change-transform"
         >
           {extendedVideos.map((video, idx) => {
-            const poster =
-              video.posterUrl ||
-              video.productImage ||
-              "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800";
+            const poster = video.posterUrl || video.productImage || undefined;
 
             return (
               <div
@@ -503,7 +508,7 @@ export function CreatorsReelsSection() {
               <video
                 ref={modalVideoRef}
                 src={currentModalVideo.videoUrl}
-                poster={currentModalVideo.posterUrl}
+                poster={currentModalVideo.posterUrl || currentModalVideo.productImage || undefined}
                 autoPlay
                 loop
                 playsInline

@@ -392,7 +392,7 @@ export async function POST(req: NextRequest) {
     const rawPoster =
       poster_image ||
       existingProd?.poster_image ||
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+      "";
 
     const rawImagesList = images !== undefined
       ? (Array.isArray(images) ? images : [images])

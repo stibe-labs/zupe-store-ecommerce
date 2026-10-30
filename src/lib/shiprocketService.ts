@@ -826,7 +826,7 @@ export async function processShiprocketWebhook(payload: any): Promise<Shiprocket
       } catch (e) {}
     }
   } else if (mapped.deliveryStatus === "In Transit") {
-    if (previousStatus !== "In Transit" && previousStatus !== "Shipped" && targetOrder.customer_phone) {
+    if (previousStatus !== "In Transit" && (previousStatus as string) !== "Shipped" && targetOrder.customer_phone) {
       try {
         const { sendOrderShippedWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
         sendOrderShippedWhatsApp({

@@ -229,7 +229,8 @@ export default function AdminReviewsPage() {
       if (data.success && Array.isArray(data.videos)) {
         setVideos(data.videos);
         if (Array.isArray(data.homeVideoIds)) {
-          setHomeVideoIds(data.homeVideoIds);
+          const availIds = new Set(data.videos.map((v: any) => v.id));
+          setHomeVideoIds(data.homeVideoIds.filter((id: string) => availIds.has(id)));
         }
       }
     } catch (err) {
@@ -254,7 +255,7 @@ export default function AdminReviewsPage() {
       } catch {}
       if (p.images.startsWith("http")) return p.images;
     }
-    return "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200";
+    return "/images/placeholder.png";
   };
 
   const fetchProducts = async () => {
@@ -498,7 +499,8 @@ export default function AdminReviewsPage() {
   };
 
   const handleOpenHomeSelector = () => {
-    setSelectorSelectedIds([...homeVideoIds]);
+    const validIds = new Set(videos.map((v) => v.id));
+    setSelectorSelectedIds(homeVideoIds.filter((id) => validIds.has(id)));
     setSelectorSearch("");
     setHomeSelectorModalOpen(true);
   };
@@ -563,6 +565,60 @@ export default function AdminReviewsPage() {
     setUploadedVideoMeta({ name: file.name, size: formattedSize });
     setIsUploadingVideo(true);
     setVideoUploadProgress(0);
+
+    // Auto-extract first frame as default poster thumbnail if user hasn't uploaded one
+    try {
+      const vEl = document.createElement("video");
+      const tempUrl = URL.createObjectURL(file);
+      vEl.src = tempUrl;
+      vEl.muted = true;
+      vEl.playsInline = true;
+      vEl.preload = "auto";
+      vEl.currentTime = 0.05;
+      vEl.onloadeddata = () => {
+        vEl.currentTime = 0.05;
+      };
+      vEl.onseeked = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = vEl.videoWidth || 720;
+          canvas.height = vEl.videoHeight || 1280;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(vEl, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+            URL.revokeObjectURL(tempUrl);
+            setVideoForm((prev) => {
+              if (!prev.posterUrl) {
+                fetch("/api/admin/upload", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ dataUrl, folder: "images" }),
+                })
+                  .then((r) => r.json())
+                  .then((d) => {
+                    if (d.success && d.url) {
+                      setVideoForm((current) => ({
+                        ...current,
+                        posterUrl: current.posterUrl || d.url,
+                      }));
+                    }
+                  })
+                  .catch((err) => console.warn("Auto first-frame upload fallback:", err));
+              }
+              return prev;
+            });
+            return;
+          }
+        } catch (e) {
+          console.warn("First frame canvas extraction error:", e);
+        }
+        URL.revokeObjectURL(tempUrl);
+      };
+      vEl.onerror = () => URL.revokeObjectURL(tempUrl);
+    } catch (e) {
+      console.warn("Could not extract frame from video:", e);
+    }
 
     const formData = new FormData();
     formData.append("file", file);
@@ -805,7 +861,7 @@ export default function AdminReviewsPage() {
         "Absolute life saver during periods",
         "Relieved cramping within 10 minutes. 3 heat modes and gentle vibration are wonderful. Premium velvety fabric.",
         "2026-02-14",
-        "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600",
+        "",
         "Amazon",
       ],
       [
@@ -825,7 +881,7 @@ export default function AdminReviewsPage() {
         "Mesmerizing ceiling visual",
         "The rotating water ripple effect looks incredible at night in our bedroom. Solid wood base feels heavy.",
         "2026-01-28",
-        "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=600",
+        "/products/ripple/ripple-amber.jpg",
         "Amazon",
       ],
       [
@@ -1711,10 +1767,7 @@ export default function AdminReviewsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                   {filteredVideos.map((vid) => {
                     const prod = getProductInfo(vid.productId);
-                    const poster =
-                      vid.posterUrl ||
-                      prod?.image ||
-                      "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800";
+                    const poster = vid.posterUrl || prod?.image || "";
                     const isOnHome = homeVideoIds.includes(vid.id);
 
                     return (
@@ -1726,12 +1779,26 @@ export default function AdminReviewsPage() {
                       >
                         {/* 9:16 Video Thumbnail Container */}
                         <div className="relative aspect-[9/16] bg-slate-900 overflow-hidden">
-                          <img
-                            src={poster}
-                            alt={vid.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
+                          {poster ? (
+                            <img
+                              src={poster}
+                              alt={vid.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : vid.videoUrl ? (
+                            <video
+                              src={`${vid.videoUrl}#t=0.001`}
+                              preload="metadata"
+                              playsInline
+                              muted
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-slate-900 flex items-center justify-center">
+                              <Video className="w-8 h-8 text-slate-700" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none" />
 
                           {/* Top Badges */}
                           <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10 gap-1">
@@ -2656,13 +2723,13 @@ export default function AdminReviewsPage() {
                 )}
 
                 {/* Inline Poster Thumbnail Preview */}
-                {videoForm.posterUrl && !isUploadingPoster && (
+                {videoForm.posterUrl && !isUploadingPoster ? (
                   <div className="mt-2 p-1.5 bg-slate-50 rounded-xl flex items-center gap-2.5 border border-slate-200 animate-fadeIn">
                     <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-200 shrink-0 border border-slate-300">
                       <img src={videoForm.posterUrl} alt="Poster" className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0 text-xs">
-                      <p className="font-bold text-slate-700 text-[11px] truncate">Thumbnail Poster Preview</p>
+                      <p className="font-bold text-slate-700 text-[11px] truncate">Custom Thumbnail Cover</p>
                       <p className="text-[10px] text-slate-400 truncate">{videoForm.posterUrl}</p>
                     </div>
                     <button
@@ -2674,7 +2741,26 @@ export default function AdminReviewsPage() {
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                )}
+                ) : !videoForm.posterUrl && videoForm.videoUrl && !isUploadingVideo ? (
+                  <div className="mt-2 p-1.5 bg-slate-50 rounded-xl flex items-center gap-2.5 border border-slate-200 animate-fadeIn">
+                    <div className="w-10 h-14 rounded-lg overflow-hidden bg-slate-900 shrink-0 border border-slate-300 relative">
+                      <video
+                        src={`${videoForm.videoUrl}#t=0.001`}
+                        preload="metadata"
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover pointer-events-none"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0 text-xs">
+                      <p className="font-bold text-slate-700 text-[11px] truncate flex items-center gap-1.5">
+                        <span>Video First Frame Cover</span>
+                        <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-700 rounded text-[9px] font-bold">Auto</span>
+                      </p>
+                      <p className="text-[10px] text-slate-400 truncate">No custom thumbnail attached — using video&apos;s first frame as cover</p>
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
               {/* Views & Badge */}
@@ -2920,7 +3006,7 @@ export default function AdminReviewsPage() {
                   const isSelected = selectorSelectedIds.includes(vid.id);
                   const orderIdx = selectorSelectedIds.indexOf(vid.id);
                   const prod = getProductInfo(vid.productId);
-                  const poster = vid.posterUrl || prod?.image || "/products/ripple/ripple-amber.jpg";
+                  const poster = vid.posterUrl || prod?.image || "";
 
                   return (
                     <div
@@ -2952,8 +3038,22 @@ export default function AdminReviewsPage() {
 
                         {/* Thumbnail */}
                         <div className="w-10 h-14 rounded-lg bg-slate-900 overflow-hidden relative shrink-0">
-                          <img src={poster} alt="" className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          {poster ? (
+                            <img src={poster} alt="" className="w-full h-full object-cover" />
+                          ) : vid.videoUrl ? (
+                            <video
+                              src={`${vid.videoUrl}#t=0.001`}
+                              preload="metadata"
+                              playsInline
+                              muted
+                              className="w-full h-full object-cover pointer-events-none"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                              <Video className="w-4 h-4 text-slate-600" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
                             <Play className="w-3.5 h-3.5 fill-white text-white" />
                           </div>
                         </div>

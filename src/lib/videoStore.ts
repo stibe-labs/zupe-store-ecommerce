@@ -91,14 +91,14 @@ const DEFAULT_VIDEOS: ProductVideo[] = [
     productId: "watch",
     title: "Titan Minimalist Watch Hands-on",
     videoUrl: "https://pub-abec22fbfdb8446490341e69eabe6a1c.r2.dev/videos/1791519244046-VID_20260913_013314_447-9d231d.mp4",
-    posterUrl: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800",
+    posterUrl: "",
     viewsText: "28.4k",
     badge: "POPULAR",
     productName: "Titan Minimalist Analog Watch",
     productPrice: 1799,
     productMrp: 2999,
     productSlug: "watch",
-    productImage: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=600",
+    productImage: "https://www.titan.co.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw429f4592/images/Titan/Catalog/10011NM01_1.jpg?sw=600&sh=600",
     active: true,
     createdAt: "2026-03-08T12:00:00.000Z",
   },
@@ -107,14 +107,14 @@ const DEFAULT_VIDEOS: ProductVideo[] = [
     productId: "watch",
     title: "Titan Minimalist Analog Watch Details",
     videoUrl: "https://pub-abec22fbfdb8446490341e69eabe6a1c.r2.dev/videos/1791519244046-VID_20260913_013314_447-9d231d.mp4",
-    posterUrl: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800",
+    posterUrl: "",
     viewsText: "24.5k",
     badge: "NEW",
     productName: "watch",
     productPrice: 1799,
     productMrp: 3499,
     productSlug: "watch",
-    productImage: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=600",
+    productImage: "https://www.titan.co.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw429f4592/images/Titan/Catalog/10011NM01_1.jpg?sw=600&sh=600",
     active: true,
     createdAt: "2026-03-08T12:00:00.000Z",
   },
@@ -123,14 +123,14 @@ const DEFAULT_VIDEOS: ProductVideo[] = [
     productId: "portable-menstrual-heating-pad",
     title: "Instant Relief & 3 Heat Modes Demo",
     videoUrl: "/videos/creator-bear.mp4",
-    posterUrl: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800",
+    posterUrl: "",
     viewsText: "29.7k",
     badge: "NEW",
     productName: "Portable Menstrual Heating Pad",
     productPrice: 799,
     productMrp: 1149,
     productSlug: "portable-menstrual-heating-pad",
-    productImage: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600",
+    productImage: "/products/heating-pad/heating-pad-main.jpg",
     active: true,
     createdAt: "2026-03-01T10:00:00.000Z",
   },
@@ -139,14 +139,14 @@ const DEFAULT_VIDEOS: ProductVideo[] = [
     productId: "portable-menstrual-heating-pad",
     title: "How to wear & gentle vibration mode",
     videoUrl: "/videos/creator-bear.mp4",
-    posterUrl: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800",
+    posterUrl: "",
     viewsText: "18.4k",
     badge: "TRENDING",
     productName: "Portable Menstrual Heating Pad",
     productPrice: 799,
     productMrp: 1149,
     productSlug: "portable-menstrual-heating-pad",
-    productImage: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600",
+    productImage: "/products/heating-pad/heating-pad-main.jpg",
     active: true,
     createdAt: "2026-03-05T12:00:00.000Z",
   },
@@ -155,14 +155,14 @@ const DEFAULT_VIDEOS: ProductVideo[] = [
     productId: "portable-mist-cooling-fan",
     title: "Ice Cold Mist Air in 5 Seconds!",
     videoUrl: "/videos/creator-sintel.mp4",
-    posterUrl: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800",
+    posterUrl: "",
     viewsText: "34.1k",
     badge: "NEW",
     productName: "Portable Mist Cooling Fan",
     productPrice: 899,
     productMrp: 1499,
     productSlug: "portable-mist-cooling-fan",
-    productImage: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=600",
+    productImage: "/products/mist-fan/mist-fan-main.jpg",
     active: true,
     createdAt: "2026-02-28T09:00:00.000Z",
   },
@@ -171,14 +171,14 @@ const DEFAULT_VIDEOS: ProductVideo[] = [
     productId: "ripple-lamp",
     title: "Ocean Wave Visual Effect in Bedroom",
     videoUrl: "/videos/creator-flower.mp4",
-    posterUrl: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800",
+    posterUrl: "",
     viewsText: "42.8k",
     badge: "POPULAR",
     productName: "Rotating Water Ripple Lamp",
     productPrice: 1299,
     productMrp: 2499,
     productSlug: "rotating-water-ripple-lamp",
-    productImage: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600",
+    productImage: "/products/ripple/ripple-amber.jpg",
     active: true,
     createdAt: "2026-02-15T15:30:00.000Z",
   },
@@ -194,6 +194,17 @@ export async function getHomePageVideoIds(): Promise<string[]> {
     return cachedHomeVideoIds;
   }
 
+  // Get active existing video IDs in DB first so we never return deleted phantom IDs
+  let existingIdSet: Set<string> | null = null;
+  try {
+    const existingRows = await executeD1Query<{ id: string }>(
+      "SELECT id FROM product_videos WHERE active != 0"
+    );
+    if (existingRows && existingRows.length > 0) {
+      existingIdSet = new Set(existingRows.map((r) => r.id));
+    }
+  } catch {}
+
   try {
     const rows = await executeD1Query<{ provider: string; config_data: string }>(
       "SELECT config_data FROM integrations_config WHERE provider = ?",
@@ -207,12 +218,23 @@ export async function getHomePageVideoIds(): Promise<string[]> {
       } else if (parsed && Array.isArray(parsed.videoIds)) {
         ids = parsed.videoIds;
       }
+      if (existingIdSet && existingIdSet.size > 0) {
+        ids = ids.filter((id) => existingIdSet!.has(id));
+      }
       cachedHomeVideoIds = ids;
       homeVideoIdsCacheTime = now;
       return ids;
     }
   } catch (err) {
     console.warn("Error fetching homepage_video_ids from D1:", err);
+  }
+
+  // If DB has videos, return existing ones rather than stale defaultIds
+  if (existingIdSet && existingIdSet.size > 0) {
+    const fallbackIds = Array.from(existingIdSet);
+    cachedHomeVideoIds = fallbackIds;
+    homeVideoIdsCacheTime = now;
+    return fallbackIds;
   }
 
   // Default home page featured video IDs
@@ -574,9 +596,54 @@ export async function updateVideo(
  */
 export async function deleteVideo(id: string): Promise<boolean> {
   inMemoryVideos = inMemoryVideos.filter((v) => v.id !== id);
+  cachedHomeVideoIds = null;
+  homeVideoIdsCacheTime = 0;
 
   try {
+    // 1. Delete from product_videos table
     await executeD1Query(`DELETE FROM product_videos WHERE id = ?`, [id]);
+
+    // 2. Remove from homepage_video_ids in integrations_config
+    try {
+      const cfgRows = await executeD1Query<{ config_data: string }>(
+        "SELECT config_data FROM integrations_config WHERE provider = 'homepage_video_ids'"
+      );
+      if (cfgRows && cfgRows.length > 0 && cfgRows[0].config_data) {
+        const parsed = JSON.parse(cfgRows[0].config_data);
+        const rawIds: string[] = Array.isArray(parsed) ? parsed : (parsed?.videoIds || []);
+        const filtered = rawIds.filter((vId) => vId !== id);
+        await executeD1Query(
+          "UPDATE integrations_config SET config_data = ?, updated_at = datetime('now') WHERE provider = 'homepage_video_ids'",
+          [JSON.stringify({ videoIds: filtered })]
+        );
+      }
+    } catch (e) {
+      console.warn("Could not clean up homepage_video_ids on video delete:", e);
+    }
+
+    // 3. Remove from products.video_ids for all products
+    try {
+      const prodRows = await executeD1Query<{ id: string; video_ids: string }>(
+        "SELECT id, video_ids FROM products WHERE video_ids IS NOT NULL AND video_ids != ''"
+      );
+      for (const prod of prodRows) {
+        if (prod.video_ids && prod.video_ids.includes(id)) {
+          try {
+            const parsed = JSON.parse(prod.video_ids);
+            if (Array.isArray(parsed)) {
+              const cleaned = parsed.filter((vId) => vId !== id);
+              await executeD1Query(
+                "UPDATE products SET video_ids = ?, updated_at = datetime('now') WHERE id = ?",
+                [cleaned.length > 0 ? JSON.stringify(cleaned) : null, prod.id]
+              );
+            }
+          } catch {}
+        }
+      }
+    } catch (e) {
+      console.warn("Could not clean up product video_ids on video delete:", e);
+    }
+
     return true;
   } catch (err) {
     console.warn("Could not delete video from D1:", err);

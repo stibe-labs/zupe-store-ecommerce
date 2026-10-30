@@ -343,7 +343,23 @@ export async function POST(req: NextRequest) {
     // Resolve display order ID (e.g. #1567)
     const displayOrderId = (newOrder as any).shopify_order_id || orderId;
 
-    // Send WhatsApp interactive pre-confirmation with [Confirm Order] and [Cancel Order] buttons for all orders
+    // 1. For prepaid orders: Immediately dispatch official Payment Successful receipt (zupe_payment_successful)
+    if (!isCodPartial) {
+      try {
+        const { sendPaymentSuccessfulWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+        await sendPaymentSuccessfulWhatsApp({
+          customerName: customer_name || "Customer",
+          customerPhone: customer_phone || "",
+          orderId: displayOrderId,
+          paidAmount: Number(total_amount),
+        });
+        console.log(`[Verify Payment] WhatsApp payment receipt (zupe_payment_successful) dispatched for order ${orderId} (${displayOrderId})`);
+      } catch (payWaErr) {
+        console.warn("Failed to dispatch WA payment successful receipt:", payWaErr);
+      }
+    }
+
+    // 2. Send WhatsApp interactive pre-confirmation with [Confirm Order] and [Cancel Order] buttons for all orders
     try {
       const { sendOrderPreConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
       await sendOrderPreConfirmationWhatsApp({

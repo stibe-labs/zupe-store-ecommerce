@@ -29,7 +29,7 @@ export interface OrderRecord {
   discount_amount?: number;
   promo_code?: string;
   payment_method: string;
-  payment_status: "pending" | "paid" | "failed" | "refunded";
+  payment_status: "pending" | "paid" | "failed" | "refunded" | "refund_pending" | "refund_rejected";
   order_status: "processing" | "shipped" | "delivered" | "cancelled";
   whatsapp_confirm_status?: "pending_whatsapp" | "confirmed" | "cancelled";
   whatsapp_confirm_token?: string;

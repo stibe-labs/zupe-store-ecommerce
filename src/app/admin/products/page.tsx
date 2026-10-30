@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
@@ -298,6 +298,13 @@ export default function AdminProductsPage() {
   const [videoSearchTerm, setVideoSearchTerm] = useState<string>("");
   const [videoPreviewItem, setVideoPreviewItem] = useState<ProductVideo | null>(null);
 
+  // Synchronized list of selected video IDs that actually exist in the current video library
+  const validFormVideoIds = useMemo(() => {
+    if (availableVideos.length === 0) return formVideoIds;
+    const availableSet = new Set(availableVideos.map((v) => v.id));
+    return formVideoIds.filter((id) => availableSet.has(id));
+  }, [formVideoIds, availableVideos]);
+
   const fetchAvailableVideos = async () => {
     setLoadingVideos(true);
     try {
@@ -306,6 +313,8 @@ export default function AdminProductsPage() {
         const data = await res.json();
         if (data.success && Array.isArray(data.videos)) {
           setAvailableVideos(data.videos);
+          const availSet = new Set(data.videos.map((v: any) => v.id));
+          setFormVideoIds((prev) => prev.filter((id) => availSet.has(id)));
         }
       }
     } catch (err) {
@@ -682,8 +691,12 @@ export default function AdminProductsPage() {
       setFormHowToUseSteps([]);
     }
     setEmptyStepWarningModal(null);
+    const availSet = new Set(availableVideos.map((v) => v.id));
     if (prod.video_ids && Array.isArray(prod.video_ids)) {
-      setFormVideoIds([...prod.video_ids]);
+      const sanitized = availSet.size > 0
+        ? prod.video_ids.filter((id: string) => availSet.has(id))
+        : [...prod.video_ids];
+      setFormVideoIds(sanitized);
     } else {
       const normId = (prod.id || "").toLowerCase().trim();
       const normSlug = (prod.slug || "").toLowerCase().trim();
@@ -1182,7 +1195,7 @@ export default function AdminProductsPage() {
         card_shadow: formHowToUseCardShadow,
         steps: formHowToUseSteps,
       },
-      video_ids: formVideoIds,
+      video_ids: validFormVideoIds,
     };
 
     // Pre-publish empty-step warning (Specification §10)
@@ -1526,7 +1539,7 @@ export default function AdminProductsPage() {
                                   className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0"
                                   onError={(e) => {
                                     (e.target as any).src =
-                                      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                                      "/images/placeholder.png";
                                   }}
                                 />
                               ) : (
@@ -1879,7 +1892,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <Video className="w-3.5 h-3.5" />
-                <span>8. Action Videos ({formVideoIds.length})</span>
+                <span>8. Action Videos ({validFormVideoIds.length})</span>
               </button>
             </div>
 
@@ -2682,7 +2695,7 @@ export default function AdminProductsPage() {
                             className="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0"
                             onError={(e) => {
                               (e.target as any).src =
-                                "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                                "/images/placeholder.png";
                             }}
                           />
                           <div className="min-w-0">
@@ -2788,7 +2801,7 @@ export default function AdminProductsPage() {
                                   className="w-full h-full object-cover pointer-events-none"
                                   onError={(e) => {
                                     (e.target as any).src =
-                                      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                                      "/images/placeholder.png";
                                   }}
                                 />
 
@@ -3113,7 +3126,7 @@ export default function AdminProductsPage() {
                                     className="w-7 h-7 rounded-md object-cover border border-slate-200 shrink-0"
                                     onError={(e) => {
                                       (e.target as any).src =
-                                        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                                        "/images/placeholder.png";
                                     }}
                                   />
                                 )}
@@ -3189,7 +3202,7 @@ export default function AdminProductsPage() {
                                         className="w-full h-full object-cover pointer-events-none"
                                         onError={(e) => {
                                           (e.target as any).src =
-                                            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                                            "/images/placeholder.png";
                                         }}
                                       />
                                       {/* Sequence Badge */}
@@ -3543,7 +3556,7 @@ export default function AdminProductsPage() {
                                       className="w-full h-full object-cover"
                                       onError={(e) => {
                                         (e.target as any).src =
-                                          "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                                          "/images/placeholder.png";
                                       }}
                                     />
                                   </div>
@@ -3628,7 +3641,7 @@ export default function AdminProductsPage() {
                                     className="w-full max-h-72 object-contain mx-auto"
                                     onError={(e) => {
                                       (e.target as any).src =
-                                        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop";
+                                        "/images/placeholder.png";
                                     }}
                                   />
                                 </div>
@@ -4320,7 +4333,7 @@ export default function AdminProductsPage() {
                           SEE IT IN ACTION Videos
                         </h4>
                         <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FF7A00]/10 text-[#FF7A00] border border-[#FF7A00]/20">
-                          {formVideoIds.length} Selected
+                          {validFormVideoIds.length} Selected
                         </span>
                       </div>
                       <p className="text-xs text-slate-600 leading-relaxed max-w-xl">
@@ -4470,11 +4483,16 @@ export default function AdminProductsPage() {
                       return (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5">
                           {filtered.map((v) => {
-                            const isSelected = formVideoIds.includes(v.id);
+                            const isSelected = validFormVideoIds.includes(v.id);
+                            const matchedProd = products.find(
+                              (p) => p.id === v.productId || p.slug === v.productId
+                            );
                             const poster =
                               v.posterUrl ||
                               v.productImage ||
-                              "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800";
+                              matchedProd?.poster_image ||
+                              (Array.isArray(matchedProd?.images) && matchedProd.images[0]) ||
+                              "";
 
                             return (
                               <div
@@ -4486,18 +4504,31 @@ export default function AdminProductsPage() {
                                       : [...prev, v.id]
                                   );
                                 }}
-                                className={`group relative aspect-[9/16] rounded-2xl overflow-hidden cursor-pointer select-none border-2 transition-all duration-200 ${
+                                className={`group relative aspect-[9/16] rounded-2xl overflow-hidden cursor-pointer select-none border-2 transition-all duration-200 bg-slate-900 ${
                                   isSelected
                                     ? "border-[#FF7A00] ring-3 ring-[#FF7A00]/25 shadow-lg shadow-orange-500/15"
                                     : "border-slate-200 hover:border-slate-300 opacity-80 hover:opacity-100"
                                 }`}
                               >
-                                {/* Background Image or Poster */}
-                                <img
-                                  src={poster}
-                                  alt={v.title}
-                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                />
+                                {/* Background Video or Poster */}
+                                {v.videoUrl ? (
+                                  <video
+                                    src={v.videoUrl}
+                                    poster={poster || undefined}
+                                    autoPlay
+                                    muted
+                                    loop
+                                    playsInline
+                                    preload="metadata"
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 pointer-events-none"
+                                  />
+                                ) : (
+                                  <img
+                                    src={poster || "/images/placeholder.png"}
+                                    alt={v.title}
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                  />
+                                )}
 
                                 {/* Top Gradient & Controls */}
                                 <div className="absolute inset-x-0 top-0 p-2.5 flex items-start justify-between z-10 bg-gradient-to-b from-black/60 to-transparent">
@@ -4535,7 +4566,10 @@ export default function AdminProductsPage() {
                                 </button>
 
                                 {/* Bottom Info Gradient */}
-                                <div className="absolute inset-x-0 bottom-0 p-3 pt-8 bg-gradient-to-t from-black via-black/75 to-transparent z-10 text-white space-y-1">
+                                <div className="absolute inset-x-0 bottom-0 p-3 pt-8 bg-gradient-to-t from-black via-black/80 to-transparent z-10 text-white space-y-1">
+                                  <p className="text-[10px] text-amber-300 font-semibold truncate drop-shadow-xs">
+                                    {matchedProd?.name || v.productName || "General Store Reel"}
+                                  </p>
                                   <p className="text-xs font-bold leading-tight line-clamp-2 drop-shadow-xs">
                                     {v.title}
                                   </p>

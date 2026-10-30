@@ -8,6 +8,9 @@ import {
   saveHomePageVideoIds,
 } from "@/lib/videoStore";
 
+import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { executeD1Query } from "@/lib/d1";
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -17,10 +20,51 @@ export async function GET() {
       getAllVideos(),
       getHomePageVideoIds(),
     ]);
+
+    // Query D1 products table to merge with DEFAULT_PRODUCTS
+    let allProducts: any[] = [...DEFAULT_PRODUCTS];
+    try {
+      const d1Products = await executeD1Query<any>("SELECT * FROM products");
+      if (d1Products && d1Products.length > 0) {
+        allProducts = [...d1Products, ...DEFAULT_PRODUCTS];
+      }
+    } catch {}
+
+    const enrichedVideos = videos.map((v) => {
+      const vPid = (v.productId || "").toLowerCase().trim();
+      const matchedProd = allProducts.find((p) => {
+        const pId = String(p.id || "").toLowerCase().trim();
+        const pSlug = String(p.slug || "").toLowerCase().trim();
+        return pId === vPid || pSlug === vPid;
+      });
+
+      let posterImg =
+        v.posterUrl ||
+        matchedProd?.poster_image ||
+        (Array.isArray(matchedProd?.images) && matchedProd.images[0]);
+
+      if (!posterImg && typeof matchedProd?.images === "string") {
+        try {
+          const parsed = JSON.parse(matchedProd.images);
+          if (Array.isArray(parsed) && parsed[0]) posterImg = parsed[0];
+        } catch {}
+      }
+
+      return {
+        ...v,
+        productName: matchedProd?.name || v.productName || (vPid === "all" ? "All Products" : "No Product Attached"),
+        productPrice: matchedProd?.price !== undefined ? Number(matchedProd.price) : v.productPrice,
+        productMrp: matchedProd?.mrp !== undefined ? Number(matchedProd.mrp) : v.productMrp,
+        productSlug: matchedProd?.slug || matchedProd?.id || v.productSlug,
+        productImage: posterImg || v.productImage || "",
+        posterUrl: posterImg || v.posterUrl || "",
+      };
+    });
+
     return NextResponse.json(
       {
         success: true,
-        videos,
+        videos: enrichedVideos,
         homeVideoIds,
       },
       {

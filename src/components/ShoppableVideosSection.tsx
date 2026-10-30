@@ -29,7 +29,7 @@ const SEED_CREATOR_VIDEOS: ProductVideo[] = [
     title: "Titan Minimalist Watch Hands-on",
     videoUrl:
       "https://pub-abec22fbfdb8446490341e69eabe6a1c.r2.dev/videos/1791519244046-VID_20260913_013314_447-9d231d.mp4",
-    posterUrl: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800",
+    posterUrl: "",
     viewsText: "28.4k",
     badge: "POPULAR",
     productName: "Titan Minimalist Analog Watch",
@@ -37,7 +37,7 @@ const SEED_CREATOR_VIDEOS: ProductVideo[] = [
     productMrp: 2999,
     productSlug: "watch",
     productImage:
-      "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=600",
+      "https://www.titan.co.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw429f4592/images/Titan/Catalog/10011NM01_1.jpg?sw=600&sh=600",
     active: true,
     createdAt: "2026-03-08T12:00:00.000Z",
   },
@@ -263,8 +263,9 @@ export function ShoppableVideosSection({
   const displayMobileVideos: ProductVideo[] =
     mobileN >= 3 ? [...baseVideos, ...baseVideos, ...baseVideos] : baseVideos;
 
-  // Triplicate array for desktop continuous scrolling
-  const extendedDesktopVideos = [...videos, ...videos, ...videos];
+  // Triplicate array for desktop continuous scrolling only when 3 or more videos exist
+  const extendedDesktopVideos =
+    totalItems >= 3 ? [...videos, ...videos, ...videos] : videos;
 
   // 3. Initialize mobile track index
   useEffect(() => {
@@ -854,7 +855,10 @@ export function ShoppableVideosSection({
             ref={desktopTrackRef}
             onTransitionEnd={handleDesktopTransitionEnd}
             style={{
-              transform: `translate3d(-${desktopIndex * desktopStepWidth}px, 0, 0)`,
+              transform:
+                totalItems <= 1
+                  ? "none"
+                  : `translate3d(-${desktopIndex * desktopStepWidth}px, 0, 0)`,
               transition: isDesktopTransitioning
                 ? "transform 0.65s cubic-bezier(0.25, 1, 0.5, 1)"
                 : "none",
@@ -866,7 +870,7 @@ export function ShoppableVideosSection({
                 video.posterUrl ||
                 video.productImage ||
                 currentProduct?.poster_image ||
-                "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800";
+                undefined;
 
               return (
                 <div
@@ -1006,7 +1010,8 @@ export function ShoppableVideosSection({
                 vid.posterUrl ||
                 vid.productImage ||
                 currentProduct?.poster_image ||
-                "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800";
+                (Array.isArray(currentProduct?.images) && currentProduct.images[0]) ||
+                undefined;
 
               return (
                 <div
@@ -1163,7 +1168,7 @@ export function ShoppableVideosSection({
             <video
               ref={activeModalVideoRef}
               src={currentReel.videoUrl}
-              poster={currentReel.posterUrl}
+              poster={currentReel.posterUrl || currentReel.productImage || undefined}
               autoPlay
               playsInline
               loop

@@ -53,6 +53,8 @@ export async function GET(req: NextRequest) {
           orderId: displayOrderId,
           totalAmount: Number(ord.total_amount) || 0,
           paymentMethod: isCod ? "cod" : "prepaid",
+          trackingId: ord.tracking_number || ord.shiprocket_awb || (ord as any).tracking_number,
+          courierPartner: ord.courier_partner || (ord as any).courier_partner,
           items: rawItems.map((it: any) => ({
             name: it.product_name || it.name || "Purchased Product",
             quantity: Number(it.quantity || 1),

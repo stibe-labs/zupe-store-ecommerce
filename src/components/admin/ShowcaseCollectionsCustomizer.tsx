@@ -103,10 +103,36 @@ const SHOWCASE_SECTIONS: ShowcaseMeta[] = [
   },
 ];
 
+// Helper to ensure collection IDs strictly match real active store products and map legacy aliases
+function sanitizeCollectionIds(ids: string[], products: Product[]): string[] {
+  if (!Array.isArray(ids)) return [];
+  const validIds = new Set(products.map((p) => p.id));
+  const validSlugs = new Set(products.map((p) => p.slug).filter(Boolean));
+  const aliasMap: Record<string, string> = {
+    "water-ripple-lamp": "ripple-lamp",
+    "foldable-mini-washer": "mini-washing-machine",
+    "mini-thermal-printer": "mini-printer",
+    "mini-hot-air-popcorn-maker": "popcorn-maker",
+  };
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const rawId of ids) {
+    const resolvedId = aliasMap[rawId] || rawId;
+    if (validIds.has(resolvedId) || validSlugs.has(resolvedId)) {
+      if (!seen.has(resolvedId)) {
+        seen.add(resolvedId);
+        result.push(resolvedId);
+      }
+    }
+  }
+  return result;
+}
+
 export function ShowcaseCollectionsCustomizer({
   showToast,
 }: ShowcaseCollectionsCustomizerProps) {
-  const [activeTab, setActiveTab] = useState<ShowcaseKey>("new_arrivals");
+  const [activeTab, setActiveTab] = useState<ShowcaseKey>("top_pickz");
   const [collections, setCollections] = useState<ShowcaseCollectionsConfig>(
     DEFAULT_SHOWCASE_COLLECTIONS
   );
@@ -127,20 +153,29 @@ export function ShowcaseCollectionsCustomizer({
           fetch("/api/products"),
         ]);
 
-        if (showcaseRes.ok) {
-          const showcaseData = await showcaseRes.json();
-          if (showcaseData.collections && isMounted) {
-            setCollections(showcaseData.collections);
+        let items: Product[] = DEFAULT_PRODUCTS;
+        if (productsRes.ok) {
+          const productsData = await productsRes.json();
+          const list = Array.isArray(productsData)
+            ? productsData
+            : productsData?.products;
+          if (Array.isArray(list) && list.length > 0) {
+            items = list;
+            if (isMounted) setAllProducts(list);
           }
         }
 
-        if (productsRes.ok) {
-          const productsData = await productsRes.json();
-          const items = Array.isArray(productsData)
-            ? productsData
-            : productsData?.products;
-          if (Array.isArray(items) && items.length > 0 && isMounted) {
-            setAllProducts(items);
+        if (showcaseRes.ok) {
+          const showcaseData = await showcaseRes.json();
+          if (showcaseData.collections && isMounted) {
+            const raw = showcaseData.collections;
+            const sanitized: ShowcaseCollectionsConfig = {
+              topPickzProductIds: sanitizeCollectionIds(raw.topPickzProductIds, items),
+              newArrivalsProductIds: sanitizeCollectionIds(raw.newArrivalsProductIds, items),
+              bestSellersProductIds: sanitizeCollectionIds(raw.bestSellersProductIds, items),
+              todayDealsProductIds: sanitizeCollectionIds(raw.todayDealsProductIds, items),
+            };
+            setCollections(sanitized);
           }
         }
       } catch (err) {
@@ -167,13 +202,21 @@ export function ShowcaseCollectionsCustomizer({
   const handleSave = async () => {
     setSaving(true);
     try {
+      const cleanCollections: ShowcaseCollectionsConfig = {
+        topPickzProductIds: sanitizeCollectionIds(collections.topPickzProductIds, allProducts),
+        newArrivalsProductIds: sanitizeCollectionIds(collections.newArrivalsProductIds, allProducts),
+        bestSellersProductIds: sanitizeCollectionIds(collections.bestSellersProductIds, allProducts),
+        todayDealsProductIds: sanitizeCollectionIds(collections.todayDealsProductIds, allProducts),
+      };
+
       const res = await fetch("/api/content/showcase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ collections }),
+        body: JSON.stringify({ collections: cleanCollections }),
       });
       const data = await res.json();
       if (data.success) {
+        setCollections(cleanCollections);
         showToast("success", "Showcase collections saved successfully!");
       } else {
         showToast("error", data.error || "Failed to save collections.");
@@ -341,7 +384,9 @@ export function ShowcaseCollectionsCustomizer({
       {/* 4 Showcase Tabs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {SHOWCASE_SECTIONS.map((sec) => {
-          const count = (collections[sec.configKey] || []).length;
+          const count = (collections[sec.configKey] || []).filter((id) =>
+            allProducts.some((p) => p.id === id || p.slug === id)
+          ).length;
           const isActive = activeTab === sec.key;
           const Icon = sec.icon;
 
@@ -551,7 +596,7 @@ export function ShowcaseCollectionsCustomizer({
                 <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
                   <span>Select Products for {activeMeta.title}</span>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-[#FF7A00] font-black">
-                    {currentProductIds.length} Selected
+                    {currentSelectedProducts.length} Selected
                   </span>
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">

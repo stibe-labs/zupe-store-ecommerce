@@ -212,9 +212,7 @@ function OrdersPageContent() {
               if (
                 oldOrd &&
                 oldOrd.whatsapp_confirm_status === "pending_whatsapp" &&
-                (newOrd.whatsapp_confirm_status === "confirmed" ||
-                  newOrd.order_status === "processing" ||
-                  (newOrd as any).status === "Processing") &&
+                newOrd.whatsapp_confirm_status === "confirmed" &&
                 !dismissedConfirmBannerIdsRef.current.has(newOrd.id)
               ) {
                 setAutoConfirmedOrderId(newOrd.id);

@@ -32,6 +32,7 @@ import {
   Smartphone,
   User,
   Mail,
+  Clock,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -755,9 +756,12 @@ function CheckoutContent() {
 
   // Shipping & COD Calculations
   // Prepaid has Free Shipping (₹0) and ₹0 COD fee.
-  // Cash on Delivery has ₹49 Shipping Charge and ₹10 Advance Payment collected online (remaining balance at doorstep).
+  // Cash on Delivery has Free Shipping if subtotal >= 1499, otherwise ₹49 Standard Shipping.
+  // COD collects ₹10 online confirmation advance, with the remaining balance due at doorstep.
   const isCod = paymentMethod === "cod";
-  const shippingFee = isCod ? 49 : 0;
+  const isFreeShippingThresholdMet = subtotal >= 1499 || (subtotal - promoDiscount) >= 1499;
+  const codShippingFee = isFreeShippingThresholdMet ? 0 : 49;
+  const shippingFee = isCod ? codShippingFee : 0;
   const codAdvance = isCod ? 10 : 0;
   const totalItemCount = cart.reduce((sum, it) => sum + it.quantity, 0);
 
@@ -780,8 +784,13 @@ function CheckoutContent() {
   // Total calculations
   const totalDiscount = savings + bundleSavings + promoDiscount;
   const grandTotal = Math.max(0, subtotal + shippingFee - promoDiscount);
-  const payableNow = isCod ? 10 : Math.max(0, subtotal - promoDiscount);
+  const payablePrepaid = Math.max(0, subtotal - promoDiscount);
+  const payableNow = isCod ? 10 : payablePrepaid;
   const doorstepBalance = isCod ? Math.max(0, grandTotal - 10) : 0;
+
+  // Dedicated COD preview calculations (always accurate regardless of currently active tab)
+  const codTotalCost = Math.max(0, subtotal + codShippingFee - promoDiscount);
+  const codDoorstepBalance = Math.max(0, codTotalCost - 10);
 
   // Total MRP for comparison pill
   const totalMrp = cart.reduce((sum, it) => {
@@ -1621,30 +1630,43 @@ function CheckoutContent() {
           {/* Status Badge */}
           {paymentMethod === "cod" ? (
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 mb-2 border border-amber-200">
-              Cash on Delivery • ₹10 Advance Received
+              <Clock className="w-3.5 h-3.5 text-amber-600" />
+              Cash on Delivery • ₹10 Advance Received • Awaiting WhatsApp Confirmation
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 mb-2 border border-emerald-200">
-              ✓ Payment Received &amp; Order Confirmed
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 mb-2 border border-amber-200">
+              <Clock className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+              ✓ Payment Received • Awaiting WhatsApp Confirmation
             </span>
           )}
 
           <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
             {paymentMethod === "cod"
-              ? `Order Confirmed, ${name || "Shopper"}!`
+              ? `Order Registered, ${name || "Shopper"}!`
               : `Payment Successful, ${name || "Shopper"}!`}
           </h1>
 
-          <p className="text-sm text-gray-500 mb-6 leading-relaxed max-w-md mx-auto">
+          <p className="text-sm text-gray-500 mb-4 leading-relaxed max-w-md mx-auto">
             {paymentMethod === "cod"
-              ? `Your Cash on Delivery order has been confirmed! We have received your ₹10 confirmation advance. Please pay the remaining balance of ₹${Math.max(0, (confirmedTotal || grandTotal) - 10).toLocaleString()} in cash or UPI when your parcel is delivered.`
-              : `Your online payment has been verified and your order is in Priority Express Dispatch. Live updates sent to +91 ${(phone || "").replace(/^\+91\s*/, "")}.`}
+              ? `We have received your ₹10 confirmation advance. Please check your WhatsApp and tap "Confirm Order" to finalize packing and dispatch.`
+              : `Your online payment has been verified! We've sent an interactive confirmation message to your WhatsApp (+91 ${(phone || "").replace(/^\+91\s*/, "")}). Please tap "Confirm Order" on WhatsApp to finalize packing & priority dispatch.`}
             {email.trim() && (
               <span className="block mt-2 font-medium text-emerald-700 bg-emerald-50 py-1.5 px-3 rounded-lg border border-emerald-200/70 text-xs">
                 📧 Order receipt &amp; live tracking link sent to <strong>{email.trim()}</strong>
               </span>
             )}
           </p>
+
+          {/* Action Prompt Box for WhatsApp */}
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-left flex items-start gap-3 shadow-xs max-w-md mx-auto">
+            <span className="text-xl">📲</span>
+            <div className="text-xs">
+              <p className="font-bold text-amber-900 text-sm">Action Required: Confirm on WhatsApp</p>
+              <p className="text-amber-800 mt-0.5 leading-relaxed">
+                Check WhatsApp on <strong>+91 {(phone || "").replace(/^\+91\s*/, "")}</strong> and click <strong>&quot;Confirm Order&quot;</strong>. Once confirmed, you will instantly receive your official order confirmation and live shipment tracking link.
+              </p>
+            </div>
+          </div>
 
           {/* Order Summary Details Card */}
           <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-xs mb-8 text-left space-y-3 text-xs text-gray-600">
@@ -1684,7 +1706,9 @@ function CheckoutContent() {
               <>
                 <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                   <span className="text-gray-500">Shipping Charge:</span>
-                  <span className="font-semibold text-gray-900">₹49</span>
+                  <span className="font-semibold text-gray-900">
+                    {shippingFee > 0 ? `₹${shippingFee}` : "FREE"}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                   <span className="text-gray-500">Total Order Amount:</span>
@@ -2649,7 +2673,7 @@ function CheckoutContent() {
                       <div className="flex items-center justify-between pt-3.5 mt-3.5 border-t border-gray-100">
                         <div>
                           <p className="text-[11px] text-gray-500 font-medium">Pay now</p>
-                          <p className="text-lg sm:text-xl font-black text-gray-950">₹{subtotal.toLocaleString()}</p>
+                          <p className="text-lg sm:text-xl font-black text-gray-950">₹{payablePrepaid.toLocaleString()}</p>
                         </div>
                         <div className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-1">
                           <Check className="w-3.5 h-3.5 stroke-[3]" />
@@ -2749,11 +2773,11 @@ function CheckoutContent() {
                           <span className="text-[10px] text-gray-500 flex items-center justify-center gap-1">
                             <Truck className="w-3 h-3 text-gray-500" /> Pay on delivery
                           </span>
-                          <p className="text-sm sm:text-base font-black text-gray-950">₹{doorstepBalance.toLocaleString()}</p>
+                          <p className="text-sm sm:text-base font-black text-gray-950">₹{codDoorstepBalance.toLocaleString()}</p>
                         </div>
                         <div className="space-y-0.5">
                           <span className="text-[10px] text-gray-500 block">Total order cost</span>
-                          <p className="text-sm sm:text-base font-black text-[#FF7A00]">₹{grandTotal.toLocaleString()}</p>
+                          <p className="text-sm sm:text-base font-black text-[#FF7A00]">₹{codTotalCost.toLocaleString()}</p>
                           <span className="text-[9px] text-gray-400 block leading-tight">incl. COD &amp; fast shipping</span>
                         </div>
                       </div>
@@ -2762,7 +2786,7 @@ function CheckoutContent() {
                       <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/60 flex items-start gap-2 mt-2.5">
                         <ShieldCheck className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
                         <p className="text-[11px] text-amber-900 leading-snug">
-                          The ₹10 you pay now is part of the ₹{grandTotal.toLocaleString()} total, not an extra charge.
+                          The ₹10 you pay now is part of the ₹{codTotalCost.toLocaleString()} total, not an extra charge.
                         </p>
                       </div>
                     </div>
@@ -2781,20 +2805,28 @@ function CheckoutContent() {
                           </div>
                           <div>
                             <h4 className="text-sm sm:text-base font-extrabold text-emerald-950 leading-tight">
-                              Save ₹49 with online payment
+                              {codShippingFee > 0 ? "Save ₹49 with online payment" : "Instant Online Payment Advantage"}
                             </h4>
-                            <p className="text-[11px] text-emerald-800">Get free shipping &amp; express dispatch</p>
+                            <p className="text-[11px] text-emerald-800">
+                              {codShippingFee > 0 ? "Get free shipping & express dispatch" : "Get priority handling & express dispatch"}
+                            </p>
                           </div>
                         </div>
 
                         <div className="space-y-1.5 text-xs text-emerald-900 font-semibold pl-1">
                           <div className="flex items-center gap-2">
                             <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                            <span>Free Express Shipping <span className="text-emerald-700 font-bold">(-₹49)</span></span>
+                            <span>
+                              {codShippingFee > 0 ? (
+                                <>Free Express Shipping <span className="text-emerald-700 font-bold">(-₹49)</span></>
+                              ) : (
+                                <>100% Free Express Shipping <span className="text-emerald-700 font-bold">(Applied)</span></>
+                              )}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                            <span>No COD handling fee <span className="text-emerald-700 font-bold">(-₹49)</span></span>
+                            <span>No COD doorstep handling fee {codShippingFee > 0 && <span className="text-emerald-700 font-bold">(-₹49)</span>}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
@@ -2812,7 +2844,7 @@ function CheckoutContent() {
                           className="w-full py-3.5 px-4 rounded-xl bg-[#111111] hover:bg-black text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] cursor-pointer"
                         >
                           <Smartphone className="w-4 h-4 text-white" />
-                          <span>Switch to UPI &amp; Save ₹49</span>
+                          <span>{codShippingFee > 0 ? "Switch to UPI & Save ₹49" : "Switch to UPI (Priority Dispatch)"}</span>
                           <ArrowRight className="w-4 h-4 text-white" />
                         </button>
                       </motion.div>
@@ -2902,7 +2934,11 @@ function CheckoutContent() {
                           Shipping Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
                         </span>
                         {paymentMethod === "cod" ? (
-                          <span className="font-semibold text-gray-900">+₹49</span>
+                          shippingFee > 0 ? (
+                            <span className="font-semibold text-gray-900">+₹{shippingFee}</span>
+                          ) : (
+                            <span className="font-bold text-emerald-600">FREE</span>
+                          )
                         ) : (
                           <span className="font-bold text-emerald-600">FREE</span>
                         )}
@@ -2940,7 +2976,11 @@ function CheckoutContent() {
                         <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">
                           ₹
                         </div>
-                        <span>You save ₹49 (Free Shipping) by paying online!</span>
+                        <span>
+                          {codShippingFee > 0
+                            ? "You save ₹49 (Free Shipping) by paying online!"
+                            : "Free Express Shipping applied!"}
+                        </span>
                       </div>
                     ) : (
                       <div className="p-2.5 rounded-xl bg-amber-50/90 text-amber-800 text-xs font-semibold flex items-center gap-2">
@@ -3241,7 +3281,11 @@ function CheckoutContent() {
                     Shipping Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
                   </span>
                   {paymentMethod === "cod" ? (
-                    <span className="font-semibold text-gray-900">+₹49</span>
+                    shippingFee > 0 ? (
+                      <span className="font-semibold text-gray-900">+₹{shippingFee}</span>
+                    ) : (
+                      <span className="font-bold text-emerald-600">FREE</span>
+                    )
                   ) : (
                     <span className="font-bold text-emerald-600">FREE</span>
                   )}
@@ -3279,7 +3323,11 @@ function CheckoutContent() {
                   <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">
                     ₹
                   </div>
-                  <span>You save ₹49 (Free Shipping) by paying online!</span>
+                  <span>
+                    {codShippingFee > 0
+                      ? "You save ₹49 (Free Shipping) by paying online!"
+                      : "Free Express Shipping applied!"}
+                  </span>
                 </div>
               ) : (
                 <div className="p-2.5 rounded-xl bg-amber-50/90 text-amber-800 text-xs font-semibold flex items-center gap-2">

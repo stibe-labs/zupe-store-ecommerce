@@ -156,7 +156,7 @@ export async function GET(req: NextRequest) {
             : isShipped
             ? "shipped"
             : "processing",
-          whatsapp_confirm_status: (o.whatsapp_confirm_status as any) || "confirmed",
+          whatsapp_confirm_status: (o.whatsapp_confirm_status as any) || "pending_whatsapp",
           items,
           created_at: o.created_at,
         };
