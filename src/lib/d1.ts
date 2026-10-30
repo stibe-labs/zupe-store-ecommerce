@@ -71,7 +71,7 @@ export async function executeD1Query<T = any>(
   const accountId =
     process.env.CLOUDFLARE_ACCOUNT_ID || "4eed09d0032a07881825f4e926cb997f";
   const databaseId =
-    process.env.CLOUDFLARE_D1_DATABASE_ID || "1ebc3c22-07be-4f35-b437-5292d137d246";
+    process.env.CLOUDFLARE_D1_DATABASE_ID || "3a7891a3-6e90-4eab-b448-7c33aaec0c5f";
   const apiToken = process.env.CLOUDFLARE_API_TOKEN;
 
   if (databaseId && apiToken && accountId) {

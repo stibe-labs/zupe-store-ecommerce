@@ -15,8 +15,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "zupe-store-db",
-      "database_id": "1ebc3c22-07be-4f35-b437-5292d137d246"
+      "database_name": "turkiyejam-db",
+      "database_id": "3a7891a3-6e90-4eab-b448-7c33aaec0c5f"
     }
   ],
   "r2_buckets": [
@@ -32,9 +32,9 @@
     "SMTP_PASS": "wwgfnukdhczwknba",
     "GMAIL_APP_PASSWORD": "wwgfnukdhczwknba",
     "CLOUDFLARE_ACCOUNT_ID": "4eed09d0032a07881825f4e926cb997f",
-    "CLOUDFLARE_D1_DATABASE_ID": "1ebc3c22-07be-4f35-b437-5292d137d246",
-    "ADMIN_EMAIL": "admin@zupestore.com",
-    "ADMIN_PASSWORD": "ZupeAdmin@2026",
+    "CLOUDFLARE_D1_DATABASE_ID": "3a7891a3-6e90-4eab-b448-7c33aaec0c5f",
+    "ADMIN_EMAIL": "admin@turkiyejam.com",
+    "ADMIN_PASSWORD": "TurkiyeJam@2026",
     "NEXT_PUBLIC_RAZORPAY_KEY_ID": "rzp_test_TaEJzNfBmA5jmF",
     "RAZORPAY_KEY_ID": "rzp_test_TaEJzNfBmA5jmF",
     "RAZORPAY_KEY_SECRET": "cmw5Lw6uCwUPwyf48Jxdz5Pt",

@@ -53,7 +53,7 @@ function AdminLoginForm() {
       if (typeof window !== "undefined") {
         const adminSession = {
           id: "superadmin",
-          name: data.user?.name || "Zupe Administrator",
+          name: data.user?.name || "Turkiye Jam Administrator",
           email: data.user?.email || email,
           role: "admin",
         };
@@ -117,7 +117,7 @@ function AdminLoginForm() {
                 type="email"
                 required
                 autoComplete="email"
-                placeholder="admin@zupestore.com"
+                placeholder="admin@turkiyejam.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-800 bg-[#0d1017] text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"

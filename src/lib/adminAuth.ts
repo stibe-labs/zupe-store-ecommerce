@@ -1,12 +1,12 @@
 // Admin Security & Authentication Utilities for Zupe Store ERP
 // Fully compatible with Cloudflare Workers Edge runtime & Node.js
 
-const ADMIN_SECRET = "zupe_admin_secret_key_2026_super_secure_edge_token";
-export const ADMIN_COOKIE_NAME = "zupe_admin_token";
+const ADMIN_SECRET = "turkiyejam_admin_secret_key_2026_super_secure_edge_token";
+export const ADMIN_COOKIE_NAME = "turkiyejam_admin_token";
 
 // Configured credentials
-const DEFAULT_ADMIN_EMAIL = "admin@zupestore.com";
-const DEFAULT_ADMIN_PASSWORD = "ZupeAdmin@2026";
+const DEFAULT_ADMIN_EMAIL = "admin@turkiyejam.com";
+const DEFAULT_ADMIN_PASSWORD = "TurkiyeJam@2026";
 
 export async function verifyAdminCredentials(
   email?: string,
@@ -19,17 +19,14 @@ export async function verifyAdminCredentials(
   const configuredPassword = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
 
   // Strict check: Only the dedicated admin email is permitted
-  const isEmailMatch =
-    normEmail === configuredEmail ||
-    normEmail === DEFAULT_ADMIN_EMAIL.toLowerCase();
-
+  const isEmailMatch = normEmail === configuredEmail;
   const isPasswordMatch = password === configuredPassword;
 
   if (isEmailMatch && isPasswordMatch) {
     return {
       valid: true,
       email: normEmail,
-      name: "Zupe Admin",
+      name: "Turkiye Jam Admin",
     };
   }
 
