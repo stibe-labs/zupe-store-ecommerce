@@ -760,7 +760,7 @@ export async function sendOrderCancellationRefundWhatsApp(
       `💳 *Refund Reference:* ${refundId || "Initiated via Razorpay"}\n` +
       `⚡ *Payment Source:* Released back to your original payment method (UPI / Card / Netbanking)\n\n` +
       `⏱️ *Expected Credit Timeline:*\n` +
-      `• UPI (GPay, PhonePe, Paytm): Usually credited within 2 to 4 hours (or up to 24 hours depending on the issuing bank)\n` +
+      `• UPI (GPay, PhonePe, Paytm): Usually credited within 12-24 hours\n` +
       `• Debit / Credit Cards / Netbanking: Credited within 2 to 4 business days\n\n` +
       `Thank you for shopping with Zupe Store!`;
   } else {

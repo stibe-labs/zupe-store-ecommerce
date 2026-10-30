@@ -186,7 +186,7 @@ export default function ReturnPolicyPage() {
                 <div className="font-semibold text-emerald-950">Expected Credit Timeline:</div>
                 <div className="flex items-start gap-2">
                   <span className="font-bold text-emerald-700">•</span>
-                  <span><strong>UPI (GPay, PhonePe, Paytm):</strong> Usually credited within <strong>2 to 4 hours</strong>.</span>
+                  <span><strong>UPI (GPay, PhonePe, Paytm):</strong> Usually credited within <strong>12-24 hours</strong>.</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="font-bold text-emerald-700">•</span>

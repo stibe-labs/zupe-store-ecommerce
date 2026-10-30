@@ -676,7 +676,7 @@ export async function sendOrderCancellationEmail(
         </table>
         <div style="margin-top: 14px; background: #ffffff; border: 1px solid #d1fae5; border-radius: 10px; padding: 12px; font-size: 12px; color: #065f46; line-height: 1.6;">
           <div style="font-weight: 800; color: #047857; margin-bottom: 4px;">⏱️ Expected Credit Timeline:</div>
-          <div>• <strong>UPI (GPay, PhonePe, Paytm):</strong> Usually credited within <strong>2 to 4 hours</strong> (or up to 24 hours depending on the issuing bank).</div>
+          <div>• <strong>UPI (GPay, PhonePe, Paytm):</strong> Usually credited within <strong>12-24 hours</strong>.</div>
           <div style="margin-top: 3px;">• <strong>Debit / Credit Cards / Netbanking:</strong> Credited within <strong>2 to 4 business days</strong>.</div>
         </div>
       </div>
@@ -785,7 +785,7 @@ ${
 Refund Amount: ₹${totalAmount.toLocaleString("en-IN")}
 ${refundId ? `Refund Reference: ${refundId}\n` : ""}${paymentId ? `Payment ID: ${paymentId}\n` : ""}
 EXPECTED CREDIT TIMELINE:
-• UPI (GPay, PhonePe, Paytm): Usually credited within 2 to 4 hours (or up to 24 hours depending on the issuing bank).
+• UPI (GPay, PhonePe, Paytm): Usually credited within 12-24 hours.
 • Debit / Credit Cards / Netbanking: Credited within 2 to 4 business days.`
     : `CASH ON DELIVERY ORDER CANCELLED:
 Your Cash on Delivery order has been successfully cancelled. No doorstep payment will be collected.
