@@ -862,7 +862,7 @@ function CheckoutContent() {
 
     const captureBackOut = () => {
       const clean = cleanPhoneDigits(phone);
-      if (clean.length !== 10 || cart.length === 0 || orderComplete) return;
+      if (clean.length !== 10 || cart.length === 0 || orderComplete || loading) return;
 
       const payload = JSON.stringify({
         customer_name: name.trim() || undefined,

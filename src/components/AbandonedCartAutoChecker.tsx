@@ -3,9 +3,9 @@
 import { useEffect } from "react";
 
 /**
- * Background auto-checker for overdue 30-minute abandoned carts.
+ * Background auto-checker for overdue 1-hour abandoned carts.
  * Periodically pings the cron endpoint to ensure overdue recovery messages
- * are dispatched automatically without manual intervention.
+ * (for carts unpurchased for >= 1 hour) are dispatched automatically.
  */
 export function AbandonedCartAutoChecker() {
   useEffect(() => {

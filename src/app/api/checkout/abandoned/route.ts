@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeD1Query } from "@/lib/d1";
 import { normalizePhoneNumber } from "@/lib/whatsappOtp";
-import { sendAbandonedCartWhatsApp } from "@/lib/whatsappOrderConfirmation";
 
 export const dynamic = "force-dynamic";
 
@@ -150,45 +149,13 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // If customer backed out and hasn't received a WhatsApp recovery message recently
-      if (is_backout) {
-        const isEligible =
-          existingSentCount === 0 ||
-          (existingLastSentAt && Date.now() - new Date(existingLastSentAt).getTime() > 30 * 60 * 1000);
-
-        if (isEligible) {
-          try {
-            const sent = await sendAbandonedCartWhatsApp({
-              customerName: customer_name,
-              customerPhone: digits,
-              items: items.map((it: any) => ({
-                name: it.name || it.product_name || "Cart Product",
-                quantity: Number(it.quantity || 1),
-                price: Number(it.price || it.unit_price || 0),
-              })),
-              totalAmount: amount,
-              recoveryUrl,
-              source: "checkout",
-            });
-            if (sent) {
-              await executeD1Query(
-                "UPDATE abandoned_checkouts SET whatsapp_sent_count = whatsapp_sent_count + 1, last_whatsapp_sent_at = CURRENT_TIMESTAMP WHERE id = ?",
-                [existingId]
-              );
-            }
-          } catch (e) {
-            console.warn("Auto backout WA error:", e);
-          }
-        }
-      }
-
       return NextResponse.json({
         success: true,
         action: "updated",
         id: existingId,
         recovery_token: recoveryToken,
         recovery_url: recoveryUrl,
-        whatsapp_auto_sent: Boolean(is_backout && existingSentCount === 0),
+        whatsapp_auto_sent: false,
       });
     }
 
@@ -236,39 +203,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Automatically send recovery WhatsApp if created via exit / backout
-    if (is_backout) {
-      try {
-        const sent = await sendAbandonedCartWhatsApp({
-          customerName: customer_name,
-          customerPhone: digits,
-          items: items.map((it: any) => ({
-            name: it.name || it.product_name || "Cart Product",
-            quantity: Number(it.quantity || 1),
-            price: Number(it.price || it.unit_price || 0),
-          })),
-          totalAmount: amount,
-          recoveryUrl,
-          source: "checkout",
-        });
-        if (sent) {
-          await executeD1Query(
-            "UPDATE abandoned_checkouts SET whatsapp_sent_count = whatsapp_sent_count + 1, last_whatsapp_sent_at = CURRENT_TIMESTAMP WHERE id = ?",
-            [newId]
-          );
-        }
-      } catch (e) {
-        console.warn("Auto backout WA insert error:", e);
-      }
-    }
-
     return NextResponse.json({
       success: true,
       action: "created",
       id: newId,
       recovery_token: recoveryToken,
       recovery_url: recoveryUrl,
-      whatsapp_auto_sent: Boolean(is_backout),
+      whatsapp_auto_sent: false,
     });
   } catch (err: any) {
     console.error("Error in abandoned checkout track:", err);
