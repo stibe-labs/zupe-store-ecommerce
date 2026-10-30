@@ -407,12 +407,6 @@ function OrderTrackingContent() {
     }
   };
 
-  const handleSelectSample = (sampleId: string) => {
-    setInputTerm(sampleId);
-    router.push(`/order-tracking?query=${encodeURIComponent(sampleId)}`);
-    fetchTracking(sampleId, true);
-  };
-
   const copyToClipboard = (text: string, type: "awb" | "id") => {
     navigator.clipboard.writeText(text);
     if (type === "awb") {
@@ -466,17 +460,10 @@ function OrderTrackingContent() {
     }
   };
 
-  const sampleTags = [
-    { label: "#1054", note: "Out for Delivery", id: "1054" },
-    { label: "#1055", note: "In Transit", id: "1055" },
-    { label: "#1057", note: "Delivered", id: "1057" },
-    { label: "#1058", note: "RTO Return", id: "1058" },
-  ];
-
   const faqs = [
     {
       q: "Where can I find my Order ID or AWB Tracking Number?",
-      a: "Your Order ID (e.g., #1054) was sent in the confirmation email and WhatsApp message right after your purchase. Your courier AWB tracking number (e.g., SR-AWB-9871105) is sent via WhatsApp and Email once the package is dispatched.",
+      a: "Your Order ID (e.g., #TJ-1001) was sent in the confirmation email and WhatsApp message right after your purchase. Your courier AWB tracking number (e.g., SR-AWB-9871105) is sent via WhatsApp and Email once the package is dispatched.",
     },
     {
       q: "How long does standard delivery take?",
@@ -529,7 +516,7 @@ function OrderTrackingContent() {
                     type="text"
                     value={inputTerm}
                     onChange={(e) => setInputTerm(e.target.value)}
-                    placeholder="Enter Order ID (#1054), AWB, or Phone..."
+                    placeholder="Enter Order ID (e.g. #TJ-1001), AWB, or Phone..."
                     className="w-full pl-12 pr-10 py-3.5 sm:py-4 text-sm sm:text-base bg-transparent text-stone-900 placeholder:text-stone-400 focus:outline-none font-medium"
                   />
                   {inputTerm && (
@@ -561,21 +548,6 @@ function OrderTrackingContent() {
                   )}
                 </button>
               </form>
-            </div>
-
-            {/* Quick Demo Suggestions */}
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-gray-500">
-              <span className="font-medium text-gray-400">Quick Test:</span>
-              {sampleTags.map((tag) => (
-                <button
-                  key={tag.id}
-                  type="button"
-                  onClick={() => handleSelectSample(tag.id)}
-                  className="px-2.5 py-1 rounded-full bg-white hover:bg-orange-50 border border-gray-200 hover:border-[#FF7A00]/40 text-gray-700 hover:text-[#FF7A00] transition-all cursor-pointer font-medium"
-                >
-                  {tag.label} <span className="text-[10px] text-gray-400">({tag.note})</span>
-                </button>
-              ))}
             </div>
           </div>
         </div>

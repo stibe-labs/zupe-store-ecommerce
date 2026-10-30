@@ -19,56 +19,32 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 const COLLECTIONS = [
   {
-    title: "TECH & GADGETS",
-    subtitle: "DISCOVER",
-    image: "/products/thermal-printer.jpg",
-    href: "/products?category=Tech+%26+Gadgets",
+    title: "HERBAL PASTE (MACUN)",
+    subtitle: "AUTHENTIC",
+    image: "/products/themra/turkiye-jam-jar-strip.png",
+    href: "/products/turkiye-jam",
   },
   {
-    title: "HOME ESSENTIALS",
-    subtitle: "DISCOVER",
-    image: "/products/ripple-lamp.jpg",
-    href: "/products?category=Home+Essentials",
+    title: "SACHET PACKS",
+    subtitle: "ON-THE-GO",
+    image: "/products/themra/turkiye-jam-sachets-box.png",
+    href: "/products/turkiye-jam",
   },
   {
-    title: "PERSONAL CARE",
-    subtitle: "DISCOVER",
-    image: "/products/heating-pad.jpg",
-    href: "/products?category=Personal+Care",
-  },
-  {
-    title: "AUTO ESSENTIALS",
-    subtitle: "DISCOVER",
-    image: "/products/helicopter-perfume.jpg",
-    href: "/products?category=Auto+Essentials",
-  },
-  {
-    title: "FITNESS & WELLNESS",
-    subtitle: "DISCOVER",
-    image: "/products/mesh-nebulizer.jpg",
-    href: "/products?category=Fitness+%26+Wellness",
-  },
-  {
-    title: "KIDS & FUN",
-    subtitle: "DISCOVER",
-    image: "/products/popcorn-maker.jpg",
-    href: "/products?category=Kids+%26+Fun",
-  },
-  {
-    title: "DEALS & OFFERS",
-    subtitle: "DISCOVER",
-    image: "/products/hero-banner.jpg",
-    href: "/products?category=Deals+%26+Offers",
+    title: "240G GLASS JARS",
+    subtitle: "BEST VALUE",
+    image: "/products/themra/turkiye-jam-jar.png",
+    href: "/products/turkiye-jam",
   },
 ];
 
 const POPULAR_SEARCHES = [
-  "Water Ripple Lamp",
-  "Mini Steam Iron",
-  "Car Perfume",
-  "Pocket Printer",
-  "Popcorn Maker",
-  "Heating Pad",
+  "Turkish Paste",
+  "Themra Epimedium",
+  "Herbal Macun",
+  "Sachet Pack",
+  "240g Glass Jar",
+  "Turkiye Jam",
 ];
 
 export function SearchModal() {

@@ -71,7 +71,7 @@ export default function ShippingAndDeliveryPage() {
             <div>
               <h3 className="font-bold text-base sm:text-lg text-white">Looking to track your order?</h3>
               <p className="text-xs sm:text-sm text-white/90">
-                Redirect to our live tracking portal using your Order ID (#1054) or Mobile Number.
+                Redirect to our live tracking portal using your Order ID or Mobile Number.
               </p>
             </div>
           </div>

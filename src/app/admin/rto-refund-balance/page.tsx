@@ -916,7 +916,7 @@ export default function RTORefundBalancePage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="Dynamic Water Ripple Night Light"
+                  placeholder="Themra Epimedium Herbal Macun"
                   value={formProductName}
                   onChange={(e) => setFormProductName(e.target.value)}
                   required

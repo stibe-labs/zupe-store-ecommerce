@@ -87,11 +87,11 @@ export async function GET(req: NextRequest) {
         if (items.length === 0) {
           items = [
             {
-              product_id: "ripple-lamp",
-              name: "Dynamic Water Ripple Night Light",
-              price: o.total_amount || 749,
+              product_id: "turkiye-jam",
+              name: "Themra Epimedium Herbal Macun (Original Turkish Paste)",
+              price: o.total_amount || 2899,
               quantity: 1,
-              image: "/products/ripple-lamp.jpg",
+              image: "/products/themra/turkiye-jam-jar-strip.png",
             },
           ];
         }

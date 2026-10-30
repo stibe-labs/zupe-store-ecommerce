@@ -18,127 +18,47 @@ export interface ProductReview {
 }
 
 export const SEED_REVIEWS: ProductReview[] = [
-  // Dynamic Water Ripple Night Light
   {
-    id: "rev-ripple-1",
-    productId: "dynamic-water-ripple-night-light",
-    orderId: "ord_zupe_1001",
-    userName: "Rohit Sharma",
-    userEmail: "rohit.s@gmail.com",
+    id: "rev-tj-1",
+    productId: "turkiye-jam",
+    userName: "Anjali M.",
+    userEmail: "anjali.m@gmail.com",
     rating: 5,
-    title: "Mesmerizing visual effect in bedroom!",
+    title: "Genuine Turkish Paste - Fast Delivery",
     comment:
-      "The rotating water ripple projection looks absolutely cinematic on the ceiling. Acrylic crystal body feels heavy and luxurious, and the solid wood base gives it a premium organic touch. Remote control makes changing colors super easy.",
-    images: ["/products/ripple/ripple-amber.jpg", "/products/ripple/ripple-amber-angle2.jpg"],
+      "Arrived in two days, well wrapped, nothing leaked. The sachets are easy to carry, and I ordered a bigger pack the next week.",
+    verifiedPurchase: true,
+    createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+    helpfulCount: 28,
+    source: "storefront",
+  },
+  {
+    id: "rev-tj-2",
+    productId: "turkiye-jam",
+    userName: "Rahul K.",
+    userEmail: "rahul.k@gmail.com",
+    rating: 5,
+    title: "Original seal and prompt COD",
+    comment:
+      "Neat packing and the label was clear. Cash on delivery made it easy for my family to trust, and the delivery boy called before reaching.",
     verifiedPurchase: true,
     createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
-    helpfulCount: 24,
+    helpfulCount: 19,
     source: "storefront",
   },
   {
-    id: "rev-ripple-2",
-    productId: "water-ripple-lamp",
-    orderId: "ord_zupe_1002",
-    userName: "Ananya Patel",
-    userEmail: "ananya.p@gmail.com",
+    id: "rev-tj-3",
+    productId: "turkiye-jam",
+    userName: "Neha S.",
+    userEmail: "neha.s@gmail.com",
     rating: 5,
-    title: "10/10 aesthetic, exactly like the videos",
+    title: "Authentic Themra product",
     comment:
-      "Arrived in 2 days in sturdy bubble packaging. 16 different color modes let me set the mood from peaceful ocean blue to warm amber night light. Guests always compliment this piece!",
-    images: ["/products/ripple/ripple-blue.jpg"],
-    verifiedPurchase: true,
-    createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-    helpfulCount: 18,
-    source: "storefront",
-  },
-  {
-    id: "rev-ripple-3",
-    productId: "dynamic-water-ripple-night-light",
-    userName: "Vikram Menon",
-    rating: 4,
-    title: "Great build quality and brightness",
-    comment:
-      "Very relaxing lighting for evening wind-down or reading. Power cable is decent length. Highly recommended for modern room decor.",
-    images: ["/products/ripple/ripple-pink.jpg"],
-    verifiedPurchase: true,
-    createdAt: new Date(Date.now() - 12 * 86400000).toISOString(),
-    helpfulCount: 9,
-    source: "amazon",
-  },
-
-  // TF20 Multipurpose Powerbank with Airpods
-  {
-    id: "rev-powerbank-1",
-    productId: "tf20-multipurpose-powerbank-with-airpods",
-    userName: "Arjun Nair",
-    rating: 5,
-    title: "Game changer for daily commute & travel",
-    comment:
-      "Charges my phone while keeping the earbuds fully juiced. Audio quality has punchy bass and clear vocals. The digital percentage LED display is extremely handy.",
-    images: ["/products/powerbank-earbuds.jpg"],
-    verifiedPurchase: true,
-    createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-    helpfulCount: 31,
-    source: "flipkart",
-  },
-  {
-    id: "rev-powerbank-2",
-    productId: "powerbank-earbuds",
-    userName: "Sneha Kapoor",
-    rating: 5,
-    title: "Sleek compact design, connects in 1 second",
-    comment:
-      "Super convenient 2-in-1 innovation. Battery backup easily lasts through my full weekend trip. Earbuds fit securely without falling out during workouts.",
-    verifiedPurchase: true,
-    createdAt: new Date(Date.now() - 9 * 86400000).toISOString(),
-    helpfulCount: 14,
-    source: "storefront",
-  },
-
-  // Solar Helicopter Car Fragrance
-  {
-    id: "rev-heli-1",
-    productId: "car-fragrance-helicopter",
-    userName: "Priya Deshmukh",
-    rating: 5,
-    title: "Solar rotor spins like real aircraft in sunlight!",
-    comment:
-      "Looks top-tier on my car dashboard. Rotor starts spinning automatically as soon as direct daylight hits the solar panel. Cologne ring smells refreshing and not overwhelming.",
-    images: ["/products/helicopter-perfume.jpg"],
-    verifiedPurchase: true,
-    createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-    helpfulCount: 42,
-    source: "amazon",
-  },
-  {
-    id: "rev-heli-2",
-    productId: "helicopter-perfume",
-    userName: "Aman Verma",
-    rating: 5,
-    title: "Best dashboard accessory I have bought",
-    comment:
-      "Zinc alloy build is metallic and sturdy. The 3M adhesive pad holds firmly even over bumpy roads. Everyone who gets into my car asks where I got it from.",
-    images: ["/products/helicopter/heli-black-1.jpg"],
-    verifiedPurchase: true,
-    createdAt: new Date(Date.now() - 10 * 86400000).toISOString(),
-    helpfulCount: 20,
-    source: "storefront",
-  },
-
-  // Mini Portable Steam Iron
-  {
-    id: "rev-iron-1",
-    productId: "mini-portable-steam-iron",
-    userName: "Kavita Rao",
-    rating: 5,
-    title: "Ergonomic foldable handle and fast heating",
-    comment:
-      "Heats up in under 30 seconds. Compact enough to slip into any travel pouch. Easily straightens out wrinkles on cotton shirts, linen, and silk dresses.",
-    images: ["/products/iron/iron-teal-1.jpg"],
+      "I started with the 2 pack just to try. The ordering was simple, delivery was quick and everything looked exactly like the photos.",
     verifiedPurchase: true,
     createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
-    helpfulCount: 15,
-    source: "amazon",
+    helpfulCount: 14,
+    source: "storefront",
   },
 ];
 

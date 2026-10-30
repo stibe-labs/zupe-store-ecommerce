@@ -51,35 +51,7 @@ export default function AdminHeader({
   const [showAdminUserDropdown, setShowAdminUserDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const [alerts, setAlerts] = useState<AdminAlert[]>([
-    {
-      id: "alt-1",
-      title: "Consignment NDR Alert",
-      description: "AWB SR-AWB-9871104 marked as Customer Unreachable. Follow up required.",
-      time: "25m ago",
-      href: "/admin/shipments",
-      icon: Truck,
-      iconColor: "text-amber-500 bg-amber-50",
-    },
-    {
-      id: "alt-2",
-      title: "Supplier RTO Credit Available",
-      description: "₹500 doorstep return credit ready to claim against Supplier A.",
-      time: "1h ago",
-      href: "/admin/rto-refund-balance",
-      icon: RotateCcw,
-      iconColor: "text-[#FF7A00] bg-orange-50",
-    },
-    {
-      id: "alt-3",
-      title: "New Store Order Placed",
-      description: "Order #1059 for Portable Steam Iron placed via COD.",
-      time: "2h ago",
-      href: "/admin/orders",
-      icon: ShoppingBag,
-      iconColor: "text-emerald-500 bg-emerald-50",
-    },
-  ]);
+  const [alerts, setAlerts] = useState<AdminAlert[]>([]);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);

@@ -183,7 +183,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: `No order found matching "${query}". Please verify your Order ID (#1054), AWB, or 10-digit mobile number.`,
+        error: `No order found matching "${query}". Please verify your Order ID (e.g. #TJ-1001), AWB, or 10-digit mobile number.`,
         suggestions: [
           "Check the order confirmation SMS or email sent at the time of purchase.",
           "Ensure you entered the 10-digit mobile number used during checkout.",

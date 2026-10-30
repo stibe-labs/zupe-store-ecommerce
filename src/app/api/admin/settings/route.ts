@@ -76,10 +76,10 @@ export async function POST(req: NextRequest) {
           paymentStatus: body.paymentMethod === "Prepaid" ? "paid" : "pending",
           items: [
             {
-              name: "Dynamic Water Ripple Night Light",
+              name: "Themra Epimedium Herbal Macun (Original Turkish Paste)",
               quantity: 1,
-              price: 1050,
-              image: "/products/ripple/ripple-amber.jpg",
+              price: 2899,
+              image: "/products/themra/turkiye-jam-jar.png",
             },
           ],
         });
