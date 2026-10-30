@@ -1092,9 +1092,26 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
   const netProfit = total - prodCost - shipCost - rtoCharge - adSpend;
   const paymentMethod = orderData.payment_method || "COD";
 
+  let shopifyOrderId = orderData.shopify_order_id;
+  if (!shopifyOrderId) {
+    try {
+      const maxRows = await executeD1Query<{ max_num: number }>(
+        "SELECT MAX(CAST(SUBSTR(shopify_order_id, 2) AS INTEGER)) as max_num FROM orders WHERE shopify_order_id LIKE '#%'"
+      );
+      if (maxRows && maxRows[0] && typeof maxRows[0].max_num === "number" && maxRows[0].max_num >= 1000) {
+        shopifyOrderId = `#${maxRows[0].max_num + 1}`;
+      }
+    } catch {
+      // Fallback
+    }
+    if (!shopifyOrderId) {
+      shopifyOrderId = `#${1941 + count}`;
+    }
+  }
+
   const newOrder: ERPOrder = {
     id: orderData.id || `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-    shopify_order_id: orderData.shopify_order_id || `#${1059 + count}`,
+    shopify_order_id: shopifyOrderId,
     customer_name: orderData.customer_name,
     customer_phone: orderData.customer_phone || "+91 98000 00000",
     guest_email: orderData.guest_email || "",

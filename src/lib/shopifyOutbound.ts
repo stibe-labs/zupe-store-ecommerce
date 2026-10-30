@@ -210,13 +210,17 @@ export async function pushOrderToShopify(
       token.startsWith("shpat_mock");
 
     if (isMock) {
-      const generatedOrderNum = 1060 + Math.floor(Math.random() * 900);
-      const simulatedShopifyId = `#${generatedOrderNum}`;
-      const simulatedNumericId = 5800000000 + generatedOrderNum;
+      let simulatedShopifyId = (order as any).shopify_order_id;
+      if (!simulatedShopifyId || !simulatedShopifyId.startsWith("#")) {
+        const generatedOrderNum = 1941 + Math.floor(Math.random() * 50);
+        simulatedShopifyId = `#${generatedOrderNum}`;
+      }
+      const cleanNum = Number(simulatedShopifyId.replace(/\D/g, "")) || 1941;
+      const simulatedNumericId = 5800000000 + cleanNum;
 
-      // Update in D1
+      // Update in D1 if empty
       await executeD1Query(
-        `UPDATE orders SET shopify_order_id = ? WHERE id = ?;`,
+        `UPDATE orders SET shopify_order_id = ? WHERE id = ? AND (shopify_order_id IS NULL OR shopify_order_id = '');`,
         [simulatedShopifyId, order.id]
       );
 

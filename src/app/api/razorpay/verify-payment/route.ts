@@ -247,10 +247,10 @@ export async function POST(req: NextRequest) {
       promo_code: promo_code || undefined,
       payment_method: orderPaymentMethod,
       payment_status: orderPaymentStatus,
-      order_status: isCodPartial ? "processing" : "shipped",
-      whatsapp_confirm_status: isCodPartial ? "pending_whatsapp" : "confirmed",
+      order_status: "processing",
+      whatsapp_confirm_status: "pending_whatsapp",
       whatsapp_confirm_token: confirmToken,
-      whatsapp_token_used: !isCodPartial,
+      whatsapp_token_used: false,
       items: items || [],
       created_at: new Date().toISOString(),
     };
@@ -297,8 +297,8 @@ export async function POST(req: NextRequest) {
 
         const { updateERPOrder } = await import("@/lib/erpStore");
         await updateERPOrder(orderId, {
-          whatsapp_confirm_status: "confirmed",
-          whatsapp_token_used: true,
+          whatsapp_confirm_status: "pending_whatsapp",
+          whatsapp_token_used: false,
           status: "Processing",
           delivery_status: "Processing",
           shiprocket_awb: liveAwb || "",
@@ -343,48 +343,25 @@ export async function POST(req: NextRequest) {
     // Resolve display order ID (e.g. #1567)
     const displayOrderId = (newOrder as any).shopify_order_id || orderId;
 
-    // Send WhatsApp notification
-    if (isCodPartial) {
-      // Cash on Delivery: Send interactive pre-confirmation with [Confirm Order] and [Cancel Order] buttons
-      try {
-        const { sendOrderPreConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
-        await sendOrderPreConfirmationWhatsApp({
-          customerName: customer_name || "Customer",
-          customerPhone: customer_phone || "",
-          orderId: displayOrderId,
-          totalAmount: Number(total_amount),
-          paymentMethod: "cod",
-          token: confirmToken,
-          items: (items || []).map((it: any) => ({
-            name: it.name,
-            quantity: Number(it.quantity || 1),
-            price: Number(it.price || 0),
-          })),
-        });
-        console.log(`[Verify Payment] WhatsApp interactive verification dispatched for COD order ${orderId} (${displayOrderId})`);
-      } catch (waErr) {
-        console.warn("Failed to dispatch WA pre-confirmation:", waErr);
-      }
-    } else {
-      // Fully prepaid online order: verified & dispatched, send official Order Confirmation
-      try {
-        const { sendOrderConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
-        await sendOrderConfirmationWhatsApp({
-          customerName: customer_name || "Customer",
-          customerPhone: customer_phone || "",
-          orderId: displayOrderId,
-          totalAmount: Number(total_amount),
-          paymentMethod: "prepaid",
-          items: (items || []).map((it: any) => ({
-            name: it.name,
-            quantity: Number(it.quantity || 1),
-            price: Number(it.price || 0),
-          })),
-        });
-        console.log(`[Verify Payment] Order confirmation WhatsApp dispatched for prepaid order ${orderId} (${displayOrderId})`);
-      } catch (waErr) {
-        console.warn("Failed to dispatch WA order confirmation:", waErr);
-      }
+    // Send WhatsApp interactive pre-confirmation with [Confirm Order] and [Cancel Order] buttons for all orders
+    try {
+      const { sendOrderPreConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+      await sendOrderPreConfirmationWhatsApp({
+        customerName: customer_name || "Customer",
+        customerPhone: customer_phone || "",
+        orderId: displayOrderId,
+        totalAmount: Number(total_amount),
+        paymentMethod: isCodPartial ? "cod" : "prepaid",
+        token: confirmToken,
+        items: (items || []).map((it: any) => ({
+          name: it.name,
+          quantity: Number(it.quantity || 1),
+          price: Number(it.price || 0),
+        })),
+      });
+      console.log(`[Verify Payment] WhatsApp interactive verification dispatched for order ${orderId} (${displayOrderId}) [${isCodPartial ? "cod" : "prepaid"}]`);
+    } catch (waErr) {
+      console.warn("Failed to dispatch WA pre-confirmation:", waErr);
     }
 
     // Automated Order Confirmation Email (Dispatched ONLY if customer provided optional email at checkout)

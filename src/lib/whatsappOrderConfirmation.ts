@@ -366,6 +366,12 @@ async function sendViaPrepaidPaymentSuccessfulTemplate(
             { type: "text", text: totalAmount.toLocaleString("en-IN") },
           ],
         },
+        {
+          type: "button",
+          sub_type: "url",
+          index: "0",
+          parameters: [{ type: "text", text: cleanButtonOrderId }],
+        },
       ],
     },
   };
@@ -403,7 +409,7 @@ async function sendViaCodV2Template(
 ): Promise<boolean> {
   const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
 
-  const templateNamesToTry = ["zupe_cod_switch_prepaid", "zupe_order_cod_v2"];
+  const templateNamesToTry = ["zupe_cod_switch_prepaid"];
 
   for (const templateName of templateNamesToTry) {
     const payload = {
