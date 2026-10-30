@@ -31,8 +31,9 @@ export async function GET(req: NextRequest) {
       ord = await getOrderByToken(token);
     }
 
-    // 3. Dispatch the official order confirmation WhatsApp message (only if freshly confirmed, not duplicate)
-    if (ord && ord.customer_phone && !result.alreadyUsed) {
+    // 3. Dispatch the official order confirmation WhatsApp message
+    const alreadySentWa = Boolean(ord?.whatsapp_confirmation_sent);
+    if (ord && ord.customer_phone && (!alreadySentWa || !result.alreadyUsed)) {
       try {
         const isCod =
           (ord.payment_method || "").toLowerCase().includes("cash on delivery") ||
@@ -46,7 +47,7 @@ export async function GET(req: NextRequest) {
 
         const displayOrderId = ord.shopify_order_id || (ord as any).shopify_order_id || ord.id || resolvedOrderId;
 
-        await sendOrderConfirmationWhatsApp({
+        const waSent = await sendOrderConfirmationWhatsApp({
           customerName: ord.customer_name || "Valued Customer",
           customerPhone: ord.customer_phone || "",
           orderId: displayOrderId,
@@ -58,6 +59,18 @@ export async function GET(req: NextRequest) {
             price: Number(it.unit_price || it.price || 0),
           })),
         });
+
+        if (waSent) {
+          try {
+            const { executeD1Query } = await import("@/lib/d1");
+            await executeD1Query(
+              "UPDATE orders SET whatsapp_confirmation_sent = 1 WHERE id = ? OR shopify_order_id = ?",
+              [ord.id || resolvedOrderId, displayOrderId]
+            );
+          } catch (d1Err) {
+            console.warn("Failed to mark whatsapp_confirmation_sent in D1:", d1Err);
+          }
+        }
       } catch (notifyErr) {
         console.warn("Failed to dispatch WhatsApp order confirmation on verify:", notifyErr);
       }
@@ -119,8 +132,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // 3. Render clean, instant in-place confirmation screen without redirecting across the storefront
-    const html = `<!DOCTYPE html>
+    const displayCardId = (ord?.shopify_order_id || (ord as any)?.shopify_order_id || resolvedOrderId || "CONFIRMED").replace(/^#/, "");
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -239,7 +252,7 @@ export async function GET(req: NextRequest) {
 <body>
   <div class="card">
     <div class="icon-ring">✓</div>
-    <div class="order-id">ORDER #${resolvedOrderId || "CONFIRMED"}</div>
+    <div class="order-id">ORDER #${displayCardId}</div>
     <h1>Order Confirmed!</h1>
     <div class="badge">
       <span>●</span> Verified & Confirmed via WhatsApp

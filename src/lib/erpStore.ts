@@ -1035,15 +1035,23 @@ export function registerERPOrderInMemory(order: ERPOrder) {
 export async function getOrderById(orderId: string): Promise<ERPOrder | null> {
   const normId = (orderId || "").trim();
   if (!normId) return null;
+  const cleanId = normId.replace(/^#/, "");
+  const hashId = `#${cleanId}`;
+
   const found = inMemoryERPOrders.find(
-    (o) => o.id === normId || (Boolean(o.shopify_order_id) && o.shopify_order_id.toLowerCase() === normId.toLowerCase())
+    (o) =>
+      o.id === normId ||
+      (Boolean(o.shopify_order_id) &&
+        (o.shopify_order_id.toLowerCase() === normId.toLowerCase() ||
+         o.shopify_order_id.toLowerCase() === cleanId.toLowerCase() ||
+         o.shopify_order_id.toLowerCase() === hashId.toLowerCase()))
   );
   if (found) return found;
 
   try {
     const rows = await executeD1Query<ERPOrder>(
-      "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
-      [normId, normId]
+      "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? OR shopify_order_id = ? LIMIT 1",
+      [normId, cleanId, hashId]
     );
     if (rows && rows.length > 0) {
       const row = rows[0];

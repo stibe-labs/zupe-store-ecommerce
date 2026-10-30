@@ -6,10 +6,35 @@ import { normalizePhoneNumber } from "@/lib/whatsappOtp";
 
 const DEFAULT_WA_TOKEN =
   "EAAY6t7MlMOIBSgAfMGRZAJsIudRT1lMXiZARDnHSvqKZAr5ZArjs6htxGbGBlnE1ZCAOvQiOM069AgyzkuZB4UAtMveTfv6gu3Ik2A3nbQDaRIkWB7yuZACwVNS2eDELePKcOJRRnjE3Nx2m728wvYld1VZCMN05fulca3ZA5COTRZB82a9AZAfsAFyrS2XP41f6dRVygZDZD";
+const DEFAULT_WA_PHONE_ID = "1434769426379176";
 const STORE_BASE_URL =
   process.env.STORE_BASE_URL ||
   process.env.NEXT_PUBLIC_BASE_URL ||
   "https://zupestore.in";
+
+export function getWhatsAppConfig(): { token: string; phoneId: string; apiUrl: string } {
+  let token = process.env.WHATSAPP_TOKEN;
+  let phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+  if (!token || !phoneId) {
+    try {
+      const { getCloudflareContext } = require("@opennextjs/cloudflare");
+      const ctx = getCloudflareContext();
+      if (ctx?.env) {
+        token = token || ctx.env.WHATSAPP_TOKEN;
+        phoneId = phoneId || ctx.env.WHATSAPP_PHONE_NUMBER_ID;
+      }
+    } catch {}
+  }
+
+  const finalToken = token || DEFAULT_WA_TOKEN;
+  const finalPhoneId = phoneId || DEFAULT_WA_PHONE_ID;
+  return {
+    token: finalToken,
+    phoneId: finalPhoneId,
+    apiUrl: `https://graph.facebook.com/v21.0/${finalPhoneId}/messages`,
+  };
+}
 
 // Template names - must match exactly what you created in Meta Business Manager
 const TEMPLATE_PREPAID = "zupe_order_prepaid";
@@ -59,9 +84,7 @@ export async function sendOrderPreConfirmationWhatsApp(
     console.warn("⚠️ [WA Pre-Confirm] Recipient phone is the business's own WhatsApp number. Meta requires testing with an external customer mobile number.");
   }
 
-  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
-  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+  const { token: apiToken, apiUrl } = getWhatsAppConfig();
 
   const firstName = customerName.split(" ")[0] || customerName;
   const itemLines = items
@@ -210,21 +233,19 @@ async function sendPreConfirmViaTemplate(
 
 export async function sendOrderConfirmationWhatsApp(
   params: OrderConfirmationParams
-): Promise<void> {
+): Promise<boolean> {
   const { customerName, customerPhone, orderId, totalAmount, paymentMethod, items } = params;
 
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) {
     console.warn("[WA Order Confirm] Invalid phone, skipping:", customerPhone);
-    return;
+    return false;
   }
 
-  const token = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
-  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+  const { token, apiUrl } = getWhatsAppConfig();
 
   const advancePaid = 10;
-  const doorstepBalance = Math.max(0, totalAmount - advancePaid); // e.g. 1048 - 10 = 1038
+  const doorstepBalance = Math.max(0, totalAmount - advancePaid); // e.g. 699 - 10 = 689
   const switchPrepaidAmount = Math.max(1, doorstepBalance - 30);  // Flat Rs 30 OFF switch to prepaid
   const productSubtotal = totalAmount >= 49 ? totalAmount - 49 : totalAmount;
   const firstName = customerName.split(" ")[0] || customerName;
@@ -272,14 +293,13 @@ export async function sendOrderConfirmationWhatsApp(
       "Thank you for shopping with Zupe Store!";
   }
 
-  const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
+  let templateSent = false;
 
   if (paymentMethod === "cod") {
-    // 1. For COD: Send approved Utility template 'zupe_cod_switch_prepaid' / 'zupe_order_cod_v2' which includes BOTH buttons:
-    // [Pay Now & Save Rs 30] and [Track Order]
-    let codV2Sent = false;
+    // 1. For COD: Send approved Utility/Marketing template 'zupe_cod_switch_prepaid'
+    // Includes both [Pay Now & Save Rs 30] and [Track Order] buttons
     try {
-      codV2Sent = await sendViaCodV2Template(
+      templateSent = await sendViaCodV2Template(
         apiUrl,
         token,
         digits,
@@ -289,68 +309,87 @@ export async function sendOrderConfirmationWhatsApp(
         switchPrepaidAmount
       );
     } catch (err) {
-      console.warn("[WA Order Confirm] COD switch template attempt:", err);
-    }
-
-    // 2. If V2 template failed, fallback to generic confirmed utility template
-    if (!codV2Sent) {
-      try {
-        await sendViaConfirmedUtilityTemplate(
-          apiUrl,
-          token,
-          digits,
-          firstName,
-          displayOrderId,
-          totalAmount,
-          paymentMethodLabel
-        );
-      } catch (err) {
-        console.warn("[WA Order Confirm] Fallback utility template attempt:", err);
-      }
+      console.warn("[WA Order Confirm] COD switch template attempt error:", err);
     }
   } else {
-    // Prepaid orders: Send prepaid template or confirmed template
-    let prepaidSent = false;
+    // 2. For Prepaid: Send approved Utility template 'zupe_payment_successful'
     try {
-      prepaidSent = await sendViaTemplate(
+      templateSent = await sendViaPrepaidPaymentSuccessfulTemplate(
         apiUrl,
         token,
         digits,
-        paymentMethod,
         firstName,
-        displayOrderId,
-        totalAmount,
-        switchPrepaidAmount
+        cleanUrlOrderId,
+        totalAmount
       );
     } catch (err) {
-      console.warn("[WA Order Confirm] Prepaid template attempt:", err);
-    }
-
-    if (!prepaidSent) {
-      try {
-        await sendViaConfirmedUtilityTemplate(
-          apiUrl,
-          token,
-          digits,
-          firstName,
-          displayOrderId,
-          totalAmount,
-          paymentMethodLabel
-        );
-      } catch (err) {
-        console.warn("[WA Order Confirm] Fallback utility template attempt:", err);
-      }
+      console.warn("[WA Order Confirm] Prepaid template attempt error:", err);
     }
   }
 
-  // 3. ALWAYS send the complete itemized direct WhatsApp confirmation message!
-  // This guarantees immediate delivery with full items list, delivery estimate, tracking link, and switch offer
+  // 3. Send the complete itemized direct WhatsApp confirmation message if in customer service window
   try {
-    await sendWhatsAppTextMessage(apiUrl, token, digits, message);
-    console.log(`✅ [WA Order Confirm] Itemized confirmation delivered to ${digits} for order ${displayOrderId}`);
+    const textSent = await sendWhatsAppTextMessage(apiUrl, token, digits, message);
+    if (textSent) {
+      console.log(`✅ [WA Order Confirm] Itemized confirmation delivered to ${digits} for order ${displayOrderId}`);
+    }
   } catch (err) {
     console.warn("[WA Order Confirm] Direct message dispatch error:", err);
   }
+
+  return templateSent;
+}
+
+async function sendViaPrepaidPaymentSuccessfulTemplate(
+  apiUrl: string,
+  token: string,
+  to: string,
+  firstName: string,
+  orderId: string,
+  totalAmount: number
+): Promise<boolean> {
+  const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
+  const payload = {
+    messaging_product: "whatsapp",
+    recipient_type: "individual",
+    to,
+    type: "template",
+    template: {
+      name: "zupe_payment_successful",
+      language: { code: TEMPLATE_LANG },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: firstName },
+            { type: "text", text: cleanButtonOrderId },
+            { type: "text", text: totalAmount.toLocaleString("en-IN") },
+          ],
+        },
+      ],
+    },
+  };
+
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(6000),
+    });
+    const data = (await res.json()) as any;
+    if (res.ok && data.messages?.length > 0) {
+      console.log(`✅ [WA Order Confirm] Prepaid template 'zupe_payment_successful' dispatched to ${to}`);
+      return true;
+    }
+    console.warn("[WA Order Confirm] Prepaid template response:", data?.error?.message || data);
+  } catch (err) {
+    console.warn("[WA Order Confirm] Prepaid template error:", err);
+  }
+  return false;
 }
 
 async function sendViaCodV2Template(
@@ -608,9 +647,7 @@ export async function sendOrderCancellationRefundWhatsApp(
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) return false;
 
-  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
-  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+  const { token: apiToken, apiUrl } = getWhatsAppConfig();
 
   const firstName = customerName.split(" ")[0] || customerName;
   const cleanOrderId = (orderId || "").replace(/^#/, "");
@@ -797,9 +834,7 @@ export async function sendAbandonedCartWhatsApp(
     return false;
   }
 
-  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
-  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+  const { token: apiToken, apiUrl } = getWhatsAppConfig();
 
   const firstName = customerName?.trim() ? customerName.split(" ")[0] : "there";
   
@@ -894,9 +929,7 @@ export async function sendPaymentSuccessfulWhatsApp(params: {
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) return false;
 
-  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
-  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+  const { token: apiToken, apiUrl } = getWhatsAppConfig();
 
   const firstName = customerName.split(" ")[0] || customerName;
   const cleanOrderId = (orderId || "").replace(/^#/, "");
@@ -961,9 +994,7 @@ export async function sendOrderShippedWhatsApp(params: {
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) return false;
 
-  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
-  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+  const { token: apiToken, apiUrl } = getWhatsAppConfig();
 
   const firstName = customerName.split(" ")[0] || customerName;
   const liveTrackingLink = trackingUrl || `${STORE_BASE_URL}/order-tracking?awb=${encodeURIComponent(trackingId)}`;
@@ -1030,9 +1061,7 @@ export async function sendOutForDeliveryWhatsApp(params: {
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) return false;
 
-  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
-  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+  const { token: apiToken, apiUrl } = getWhatsAppConfig();
 
   const firstName = customerName.split(" ")[0] || customerName;
   const cleanOrderId = (orderId || "").replace(/^#/, "");
@@ -1096,9 +1125,7 @@ export async function sendDeliveryAttemptFailedWhatsApp(params: {
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) return false;
 
-  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
-  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+  const { token: apiToken, apiUrl } = getWhatsAppConfig();
 
   const firstName = customerName.split(" ")[0] || customerName;
   const cleanOrderId = (orderId || "").replace(/^#/, "");
@@ -1159,9 +1186,7 @@ export async function sendRefundUpdateWhatsApp(params: {
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) return false;
 
-  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
-  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+  const { token: apiToken, apiUrl } = getWhatsAppConfig();
 
   const firstName = customerName.split(" ")[0] || customerName;
   const cleanOrderId = (orderId || "").replace(/^#/, "");
@@ -1228,9 +1253,7 @@ export async function sendOrderDeliveredFeedbackWhatsApp(params: {
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) return false;
 
-  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
-  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+  const { token: apiToken, apiUrl } = getWhatsAppConfig();
 
   const firstName = customerName.split(" ")[0] || customerName;
   const productKey = (productIdOrSlug || "mini-portable-steam-iron").replace(/^\//, "");

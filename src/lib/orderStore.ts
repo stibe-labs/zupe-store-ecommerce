@@ -34,6 +34,7 @@ export interface OrderRecord {
   whatsapp_confirm_status?: "pending_whatsapp" | "confirmed" | "cancelled";
   whatsapp_confirm_token?: string;
   whatsapp_token_used?: boolean;
+  whatsapp_confirmation_sent?: boolean | number;
   confirmation_email_sent?: boolean;
   razorpay_payment_id?: string;
   razorpay_order_id?: string;
@@ -77,6 +78,7 @@ async function ensureOrderSchema(): Promise<void> {
     await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_confirm_status TEXT DEFAULT 'pending_whatsapp'`).catch(() => {});
     await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_confirm_token TEXT`).catch(() => {});
     await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_token_used INTEGER DEFAULT 0`).catch(() => {});
+    await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_confirmation_sent INTEGER DEFAULT 0`).catch(() => {});
     await executeD1Query(`ALTER TABLE orders ADD COLUMN confirmation_email_sent INTEGER DEFAULT 0`).catch(() => {});
   } catch (err) {
     // Non-fatal if columns already exist or D1 offline
@@ -358,40 +360,51 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
     }
   }
 
-  // Push order to Shiprocket as 'NEW' so it appears on Shiprocket dashboard with "Ship Now" button
-  const targetOrder: any = ord || erpOrd || (await getOrderById(normId));
-  let finalAwb = targetOrder?.shiprocket_awb || "";
-  let finalCourier = targetOrder?.courier_partner || "";
-
-  try {
-    const { dispatchShiprocketOrder } = await import("@/lib/shiprocketService");
-    const dispatchRes = await dispatchShiprocketOrder(targetOrder);
-    if (dispatchRes.success && dispatchRes.awb && !dispatchRes.isSimulated) {
-      finalAwb = dispatchRes.awb;
-      finalCourier = dispatchRes.courier || finalCourier;
-    }
-  } catch (dispatchErr) {
-    console.warn("Shiprocket push on WhatsApp confirm error:", dispatchErr);
-  }
-
   if (ord) {
     ord.order_status = "processing";
-    (ord as any).shiprocket_awb = finalAwb;
-    (ord as any).courier_partner = finalCourier;
+    ord.whatsapp_confirm_status = "confirmed";
+    ord.whatsapp_token_used = true;
     (ord as any).delivery_status = "Processing";
   }
 
+  // 1. Immediately persist confirmed status in D1 / ERP so verification is locked in without delay
   try {
     await updateERPOrder(normId, {
       whatsapp_confirm_status: "confirmed",
       whatsapp_token_used: true,
       status: "Processing",
       delivery_status: "Processing",
-      shiprocket_awb: finalAwb,
-      courier_partner: finalCourier,
     });
   } catch (e) {
     console.warn("ERP update on WhatsApp confirm error:", e);
+  }
+
+  // 2. Push order to Shiprocket as 'NEW' with timeout guard (max 3.5s) so it never blocks or hangs
+  const targetOrder: any = ord || erpOrd || (await getOrderById(normId));
+  let finalAwb = targetOrder?.shiprocket_awb || "";
+  let finalCourier = targetOrder?.courier_partner || "";
+
+  try {
+    const { dispatchShiprocketOrder } = await import("@/lib/shiprocketService");
+    const dispatchPromise = dispatchShiprocketOrder(targetOrder);
+    const timeoutPromise = new Promise<{ success: boolean }>((resolve) =>
+      setTimeout(() => resolve({ success: false }), 3500)
+    );
+    const dispatchRes = (await Promise.race([dispatchPromise, timeoutPromise])) as any;
+    if (dispatchRes?.success && dispatchRes.awb && !dispatchRes.isSimulated) {
+      finalAwb = dispatchRes.awb;
+      finalCourier = dispatchRes.courier || finalCourier;
+      if (ord) {
+        (ord as any).shiprocket_awb = finalAwb;
+        (ord as any).courier_partner = finalCourier;
+      }
+      await updateERPOrder(normId, {
+        shiprocket_awb: finalAwb,
+        courier_partner: finalCourier,
+      }).catch(() => {});
+    }
+  } catch (dispatchErr) {
+    console.warn("Shiprocket push on WhatsApp confirm error:", dispatchErr);
   }
 
   // Retrieve full order record (from memory or D1) so downstream confirmation messages have full details
