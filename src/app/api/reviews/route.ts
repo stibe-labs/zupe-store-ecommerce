@@ -171,12 +171,19 @@ export async function POST(req: NextRequest) {
     const allReviews = await getReviewsByProduct(productId);
     const stats = computeReviewStats(allReviews);
 
-    return NextResponse.json({
-      success: true,
-      review: newReview,
-      stats,
-      message: "Review submitted successfully and is now live!",
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        review: newReview,
+        stats,
+        message: "Review submitted successfully and is now live!",
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
+    );
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

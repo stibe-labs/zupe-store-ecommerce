@@ -1143,11 +1143,16 @@ export default function AdminReviewsPage() {
           const rawImages =
             r.customer_product_photo ||
             r.customerproductphoto ||
-            r.customer_product_photos ||
+            r.customer_product_photo_data_uri ||
+            r.customerproductphotodatauri ||
             r.customer_photos ||
             r.customer_photo ||
+            r.customer_photo_data_uri ||
             r.product_photo ||
             r.product_photos ||
+            r.product_photo_data_uri ||
+            r.photo_data_uri ||
+            r.image_data_uri ||
             r.review_photo ||
             r.review_photos ||
             r.images ||
@@ -1161,12 +1166,16 @@ export default function AdminReviewsPage() {
           const rawReviewerPhoto =
             r.reviewer_photo ||
             r.reviewerphoto ||
+            r.reviewer_photo_data_uri ||
+            r.reviewerphotodatauri ||
             r.reviewer_avatar ||
             r.revieweravatar ||
             r.user_photo ||
             r.userphoto ||
+            r.user_photo_data_uri ||
             r.user_avatar ||
             r.avatar ||
+            r.avatar_data_uri ||
             "";
 
           // Intelligently resolve product

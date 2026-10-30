@@ -94,7 +94,9 @@ export function ProductReviewsSection({
 
   const fetchReviews = async () => {
     try {
-      const res = await fetch(`/api/reviews?productId=${encodeURIComponent(productId)}&_t=${Date.now()}`);
+      const res = await fetch(`/api/reviews?productId=${encodeURIComponent(productId)}&_t=${Date.now()}`, {
+        cache: "no-store",
+      });
       const data = await res.json();
       if (data.success) {
         setReviews(data.reviews || []);
@@ -268,8 +270,27 @@ export function ProductReviewsSection({
       const data = await res.json();
       if (data.success) {
         setSubmitSuccess(true);
-        // Refresh reviews list
-        await fetchReviews();
+        // Instantly reflect the newly created review in local state (0ms delay)
+        if (data.review) {
+          setReviews((prev) => [data.review, ...prev.filter((r) => r.id !== data.review.id)]);
+        }
+        if (data.stats) {
+          setStats({
+            averageRating: Number(data.stats.averageRating) || 0,
+            totalReviews: Number(data.stats.totalReviews) || 0,
+            recommendPercentage: Number(data.stats.recommendPercentage) || 0,
+            ratingCounts: data.stats.ratingCounts || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+            ratingPercentages: data.stats.ratingPercentages || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+            customerPhotos: Array.isArray(data.stats.customerPhotos) ? data.stats.customerPhotos : [],
+          });
+          onStatsChange?.({
+            averageRating: Number(data.stats.averageRating) || 0,
+            totalReviews: Number(data.stats.totalReviews) || 0,
+            recommendPercentage: Number(data.stats.recommendPercentage) || 0,
+          });
+        }
+        // Background sync to ensure full consistency
+        fetchReviews();
         setTimeout(() => {
           setWriteModalOpen(false);
           setSubmitSuccess(false);
@@ -277,7 +298,7 @@ export function ProductReviewsSection({
           setFormComment("");
           setFormPhotos([]);
           setFormRating(5);
-        }, 1800);
+        }, 1200);
       }
     } catch (err) {
       console.error("Failed to submit review:", err);

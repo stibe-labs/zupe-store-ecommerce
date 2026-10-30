@@ -1,5 +1,6 @@
 // Product Reviews Data Layer (Cloudflare D1 + In-Memory Fallback)
 import { executeD1Query } from "@/lib/d1";
+import { uploadBase64Media } from "@/lib/r2";
 
 export interface ProductReview {
   id: string;
@@ -252,7 +253,7 @@ export async function getReviewsByProduct(productId: string): Promise<ProductRev
   // 1. Try D1 table query
   try {
     const rows = await executeD1Query<any>(
-      `SELECT * FROM product_reviews ORDER BY created_at DESC`
+      `SELECT * FROM product_reviews ORDER BY created_at DESC LIMIT 2000`
     );
 
     if (rows && rows.length > 0) {
@@ -306,7 +307,7 @@ export async function getAllReviews(options?: {
 
   try {
     const rows = await executeD1Query<any>(
-      `SELECT * FROM product_reviews ORDER BY created_at DESC`
+      `SELECT * FROM product_reviews ORDER BY created_at DESC LIMIT 5000`
     );
 
     if (rows && rows.length > 0) {
@@ -383,6 +384,40 @@ export async function addReview(newRev: {
   createdAt?: string;
   source?: string;
 }): Promise<ProductReview> {
+  // Upload base64 customer product images to Cloudflare R2 media storage
+  const processedImages: string[] = [];
+  if (Array.isArray(newRev.images)) {
+    for (const img of newRev.images) {
+      if (typeof img === "string" && img.startsWith("data:")) {
+        try {
+          const cdnUrl = await uploadBase64Media(img, "images");
+          processedImages.push(cdnUrl || img);
+        } catch (uploadErr) {
+          console.warn("Could not upload customer review photo to R2:", uploadErr);
+          // If image is too large, avoid passing raw 1MB string to SQLite
+          if (img.length < 50000) {
+            processedImages.push(img);
+          }
+        }
+      } else if (img) {
+        processedImages.push(img);
+      }
+    }
+  }
+
+  // Upload base64 reviewer avatar if provided
+  let processedReviewerPhoto = (newRev.reviewerPhoto || "").trim() || undefined;
+  if (processedReviewerPhoto && processedReviewerPhoto.startsWith("data:")) {
+    try {
+      const cdnAvatar = await uploadBase64Media(processedReviewerPhoto, "images");
+      processedReviewerPhoto = cdnAvatar || undefined;
+    } catch {
+      if (processedReviewerPhoto.length > 50000) {
+        processedReviewerPhoto = undefined;
+      }
+    }
+  }
+
   const review: ProductReview = {
     id: "rev-" + Date.now().toString(36) + "-" + Math.random().toString(36).substring(2, 6),
     productId: newRev.productId.trim(),
@@ -392,8 +427,8 @@ export async function addReview(newRev: {
     rating: Math.max(1, Math.min(5, Number(newRev.rating) || 5)),
     title: (newRev.title || "").trim(),
     comment: newRev.comment.trim(),
-    images: Array.isArray(newRev.images) ? newRev.images.filter(Boolean) : [],
-    reviewerPhoto: (newRev.reviewerPhoto || "").trim() || undefined,
+    images: processedImages,
+    reviewerPhoto: processedReviewerPhoto,
     verifiedPurchase: newRev.verifiedPurchase !== false,
     createdAt: newRev.createdAt || new Date().toISOString(),
     helpfulCount: 0,
@@ -426,6 +461,7 @@ export async function addReview(newRev: {
       ]
     );
   } catch (err) {
+    console.warn("Failed to insert review into D1 product_reviews (query 1):", err);
     // Fallback if reviewer_photo column doesn't exist yet
     try {
       await executeD1Query(
@@ -448,7 +484,7 @@ export async function addReview(newRev: {
         ]
       );
     } catch (insertErr) {
-      console.warn("Failed to insert review into D1 product_reviews:", insertErr);
+      console.warn("Failed to insert review into D1 product_reviews (fallback query 2):", insertErr);
     }
   }
 

@@ -94,7 +94,9 @@ export default function ProductDetailPage() {
   // Fetch real reviews stats immediately for flawless header synchronization
   useEffect(() => {
     if (idOrSlug) {
-      fetch(`/api/reviews?productId=${encodeURIComponent(idOrSlug)}&_t=${Date.now()}`)
+      fetch(`/api/reviews?productId=${encodeURIComponent(idOrSlug)}&_t=${Date.now()}`, {
+        cache: "no-store",
+      })
         .then((r) => r.json())
         .then((data) => {
           if (data.success && data.stats) {
