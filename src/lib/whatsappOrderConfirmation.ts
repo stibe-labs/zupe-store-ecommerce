@@ -10,11 +10,10 @@ const DEFAULT_WA_PHONE_ID = "1477900698733187";
 const STORE_BASE_URL = "https://turkiyejam.stibelabs.workers.dev";
 
 // Template names - must match exactly what you created in Meta Business Manager
-const TEMPLATE_PREPAID = "zupe_order_prepaid";
-const TEMPLATE_COD = "zupe_order_cod";
-const TEMPLATE_VERIFY = "zupe_order_verify";
-const TEMPLATE_CANCEL_PREPAID = "zupe_order_cancelled_prepaid";
-const TEMPLATE_CANCEL_COD = "zupe_order_cancelled_cod";
+const TEMPLATE_PREPAID = "turkiyejam_order_update";
+const TEMPLATE_COD = "turkiyejam_order_update";
+const TEMPLATE_VERIFY = "turkiyejam_order_verify";
+const TEMPLATE_UPDATE = "turkiyejam_order_update";
 const TEMPLATE_LANG = "en";
 
 export interface OrderConfirmationParams {
@@ -173,17 +172,6 @@ async function sendPreConfirmViaTemplate(
             {
               type: "text",
               text: verificationToken,
-            },
-          ],
-        },
-        {
-          type: "button",
-          sub_type: "url",
-          index: "1",
-          parameters: [
-            {
-              type: "text",
-              text: cleanButtonOrderId,
             },
           ],
         },
@@ -438,15 +426,13 @@ async function sendViaConfirmedUtilityTemplate(
   totalAmount: number,
   paymentMethodLabel: string
 ): Promise<boolean> {
-  const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
-
   const payload = {
     messaging_product: "whatsapp",
     recipient_type: "individual",
     to,
     type: "template",
     template: {
-      name: "zupe_order_confirmed",
+      name: "turkiyejam_order_update",
       language: { code: TEMPLATE_LANG },
       components: [
         {
@@ -455,14 +441,7 @@ async function sendViaConfirmedUtilityTemplate(
             { type: "text", text: firstName },
             { type: "text", text: orderId },
             { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
-            { type: "text", text: paymentMethodLabel },
           ],
-        },
-        {
-          type: "button",
-          sub_type: "url",
-          index: "0",
-          parameters: [{ type: "text", text: cleanButtonOrderId }],
         },
       ],
     },
@@ -479,7 +458,7 @@ async function sendViaConfirmedUtilityTemplate(
     });
     const data = (await res.json()) as any;
     if (res.ok && data.messages?.length > 0) {
-      console.log(`✅ [WA Order Confirm] Utility template 'zupe_order_confirmed' sent to ${to}`);
+      console.log(`✅ [WA Order Confirm] Utility template 'turkiyejam_order_update' sent to ${to}`);
       return true;
     }
   } catch (err) {
