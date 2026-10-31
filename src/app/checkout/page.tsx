@@ -135,6 +135,7 @@ function CheckoutContent() {
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [isUsingNewAddress, setIsUsingNewAddress] = useState(false);
+  const [isAddressesExpanded, setIsAddressesExpanded] = useState(false);
 
   // Submission state
   const [loading, setLoading] = useState(false);
@@ -503,15 +504,50 @@ function CheckoutContent() {
   useEffect(() => {
     if (!user?.email) return;
 
-    const cacheKey = `zp_user_addresses_${user.email.toLowerCase().trim()}`;
+    const normEmail = user.email.toLowerCase().trim();
+    const cacheKey = `zp_user_addresses_${normEmail}`;
+    const lastUsedKey = `zp_last_used_address_id_${normEmail}`;
+
+    const sortWithLatestUsedFirst = (list: any[]) => {
+      if (!list || list.length <= 1) return list;
+      let cachedLastId: string | null = null;
+      try {
+        cachedLastId = localStorage.getItem(lastUsedKey);
+      } catch (e) {}
+
+      return [...list].sort((a, b) => {
+        // 1. Explicitly recorded latest used ID in client session
+        if (cachedLastId) {
+          if (a.id === cachedLastId) return -1;
+          if (b.id === cachedLastId) return 1;
+        }
+        // 2. Most recent last_used_at timestamp
+        if (a.last_used_at && b.last_used_at) {
+          const diff = new Date(b.last_used_at).getTime() - new Date(a.last_used_at).getTime();
+          if (diff !== 0) return diff;
+        }
+        if (a.last_used_at && !b.last_used_at) return -1;
+        if (!a.last_used_at && b.last_used_at) return 1;
+        // 3. Explicit default address
+        if (a.is_default && !b.is_default) return -1;
+        if (!a.is_default && b.is_default) return 1;
+        // 4. Most recently created
+        if (a.created_at && b.created_at) {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        }
+        return 0;
+      });
+    };
+
     try {
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length > 0) {
           const deduplicated = deduplicateAddresses(parsed);
-          setSavedAddresses(deduplicated);
-          const defaultAddr = deduplicated.find((a: any) => a.is_default) || deduplicated[0];
+          const sorted = sortWithLatestUsedFirst(deduplicated);
+          setSavedAddresses(sorted);
+          const defaultAddr = sorted[0];
           if (defaultAddr && !address) {
             setSelectedAddressId(defaultAddr.id);
             if (defaultAddr.recipient_name && !defaultAddr.recipient_name.startsWith("Customer ")) {
@@ -532,12 +568,13 @@ function CheckoutContent() {
       .then((data) => {
         if (data.success && Array.isArray(data.addresses)) {
           const deduplicated = deduplicateAddresses(data.addresses);
-          setSavedAddresses(deduplicated);
+          const sorted = sortWithLatestUsedFirst(deduplicated);
+          setSavedAddresses(sorted);
           try {
-            localStorage.setItem(cacheKey, JSON.stringify(deduplicated));
+            localStorage.setItem(cacheKey, JSON.stringify(sorted));
           } catch (e) {}
 
-          const defaultAddr = deduplicated.find((a: any) => a.is_default) || deduplicated[0];
+          const defaultAddr = sorted[0];
           if (defaultAddr && (!address || !selectedAddressId)) {
             setSelectedAddressId(defaultAddr.id);
             if (defaultAddr.recipient_name && !defaultAddr.recipient_name.startsWith("Customer ")) {
@@ -596,6 +633,17 @@ function CheckoutContent() {
     setCity(addr.city || "");
     setState(addr.state || "");
     setPostalCode(addr.postal_code || "");
+
+    if (user?.email) {
+      try {
+        localStorage.setItem(`zp_last_used_address_id_${user.email.toLowerCase().trim()}`, addr.id);
+        fetch("/api/user/addresses", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: addr.id, email: user.email, action: "touch_last_used" }),
+        }).catch(() => {});
+      } catch (e) {}
+    }
   };
 
   const handleUseNewAddress = () => {
@@ -920,6 +968,7 @@ function CheckoutContent() {
       if (targetEmail && address.trim()) {
         const userEmailNorm = targetEmail;
         const cacheKey = `zp_user_addresses_${userEmailNorm}`;
+        const lastUsedKey = `zp_last_used_address_id_${userEmailNorm}`;
 
         const targetNormKey = normalizeAddressKey(address, postalCode);
         const existingMatch = savedAddresses.find(
@@ -928,37 +977,47 @@ function CheckoutContent() {
             normalizeAddressKey(a.street, a.postal_code || a.postalCode) === targetNormKey
         );
 
+        const now = new Date().toISOString();
+        let targetAddr: any;
+
         if (existingMatch && !isUsingNewAddress) {
-          return;
+          targetAddr = {
+            ...existingMatch,
+            recipient_name: name.trim() || existingMatch.recipient_name,
+            phone: phone.trim() || existingMatch.phone,
+            last_used_at: now,
+          };
+        } else {
+          targetAddr = {
+            id: existingMatch ? existingMatch.id : `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            user_email: userEmailNorm,
+            user_id: user?.id,
+            recipient_name: name.trim(),
+            phone: phone.trim(),
+            street: address.trim(),
+            city: city.trim(),
+            state: state.trim(),
+            postal_code: postalCode.trim(),
+            country: "India",
+            is_default: savedAddresses.length === 0,
+            tag: "Home",
+            created_at: now,
+            last_used_at: now,
+          };
         }
 
-        const newAddr = {
-          id: existingMatch ? existingMatch.id : `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          user_email: userEmailNorm,
-          user_id: user?.id,
-          recipient_name: name.trim(),
-          phone: phone.trim(),
-          street: address.trim(),
-          city: city.trim(),
-          state: state.trim(),
-          postal_code: postalCode.trim(),
-          country: "India",
-          is_default: savedAddresses.length === 0,
-          tag: "Home",
-          created_at: new Date().toISOString(),
-        };
-
-        const otherAddresses = savedAddresses.filter((a: any) => a.id !== newAddr.id);
-        const updated = deduplicateAddresses([newAddr, ...otherAddresses]);
+        const otherAddresses = savedAddresses.filter((a: any) => a.id !== targetAddr.id);
+        const updated = deduplicateAddresses([targetAddr, ...otherAddresses]);
         setSavedAddresses(updated);
         try {
           localStorage.setItem(cacheKey, JSON.stringify(updated));
+          localStorage.setItem(lastUsedKey, targetAddr.id);
         } catch (e) {}
 
         await fetch("/api/user/addresses", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newAddr),
+          body: JSON.stringify(targetAddr),
         });
       }
       if (user && phone.trim() && (!user?.phone || user.phone !== phone.trim())) {
@@ -2317,29 +2376,73 @@ function CheckoutContent() {
               {/* Saved Delivery Addresses Selection Cards */}
               {savedAddresses.length > 0 && !isUsingNewAddress && (
                 <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-200/80 space-y-2.5">
-                  <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#FF7A00]" />
-                    Saved Addresses ({savedAddresses.length})
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-[#FF7A00]" />
+                      Saved Addresses ({savedAddresses.length})
+                    </p>
+                    {savedAddresses.length > 3 && (
+                      <span className="text-[10px] font-medium text-gray-500">
+                        {isAddressesExpanded ? (
+                          `All ${savedAddresses.length} shown`
+                        ) : (
+                          <>
+                            <span className="sm:hidden">Showing 3 of {savedAddresses.length}</span>
+                            <span className="hidden sm:inline">
+                              {savedAddresses.length > 4 ? `Showing 4 of ${savedAddresses.length}` : `All 4 shown`}
+                            </span>
+                          </>
+                        )}
+                      </span>
+                    )}
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {savedAddresses.map((addr) => {
+                    {savedAddresses.map((addr, idx) => {
                       const isSelected = selectedAddressId === addr.id;
+                      const isFirst = idx === 0;
+
+                      // Display logic:
+                      // - Mobile (< sm): show first 3 addresses.
+                      // - Desktop (>= sm): show first 4 addresses.
+                      // If not expanded:
+                      //   - idx 3 is hidden on mobile, visible on desktop (hidden sm:block)
+                      //   - idx >= 4 is hidden on both (unless currently selected)
+                      let visibilityClass = "block";
+                      if (!isAddressesExpanded) {
+                        if (idx === 3) {
+                          visibilityClass = "hidden sm:block";
+                        } else if (idx >= 4) {
+                          visibilityClass = isSelected ? "block" : "hidden";
+                        }
+                      }
+
                       return (
                         <div
                           key={addr.id}
                           onClick={() => handleSelectSavedAddress(addr)}
-                          className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                          className={`${visibilityClass} p-3 rounded-xl border text-left cursor-pointer transition-all ${
                             isSelected
                               ? "border-[#FF7A00] bg-orange-50/50 ring-1 ring-[#FF7A00]"
                               : "border-gray-200 bg-white hover:border-gray-300"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-1 mb-1">
-                            <span className="font-bold text-xs text-gray-900">{addr.recipient_name}</span>
+                            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                              <span className="font-bold text-xs text-gray-900 truncate">
+                                {addr.recipient_name || "Delivery Address"}
+                              </span>
+                              {isFirst && (
+                                <span className="text-[9px] font-bold uppercase tracking-wider text-[#FF7A00] bg-orange-100/90 px-1.5 py-0.5 rounded-md leading-none shrink-0">
+                                  Latest Used
+                                </span>
+                              )}
+                            </div>
                             <button
                               type="button"
                               onClick={(e) => handleDeleteSavedAddress(e, addr.id)}
-                              className="text-gray-400 hover:text-red-500 p-0.5 cursor-pointer"
+                              className="text-gray-400 hover:text-red-500 p-0.5 cursor-pointer transition-colors shrink-0"
+                              title="Delete address"
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>
@@ -2351,6 +2454,34 @@ function CheckoutContent() {
                       );
                     })}
                   </div>
+
+                  {/* Expand / Collapse "Show More" Button */}
+                  {savedAddresses.length > 3 && (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddressesExpanded((prev) => !prev)}
+                      className={`w-full py-2 px-3 rounded-xl border border-gray-200 bg-white hover:bg-orange-50/40 hover:border-orange-200 text-xs font-semibold text-gray-700 hover:text-[#FF7A00] transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
+                        savedAddresses.length === 4 && !isAddressesExpanded ? "sm:hidden" : ""
+                      }`}
+                    >
+                      {isAddressesExpanded ? (
+                        <>
+                          <span>Show less</span>
+                          <ChevronUp className="w-3.5 h-3.5 text-[#FF7A00]" />
+                        </>
+                      ) : (
+                        <>
+                          <span className="sm:hidden">
+                            Show more ({savedAddresses.length - 3})
+                          </span>
+                          <span className="hidden sm:inline">
+                            {savedAddresses.length > 4 ? `Show more (${savedAddresses.length - 4})` : "Show more"}
+                          </span>
+                          <ChevronDown className="w-3.5 h-3.5 text-[#FF7A00]" />
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               )}
 

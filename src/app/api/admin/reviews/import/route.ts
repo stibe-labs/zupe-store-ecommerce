@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Fetch available products catalog for intelligent name/slug matching
-    let catalog = [...DEFAULT_PRODUCTS];
+    let catalog: any[] = [...DEFAULT_PRODUCTS];
     try {
       const rows = await executeD1Query<any>(
         `SELECT id, slug, name, category, price, poster_image, images FROM products`

@@ -16,6 +16,7 @@ export interface UserAddress {
   is_default?: boolean;
   tag?: "Home" | "Work" | "Other";
   created_at?: string;
+  last_used_at?: string;
 }
 
 // In-memory fallback map: email -> UserAddress[]
@@ -42,12 +43,17 @@ export async function ensureAddressTable(): Promise<void> {
         country TEXT DEFAULT 'India',
         is_default INTEGER DEFAULT 0,
         tag TEXT DEFAULT 'Home',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_used_at TIMESTAMP
       );
     `);
 
     try {
       await executeD1Query(`CREATE INDEX IF NOT EXISTS idx_addresses_email ON addresses(user_email);`);
+    } catch {}
+
+    try {
+      await executeD1Query(`ALTER TABLE addresses ADD COLUMN last_used_at TIMESTAMP;`);
     } catch {}
   } catch (err) {
     console.warn("Could not ensure addresses table:", err);
@@ -109,11 +115,54 @@ export async function getUserAddresses(
             is_default: isFinalDefault,
             tag: r.tag || "Home",
             created_at: r.created_at || new Date().toISOString(),
+            last_used_at: r.last_used_at || undefined,
           });
         }
       }
 
       addresses = Array.from(seenKeys.values());
+
+      // If any addresses exist, see if customer has a latest order in orders table to identify latest used address
+      try {
+        const latestOrderRows = await executeD1Query<any>(
+          `SELECT shipping_address, postal_code, created_at FROM orders WHERE (LOWER(customer_email) = ? ${userId ? "OR user_id = ?" : ""}) AND shipping_address IS NOT NULL ORDER BY created_at DESC LIMIT 1`,
+          userId ? [normEmail, userId] : [normEmail]
+        );
+        if (latestOrderRows && latestOrderRows.length > 0) {
+          const latestShipping = latestOrderRows[0].shipping_address;
+          const latestPin = latestOrderRows[0].postal_code;
+          const latestTime = latestOrderRows[0].created_at || new Date().toISOString();
+          const latestKey = normalizeAddressKey(latestShipping, latestPin);
+
+          for (const addr of addresses) {
+            if (!addr.last_used_at && normalizeAddressKey(addr.street, addr.postal_code) === latestKey) {
+              addr.last_used_at = latestTime;
+              try {
+                await executeD1Query(`UPDATE addresses SET last_used_at = ? WHERE id = ?`, [latestTime, addr.id]);
+              } catch {}
+              break;
+            }
+          }
+        }
+      } catch (orderCheckErr) {
+        // Non-fatal
+      }
+
+      // Sort with latest used address in first position
+      addresses.sort((a, b) => {
+        if (a.last_used_at && b.last_used_at) {
+          const diff = new Date(b.last_used_at).getTime() - new Date(a.last_used_at).getTime();
+          if (diff !== 0) return diff;
+        }
+        if (a.last_used_at && !b.last_used_at) return -1;
+        if (!a.last_used_at && b.last_used_at) return 1;
+        if (a.is_default && !b.is_default) return -1;
+        if (!a.is_default && b.is_default) return 1;
+        if (a.created_at && b.created_at) {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        }
+        return 0;
+      });
 
       // If no address was marked default but addresses exist, designate the first address as default
       if (!defaultFound && addresses.length > 0) {
@@ -234,8 +283,8 @@ export async function saveUserAddress(address: UserAddress): Promise<UserAddress
   // Sync to D1
   try {
     await executeD1Query(
-      `INSERT OR REPLACE INTO addresses (id, user_id, user_email, recipient_name, phone, street, city, state, postal_code, country, is_default, tag, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT OR REPLACE INTO addresses (id, user_id, user_email, recipient_name, phone, street, city, state, postal_code, country, is_default, tag, created_at, last_used_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         address.id,
         address.user_id || null,
@@ -250,10 +299,33 @@ export async function saveUserAddress(address: UserAddress): Promise<UserAddress
         address.is_default ? 1 : 0,
         address.tag || "Home",
         address.created_at || new Date().toISOString(),
+        address.last_used_at || address.created_at || new Date().toISOString(),
       ]
     );
   } catch (err) {
-    console.warn("D1 address save error:", err);
+    try {
+      await executeD1Query(
+        `INSERT OR REPLACE INTO addresses (id, user_id, user_email, recipient_name, phone, street, city, state, postal_code, country, is_default, tag, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          address.id,
+          address.user_id || null,
+          normEmail,
+          address.recipient_name,
+          address.phone || "",
+          address.street,
+          address.city,
+          address.state || "",
+          address.postal_code,
+          address.country || "India",
+          address.is_default ? 1 : 0,
+          address.tag || "Home",
+          address.created_at || new Date().toISOString(),
+        ]
+      );
+    } catch (fallbackErr) {
+      console.warn("D1 address save error:", fallbackErr);
+    }
   }
 
   // Update inMemoryAddresses
@@ -293,6 +365,27 @@ export async function deleteUserAddress(id: string, email: string): Promise<bool
 
   inMemoryAddresses.set(normEmail, userList);
   return true;
+}
+
+export async function touchAddressLastUsed(id: string, email: string): Promise<boolean> {
+  const normEmail = email.toLowerCase().trim();
+  const now = new Date().toISOString();
+  let userList = inMemoryAddresses.get(normEmail) || [];
+  const found = userList.find((a) => a.id === id);
+  if (found) {
+    found.last_used_at = now;
+  }
+
+  try {
+    await executeD1Query(
+      `UPDATE addresses SET last_used_at = ? WHERE id = ? AND LOWER(user_email) = ?`,
+      [now, id, normEmail]
+    );
+    return true;
+  } catch (err) {
+    console.warn("D1 touchAddressLastUsed error:", err);
+    return false;
+  }
 }
 
 export async function setDefaultUserAddress(id: string, email: string): Promise<boolean> {
@@ -345,8 +438,18 @@ export async function syncAddressFromOrder(orderData: {
     (a) => normalizeAddressKey(a.street, a.postal_code) === targetKey
   );
 
+  const now = new Date().toISOString();
+
   if (existingMatch) {
-    // Address already saved; do not create duplicate
+    // Address already saved; update last_used_at and refresh details
+    existingMatch.last_used_at = now;
+    if (orderData.customer_name && !orderData.customer_name.startsWith("Customer ")) {
+      existingMatch.recipient_name = orderData.customer_name;
+    }
+    if (orderData.customer_phone) {
+      existingMatch.phone = orderData.customer_phone;
+    }
+    await saveUserAddress(existingMatch);
     return existingMatch;
   }
 
@@ -372,7 +475,8 @@ export async function syncAddressFromOrder(orderData: {
     country: "India",
     is_default: existing.length === 0,
     tag: "Home",
-    created_at: new Date().toISOString(),
+    created_at: now,
+    last_used_at: now,
   };
 
   return await saveUserAddress(newAddress);

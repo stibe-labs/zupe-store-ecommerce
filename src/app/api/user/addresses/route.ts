@@ -4,6 +4,7 @@ import {
   saveUserAddress,
   deleteUserAddress,
   setDefaultUserAddress,
+  touchAddressLastUsed,
   UserAddress,
 } from "@/lib/addressStore";
 import { getAuthenticatedUser } from "@/lib/userAuth";
@@ -65,6 +66,7 @@ export async function POST(req: NextRequest) {
       country,
       is_default,
       tag,
+      last_used_at,
     } = body;
 
     if (!user_email || !recipient_name || !street || !city || !postal_code) {
@@ -97,6 +99,7 @@ export async function POST(req: NextRequest) {
       is_default: !!is_default,
       tag: tag || "Home",
       created_at: new Date().toISOString(),
+      last_used_at: last_used_at || new Date().toISOString(),
     };
 
     const saved = await saveUserAddress(address);
@@ -166,6 +169,11 @@ export async function PATCH(req: NextRequest) {
 
     if (action === "set_default") {
       const ok = await setDefaultUserAddress(id, normalizedEmail);
+      return NextResponse.json({ success: ok });
+    }
+
+    if (action === "touch_last_used") {
+      const ok = await touchAddressLastUsed(id, normalizedEmail);
       return NextResponse.json({ success: ok });
     }
 
