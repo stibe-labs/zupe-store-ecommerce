@@ -119,6 +119,17 @@ export async function POST(req: NextRequest) {
       if (paymentInfo?.id) razorpayPaymentId = paymentInfo.id;
     }
 
+    // Validate genuine customer UPI handle (exclude Razorpay test/dummy VPAs like success@razorpay)
+    const rawVpa = (paymentInfo?.vpa || "").trim();
+    const isValidCustomerVpa =
+      Boolean(rawVpa) &&
+      rawVpa.includes("@") &&
+      !rawVpa.toLowerCase().includes("razorpay") &&
+      !rawVpa.toLowerCase().includes("test") &&
+      !rawVpa.toLowerCase().includes("dummy") &&
+      !rawVpa.toLowerCase().includes("mock");
+    const genuineVpa = isValidCustomerVpa ? rawVpa : null;
+
     // Calculate actual amount refundable to customer
     let amountToRefund = 0;
     if (isCodPartial) {
@@ -269,13 +280,13 @@ export async function POST(req: NextRequest) {
 
       let refundSourceDescriptor = "my original payment account";
 
-      // If client paid via UPI, mention UPI ID:
-      if (paymentInfo?.vpa) {
-        paymentDetailsLines.push(`📱 UPI ID: ${paymentInfo.vpa}`);
-        refundSourceDescriptor = `my UPI ID (${paymentInfo.vpa})`;
+      // If client paid via UPI, only mention UPI ID if it is a genuine customer UPI:
+      if (genuineVpa) {
+        paymentDetailsLines.push(`📱 UPI ID: ${genuineVpa}`);
+        refundSourceDescriptor = `my UPI ID (${genuineVpa})`;
       } else if (isUpi) {
-        paymentDetailsLines.push(`📱 Payment Mode: UPI Instant`);
-        refundSourceDescriptor = `my original UPI payment account`;
+        paymentDetailsLines.push(`📱 Payment Mode: UPI Instant Payment`);
+        refundSourceDescriptor = `my original payment account`;
       }
 
       // If client paid via Credit/Debit card, mention Card Details:
@@ -391,7 +402,7 @@ export async function POST(req: NextRequest) {
             id: paymentInfo.id,
             amount: paymentInfo.amount,
             method: paymentInfo.method,
-            vpa: paymentInfo.vpa,
+            vpa: genuineVpa,
             bank: paymentInfo.bank,
             card: paymentInfo.card,
             paymentSummary: paymentInfo.paymentSummary,
@@ -401,7 +412,7 @@ export async function POST(req: NextRequest) {
       isCodPartial,
       isRefundEligible,
       amountToRefund,
-      upi_id: paymentInfo?.vpa || null,
+      upi_id: genuineVpa,
     });
   } catch (err: any) {
     console.error("Direct order cancel error:", err);

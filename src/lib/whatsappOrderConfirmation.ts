@@ -1293,8 +1293,10 @@ export async function sendRefundUpdateWhatsApp(params: {
 
   const firstName = customerName.split(" ")[0] || customerName;
   const cleanOrderId = (orderId || "").replace(/^#/, "");
+  const formattedAmount = Number(refundAmount || 0).toLocaleString("en-IN");
+  const refundStatusText = status || "Refunded (Processed to bank account)";
 
-  // 1. Try template
+  // 1. Try template with 4 parameters (matches Meta template localizable_params)
   try {
     const res = await fetch(apiUrl, {
       method: "POST",
@@ -1313,8 +1315,8 @@ export async function sendRefundUpdateWhatsApp(params: {
               parameters: [
                 { type: "text", text: firstName },
                 { type: "text", text: cleanOrderId },
-                { type: "text", text: refundAmount.toLocaleString("en-IN") },
-                { type: "text", text: status },
+                { type: "text", text: formattedAmount },
+                { type: "text", text: refundStatusText },
               ],
             },
             {
@@ -1327,18 +1329,62 @@ export async function sendRefundUpdateWhatsApp(params: {
         },
       }),
     });
-    const data = await res.json() as any;
-    if (res.ok && data.messages?.length > 0) return true;
-  } catch {}
+    const data = (await res.json()) as any;
+    if (res.ok && data.messages?.length > 0) {
+      console.log(`✅ [WA Refund Update] Template 'zupe_refund_update' (4 params) delivered to ${digits} for Order #${cleanOrderId}`);
+      return true;
+    }
+    console.warn(`[WA Refund Update] 4-param attempt response:`, data?.error?.message || data);
 
-  // 2. Direct message fallback
+    // 2. Try template with 3 parameters if Meta template has 3 localizable params
+    const res3 = await fetch(apiUrl, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + apiToken, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: digits,
+        type: "template",
+        template: {
+          name: "zupe_refund_update",
+          language: { code: TEMPLATE_LANG },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: firstName },
+                { type: "text", text: cleanOrderId },
+                { type: "text", text: formattedAmount },
+              ],
+            },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [{ type: "text", text: cleanOrderId }],
+            },
+          ],
+        },
+      }),
+    });
+    const data3 = (await res3.json()) as any;
+    if (res3.ok && data3.messages?.length > 0) {
+      console.log(`✅ [WA Refund Update] Template 'zupe_refund_update' (3 params) delivered to ${digits} for Order #${cleanOrderId}`);
+      return true;
+    }
+    console.warn(`[WA Refund Update] 3-param attempt response:`, data3?.error?.message || data3);
+  } catch (tErr) {
+    console.warn(`[WA Refund Update] Template error:`, tErr);
+  }
+
+  // 3. Direct message fallback
   const body =
     `Hi ${firstName}! 👋\n\n` +
-    `ℹ️Here’s an update on your ZupeStore refund. 💰\n\n` +
+    `ℹ️ Here’s an update on your ZupeStore refund: 💰\n\n` +
     `🧾 Order ID: #${cleanOrderId}\n` +
-    `💵 Refund Amount: ₹${refundAmount.toLocaleString("en-IN")}\n` +
-    `📌 Status: ${status}\n\n` +
-    `We’ll share further updates when available.✅\n\n` +
+    `💵 Refund Amount: ₹${formattedAmount}\n` +
+    `📌 Status: ${refundStatusText}\n\n` +
+    `We’ll share further updates when available. ✅\n\n` +
     `Thank you for your patience! 🧡\n\n` +
     `Team ZupeStore`;
 
