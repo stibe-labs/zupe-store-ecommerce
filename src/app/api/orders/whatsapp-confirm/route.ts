@@ -32,8 +32,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 3. Dispatch the official order confirmation WhatsApp message
-    const alreadySentWa = Boolean(ord?.whatsapp_confirmation_sent);
-    if (ord && ord.customer_phone && (!alreadySentWa || !result.alreadyUsed)) {
+    if (ord && ord.customer_phone) {
       try {
         const isCod =
           (ord.payment_method || "").toLowerCase().includes("cash on delivery") ||
@@ -262,7 +261,7 @@ export async function GET(req: NextRequest) {
     <p>
       Thank you for confirming! Your order has been verified and updated in our system. Our fulfillment team is now preparing your parcel for prompt dispatch.
     </p>
-    <a class="btn-wa" id="wa-btn" href="https://wa.me/919778137954">
+    <a class="btn-wa" id="wa-btn" href="https://wa.me/919778137954?text=Hi%2C%20I%20have%20confirmed%20my%20order%20%23${displayCardId}">
       <span>💬 Return to WhatsApp</span>
     </a>
     <p id="countdown" style="font-size: 12px; color: #64748b; margin-bottom: 18px;">
@@ -280,7 +279,7 @@ export async function GET(req: NextRequest) {
       if (secEl) secEl.innerText = timeLeft;
       if (timeLeft <= 0) {
         clearInterval(timer);
-        window.location.href = "https://wa.me/919778137954";
+        window.location.href = "https://wa.me/919778137954?text=Hi%2C%20I%20have%20confirmed%20my%20order%20%23${displayCardId}";
       }
     }, 1000);
   </script>

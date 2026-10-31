@@ -297,11 +297,27 @@ export async function sendOrderConfirmationWhatsApp(
 
   let templateSent = false;
 
+  // 1. Dispatch approved Meta Utility template 'zupe_order_shipped' with [ 🔎 Track Shipment ] button
+  // This is a guaranteed 100% delivery Utility template for BOTH COD and Prepaid orders
+  try {
+    templateSent = await sendViaConfirmedTrackingTemplate(
+      apiUrl,
+      token,
+      digits,
+      firstName,
+      cleanUrlOrderId,
+      displayOrderId,
+      courierPartner || (paymentMethod === "cod" ? "Zupe Express Priority COD Dispatch" : "Zupe Express Priority Dispatch"),
+      trackingId || cleanUrlOrderId
+    );
+  } catch (err) {
+    console.warn("[WA Order Confirm] Tracking confirmation template error:", err);
+  }
+
+  // 2. For COD: Also dispatch COD switch to prepaid offer template if available
   if (paymentMethod === "cod") {
-    // 1. For COD: Send approved Utility/Marketing template 'zupe_cod_switch_prepaid'
-    // Includes both [Pay Now & Save Rs 30] and [Track Order] buttons
     try {
-      templateSent = await sendViaCodV2Template(
+      await sendViaCodV2Template(
         apiUrl,
         token,
         digits,
@@ -313,41 +329,23 @@ export async function sendOrderConfirmationWhatsApp(
     } catch (err) {
       console.warn("[WA Order Confirm] COD switch template attempt error:", err);
     }
-  } else {
-    // 2. For Prepaid: Send approved Meta template 'zupe_order_shipped' with [ 🔎 Track Shipment ] button
+  } else if (!templateSent) {
+    // 3. Fallback for Prepaid: zupe_payment_successful if tracking template encountered any issue
     try {
-      templateSent = await sendViaPrepaidConfirmedTrackingTemplate(
+      templateSent = await sendViaPrepaidPaymentSuccessfulTemplate(
         apiUrl,
         token,
         digits,
         firstName,
         cleanUrlOrderId,
-        displayOrderId,
-        courierPartner,
-        trackingId
+        totalAmount
       );
     } catch (err) {
-      console.warn("[WA Order Confirm] Prepaid tracking template attempt error:", err);
-    }
-
-    // Fallback to zupe_payment_successful if tracking template failed
-    if (!templateSent) {
-      try {
-        templateSent = await sendViaPrepaidPaymentSuccessfulTemplate(
-          apiUrl,
-          token,
-          digits,
-          firstName,
-          cleanUrlOrderId,
-          totalAmount
-        );
-      } catch (err) {
-        console.warn("[WA Order Confirm] Prepaid payment template fallback error:", err);
-      }
+      console.warn("[WA Order Confirm] Prepaid payment template fallback error:", err);
     }
   }
 
-  // 3. Send the complete itemized direct WhatsApp confirmation message if in customer service window
+  // 4. Send the complete itemized direct WhatsApp confirmation message
   try {
     const textSent = await sendWhatsAppTextMessage(apiUrl, token, digits, message);
     if (textSent) {
@@ -360,7 +358,7 @@ export async function sendOrderConfirmationWhatsApp(
   return templateSent;
 }
 
-export async function sendViaPrepaidConfirmedTrackingTemplate(
+export async function sendViaConfirmedTrackingTemplate(
   apiUrl: string,
   token: string,
   to: string,
@@ -425,6 +423,8 @@ export async function sendViaPrepaidConfirmedTrackingTemplate(
   }
   return false;
 }
+
+export const sendViaPrepaidConfirmedTrackingTemplate = sendViaConfirmedTrackingTemplate;
 
 export async function sendViaPrepaidPaymentSuccessfulTemplate(
   apiUrl: string,
