@@ -29,6 +29,7 @@ yarn-error.log*
 # Local env files
 .env*.local
 .env
+docs/rzp-key.csv
 
 # Vercel & IDE
 .vercel
