@@ -82,7 +82,7 @@ export function Navbar() {
           className="inline-flex items-center group py-1"
           aria-label="Turkiye Jam Homepage"
         >
-          <div className="relative h-11 sm:h-13 w-28 sm:w-36 shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform drop-shadow-md">
+          <div className="relative h-10 sm:h-13 w-28 sm:w-36 shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform drop-shadow-md">
             <Image
               src="/turkiye-jam-logo.svg"
               alt="Turkiye Jam"
@@ -133,11 +133,11 @@ export function Navbar() {
         </nav>
 
         {/* Right Side: Order Now yellow pill + Cart + Profile */}
-        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <a
             href="#shop"
             onClick={(e) => scrollToSection(e, "shop")}
-            className="btn-shimmer px-5 sm:px-6 py-2 sm:py-2.5 rounded-full bg-[#fed000] hover:bg-[#e6bc00] text-black font-extrabold text-xs sm:text-sm tracking-wide shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center cursor-pointer"
+            className="btn-shimmer px-4 sm:px-6 py-1.5 sm:py-2.5 rounded-full bg-[#fed000] hover:bg-[#e6bc00] text-black font-extrabold text-xs sm:text-sm tracking-wide shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center cursor-pointer"
           >
             Order now
           </a>
@@ -145,13 +145,13 @@ export function Navbar() {
           {/* Cart Button */}
           <button
             onClick={openCart}
-            className="p-2 sm:px-3.5 sm:py-2 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-white/20 backdrop-blur-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            className="p-1.5 sm:px-3.5 sm:py-2 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 border border-white/20 backdrop-blur-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
             aria-label="View Shopping Cart"
           >
             <ShoppingBag className="w-4 h-4" />
             <span className="hidden sm:inline">Cart</span>
             {totalItems > 0 && (
-              <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#fed000] text-black text-[10px] font-black flex items-center justify-center">
+              <span className="min-w-[17px] h-[17px] px-1 rounded-full bg-[#fed000] text-black text-[10px] font-black flex items-center justify-center">
                 {totalItems}
               </span>
             )}
@@ -160,7 +160,7 @@ export function Navbar() {
           {/* User Account / Profile */}
           <button
             onClick={handleAccountClick}
-            className="p-2 rounded-full bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-sm transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
+            className="hidden sm:flex p-2 rounded-full bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-sm transition-all hover:scale-105 active:scale-95 cursor-pointer items-center justify-center"
             aria-label="User Account"
           >
             <User className="w-4 h-4 stroke-[2.2]" />

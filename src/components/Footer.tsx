@@ -48,13 +48,13 @@ function FooterLink({ link }: { link: { label: string; href: string } }) {
 
 export function Footer() {
   return (
-    <footer className="bg-[#5b1420] text-white relative overflow-hidden border-t border-white/10 pt-16 pb-24 md:pb-16">
+    <footer className="bg-[#5b1420] text-white relative overflow-hidden border-t border-white/10 pt-10 sm:pt-16 pb-24 md:pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 lg:gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-16">
           {/* Brand Logo & Mission */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <Link href="/" className="inline-flex items-center group" aria-label="Turkiye Jam">
-              <div className="relative h-13 w-36 shrink-0">
+              <div className="relative h-11 sm:h-13 w-32 sm:w-36 shrink-0">
                 <Image
                   src="/turkiye-jam-logo.svg"
                   alt="Turkiye Jam"
@@ -63,94 +63,97 @@ export function Footer() {
                 />
               </div>
             </Link>
-            <p className="text-sm text-stone-200/90 leading-relaxed max-w-xs">
+            <p className="text-xs sm:text-sm text-stone-200/90 leading-relaxed max-w-xs">
               Imported preserves, delivered across India. Authentic Themra Epimedium herbal formula.
             </p>
           </div>
 
-          {/* Shop */}
-          <div>
-            <h4 className="font-tj-serif text-lg font-bold text-white mb-4">Shop</h4>
-            <ul className="space-y-2 text-sm text-stone-200">
-              <li>
-                <a href="#shop" className="hover:text-[#fed000] transition-colors">
-                  All packs
-                </a>
-              </li>
-              <li>
-                <a href="#shop" className="hover:text-[#fed000] transition-colors">
-                  240g Glass Jar
-                </a>
-              </li>
-              <li>
-                <a href="#shop" className="hover:text-[#fed000] transition-colors">
-                  Single-Serve Sachets
-                </a>
-              </li>
-            </ul>
-          </div>
+          {/* 3 Link Columns: Shop, Help, Contact - 3 columns on mobile matching des.svg */}
+          <div className="md:col-span-3 grid grid-cols-3 gap-3 sm:gap-8">
+            {/* Shop */}
+            <div>
+              <h4 className="font-tj-serif text-sm sm:text-lg font-bold text-white mb-2.5 sm:mb-4">Shop</h4>
+              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-stone-200">
+                <li>
+                  <a href="#shop" className="hover:text-[#fed000] transition-colors">
+                    All packs
+                  </a>
+                </li>
+                <li>
+                  <a href="#shop" className="hover:text-[#fed000] transition-colors">
+                    240g Jar
+                  </a>
+                </li>
+                <li>
+                  <a href="#shop" className="hover:text-[#fed000] transition-colors">
+                    Sachets
+                  </a>
+                </li>
+              </ul>
+            </div>
 
-          {/* Help */}
-          <div>
-            <h4 className="font-tj-serif text-lg font-bold text-white mb-4">Help</h4>
-            <ul className="space-y-2 text-sm text-stone-200">
-              <li>
-                <a href="#faq" className="hover:text-[#fed000] transition-colors">
-                  FAQ
-                </a>
-              </li>
-              <li>
-                <Link href="/shipping-and-delivery" className="hover:text-[#fed000] transition-colors">
-                  Shipping &amp; Delivery
-                </Link>
-              </li>
-              <li>
-                <Link href="/return" className="hover:text-[#fed000] transition-colors">
-                  Returns &amp; Guarantee
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="hover:text-[#fed000] transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-            </ul>
-          </div>
+            {/* Help */}
+            <div>
+              <h4 className="font-tj-serif text-sm sm:text-lg font-bold text-white mb-2.5 sm:mb-4">Help</h4>
+              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-stone-200">
+                <li>
+                  <a href="#faq" className="hover:text-[#fed000] transition-colors">
+                    FAQ
+                  </a>
+                </li>
+                <li>
+                  <Link href="/shipping-and-delivery" className="hover:text-[#fed000] transition-colors">
+                    Shipping
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/return" className="hover:text-[#fed000] transition-colors">
+                    Returns
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="hover:text-[#fed000] transition-colors">
+                    Privacy
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Contact */}
-          <div>
-            <h4 className="font-tj-serif text-lg font-bold text-white mb-4">Contact</h4>
-            <ul className="space-y-2.5 text-sm text-stone-200">
-              <li>
-                <a
-                  href="https://wa.me/916238165935"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 hover:text-[#fed000] transition-colors"
-                >
-                  <Phone className="w-4 h-4 text-[#fed000]" />
-                  <span>+91 62381 65935</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="mailto:support@turkiyejam.com"
-                  className="inline-flex items-center gap-2 hover:text-[#fed000] transition-colors"
-                >
-                  <Mail className="w-4 h-4 text-[#fed000]" />
-                  <span>support@turkiyejam.com</span>
-                </a>
-              </li>
-              <li className="flex items-center gap-2 text-stone-300">
-                <MapPin className="w-4 h-4 text-[#fed000]" />
-                <span>All-India Express Delivery</span>
-              </li>
-            </ul>
+            {/* Contact */}
+            <div>
+              <h4 className="font-tj-serif text-sm sm:text-lg font-bold text-white mb-2.5 sm:mb-4">Contact</h4>
+              <ul className="space-y-2 sm:space-y-2.5 text-xs sm:text-sm text-stone-200">
+                <li>
+                  <a
+                    href="https://wa.me/916238165935"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 hover:text-[#fed000] transition-colors"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-[#fed000] shrink-0" />
+                    <span className="text-[11px] sm:text-sm whitespace-nowrap">+91 62381 65935</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="mailto:support@turkiyejam.com"
+                    className="inline-flex items-center gap-1.5 hover:text-[#fed000] transition-colors"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-[#fed000] shrink-0" />
+                    <span className="text-[11px] sm:text-sm truncate max-w-[90px] sm:max-w-none">support@turkiyejam.com</span>
+                  </a>
+                </li>
+                <li className="flex items-center gap-1.5 text-stone-300">
+                  <MapPin className="w-3.5 h-3.5 text-[#fed000] shrink-0" />
+                  <span className="text-[11px] sm:text-sm">All-India Delivery</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-14 pt-8 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-300">
+        <div className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-xs text-stone-300 text-center sm:text-left">
           <p>
             © 2026 Turkiye Jam. This product is not intended to diagnose, treat, cure or prevent any disease.
           </p>
