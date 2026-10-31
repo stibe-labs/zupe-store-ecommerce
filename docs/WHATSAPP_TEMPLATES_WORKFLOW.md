@@ -39,7 +39,7 @@ Because all 11 message templates are officially **Approved & Active** in Meta Bu
    │                                             │
    ▼                                             ▼
 zupe_cod_switch_prepaid                zupe_order_confirmed_prepaid
-(Instant ₹30 OFF Offer)                (Order Confirmed & Express Dispatch Notice)
+(Instant ₹49 OFF Offer)                (Order Confirmed & Express Dispatch Notice)
    │                                             │
    └──────────────────────┬──────────────────────┘
                           │
@@ -71,7 +71,7 @@ zupe_cod_switch_prepaid                zupe_order_confirmed_prepaid
 | # | Template Name | Category | Trigger Event | Trigger Timing | Interactive Buttons |
 |---|---|---|---|---|---|
 | **1** | `zupe_order_verify` | Utility | Customer places order at checkout | Immediate | `[ ✅ Confirm Order ]`<br>`[ ❌ Cancel Order ]` |
-| **2** | `zupe_cod_switch_prepaid` | Marketing | Customer confirms COD order | Immediate after confirmation | `[ Pay Now & Save Rs 30 ]`<br>`[ Track Order ]` |
+| **2** | `zupe_cod_switch_prepaid` | Marketing | Customer confirms COD order | Immediate after confirmation | `[ Pay Now & Save Rs 49 ]`<br>`[ Track Order ]` |
 | **3** | `zupe_payment_successful` | Utility | Razorpay payment captured | Immediate upon payment | `[ 📦 View Order ]` |
 | **4** | `zupe_abandoned_cart` | Marketing | Customer leaves checkout/cart | 15–30 mins after exit | `[ 🛒 Complete Your Order ]` |
 | **5** | `zupe_order_shipped` | Utility | AWB assigned / In Transit | Immediate via Shiprocket webhook | `[ 🔎 Track Shipment ]` |
@@ -129,7 +129,7 @@ Team ZupeStore
 
 ---
 
-### 2. COD Order — Switch to Prepaid Discount Offer (Save ₹30)
+### 2. COD Order — Switch to Prepaid Discount Offer (Save ₹49)
 * **Template Name:** `zupe_cod_switch_prepaid` *(Fallback alias: `zupe_order_cod_v2`)*
 * **Category:** `Marketing` | **Language:** `English (en)`
 * **When It Triggers:** Automatically sent the instant a COD customer clicks `[ ✅ Confirm Order ]` from WhatsApp or when confirmed manually by admin.
@@ -139,7 +139,7 @@ Hi {{1}}! 👋Your Cash on Delivery order is confirmed.
 
 ⚡ Special Offer on your ZupeStore Order! 🎁
 
-Switch your Cash on Delivery order to Prepaid now and get an instant FLAT ₹30 OFF! 💰
+Switch your Cash on Delivery order to Prepaid now and get an instant FLAT ₹49 OFF! 💰
 
 📦 Order ID: #{{2}}
 💵 Original COD Due: ₹{{3}}
@@ -153,12 +153,12 @@ Team ZupeStore
   * `{{1}}`: Customer First Name (e.g. `Rahul`)
   * `{{2}}`: Clean Order ID (e.g. `1054`)
   * `{{3}}`: Original COD Doorstep Balance (e.g. `668`)
-  * `{{4}}`: Discounted Online Price with ₹30 OFF (e.g. `638`)
+  * `{{4}}`: Discounted Online Price with ₹49 OFF (e.g. `638`)
 * **Buttons (Type: Visit Website):**
-  1. **Button 1 (`index: 0`):** `Pay Now & Save Rs 30`  
+  1. **Button 1 (`index: 0`):** `Pay Now & Save Rs 49`  
      * URL Type: Dynamic  
      * Destination: `https://zupestore.in/checkout?method=prepaid&switch=cod&orderId={{1}}`  
-     * Behavior: Opens checkout in switch mode, applies the flat ₹30 discount to the order, and launches Razorpay UPI/Cards payment.
+     * Behavior: Opens checkout in switch mode, applies the flat ₹49 discount to the order, and launches Razorpay UPI/Cards payment.
   2. **Button 2 (`index: 1`):** `Track Order`  
      * URL Type: Dynamic  
      * Destination: `https://zupestore.in/order-tracking?query={{1}}`  

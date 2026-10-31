@@ -107,7 +107,7 @@ async function main() {
   await testTemplate({
     num: 2,
     name: "zupe_cod_switch_prepaid",
-    desc: "COD Order — Switch to Prepaid Discount Offer (Save ₹30)",
+    desc: "COD Order — Switch to Prepaid Discount Offer (Save ₹49)",
     payload: {
       messaging_product: "whatsapp",
       recipient_type: "individual",
@@ -123,7 +123,7 @@ async function main() {
               { type: "text", text: "Rahul" },
               { type: "text", text: "1054" },
               { type: "text", text: "668" },
-              { type: "text", text: "638" },
+              { type: "text", text: "619" },
             ],
           },
           {

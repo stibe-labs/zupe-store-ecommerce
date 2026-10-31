@@ -772,7 +772,7 @@ function OrderTrackingContent() {
                         baseCodTotal = pSubtotal + 49;
                       }
 
-                      const discounted = Math.max(0, baseCodTotal - 30);
+                      const discounted = Math.max(0, baseCodTotal - 49);
 
                       return (
                         <div className="mx-6 sm:mx-8 mt-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border-2 border-[#FF7A00]/40 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
@@ -783,7 +783,7 @@ function OrderTrackingContent() {
                             <div>
                               <div className="flex items-center gap-2">
                                 <h4 className="font-extrabold text-gray-900 text-sm sm:text-base">
-                                  Switch to Prepaid &amp; Save ₹30!
+                                  Switch to Prepaid &amp; Save ₹49!
                                 </h4>
                                 <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
                                   Instant Discount

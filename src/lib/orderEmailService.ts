@@ -218,14 +218,14 @@ export async function sendOrderConfirmationEmail(
             </td>
             <td>
               <div style="font-size: 14px; font-weight: 700; color: #9A3412;">
-                Save ₹30 Instantly by Switching to Prepaid!
+                Save ₹49 Instantly by Switching to Prepaid!
               </div>
               <div style="font-size: 12px; color: #7C2D12; line-height: 1.5; margin-top: 4px;">
-                Pay securely online now via UPI, Google Pay, PhonePe, or Cards. You will save ₹30 immediately and your package gets priority express courier dispatch.
+                Pay securely online now via UPI, Google Pay, PhonePe, or Cards. You will save ₹49 immediately and your package gets priority express courier dispatch.
               </div>
               <div style="margin-top: 12px;">
                 <a href="${payNowUrl}" style="display: inline-block; background: #FF7A00; color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.3px;">
-                  Pay Online & Save ₹30 Now →
+                  Pay Online & Save ₹49 Now →
                 </a>
               </div>
             </td>
@@ -502,7 +502,7 @@ ${customerPhone ? `Phone: ${customerPhone}` : ""}
 
 TRACK YOUR ORDER:
 ${trackingUrl}
-${isCod ? `\nSWITCH TO PREPAID & SAVE ₹30:\n${payNowUrl}\n` : ""}
+${isCod ? `\nSWITCH TO PREPAID & SAVE ₹49:\n${payNowUrl}\n` : ""}
 
 Need assistance? Reply to this email at zupestoreonline@gmail.com.
   `.trim();

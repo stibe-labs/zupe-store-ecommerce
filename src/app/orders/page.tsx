@@ -839,7 +839,7 @@ function OrdersPageContent() {
                             className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-xs font-black tracking-tight bg-[#FF7A00] hover:bg-[#E66E00] text-white shadow-xs hover:shadow-md hover:shadow-orange-500/25 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] w-full sm:w-auto text-center animate-pulse whitespace-nowrap"
                           >
                             <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                            <span>Pay Now (Save ₹30)</span>
+                            <span>Pay Now (Save ₹49)</span>
                           </Link>
                         ) : isRefundCompleted ? (
                           <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
@@ -1265,18 +1265,18 @@ function OrdersPageContent() {
                       <span>•</span>
                       {isCod ? (
                         <span className="text-amber-700 font-semibold">
-                          COD Delivery Fee: <strong>+₹49</strong>
+                          COD Handling Fee: <strong>+₹49</strong>
                         </span>
-                      ) : ord.discount_amount === 30 ? (
+                      ) : (ord.discount_amount === 49 || ord.discount_amount === 30) ? (
                         <span className="text-emerald-700 font-semibold">
-                          Delivery: <strong>₹19 (Saved ₹30 with Prepaid Offer)</strong>
+                          Delivery: <strong>FREE (Saved ₹49 with Prepaid Offer)</strong>
                         </span>
                       ) : (
                         <span className="text-emerald-700 font-semibold">
                           Delivery: <strong>FREE</strong>
                         </span>
                       )}
-                      {ord.discount_amount && ord.discount_amount > 0 && ord.discount_amount !== 30 ? (
+                      {ord.discount_amount && ord.discount_amount > 0 && ord.discount_amount !== 49 && ord.discount_amount !== 30 ? (
                         <>
                           <span>•</span>
                           <span className="text-emerald-600 font-semibold">

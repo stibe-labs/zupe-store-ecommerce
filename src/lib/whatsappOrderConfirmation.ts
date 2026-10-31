@@ -248,7 +248,7 @@ export async function sendOrderConfirmationWhatsApp(
 
   const advancePaid = 10;
   const doorstepBalance = Math.max(0, totalAmount - advancePaid); // e.g. 699 - 10 = 689
-  const switchPrepaidAmount = Math.max(1, doorstepBalance - 30);  // Flat Rs 30 OFF switch to prepaid
+  const switchPrepaidAmount = Math.max(1, doorstepBalance - 49);  // Flat Rs 49 OFF switch to prepaid
   const productSubtotal = totalAmount >= 49 ? totalAmount - 49 : totalAmount;
   const firstName = customerName.split(" ")[0] || customerName;
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
@@ -271,12 +271,12 @@ export async function sendOrderConfirmationWhatsApp(
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
       "💰 *Price Breakdown:*\n" +
       "  • Product Amount: Rs " + productSubtotal.toLocaleString("en-IN") + "\n" +
-      "  • Shipping Charge: Rs 49\n" +
+      "  • COD Handling Charge: Rs 49\n" +
       "  • Total Amount: Rs " + totalAmount.toLocaleString("en-IN") + "\n" +
       "  • Advance Paid Online: Rs 10 (Received)\n" +
       "  • *Balance Due at Doorstep: Rs " + doorstepBalance.toLocaleString("en-IN") + "*\n\n" +
       "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
-      "⚡ *Special Offer: Switch to Prepaid & Save Rs 30!*\n" +
+      "⚡ *Special Offer: Switch to Prepaid & Save Rs 49!*\n" +
       "Pay online now — pay only *Rs " + switchPrepaidAmount.toLocaleString("en-IN") + "* instead of Rs " + doorstepBalance.toLocaleString("en-IN") + " at delivery:\n" +
       payNowUrl + "\n\n" +
       "📦 *Track Your Order:*\n" +
@@ -298,7 +298,7 @@ export async function sendOrderConfirmationWhatsApp(
   let templateSent = false;
 
   if (paymentMethod === "cod") {
-    // 1. For COD: Send the official 'zupe_cod_switch_prepaid' template with Instant ₹30 OFF offer + Track Order button
+    // 1. For COD: Send the official 'zupe_cod_switch_prepaid' template with Instant ₹49 OFF offer + Track Order button
     try {
       templateSent = await sendViaCodV2Template(
         apiUrl,

@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       const doorstepDue = Math.max(0, Number(existingOrder?.total_amount || 0) - advancePaid);
       const discountedAmount = Number(
         order_payload.discounted_amount ||
-          (existingOrder ? Math.max(1, doorstepDue - 30) : 0)
+          (existingOrder ? Math.max(1, doorstepDue - 49) : 0)
       );
 
       const prodCost = Number(existingOrder?.product_cost || 0);
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
                razorpay_payment_id = ?,
                razorpay_order_id = ?,
                total_amount = ?,
-               discount_amount = COALESCE(discount_amount, 0) + 30,
+               discount_amount = COALESCE(discount_amount, 0) + 49,
                shipping_cost = 0,
                remittance_status = 'Settled',
                net_profit = ?
@@ -164,8 +164,8 @@ export async function POST(req: NextRequest) {
             city: (existingOrder as any)?.city || order_payload?.city || "",
             postalCode: (existingOrder as any)?.postal_code || order_payload?.postal_code || "",
             totalAmount: discountedAmount,
-            discountAmount: (existingOrder?.discount_amount || 0) + 30,
-            paymentMethod: "Prepaid (Switched to Online - Saved ₹30)",
+            discountAmount: (existingOrder?.discount_amount || 0) + 49,
+            paymentMethod: "Prepaid (Switched to Online - Saved ₹49)",
             paymentStatus: "paid",
             items: orderItems.map((it: any) => ({
               name: it.product_name || it.name,

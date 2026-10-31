@@ -147,8 +147,8 @@ Within seconds of placing the order, the customer receives Meta template **`zupe
 When the customer clicks `[ ✅ Confirm Order ]`:
 * **For COD Orders:** 
   * The order status changes to `Confirmed` and `Processing`.
-  * Meta template **`zupe_cod_switch_prepaid`** is instantly delivered on WhatsApp offering flat **₹30 OFF** if they switch to prepaid now.
-  * Features two buttons: `[ Pay Now & Save Rs 30 ]` and `[ Track Order ]`.
+  * Meta template **`zupe_cod_switch_prepaid`** is instantly delivered on WhatsApp offering flat **₹49 OFF** if they switch to prepaid now.
+  * Features two buttons: `[ Pay Now & Save Rs 49 ]` and `[ Track Order ]`.
 * **For Prepaid Orders:**
   * Meta template **`zupe_payment_successful`** is dispatched with official payment receipt and `[ 📦 View Order ]` button.
 * **Email Notification:** If the customer provided an optional email, an itemized HTML confirmation email is sent via Gmail SMTP.
@@ -354,7 +354,7 @@ sequenceDiagram
         Customer->>Store: Taps [ ✅ Confirm Order ]
         Store->>D1: Sets whatsapp_confirm_status = 'confirmed'
         alt Is Cash on Delivery
-            Store->>Meta: Dispatches zupe_cod_switch_prepaid (₹30 OFF Offer)
+            Store->>Meta: Dispatches zupe_cod_switch_prepaid (₹49 OFF Offer)
         else Is Full Prepaid
             Store->>Meta: Dispatches zupe_payment_successful (Receipt)
         end
@@ -398,7 +398,7 @@ All 11 message templates are officially **Approved & Active** in Meta Business M
 | # | Template Name | Category | Exact Trigger Timing | Body Variables Passed | Interactive Buttons & Destination |
 |---|---|---|---|---|---|
 | **1** | `zupe_order_verify` | Utility | Immediate on order placement (COD & Prepaid) | `{{1}}` Name, `{{2}}` Order ID, `{{3}}` Product, `{{4}}` Due at Delivery, `{{5}}` Paid Online | `[ ✅ Confirm Order ]` → `/api/orders/whatsapp-confirm?token={tok}`<br>`[ ❌ Cancel Order ]` → `/orders?cancelPrompt={orderId}` |
-| **2** | `zupe_cod_switch_prepaid` | Marketing | Immediate when COD order confirmed | `{{1}}` Name, `{{2}}` Clean Order ID, `{{3}}` Original COD Due, `{{4}}` Discounted Prepaid Price | `[ Pay Now & Save Rs 30 ]` → `/checkout?method=prepaid&switch=cod&orderId={id}`<br>`[ Track Order ]` → `/order-tracking?query={id}` |
+| **2** | `zupe_cod_switch_prepaid` | Marketing | Immediate when COD order confirmed | `{{1}}` Name, `{{2}}` Clean Order ID, `{{3}}` Original COD Due, `{{4}}` Discounted Prepaid Price | `[ Pay Now & Save Rs 49 ]` → `/checkout?method=prepaid&switch=cod&orderId={id}`<br>`[ Track Order ]` → `/order-tracking?query={id}` |
 | **3** | `zupe_payment_successful` | Utility | Immediate when prepaid payment captured | `{{1}}` Name, `{{2}}` Clean Order ID, `{{3}}` Total Paid | `[ 📦 View Order ]` → `/orders?query={id}` |
 | **4** | `zupe_abandoned_cart` | Marketing | Strictly 1 hour (60 mins) if cart remains unpurchased; sent exactly 1 time | `{{1}}` Name, `{{2}}` First Abandoned Product Name | `[ 🛒 Complete Your Order ]` → `/checkout?recover={token}` |
 | **5** | `zupe_order_shipped` | Utility | Immediate when Shiprocket assigns AWB | `{{1}}` Name, `{{2}}` Order ID, `{{3}}` Courier Partner, `{{4}}` AWB Number, `{{5}}` Tracking URL | `[ 🔎 Track Shipment ]` → `/order-tracking?awb={awb}` |

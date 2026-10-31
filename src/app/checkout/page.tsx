@@ -398,7 +398,7 @@ function CheckoutContent() {
         amount: Math.round(payableAmount * 100),
         currency: "INR",
         name: "Zupe Store",
-        description: `Order ${switchOrder.display_id || switchOrder.id} - Switch to Prepaid (Save ₹30)`,
+        description: `Order ${switchOrder.display_id || switchOrder.id} - Switch to Prepaid (Save ₹49)`, 
         image: "/zupe-logo.webp",
         order_id: data.razorpay_order_id,
         prefill: {
@@ -1362,13 +1362,13 @@ function CheckoutContent() {
               <CheckCircle2 className="w-10 h-10" />
             </motion.div>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 mb-2 border border-emerald-200">
-              ✓ Switched to Prepaid &amp; Saved ₹30
+              ✓ Switched to Prepaid &amp; Saved ₹49
             </span>
             <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
               Payment Successful!
             </h1>
             <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-              Your order is now <strong>Prepaid &amp; Confirmed</strong>. You saved ₹30 and your package has been moved to <strong>Priority Express Dispatch</strong>.
+              Your order is now <strong>Prepaid &amp; Confirmed</strong>. You saved ₹49 and your package has been moved to <strong>Priority Express Dispatch</strong>.
             </p>
 
             <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-xs mb-8 text-left space-y-3 text-xs text-gray-600">
@@ -1384,11 +1384,11 @@ function CheckoutContent() {
               </div>
               <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                 <span className="text-gray-500">Prepaid Discount:</span>
-                <span className="font-bold text-emerald-600">-₹30 Applied</span>
+                <span className="font-bold text-emerald-600">-₹49 Applied</span>
               </div>
               <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                 <span className="text-gray-500">Shipping:</span>
-                <span className="font-bold text-[#FF7A00]">Discounted (Saved ₹30)</span>
+                <span className="font-bold text-[#FF7A00]">Free (Saved ₹49)</span>
               </div>
               <div className="flex justify-between items-center pt-2 text-sm">
                 <span className="font-bold text-gray-900">Total Paid:</span>
@@ -1449,7 +1449,7 @@ function CheckoutContent() {
               ⚡ Instant ₹49 Discount Offer
             </span>
             <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight">
-              Switch to Prepaid &amp; Save ₹30!
+              Switch to Prepaid &amp; Save ₹49!
             </h1>
             <p className="text-xs sm:text-sm text-orange-100 mt-2 max-w-md mx-auto leading-relaxed">
               Pay online now via UPI, Google Pay, PhonePe, Cards, or Net Banking. Waive cash charges and get priority express dispatch.
@@ -1508,7 +1508,7 @@ function CheckoutContent() {
                 )}
               </div>
 
-              {/* Price Breakdown with Flat Rs 30 discount */}
+              {/* Price Breakdown with Flat Rs 49 discount */}
               {(() => {
                 const codTotal = Number(switchOrder.total_amount) || 0;
                 const advancePaid = Number((switchOrder as any).advance_paid) || 10;
@@ -1517,7 +1517,7 @@ function CheckoutContent() {
                   : Math.max(0, codTotal - advancePaid);
                 const finalPayable = (switchOrder as any).discounted_amount !== undefined
                   ? Number((switchOrder as any).discounted_amount)
-                  : Math.max(1, doorstepDue - 30);
+                  : Math.max(1, doorstepDue - 49);
 
                 return (
                   <>
@@ -1537,9 +1537,9 @@ function CheckoutContent() {
                       <div className="flex justify-between text-emerald-600 font-bold">
                         <span className="flex items-center gap-1.5">
                           <Sparkles className="w-4 h-4" />
-                          <span>Prepaid Switch Discount (Flat ₹30 OFF):</span>
+                          <span>Prepaid Switch Discount (Flat ₹49 OFF):</span>
                         </span>
-                        <span>-₹30</span>
+                        <span>-₹49</span>
                       </div>
                       <div className="pt-3 border-t border-gray-200 flex justify-between items-center text-base sm:text-lg">
                         <span className="font-bold text-gray-900">Final Amount to Pay Online:</span>
@@ -1547,7 +1547,7 @@ function CheckoutContent() {
                           <span className="font-extrabold text-[#FF7A00] text-xl">
                             ₹{finalPayable.toLocaleString()}
                           </span>
-                          <span className="block text-[10px] text-emerald-600 font-bold">You Save ₹30 • ₹0 at Delivery (Net Delivery: ₹19)</span>
+                          <span className="block text-[10px] text-emerald-600 font-bold">You Save ₹49 • ₹0 at Delivery (Free Shipping)</span>
                         </div>
                       </div>
                     </div>
@@ -1764,7 +1764,7 @@ function CheckoutContent() {
             {paymentMethod === "cod" ? (
               <>
                 <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                  <span className="text-gray-500">Shipping Charge:</span>
+                  <span className="text-gray-500">COD Handling Charge:</span>
                   <span className="font-semibold text-gray-900">
                     {shippingFee > 0 ? `₹${shippingFee}` : "FREE"}
                   </span>
@@ -2947,13 +2947,7 @@ function CheckoutContent() {
                         <div className="space-y-1.5 text-xs text-emerald-900 font-semibold pl-1">
                           <div className="flex items-center gap-2">
                             <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                            <span>
-                              {codShippingFee > 0 ? (
-                                <>Free Express Shipping <span className="text-emerald-700 font-bold">(-₹49)</span></>
-                              ) : (
-                                <>100% Free Express Shipping <span className="text-emerald-700 font-bold">(Applied)</span></>
-                              )}
-                            </span>
+                            <span>Free Express Shipping</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
@@ -3062,7 +3056,7 @@ function CheckoutContent() {
                       )}
                       <div className="flex justify-between text-gray-600">
                         <span className="flex items-center gap-1.5">
-                          Shipping Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
+                          {paymentMethod === "cod" ? "COD Handling Charge" : "Shipping Charge"} <Truck className="w-3.5 h-3.5 text-gray-400" />
                         </span>
                         {paymentMethod === "cod" ? (
                           shippingFee > 0 ? (
@@ -3409,7 +3403,7 @@ function CheckoutContent() {
                 )}
                 <div className="flex justify-between text-gray-600">
                   <span className="flex items-center gap-1.5">
-                    Shipping Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
+                    {paymentMethod === "cod" ? "COD Handling Charge" : "Shipping Charge"} <Truck className="w-3.5 h-3.5 text-gray-400" />
                   </span>
                   {paymentMethod === "cod" ? (
                     shippingFee > 0 ? (
