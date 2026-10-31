@@ -86,12 +86,9 @@ export async function sendEmail({
           user: companyEmail,
           pass: smtpPass,
         },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
-        tls: {
-          rejectUnauthorized: false,
-        },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000,
       });
 
       await transporter.sendMail({
@@ -107,8 +104,12 @@ export async function sendEmail({
       console.log(`[Mailer] ✅ SMTP email delivered to ${to} from ${fromAddress}`);
       return { success: true };
     } catch (err: any) {
-      console.error("[Mailer] Nodemailer SMTP error:", err);
-      // Fall through to HTTP options if SMTP fails
+      const errMsg = err?.message || String(err);
+      console.error("[Mailer] Nodemailer SMTP error:", errMsg, err?.stack);
+      // If HTTP providers are not configured, return this exact SMTP error so we know why it failed
+      if (!process.env.BREVO_API_KEY && !process.env.RESEND_API_KEY) {
+        return { success: false, error: `SMTP error: ${errMsg}` };
+      }
     }
   }
 

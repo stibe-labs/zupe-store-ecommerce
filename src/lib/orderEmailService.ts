@@ -54,7 +54,7 @@ function findProductUrl(productName?: string, productId?: string): string {
     );
     if (matchByName) return `${STORE_BASE_URL}/products/${matchByName.slug || matchByName.id}`;
   }
-  return `${STORE_BASE_URL}/products/${productId || ""}`;
+  return productId ? `${STORE_BASE_URL}/products/${productId}` : STORE_BASE_URL;
 }
 
 function calculateEstimatedDelivery(dateStr?: string): { minDate: string; maxDate: string; label: string } {
@@ -133,10 +133,13 @@ export async function sendOrderConfirmationEmail(
     (paymentMethod || "").toLowerCase().includes("cash on delivery") ||
     (paymentMethod || "").toLowerCase() === "cod";
 
+  const cleanOrderId = (orderId || "").replace(/^#/, "");
+  const displayOrderId = cleanOrderId ? `#${cleanOrderId}` : orderId;
+
   const firstName = (customerName || "Customer").split(" ")[0] || "Customer";
   const estDelivery = calculateEstimatedDelivery(createdAt);
-  const trackingUrl = `${STORE_BASE_URL}/order-tracking?query=${encodeURIComponent(orderId)}`;
-  const payNowUrl = `${STORE_BASE_URL}/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(orderId)}`;
+  const trackingUrl = `${STORE_BASE_URL}/order-tracking?query=${encodeURIComponent(cleanOrderId)}`;
+  const payNowUrl = `${STORE_BASE_URL}/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(cleanOrderId)}`;
 
   // Calculate items subtotal if not provided
   const itemsSubtotal =
@@ -151,8 +154,8 @@ export async function sendOrderConfirmationEmail(
     .filter(Boolean)
     .join(", ");
 
-  // Official Zupe Store text label logo via HTTPS URL
-  const logoImgSrc = `${STORE_BASE_URL}/zupe-email-label.png`;
+  // Official Zupe Store white label logo via HTTPS URL (designed for dark brand header)
+  const logoImgSrc = `${STORE_BASE_URL}/zupe-label-white.png`;
 
   // 2. Build Item HTML rows with clean HTTPS image URLs and product detail links
   const itemRows = items.map((item) => {
@@ -251,12 +254,12 @@ export async function sendOrderConfirmationEmail(
         
         <!-- Header / Brand -->
         <tr>
-          <td style="padding: 26px 32px 18px 32px; text-align: center; border-bottom: 1px solid #f3f4f6; background-color: #ffffff;">
+          <td style="padding: 24px 32px 20px 32px; text-align: center; border-bottom: 1px solid #1f2937; background-color: #111827;">
             <a href="${STORE_BASE_URL}" target="_blank" style="text-decoration: none; display: inline-block;">
               <img src="${logoImgSrc}" alt="Zupe Store" width="165" style="display: block; width: 165px; max-width: 165px; height: auto; margin: 0 auto; border: 0;" />
             </a>
-            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #9ca3af; margin-top: 8px; font-weight: 600;">
-              Official Order Confirmation
+            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #9ca3af; margin-top: 8px; font-weight: 600;">
+              Modern Tech &amp; Lifestyle Store
             </div>
           </td>
         </tr>
@@ -277,7 +280,7 @@ export async function sendOrderConfirmationEmail(
             </h1>
             
             <p style="font-size: 14px; line-height: 1.6; color: #4b5563; margin: 0; max-width: 480px; margin: 0 auto;">
-              Your order <strong style="color: #111827;">#${orderId}</strong> has been received and confirmed. Our team is packaging your items for express courier dispatch.
+              Your order <strong style="color: #111827;">${displayOrderId}</strong> has been received and confirmed. Our team is packaging your items for express courier dispatch.
             </p>
           </td>
         </tr>
@@ -289,7 +292,7 @@ export async function sendOrderConfirmationEmail(
               <tr>
                 <td style="padding: 6px 0; width: 50%; vertical-align: top;">
                   <div style="font-size: 11px; text-transform: uppercase; color: #6b7280; font-weight: 700; letter-spacing: 0.5px;">Order ID</div>
-                  <div style="font-size: 14px; font-weight: 700; color: #111827; margin-top: 2px; font-family: monospace;">${orderId}</div>
+                  <div style="font-size: 14px; font-weight: 700; color: #111827; margin-top: 2px; font-family: monospace;">${displayOrderId}</div>
                 </td>
                 <td style="padding: 6px 0; width: 50%; vertical-align: top;">
                   <div style="font-size: 11px; text-transform: uppercase; color: #6b7280; font-weight: 700; letter-spacing: 0.5px;">Payment Method</div>
@@ -508,13 +511,13 @@ Need assistance? Reply to this email at zupestoreonline@gmail.com.
   try {
     const res = await sendEmail({
       to: cleanEmail,
-      subject: `Order Confirmed: #${orderId} — Zupe Store`,
+      subject: `Order Confirmed: ${displayOrderId} — Zupe Store`,
       html,
       text: textBody,
     });
 
     if (res.success) {
-      console.log(`[Order Email Service] ✅ Order confirmation email successfully sent to ${cleanEmail} for Order #${orderId}`);
+      console.log(`[Order Email Service] ✅ Order confirmation email successfully sent to ${cleanEmail} for Order ${displayOrderId}`);
       return { success: true, message: `Email sent to ${cleanEmail}` };
     } else {
       console.warn(`[Order Email Service] ⚠️ Email dispatch returned error for ${cleanEmail}:`, res.error);
@@ -616,11 +619,11 @@ export async function sendOrderCancellationEmail(
       <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 30px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
         <!-- Header -->
         <tr>
-          <td style="padding: 28px 32px; background: linear-gradient(135deg, #111827 0%, #1f2937 100%); text-align: center;">
-            <div style="font-size: 24px; font-weight: 900; color: #FF7A00; letter-spacing: -0.5px;">
-              Zupe Store
-            </div>
-            <div style="font-size: 12px; color: #9ca3af; margin-top: 4px; letter-spacing: 1px; text-transform: uppercase;">
+          <td style="padding: 24px 32px 20px 32px; background-color: #111827; text-align: center; border-bottom: 1px solid #1f2937;">
+            <a href="${STORE_BASE_URL}" target="_blank" style="text-decoration: none; display: inline-block;">
+              <img src="${logoImgSrc}" alt="Zupe Store" width="165" style="display: block; width: 165px; max-width: 165px; height: auto; margin: 0 auto; border: 0;" />
+            </a>
+            <div style="font-size: 11px; color: #9ca3af; margin-top: 8px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600;">
               Order Cancellation Notice
             </div>
           </td>
