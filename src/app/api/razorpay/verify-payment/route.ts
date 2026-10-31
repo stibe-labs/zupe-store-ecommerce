@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       const doorstepDue = Math.max(0, Number(existingOrder?.total_amount || 0) - advancePaid);
       const discountedAmount = Number(
         order_payload.discounted_amount ||
-          (existingOrder ? Math.max(1, doorstepDue - 49) : 0)
+          (existingOrder ? Math.max(1, doorstepDue - 30) : 0)
       );
 
       const prodCost = Number(existingOrder?.product_cost || 0);
@@ -80,6 +80,10 @@ export async function POST(req: NextRequest) {
       await updateERPOrder(existingOrderId, {
         payment_method: "Prepaid",
         payment_status: "Completed",
+        status: "Processing",
+        delivery_status: "Processing" as any,
+        whatsapp_confirm_status: "confirmed",
+        whatsapp_token_used: true,
         total_amount: discountedAmount,
         shipping_cost: 0,
         remittance_status: "Settled",
@@ -92,13 +96,19 @@ export async function POST(req: NextRequest) {
           `UPDATE orders
            SET payment_method = 'Prepaid',
                payment_status = 'Completed',
+               status = 'Processing',
+               delivery_status = 'Processing',
+               whatsapp_confirm_status = 'confirmed',
+               whatsapp_token_used = 1,
+               razorpay_payment_id = ?,
+               razorpay_order_id = ?,
                total_amount = ?,
-               discount_amount = COALESCE(discount_amount, 0) + 49,
+               discount_amount = COALESCE(discount_amount, 0) + 30,
                shipping_cost = 0,
                remittance_status = 'Settled',
                net_profit = ?
            WHERE id = ? OR shopify_order_id = ?`,
-          [discountedAmount, newNetProfit, existingOrderId, existingOrderId]
+          [razorpay_payment_id, razorpay_order_id, discountedAmount, newNetProfit, existingOrderId, existingOrderId]
         );
       } catch (d1Err) {
         console.warn("D1 update order switch error:", d1Err);
@@ -110,6 +120,8 @@ export async function POST(req: NextRequest) {
         updateStorefrontOrder(existingOrderId, {
           payment_method: "Prepaid",
           payment_status: "paid",
+          order_status: "processing",
+          whatsapp_confirm_status: "confirmed",
           total_amount: discountedAmount,
         });
       } catch {}

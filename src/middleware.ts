@@ -185,6 +185,21 @@ export async function middleware(req: NextRequest) {
   // 4. CUSTOMER ACCOUNT PAGES (/account, /orders)
   // =========================================================================
   if (pathname === "/account" || pathname === "/orders") {
+    // If accessing /orders with an order-specific query parameter (e.g. from WhatsApp, tracking, or confirmation links),
+    // allow guest customer access without forcing redirect to /signin
+    if (
+      pathname === "/orders" &&
+      (url.searchParams.has("confirmed") ||
+        url.searchParams.has("query") ||
+        url.searchParams.has("orderId") ||
+        url.searchParams.has("order_id") ||
+        url.searchParams.has("cancelPrompt") ||
+        url.searchParams.has("cancelled") ||
+        url.searchParams.has("notice"))
+    ) {
+      return applySecurityHeaders(NextResponse.next());
+    }
+
     const userToken = req.cookies.get(USER_COOKIE_NAME)?.value;
     const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
 

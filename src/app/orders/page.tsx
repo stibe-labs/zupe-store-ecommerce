@@ -134,6 +134,18 @@ function OrdersPageContent() {
             url.searchParams.delete("cancel");
             window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
           } catch {}
+        } else if (
+          targetOrd.whatsapp_confirm_status === "confirmed" &&
+          (targetOrd.payment_method?.toLowerCase().includes("prepaid") || targetOrd.payment_status === "paid" || (targetOrd as any).payment_status === "Completed")
+        ) {
+          // Do not open cancel prompt automatically for an already paid and confirmed order
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("cancelPrompt");
+            url.searchParams.delete("cancel");
+            url.searchParams.set("notice", "already_confirmed");
+            window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+          } catch {}
         } else {
           setCancelPromptId(targetOrd.id);
         }
@@ -625,6 +637,19 @@ function OrdersPageContent() {
           </div>
         )}
 
+        {/* Banner: Notice / Already Confirmed & Paid */}
+        {noticeCode === "already_confirmed" && (
+          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex items-start gap-3 shadow-xs">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-bold text-sm">Order Already Confirmed &amp; Processing</p>
+              <p className="text-xs text-emerald-800 mt-0.5">
+                Your order is already confirmed and being prepared for dispatch. If you need any assistance, modifications, or support, please chat directly with our billing and support desk on WhatsApp at <strong className="text-emerald-950">+91 97441 22853</strong>.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Banner: Direct cancellation success message */}
         {cancelSuccessMsg && (
           <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 flex items-start justify-between gap-3 shadow-xs">
@@ -1045,7 +1070,7 @@ function OrdersPageContent() {
                                   disabled={cancellingOrderId === ord.id}
                                   className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-white bg-rose-600 hover:bg-rose-700 transition cursor-pointer shadow-xs"
                                 >
-                                  {cancellingOrderId === ord.id ? "Cancelling..." : "Confirm"}
+                                  {cancellingOrderId === ord.id ? "Cancelling..." : "Yes, Cancel Order"}
                                 </button>
                                 <button
                                   type="button"
@@ -1106,7 +1131,7 @@ function OrdersPageContent() {
                                 disabled={cancellingOrderId === ord.id}
                                 className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer shadow-xs"
                               >
-                                {cancellingOrderId === ord.id ? "Cancelling..." : "Confirm Cancel"}
+                                {cancellingOrderId === ord.id ? "Cancelling..." : "Yes, Cancel Order"}
                               </button>
                               <button
                                 type="button"
@@ -1242,12 +1267,16 @@ function OrdersPageContent() {
                         <span className="text-amber-700 font-semibold">
                           COD Delivery Fee: <strong>+₹49</strong>
                         </span>
+                      ) : ord.discount_amount === 30 ? (
+                        <span className="text-emerald-700 font-semibold">
+                          Delivery: <strong>₹19 (Saved ₹30 with Prepaid Offer)</strong>
+                        </span>
                       ) : (
                         <span className="text-emerald-700 font-semibold">
                           Delivery: <strong>FREE (Saved ₹49)</strong>
                         </span>
                       )}
-                      {ord.discount_amount && ord.discount_amount > 0 ? (
+                      {ord.discount_amount && ord.discount_amount > 0 && ord.discount_amount !== 30 ? (
                         <>
                           <span>•</span>
                           <span className="text-emerald-600 font-semibold">
