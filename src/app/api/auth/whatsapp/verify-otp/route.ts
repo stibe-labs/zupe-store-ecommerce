@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyWhatsAppOTP } from "@/lib/whatsappOtp";
+import { verifySmsOTP } from "@/lib/smsOtp";
 import { findOrCreateWhatsAppUserAsync } from "@/lib/userStore";
 import { createUserSessionToken, USER_COOKIE_NAME } from "@/lib/userAuth";
 
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Verify OTP
-    const verification = await verifyWhatsAppOTP(phone, otp);
+    const verification = await verifySmsOTP(phone, otp);
     if (!verification.valid) {
       return NextResponse.json(
         { success: false, error: verification.message },
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (err: any) {
-    console.error("WhatsApp verify OTP error:", err);
+    console.error("SMS verify OTP error:", err);
     return NextResponse.json(
       { success: false, error: err.message || "Authentication failed" },
       { status: 500 }

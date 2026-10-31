@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sendWhatsAppOTP } from "@/lib/whatsappOtp";
+import { sendSmsOTP } from "@/lib/smsOtp";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = await sendWhatsAppOTP(phone);
+    const result = await sendSmsOTP(phone);
 
     if (!result.success) {
       return NextResponse.json(
@@ -26,11 +26,12 @@ export async function POST(req: NextRequest) {
       success: true,
       codeSent: result.codeSent ?? true,
       message: result.message,
+      otp: result.otp,
     });
   } catch (err: any) {
-    console.error("WhatsApp send OTP error:", err);
+    console.error("SMS send OTP error:", err);
     return NextResponse.json(
-      { success: false, error: err.message || "Failed to send WhatsApp verification code" },
+      { success: false, error: err.message || "Failed to send SMS verification code" },
       { status: 500 }
     );
   }

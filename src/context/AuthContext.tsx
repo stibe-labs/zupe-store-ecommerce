@@ -21,6 +21,8 @@ interface AuthContextType {
   closeAuthModal: () => void;
   sendWhatsAppOtp: (phone: string) => Promise<{ success: boolean; message?: string; codeSent?: boolean; otp?: string; error?: string }>;
   loginWithWhatsApp: (phone: string, otp: string, name?: string) => Promise<{ success: boolean; user?: UserSession; isNew?: boolean; error?: string }>;
+  sendPhoneOtp: (phone: string) => Promise<{ success: boolean; message?: string; codeSent?: boolean; otp?: string; error?: string }>;
+  loginWithPhoneOtp: (phone: string, otp: string, name?: string) => Promise<{ success: boolean; user?: UserSession; isNew?: boolean; error?: string }>;
   login: (email: string, password: string) => Promise<{ success: boolean; user?: UserSession; redirect?: string; error?: string }>;
   register: (name: string, email: string, password: string, otp: string) => Promise<{ success: boolean; error?: string }>;
   sendOtp: (email: string, name?: string) => Promise<{ success: boolean; message?: string; emailSent?: boolean; otp?: string; error?: string }>;
@@ -97,16 +99,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const sendWhatsAppOtp = async (phone: string) => {
+  const sendPhoneOtp = async (phone: string) => {
     try {
-      const res = await fetch("/api/auth/whatsapp/send-otp", {
+      const res = await fetch("/api/auth/phone/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        return { success: false, error: data.error || "Failed to send WhatsApp code" };
+        return { success: false, error: data.error || "Failed to send SMS code" };
       }
       return {
         success: true,
@@ -119,9 +121,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loginWithWhatsApp = async (phone: string, otp: string, name?: string) => {
+  const loginWithPhoneOtp = async (phone: string, otp: string, name?: string) => {
     try {
-      const res = await fetch("/api/auth/whatsapp/verify-otp", {
+      const res = await fetch("/api/auth/phone/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, otp, name }),
@@ -142,6 +144,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: err.message || "Network error" };
     }
   };
+
+  const sendWhatsAppOtp = sendPhoneOtp;
+  const loginWithWhatsApp = loginWithPhoneOtp;
 
   const sendOtp = async (email: string, name?: string) => {
     try {
@@ -258,6 +263,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         authModalNotice,
         openAuthModal,
         closeAuthModal,
+        sendPhoneOtp,
+        loginWithPhoneOtp,
         sendWhatsAppOtp,
         loginWithWhatsApp,
         login,

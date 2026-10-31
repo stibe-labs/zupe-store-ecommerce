@@ -608,6 +608,8 @@ export async function sendOrderCancellationEmail(
       </div>
     `;
 
+  const logoImgSrc = `${STORE_BASE_URL}/zupe-label-white.png`;
+
   const html = `
     <!DOCTYPE html>
     <html lang="en">

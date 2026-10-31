@@ -33,7 +33,7 @@ export function AuthCard({
   redirectUrl = "/",
   onSuccess,
 }: AuthCardProps) {
-  const { sendWhatsAppOtp, loginWithWhatsApp } = useAuth();
+  const { sendPhoneOtp, loginWithPhoneOtp } = useAuth();
 
   // Step 1: "phone", Step 2: "otp"
   const [step, setStep] = useState<"phone" | "otp">("phone");
@@ -102,7 +102,7 @@ export function AuthCard({
     }
 
     setLoading(true);
-    const res = await sendWhatsAppOtp(raw);
+    const res = await sendPhoneOtp(raw);
     setLoading(false);
 
     if (res.success) {
@@ -111,7 +111,7 @@ export function AuthCard({
       if (res.otp) {
         setOtp(res.otp);
       }
-      setSuccess("Verification code sent successfully!");
+      setSuccess("SMS verification code sent successfully!");
     } else {
       setError(res.error || "Failed to send verification code. Please try again.");
     }
@@ -134,7 +134,7 @@ export function AuthCard({
     }
 
     setLoading(true);
-    const res = await loginWithWhatsApp(phone, otp.trim(), name);
+    const res = await loginWithPhoneOtp(phone, otp.trim(), name);
     setLoading(false);
 
     if (!res.success) {
@@ -203,8 +203,8 @@ export function AuthCard({
           </h2>
           <p className="text-xs sm:text-sm text-gray-500 mt-1.5">
             {step === "phone"
-              ? "Enter your 10-digit mobile number to sign in or create an account"
-              : `Enter the 6-digit code sent to +91 ${phone.length === 10 ? phone.slice(0, 5) + " " + phone.slice(5) : phone}`}
+              ? "Enter your 10-digit mobile number to receive an SMS verification code"
+              : `Enter the 6-digit code sent via SMS to +91 ${phone.length === 10 ? phone.slice(0, 5) + " " + phone.slice(5) : phone}`}
           </p>
         </div>
 
@@ -388,21 +388,9 @@ export function AuthCard({
               )}
             </button>
 
-            {/* Quick helper if user has not yet interacted with WhatsApp number */}
-            <div className="pt-2 text-center">
-              <a
-                href="https://wa.me/919778137954?text=Hi"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => {
-                  // After user opens WhatsApp to send Hi, immediately unlock the Resend code button
-                  setExpiryCountdown(0);
-                }}
-                className="inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:text-emerald-800 font-semibold bg-emerald-50 hover:bg-emerald-100/80 px-3 py-1.5 rounded-full transition-all cursor-pointer"
-              >
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Didn&apos;t get code? Tap to send &ldquo;Hi&rdquo; on WhatsApp</span>
-              </a>
+            {/* SMS helper note */}
+            <div className="pt-2 text-center text-xs text-gray-400">
+              Didn&apos;t receive SMS? Ensure network connectivity or tap Resend code.
             </div>
           </form>
         )}
