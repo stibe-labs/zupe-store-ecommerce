@@ -489,11 +489,8 @@ export default function AccountPage() {
 
                 {user.phone ? (
                   <p className="text-xs sm:text-sm text-gray-200 flex items-center gap-2 truncate">
-                    <Phone className="w-3.5 h-3.5 text-[#25D366] flex-shrink-0" />
+                    <Phone className="w-3.5 h-3.5 text-[#FF7A00] flex-shrink-0" />
                     <span className="font-semibold">{user.phone}</span>
-                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-500/30">
-                      WhatsApp Verified
-                    </span>
                   </p>
                 ) : user.email ? (
                   <p className="text-xs sm:text-sm text-gray-300 flex items-center gap-2 truncate">
@@ -502,7 +499,7 @@ export default function AccountPage() {
                   </p>
                 ) : null}
 
-                {user.email && !user.email.includes("@customer.zupestore.com") && (
+                {user.phone && user.email && !user.email.includes("@customer.zupestore.com") && !user.email.includes("example.com") && !user.email.startsWith("test@") && (
                   <p className="text-xs text-gray-400 flex items-center gap-2 truncate mt-0.5">
                     <Mail className="w-3 h-3 text-gray-500 flex-shrink-0" />
                     <span className="truncate">{user.email}</span>
@@ -1116,21 +1113,6 @@ export default function AccountPage() {
                 />
                 <p className="text-[11px] text-gray-400 mt-1">
                   Used for order tracking SMS, courier OTP, and delivery coordination.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  disabled
-                  value={user?.email || ""}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-100 bg-gray-50 text-gray-500 text-xs font-medium cursor-not-allowed"
-                />
-                <p className="text-[11px] text-gray-400 mt-1">
-                  Email is locked to your verified account credentials.
                 </p>
               </div>
 
