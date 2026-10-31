@@ -316,23 +316,7 @@ export async function sendOrderConfirmationWhatsApp(
       console.warn("[WA Order Confirm] COD switch template attempt error:", err);
     }
 
-    // Only fallback to tracking template if COD switch template failed
-    if (!templateSent) {
-      try {
-        templateSent = await sendViaConfirmedTrackingTemplate(
-          apiUrl,
-          token,
-          digits,
-          firstName,
-          cleanUrlOrderId,
-          displayOrderId,
-          courierPartner || "Zupe Express Priority COD Dispatch",
-          trackingId || cleanUrlOrderId
-        );
-      } catch (err) {
-        console.warn("[WA Order Confirm] COD fallback tracking template error:", err);
-      }
-    }
+
   } else {
     // 2. For Prepaid: Send payment confirmation or tracking template
     try {
@@ -1460,3 +1444,4 @@ export async function sendOrderDeliveredFeedbackWhatsApp(params: {
 
   return await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
 }
+

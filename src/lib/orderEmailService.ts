@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import { sendEmail } from "@/lib/mailer";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
@@ -153,144 +151,57 @@ export async function sendOrderConfirmationEmail(
     .filter(Boolean)
     .join(", ");
 
-  const attachments: Array<{
-    filename: string;
-    path?: string;
-    content?: any;
-    cid: string;
-    contentType?: string;
-    contentDisposition?: string;
-  }> = [];
+  // Official Zupe Store text label logo via HTTPS URL
+  const logoImgSrc = `${STORE_BASE_URL}/zupe-email-label.png`;
 
-  // Try attaching official text label logo inline
-  let logoImgSrc = `${STORE_BASE_URL}/zupe-label.png`;
-  try {
-    const candidateLogoPaths = [
-      path.join(process.cwd(), "public", "zupe-email-label.png"),
-      path.join(process.cwd(), "public", "zupe-label.png"),
-      path.join(process.cwd(), "public", "zupe-label.webp"),
-    ];
-    for (const p of candidateLogoPaths) {
-      if (fs.existsSync(p)) {
-        const ext = path.extname(p).toLowerCase().replace(".", "");
-        attachments.push({
-          filename: `zupe-label.${ext}`,
-          path: p,
-          cid: "zupe_text_label_logo",
-          contentType: ext === "webp" ? "image/webp" : "image/png",
-          contentDisposition: "inline",
-        });
-        logoImgSrc = "cid:zupe_text_label_logo";
-        break;
+  // 2. Build Item HTML rows with clean HTTPS image URLs and product detail links
+  const itemRows = items.map((item) => {
+    let rawImage = item.image;
+    if (!rawImage || rawImage === "/placeholder.jpg" || rawImage === "/placeholder.png") {
+      const prod = DEFAULT_PRODUCTS.find(
+        (p) =>
+          (item.product_id && (p.id === item.product_id || p.slug === item.product_id)) ||
+          (item.name &&
+            (p.name.toLowerCase().includes(item.name.toLowerCase()) ||
+              item.name.toLowerCase().includes(p.name.toLowerCase())))
+      );
+      if (prod) {
+        rawImage = prod.poster_image || prod.images?.[0] || "/products/ripple/ripple-amber.jpg";
       }
     }
-  } catch (e) {}
 
-  // 2. Build Item HTML rows with CID inline embedded images and product detail links
-  const itemRows = await Promise.all(
-    items.map(async (item, idx) => {
-      let rawImage = item.image;
-      if (!rawImage || rawImage === "/placeholder.jpg" || rawImage === "/placeholder.png") {
-        const prod = DEFAULT_PRODUCTS.find(
-          (p) =>
-            (item.product_id && (p.id === item.product_id || p.slug === item.product_id)) ||
-            (item.name &&
-              (p.name.toLowerCase().includes(item.name.toLowerCase()) ||
-                item.name.toLowerCase().includes(p.name.toLowerCase())))
-        );
-        if (prod) {
-          rawImage = prod.poster_image || prod.images?.[0] || "/products/ripple/ripple-amber.jpg";
-        }
-      }
+    const imgSrc = resolveImageUrl(rawImage);
+    const itemProductUrl = findProductUrl(item.name, item.product_id);
+    const itemTotal = Number(item.price || 0) * Number(item.quantity || 1);
 
-      let imgSrc = resolveImageUrl(rawImage);
-      const cidKey = `prod_thumb_${idx}`;
-
-      // A. Try resolving local file if available to embed inline (bypasses Google image proxy!)
-      let attachedLocally = false;
-      try {
-        if (rawImage) {
-          let cleanPath = rawImage.trim().split("?")[0].split("#")[0];
-          if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
-            if (cleanPath.startsWith(STORE_BASE_URL)) {
-              cleanPath = cleanPath.replace(STORE_BASE_URL, "");
-            }
-          }
-          if (cleanPath.startsWith("/")) cleanPath = cleanPath.slice(1);
-
-          const candidatePath = path.join(process.cwd(), "public", cleanPath);
-          if (fs.existsSync(candidatePath) && fs.statSync(candidatePath).isFile()) {
-            const ext = path.extname(candidatePath).toLowerCase().replace(".", "");
-            attachments.push({
-              filename: `item-${idx}.${ext || "jpg"}`,
-              path: candidatePath,
-              cid: cidKey,
-              contentType: ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg",
-              contentDisposition: "inline",
-            });
-            imgSrc = `cid:${cidKey}`;
-            attachedLocally = true;
-          }
-        }
-      } catch (err) {}
-
-      // B. If not attached locally and we have an absolute URL, fetch buffer to embed inline
-      if (!attachedLocally && imgSrc.startsWith("http")) {
-        try {
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 3500);
-          const res = await fetch(imgSrc, { signal: controller.signal });
-          clearTimeout(timer);
-          if (res.ok) {
-            const ab = await res.arrayBuffer();
-            const buf = Buffer.from(ab);
-            if (buf.length > 0 && buf.length < 3 * 1024 * 1024) {
-              const mime = res.headers.get("content-type") || "image/jpeg";
-              attachments.push({
-                filename: `item-${idx}.jpg`,
-                content: buf,
-                cid: cidKey,
-                contentType: mime,
-                contentDisposition: "inline",
-              });
-              imgSrc = `cid:${cidKey}`;
-            }
-          }
-        } catch (fetchErr) {}
-      }
-
-      const itemProductUrl = findProductUrl(item.name, item.product_id);
-      const itemTotal = Number(item.price || 0) * Number(item.quantity || 1);
-
-      return `
-        <tr>
-          <td style="padding: 14px 0; border-bottom: 1px solid #f0f0f0; vertical-align: top; width: 68px;">
-            <a href="${itemProductUrl}" target="_blank" style="text-decoration: none; display: block;">
-              <img src="${imgSrc}" alt="${item.name}" width="60" height="60" style="display: block; border-radius: 12px; object-fit: cover; border: 1px solid #eeeeee; background: #fafafa; max-width: 60px; max-height: 60px;" />
-            </a>
-          </td>
-          <td style="padding: 14px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top;">
-            <a href="${itemProductUrl}" target="_blank" style="text-decoration: none; color: #111827;">
-              <div style="font-size: 14px; font-weight: 600; color: #111827; line-height: 1.4;">
-                ${item.name}
-              </div>
-            </a>
-            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
-              Qty: <strong style="color: #111827;">${item.quantity}</strong> × ₹${Number(item.price || 0).toLocaleString("en-IN")}
+    return `
+      <tr>
+        <td style="padding: 14px 0; border-bottom: 1px solid #f0f0f0; vertical-align: top; width: 68px;">
+          <a href="${itemProductUrl}" target="_blank" style="text-decoration: none; display: block;">
+            <img src="${imgSrc}" alt="${item.name}" width="60" height="60" style="display: block; border-radius: 12px; object-fit: cover; border: 1px solid #eeeeee; background: #fafafa; max-width: 60px; max-height: 60px;" />
+          </a>
+        </td>
+        <td style="padding: 14px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top;">
+          <a href="${itemProductUrl}" target="_blank" style="text-decoration: none; color: #111827;">
+            <div style="font-size: 14px; font-weight: 600; color: #111827; line-height: 1.4;">
+              ${item.name}
             </div>
-            <div style="margin-top: 6px;">
-              <a href="${itemProductUrl}" target="_blank" style="font-size: 12px; color: #FF7A00; text-decoration: none; font-weight: 700;">
-                View Product Details →
-              </a>
-            </div>
-          </td>
-          <td style="padding: 14px 0; border-bottom: 1px solid #f0f0f0; vertical-align: top; text-align: right; font-size: 14px; font-weight: 700; color: #111827; white-space: nowrap;">
-            ₹${itemTotal.toLocaleString("en-IN")}
-          </td>
-        </tr>
-      `;
-    })
-  );
+          </a>
+          <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+            Qty: <strong style="color: #111827;">${item.quantity}</strong> × ₹${Number(item.price || 0).toLocaleString("en-IN")}
+          </div>
+          <div style="margin-top: 6px;">
+            <a href="${itemProductUrl}" target="_blank" style="font-size: 12px; color: #FF7A00; text-decoration: none; font-weight: 700;">
+              View Product Details →
+            </a>
+          </div>
+        </td>
+        <td style="padding: 14px 0; border-bottom: 1px solid #f0f0f0; vertical-align: top; text-align: right; font-size: 14px; font-weight: 700; color: #111827; white-space: nowrap;">
+          ₹${itemTotal.toLocaleString("en-IN")}
+        </td>
+      </tr>
+    `;
+  });
   const itemRowsHtml = itemRows.join("");
 
   // 3. Switch to Prepaid COD Incentive Box
@@ -593,14 +504,13 @@ ${isCod ? `\nSWITCH TO PREPAID & SAVE ₹30:\n${payNowUrl}\n` : ""}
 Need assistance? Reply to this email at zupestoreonline@gmail.com.
   `.trim();
 
-  // 6. Send the email using Zupe Store mailer with inline attachments
+  // 6. Send the email using Zupe Store mailer
   try {
     const res = await sendEmail({
       to: cleanEmail,
       subject: `Order Confirmed: #${orderId} — Zupe Store`,
       html,
       text: textBody,
-      attachments: attachments.length > 0 ? attachments : undefined,
     });
 
     if (res.success) {

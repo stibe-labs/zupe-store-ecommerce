@@ -17,6 +17,48 @@ export interface SendEmailOptions {
   }>;
 }
 
+const DEFAULT_SMTP_HOST = "smtp.gmail.com";
+const DEFAULT_SMTP_PORT = 465;
+const DEFAULT_SMTP_USER = "zupestoreonline@gmail.com";
+const DEFAULT_SMTP_PASS = "wwgfnukdhczwknba";
+
+export function getMailConfig() {
+  let user = process.env.SMTP_USER;
+  let pass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
+  let host = process.env.SMTP_HOST;
+  let port = process.env.SMTP_PORT;
+
+  // Try OpenNext Cloudflare Context
+  if (!pass) {
+    try {
+      const { getCloudflareContext } = require("@opennextjs/cloudflare");
+      const ctx = getCloudflareContext();
+      if (ctx?.env) {
+        user = user || ctx.env.SMTP_USER;
+        pass = pass || ctx.env.SMTP_PASS || ctx.env.GMAIL_APP_PASSWORD;
+        host = host || ctx.env.SMTP_HOST;
+        port = port || ctx.env.SMTP_PORT;
+      }
+    } catch {}
+  }
+
+  // Try globalThis.__cf_env__
+  if (!pass && (globalThis as any).__cf_env__) {
+    const env = (globalThis as any).__cf_env__;
+    user = user || env.SMTP_USER;
+    pass = pass || env.SMTP_PASS || env.GMAIL_APP_PASSWORD;
+    host = host || env.SMTP_HOST;
+    port = port || env.SMTP_PORT;
+  }
+
+  return {
+    user: (user || DEFAULT_SMTP_USER).trim(),
+    pass: (pass || DEFAULT_SMTP_PASS).trim().replace(/\s+/g, ""),
+    host: (host || DEFAULT_SMTP_HOST).trim(),
+    port: Number(port || DEFAULT_SMTP_PORT),
+  };
+}
+
 export async function sendEmail({
   to,
   subject,
@@ -26,18 +68,18 @@ export async function sendEmail({
   replyTo,
   attachments,
 }: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
-  const companyEmail = process.env.SMTP_USER || "zupestoreonline@gmail.com";
-  const rawPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || "";
-  const smtpPass = rawPass.replace(/\s+/g, "");
+  const mailConfig = getMailConfig();
+  const companyEmail = mailConfig.user;
+  const smtpPass = mailConfig.pass;
   const fromAddress = from || `"Zupe Store" <${companyEmail}>`;
   const replyToAddress = replyTo || companyEmail;
 
   // 1. Check for Gmail SMTP if password is provided
   if (smtpPass) {
     try {
-      const port = Number(process.env.SMTP_PORT) || 465;
+      const port = mailConfig.port || 465;
       const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        host: mailConfig.host || "smtp.gmail.com",
         port,
         secure: port === 465,
         auth: {
