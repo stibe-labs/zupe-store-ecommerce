@@ -1273,7 +1273,7 @@ function OrdersPageContent() {
                         </span>
                       ) : (
                         <span className="text-emerald-700 font-semibold">
-                          Delivery: <strong>FREE (Saved ₹49)</strong>
+                          Delivery: <strong>FREE</strong>
                         </span>
                       )}
                       {ord.discount_amount && ord.discount_amount > 0 && ord.discount_amount !== 30 ? (

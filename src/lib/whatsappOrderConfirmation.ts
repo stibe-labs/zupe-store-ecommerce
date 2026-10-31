@@ -1022,6 +1022,90 @@ export async function sendAbandonedCartWhatsApp(
 // ADDITIONAL LIFECYCLE WHATSAPP NOTIFICATIONS
 // ==========================================
 
+/**
+ * Sends the prepaid order confirmed WhatsApp notification after the customer clicks
+ * "Confirm Order" on WhatsApp for a PREPAID order.
+ * Uses template 'zupe_order_confirmed_prepaid' — 3 body params: firstName, orderId, totalAmount.
+ * Single URL button: [Track Order] → https://zupestore.in/orders?query={{orderId}}
+ * Falls back to a plain text message if the template is not yet approved.
+ */
+export async function sendPrepaidOrderConfirmedWhatsApp(params: {
+  customerName: string;
+  customerPhone: string;
+  orderId: string;
+  totalAmount: number;
+}): Promise<boolean> {
+  const { customerName, customerPhone, orderId, totalAmount } = params;
+  const { digits, isValid } = normalizePhoneNumber(customerPhone);
+  if (!isValid) {
+    console.warn("[WA Prepaid Confirmed] Invalid phone, skipping:", customerPhone);
+    return false;
+  }
+
+  const { token: apiToken, apiUrl } = getWhatsAppConfig();
+  const firstName = customerName.split(" ")[0] || customerName;
+  const cleanOrderId = (orderId || "").replace(/^#/, "");
+  const displayOrderId = cleanOrderId.startsWith("#") ? cleanOrderId : `#${cleanOrderId}`;
+
+  // 1. Try approved Meta template 'zupe_order_confirmed_prepaid'
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + apiToken, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: digits,
+        type: "template",
+        template: {
+          name: "zupe_order_confirmed_prepaid",
+          language: { code: TEMPLATE_LANG },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: firstName },
+                { type: "text", text: cleanOrderId },
+                { type: "text", text: totalAmount.toLocaleString("en-IN") },
+              ],
+            },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [{ type: "text", text: cleanOrderId }],
+            },
+          ],
+        },
+      }),
+      signal: AbortSignal.timeout(6000),
+    });
+    const data = (await res.json()) as any;
+    if (res.ok && data.messages?.length > 0) {
+      console.log(`✅ [WA Prepaid Confirmed] Template 'zupe_order_confirmed_prepaid' dispatched to ${digits} for order ${displayOrderId}`);
+      return true;
+    }
+    console.warn("[WA Prepaid Confirmed] Template response:", data?.error?.message || data?.error || data);
+  } catch (err) {
+    console.warn("[WA Prepaid Confirmed] Template error:", err);
+  }
+
+  // 2. Fallback plain text message (used while template is pending approval)
+  const fallbackBody =
+    `✅ Order Confirmed — Zupe Store! 🛍️\n\n` +
+    `Hi ${firstName}! 🧡 Your ZupeStore order ${displayOrderId} is confirmed and paid.\n\n` +
+    `✅ Payment Received: ₹${totalAmount.toLocaleString("en-IN")}\n` +
+    `📦 Your order is being prepared for express dispatch.\n\n` +
+    `🔍 Track your order here:\n${STORE_BASE_URL}/orders?query=${encodeURIComponent(cleanOrderId)}\n\n` +
+    `Thank you for shopping with us! 🛍️\n\nTeam ZupeStore ✨`;
+
+  const textSent = await sendWhatsAppTextMessage(apiUrl, apiToken, digits, fallbackBody);
+  if (textSent) {
+    console.log(`✅ [WA Prepaid Confirmed] Fallback plain text dispatched to ${digits} for order ${displayOrderId}`);
+  }
+  return textSent;
+}
+
 export async function sendPaymentSuccessfulWhatsApp(params: {
   customerName: string;
   customerPhone: string;

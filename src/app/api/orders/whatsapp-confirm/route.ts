@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { confirmWhatsAppOrder, getStorefrontOrderById, getOrderByToken } from "@/lib/orderStore";
 import { getOrderById } from "@/lib/erpStore";
-import { sendOrderConfirmationWhatsApp } from "@/lib/whatsappOrderConfirmation";
+import { sendOrderConfirmationWhatsApp, sendPrepaidOrderConfirmedWhatsApp } from "@/lib/whatsappOrderConfirmation";
 
 export const dynamic = "force-dynamic";
 
@@ -38,38 +38,64 @@ export async function GET(req: NextRequest) {
           (ord.payment_method || "").toLowerCase().includes("cash on delivery") ||
           (ord.payment_method || "").toUpperCase() === "COD";
 
-        let rawItems: any[] = [];
-        if (Array.isArray(ord.items)) rawItems = ord.items;
-        else if (typeof ord.items === "string") {
-          try { rawItems = JSON.parse(ord.items); } catch { rawItems = []; }
-        }
+        // For prepaid orders the payment_successful template was already sent at checkout.
+        // Send the dedicated prepaid-confirmed template instead (no duplicate).
+        // For COD orders, send the COD switch-to-prepaid confirmation template.
+        if (!isCod) {
+          // PREPAID path — use zupe_order_confirmed_prepaid (or text fallback)
+          const displayOrderId = ord.shopify_order_id || (ord as any).shopify_order_id || ord.id || resolvedOrderId;
+          const waSent = await sendPrepaidOrderConfirmedWhatsApp({
+            customerName: ord.customer_name || "Valued Customer",
+            customerPhone: ord.customer_phone || "",
+            orderId: displayOrderId,
+            totalAmount: Number(ord.total_amount) || 0,
+          });
+          if (waSent) {
+            try {
+              const { executeD1Query } = await import("@/lib/d1");
+              await executeD1Query(
+                "UPDATE orders SET whatsapp_confirmation_sent = 1 WHERE id = ? OR shopify_order_id = ?",
+                [ord.id || resolvedOrderId, displayOrderId]
+              );
+            } catch (d1Err) {
+              console.warn("Failed to mark whatsapp_confirmation_sent in D1:", d1Err);
+            }
+          }
+        } else {
+          // COD path — existing behavior
+          let rawItems: any[] = [];
+          if (Array.isArray(ord.items)) rawItems = ord.items;
+          else if (typeof ord.items === "string") {
+            try { rawItems = JSON.parse(ord.items); } catch { rawItems = []; }
+          }
 
-        const displayOrderId = ord.shopify_order_id || (ord as any).shopify_order_id || ord.id || resolvedOrderId;
+          const displayOrderId = ord.shopify_order_id || (ord as any).shopify_order_id || ord.id || resolvedOrderId;
 
-        const waSent = await sendOrderConfirmationWhatsApp({
-          customerName: ord.customer_name || "Valued Customer",
-          customerPhone: ord.customer_phone || "",
-          orderId: displayOrderId,
-          totalAmount: Number(ord.total_amount) || 0,
-          paymentMethod: isCod ? "cod" : "prepaid",
-          trackingId: ord.tracking_number || ord.shiprocket_awb || (ord as any).tracking_number,
-          courierPartner: ord.courier_partner || (ord as any).courier_partner,
-          items: rawItems.map((it: any) => ({
-            name: it.product_name || it.name || "Purchased Product",
-            quantity: Number(it.quantity || 1),
-            price: Number(it.unit_price || it.price || 0),
-          })),
-        });
+          const waSent = await sendOrderConfirmationWhatsApp({
+            customerName: ord.customer_name || "Valued Customer",
+            customerPhone: ord.customer_phone || "",
+            orderId: displayOrderId,
+            totalAmount: Number(ord.total_amount) || 0,
+            paymentMethod: "cod",
+            trackingId: ord.tracking_number || ord.shiprocket_awb || (ord as any).tracking_number,
+            courierPartner: ord.courier_partner || (ord as any).courier_partner,
+            items: rawItems.map((it: any) => ({
+              name: it.product_name || it.name || "Purchased Product",
+              quantity: Number(it.quantity || 1),
+              price: Number(it.unit_price || it.price || 0),
+            })),
+          });
 
-        if (waSent) {
-          try {
-            const { executeD1Query } = await import("@/lib/d1");
-            await executeD1Query(
-              "UPDATE orders SET whatsapp_confirmation_sent = 1 WHERE id = ? OR shopify_order_id = ?",
-              [ord.id || resolvedOrderId, displayOrderId]
-            );
-          } catch (d1Err) {
-            console.warn("Failed to mark whatsapp_confirmation_sent in D1:", d1Err);
+          if (waSent) {
+            try {
+              const { executeD1Query } = await import("@/lib/d1");
+              await executeD1Query(
+                "UPDATE orders SET whatsapp_confirmation_sent = 1 WHERE id = ? OR shopify_order_id = ?",
+                [ord.id || resolvedOrderId, displayOrderId]
+              );
+            } catch (d1Err) {
+              console.warn("Failed to mark whatsapp_confirmation_sent in D1:", d1Err);
+            }
           }
         }
       } catch (notifyErr) {
