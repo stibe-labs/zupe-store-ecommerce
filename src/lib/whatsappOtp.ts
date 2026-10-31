@@ -192,7 +192,7 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
 
   try {
     const url = `https://graph.facebook.com/v21.0/${phoneId}/messages`;
-    const templateName = process.env.WHATSAPP_TEMPLATE_NAME || "zupe_login_otp";
+    const templateName = process.env.WHATSAPP_TEMPLATE_NAME || "turkiyejam_otp";
     const configuredLang = process.env.WHATSAPP_TEMPLATE_LANG || "en";
     const languageCandidates = [configuredLang, configuredLang === "en" ? "en_US" : "en"];
 
