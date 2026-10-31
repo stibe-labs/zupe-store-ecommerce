@@ -28,15 +28,18 @@ Because all 11 message templates are officially **Approved & Active** in Meta Bu
  [ 2. Order Placed ]
           │
           ▼
+   (If Prepaid at Checkout) ─────► zupe_payment_successful (Sent once upon payment capture)
+          │
+          ▼
    zupe_order_verify ────────────► [ ✅ Confirm Order ] or [ ❌ Cancel Order ]
           │
    ┌──────┴──────────────────────────────────────┐
    │                                             │
- (COD Confirmed)                         (Prepaid Captured)
+ (COD Confirmed)                         (Prepaid Confirmed)
    │                                             │
    ▼                                             ▼
-zupe_cod_switch_prepaid                zupe_payment_successful
-(Instant ₹30 OFF Offer)                (Payment Confirmed & Receipt)
+zupe_cod_switch_prepaid                zupe_order_confirmed_prepaid
+(Instant ₹30 OFF Offer)                (Order Confirmed & Express Dispatch Notice)
    │                                             │
    └──────────────────────┬──────────────────────┘
                           │
@@ -77,11 +80,12 @@ zupe_cod_switch_prepaid                zupe_payment_successful
 | **8** | `zupe_order_delivered_feedback` | Utility | Order marked "Delivered" | Immediate via Shiprocket webhook | `[ ⭐ Leave a Review ]` |
 | **9** | `zupe_order_cancelled` | Utility | Order cancelled by customer/admin | Immediate upon cancellation | `[ 🛍️ Browse Store ]` |
 | **10** | `zupe_refund_update` | Utility | Refund initiated or completed | Immediate upon refund trigger | `[ 🔎 View Order Status ]` |
-| **11** | `zupe_login_otp` | Authentication | Phone login / OTP requested | Instant (60s security cooldown) | `[ Copy Code ]` |
+| **11** | `zupe_order_confirmed_prepaid` | Utility | Customer confirms prepaid order | Immediate upon WA confirm click | `[ 🔎 Track Order ]` |
+| **12** | `zupe_login_otp` | Authentication | Phone login / OTP requested | Instant (60s security cooldown) | `[ Copy Code ]` |
 
 ---
 
-## 📝 Detailed Specification for All 11 Templates
+## 📝 Detailed Specification for All 12 Templates
 
 ---
 
@@ -400,7 +404,33 @@ Team ZupeStore
 
 ---
 
-### 11. Customer Login OTP
+### 11. Prepaid Order Confirmed
+* **Template Name:** `zupe_order_confirmed_prepaid`
+* **Category:** `Utility` | **Language:** `English (en)`
+* **When It Triggers:** Triggered when a customer who placed a **Prepaid** order clicks `[ ✅ Confirm Order ]` from the initial WhatsApp verification message. (Ensures `zupe_payment_successful` is not duplicated, and does not show unnecessary "switch to prepaid" buttons since it's already paid).
+* **Exact Body Text in Meta:**
+```text
+Hi {{1}}! 🧡 Your ZupeStore order #{{2}} is confirmed and paid.
+
+✅ Payment Received: ₹{{3}}
+📦 Your order is being prepared for express dispatch.
+
+Thank you for shopping with us! 🛍️
+
+Team ZupeStore ✨
+```
+* **Variables:**
+  * `{{1}}`: Customer First Name (e.g. `Rahul`)
+  * `{{2}}`: Clean Order ID (e.g. `1054`)
+  * `{{3}}`: Total Paid Amount (e.g. `599`)
+* **Button (Type: Visit Website):**
+  * **Button 1 (`index: 0`):** `🔎 Track Order`  
+    * URL Type: Dynamic  
+    * Destination: `https://zupestore.in/orders?query={{1}}`
+
+---
+
+### 12. Customer Login OTP
 * **Template Name:** `zupe_login_otp`
 * **Category:** `Authentication` | **Language:** `English (en)`
 * **When It Triggers:** Dispatched instantly when a user enters their mobile number on the login page (`/signin` or checkout OTP modal).
