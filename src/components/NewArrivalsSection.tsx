@@ -180,7 +180,7 @@ export function NewArrivalsSection({ initialProductIds }: NewArrivalsSectionProp
                         if (!added) return;
                       }
                       if (!user) {
-                        openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
+                        openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡", "/checkout");
                         return;
                       }
                       router.push("/checkout");

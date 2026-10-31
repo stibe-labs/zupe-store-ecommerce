@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export interface UserSession {
   id: string;
@@ -17,7 +18,9 @@ interface AuthContextType {
   isAuthModalOpen: boolean;
   authModalMode: "login" | "signup";
   authModalNotice: string | null;
-  openAuthModal: (mode?: "login" | "signup", notice?: string) => void;
+  authModalRedirectUrl: string | null;
+  authModalOnSuccess: ((user?: any) => void) | null;
+  openAuthModal: (mode?: "login" | "signup", notice?: string, redirectUrl?: string, onSuccess?: (user?: any) => void) => void;
   closeAuthModal: () => void;
   sendWhatsAppOtp: (phone: string) => Promise<{ success: boolean; message?: string; codeSent?: boolean; otp?: string; error?: string }>;
   loginWithWhatsApp: (phone: string, otp: string, name?: string) => Promise<{ success: boolean; user?: UserSession; isNew?: boolean; error?: string }>;
@@ -31,11 +34,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<UserSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"login" | "signup">("login");
   const [authModalNotice, setAuthModalNotice] = useState<string | null>(null);
+  const [authModalRedirectUrl, setAuthModalRedirectUrl] = useState<string | null>(null);
+  const [authModalOnSuccess, setAuthModalOnSuccess] = useState<((user?: any) => void) | null>(null);
 
   const syncUserSession = () => {
     try {
@@ -81,15 +87,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const openAuthModal = (mode: "login" | "signup" = "login", notice?: string) => {
+  const openAuthModal = (
+    mode: "login" | "signup" = "login",
+    notice?: string,
+    redirectUrl?: string,
+    onSuccess?: (user?: any) => void
+  ) => {
     setAuthModalMode(mode);
     setAuthModalNotice(notice || null);
+    setAuthModalRedirectUrl(redirectUrl || null);
+    setAuthModalOnSuccess(() => onSuccess || null);
     setIsAuthModalOpen(true);
   };
 
   const closeAuthModal = () => {
     setIsAuthModalOpen(false);
     setAuthModalNotice(null);
+    setAuthModalRedirectUrl(null);
+    setAuthModalOnSuccess(null);
     if (typeof window !== "undefined" && window.location.search.includes("auth=admin")) {
       const url = new URL(window.location.href);
       url.searchParams.delete("auth");
@@ -130,9 +145,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!res.ok || !data.success) {
         return { success: false, error: data.error || "Verification failed" };
       }
+      const targetRedirect = authModalRedirectUrl;
+      const targetSuccess = authModalOnSuccess;
       setUser(data.user);
       localStorage.setItem("zp_user_session", JSON.stringify(data.user));
       closeAuthModal();
+      if (targetSuccess) {
+        try { targetSuccess(data.user); } catch (e) {}
+      }
+      if (targetRedirect && targetRedirect !== "/") {
+        setTimeout(() => {
+          router.push(targetRedirect);
+        }, 100);
+      }
       return {
         success: true,
         user: data.user,
@@ -171,9 +196,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!res.ok || !data.success) {
         return { success: false, error: data.error || "Login failed" };
       }
+      const targetRedirect = authModalRedirectUrl;
+      const targetSuccess = authModalOnSuccess;
       setUser(data.user);
       localStorage.setItem("zp_user_session", JSON.stringify(data.user));
       closeAuthModal();
+      if (targetSuccess) {
+        try { targetSuccess(data.user); } catch (e) {}
+      }
+      if (targetRedirect && targetRedirect !== "/") {
+        setTimeout(() => {
+          router.push(targetRedirect);
+        }, 100);
+      }
 
       return {
         success: true,
@@ -196,9 +231,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!res.ok || !data.success) {
         return { success: false, error: data.error || "Registration failed" };
       }
+      const targetRedirect = authModalRedirectUrl;
+      const targetSuccess = authModalOnSuccess;
       setUser(data.user);
       localStorage.setItem("zp_user_session", JSON.stringify(data.user));
       closeAuthModal();
+      if (targetSuccess) {
+        try { targetSuccess(data.user); } catch (e) {}
+      }
+      if (targetRedirect && targetRedirect !== "/") {
+        setTimeout(() => {
+          router.push(targetRedirect);
+        }, 100);
+      }
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message || "Network error" };
@@ -256,6 +301,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthModalOpen,
         authModalMode,
         authModalNotice,
+        authModalRedirectUrl,
+        authModalOnSuccess,
         openAuthModal,
         closeAuthModal,
         sendWhatsAppOtp,

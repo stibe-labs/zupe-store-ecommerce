@@ -314,7 +314,7 @@ export default function CartPage() {
               <button
                 onClick={() => {
                   if (!user) {
-                    openAuthModal("login", "Sign in required: Please log in or create an account to proceed to checkout 🔒");
+                    openAuthModal("login", "Sign in required: Please log in or create an account to proceed to checkout 🔒", "/checkout");
                     return;
                   }
                   router.push("/checkout");

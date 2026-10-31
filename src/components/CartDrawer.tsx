@@ -266,7 +266,7 @@ export function CartDrawer() {
                       if (hasOutOfStockItems) return;
                       if (!user) {
                         closeCart();
-                        openAuthModal("login", "Sign in required: Please log in or create an account to proceed to checkout 🔒");
+                        openAuthModal("login", "Sign in required: Please log in or create an account to proceed to checkout 🔒", "/checkout");
                         return;
                       }
                       closeCart();

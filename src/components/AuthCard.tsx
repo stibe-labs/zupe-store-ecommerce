@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Phone,
@@ -36,6 +37,7 @@ export function AuthCard({
   redirectUrl = "/",
   onSuccess,
 }: AuthCardProps) {
+  const router = useRouter();
   const { sendWhatsAppOtp, loginWithWhatsApp } = useAuth();
 
   // Step 1: "phone", Step 2: "otp"
@@ -153,6 +155,11 @@ export function AuthCard({
 
     if (isModal) {
       if (onClose) onClose();
+      if (redirectUrl && redirectUrl !== "/") {
+        setTimeout(() => {
+          router.push(redirectUrl);
+        }, 150);
+      }
     } else {
       setTimeout(() => {
         window.location.href = redirectUrl || "/";

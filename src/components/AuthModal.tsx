@@ -11,6 +11,8 @@ export function AuthModal() {
     closeAuthModal,
     authModalMode,
     authModalNotice,
+    authModalRedirectUrl,
+    authModalOnSuccess,
   } = useAuth();
 
   // Lock background scrolling when Auth modal is open
@@ -55,6 +57,8 @@ export function AuthModal() {
               onClose={closeAuthModal}
               initialMode={authModalMode || "login"}
               notice={authModalNotice}
+              redirectUrl={authModalRedirectUrl || undefined}
+              onSuccess={authModalOnSuccess || undefined}
               showBadges={false}
             />
           </motion.div>
