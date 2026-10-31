@@ -1387,7 +1387,7 @@ function CheckoutContent() {
                 <span className="font-bold text-emerald-600">-₹49 Applied</span>
               </div>
               <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                <span className="text-gray-500">Shipping:</span>
+                <span className="text-gray-500">COD Handling Charge:</span>
                 <span className="font-bold text-[#FF7A00]">Free (Saved ₹49)</span>
               </div>
               <div className="flex justify-between items-center pt-2 text-sm">
@@ -3056,7 +3056,7 @@ function CheckoutContent() {
                       )}
                       <div className="flex justify-between text-gray-600">
                         <span className="flex items-center gap-1.5">
-                          {paymentMethod === "cod" ? "COD Handling Charge" : "Shipping Charge"} <Truck className="w-3.5 h-3.5 text-gray-400" />
+                          COD Handling Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
                         </span>
                         {paymentMethod === "cod" ? (
                           shippingFee > 0 ? (
@@ -3103,7 +3103,7 @@ function CheckoutContent() {
                         </div>
                         <span>
                           {codShippingFee > 0
-                            ? "You save ₹49 (Free Shipping) by paying online!"
+                            ? "You save ₹49 by paying online!"
                             : "Free Express Shipping applied!"}
                         </span>
                       </div>
@@ -3403,7 +3403,7 @@ function CheckoutContent() {
                 )}
                 <div className="flex justify-between text-gray-600">
                   <span className="flex items-center gap-1.5">
-                    {paymentMethod === "cod" ? "COD Handling Charge" : "Shipping Charge"} <Truck className="w-3.5 h-3.5 text-gray-400" />
+                    COD Handling Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
                   </span>
                   {paymentMethod === "cod" ? (
                     shippingFee > 0 ? (
@@ -3450,7 +3450,7 @@ function CheckoutContent() {
                   </div>
                   <span>
                     {codShippingFee > 0
-                      ? "You save ₹49 (Free Shipping) by paying online!"
+                      ? "You save ₹49 by paying online!"
                       : "Free Express Shipping applied!"}
                   </span>
                 </div>
