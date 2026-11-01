@@ -10,15 +10,17 @@ export async function POST(req: NextRequest) {
 
     // Map cart items to Shiprocket Fastrr items with catalog_data
     const formattedItems = (items || []).map((cartItem: any) => {
+      const idStr = String(cartItem.id || "").toLowerCase();
+      const nameStr = String(cartItem.name || "").toLowerCase();
+
       // Find matching catalog product
       const catalogMatch =
-        TJ_CATALOG_PRODUCTS.find(
-          (p) =>
-            p.slug === cartItem.id ||
-            p.sku === cartItem.id ||
-            cartItem.id?.includes(p.slug) ||
-            cartItem.name?.toLowerCase().includes(p.subtitle?.toLowerCase())
-        ) || TJ_CATALOG_PRODUCTS[1]; // fallback to 3 sachet
+        TJ_CATALOG_PRODUCTS.find((p) => {
+          if (p.slug === idStr || p.sku.toLowerCase() === idStr) return true;
+          if (idStr.includes(`pack-${p.quantity}`) || idStr.includes(`${p.quantity}-sachet`)) return true;
+          if (nameStr.includes(`${p.quantity} sachet`)) return true;
+          return false;
+        }) || TJ_CATALOG_PRODUCTS[1]; // fallback to 3 sachet
 
       return {
         variant_id: String(catalogMatch.variant_id),
@@ -26,7 +28,9 @@ export async function POST(req: NextRequest) {
         catalog_data: {
           price: Number(cartItem.price || catalogMatch.price),
           name: cartItem.name || catalogMatch.title,
-          image_url: cartItem.poster_image || catalogMatch.image,
+          image_url: cartItem.poster_image?.startsWith("http")
+            ? cartItem.poster_image
+            : `https://turkiyejam.com${cartItem.poster_image || catalogMatch.image}`,
         },
       };
     });
@@ -97,3 +101,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

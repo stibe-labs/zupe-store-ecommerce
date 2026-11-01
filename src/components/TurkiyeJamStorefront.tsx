@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { launchFastrrCheckout } from "@/lib/fastrrClient";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 // Motion Animation Variants for Scroll Reveals
@@ -242,21 +243,22 @@ export function TurkiyeJamStorefront() {
     openCart();
   };
 
-  const handleBuyNow = (pkg: typeof PACKAGES[0]) => {
-    addItem(
-      {
-        id: `turkiye-jam-${pkg.id}`,
-        name: `Turkiye Jam (${pkg.name})`,
-        category: "Vitality & Wellness",
-        price: pkg.price,
-        original_price: pkg.mrp,
-        mrp: pkg.mrp,
-        poster_image: pkg.image,
-        color: pkg.name,
-      },
-      1
-    );
-    router.push("/checkout");
+  const handleBuyNow = async (pkg: typeof PACKAGES[0]) => {
+    const item = {
+      id: `turkiye-jam-${pkg.id}`,
+      name: `Turkiye Jam (${pkg.name})`,
+      category: "Vitality & Wellness",
+      price: pkg.price,
+      original_price: pkg.mrp,
+      mrp: pkg.mrp,
+      poster_image: pkg.image,
+      color: pkg.name,
+    };
+    addItem(item, 1);
+    const launched = await launchFastrrCheckout([{ ...item, quantity: 1 }]);
+    if (!launched) {
+      router.push("/checkout");
+    }
   };
 
   const toggleFaq = (id: number) => {

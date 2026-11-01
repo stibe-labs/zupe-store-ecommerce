@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { launchFastrrCheckout } from "@/lib/fastrrClient";
 import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 import { deduplicateAddresses, normalizeAddressKey } from "@/lib/addressUtils";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
