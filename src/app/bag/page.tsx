@@ -10,7 +10,7 @@ export default function BagPage() {
 
   useEffect(() => {
     openCart();
-    router.replace("/products");
+    router.replace("/#shop");
   }, [router, openCart]);
 
   return (

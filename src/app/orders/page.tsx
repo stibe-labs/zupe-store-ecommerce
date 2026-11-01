@@ -631,7 +631,7 @@ function OrdersPageContent() {
                 When you place an order, its details, tracking, and product reviews will appear here.
               </p>
               <Link
-                href="/products"
+                href="/#shop"
                 className="inline-flex items-center justify-center px-6 py-3 rounded-xl btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 text-xs font-black border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none transition-all"
               >
                 Start Shopping

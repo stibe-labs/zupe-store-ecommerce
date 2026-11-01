@@ -38,7 +38,7 @@ export default function CartPage() {
 
   React.useEffect(() => {
     openCart();
-    router.replace("/products");
+    router.replace("/#shop");
   }, [openCart, router]);
 
   const [couponCode, setCouponCode] = useState("");
@@ -83,7 +83,7 @@ export default function CartPage() {
               Looks like you haven&apos;t added anything to your bag yet. Explore our authentic Turkish Epimedium honey herbal paste and boost your daily vitality.
             </p>
             <Link
-              href="/products"
+              href="/#shop"
               className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 font-black text-sm border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none transition-all"
             >
               <span>Explore Collection</span>

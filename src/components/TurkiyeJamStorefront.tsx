@@ -392,6 +392,7 @@ export function TurkiyeJamStorefront() {
       {/* ─────────────────────────────────────────────────────────────
           SECTION 2: PICK YOUR PACK (Warm Cream + 6 Color-Coded Packs)
       ───────────────────────────────────────────────────────────── */}
+      <div id="products" className="relative -top-20 pointer-events-none" />
       <section
         id="shop"
         className="tj-diamonds-cream text-stone-900 min-h-[100dvh] py-10 sm:py-12 lg:py-16 flex flex-col justify-center relative overflow-hidden"

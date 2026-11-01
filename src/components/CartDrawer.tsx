@@ -120,7 +120,7 @@ export function CartDrawer() {
                   </div>
                   <p className="text-base font-semibold text-[#2D3436] mb-1">Your cart is empty</p>
                   <Link
-                    href="/products"
+                    href="/#shop"
                     onClick={closeCart}
                     className="inline-flex items-center justify-center px-6 py-2.5 bg-[#cb0805] text-white font-semibold text-sm rounded-xl hover:bg-[#a80604] transition-colors shadow-sm shadow-[#cb0805]/20 cursor-pointer"
                   >

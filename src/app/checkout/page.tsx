@@ -1785,10 +1785,10 @@ function CheckoutContent() {
           <h2 className="text-2xl font-bold font-display text-gray-900 mb-2">Your Bag is Empty</h2>
           <p className="text-sm text-gray-500 mb-6">You don&apos;t have any products ready for checkout yet.</p>
           <Link
-            href="/products"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-semibold text-sm shadow-xs transition-colors"
+            href="/#shop"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#5b1420] hover:bg-[#8e1c2e] text-white font-semibold text-sm shadow-xs transition-colors"
           >
-            Browse Trending Products
+            Pick Your Pack
           </Link>
         </main>
 

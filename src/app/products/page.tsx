@@ -51,6 +51,10 @@ function ProductsContent() {
   const initialFilter = searchParams.get("filter") || "";
 
   const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
+
+  useEffect(() => {
+    router.replace("/#shop");
+  }, [router]);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>(initialSubcategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
