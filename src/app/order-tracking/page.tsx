@@ -723,54 +723,72 @@ function OrderTrackingContent() {
                       </div>
 
                       {/* Stepper Timeline */}
-                      <div className="relative pl-6 sm:pl-8 border-l-2 border-orange-200/70 space-y-8 my-4 ml-3">
-                        {checkpoints.map((cp, idx) => (
-                          <div key={idx} className="relative">
-                            {/* Dot / Icon indicator */}
-                            <div
-                              className={`absolute -left-[31px] sm:-left-[39px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center border-2 ${
-                                cp.active
-                                  ? "bg-[#FF7A00] border-white ring-4 ring-orange-200 text-white"
-                                  : cp.completed
-                                  ? "bg-emerald-500 border-white text-white"
-                                  : "bg-gray-200 border-white text-gray-400"
-                              }`}
-                            >
-                              {cp.active ? (
-                                <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-                              ) : cp.completed ? (
-                                <Check className="w-3.5 h-3.5" />
-                              ) : (
-                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                              )}
-                            </div>
+                      <div className="space-y-6 my-4">
+                        {checkpoints.map((cp, idx) => {
+                          const isLast = idx === checkpoints.length - 1;
 
-                            {/* Content */}
-                            <div className="bg-gray-50/60 rounded-2xl p-4 border border-gray-100">
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
-                                <h4
-                                  className={`text-sm font-bold ${
-                                    cp.active ? "text-[#FF7A00]" : "text-gray-900"
+                          return (
+                            <div key={idx} className="relative flex items-start gap-3.5 sm:gap-5">
+                              {/* Left Column: Perfectly Centered Indicator & Connecting Line */}
+                              <div className="relative flex flex-col items-center shrink-0 w-8 self-stretch">
+                                {/* Connecting line to NEXT checkpoint */}
+                                {!isLast && (
+                                  <div
+                                    className={`absolute top-4 -bottom-6 w-0.5 left-1/2 -translate-x-1/2 ${
+                                      cp.completed && (checkpoints[idx + 1]?.completed || checkpoints[idx + 1]?.active)
+                                        ? "bg-emerald-400"
+                                        : "bg-orange-200/80"
+                                    }`}
+                                  />
+                                )}
+
+                                {/* Dot / Icon indicator */}
+                                <div
+                                  className={`relative z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 transition-transform ${
+                                    cp.active
+                                      ? "bg-[#FF7A00] border-white ring-4 ring-orange-200 text-white shadow-sm"
+                                      : cp.completed
+                                      ? "bg-emerald-500 border-white text-white shadow-xs"
+                                      : "bg-stone-100 border-stone-300 text-stone-400"
                                   }`}
                                 >
-                                  {cp.title}
-                                </h4>
-                                <span className="text-[11px] font-medium text-gray-400">
-                                  {cp.timestamp}
-                                </span>
+                                  {cp.active ? (
+                                    <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
+                                  ) : cp.completed ? (
+                                    <Check className="w-4 h-4 text-white stroke-[2.5]" />
+                                  ) : (
+                                    <span className="w-2 h-2 rounded-full bg-stone-400" />
+                                  )}
+                                </div>
                               </div>
-                              <p className="text-xs font-semibold text-gray-600 mb-1 flex items-center gap-1.5">
-                                <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                                {cp.location}
-                              </p>
-                              {cp.description && (
-                                <p className="text-xs text-gray-500 leading-relaxed mt-1">
-                                  {cp.description}
+
+                              {/* Content Card */}
+                              <div className="flex-1 bg-stone-50/70 hover:bg-stone-50 rounded-2xl p-4 sm:p-5 border border-stone-200/80 transition-colors">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                                  <h4
+                                    className={`text-sm sm:text-base font-bold ${
+                                      cp.active ? "text-[#FF7A00]" : "text-stone-900"
+                                    }`}
+                                  >
+                                    {cp.title}
+                                  </h4>
+                                  <span className="text-[11px] sm:text-xs font-semibold text-stone-400">
+                                    {cp.timestamp}
+                                  </span>
+                                </div>
+                                <p className="text-xs sm:text-sm font-semibold text-stone-600 mb-1 flex items-center gap-1.5">
+                                  <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                                  <span>{cp.location}</span>
                                 </p>
-                              )}
+                                {cp.description && (
+                                  <p className="text-xs sm:text-sm text-stone-500 leading-relaxed mt-1">
+                                    {cp.description}
+                                  </p>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
 
                       {/* Courier & AWB Details Bar */}
