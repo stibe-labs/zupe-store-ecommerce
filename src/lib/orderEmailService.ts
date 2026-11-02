@@ -35,7 +35,7 @@ export interface SendOrderConfirmationEmailParams {
 const STORE_BASE_URL =
   process.env.STORE_BASE_URL ||
   process.env.NEXT_PUBLIC_BASE_URL ||
-  "https://turkiyejam.stibelabs.workers.dev";
+  "https://turkiyejam.com";
 
 function resolveImageUrl(img?: string): string {
   if (!img) return `${STORE_BASE_URL}/turkiye-jam-logo.png`;
