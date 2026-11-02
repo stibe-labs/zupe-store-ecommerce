@@ -97,7 +97,20 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const customerPhone = ord.customer_phone || "";
+      let customerPhone = ord.customer_phone || "";
+      if (!customerPhone && ord.user_id) {
+        try {
+          const userRows = await executeD1Query<any>(
+            "SELECT phone, name FROM users WHERE id = ? LIMIT 1",
+            [ord.user_id]
+          );
+          if (userRows && userRows.length > 0) {
+            customerPhone = userRows[0].phone || "";
+            if (!ord.customer_name) ord.customer_name = userRows[0].name;
+            ord.customer_phone = customerPhone;
+          }
+        } catch {}
+      }
       if (!customerPhone) {
         return NextResponse.json(
           { success: false, error: "Customer phone number is missing from this order" },
@@ -245,7 +258,20 @@ export async function POST(req: NextRequest) {
       }
 
       // 4. Send official Order Confirmation WhatsApp message to customer (Prepaid or COD template)
-      const customerPhone = ord.customer_phone;
+      let customerPhone = ord.customer_phone;
+      if (!customerPhone && ord.user_id) {
+        try {
+          const userRows = await executeD1Query<any>(
+            "SELECT phone, name FROM users WHERE id = ? LIMIT 1",
+            [ord.user_id]
+          );
+          if (userRows && userRows.length > 0) {
+            customerPhone = userRows[0].phone || "";
+            if (!ord.customer_name) ord.customer_name = userRows[0].name;
+            ord.customer_phone = customerPhone;
+          }
+        } catch {}
+      }
       if (customerPhone) {
         try {
           let rawItems: any[] = [];
@@ -467,7 +493,20 @@ export async function POST(req: NextRequest) {
       }
 
       // 4. Send official cancellation WhatsApp message to customer (COD or Prepaid refund template)
-      const customerPhone = ord.customer_phone;
+      let customerPhone = ord.customer_phone;
+      if (!customerPhone && ord.user_id) {
+        try {
+          const userRows = await executeD1Query<any>(
+            "SELECT phone, name FROM users WHERE id = ? LIMIT 1",
+            [ord.user_id]
+          );
+          if (userRows && userRows.length > 0) {
+            customerPhone = userRows[0].phone || "";
+            if (!ord.customer_name) ord.customer_name = userRows[0].name;
+            ord.customer_phone = customerPhone;
+          }
+        } catch {}
+      }
       if (customerPhone) {
         try {
           await sendOrderCancellationRefundWhatsApp({
