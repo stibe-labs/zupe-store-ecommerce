@@ -608,48 +608,53 @@ export async function getERPOrders(filters?: {
   whatsapp_status?: string;
 }): Promise<ERPOrder[]> {
   try {
-    let sql = "SELECT * FROM orders WHERE 1=1";
+    let sql = `SELECT orders.*, 
+                      COALESCE(orders.customer_name, users.name, 'Valued Customer') AS customer_name, 
+                      COALESCE(orders.customer_phone, users.phone, '') AS customer_phone 
+               FROM orders 
+               LEFT JOIN users ON orders.user_id = users.id 
+               WHERE 1=1`;
     const params: any[] = [];
 
     if (filters?.whatsapp_status && filters.whatsapp_status !== "all") {
-      sql += " AND whatsapp_confirm_status = ?";
+      sql += " AND orders.whatsapp_confirm_status = ?";
       params.push(filters.whatsapp_status);
     }
 
     if (filters?.delivery_status && filters.delivery_status !== "all") {
       if (filters.delivery_status === "Pending WhatsApp") {
-        sql += " AND whatsapp_confirm_status = 'pending_whatsapp'";
+        sql += " AND orders.whatsapp_confirm_status = 'pending_whatsapp'";
       } else if (filters.delivery_status === "NDR") {
-        sql += " AND (delivery_status = 'NDR' OR status = 'NDR' OR (ndr_status IS NOT NULL AND ndr_status != 'None' AND ndr_status != '-'))";
+        sql += " AND (orders.delivery_status = 'NDR' OR orders.status = 'NDR' OR (orders.ndr_status IS NOT NULL AND orders.ndr_status != 'None' AND orders.ndr_status != '-'))";
       } else if (filters.delivery_status === "RTO Delivered" || filters.delivery_status === "RTO") {
-        sql += " AND (delivery_status LIKE '%RTO%' OR status LIKE '%RTO%' OR (rto_status IS NOT NULL AND rto_status != 'None' AND rto_status != '-'))";
+        sql += " AND (orders.delivery_status LIKE '%RTO%' OR orders.status LIKE '%RTO%' OR (orders.rto_status IS NOT NULL AND orders.rto_status != 'None' AND orders.rto_status != '-'))";
       } else {
-        sql += " AND (delivery_status = ? OR status = ?)";
+        sql += " AND (orders.delivery_status = ? OR orders.status = ?)";
         params.push(filters.delivery_status, filters.delivery_status);
       }
     }
     if (filters?.payment_method && filters.payment_method !== "all") {
       if (filters.payment_method === "Prepaid") {
-        sql += " AND (payment_method = 'Prepaid' OR payment_method LIKE '%UPI%' OR payment_method = 'Credit Card' OR payment_method = 'Online')";
+        sql += " AND (orders.payment_method = 'Prepaid' OR orders.payment_method LIKE '%UPI%' OR orders.payment_method = 'Credit Card' OR orders.payment_method = 'Online')";
       } else if (filters.payment_method === "COD" || filters.payment_method.toLowerCase().includes("cash")) {
-        sql += " AND (payment_method = 'COD' OR payment_method LIKE '%Cash on Delivery%')";
+        sql += " AND (orders.payment_method = 'COD' OR orders.payment_method LIKE '%Cash on Delivery%')";
       } else if (filters.payment_method === "Refunded") {
-        sql += " AND (payment_status = 'Refunded' OR payment_status = 'refunded')";
+        sql += " AND (orders.payment_status = 'Refunded' OR orders.payment_status = 'refunded')";
       } else {
-        sql += " AND payment_method = ?";
+        sql += " AND orders.payment_method = ?";
         params.push(filters.payment_method);
       }
     }
     if (filters?.courier_partner && filters.courier_partner !== "all") {
-      sql += " AND courier_partner = ?";
+      sql += " AND orders.courier_partner = ?";
       params.push(filters.courier_partner);
     }
     if (filters?.search && filters.search.trim()) {
-      sql += " AND (id LIKE ? OR shopify_order_id LIKE ? OR customer_name LIKE ? OR shiprocket_awb LIKE ? OR customer_phone LIKE ?)";
+      sql += " AND (orders.id LIKE ? OR orders.shopify_order_id LIKE ? OR orders.customer_name LIKE ? OR users.name LIKE ? OR orders.shiprocket_awb LIKE ? OR orders.customer_phone LIKE ? OR users.phone LIKE ?)";
       const term = `%${filters.search.trim()}%`;
-      params.push(term, term, term, term, term);
+      params.push(term, term, term, term, term, term, term);
     }
-    sql += " ORDER BY created_at DESC";
+    sql += " ORDER BY orders.created_at DESC";
 
     const rows = await executeD1Query<ERPOrder>(sql, params);
     if (rows && rows.length > 0) {
@@ -803,8 +808,14 @@ export async function getOrderById(orderId: string): Promise<ERPOrder | null> {
   if (found) return found;
 
   try {
-    const rows = await executeD1Query<ERPOrder>(
-      "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
+    const rows = await executeD1Query<any>(
+      `SELECT orders.*, 
+              COALESCE(orders.customer_name, users.name, 'Valued Customer') AS customer_name, 
+              COALESCE(orders.customer_phone, users.phone, '') AS customer_phone 
+       FROM orders 
+       LEFT JOIN users ON orders.user_id = users.id 
+       WHERE orders.id = ? OR orders.shopify_order_id = ? 
+       LIMIT 1`,
       [normId, normId]
     );
     if (rows && rows.length > 0) {
