@@ -199,14 +199,11 @@ export default function ReturnPolicyPage() {
             <div className="bg-[#fff8db] border-2 border-stone-800 rounded-2xl p-4 sm:p-5 space-y-2.5 text-stone-900 shadow-[0_4px_0_0_#2b2b2b]">
               <h4 className="font-bold text-sm sm:text-base flex items-center gap-2 text-amber-900">
                 <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
-                Cash on Delivery (COD) Orders &amp; ₹10 Advance Fee
+                Cash on Delivery (COD) Cancellation Policy
               </h4>
               <p className="text-xs sm:text-sm text-stone-800 leading-relaxed">
-                When you cancel a Cash on Delivery order, the remaining balance due at doorstep is completely canceled, and our logistics partner will not deliver the parcel.
+                When you cancel a Cash on Delivery order before dispatch, the order is cancelled immediately with ₹0 payment due at your doorstep, and no parcel will be dispatched.
               </p>
-              <div className="bg-white rounded-xl p-3 border border-amber-300 text-xs sm:text-sm text-stone-900 leading-relaxed">
-                <strong>Important Note:</strong> The <strong>₹10 advance verification fee</strong> paid during checkout covers courier dispatch reservation, automated fraud prevention, and parcel allocation, and is <strong className="text-red-700">strictly non-refundable</strong> upon order cancellation.
-              </div>
             </div>
           </section>
 

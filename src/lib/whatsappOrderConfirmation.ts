@@ -690,10 +690,11 @@ export async function sendOrderCancellationRefundWhatsApp(
 
   // 2. Fallback to direct text message
   let body = "";
+  const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
   if (isPrepaid && refundAmount) {
     body =
       `🛍️ *Turkiye Jam — Order Cancelled & Refund Initiated*\n\n` +
-      `Hi ${firstName}! Your order *#${orderId}* has been successfully cancelled.\n\n` +
+      `Hi ${firstName}! Your order *${displayOrderId}* has been successfully cancelled.\n\n` +
       `💰 *Refund Amount:* Rs ${refundAmount.toLocaleString("en-IN")}\n` +
       `💳 *Refund Reference:* ${refundId || "Initiated via Razorpay"}\n` +
       `⚡ *Payment Source:* Released back to your original payment method (UPI / Card / Netbanking)\n\n` +
@@ -704,9 +705,8 @@ export async function sendOrderCancellationRefundWhatsApp(
   } else {
     body =
       `🛍️ *Turkiye Jam — Order Cancelled*\n\n` +
-      `Hi ${firstName}! Your Cash on Delivery order *#${orderId}* has been successfully cancelled.\n\n` +
-      `📦 *Status:* Shipment cancelled. No payment will be collected at your doorstep.\n` +
-      `ℹ️ *Note:* The Rs 10 advance verification fee paid during order placement is non-refundable.\n\n` +
+      `Hi ${firstName}! Your Cash on Delivery order *${displayOrderId}* has been successfully cancelled.\n\n` +
+      `📦 *Status:* Shipment cancelled. No payment will be collected at your doorstep.\n\n` +
       `If you need any assistance or wish to re-order, we are always here to help.\n\n` +
       `Thank you,\nTurkiye Jam Team`;
   }

@@ -658,9 +658,6 @@ export async function sendOrderCancellationEmail(
         <div style="font-size: 13px; color: #78350f; line-height: 1.6;">
           Your Cash on Delivery order has been successfully cancelled. Your shipment will not be dispatched and no payment will be collected at your doorstep.
         </div>
-        <div style="margin-top: 12px; background: #ffffff; border: 1px solid #fef3c7; border-radius: 10px; padding: 12px; font-size: 12px; color: #92400e; line-height: 1.5;">
-          <strong>ℹ️ Advance Fee Note:</strong> The <strong>₹10 advance verification fee</strong> paid during checkout covers anti-fraud address verification and carrier commitment, and is <strong>non-refundable</strong>.
-        </div>
       </div>
     `;
 
@@ -757,8 +754,7 @@ EXPECTED CREDIT TIMELINE:
 • UPI (GPay, PhonePe, Paytm): Usually credited within 2 to 4 hours (or up to 24 hours depending on the issuing bank).
 • Debit / Credit Cards / Netbanking: Credited within 2 to 4 business days.`
     : `CASH ON DELIVERY ORDER CANCELLED:
-Your Cash on Delivery order has been successfully cancelled. No doorstep payment will be collected.
-Note: The ₹10 advance verification fee paid during checkout covers order verification and carrier reservation, and is non-refundable.`
+Your Cash on Delivery order has been successfully cancelled. No doorstep payment will be collected.`
 }
 
 If you need any assistance, reply to this email at support@turkiyejam.com.

@@ -236,9 +236,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const cleanOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
     const message = refundInfo
-      ? `Order #${orderId} was cancelled. Full refund of ₹${refundInfo.amount} has been initiated to your original payment method (Ref: ${refundInfo.id}). Expected credit: UPI within 2-4 hours, Cards/Netbanking within 2-4 business days.`
-      : `Order #${orderId} was successfully cancelled. Your remaining doorstep payment is cancelled. (Note: ₹10 advance verification fee paid during checkout is non-refundable).`;
+      ? `Order ${cleanOrderId} was cancelled. Full refund of ₹${refundInfo.amount} has been initiated to your original payment method (Ref: ${refundInfo.id}). Expected credit: UPI within 2-4 hours, Cards/Netbanking within 2-4 business days.`
+      : `Order ${cleanOrderId} was successfully cancelled. Your doorstep Cash on Delivery payment is cancelled.`;
 
     return NextResponse.json({
       success: true,
