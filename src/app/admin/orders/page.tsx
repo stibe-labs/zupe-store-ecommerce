@@ -1472,13 +1472,14 @@ function AdminOrdersContent() {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label className="block text-[11px] font-bold text-slate-600">
-                        AWB Tracking Number
+                        AWB / Consignment Tracking Number
                       </label>
                       <button
                         type="button"
                         onClick={handleGenerateAWB}
                         disabled={isGeneratingAWB}
-                        className="text-[11px] font-bold text-[#FF7A00] hover:text-[#E66E00] flex items-center gap-1 disabled:opacity-50"
+                        className="text-[10px] font-medium text-slate-500 hover:text-[#FF7A00] flex items-center gap-1 disabled:opacity-50"
+                        title="Only use if booking pickups via Shiprocket API"
                       >
                         {isGeneratingAWB ? (
                           <>
@@ -1488,7 +1489,7 @@ function AdminOrdersContent() {
                         ) : (
                           <>
                             <Zap className="w-3 h-3 text-[#FF7A00]" />
-                            <span>Auto-Generate AWB</span>
+                            <span>Auto-Generate (Shiprocket API)</span>
                           </>
                         )}
                       </button>
@@ -1500,6 +1501,9 @@ function AdminOrdersContent() {
                       placeholder="e.g. D12345678 or DTDC Consignment No"
                       className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                     />
+                    <p className="mt-1 text-[10px] text-slate-500">
+                      💡 Type the tracking / consignment number from your DTDC receipt slip here.
+                    </p>
                   </div>
 
                   <div>
