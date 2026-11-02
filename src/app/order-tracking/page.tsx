@@ -103,7 +103,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       },
       {
         title: "Packaging & Quality Inspection",
-        location: "Central Warehouse, Gurugram",
+        location: "Turkiye Jam Fulfillment Center, Ernakulam",
         timestamp: "In Progress",
         completed: false,
         active: true,
@@ -111,11 +111,11 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       },
       {
         title: "Courier Handover & AWB Assignment",
-        location: "Courier Dispatch Bay",
+        location: "Ernakulam Logistics Dispatch Bay",
         timestamp: "Expected within 24 business hours",
         completed: false,
         active: false,
-        description: "Express courier partner (Delhivery/Bluedart) will be assigned and tracking activated upon pickup.",
+        description: "Express courier partner will be assigned and tracking activated upon warehouse pickup.",
       },
       {
         title: "Out for Delivery & Doorstep Handover",
@@ -140,7 +140,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       },
       {
         title: "Dispatched from Fulfillment Center",
-        location: "Central Warehouse, Gurugram",
+        location: "Turkiye Jam Fulfillment Center, Ernakulam",
         timestamp: "Dispatched",
         completed: true,
         active: false,
@@ -169,7 +169,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
     return [
       {
         title: "Order Confirmed & Dispatched",
-        location: "Central Warehouse",
+        location: "Turkiye Jam Fulfillment Center, Ernakulam",
         timestamp: formatPlacedTime,
         completed: true,
         active: false,
@@ -206,7 +206,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
     return [
       {
         title: "Order Placed & Dispatched",
-        location: "Turkiye Jam Store",
+        location: "Turkiye Jam Fulfillment Center, Ernakulam",
         timestamp: formatPlacedTime,
         completed: true,
         active: false,
@@ -235,7 +235,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
   return [
     {
       title: "Order Placed & Dispatched",
-      location: "Turkiye Jam Store",
+      location: "Turkiye Jam Fulfillment Center, Ernakulam",
       timestamp: formatPlacedTime,
       completed: true,
       active: false,
@@ -251,7 +251,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
     },
     {
       title: "Return to Origin (RTO)",
-      location: "Fulfillment Center",
+      location: "Turkiye Jam Fulfillment Center, Ernakulam",
       timestamp: "In Progress",
       completed: true,
       active: true,
