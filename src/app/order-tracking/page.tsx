@@ -31,6 +31,7 @@ import {
   Zap,
   Headphones,
   RotateCcw,
+  CalendarDays,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -817,6 +818,46 @@ function OrderTrackingContent() {
     );
   };
 
+  // 2b. Expected Delivery Date Card
+  const renderEddCard = () => {
+    if (!liveTracking?.edd) return null;
+    let eddFormatted = "";
+    try {
+      const eddDate = new Date(liveTracking.edd);
+      if (!isNaN(eddDate.getTime())) {
+        eddFormatted = eddDate.toLocaleDateString("en-IN", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+      }
+    } catch {
+      eddFormatted = liveTracking.edd;
+    }
+    if (!eddFormatted) return null;
+    return (
+      <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 border border-emerald-100">
+            <CalendarDays className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[11px] text-gray-400 font-medium mb-0.5">Expected Delivery Date</p>
+            <p className="text-sm sm:text-base font-extrabold text-gray-900">{eddFormatted}</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">Estimated by courier partner</p>
+          </div>
+        </div>
+        <div className="flex-shrink-0">
+          <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+            Live EDD
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   // 3. Switch to Prepaid COD Offer Card
   const renderCodOfferCard = () => {
     if (!selectedOrder) return null;
@@ -1365,7 +1406,7 @@ function OrderTrackingContent() {
       <main className="flex-1 pb-16">
         {/* Hero & Search Header */}
         <div className="pt-8 pb-4 px-4 sm:px-6">
-          <div className="max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto text-center">
+          <div className="max-w-xl md:max-w-2xl lg:max-w-5xl mx-auto text-center">
             {/* Live Order Tracking Capsule Pill */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 border border-orange-200/80 mb-3 shadow-2xs">
               <span className="relative flex h-2 w-2">
@@ -1581,6 +1622,7 @@ function OrderTrackingContent() {
               <div className="block lg:hidden space-y-4">
                 {renderStepperCard()}
                 {renderOrderHeaderCard()}
+                {renderEddCard()}
                 {renderCodOfferCard()}
                 {renderJourneyCard()}
                 {renderTrackingDetailsCard()}
@@ -1601,6 +1643,7 @@ function OrderTrackingContent() {
                   {/* Left Column (col-span-7): Order Header, Live Journey Timeline, Delivery Guide, FAQs */}
                   <div className="col-span-7 space-y-5">
                     {renderOrderHeaderCard()}
+                    {renderEddCard()}
                     {renderJourneyCard()}
                     {renderDeliveryProcessCard()}
                     {renderFaqCard()}
