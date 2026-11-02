@@ -362,6 +362,11 @@ export default function AdminProductsPage() {
         setProducts((prev) =>
           prev.map((p) => (p.id === data.product.id ? data.product : p))
         );
+        setActionMessage({
+          text: `"${prod.name}" is now marked ${newInStock === 1 ? "In Stock" : "Out of Stock"}!`,
+          type: "success",
+        });
+        setTimeout(() => setActionMessage(null), 3500);
       } else {
         fetchProducts();
       }

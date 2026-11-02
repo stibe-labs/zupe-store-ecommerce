@@ -3,7 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { TurkiyeJamStorefront } from "@/components/TurkiyeJamStorefront";
 import { Footer } from "@/components/Footer";
 
-export const revalidate = 30;
+export const revalidate = 0;
 
 export default function Home() {
   return (

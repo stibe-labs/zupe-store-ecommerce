@@ -63,12 +63,15 @@ import {
   ShoppingBag,
   ShieldCheck,
   Package,
+  PackageX,
   Clock,
   Sparkles,
   ArrowRight,
   ChevronDown,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { Product } from "@/types/product";
+import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 // 6 Exact Packages from SVG Mockup
 const PACKAGES = [
@@ -225,16 +228,74 @@ export function TurkiyeJamStorefront() {
   const router = useRouter();
   const { addItem, openCart } = useCart();
   const [openFaq, setOpenFaq] = useState<number | null>(1); // Question 1 open by default matching SVG
+  const [liveCatalog, setLiveCatalog] = useState<Product[]>(DEFAULT_PRODUCTS);
+
+  // Synchronize live stock & pricing from /api/products
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLiveProducts = () => {
+      fetch(`/api/products?_t=${Date.now()}`, { cache: "no-store" })
+        .then((res) => res.json())
+        .then((data) => {
+          if (isMounted && data.success && Array.isArray(data.products)) {
+            setLiveCatalog(data.products);
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchLiveProducts();
+    const interval = setInterval(fetchLiveProducts, 15000); // 15s polling to instantly reflect admin stock changes
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const getPackageLiveDetails = (pkg: typeof PACKAGES[0]) => {
+    const found = liveCatalog.find((p) => {
+      const pid = (p.id || "").toLowerCase().trim();
+      const pslug = (p.slug || "").toLowerCase().trim();
+      const target = pkg.id.toLowerCase().trim();
+
+      if (pid === target || pid === `turkiye-jam-${target}`) return true;
+      if (pslug.includes(target)) return true;
+      if (target === "bottle-240g" && (pid.includes("bottle") || pid.includes("240g") || pid === "turkiye-jam")) return true;
+      if (target === "combo-box-14" && (pid.includes("box") || pid.includes("14"))) return true;
+      if (target === "pack-6" && pid.includes("6")) return true;
+      if (target === "pack-4" && pid.includes("4")) return true;
+      if (target === "pack-3" && pid.includes("3")) return true;
+      if (target === "pack-2" && pid.includes("2")) return true;
+      return false;
+    });
+
+    const isOutOfStock = found
+      ? found.in_stock === 0 || (found.stock_count !== undefined && Number(found.stock_count) <= 0)
+      : false;
+
+    const price = found && found.price ? Number(found.price) : pkg.price;
+    const mrp = found && found.mrp ? Number(found.mrp) : pkg.mrp;
+
+    return {
+      isOutOfStock,
+      price,
+      mrp,
+      product: found,
+    };
+  };
 
   const handleAddToCart = (pkg: typeof PACKAGES[0]) => {
+    const details = getPackageLiveDetails(pkg);
+    if (details.isOutOfStock) return;
+
     addItem(
       {
         id: `turkiye-jam-${pkg.id}`,
         name: `Turkiye Jam (${pkg.name})`,
         category: "Vitality & Wellness",
-        price: pkg.price,
-        original_price: pkg.mrp,
-        mrp: pkg.mrp,
+        price: details.price,
+        original_price: details.mrp,
+        mrp: details.mrp,
         poster_image: pkg.image,
         color: pkg.name,
       },
@@ -244,13 +305,16 @@ export function TurkiyeJamStorefront() {
   };
 
   const handleBuyNow = async (pkg: typeof PACKAGES[0]) => {
+    const details = getPackageLiveDetails(pkg);
+    if (details.isOutOfStock) return;
+
     const item = {
       id: `turkiye-jam-${pkg.id}`,
       name: `Turkiye Jam (${pkg.name})`,
       category: "Vitality & Wellness",
-      price: pkg.price,
-      original_price: pkg.mrp,
-      mrp: pkg.mrp,
+      price: details.price,
+      original_price: details.mrp,
+      mrp: details.mrp,
       poster_image: pkg.image,
       color: pkg.name,
     };
@@ -432,80 +496,114 @@ export function TurkiyeJamStorefront() {
             variants={staggerContainer}
             className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 mt-6 sm:mt-10 text-left"
           >
-            {PACKAGES.map((pkg) => (
-              <motion.div
-                key={pkg.id}
-                variants={fadeInUp}
-                whileHover={{ y: -6, transition: { duration: 0.25 } }}
-                className="group rounded-2xl sm:rounded-3xl bg-white border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] sm:shadow-[0_6px_0_0_#2b2b2b] hover:shadow-[0_10px_0_0_#2b2b2b] overflow-hidden flex flex-col justify-between transition-all duration-300"
-              >
-                {/* Top Image Box with Pastel Background & Badge */}
-                <div className={`${pkg.headerBg} relative w-full aspect-[1.15/1] sm:aspect-[1.4/1] p-2 sm:p-4 flex items-center justify-center border-b-2 border-stone-800 overflow-hidden`}>
-                  {/* Badge top right */}
-                  <div className="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 z-10">
-                    <span
-                      className={`px-1.5 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-xs font-black tracking-wide shadow-sm border border-black/10 transition-transform duration-300 group-hover:scale-105 ${pkg.badgeColor}`}
-                    >
-                      {pkg.badge}
-                    </span>
-                  </div>
+            {PACKAGES.map((pkg) => {
+              const { isOutOfStock, price, mrp } = getPackageLiveDetails(pkg);
 
-                  {/* Product Photo */}
-                  <div className="relative w-full h-full max-w-[120px] sm:max-w-[180px] transition-transform duration-500 ease-out group-hover:scale-108 group-hover:-translate-y-1">
-                    <Image
-                      src={pkg.image}
-                      alt={pkg.name}
-                      fill
-                      className="object-contain drop-shadow-md"
-                    />
-                  </div>
-                </div>
-
-                {/* Card Body */}
-                <div className="p-2.5 sm:p-5 flex flex-col flex-1 justify-between gap-2 sm:gap-3">
-                  <div>
-                    <h3 className="font-tj-serif text-xs sm:text-xl font-bold text-stone-900 leading-tight group-hover:text-[#8e1c2e] transition-colors line-clamp-1">
-                      {pkg.name}
-                    </h3>
-                    <p className="text-stone-600 text-[10px] sm:text-xs mt-0.5 line-clamp-1">
-                      {pkg.sub}
-                    </p>
-
-                    {/* Price */}
-                    <div className="mt-1.5 sm:mt-2.5 flex items-baseline gap-1 sm:gap-2">
-                      <span className="font-tj-serif text-base sm:text-3xl font-extrabold text-stone-950">
-                        ₹{pkg.price.toLocaleString("en-IN")}
-                      </span>
-                      <span className="text-[10px] sm:text-xs text-stone-400 line-through">
-                        ₹{pkg.mrp.toLocaleString("en-IN")}
-                      </span>
-                    </div>
-
-                    {/* Cost per sachet & optional savings pill */}
-                    <div className="mt-0.5 sm:mt-1 flex flex-wrap items-center gap-1 sm:gap-2">
-                      <span className="text-[9px] sm:text-xs text-stone-600 font-medium">
-                        {pkg.perSachet}
-                      </span>
-                      {pkg.savingsPill && (
-                        <span className="px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded-md bg-[#2d6a4f] text-white text-[8px] sm:text-[10px] font-bold">
-                          {pkg.savingsPill}
+              return (
+                <motion.div
+                  key={pkg.id}
+                  variants={fadeInUp}
+                  whileHover={isOutOfStock ? undefined : { y: -6, transition: { duration: 0.25 } }}
+                  className={`group rounded-2xl sm:rounded-3xl bg-white border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] sm:shadow-[0_6px_0_0_#2b2b2b] ${
+                    isOutOfStock ? "opacity-85" : "hover:shadow-[0_10px_0_0_#2b2b2b]"
+                  } overflow-hidden flex flex-col justify-between transition-all duration-300`}
+                >
+                  {/* Top Image Box with Pastel Background & Badge */}
+                  <div className={`${pkg.headerBg} relative w-full aspect-[1.15/1] sm:aspect-[1.4/1] p-2 sm:p-4 flex items-center justify-center border-b-2 border-stone-800 overflow-hidden`}>
+                    {/* Badge top right */}
+                    <div className="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 z-10">
+                      {isOutOfStock ? (
+                        <span className="px-1.5 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-xs font-black tracking-wide uppercase shadow-md bg-stone-900 text-white border border-stone-700">
+                          Out of Stock
                         </span>
-                      )}
+                      ) : pkg.badge ? (
+                        <span
+                          className={`px-1.5 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-xs font-black tracking-wide shadow-sm border border-black/10 transition-transform duration-300 group-hover:scale-105 ${pkg.badgeColor}`}
+                        >
+                          {pkg.badge}
+                        </span>
+                      ) : null}
                     </div>
+
+                    {/* Product Photo */}
+                    <div className={`relative w-full h-full max-w-[120px] sm:max-w-[180px] transition-transform duration-500 ease-out ${
+                      isOutOfStock ? "grayscale-[35%]" : "group-hover:scale-108 group-hover:-translate-y-1"
+                    }`}>
+                      <Image
+                        src={pkg.image}
+                        alt={pkg.name}
+                        fill
+                        className="object-contain drop-shadow-md"
+                      />
+                    </div>
+
+                    {/* Out of Stock Centered Overlay */}
+                    {isOutOfStock && (
+                      <div className="absolute inset-0 bg-stone-900/25 backdrop-blur-[0.5px] flex items-center justify-center z-[5] pointer-events-none">
+                        <span className="px-2.5 py-1 rounded-full bg-stone-900/90 text-white text-[9px] sm:text-xs font-black uppercase tracking-wider shadow-lg border border-white/20">
+                          Sold Out
+                        </span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Add to Cart Button */}
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleAddToCart(pkg)}
-                    className="w-full py-1.5 sm:py-3 rounded-xl sm:rounded-2xl bg-[#731a26] hover:bg-[#5b1420] text-white font-bold text-[11px] sm:text-sm transition-all shadow-sm sm:shadow-md hover:shadow-lg flex items-center justify-center gap-1 sm:gap-2 cursor-pointer group/btn active:scale-95"
-                  >
-                    <ShoppingBag className="w-3 h-3 sm:w-4 sm:h-4 transition-transform group-hover/btn:-rotate-12" />
-                    <span>Add to cart</span>
-                  </motion.button>
-                </div>
-              </motion.div>
-            ))}
+                  {/* Card Body */}
+                  <div className="p-2.5 sm:p-5 flex flex-col flex-1 justify-between gap-2 sm:gap-3">
+                    <div>
+                      <h3 className="font-tj-serif text-xs sm:text-xl font-bold text-stone-900 leading-tight group-hover:text-[#8e1c2e] transition-colors line-clamp-1">
+                        {pkg.name}
+                      </h3>
+                      <p className="text-stone-600 text-[10px] sm:text-xs mt-0.5 line-clamp-1">
+                        {pkg.sub}
+                      </p>
+
+                      {/* Price */}
+                      <div className="mt-1.5 sm:mt-2.5 flex items-baseline gap-1 sm:gap-2">
+                        <span className="font-tj-serif text-base sm:text-3xl font-extrabold text-stone-950">
+                          ₹{price.toLocaleString("en-IN")}
+                        </span>
+                        <span className="text-[10px] sm:text-xs text-stone-400 line-through">
+                          ₹{mrp.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+
+                      {/* Cost per sachet & optional savings pill */}
+                      <div className="mt-0.5 sm:mt-1 flex flex-wrap items-center gap-1 sm:gap-2">
+                        <span className="text-[9px] sm:text-xs text-stone-600 font-medium">
+                          {pkg.perSachet}
+                        </span>
+                        {pkg.savingsPill && (
+                          <span className="px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded-md bg-[#2d6a4f] text-white text-[8px] sm:text-[10px] font-bold">
+                            {pkg.savingsPill}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Add to Cart / Out of Stock Button */}
+                    {isOutOfStock ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="w-full py-1.5 sm:py-3 rounded-xl sm:rounded-2xl bg-stone-200 text-stone-500 font-bold text-[11px] sm:text-sm flex items-center justify-center gap-1 sm:gap-2 cursor-not-allowed opacity-90 border border-stone-300 shadow-none select-none"
+                      >
+                        <PackageX className="w-3 h-3 sm:w-4 sm:h-4 text-stone-400" />
+                        <span>Out of Stock</span>
+                      </button>
+                    ) : (
+                      <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleAddToCart(pkg)}
+                        className="w-full py-1.5 sm:py-3 rounded-xl sm:rounded-2xl bg-[#731a26] hover:bg-[#5b1420] text-white font-bold text-[11px] sm:text-sm transition-all shadow-sm sm:shadow-md hover:shadow-lg flex items-center justify-center gap-1 sm:gap-2 cursor-pointer group/btn active:scale-95"
+                      >
+                        <ShoppingBag className="w-3 h-3 sm:w-4 sm:h-4 transition-transform group-hover/btn:-rotate-12" />
+                        <span>Add to cart</span>
+                      </motion.button>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
           </motion.div>
 
           {/* Footnote note from SVG */}

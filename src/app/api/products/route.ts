@@ -264,7 +264,13 @@ export async function GET(req: NextRequest) {
 
       return NextResponse.json(
         { success: true, source: "cloudflare-d1", products: formatted },
-        { headers: { "Cache-Control": "public, max-age=15, stale-while-revalidate=60" } }
+        {
+          headers: {
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+            Pragma: "no-cache",
+            Expires: "0",
+          },
+        }
       );
     }
   } catch (err) {
@@ -281,7 +287,13 @@ export async function GET(req: NextRequest) {
       source: "zupe-catalog",
       products: synchronizedList,
     },
-    { headers: { "Cache-Control": "public, max-age=15, stale-while-revalidate=60" } }
+    {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    }
   );
 }
 
