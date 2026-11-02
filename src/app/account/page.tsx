@@ -77,14 +77,14 @@ export default function AccountPage() {
   const [profileError, setProfileError] = useState("");
   const [profileSuccess, setProfileSuccess] = useState(false);
 
-  // Strict Super Admin Verification State (only true for verified admin@turkiyejam.com or admin@zupestore.com)
+  // Strict Super Admin Verification State (only true for verified admin@vittaldigital.com or admin@zupestore.com)
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   // Strictly verify Super Admin credentials & cryptographic session
   useEffect(() => {
     const isCandidate =
       user?.role === "admin" &&
-      (user?.email?.toLowerCase().trim() === "admin@turkiyejam.com" ||
+      (user?.email?.toLowerCase().trim() === "admin@vittaldigital.com" ||
         user?.email?.toLowerCase().trim() === "admin@zupestore.com");
 
     if (!isCandidate) {

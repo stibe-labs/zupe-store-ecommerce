@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/adminAuth";
 import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/userAuth";
 
-const SUPER_ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@turkiyejam.com";
+const SUPER_ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@vittaldigital.com";
 
 /**
  * Cryptographically verifies if the current session belongs to the Super Admin.

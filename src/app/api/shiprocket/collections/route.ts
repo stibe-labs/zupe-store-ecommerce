@@ -10,11 +10,11 @@ export async function GET(req: NextRequest) {
         collections: [
           {
             id: 5001,
-            title: "Turkiye Jam Sachets",
+            title: "Vittal Digital Sachets",
             handle: "all-packs",
-            body_html: "<p>100% Authentic Turkish Epimedium Jam sachets</p>",
+            body_html: "<p>Authentic Herbal Jam sachets</p>",
             image: {
-              src: "https://turkiyejam.com/tj/turkiye-jam-3-strips.png",
+              src: "https://vittaldigital.com/tj/turkiye-jam-3-strips.png",
             },
             created_at: "2026-01-01T00:00:00Z",
             updated_at: "2026-01-01T00:00:00Z",

@@ -278,7 +278,7 @@ export async function dispatchShiprocketOrder(
           billing_pincode: postalCode,
           billing_state: (order as any).state || "Karnataka",
           billing_country: "India",
-          billing_email: (order as any).customer_email || (order as any).guest_email || "support@turkiyejam.com",
+          billing_email: (order as any).customer_email || (order as any).guest_email || "support@vittaldigital.com",
           billing_phone: cleanPhone,
           shipping_is_billing: true,
           order_items: orderItems.length > 0 ? orderItems : [{ name: "Turkiye Jam Herbal Macun", sku: "SKU-TJ", units: 1, selling_price: order.total_amount || 1099 }],

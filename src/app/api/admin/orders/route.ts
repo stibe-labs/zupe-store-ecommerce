@@ -198,8 +198,8 @@ export async function POST(req: NextRequest) {
           );
           if (oiRows && oiRows.length > 0) {
             rawItems = oiRows.map((it: any) => ({
-              name: it.product_name || "Turkiye Jam",
-              product_name: it.product_name || "Turkiye Jam",
+              name: it.product_name || "Vittal Digital",
+              product_name: it.product_name || "Vittal Digital",
               quantity: Number(it.quantity || 1),
               unit_price: Number(it.unit_price || it.total_price || 0),
               price: Number(it.unit_price || it.total_price || 0),
@@ -212,8 +212,8 @@ export async function POST(req: NextRequest) {
 
       if (rawItems.length === 0) {
         rawItems = [{
-          name: "Turkiye Jam (3 Sachet Pack)",
-          product_name: "Turkiye Jam (3 Sachet Pack)",
+          name: "Vittal Digital (3 Sachet Pack)",
+          product_name: "Vittal Digital (3 Sachet Pack)",
           quantity: 1,
           unit_price: Number(ord.total_amount) || 1099,
           price: Number(ord.total_amount) || 1099,
@@ -231,7 +231,7 @@ export async function POST(req: NextRequest) {
         totalAmount: Number(ord.total_amount) || 0,
         paymentMethod: isCod ? "cod" : "prepaid",
         items: rawItems.map((it: any) => ({
-          name: it.product_name || it.name || "Turkiye Jam",
+          name: it.product_name || it.name || "Vittal Digital",
           quantity: Number(it.quantity || 1),
           price: Number(it.unit_price || it.price || 0),
         })),
@@ -353,8 +353,8 @@ export async function POST(req: NextRequest) {
               );
               if (oiRows && oiRows.length > 0) {
                 rawItems = oiRows.map((it: any) => ({
-                  name: it.product_name || "Turkiye Jam",
-                  product_name: it.product_name || "Turkiye Jam",
+                  name: it.product_name || "Vittal Digital",
+                  product_name: it.product_name || "Vittal Digital",
                   quantity: Number(it.quantity || 1),
                   unit_price: Number(it.unit_price || it.total_price || 0),
                   price: Number(it.unit_price || it.total_price || 0),
@@ -367,8 +367,8 @@ export async function POST(req: NextRequest) {
 
           if (rawItems.length === 0) {
             rawItems = [{
-              name: "Turkiye Jam (3 Sachet Pack)",
-              product_name: "Turkiye Jam (3 Sachet Pack)",
+              name: "Vittal Digital (3 Sachet Pack)",
+              product_name: "Vittal Digital (3 Sachet Pack)",
               quantity: 1,
               unit_price: Number(ord.total_amount) || 1099,
               price: Number(ord.total_amount) || 1099,
@@ -386,7 +386,7 @@ export async function POST(req: NextRequest) {
             totalAmount: Number(ord.total_amount) || 0,
             paymentMethod: isCod ? "cod" : "prepaid",
             items: rawItems.map((it: any) => ({
-              name: it.product_name || it.name || "Turkiye Jam",
+              name: it.product_name || it.name || "Vittal Digital",
               quantity: Number(it.quantity || 1),
               price: Number(it.unit_price || it.price || 0),
             })),

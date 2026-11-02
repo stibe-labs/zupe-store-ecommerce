@@ -15,7 +15,7 @@ export function WhatsAppFloatingButton() {
 
   const phoneNumber = "916238165935";
   const defaultMessage = encodeURIComponent(
-    "Hi Turkiye Jam Care, I have an inquiry about ordering Themra Epimedium Macun!"
+    "Hi Vittal Digital Care, I have an inquiry about my order!"
   );
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${defaultMessage}`;
 
@@ -46,7 +46,7 @@ export function WhatsAppFloatingButton() {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Chat with Turkiye Jam on WhatsApp"
+          aria-label="Chat with Vittal Digital on WhatsApp"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           onMouseEnter={() => setIsHovered(true)}

@@ -252,14 +252,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: `No order found matching "${query}". Please verify your Order ID (e.g. #TJ-1001), AWB, or 10-digit mobile number.`,
+        error: `No order found matching "${query}". Please verify your Order ID (e.g. #VD-1001), AWB, or 10-digit mobile number.`,
         suggestions: [
           "Check the order confirmation SMS or email sent at the time of purchase.",
           "Ensure you entered the 10-digit mobile number used during checkout.",
           "Newly placed orders may take up to 10-15 minutes to reflect in courier tracking systems.",
         ],
         support_whatsapp: `https://wa.me/916238165935?text=${encodeURIComponent(
-          `Hi Turkiye Jam, I need help tracking my order with query "${query}".`
+          `Hi Vittal Digital, I need help tracking my order with query "${query}".`
         )}`,
         support_phone: "+91 62381 65935",
       },

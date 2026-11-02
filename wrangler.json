@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "turkiyejam",
+  "name": "vittaldigital",
   "account_id": "4eed09d0032a07881825f4e926cb997f",
   "compatibility_date": "2026-08-31",
   "compatibility_flags": [
@@ -15,8 +15,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "turkiyejam-db",
-      "database_id": "3a7891a3-6e90-4eab-b448-7c33aaec0c5f"
+      "database_name": "vittaldigital-db",
+      "database_id": "ff60b17f-319d-42b6-9ff7-2ce4684a91d7"
     }
   ],
   "r2_buckets": [
@@ -26,28 +26,28 @@
     }
   ],
   "vars": {
-    "NEXT_PUBLIC_SITE_URL": "https://turkiyejam.com",
-    "NEXT_PUBLIC_BASE_URL": "https://turkiyejam.com",
-    "STORE_BASE_URL": "https://turkiyejam.com",
+    "NEXT_PUBLIC_SITE_URL": "https://vittaldigital.com",
+    "NEXT_PUBLIC_BASE_URL": "https://vittaldigital.com",
+    "STORE_BASE_URL": "https://vittaldigital.com",
     "SMTP_HOST": "mail.stibe.in",
     "SMTP_PORT": "465",
-    "SMTP_USER": "support@turkiyejam.com",
+    "SMTP_USER": "support@vittaldigital.com",
     "SMTP_PASS": "ippFiRreBn2P",
     "CLOUDFLARE_ACCOUNT_ID": "4eed09d0032a07881825f4e926cb997f",
-    "CLOUDFLARE_D1_DATABASE_ID": "3a7891a3-6e90-4eab-b448-7c33aaec0c5f",
-    "ADMIN_EMAIL": "admin@turkiyejam.com",
-    "ADMIN_PASSWORD": "TurkiyeJam@2026",
+    "CLOUDFLARE_D1_DATABASE_ID": "ff60b17f-319d-42b6-9ff7-2ce4684a91d7",
+    "ADMIN_EMAIL": "admin@vittaldigital.com",
+    "ADMIN_PASSWORD": "VittalDigital@2026",
     "NEXT_PUBLIC_RAZORPAY_KEY_ID": "rzp_live_TuVIitHfZBQ28r",
     "RAZORPAY_KEY_ID": "rzp_live_TuVIitHfZBQ28r",
     "RAZORPAY_KEY_SECRET": "M6ZjfGN7g5XDqRjs47CpaqDN",
     "WHATSAPP_TOKEN": "EAATwm2s3GMYBS7KhJQ2MDiAyAGFS6OwFHiXZAFvfPlyMUg4Jf3wV5e8TPj0PKC8rkE6x9vkzuZANllpjCUHvJaXYAZB6Ursyzc26l0SDJrBEEPJYB4ZB8rjEQ2qTSBI6tEYgZBOTJ47DAmVNAhuyaQAoryvhYiO6vRpAFdE0H61gFXCkwttX5sZCCSyR20kCwOOQZDZD",
     "WHATSAPP_PHONE_NUMBER_ID": "1477900698733187",
     "WHATSAPP_PHONE_NUMBER": "916238165935",
-    "WHATSAPP_TEMPLATE_NAME": "turkiyejam_otp",
+    "WHATSAPP_TEMPLATE_NAME": "vittaldigital_otp",
     "WHATSAPP_TEMPLATE_LANG": "en",
-    "WHATSAPP_WEBHOOK_VERIFY_TOKEN": "turkiyejam_wa_secret_2026",
+    "WHATSAPP_WEBHOOK_VERIFY_TOKEN": "vittaldigital_wa_secret_2026",
     "SHIPROCKET_PICKUP_LOCATION": "work",
-    "SHIPROCKET_EMAIL": "support@turkiyejam.com",
+    "SHIPROCKET_EMAIL": "support@vittaldigital.com",
     "SHIPROCKET_PASSWORD": "vWwIV@pJqVO!!6@JQSFZChuaPP8s*SfX",
     "SHIPROCKET_CHECKOUT_API_KEY": "SJDGjm63QEW11sat",
     "SHIPROCKET_CHECKOUT_API_SECRET": "8rXNirBwWVrkDOwrNHFs9nLccBKIrC98"

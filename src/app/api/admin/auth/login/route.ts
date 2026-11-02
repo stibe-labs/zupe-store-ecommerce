@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     const { createUserSessionToken, USER_COOKIE_NAME } = await import("@/lib/userAuth");
     const userToken = await createUserSessionToken({
       id: "superadmin",
-      name: verification.name || "Turkiye Jam SuperAdmin",
+      name: verification.name || "Vittal Digital SuperAdmin",
       email: verification.email,
       role: "admin",
     });

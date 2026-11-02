@@ -77,7 +77,7 @@ export interface Product {
   in_stock: number;
   rating?: number;
   review_count?: number;
-  badge?: "New" | "Sale" | "Trending" | "Limited" | "";
+  badge?: string;
   created_at?: string;
   sold_count?: string;
   has_colors?: boolean;

@@ -146,8 +146,8 @@ export default function AdminSidebar({
             <Link href="/admin" className="flex items-center gap-3 group">
               <div className="relative h-9 w-28 flex items-center justify-start group-hover:scale-105 transition-transform overflow-hidden flex-shrink-0">
                 <Image
-                  src="/turkiye-jam-logo.svg"
-                  alt="Turkiye Jam"
+                  src="/vittal-digital-logo.svg"
+                  alt="Vittal Digital"
                   width={112}
                   height={36}
                   className="object-contain w-auto h-8"
@@ -244,10 +244,10 @@ export default function AdminSidebar({
           <div className="flex items-center justify-between px-1 pt-1">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded bg-[#FF7A00]/15 text-[#FF7A00] flex items-center justify-center text-xs font-bold">
-                T
+                V
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-200">Turkiye Jam</p>
+                <p className="text-xs font-semibold text-slate-200">Vittal Digital</p>
                 <p className="text-[10px] text-slate-500">Live Production ERP</p>
               </div>
             </div>

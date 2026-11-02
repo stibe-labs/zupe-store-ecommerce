@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
         `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
         {
           headers: {
-            "User-Agent": "TurkiyeJamEcommerce/2.0 (support@turkiyejam.com)",
+            "User-Agent": "VittalDigitalEcommerce/2.0 (support@vittaldigital.com)",
             "Accept-Language": "en-IN,en;q=0.9",
           },
           signal: controller.signal,

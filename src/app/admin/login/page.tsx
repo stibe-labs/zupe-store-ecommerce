@@ -53,7 +53,7 @@ function AdminLoginForm() {
       if (typeof window !== "undefined") {
         const adminSession = {
           id: "superadmin",
-          name: data.user?.name || "Turkiye Jam Administrator",
+          name: data.user?.name || "Vittal Digital Administrator",
           email: data.user?.email || email,
           role: "admin",
         };
@@ -93,7 +93,7 @@ function AdminLoginForm() {
             Admin Portal
           </h1>
           <p className="text-xs sm:text-sm text-gray-400 mt-1.5 font-medium">
-            Sign in with administrator credentials to manage Turkiye Jam
+            Sign in with administrator credentials to manage Vittal Digital
           </p>
         </div>
 
@@ -117,7 +117,7 @@ function AdminLoginForm() {
                 type="email"
                 required
                 autoComplete="email"
-                placeholder="admin@turkiyejam.com"
+                placeholder="admin@vittaldigital.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-800 bg-[#0d1017] text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
@@ -199,8 +199,8 @@ export default function AdminLoginPage() {
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="relative h-8 w-24 flex items-center justify-start">
               <Image
-                src="/turkiye-jam-logo.svg"
-                alt="Turkiye Jam"
+                src="/vittal-digital-logo.svg"
+                alt="Vittal Digital"
                 width={96}
                 height={32}
                 className="object-contain"
@@ -236,7 +236,7 @@ export default function AdminLoginPage() {
 
       {/* Footer */}
       <footer className="w-full py-4 text-center text-[11px] text-gray-600 border-t border-gray-900 bg-[#090b10]">
-        Turkiye Jam Enterprise ERP System • Secure Management Console
+        Vittal Digital Enterprise ERP System • Secure Management Console
       </footer>
     </div>
   );

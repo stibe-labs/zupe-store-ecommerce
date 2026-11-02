@@ -497,7 +497,7 @@ export default function ProfitCalculatorPage() {
 
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
-    a.download = `turkiyejam-profit-calculator-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `vittaldigital-profit-calculator-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(a.href);
   };

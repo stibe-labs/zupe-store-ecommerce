@@ -156,26 +156,25 @@ export async function sendOrderConfirmationEmail(
   }> = [];
 
   // Try attaching official text label logo inline
-  let logoImgSrc = `${STORE_BASE_URL}/turkiye-jam-logo.png`;
+  let logoImgSrc = `${STORE_BASE_URL}${siteConfig.logoUrl}`;
   try {
     const candidateLogoPaths = [
-      path.join(process.cwd(), "public", "turkiye-jam-logo.png"),
+      path.join(process.cwd(), "public", "vittal-digital-logo.svg"),
+      path.join(process.cwd(), "public", "vittal-digital-logo.png"),
       path.join(process.cwd(), "public", "turkiye-jam-logo.svg"),
       path.join(process.cwd(), "public", "zupe-email-label.png"),
-      path.join(process.cwd(), "public", "zupe-label.png"),
-      path.join(process.cwd(), "public", "zupe-label.webp"),
     ];
     for (const p of candidateLogoPaths) {
       if (fs.existsSync(p)) {
         const ext = path.extname(p).toLowerCase().replace(".", "");
         attachments.push({
-          filename: `turkiye-jam-logo.${ext}`,
+          filename: `store-logo.${ext}`,
           path: p,
-          cid: "tj_text_label_logo",
+          cid: "store_text_label_logo",
           contentType: ext === "svg" ? "image/svg+xml" : ext === "webp" ? "image/webp" : "image/png",
           contentDisposition: "inline",
         });
-        logoImgSrc = "cid:tj_text_label_logo";
+        logoImgSrc = "cid:store_text_label_logo";
         break;
       }
     }
@@ -298,7 +297,7 @@ export async function sendOrderConfirmationEmail(
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Order Confirmed — Turkiye Jam</title>
+      <title>Order Confirmed — ${siteConfig.name}</title>
       <style>
         body { margin: 0; padding: 0; background-color: #f4f6f8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
         table { border-collapse: collapse; }
@@ -312,7 +311,7 @@ export async function sendOrderConfirmationEmail(
         <tr>
           <td style="padding: 26px 32px 18px 32px; text-align: center; border-bottom: 1px solid #f3f4f6; background-color: #ffffff;">
             <a href="${STORE_BASE_URL}" target="_blank" style="text-decoration: none; display: inline-block;">
-              <img src="${logoImgSrc}" alt="Turkiye Jam" width="165" style="display: block; width: 165px; max-width: 165px; height: auto; margin: 0 auto; border: 0;" />
+              <img src="${logoImgSrc}" alt="${siteConfig.name}" width="165" style="display: block; width: 165px; max-width: 165px; height: auto; margin: 0 auto; border: 0;" />
             </a>
             <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #9ca3af; margin-top: 8px; font-weight: 600;">
               Official Order Confirmation
@@ -509,7 +508,7 @@ export async function sendOrderConfirmationEmail(
               Need help with this order?
             </div>
             <div style="font-size: 12px; color: #6b7280; line-height: 1.5;">
-              Simply reply directly to this email at <a href="mailto:support@turkiyejam.com" style="color: #FF7A00; text-decoration: none; font-weight: 600;">support@turkiyejam.com</a>. Our support team is ready to assist you.
+              Simply reply directly to this email at <a href="mailto:${siteConfig.supportEmail}" style="color: #FF7A00; text-decoration: none; font-weight: 600;">${siteConfig.supportEmail}</a>. Our support team is ready to assist you.
             </div>
           </td>
         </tr>
@@ -518,13 +517,13 @@ export async function sendOrderConfirmationEmail(
         <tr>
           <td style="padding: 20px 32px; background-color: #111827; text-align: center; color: #9ca3af; font-size: 11px; line-height: 1.5;">
             <div style="color: #ffffff; font-weight: 700; margin-bottom: 4px;">
-              Turkiye Jam
+              ${siteConfig.name}
             </div>
             <div>
               100% Genuine Quality Products • Safe Packaging • Fast Delivery Across India
             </div>
             <div style="margin-top: 8px; color: #6b7280;">
-              © ${new Date().getFullYear()} Turkiye Jam. Sent to ${cleanEmail}.
+              © ${new Date().getFullYear()} ${siteConfig.name}. Sent to ${cleanEmail}.
             </div>
           </td>
         </tr>
@@ -536,7 +535,7 @@ export async function sendOrderConfirmationEmail(
 
   // 5. Build plain text fallback for spam scoring & text clients
   const textBody = `
-Turkiye Jam — Order Confirmed!
+${siteConfig.name} — Order Confirmed!
 
 Hi ${firstName},
 
@@ -559,14 +558,14 @@ ${customerPhone ? `Phone: ${customerPhone}` : ""}
 TRACK YOUR ORDER:
 ${trackingUrl}
 
-Need assistance? Reply to this email at support@turkiyejam.com.
+Need assistance? Reply to this email at ${siteConfig.supportEmail}.
   `.trim();
 
-  // 6. Send the email using Turkiye Jam mailer with inline attachments
+  // 6. Send the email using Vittal Digital mailer with inline attachments
   try {
     const res = await sendEmail({
       to: cleanEmail,
-      subject: `Order Confirmed: #${orderId} — Turkiye Jam`,
+      subject: `Order Confirmed: #${orderId} — ${siteConfig.name}`,
       html,
       text: textBody,
       attachments: attachments.length > 0 ? attachments : undefined,
@@ -666,15 +665,15 @@ export async function sendOrderCancellationEmail(
     <html lang="en">
     <head>
       <meta charset="UTF-8">
-      <title>Order Cancelled — Turkiye Jam</title>
+      <title>Order Cancelled — ${siteConfig.name}</title>
     </head>
     <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
       <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 30px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
         <!-- Header -->
         <tr>
           <td style="padding: 28px 32px; background: linear-gradient(135deg, #111827 0%, #1f2937 100%); text-align: center;">
-            <div style="font-size: 24px; font-weight: 900; color: #FF7A00; letter-spacing: -0.5px;">
-              Turkiye Jam
+            <div style="font-size: 24px; font-weight: 900; color: #FED000; letter-spacing: -0.5px;">
+              ${siteConfig.name}
             </div>
             <div style="font-size: 12px; color: #9ca3af; margin-top: 4px; letter-spacing: 1px; text-transform: uppercase;">
               Order Cancellation Notice
@@ -714,7 +713,7 @@ export async function sendOrderCancellationEmail(
 
             <div style="text-align: center; margin: 28px 0 10px 0;">
               <a href="${STORE_BASE_URL}" target="_blank" style="display: inline-block; padding: 12px 28px; background-color: #FF7A00; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 10px;">
-                Continue Shopping on Turkiye Jam →
+                Continue Shopping on ${siteConfig.name} →
               </a>
             </div>
           </td>
@@ -723,14 +722,14 @@ export async function sendOrderCancellationEmail(
         <!-- Support Info -->
         <tr>
           <td style="padding: 20px 32px; background-color: #f9fafb; border-top: 1px solid #f3f4f6; text-align: center; font-size: 12px; color: #6b7280;">
-            Need help or have questions? Contact us anytime at <a href="mailto:support@turkiyejam.com" style="color: #FF7A00; text-decoration: none; font-weight: 600;">support@turkiyejam.com</a>.
+            Need help or have questions? Contact us anytime at <a href="mailto:${siteConfig.supportEmail}" style="color: #FF7A00; text-decoration: none; font-weight: 600;">${siteConfig.supportEmail}</a>.
           </td>
         </tr>
 
         <!-- Footer -->
         <tr>
           <td style="padding: 16px 32px; background-color: #111827; text-align: center; color: #9ca3af; font-size: 11px;">
-            © ${new Date().getFullYear()} Turkiye Jam. Sent to ${cleanEmail}.
+            © ${new Date().getFullYear()} ${siteConfig.name}. Sent to ${cleanEmail}.
           </td>
         </tr>
       </table>
@@ -739,7 +738,7 @@ export async function sendOrderCancellationEmail(
   `;
 
   const textBody = `
-Turkiye Jam — Order #${orderId} Cancelled
+${siteConfig.name} — Order #${orderId} Cancelled
 
 Hi ${firstName},
 
@@ -757,16 +756,16 @@ EXPECTED CREDIT TIMELINE:
 Your Cash on Delivery order has been successfully cancelled. No doorstep payment will be collected.`
 }
 
-If you need any assistance, reply to this email at support@turkiyejam.com.
+If you need any assistance, reply to this email at ${siteConfig.supportEmail}.
 
-Turkiye Jam Team
+${siteConfig.name} Team
 ${STORE_BASE_URL}
   `.trim();
 
   try {
     const res = await sendEmail({
       to: cleanEmail,
-      subject: `Order #${orderId} Cancelled & Refund Initiated — Turkiye Jam`,
+      subject: `Order #${orderId} Cancelled & Refund Initiated — ${siteConfig.name}`,
       html,
       text: textBody,
     });

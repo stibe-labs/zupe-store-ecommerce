@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const topic = req.headers.get("x-shopify-topic");
-    const shopDomain = req.headers.get("x-shopify-shop-domain") || "turkiyejam.myshopify.com";
+    const shopDomain = req.headers.get("x-shopify-shop-domain") || "vittaldigital.myshopify.com";
 
     let body: any = {};
     try {

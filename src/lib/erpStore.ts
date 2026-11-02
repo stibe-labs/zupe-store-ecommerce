@@ -1,4 +1,4 @@
-// Turkiye Jam ERP Data Store & Business Logic Layer
+// Vittal Digital ERP Data Store & Business Logic Layer
 import { executeD1Query } from "@/lib/d1";
 import { decrementInventory, restockInventory } from "@/lib/inventoryService";
 
@@ -720,7 +720,7 @@ export async function getERPOrders(filters?: {
           items = mem.items;
         }
         const normalizedItems = (Array.isArray(items) ? items : []).map((it: any) => {
-          const name = it.product_name || it.name || it.title || "Turkiye Jam (3 Sachet Pack)";
+          const name = it.product_name || it.name || it.title || "Vittal Digital (3 Sachet Pack)";
           const quantity = Number(it.quantity || it.units || 1);
           const price = Number(it.unit_price ?? it.price ?? it.selling_price ?? (row.total_amount ? Math.round(row.total_amount / quantity) : 1099)) || 1099;
           return {
@@ -853,8 +853,8 @@ export async function getOrderById(orderId: string): Promise<ERPOrder | null> {
           if (oiRows && oiRows.length > 0) {
             itemsList = oiRows.map((it: any) => ({
               product_id: it.product_id,
-              name: it.product_name || "Turkiye Jam",
-              product_name: it.product_name || "Turkiye Jam",
+              name: it.product_name || "Vittal Digital",
+              product_name: it.product_name || "Vittal Digital",
               quantity: Number(it.quantity || 1),
               unit_price: Number(it.unit_price || it.total_price || 0),
               price: Number(it.unit_price || it.total_price || 0),
@@ -1578,15 +1578,15 @@ export interface ERPIntegrationsSettings {
 
 let inMemorySettings: ERPIntegrationsSettings = {
   storeProfile: {
-    storeName: "Turkiye Jam",
-    supportEmail: "support@turkiyejam.com",
+    storeName: "Vittal Digital",
+    supportEmail: "support@vittaldigital.com",
     supportPhone: "+91 62381 65935",
     currency: "INR (₹)",
     freeShippingThreshold: 499,
     standardShippingFee: 49,
   },
   shopify: {
-    domain: "turkiyejam.myshopify.com",
+    domain: "vittaldigital.myshopify.com",
     token: "shpat_live_98a76d54f32e10cba",
     webhookSecret: "whsec_9871122334455",
     autoPushOrders: true,
@@ -1595,7 +1595,7 @@ let inMemorySettings: ERPIntegrationsSettings = {
     lastSyncedAt: new Date().toISOString(),
   },
   shiprocket: {
-    email: "support@turkiyejam.com",
+    email: "support@vittaldigital.com",
     password: "",
     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     pickup_location: "Primary",

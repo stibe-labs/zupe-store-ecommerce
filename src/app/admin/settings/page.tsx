@@ -33,16 +33,16 @@ export default function AdminSettingsPage() {
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
 
   // Store Profile
-  const [storeName, setStoreName] = useState("Turkiye Jam");
-  const [supportEmail, setSupportEmail] = useState("support@turkiyejam.com");
-  const [testEmailAddress, setTestEmailAddress] = useState("support@turkiyejam.com");
+  const [storeName, setStoreName] = useState("Vittal Digital");
+  const [supportEmail, setSupportEmail] = useState("support@vittaldigital.com");
+  const [testEmailAddress, setTestEmailAddress] = useState("support@vittaldigital.com");
   const [supportPhone, setSupportPhone] = useState("+91 62381 65935");
   const [currency, setCurrency] = useState("INR (₹)");
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("499");
   const [standardShippingFee, setStandardShippingFee] = useState("49");
 
   // Shopify
-  const [shopifyDomain, setShopifyDomain] = useState("turkiyejam.myshopify.com");
+  const [shopifyDomain, setShopifyDomain] = useState("vittaldigital.myshopify.com");
   const [shopifyToken, setShopifyToken] = useState("shpat_live_98a76d54f32e10cba");
   const [shopifyWebhookSecret, setShopifyWebhookSecret] = useState("whsec_9871122334455");
   const [shopifyAutoPush, setShopifyAutoPush] = useState(true);
@@ -50,7 +50,7 @@ export default function AdminSettingsPage() {
   const [shopifyActive, setShopifyActive] = useState(true);
 
   // Shiprocket
-  const [shiprocketEmail, setShiprocketEmail] = useState("support@turkiyejam.com");
+  const [shiprocketEmail, setShiprocketEmail] = useState("support@vittaldigital.com");
   const [shiprocketPassword, setShiprocketPassword] = useState("");
   const [shiprocketToken, setShiprocketToken] = useState("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...");
   const [shiprocketPickupLocation, setShiprocketPickupLocation] = useState("Primary");
@@ -71,8 +71,8 @@ export default function AdminSettingsPage() {
       if (data.success && data.settings) {
         const s: ERPIntegrationsSettings = data.settings;
         if (s.storeProfile) {
-          setStoreName(s.storeProfile.storeName || "Turkiye Jam");
-          setSupportEmail(s.storeProfile.supportEmail || "support@turkiyejam.com");
+          setStoreName(s.storeProfile.storeName || "Vittal Digital");
+          setSupportEmail(s.storeProfile.supportEmail || "support@vittaldigital.com");
           setSupportPhone(s.storeProfile.supportPhone || "+91 62381 65935");
           setCurrency(s.storeProfile.currency || "INR (₹)");
           setFreeShippingThreshold(String(s.storeProfile.freeShippingThreshold ?? 499));
@@ -238,7 +238,7 @@ export default function AdminSettingsPage() {
     downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute(
       "download",
-      `turkiyejam_erp_settings_backup_${new Date().toISOString().split("T")[0]}.json`
+      `vittaldigital_erp_settings_backup_${new Date().toISOString().split("T")[0]}.json`
     );
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
@@ -502,7 +502,7 @@ export default function AdminSettingsPage() {
                   <div>
                     <p className="font-semibold text-slate-900 text-xs">Automatically Push Web Orders to Shopify</p>
                     <p className="text-[11px] text-slate-500">
-                      When customers place orders on Turkiye Jam, instantly post them to Shopify Admin API so fulfillment apps (Roposo/GlowRoad/DSers) can process them.
+                      When customers place orders on Vittal Digital, instantly post them to Shopify Admin API so fulfillment apps (Roposo/GlowRoad/DSers) can process them.
                     </p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
@@ -554,7 +554,7 @@ export default function AdminSettingsPage() {
                       type="email"
                       value={shiprocketEmail}
                       onChange={(e) => setShiprocketEmail(e.target.value)}
-                      placeholder="e.g. support@turkiyejam.com"
+                      placeholder="e.g. support@vittaldigital.com"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
                     />
                   </div>
@@ -705,7 +705,7 @@ export default function AdminSettingsPage() {
                     <div>
                       <h3 className="font-bold text-slate-900 text-base">Automated Order Confirmation Emails</h3>
                       <p className="text-xs text-slate-500">
-                        Dispatches branded emails from <strong className="text-slate-800">support@turkiyejam.com</strong> when customer fills optional checkout email
+                        Dispatches branded emails from <strong className="text-slate-800">support@vittaldigital.com</strong> when customer fills optional checkout email
                       </p>
                     </div>
                   </div>
@@ -726,10 +726,10 @@ export default function AdminSettingsPage() {
                       </span>
                     </div>
                     <div className="font-mono text-xs font-bold text-slate-900">
-                      support@turkiyejam.com
+                      support@vittaldigital.com
                     </div>
                     <p className="text-[11px] text-slate-500 leading-relaxed">
-                      All confirmation emails are addressed as <strong className="text-slate-700">&quot;Turkiye Jam&quot; &lt;support@turkiyejam.com&gt;</strong>.
+                      All confirmation emails are addressed as <strong className="text-slate-700">&quot;Vittal Digital&quot; &lt;support@vittaldigital.com&gt;</strong>.
                     </p>
                   </div>
 
@@ -756,7 +756,7 @@ export default function AdminSettingsPage() {
                       type="email"
                       value={testEmailAddress}
                       onChange={(e) => setTestEmailAddress(e.target.value)}
-                      placeholder="Enter recipient email (e.g. support@turkiyejam.com)"
+                      placeholder="Enter recipient email (e.g. support@vittaldigital.com)"
                       className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
                     />
                     <button

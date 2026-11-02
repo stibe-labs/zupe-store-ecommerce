@@ -45,7 +45,7 @@ export async function testShopifyConnection(
   if (token.includes("live_98a76d54") || token.startsWith("shpat_test_") || token.startsWith("shpat_mock")) {
     return {
       success: true,
-      shopName: "Turkiye Jam (Sandbox)",
+      shopName: "Vittal Digital (Sandbox)",
       currency: "INR",
       message: `Verified simulated handshake with ${domain}. Outbound order creation active.`,
     };
@@ -111,7 +111,7 @@ export async function pushOrderToShopify(
       }
     }
 
-    const domain = normalizeShopifyDomain(shopifyConfig?.domain || "turkiyejam.myshopify.com");
+    const domain = normalizeShopifyDomain(shopifyConfig?.domain || "vittaldigital.myshopify.com");
     const token = (shopifyConfig?.token || "").trim();
     const apiVersion = (shopifyConfig as any)?.apiVersion || "2024-01";
 
@@ -169,8 +169,8 @@ export async function pushOrderToShopify(
         send_receipt: false,
         send_fulfillment_receipt: false,
         source_name: "web",
-        tags: `TurkiyeJam, WebOrder, ${isCod ? "COD" : "Prepaid"}`,
-        note: `Turkiye Jam Storefront Order ID: ${order.id}`,
+        tags: `VittalDigital, WebOrder, ${isCod ? "COD" : "Prepaid"}`,
+        note: `Vittal Digital Storefront Order ID: ${order.id}`,
         line_items: lineItems,
         customer: {
           first_name: firstName,
@@ -519,7 +519,7 @@ export async function pullShopifyOrders(options?: {
     const settings = await getSettings();
     const config = settings.shopify;
 
-    const domain = normalizeShopifyDomain(config?.domain || "turkiyejam.myshopify.com");
+    const domain = normalizeShopifyDomain(config?.domain || "vittaldigital.myshopify.com");
     const token = (config?.token || "").trim();
     const apiVersion = (config as any)?.apiVersion || "2024-01";
     const limit = options?.limit || 50;

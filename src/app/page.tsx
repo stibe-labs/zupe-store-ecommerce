@@ -1,6 +1,6 @@
 import React from "react";
 import { Navbar } from "@/components/Navbar";
-import { TurkiyeJamStorefront } from "@/components/TurkiyeJamStorefront";
+import { VittalDigitalStorefront } from "@/components/TurkiyeJamStorefront";
 import { Footer } from "@/components/Footer";
 import { executeD1Query } from "@/lib/d1";
 import { Product } from "@/types/product";
@@ -28,11 +28,11 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[#FCFBF8] text-[#1A1A1A] selection:bg-[#fed000] selection:text-stone-900">
-      {/* 1. Turkiye Jam Navigation Bar (Floating over Full-Screen Hero) */}
+      {/* 1. Vittal Digital Navigation Bar (Floating over Full-Screen Hero) */}
       <Navbar />
 
-      {/* 2. Dedicated High-Conversion Turkiye Jam Storefront Experience */}
-      <TurkiyeJamStorefront initialProducts={initialProducts} />
+      {/* 2. Dedicated High-Conversion Vittal Digital Storefront Experience */}
+      <VittalDigitalStorefront initialProducts={initialProducts} />
 
       {/* 3. Brand Footer with Discreet Packaging & Policy Guarantees */}
       <Footer />

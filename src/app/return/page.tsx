@@ -18,9 +18,9 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
-  title: "Return & Exchange Policy | Turkiye Jam India",
+  title: "Return & Exchange Policy | Vittal Digital India",
   description:
-    "Learn about Turkiye Jam return and cancellation policy, including eligible products, return requests, refunds, damaged orders, and unboxing video requirements.",
+    "Learn about Vittal Digital return and cancellation policy, including eligible products, return requests, refunds, damaged orders, and unboxing video requirements.",
 };
 
 export default function ReturnPolicyPage() {
@@ -47,13 +47,13 @@ export default function ReturnPolicyPage() {
                 Order Cancellation and Return Policy
               </h1>
               <p className="text-xs sm:text-sm text-stone-600 font-medium">
-                Transparent and fair returns for Turkiye Jam customers
+                Transparent and fair returns for Vittal Digital customers
               </p>
             </div>
           </div>
 
           <div className="bg-white border-2 border-stone-800 rounded-2xl p-5 shadow-[0_4px_0_0_#2b2b2b] text-sm sm:text-base text-stone-700 leading-relaxed">
-            At <strong className="text-stone-900">Turkiye Jam</strong>, we take pride in personally handling every part of your shopping journey — from product selection to secure packaging and delivery. Every product is <strong className="text-stone-900">handpicked, quality-checked, and packed with care</strong> to ensure you receive the best experience.
+            At <strong className="text-stone-900">Vittal Digital</strong>, we take pride in personally handling every part of your shopping journey — from product selection to secure packaging and delivery. Every product is <strong className="text-stone-900">handpicked, quality-checked, and packed with care</strong> to ensure you receive the best experience.
           </div>
         </div>
 
@@ -88,7 +88,7 @@ export default function ReturnPolicyPage() {
               <h2>Our Quality Promise</h2>
             </div>
             <p>
-              Each item sold on Turkiye Jam undergoes strict quality inspection before dispatch. <strong className="text-stone-900">Product issues are extremely rare</strong>, but if something goes wrong, we are here to assist you.
+              Each item sold on Vittal Digital undergoes strict quality inspection before dispatch. <strong className="text-stone-900">Product issues are extremely rare</strong>, but if something goes wrong, we are here to assist you.
             </p>
           </section>
 
@@ -159,7 +159,7 @@ export default function ReturnPolicyPage() {
               <h2>Product Usage Disclaimer</h2>
             </div>
             <p>
-              Customers are advised to carefully read product descriptions before placing an order. Turkiye Jam is <strong className="text-stone-900">not responsible for returns based on incorrect assumptions about product usage, dosage, or ingredients</strong>.
+              Customers are advised to carefully read product descriptions before placing an order. Vittal Digital is <strong className="text-stone-900">not responsible for returns based on incorrect assumptions about product usage, dosage, or ingredients</strong>.
             </p>
           </section>
 
@@ -229,13 +229,13 @@ export default function ReturnPolicyPage() {
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <a
-                href="mailto:support@turkiyejam.com"
+                href="mailto:support@vittaldigital.com"
                 className="inline-flex items-center gap-2 bg-stone-100 border-2 border-stone-800 text-stone-900 font-bold px-4 py-2 rounded-xl hover:bg-stone-200 transition-colors shadow-[0_2px_0_0_#2b2b2b]"
               >
-                📧 support@turkiyejam.com
+                📧 support@vittaldigital.com
               </a>
               <a
-                href="https://wa.me/916238165935?text=Hi%20Turkiye%20Jam%2C%20I%20need%20assistance%20with%20my%20order"
+                href="https://wa.me/916238165935?text=Hi%20Vittal%20Digital%2C%20I%20need%20assistance%20with%20my%20order"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-[#d1fae5] border-2 border-stone-800 text-[#0e4a3b] font-bold px-4 py-2 rounded-xl hover:bg-emerald-200 transition-colors shadow-[0_2px_0_0_#2b2b2b]"
@@ -248,7 +248,7 @@ export default function ReturnPolicyPage() {
           {/* 8. Thank You Note */}
           <div className="bg-[#fed000]/25 rounded-2xl p-6 border-2 border-stone-800 text-center shadow-[0_4px_0_0_#2b2b2b]">
             <h3 className="font-tj-serif font-black text-stone-900 text-lg mb-1">
-              Thank You for Choosing Turkiye Jam
+              Thank You for Choosing Vittal Digital
             </h3>
             <p className="text-sm text-stone-700 max-w-lg mx-auto">
               We are more than just an online store — we are an authentic artisanal brand built on trust, quality, and natural vitality.

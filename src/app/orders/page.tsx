@@ -665,8 +665,8 @@ function OrdersPageContent() {
               if (!rawItems || rawItems.length === 0) {
                 rawItems = [
                   {
-                    product_id: "turkiye-jam",
-                    name: "Turkiye Jam - Authentic Turkish Epimedium Honey Herbal Paste",
+                    product_id: "vittal-digital",
+                    name: "Vittal Digital - Authentic Herbal Formulations",
                     price: ord.total_amount || 1499,
                     quantity: 1,
                     image: "/tj/turkiye-jam-jar-2-strips.png",

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { siteConfig } from "@/config/siteConfig";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Heart,
@@ -938,7 +939,7 @@ export default function ProductDetailPage() {
   const handleShare = async () => {
     const shareData = {
       title: product.name,
-      text: `Check out ${product.name} on Turkiye Jam!`,
+      text: `Check out ${product.name} on ${siteConfig.name}!`,
       url: typeof window !== "undefined" ? window.location.href : "",
     };
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
@@ -1940,7 +1941,7 @@ export default function ProductDetailPage() {
                           </li>
                           <li className="flex items-center gap-2">
                             <Check className="w-4 h-4 text-[#FF7A00]" />
-                            <span>1 × Turkiye Jam Quality Verification & Warranty Seal</span>
+                            <span>1 × {siteConfig.name} Quality Verification &amp; Warranty Seal</span>
                           </li>
                         </ul>
                       )}
@@ -2060,7 +2061,9 @@ export default function ProductDetailPage() {
                             <p className="text-xs text-gray-500 leading-relaxed mt-0.5">
                               Spotted an issue? WhatsApp us at{" "}
                               <a
-                                href="https://wa.me/916238165935?text=Hi%20Turkiye%20Jam%2C%20I%20have%20an%20unboxing%20video%20for%20return%2Fexchange"
+                                href={`https://wa.me/916238165935?text=${encodeURIComponent(
+                                  `Hi ${siteConfig.name}, I have an unboxing video for return/exchange`
+                                )}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-[#FF7A00] font-bold hover:underline"
@@ -2094,7 +2097,7 @@ export default function ProductDetailPage() {
                       <div className="mt-4 p-3.5 rounded-xl bg-orange-50/80 border border-orange-200/90 text-xs text-orange-950 leading-relaxed flex items-start gap-2.5">
                         <AlertCircle className="w-4 h-4 text-[#FF7A00] shrink-0 mt-0.5" />
                         <div>
-                          A continuous unboxing video helps <strong className="font-bold text-[#FF7A00]">Turkiye Jam</strong> verify transit damage, missing contents, wrong products or initial defects faster.
+                          A continuous unboxing video helps <strong className="font-bold text-[#FF7A00]">{siteConfig.name}</strong> verify transit damage, missing contents, wrong products or initial defects faster.
                         </div>
                       </div>
 

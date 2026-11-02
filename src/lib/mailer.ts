@@ -26,10 +26,10 @@ export async function sendEmail({
   replyTo,
   attachments,
 }: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
-  const companyEmail = process.env.SMTP_USER || "support@turkiyejam.com";
+  const companyEmail = process.env.SMTP_USER || "support@vittaldigital.com";
   const rawPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || "";
   const smtpPass = rawPass.replace(/\s+/g, "");
-  const fromAddress = from || `"Turkiye Jam" <${companyEmail}>`;
+  const fromAddress = from || `"Vittal Digital" <${companyEmail}>`;
   const replyToAddress = replyTo || companyEmail;
 
   // 1. Check for SMTP if password is provided

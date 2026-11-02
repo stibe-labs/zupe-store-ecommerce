@@ -23,9 +23,9 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
-  title: "Shipping & Delivery Policy | Turkiye Jam",
+  title: "Shipping & Delivery Policy | Vittal Digital",
   description:
-    "Learn about Turkiye Jam shipping and delivery across India, including order processing times, delivery timelines, express shipping, discreet plain packaging, and support.",
+    "Learn about Vittal Digital shipping and delivery across India, including order processing times, delivery timelines, express shipping, discreet plain packaging, and support.",
 };
 
 export default function ShippingAndDeliveryPage() {
@@ -58,7 +58,7 @@ export default function ShippingAndDeliveryPage() {
           </div>
 
           <div className="bg-white border-2 border-stone-800 rounded-3xl p-6 shadow-[0_4px_0_0_#2b2b2b] text-sm sm:text-base text-stone-700 leading-relaxed">
-            At <strong className="text-stone-900">Turkiye Jam</strong>, we ensure every order is handled with maximum privacy and care — from tamper-proof plain box packaging to express doorstep delivery. All our products are <strong className="text-stone-900">100% authentic Turkish Themra Epimedium Macun imports</strong> with genuine verification seals.
+            At <strong className="text-stone-900">Vittal Digital</strong>, we ensure every order is handled with maximum privacy and care — from tamper-proof plain box packaging to express doorstep delivery. All our products are <strong className="text-stone-900">100% authentic Turkish Themra Epimedium Macun imports</strong> with genuine verification seals.
           </div>
         </div>
 
@@ -137,7 +137,7 @@ export default function ShippingAndDeliveryPage() {
               </li>
             </ul>
             <p className="text-xs sm:text-sm bg-gray-50 border border-gray-200/80 rounded-xl p-3 text-gray-600">
-              <strong className="text-gray-900">Note:</strong> Delivery times are estimates and may vary due to logistics delays, weather conditions, or regional restrictions. Turkiye Jam always strives to ensure timely deliveries through trusted courier partners.
+              <strong className="text-gray-900">Note:</strong> Delivery times are estimates and may vary due to logistics delays, weather conditions, or regional restrictions. Vittal Digital always strives to ensure timely deliveries through trusted courier partners.
             </p>
           </section>
 
@@ -231,7 +231,7 @@ export default function ShippingAndDeliveryPage() {
               <h2>Damaged, Missing, or Lost Orders</h2>
             </div>
             <p>
-              All parcels are securely packed and checked before dispatch. In the rare case that your order arrives damaged, incomplete, or appears lost in transit, please contact us within <strong className="text-gray-900">24 hours of delivery</strong> at <strong className="text-gray-900">support@turkiyejam.com</strong>.
+              All parcels are securely packed and checked before dispatch. In the rare case that your order arrives damaged, incomplete, or appears lost in transit, please contact us within <strong className="text-gray-900">24 hours of delivery</strong> at <strong className="text-gray-900">support@vittaldigital.com</strong>.
             </p>
             <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 text-amber-950 flex items-start gap-3">
               <Video className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -251,7 +251,7 @@ export default function ShippingAndDeliveryPage() {
               <h2>Customs, Duties &amp; Taxes</h2>
             </div>
             <p>
-              All prices shown on Turkiye Jam are inclusive of applicable Indian taxes. If any regional tax or surcharge applies at the delivery location, it will be calculated at checkout. Turkiye Jam is not responsible for any additional local charges imposed by authorities post-shipment.
+              All prices shown on Vittal Digital are inclusive of applicable Indian taxes. If any regional tax or surcharge applies at the delivery location, it will be calculated at checkout. Vittal Digital is not responsible for any additional local charges imposed by authorities post-shipment.
             </p>
           </section>
 
@@ -262,7 +262,7 @@ export default function ShippingAndDeliveryPage() {
               <h2>Our Commitment</h2>
             </div>
             <p>
-              We value your time and trust. Turkiye Jam is committed to providing fast, reliable, and safe delivery for every order. From packaging to tracking, our dedicated team ensures your products reach you in perfect condition.
+              We value your time and trust. Vittal Digital is committed to providing fast, reliable, and safe delivery for every order. From packaging to tracking, our dedicated team ensures your products reach you in perfect condition.
             </p>
           </section>
 
@@ -277,13 +277,13 @@ export default function ShippingAndDeliveryPage() {
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <a
-                href="mailto:support@turkiyejam.com"
+                href="mailto:support@vittaldigital.com"
                 className="inline-flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-950 font-semibold px-4 py-2 rounded-xl hover:bg-orange-100 transition-colors"
               >
-                📧 support@turkiyejam.com
+                📧 support@vittaldigital.com
               </a>
               <a
-                href="https://wa.me/916238165935?text=Hi%20Turkiye%20Jam%2C%20I%20have%20an%20inquiry%20about%20shipping"
+                href="https://wa.me/916238165935?text=Hi%20Vittal%20Digital%2C%20I%20have%20an%20inquiry%20about%20shipping"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-950 font-semibold px-4 py-2 rounded-xl hover:bg-emerald-100 transition-colors"

@@ -19,6 +19,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { siteConfig } from "@/config/siteConfig";
 
 export interface AuthCardProps {
   isModal?: boolean;
@@ -204,12 +205,12 @@ export function AuthCard({
 
       {/* Main Form Card - Neo-brutalist Turkiye Jam retro card */}
       <div className="bg-[#fffdfa] rounded-3xl border-2 border-stone-800 shadow-[0_10px_0_0_#2b2b2b] relative overflow-hidden transition-all duration-300">
-        {/* Brand Wine Top Header Banner */}
+        {/* Brand Top Header Banner */}
         <div className="bg-[#5b1420] px-6 py-4 border-b-2 border-stone-800 relative flex items-center justify-center">
           <div className="flex items-center justify-center py-0.5">
             <Image
-              src="/turkiye-jam-logo.svg"
-              alt="Turkiye Jam"
+              src={siteConfig.logoUrl}
+              alt={siteConfig.name}
               width={140}
               height={42}
               className="h-8 w-auto object-contain drop-shadow-md"
@@ -235,12 +236,12 @@ export function AuthCard({
           {/* Header */}
           <div className="text-center mb-6">
             <p className="font-tj-serif italic text-xs sm:text-sm text-[#8e1c2e] font-semibold">
-              {step === "phone" ? "authentic royal macun" : "quick verification"}
+              {step === "phone" ? "premium wellness & herbal" : "quick verification"}
             </p>
             <h2 className="font-tj-serif text-2xl sm:text-3xl font-black text-stone-900 tracking-tight mt-0.5">
               {step === "phone" ? (
                 <>
-                  Welcome to <span className="text-[#8e1c2e] italic">Turkiye Jam</span>
+                  Welcome to <span className="text-[#8e1c2e] italic">{siteConfig.name}</span>
                 </>
               ) : (
                 "Enter Verification Code"

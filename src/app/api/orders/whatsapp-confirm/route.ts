@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   try {
     const host = req.headers.get("host") || "";
     if (host.includes("workers.dev")) {
-      const canonicalUrl = new URL(req.nextUrl.pathname + req.nextUrl.search, "https://turkiyejam.com");
+      const canonicalUrl = new URL(req.nextUrl.pathname + req.nextUrl.search, siteConfig.url);
       return NextResponse.redirect(canonicalUrl, 301);
     }
     const { searchParams } = new URL(req.url);
@@ -59,8 +59,8 @@ export async function GET(req: NextRequest) {
             );
             if (oiRows && oiRows.length > 0) {
               rawItems = oiRows.map((it: any) => ({
-                name: it.product_name || "Turkiye Jam",
-                product_name: it.product_name || "Turkiye Jam",
+                name: it.product_name || siteConfig.name,
+                product_name: it.product_name || siteConfig.name,
                 quantity: Number(it.quantity || 1),
                 unit_price: Number(it.unit_price || it.total_price || 0),
                 price: Number(it.unit_price || it.total_price || 0),
@@ -73,8 +73,8 @@ export async function GET(req: NextRequest) {
 
         if (rawItems.length === 0) {
           rawItems = [{
-            name: "Turkiye Jam (3 Sachet Pack)",
-            product_name: "Turkiye Jam (3 Sachet Pack)",
+            name: `${siteConfig.name} Package`,
+            product_name: `${siteConfig.name} Package`,
             quantity: 1,
             unit_price: Number(ord.total_amount) || 1099,
             price: Number(ord.total_amount) || 1099,
@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
           totalAmount: Number(ord.total_amount) || 0,
           paymentMethod: isCod ? "cod" : "prepaid",
           items: rawItems.map((it: any) => ({
-            name: it.product_name || it.name || "Turkiye Jam",
+            name: it.product_name || it.name || siteConfig.name,
             quantity: Number(it.quantity || 1),
             price: Number(it.unit_price || it.price || 0),
           })),
@@ -161,7 +161,7 @@ export async function GET(req: NextRequest) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Order Confirmed — Turkiye Jam</title>
+  <title>Order Confirmed — ${siteConfig.name}</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {

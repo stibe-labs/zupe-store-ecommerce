@@ -386,9 +386,9 @@ function CheckoutContent() {
         key: data.key_id || RAZORPAY_KEY_ID,
         amount: Math.round(payableAmount * 100),
         currency: "INR",
-        name: "Turkiye Jam",
+        name: siteConfig.name,
         description: `Order ${switchOrder.display_id || switchOrder.id} - Switch to Prepaid (Save ₹49)`,
-        image: "/turkiye-jam-logo.png",
+        image: siteConfig.logoUrl,
         order_id: data.razorpay_order_id,
         prefill: {
           name: switchOrder.customer_name || "",
@@ -1148,8 +1148,8 @@ function CheckoutContent() {
             <div className="max-w-4xl mx-auto px-4 flex items-center justify-center">
               <Link href="/" className="inline-block">
                 <Image
-                  src="/turkiye-jam-logo.svg"
-                  alt="Turkiye Jam"
+                  src="/vittal-digital-logo.svg"
+                  alt="Vittal Digital"
                   width={140}
                   height={45}
                   className="h-10 w-auto object-contain"
@@ -1221,7 +1221,7 @@ function CheckoutContent() {
           </main>
 
           <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-            © 2026 Turkiye Jam
+            © 2026 Vittal Digital
           </footer>
         </div>
       );
@@ -1233,8 +1233,8 @@ function CheckoutContent() {
           <div className="max-w-4xl mx-auto px-4 flex items-center justify-between">
             <Link href="/" className="inline-block">
               <Image
-                src="/turkiye-jam-logo.svg"
-                alt="Turkiye Jam"
+                src="/vittal-digital-logo.svg"
+                alt="Vittal Digital"
                 width={140}
                 height={45}
                 className="h-10 w-auto object-contain"
@@ -1452,7 +1452,7 @@ function CheckoutContent() {
         </main>
 
         <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-          © 2026 Turkiye Jam
+          © 2026 Vittal Digital
         </footer>
       </div>
     );
@@ -1467,8 +1467,8 @@ function CheckoutContent() {
           <div className="max-w-4xl mx-auto px-4 flex items-center justify-center">
             <Link href="/" className="inline-block">
               <Image
-                src="/turkiye-jam-logo.svg"
-                alt="Turkiye Jam"
+                src="/vittal-digital-logo.svg"
+                alt="Vittal Digital"
                 width={140}
                 height={45}
                 className="h-10 w-auto object-contain"
@@ -1570,7 +1570,7 @@ function CheckoutContent() {
         </main>
 
         <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-          © 2026 Turkiye Jam
+          © 2026 Vittal Digital
         </footer>
       </div>
     );
@@ -1584,8 +1584,8 @@ function CheckoutContent() {
           <div className="max-w-5xl mx-auto px-4 flex items-center justify-center">
             <Link href="/" className="inline-block">
               <Image
-                src="/turkiye-jam-logo.svg"
-                alt="Turkiye Jam"
+                src="/vittal-digital-logo.svg"
+                alt="Vittal Digital"
                 width={140}
                 height={45}
                 className="h-10 w-auto object-contain"
@@ -1610,7 +1610,7 @@ function CheckoutContent() {
         </main>
 
         <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-          © 2026 Turkiye Jam
+          © 2026 Vittal Digital
         </footer>
       </div>
     );
@@ -1624,8 +1624,8 @@ function CheckoutContent() {
           {/* Centered Logo */}
           <Link href="/" className="inline-block transition-transform active:scale-95">
             <Image
-              src="/turkiye-jam-logo.svg"
-              alt="Turkiye Jam"
+              src="/vittal-digital-logo.svg"
+              alt="Vittal Digital"
               width={140}
               height={45}
               className="h-9 sm:h-10 w-auto object-contain mx-auto drop-shadow-md"
@@ -2667,7 +2667,7 @@ function CheckoutContent() {
                     Terms &amp; Conditions
                   </Link>
                 </div>
-                <p className="text-xs text-gray-400">© 2026 Turkiye Jam</p>
+                <p className="text-xs text-gray-400">© 2026 Vittal Digital</p>
               </div>
             </div>
           </div>
@@ -2933,7 +2933,7 @@ function CheckoutContent() {
 
       {/* Clean Bottom Footer */}
       <footer className="py-8 text-center text-xs text-gray-400 border-t border-gray-100 bg-white mt-12">
-        © 2026 Turkiye Jam
+        © 2026 Vittal Digital
       </footer>
     </div>
   );

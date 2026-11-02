@@ -192,7 +192,7 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
 
   try {
     const url = `https://graph.facebook.com/v21.0/${phoneId}/messages`;
-    const templateName = process.env.WHATSAPP_TEMPLATE_NAME || "turkiyejam_otp";
+    const templateName = process.env.WHATSAPP_TEMPLATE_NAME || "vittaldigital_otp";
     const configuredLang = process.env.WHATSAPP_TEMPLATE_LANG || "en";
     const languageCandidates = [configuredLang, configuredLang === "en" ? "en_US" : "en"];
 
@@ -279,7 +279,7 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
     );
 
     // 2. Fallback: Direct text message
-    const messageBody = `🛍️ *Turkiye Jam Verification Code*\n\nYour one-time login code is: *${otp}*\n\nUse this code to access your Turkiye Jam account. Valid for 3 minutes.\n\n_For your safety, never share this code with anyone._`;
+    const messageBody = `🛍️ *Vittal Digital Verification Code*\n\nYour one-time login code is: *${otp}*\n\nUse this code to access your Vittal Digital account. Valid for 3 minutes.\n\n_For your safety, never share this code with anyone._`;
 
     const response = await fetch(url, {
       method: "POST",

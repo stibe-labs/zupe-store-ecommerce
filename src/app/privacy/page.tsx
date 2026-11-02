@@ -5,8 +5,8 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
-  title: "Privacy Policy | Turkiye Jam",
-  description: "Read the Privacy Policy of Turkiye Jam to understand how we collect, use, protect, and manage customer information when you use our website and online shopping services in India.",
+  title: "Privacy Policy | Vittal Digital",
+  description: "Read the Privacy Policy of Vittal Digital to understand how we collect, use, protect, and manage customer information when you use our website and online shopping services in India.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -18,7 +18,7 @@ export default function PrivacyPolicyPage() {
       content: (
         <div className="space-y-4">
           <p>
-            When you visit Turkiye Jam, we automatically collect certain information about your device, such as your IP address, browser type, time zone, and some cookies installed on your device. This is referred to as <strong className="text-gray-900">&quot;Device Information.&quot;</strong>
+            When you visit Vittal Digital, we automatically collect certain information about your device, such as your IP address, browser type, time zone, and some cookies installed on your device. This is referred to as <strong className="text-gray-900">&quot;Device Information.&quot;</strong>
           </p>
           <p>We collect Device Information using technologies such as:</p>
           <ul className="list-disc list-inside space-y-2 pl-2 text-gray-700">
@@ -62,7 +62,7 @@ export default function PrivacyPolicyPage() {
       content: (
         <div className="space-y-4">
           <p>
-            We may share your Personal Information with third-party service providers (e.g., payment processors, shipping partners, or analytics platforms) strictly to help us operate Turkiye Jam efficiently.
+            We may share your Personal Information with third-party service providers (e.g., payment processors, shipping partners, or analytics platforms) strictly to help us operate Vittal Digital efficiently.
           </p>
           <p>
             We may also disclose your information to comply with legal obligations or respond to lawful requests (e.g., government or regulatory orders).
@@ -137,8 +137,8 @@ export default function PrivacyPolicyPage() {
         <div className="space-y-2">
           <p>
             We retain your Order Information for our records unless and until you request us to delete it. You may request data removal at any time by contacting{" "}
-            <a href="mailto:support@turkiyejam.com" className="text-[#FF7A00] font-semibold underline">
-              support@turkiyejam.com
+            <a href="mailto:support@vittaldigital.com" className="text-[#FF7A00] font-semibold underline">
+              support@vittaldigital.com
             </a>.
           </p>
         </div>
@@ -182,13 +182,13 @@ export default function PrivacyPolicyPage() {
                 Privacy Policy
               </h1>
               <p className="text-xs sm:text-sm text-stone-600">
-                Official policy for Turkiye Jam customers
+                Official policy for Vittal Digital customers
               </p>
             </div>
           </div>
 
           <div className="bg-white border-2 border-stone-800 rounded-3xl p-6 shadow-[0_4px_0_0_#2b2b2b] text-sm text-stone-700 leading-relaxed">
-            This Privacy Policy outlines how your personal information is collected, used, and shared when you visit or make a purchase from <strong className="text-stone-900">Turkiye Jam</strong>.
+            This Privacy Policy outlines how your personal information is collected, used, and shared when you visit or make a purchase from <strong className="text-stone-900">Vittal Digital</strong>.
           </div>
         </div>
 
@@ -224,11 +224,11 @@ export default function PrivacyPolicyPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <a
-              href="mailto:support@turkiyejam.com"
+              href="mailto:support@vittaldigital.com"
               className="btn-shimmer inline-flex items-center gap-2 bg-[#fed000] hover:bg-[#fab005] text-stone-900 text-sm font-black px-4 py-2.5 rounded-xl border-2 border-stone-800 shadow-[0_3px_0_0_#2b2b2b] transition-all"
             >
               <Mail className="w-4 h-4 text-stone-900" />
-              support@turkiyejam.com
+              support@vittaldigital.com
             </a>
             <a
               href="tel:+916238165935"

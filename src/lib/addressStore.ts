@@ -220,7 +220,7 @@ export async function getUserAddresses(
             const autoAddress: UserAddress = {
               id: `addr_auto_${Date.now()}`,
               user_id: resolvedUserId || ord.user_id,
-              user_email: normEmail || ord.guest_email || `${last10Digits}@turkiyejam.customer`,
+              user_email: normEmail || ord.guest_email || `${last10Digits}@vittaldigital.customer`,
               recipient_name: recipientName !== "Valued Customer" ? recipientName : (addrParts[0] || "Valued Customer"),
               phone: userPhone,
               street: rawAddr,
@@ -245,7 +245,7 @@ export async function getUserAddresses(
           const autoAddress: UserAddress = {
             id: `addr_auto_${Date.now()}`,
             user_id: userId || latestOrder.user_id,
-            user_email: normEmail || `${last10Digits}@turkiyejam.customer`,
+            user_email: normEmail || `${last10Digits}@vittaldigital.customer`,
             recipient_name: latestOrder.customer_name || "Valued Customer",
             phone: latestOrder.customer_phone || "",
             street: latestOrder.shipping_address,
@@ -415,7 +415,7 @@ export async function syncAddressFromOrder(orderData: {
   const digits = (orderData.customer_phone || "").replace(/\D/g, "");
   const last10 = digits.length >= 10 ? digits.slice(-10) : digits;
   const email = (orderData.customer_email || "").toLowerCase().trim() ||
-    (last10 ? `${last10}@turkiyejam.customer` : "customer@turkiyejam.com");
+    (last10 ? `${last10}@vittaldigital.customer` : "customer@vittaldigital.com");
 
   // Also update user's profile phone if customer provided one
   if (orderData.customer_phone && orderData.customer_email) {

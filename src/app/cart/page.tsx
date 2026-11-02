@@ -51,16 +51,16 @@ export default function CartPage() {
     setCouponError("");
     const code = couponCode.trim().toUpperCase();
 
-    if (code === "TURKIYE10" || code === "TJ10" || code === "ZUPE10" || code === "WELCOME10") {
+    if (code === "VITTAL10" || code === "VD10" || code === "TURKIYE10" || code === "TJ10" || code === "ZUPE10" || code === "WELCOME10") {
       const disc = Math.round(subtotal * 0.1);
       setDiscount(disc);
       setCouponApplied(true);
-    } else if (code === "TURKIYE15" || code === "TJ15" || code === "ZUPE15") {
+    } else if (code === "VITTAL15" || code === "VD15" || code === "TURKIYE15" || code === "TJ15" || code === "ZUPE15") {
       const disc = Math.round(subtotal * 0.15);
       setDiscount(disc);
       setCouponApplied(true);
     } else {
-      setCouponError("Invalid promo code. Try TURKIYE10 for 10% off.");
+      setCouponError("Invalid promo code. Try VITTAL10 for 10% off.");
     }
   };
 
@@ -252,7 +252,7 @@ export default function CartPage() {
                     <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                     <input
                       type="text"
-                      placeholder="Promo Code (TURKIYE10)"
+                      placeholder="Promo Code (VITTAL10)"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
                       className="w-full pl-9 pr-3 py-2.5 rounded-xl border-2 border-stone-800 text-xs font-bold uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-[#fed000]"

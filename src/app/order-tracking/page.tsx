@@ -97,7 +97,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
     return [
       {
         title: "Order Confirmed & Placed",
-        location: "Turkiye Jam Store",
+        location: siteConfig.fulfillmentCenter,
         timestamp: formatPlacedTime,
         completed: true,
         active: false,
@@ -134,7 +134,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
     return [
       {
         title: "Order Confirmed & Placed",
-        location: "Turkiye Jam Store",
+        location: siteConfig.fulfillmentCenter,
         timestamp: formatPlacedTime,
         completed: true,
         active: false,
@@ -228,7 +228,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
         timestamp: "Delivered",
         completed: true,
         active: true,
-        description: "Package was handed over directly to recipient. Thank you for shopping with Turkiye Jam!",
+        description: `Package was handed over directly to recipient. Thank you for shopping with ${siteConfig.name}!`,
       },
     ];
   }
@@ -562,7 +562,7 @@ function OrderTrackingContent() {
                       className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors shadow-xs"
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
-                      <span>Chat with Turkiye Jam Support on WhatsApp</span>
+                      <span>Chat with {siteConfig.name} Support on WhatsApp</span>
                     </a>
                   </div>
                 )}
@@ -601,7 +601,7 @@ function OrderTrackingContent() {
                         </span>
                       </div>
                       <p className="text-xs text-gray-500 truncate">
-                        {ord.items?.[0]?.product_name || "Turkiye Jam Item"}
+                        {ord.items?.[0]?.product_name || `${siteConfig.name} Item`}
                       </p>
                       <p className="text-xs font-semibold text-[#FF7A00] mt-2">
                         ₹{ord.total_amount?.toLocaleString()}
@@ -896,7 +896,7 @@ function OrderTrackingContent() {
                     {selectedOrder.items && selectedOrder.items.length > 0 ? (
                       selectedOrder.items.map((it: any, idx: number) => {
                         const productName =
-                          it.product_name || it.name || it.title || "Turkiye Jam (3 Sachet Pack)";
+                          it.product_name || it.name || it.title || `${siteConfig.name} Package`;
                         const quantity = Number(it.quantity || it.units || 1);
                         const unitPrice =
                           Number(
@@ -941,13 +941,13 @@ function OrderTrackingContent() {
                         <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100">
                           <Image
                             src="/tj/turkiye-jam-3-strips.png"
-                            alt="Turkiye Jam"
+                            alt={siteConfig.name}
                             fill
                             className="object-cover"
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-gray-900 truncate">Turkiye Jam (3 Sachet Pack)</p>
+                          <p className="text-sm font-bold text-gray-900 truncate">{siteConfig.name} Package</p>
                           <p className="text-xs text-gray-500 mt-0.5 font-medium">
                             Qty: 1 × ₹{(selectedOrder.total_amount || 1099).toLocaleString("en-IN")}
                           </p>
@@ -1040,7 +1040,7 @@ function OrderTrackingContent() {
                     <div className="flex items-center gap-2 text-[#FF7A00] mb-2">
                       <ShieldCheck className="w-5 h-5" />
                       <span className="text-xs font-bold uppercase tracking-wider">
-                        Turkiye Jam Care Guarantee
+                        {siteConfig.name} Care Guarantee
                       </span>
                     </div>
                     <h4 className="text-base font-bold mb-1">Need help with this shipment?</h4>
@@ -1051,7 +1051,7 @@ function OrderTrackingContent() {
                     <div className="space-y-2">
                       <a
                         href={`https://wa.me/916238165935?text=${encodeURIComponent(
-                          `Hi Turkiye Jam, I need updates on my Order ${
+                          `Hi ${siteConfig.name}, I need updates on my Order ${
                             selectedOrder.shopify_order_id || selectedOrder.id
                           }`
                         )}`}

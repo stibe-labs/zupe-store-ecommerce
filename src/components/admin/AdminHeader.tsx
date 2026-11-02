@@ -292,8 +292,8 @@ export default function AdminHeader({
           {showAdminUserDropdown && (
             <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
               <div className="px-4 py-2 border-b border-slate-100">
-                <p className="font-bold text-slate-900">Turkiye Jam Admin</p>
-                <p className="text-[11px] text-slate-400">admin@turkiyejam.com</p>
+                <p className="font-bold text-slate-900">Vittal Digital Admin</p>
+                <p className="text-[11px] text-slate-400">admin@vittaldigital.com</p>
               </div>
               <Link
                 href="/admin/settings"

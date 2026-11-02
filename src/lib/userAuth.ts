@@ -134,7 +134,7 @@ export async function getAuthenticatedUser(req: Request): Promise<{
         isAdmin: true,
         user: {
           id: "admin",
-          email: adminSession.email || "admin@turkiyejam.com",
+          email: adminSession.email || "admin@vittaldigital.com",
           name: "Turkiye Jam Administrator",
           role: "admin",
           exp: Date.now() + 86400000,

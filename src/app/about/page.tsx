@@ -82,7 +82,7 @@ function CountUpNumber({
   );
 }
 
-// Authentic Turkiye Jam customer reviews
+// Authentic Vittal Digital customer reviews
 const VOICES_OF_TRUST = [
   {
     id: 1,
@@ -96,7 +96,7 @@ const VOICES_OF_TRUST = [
   {
     id: 2,
     quote:
-      "Discreet packaging was my top priority and Turkiye Jam delivered flawlessly. Plain brown box with no sensitive product labels. The paste has an authentic rich honey and botanical herbal taste.",
+      "Discreet packaging was my top priority and Vittal Digital delivered flawlessly. Plain brown box with no sensitive product labels. The paste has an authentic rich honey and botanical herbal taste.",
     author: "Vivek M.",
     location: "Mumbai, Maharashtra",
     product: "14 Sachet Strips Box",
@@ -276,7 +276,7 @@ export default function AboutPage() {
 
               {/* Title */}
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-tj-serif font-black text-stone-900 tracking-tight leading-tight max-w-3xl mx-auto">
-                The Authentic Turkiye Jam Story
+                The Authentic Vittal Digital Story
               </h1>
 
               {/* Subtitle */}
@@ -328,7 +328,7 @@ export default function AboutPage() {
         <section className="py-12 sm:py-16 max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl font-tj-serif font-black text-stone-900 tracking-tight">
-              Why Discerning Buyers Choose Turkiye Jam
+              Why Discerning Buyers Choose Vittal Digital
             </h2>
             <p className="mt-2 text-xs sm:text-sm text-stone-600 leading-relaxed font-medium">
               In a market full of imitation pastes and diluted remedies, we maintain direct, uncompromised sourcing from Turkey with verifiable tamper seals.
@@ -533,7 +533,7 @@ export default function AboutPage() {
               href="/products"
               className="btn-shimmer inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-[#fed000] hover:bg-[#fab005] text-stone-900 text-sm font-black border-2 border-stone-800 shadow-[0_5px_0_0_#2b2b2b] hover:translate-y-[-1px] transition-all cursor-pointer"
             >
-              <span>Order Turkiye Jam Now</span>
+              <span>Order Vittal Digital Now</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

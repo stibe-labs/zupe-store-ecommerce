@@ -13,16 +13,16 @@ export async function POST(req: NextRequest) {
     const otp = generateOTP(email);
     console.log(`\n🔑 OTP for ${email}: ${otp}\n`);
 
-    const companyEmail = process.env.SMTP_USER || "support@turkiyejam.com";
+    const companyEmail = process.env.SMTP_USER || "support@vittaldigital.com";
 
     const emailResult = await sendEmail({
       to: email,
-      subject: "Your Turkiye Jam Verification Code",
+      subject: "Your Vittal Digital Verification Code",
       html: `
         <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px; background: #ffffff; border-radius: 20px; border: 1px solid #f0f0f0;">
           <div style="text-align: center; margin-bottom: 24px;">
             <h1 style="color: #111111; font-size: 26px; font-weight: 800; margin: 0;">
-              Turkiye <span style="color: #FF7A00;">Jam</span>
+              Vittal <span style="color: #E5A900;">Digital</span>
             </h1>
             <p style="color: #888888; font-size: 11px; margin-top: 4px;">from ${companyEmail}</p>
           </div>
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
             Verify Your Email
           </h2>
           <p style="color: #666666; text-align: center; font-size: 14px; margin-bottom: 28px;">
-            Hi${name ? ` ${name}` : ""}, use the verification code below to complete your Turkiye Jam sign up:
+            Hi${name ? ` ${name}` : ""}, use the verification code below to complete your Vittal Digital sign up:
           </p>
           <div style="background: #FFF5F2; border: 1.5px dashed #FF7A00; border-radius: 14px; padding: 20px; text-align: center; margin-bottom: 24px;">
             <span style="font-size: 36px; font-weight: 800; letter-spacing: 10px; color: #FF7A00; font-family: monospace;">

@@ -11,10 +11,10 @@ let rawUrl =
   process.env.NEXT_PUBLIC_SITE_URL ||
   process.env.NEXT_PUBLIC_BASE_URL ||
   process.env.STORE_BASE_URL ||
-  "https://turkiyejam.com";
+  "https://vittaldigital.com";
 
 if (rawUrl.includes("workers.dev") || !rawUrl.startsWith("http")) {
-  rawUrl = "https://turkiyejam.com";
+  rawUrl = "https://vittaldigital.com";
 }
 
 const cleanUrl = rawUrl.replace(/\/+$/, "");
@@ -25,13 +25,13 @@ export interface SiteConfig {
   domain: string;
 
   // Brand & Identity
-  slug: string; // e.g. "turkiyejam" (used for csv filenames, cache keys, identifiers)
+  slug: string; // e.g. "vittaldigital" (used for csv filenames, cache keys, identifiers)
   name: string;
   shortName: string;
   tagline: string;
   description: string;
   legalName: string;
-  orderPrefix: string; // e.g. "TJ" for #TJ-1001
+  orderPrefix: string; // e.g. "VD" for #VD-1001
 
   // Visual Assets
   logoUrl: string;
@@ -65,7 +65,7 @@ export interface SiteConfig {
 }
 
 const domainHost = cleanUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-const siteSlug = process.env.NEXT_PUBLIC_SITE_SLUG || "turkiyejam";
+const siteSlug = process.env.NEXT_PUBLIC_SITE_SLUG || "vittaldigital";
 const customerDomain = process.env.CUSTOMER_EMAIL_DOMAIN || `customer.${domainHost}`;
 
 export const siteConfig: SiteConfig = {
@@ -73,19 +73,19 @@ export const siteConfig: SiteConfig = {
   domain: domainHost,
   slug: siteSlug,
 
-  name: process.env.NEXT_PUBLIC_SITE_NAME || "Turkiye Jam",
-  shortName: process.env.NEXT_PUBLIC_SITE_SHORT_NAME || "Turkiye Jam",
+  name: process.env.NEXT_PUBLIC_SITE_NAME || "Vittal Digital",
+  shortName: process.env.NEXT_PUBLIC_SITE_SHORT_NAME || "Vittal Digital",
   tagline:
     process.env.NEXT_PUBLIC_SITE_TAGLINE ||
-    "100% Authentic Turkish Epimedium Herbal Macun",
+    "Premium Wellness & Herbal Formulations",
   description:
     process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
-    "Experience 100% original Themra Epimedium Turkish Herbal Macun. Express 1–2 day discreet delivery with unused strip refund guarantee.",
-  legalName: process.env.NEXT_PUBLIC_LEGAL_NAME || "Turkiye Jam India",
-  orderPrefix: process.env.NEXT_PUBLIC_ORDER_PREFIX || "TJ",
+    "Discover authentic premium herbal and wellness products at Vittal Digital. Express 1–2 day discreet delivery across India.",
+  legalName: process.env.NEXT_PUBLIC_LEGAL_NAME || "Vittal Digital India",
+  orderPrefix: process.env.NEXT_PUBLIC_ORDER_PREFIX || "VD",
 
-  logoUrl: process.env.NEXT_PUBLIC_LOGO_URL || "/turkiye-jam-logo.svg",
-  logoPng: process.env.NEXT_PUBLIC_LOGO_PNG || "/turkiye-jam-logo.png",
+  logoUrl: process.env.NEXT_PUBLIC_LOGO_URL || "/vittal-digital-logo.svg",
+  logoPng: process.env.NEXT_PUBLIC_LOGO_PNG || "/vittal-digital-logo.png",
   faviconUrl: process.env.NEXT_PUBLIC_FAVICON_URL || "/favicon.png",
 
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || `support@${domainHost}`,
@@ -98,7 +98,7 @@ export const siteConfig: SiteConfig = {
 
   fulfillmentCenter:
     process.env.NEXT_PUBLIC_FULFILLMENT_CENTER ||
-    `${process.env.NEXT_PUBLIC_SITE_NAME || "Turkiye Jam"} Fulfillment Center, Ernakulam`,
+    `${process.env.NEXT_PUBLIC_SITE_NAME || "Vittal Digital"} Fulfillment Center, Ernakulam`,
   dispatchBay:
     process.env.NEXT_PUBLIC_DISPATCH_BAY ||
     "Ernakulam Logistics Dispatch Bay",

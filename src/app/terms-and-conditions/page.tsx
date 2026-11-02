@@ -18,9 +18,9 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
-  title: "Terms and Conditions | Turkiye Jam",
+  title: "Terms and Conditions | Vittal Digital",
   description:
-    "Read the Terms and Conditions governing your use of the Turkiye Jam website, online shopping services, purchases, payments, orders, and returns in India.",
+    "Read the Terms and Conditions governing your use of the Vittal Digital website, online shopping services, purchases, payments, orders, and returns in India.",
 };
 
 export default function TermsAndConditionsPage() {
@@ -32,7 +32,7 @@ export default function TermsAndConditionsPage() {
       icon: Sparkles,
       content: (
         <p>
-          By accessing or using <strong className="text-gray-900">Turkiye Jam</strong>, you agree to comply with these Terms and Conditions. You must be at least 18 years old or accessing the site under the supervision of a parent or legal guardian. You agree to use our website solely for lawful purposes and refrain from any actions that may harm, disrupt, or misuse the platform.
+          By accessing or using <strong className="text-gray-900">Vittal Digital</strong>, you agree to comply with these Terms and Conditions. You must be at least 18 years old or accessing the site under the supervision of a parent or legal guardian. You agree to use our website solely for lawful purposes and refrain from any actions that may harm, disrupt, or misuse the platform.
         </p>
       ),
     },
@@ -44,12 +44,12 @@ export default function TermsAndConditionsPage() {
       content: (
         <div className="space-y-3">
           <p>
-            At <strong className="text-gray-900">Turkiye Jam</strong>, every product listed on our platform is <strong className="text-gray-900">100% authentic, tamper-proof sealed, and directly imported from Turkey</strong> to ensure you receive only genuine herbal macun paste. We take complete responsibility for product handling, packaging, and discreet express shipping.
+            At <strong className="text-gray-900">Vittal Digital</strong>, every product listed on our platform is <strong className="text-gray-900">100% authentic, tamper-proof sealed, and directly imported from Turkey</strong> to ensure you receive only genuine herbal macun paste. We take complete responsibility for product handling, packaging, and discreet express shipping.
           </p>
           <ul className="list-disc list-inside space-y-1.5 pl-2 text-gray-700">
             <li>Product descriptions, dosage guidelines, and packaging options are provided for clarity.</li>
             <li>We reserve the right to modify, update, or discontinue any package tier without prior notice.</li>
-            <li>Turkiye Jam guarantees authentic Themra herbal paste formulation with original holograms.</li>
+            <li>Vittal Digital guarantees authentic Themra herbal paste formulation with original holograms.</li>
           </ul>
         </div>
       ),
@@ -62,10 +62,10 @@ export default function TermsAndConditionsPage() {
       content: (
         <div className="space-y-3">
           <p>
-            All prices displayed on Turkiye Jam are in INR (₹) inclusive of all applicable taxes. We reserve the right to adjust pricing, promotional discounts, or bundle offers. Payments can be completed online via UPI, Cards, Netbanking, or via Cash on Delivery (COD) across India.
+            All prices displayed on Vittal Digital are in INR (₹) inclusive of all applicable taxes. We reserve the right to adjust pricing, promotional discounts, or bundle offers. Payments can be completed online via UPI, Cards, Netbanking, or via Cash on Delivery (COD) across India.
           </p>
           <p className="bg-red-50/60 border border-red-100 rounded-xl p-3 text-red-950 font-medium text-sm">
-            Turkiye Jam ensures that all payment transactions are encrypted and processed safely through verified RBI-compliant gateways.
+            Vittal Digital ensures that all payment transactions are encrypted and processed safely through verified RBI-compliant gateways.
           </p>
         </div>
       ),
@@ -78,10 +78,10 @@ export default function TermsAndConditionsPage() {
       content: (
         <div className="space-y-3">
           <p>
-            Turkiye Jam directly manages the packaging and shipping of every order to ensure reliable, discreet, and safe delivery. Shipping times typically range from 24 to 48 hours for express prepaid orders and 2–4 business days nationwide across India.
+            Vittal Digital directly manages the packaging and shipping of every order to ensure reliable, discreet, and safe delivery. Shipping times typically range from 24 to 48 hours for express prepaid orders and 2–4 business days nationwide across India.
           </p>
           <p>
-            While we strive for prompt dispatch, Turkiye Jam is not responsible for unforeseen delays caused by logistics partners, natural events, or regional restrictions.
+            While we strive for prompt dispatch, Vittal Digital is not responsible for unforeseen delays caused by logistics partners, natural events, or regional restrictions.
           </p>
         </div>
       ),
@@ -97,7 +97,7 @@ export default function TermsAndConditionsPage() {
             We stand by the quality of every product we deliver with our <strong className="text-gray-900">15-day unused strip refund guarantee</strong>.
           </p>
           <ul className="list-disc list-inside space-y-1.5 pl-2 text-gray-700">
-            <li>For damaged parcels, please report with an unboxing video to <strong className="text-gray-900">support@turkiyejam.in</strong> or WhatsApp within <strong className="text-gray-900">48 hours of delivery</strong>.</li>
+            <li>For damaged parcels, please report with an unboxing video to <strong className="text-gray-900">support@vittaldigital.com</strong> or WhatsApp within <strong className="text-gray-900">48 hours of delivery</strong>.</li>
             <li>Once reviewed and verified, our team will process the replacement or refund accordingly.</li>
           </ul>
           <p className="pt-1">
@@ -117,7 +117,7 @@ export default function TermsAndConditionsPage() {
       icon: Lock,
       content: (
         <p>
-          All content, including text, images, product designs, logos, and graphics on Turkiye Jam, is the intellectual property of <strong className="text-gray-900">Turkiye Jam</strong> and its licensors. Unauthorized use, reproduction, or modification of any material is strictly prohibited.
+          All content, including text, images, product designs, logos, and graphics on Vittal Digital, is the intellectual property of <strong className="text-gray-900">Vittal Digital</strong> and its licensors. Unauthorized use, reproduction, or modification of any material is strictly prohibited.
         </p>
       ),
     },
@@ -128,7 +128,7 @@ export default function TermsAndConditionsPage() {
       icon: UserCheck,
       content: (
         <p>
-          When creating an account on Turkiye Jam, you agree to provide accurate and current information. You are responsible for safeguarding your login credentials and for all activities under your account. Turkiye Jam reserves the right to suspend or terminate accounts found to be in violation of our policies or involved in fraudulent activities.
+          When creating an account on Vittal Digital, you agree to provide accurate and current information. You are responsible for safeguarding your login credentials and for all activities under your account. Vittal Digital reserves the right to suspend or terminate accounts found to be in violation of our policies or involved in fraudulent activities.
         </p>
       ),
     },
@@ -139,7 +139,7 @@ export default function TermsAndConditionsPage() {
       icon: AlertCircle,
       content: (
         <p>
-          Turkiye Jam shall not be held liable for any indirect, incidental, or consequential damages arising from the use of our website, products, or services, including but not limited to data loss, loss of profits, or delays beyond our control.
+          Vittal Digital shall not be held liable for any indirect, incidental, or consequential damages arising from the use of our website, products, or services, including but not limited to data loss, loss of profits, or delays beyond our control.
         </p>
       ),
     },
@@ -150,7 +150,7 @@ export default function TermsAndConditionsPage() {
       icon: ShieldCheck,
       content: (
         <p>
-          Turkiye Jam reserves the right to revise, modify, or update these Terms &amp; Conditions at any time without prior notice. Continued use of the website after changes are posted constitutes your acceptance of the updated terms.
+          Vittal Digital reserves the right to revise, modify, or update these Terms &amp; Conditions at any time without prior notice. Continued use of the website after changes are posted constitutes your acceptance of the updated terms.
         </p>
       ),
     },
@@ -166,13 +166,13 @@ export default function TermsAndConditionsPage() {
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <a
-              href="mailto:support@turkiyejam.in"
+              href="mailto:support@vittaldigital.com"
               className="inline-flex items-center gap-2 bg-stone-100 border-2 border-stone-800 text-stone-900 font-bold px-4 py-2 rounded-xl hover:bg-stone-200 transition-colors shadow-[0_2px_0_0_#2b2b2b]"
             >
-              📧 support@turkiyejam.com
+              📧 support@vittaldigital.com
             </a>
             <a
-              href="https://wa.me/916238165935?text=Hi%20Turkiye%20Jam%2C%20I%20have%20a%20question%20about%20your%20terms"
+              href="https://wa.me/916238165935?text=Hi%20Vittal%20Digital%2C%20I%20have%20a%20question%20about%20your%20terms"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#d1fae5] border-2 border-stone-800 text-[#0e4a3b] font-bold px-4 py-2 rounded-xl hover:bg-emerald-200 transition-colors shadow-[0_2px_0_0_#2b2b2b]"
@@ -208,7 +208,7 @@ export default function TermsAndConditionsPage() {
                 Terms and Conditions
               </h1>
               <p className="text-xs sm:text-sm text-stone-600 font-medium">
-                Official terms of use &amp; policies for Turkiye Jam
+                Official terms of use &amp; policies for Vittal Digital
               </p>
             </div>
           </div>

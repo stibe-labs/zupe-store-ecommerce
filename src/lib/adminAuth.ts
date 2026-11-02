@@ -1,12 +1,12 @@
-// Admin Security & Authentication Utilities for Turkiye Jam ERP
+// Admin Security & Authentication Utilities for Vittal Digital ERP
 // Fully compatible with Cloudflare Workers Edge runtime & Node.js
 
-const ADMIN_SECRET = "turkiyejam_admin_secret_key_2026_super_secure_edge_token";
-export const ADMIN_COOKIE_NAME = "turkiyejam_admin_token";
+const ADMIN_SECRET = "vittaldigital_admin_secret_key_2026_super_secure_edge_token";
+export const ADMIN_COOKIE_NAME = "vittaldigital_admin_token";
 
 // Configured credentials
-const DEFAULT_ADMIN_EMAIL = "admin@turkiyejam.com";
-const DEFAULT_ADMIN_PASSWORD = "TurkiyeJam@2026";
+const DEFAULT_ADMIN_EMAIL = "admin@vittaldigital.com";
+const DEFAULT_ADMIN_PASSWORD = "VittalDigital@2026";
 
 export async function verifyAdminCredentials(
   email?: string,
@@ -26,7 +26,7 @@ export async function verifyAdminCredentials(
     return {
       valid: true,
       email: normEmail,
-      name: "Turkiye Jam Admin",
+      name: "Vittal Digital Admin",
     };
   }
 

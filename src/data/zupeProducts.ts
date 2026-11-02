@@ -1,4 +1,4 @@
-import { Product } from "@/types/product";
+import { Product, HowToUseConfig } from "@/types/product";
 
 export interface TurkiyeJamVariant {
   id: string;
@@ -128,7 +128,7 @@ const COMMON_RETURNS = [
   "Dedicated WhatsApp Support: Friendly customer care available 7 days a week.",
 ];
 
-const COMMON_HOW_TO_USE = {
+const COMMON_HOW_TO_USE: HowToUseConfig = {
   enabled: true,
   section_bg: "white",
   card_radius: "rounded-2xl",

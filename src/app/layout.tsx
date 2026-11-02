@@ -122,10 +122,10 @@ export default function RootLayout({
             style={{ position: "relative", width: "140px", height: "90px", display: "flex", alignItems: "center", justifyContent: "center" }}
           >
             <img
-              src="/turkiye-jam-logo.svg"
-              alt="Turkiye Jam"
-              width={140}
-              height={90}
+              src={siteConfig.logoUrl}
+              alt={siteConfig.name}
+              width={160}
+              height={70}
               style={{ objectFit: "contain", width: "100%", height: "100%", filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.08))" }}
             />
           </div>

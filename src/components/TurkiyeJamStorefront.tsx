@@ -224,9 +224,10 @@ const REVIEWS = [
   },
 ];
 
-interface TurkiyeJamStorefrontProps {
+export interface TurkiyeJamStorefrontProps {
   initialProducts?: Product[];
 }
+export type VittalDigitalStorefrontProps = TurkiyeJamStorefrontProps;
 
 export function TurkiyeJamStorefront({ initialProducts }: TurkiyeJamStorefrontProps = {}) {
   const router = useRouter();
@@ -277,8 +278,6 @@ export function TurkiyeJamStorefront({ initialProducts }: TurkiyeJamStorefrontPr
 
     const isOutOfStock = found
       ? Number(found.in_stock) === 0 ||
-        found.in_stock === false ||
-        found.in_stock === "0" ||
         (found.stock_count !== undefined && Number(found.stock_count) <= 0)
       : false;
 
@@ -370,8 +369,8 @@ export function TurkiyeJamStorefront({ initialProducts }: TurkiyeJamStorefrontPr
                 className="relative w-52 sm:w-72 md:w-88 lg:w-[360px] xl:w-[440px] 2xl:w-[500px] max-h-[22vh] sm:max-h-[25vh] aspect-[2.11/1] mx-auto lg:mx-0 group cursor-pointer"
               >
                 <Image
-                  src="/turkiye-jam-logo.svg"
-                  alt="Turkiye Jam"
+                  src="/vittal-digital-logo.svg"
+                  alt="Vittal Digital"
                   fill
                   className="object-contain drop-shadow-2xl transition-transform duration-500 group-hover:scale-105"
                   priority
@@ -1324,3 +1323,5 @@ export function TurkiyeJamStorefront({ initialProducts }: TurkiyeJamStorefrontPr
     </div>
   );
 }
+
+export const VittalDigitalStorefront = TurkiyeJamStorefront;
