@@ -247,30 +247,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // 3. Check Fastrr Shiprocket Checkout API Fallback
-    try {
-      const { getFastrrOrderDetails, fastrrOrderToERPOrder } = await import("@/lib/fastrr");
-      const fastrrRes = await getFastrrOrderDetails(query);
-      if (fastrrRes && (fastrrRes.order_id || fastrrRes.fastrr_order_id)) {
-        const erpOrder = fastrrOrderToERPOrder(fastrrRes);
 
-        try {
-          const { registerERPOrderInMemory } = await import("@/lib/erpStore");
-          registerERPOrderInMemory(erpOrder);
-        } catch (_) {}
-
-        return NextResponse.json({
-          success: true,
-          source: "fastrr",
-          order: erpOrder,
-          orders: [erpOrder],
-          live_tracking: null,
-          checked_at: new Date().toISOString(),
-        });
-      }
-    } catch (fErr) {
-      console.warn("Fastrr fallback track error:", fErr);
-    }
 
     return NextResponse.json(
       {
