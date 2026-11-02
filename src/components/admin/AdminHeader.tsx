@@ -280,8 +280,8 @@ export default function AdminHeader({
             onClick={() => setShowAdminUserDropdown(!showAdminUserDropdown)}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <div className="w-8 h-8 rounded-full bg-[#0F172A] text-[#FF7A00] font-extrabold flex items-center justify-center text-xs shadow-sm ring-2 ring-[#FF7A00]/30">
-              Z
+            <div className="w-8 h-8 rounded-full bg-[#5b1420] text-[#fed000] font-extrabold flex items-center justify-center text-xs shadow-sm ring-2 ring-[#fed000]/30">
+              TJ
             </div>
             <span className="text-xs sm:text-sm font-semibold text-slate-800 hidden md:inline">
               Administrator
@@ -293,7 +293,7 @@ export default function AdminHeader({
             <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
               <div className="px-4 py-2 border-b border-slate-100">
                 <p className="font-bold text-slate-900">Turkiye Jam Admin</p>
-                <p className="text-[11px] text-slate-400">admin@zupestore.in</p>
+                <p className="text-[11px] text-slate-400">admin@turkiyejam.com</p>
               </div>
               <Link
                 href="/admin/settings"

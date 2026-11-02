@@ -287,8 +287,10 @@ export function CategoryPills({ initialCategories }: CategoryPillsProps) {
       }
     };
 
+    window.addEventListener("tj_categories_updated", handleStorageUpdate);
     window.addEventListener("zupe_categories_updated", handleStorageUpdate);
     return () => {
+      window.removeEventListener("tj_categories_updated", handleStorageUpdate);
       window.removeEventListener("zupe_categories_updated", handleStorageUpdate);
     };
   }, [initialCategories, applyCategories]);

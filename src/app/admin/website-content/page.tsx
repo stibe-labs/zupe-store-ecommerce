@@ -54,6 +54,7 @@ import { HeroBannerSlide, StoreCategory } from "@/lib/storeContent";
 import { getSubcategoriesForCategory } from "@/data/zupeProducts";
 import { PromoCardsCustomizer } from "@/components/admin/PromoCardsCustomizer";
 import { ShowcaseCollectionsCustomizer } from "@/components/admin/ShowcaseCollectionsCustomizer";
+import { siteConfig } from "@/config/siteConfig";
 import {
   AVAILABLE_CATEGORY_ICONS,
   getSubcategoryFallbackIcon,
@@ -61,25 +62,19 @@ import {
 } from "@/components/CategoryPills";
 
 const IMAGE_PRESETS = [
-  { label: "🔥 Mega Sale Poster", url: "/banners/banner-mega-sale.jpg" },
-  { label: "⚡ Smart Tech Poster", url: "/banners/banner-tech-gadgets.jpg" },
-  { label: "✨ Auto & Home Poster", url: "/banners/banner-auto-home.jpg" },
-  { label: "Water Ripple Lamp", url: "/products/hero-banner.jpg" },
-  { label: "Helicopter Perfume", url: "/products/helicopter-perfume.jpg" },
-  { label: "Powerbank Earbuds", url: "/products/powerbank-earbuds.jpg" },
-  { label: "Mini Steam Iron", url: "/products/iron/iron-teal-1.jpg" },
-  { label: "Car Diffuser", url: "/products/car-perfume.jpg" },
-  { label: "Crystal Lamp", url: "/products/ripple-lamp.jpg" },
+  { label: "🏺 240g Glass Jar & Box", url: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg" },
+  { label: "📦 14 Sachet Strips Box", url: "/products/turkiye-jam/turkiye-jam-box-strips.jpg" },
+  { label: "🌿 3-Sachet Pack", url: "/products/turkiye-jam/turkiye-jam-3-strips.jpg" },
+  { label: "⚡ 5-Sachet Pack", url: "/products/turkiye-jam/turkiye-jam-5-strips.jpg" },
+  { label: "✨ Honey Harvest Heritage", url: "/tj/turkiye-jam-gallery-1.jpeg" },
+  { label: "🛡️ Tamper-Proof Discreet Box", url: "/tj/turkiye-jam-gallery-2.jpeg" },
 ];
 
 const MOBILE_IMAGE_PRESETS = [
-  { label: "🔥 Mega Sale Poster", url: "/banners/banner-mega-sale.jpg" },
-  { label: "⚡ Tech Poster", url: "/banners/banner-tech-gadgets.jpg" },
-  { label: "✨ Auto Poster", url: "/banners/banner-auto-home.jpg" },
-  { label: "Ripple Lamp (Square)", url: "/products/ripple/ripple-amber.jpg" },
-  { label: "Helicopter (Square)", url: "/products/helicopter/heli-black-1.jpg" },
-  { label: "Earbuds (Square)", url: "/products/earbuds/earbuds-matte.jpg" },
-  { label: "Steam Iron (Portrait)", url: "/products/iron/iron-teal-1.jpg" },
+  { label: "🏺 240g Glass Jar", url: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg" },
+  { label: "📦 14 Strips Box", url: "/products/turkiye-jam/turkiye-jam-box-strips.jpg" },
+  { label: "🌿 3-Sachet Pack", url: "/products/turkiye-jam/turkiye-jam-3-strips.jpg" },
+  { label: "⚡ 5-Sachet Pack", url: "/products/turkiye-jam/turkiye-jam-5-strips.jpg" },
 ];
 
 const CATEGORY_ICON_PRESETS = [
@@ -502,6 +497,9 @@ export default function WebsiteContentPage() {
         setCategoryForm((prev) => ({ ...prev, iconShape: shape }));
         if (typeof window !== "undefined") {
           window.dispatchEvent(
+            new CustomEvent("tj_categories_updated", { detail: { categories: data.categories } })
+          );
+          window.dispatchEvent(
             new CustomEvent("zupe_categories_updated", { detail: { categories: data.categories } })
           );
         }
@@ -606,6 +604,9 @@ export default function WebsiteContentPage() {
           setCategoryModalOpen(false);
           if (typeof window !== "undefined") {
             window.dispatchEvent(
+              new CustomEvent("tj_categories_updated", { detail: { categories: data.categories } })
+            );
+            window.dispatchEvent(
               new CustomEvent("zupe_categories_updated", { detail: { categories: data.categories } })
             );
           }
@@ -632,6 +633,9 @@ export default function WebsiteContentPage() {
           setCategories(data.categories);
           setCategoryModalOpen(false);
           if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("tj_categories_updated", { detail: { categories: data.categories } })
+            );
             window.dispatchEvent(
               new CustomEvent("zupe_categories_updated", { detail: { categories: data.categories } })
             );
@@ -1500,7 +1504,7 @@ export default function WebsiteContentPage() {
                             <Search className="w-3.5 h-3.5 text-slate-500" />
                           </div>
                           <span className="font-extrabold text-xs tracking-tight text-slate-900 font-display">
-                            ZUPE <span className="text-[#FF7A00]">STORE</span>
+                            TURKIYE <span className="text-[#fed000]">JAM</span>
                           </span>
                           <div className="flex items-center gap-2">
                             <Heart className="w-3.5 h-3.5 text-slate-700" />

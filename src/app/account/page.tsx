@@ -76,14 +76,15 @@ export default function AccountPage() {
   const [profileError, setProfileError] = useState("");
   const [profileSuccess, setProfileSuccess] = useState(false);
 
-  // Strict Super Admin Verification State (only true for verified admin@zupestore.com)
+  // Strict Super Admin Verification State (only true for verified admin@turkiyejam.com or admin@zupestore.com)
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   // Strictly verify Super Admin credentials & cryptographic session
   useEffect(() => {
     const isCandidate =
       user?.role === "admin" &&
-      user?.email?.toLowerCase().trim() === "admin@zupestore.com";
+      (user?.email?.toLowerCase().trim() === "admin@turkiyejam.com" ||
+        user?.email?.toLowerCase().trim() === "admin@zupestore.com");
 
     if (!isCandidate) {
       setIsSuperAdmin(false);
@@ -504,7 +505,9 @@ export default function AccountPage() {
                   </p>
                 ) : null}
 
-                {user.email && !user.email.includes("@customer.zupestore.com") && (
+                {user.email &&
+                  !user.email.includes("@customer.zupestore.com") &&
+                  !user.email.includes("@customer.turkiyejam.com") && (
                   <p className="text-xs text-amber-200/70 flex items-center gap-2 truncate mt-0.5">
                     <Mail className="w-3 h-3 text-amber-300/60 flex-shrink-0" />
                     <span className="truncate">{user.email}</span>

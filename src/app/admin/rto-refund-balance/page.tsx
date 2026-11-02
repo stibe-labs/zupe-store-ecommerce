@@ -233,7 +233,7 @@ export default function RTORefundBalancePage() {
     link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
-      `zupe_rto_refund_balance_${new Date().toISOString().split("T")[0]}.csv`
+      `turkiyejam_rto_refund_balance_${new Date().toISOString().split("T")[0]}.csv`
     );
     document.body.appendChild(link);
     link.click();

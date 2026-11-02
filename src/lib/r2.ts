@@ -1,4 +1,4 @@
-// Cloudflare R2 Media Storage Helper for Zupe Store
+// Cloudflare R2 Media Storage Helper for Turkiye Jam
 // Stores videos and images in Cloudflare R2 bucket 'stibe-media'
 
 export const R2_PUBLIC_BASE_URL = "https://pub-abec22fbfdb8446490341e69eabe6a1c.r2.dev";

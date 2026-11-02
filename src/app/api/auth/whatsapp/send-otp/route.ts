@@ -29,13 +29,34 @@ export async function POST(req: NextRequest) {
     try {
       const { findUserByPhoneAsync } = await import("@/lib/userStore");
       const existingUser = await findUserByPhoneAsync(phone);
-      if (
-        existingUser?.name &&
-        !existingUser.name.startsWith("Customer ") &&
-        existingUser.name !== "Customer"
-      ) {
+      if (existingUser) {
         isExistingUser = true;
-        existingName = existingUser.name;
+        if (
+          existingUser.name &&
+          !existingUser.name.startsWith("Customer ") &&
+          existingUser.name !== "Customer"
+        ) {
+          existingName = existingUser.name;
+        }
+      }
+
+      // If user exists but name is placeholder, or to ensure customer profile is reconciled, check orders
+      if (!existingName) {
+        const { executeD1Query } = await import("@/lib/d1");
+        const digits = phone.replace(/\D/g, "").slice(-10);
+        const orderRows = await executeD1Query<{ customer_name: string }>(
+          `SELECT customer_name FROM orders 
+           WHERE customer_phone LIKE ? AND customer_name IS NOT NULL AND customer_name != ''
+           ORDER BY created_at DESC LIMIT 1`,
+          [`%${digits}%`]
+        );
+        if (orderRows && orderRows[0]?.customer_name) {
+          const ordName = orderRows[0].customer_name.trim();
+          if (ordName && ordName.toLowerCase() !== "customer") {
+            isExistingUser = true;
+            existingName = ordName;
+          }
+        }
       }
     } catch (checkErr) {
       console.warn("User lookup check error:", checkErr);

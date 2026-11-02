@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
+import { siteConfig } from "@/config/siteConfig";
 import {
   Calculator,
   Wallet,
@@ -100,7 +101,9 @@ export default function ProfitCalculatorPage() {
   // Load from localStorage & fetch live suppliers/products on mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("zupeSupplierLedgerV2");
+      const saved =
+        localStorage.getItem("tjSupplierLedgerV2") ||
+        localStorage.getItem("zupeSupplierLedgerV2");
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.suppliers && Object.keys(parsed.suppliers).length > 0) {
@@ -149,7 +152,7 @@ export default function ProfitCalculatorPage() {
   const persistDB = (newDb: StoredDB) => {
     setDb(newDb);
     try {
-      localStorage.setItem("zupeSupplierLedgerV2", JSON.stringify(newDb));
+      localStorage.setItem("tjSupplierLedgerV2", JSON.stringify(newDb));
     } catch (e) {
       console.warn("Could not persist supplier ledger:", e);
     }
@@ -494,14 +497,14 @@ export default function ProfitCalculatorPage() {
 
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
-    a.download = `zupestore-profit-calculator-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `turkiyejam-profit-calculator-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(a.href);
   };
 
   // Copy Summary to Clipboard
   const handleCopySummary = () => {
-    const text = `📊 ZUPESTORE PROFIT & CASH FLOW STUDIO
+    const text = `📊 ${siteConfig.name.toUpperCase()} PROFIT & CASH FLOW STUDIO
 Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calculations.d} Delivered • ${calculations.r} RTO)
 --------------------------------------
 • Delivered Sales Revenue: ₹${calculations.revenue.toLocaleString("en-IN")}
@@ -544,7 +547,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
               <div className="space-y-2">
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <span className="text-xs font-black tracking-widest uppercase text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-md border border-amber-400/20">
-                    ZUPESTORE
+                    {siteConfig.name.toUpperCase()}
                   </span>
                   <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-[#FF7A00]/20 text-orange-300 border border-[#FF7A00]/40 flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />

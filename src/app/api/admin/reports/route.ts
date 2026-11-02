@@ -201,7 +201,7 @@ export async function GET(req: NextRequest) {
         const itemRev = (Number(it.unit_price) || 0) * qty;
 
         if (!productStats.has(key)) {
-          const skuCode = `ZUPE-${key.substring(0, 4).toUpperCase()}-01`;
+          const skuCode = `TJ-${key.substring(0, 4).toUpperCase()}-01`;
           productStats.set(key, {
             name: pName,
             sku: skuCode,

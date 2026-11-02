@@ -42,7 +42,7 @@ export default function AdminSettingsPage() {
   const [standardShippingFee, setStandardShippingFee] = useState("49");
 
   // Shopify
-  const [shopifyDomain, setShopifyDomain] = useState("zupe-store.myshopify.com");
+  const [shopifyDomain, setShopifyDomain] = useState("turkiyejam.myshopify.com");
   const [shopifyToken, setShopifyToken] = useState("shpat_live_98a76d54f32e10cba");
   const [shopifyWebhookSecret, setShopifyWebhookSecret] = useState("whsec_9871122334455");
   const [shopifyAutoPush, setShopifyAutoPush] = useState(true);
@@ -50,7 +50,7 @@ export default function AdminSettingsPage() {
   const [shopifyActive, setShopifyActive] = useState(true);
 
   // Shiprocket
-  const [shiprocketEmail, setShiprocketEmail] = useState("logistics@zupestore.com");
+  const [shiprocketEmail, setShiprocketEmail] = useState("support@turkiyejam.com");
   const [shiprocketPassword, setShiprocketPassword] = useState("");
   const [shiprocketToken, setShiprocketToken] = useState("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...");
   const [shiprocketPickupLocation, setShiprocketPickupLocation] = useState("Primary");
@@ -229,7 +229,7 @@ export default function AdminSettingsPage() {
         shiprocket: { email: shiprocketEmail, preferredCourier, autoSync: shiprocketAutoSync },
         meta: { accountId: metaAccountId, pixelId: metaPixelId },
       },
-      exportedBy: "Zupe Administrator",
+      exportedBy: `${siteConfig.name} Administrator`,
     };
 
     const dataStr =
@@ -238,7 +238,7 @@ export default function AdminSettingsPage() {
     downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute(
       "download",
-      `zupe_store_erp_settings_backup_${new Date().toISOString().split("T")[0]}.json`
+      `turkiyejam_erp_settings_backup_${new Date().toISOString().split("T")[0]}.json`
     );
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
@@ -554,7 +554,7 @@ export default function AdminSettingsPage() {
                       type="email"
                       value={shiprocketEmail}
                       onChange={(e) => setShiprocketEmail(e.target.value)}
-                      placeholder="e.g. logistics@zupestore.com"
+                      placeholder="e.g. support@turkiyejam.com"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
                     />
                   </div>

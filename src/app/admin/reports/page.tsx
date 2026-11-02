@@ -599,7 +599,7 @@ export default function AdminReportsPage() {
         const itemRev = (Number(it.unit_price) || 0) * qty;
 
         if (!statsMap.has(key)) {
-          const skuCode = `ZUPE-${key.substring(0, 4).toUpperCase()}-01`;
+          const skuCode = `TJ-${key.substring(0, 4).toUpperCase()}-01`;
           statsMap.set(key, {
             name: pName,
             sku: skuCode,
@@ -872,7 +872,7 @@ export default function AdminReportsPage() {
     link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
-      `zupe_report_${reportType}_${timeFilter}_${activeStart}_to_${activeEnd}.csv`
+      `turkiyejam_report_${reportType}_${timeFilter}_${activeStart}_to_${activeEnd}.csv`
     );
     document.body.appendChild(link);
     link.click();

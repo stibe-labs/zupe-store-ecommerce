@@ -1,4 +1,4 @@
-// Admin Security & Authentication Utilities for Zupe Store ERP
+// Admin Security & Authentication Utilities for Turkiye Jam ERP
 // Fully compatible with Cloudflare Workers Edge runtime & Node.js
 
 const ADMIN_SECRET = "turkiyejam_admin_secret_key_2026_super_secure_edge_token";

@@ -45,7 +45,7 @@ export async function testShopifyConnection(
   if (token.includes("live_98a76d54") || token.startsWith("shpat_test_") || token.startsWith("shpat_mock")) {
     return {
       success: true,
-      shopName: "Zupe Store (Sandbox)",
+      shopName: "Turkiye Jam (Sandbox)",
       currency: "INR",
       message: `Verified simulated handshake with ${domain}. Outbound order creation active.`,
     };
@@ -111,7 +111,7 @@ export async function pushOrderToShopify(
       }
     }
 
-    const domain = normalizeShopifyDomain(shopifyConfig?.domain || "zupe-store.myshopify.com");
+    const domain = normalizeShopifyDomain(shopifyConfig?.domain || "turkiyejam.myshopify.com");
     const token = (shopifyConfig?.token || "").trim();
     const apiVersion = (shopifyConfig as any)?.apiVersion || "2024-01";
 
@@ -139,8 +139,8 @@ export async function pushOrderToShopify(
     // Format line items
     const rawItems: any[] = (order as any).items || [];
     const lineItems = rawItems.map((item) => {
-      const title = item.product_name || item.name || "Zupe Store Product";
-      const price = Number(item.unit_price || item.price || 499);
+      const title = item.product_name || item.name || "Turkiye Jam Herbal Macun";
+      const price = Number(item.unit_price || item.price || 1099);
       const quantity = Math.max(1, Number(item.quantity || 1));
       return {
         title,
@@ -152,8 +152,8 @@ export async function pushOrderToShopify(
 
     if (lineItems.length === 0) {
       lineItems.push({
-        title: "Storefront Purchased Item",
-        price: Number(order.total_amount || 499).toFixed(2),
+        title: "Turkiye Jam (3 Sachet Pack)",
+        price: Number(order.total_amount || 1099).toFixed(2),
         quantity: 1,
         requires_shipping: true,
       });
@@ -169,8 +169,8 @@ export async function pushOrderToShopify(
         send_receipt: false,
         send_fulfillment_receipt: false,
         source_name: "web",
-        tags: `ZupeStore, WebOrder, ${isCod ? "COD" : "Prepaid"}`,
-        note: `Zupe Storefront Order ID: ${order.id}`,
+        tags: `TurkiyeJam, WebOrder, ${isCod ? "COD" : "Prepaid"}`,
+        note: `Turkiye Jam Storefront Order ID: ${order.id}`,
         line_items: lineItems,
         customer: {
           first_name: firstName,
@@ -519,7 +519,7 @@ export async function pullShopifyOrders(options?: {
     const settings = await getSettings();
     const config = settings.shopify;
 
-    const domain = normalizeShopifyDomain(config?.domain || "zupe-store.myshopify.com");
+    const domain = normalizeShopifyDomain(config?.domain || "turkiyejam.myshopify.com");
     const token = (config?.token || "").trim();
     const apiVersion = (config as any)?.apiVersion || "2024-01";
     const limit = options?.limit || 50;
@@ -560,10 +560,10 @@ export async function pullShopifyOrders(options?: {
           line_items: [
             {
               id: 981123,
-              title: "Smart Sunset Projection Lamp",
-              price: "1299.00",
+              title: "Turkiye Jam (3 Sachet Pack)",
+              price: "1099.00",
               quantity: 1,
-              sku: "ZUPE-LAMP-01",
+              sku: "TJ-STRIP-03",
             },
           ],
         },
@@ -574,7 +574,7 @@ export async function pullShopifyOrders(options?: {
           created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
           financial_status: "paid",
           gateway: "Razorpay / UPI",
-          total_price: "899.00",
+          total_price: "2499.00",
           customer: {
             first_name: "Meera",
             last_name: "Iyer",
@@ -592,10 +592,10 @@ export async function pullShopifyOrders(options?: {
           line_items: [
             {
               id: 981124,
-              title: "Portable Mini Steam Iron",
-              price: "899.00",
+              title: "Turkiye Jam - 240g Royal Glass Jar",
+              price: "2499.00",
               quantity: 1,
-              sku: "ZUPE-IRON-02",
+              sku: "TJ-JAR-240G",
             },
           ],
         },
