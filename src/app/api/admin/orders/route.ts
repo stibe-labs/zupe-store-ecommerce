@@ -307,6 +307,7 @@ export async function POST(req: NextRequest) {
         customerEmail &&
         customerEmail.includes("@") &&
         !customerEmail.endsWith("@customer.zupestore.com") &&
+        !customerEmail.endsWith("@customer.turkiyejam.com") &&
         !ord.confirmation_email_sent
       ) {
         try {
@@ -527,7 +528,8 @@ export async function POST(req: NextRequest) {
       if (
         customerEmail &&
         customerEmail.includes("@") &&
-        !customerEmail.endsWith("@customer.zupestore.com")
+        !customerEmail.endsWith("@customer.zupestore.com") &&
+        !customerEmail.endsWith("@customer.turkiyejam.com")
       ) {
         try {
           await sendOrderCancellationEmail({

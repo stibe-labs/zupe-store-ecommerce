@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
 
       // 4. Dispatch Email Confirmation update if customer email is on record
       const switchEmail = (existingOrder?.guest_email || (existingOrder as any)?.customer_email || order_payload?.customer_email || "").trim();
-      if (switchEmail && switchEmail.includes("@") && !switchEmail.endsWith("@customer.zupestore.com")) {
+      if (switchEmail && switchEmail.includes("@") && !switchEmail.endsWith("@customer.zupestore.com") && !switchEmail.endsWith("@customer.turkiyejam.com")) {
         try {
           const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
           const { markOrderEmailSent } = await import("@/lib/orderStore");
@@ -370,7 +370,7 @@ export async function POST(req: NextRequest) {
 
     // Automated Order Confirmation Email (Dispatched ONLY if customer provided optional email at checkout)
     const normEmail = (customer_email || "").trim();
-    if (normEmail && normEmail.includes("@") && !normEmail.endsWith("@customer.zupestore.com")) {
+    if (normEmail && normEmail.includes("@") && !normEmail.endsWith("@customer.zupestore.com") && !normEmail.endsWith("@customer.turkiyejam.com")) {
       try {
         const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
         const { markOrderEmailSent } = await import("@/lib/orderStore");

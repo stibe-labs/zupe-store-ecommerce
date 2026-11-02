@@ -118,6 +118,7 @@ export async function sendOrderConfirmationEmail(
     !cleanEmail ||
     !cleanEmail.includes("@") ||
     cleanEmail.endsWith("@customer.zupestore.com") ||
+    cleanEmail.endsWith("@customer.turkiyejam.com") ||
     cleanEmail.endsWith(".local")
   ) {
     console.log(
@@ -165,6 +166,7 @@ export async function sendOrderConfirmationEmail(
   try {
     const candidateLogoPaths = [
       path.join(process.cwd(), "public", "turkiye-jam-logo.png"),
+      path.join(process.cwd(), "public", "turkiye-jam-logo.svg"),
       path.join(process.cwd(), "public", "zupe-email-label.png"),
       path.join(process.cwd(), "public", "zupe-label.png"),
       path.join(process.cwd(), "public", "zupe-label.webp"),
@@ -173,13 +175,13 @@ export async function sendOrderConfirmationEmail(
       if (fs.existsSync(p)) {
         const ext = path.extname(p).toLowerCase().replace(".", "");
         attachments.push({
-          filename: `zupe-label.${ext}`,
+          filename: `turkiye-jam-logo.${ext}`,
           path: p,
-          cid: "zupe_text_label_logo",
-          contentType: ext === "webp" ? "image/webp" : "image/png",
+          cid: "tj_text_label_logo",
+          contentType: ext === "svg" ? "image/svg+xml" : ext === "webp" ? "image/webp" : "image/png",
           contentDisposition: "inline",
         });
-        logoImgSrc = "cid:zupe_text_label_logo";
+        logoImgSrc = "cid:tj_text_label_logo";
         break;
       }
     }

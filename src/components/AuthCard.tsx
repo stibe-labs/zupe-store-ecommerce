@@ -117,9 +117,11 @@ export function AuthCard({
       if (res.otp) {
         setOtp(res.otp);
       }
-      if (res.isExistingUser && res.name) {
+      if (res.isExistingUser) {
         setIsExistingUser(true);
-        setName(res.name);
+        if (res.name) {
+          setName(res.name);
+        }
       } else {
         setIsExistingUser(false);
       }
@@ -413,15 +415,17 @@ export function AuthCard({
               </div>
 
               {/* If existing user, show friendly greeting pill instead of asking for name again! */}
-              {isExistingUser && name ? (
+              {isExistingUser ? (
                 <div className="p-3.5 rounded-2xl bg-stone-100 border-2 border-stone-800 flex items-center justify-between shadow-[0_2px_0_0_#2b2b2b]">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-8 h-8 rounded-full bg-[#fed000] text-black font-extrabold flex items-center justify-center text-xs shrink-0 border border-stone-800">
-                      {name.charAt(0).toUpperCase()}
+                      {(name || "T").charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">Signing in as</p>
-                      <p className="text-xs sm:text-sm font-extrabold text-stone-900 truncate">{name}</p>
+                      <p className="text-xs sm:text-sm font-extrabold text-stone-900 truncate">
+                        {name || "Valued Customer"}
+                      </p>
                     </div>
                   </div>
                   <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400">

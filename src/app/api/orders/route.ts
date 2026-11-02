@@ -333,7 +333,7 @@ export async function POST(req: NextRequest) {
 
     // Automated Order Confirmation Email (Dispatched ONLY if customer provided optional email at checkout)
     const normEmail = (customer_email || "").trim();
-    if (normEmail && normEmail.includes("@") && !normEmail.endsWith("@customer.zupestore.com")) {
+    if (normEmail && normEmail.includes("@") && !normEmail.endsWith("@customer.zupestore.com") && !normEmail.endsWith("@customer.turkiyejam.com")) {
       try {
         const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
         const { markOrderEmailSent } = await import("@/lib/orderStore");

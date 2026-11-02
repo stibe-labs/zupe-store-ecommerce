@@ -1,4 +1,4 @@
-// Cloudflare D1 Database Helper for Zupe Store
+// Cloudflare D1 Database Helper for Turkiye Jam
 
 export interface D1QueryResult<T = any> {
   results: T[];
@@ -48,18 +48,23 @@ function getLocalCloudflareToken(): string | null {
   if (typeof window !== "undefined") return null;
 
   try {
-    const fs = require("fs");
-    const os = require("os");
-    const path = require("path");
-    const possiblePaths = [
-      path.join(os.homedir(), "Library", "Preferences", ".wrangler", "config", "default.toml"),
-      path.join(os.homedir(), ".wrangler", "config", "default.toml"),
-    ];
-    for (const p of possiblePaths) {
-      if (fs.existsSync(p)) {
-        const content = fs.readFileSync(p, "utf-8");
-        const match = content.match(/oauth_token\s*=\s*"([^"]+)"/);
-        if (match && match[1]) return match[1];
+    if (typeof process !== "undefined" && (process as any).versions?.node) {
+      const fsMod = "fs";
+      const osMod = "os";
+      const pathMod = "path";
+      const fs = require(fsMod);
+      const os = require(osMod);
+      const path = require(pathMod);
+      const possiblePaths = [
+        path.join(os.homedir(), "Library", "Preferences", ".wrangler", "config", "default.toml"),
+        path.join(os.homedir(), ".wrangler", "config", "default.toml"),
+      ];
+      for (const p of possiblePaths) {
+        if (fs.existsSync(p)) {
+          const content = fs.readFileSync(p, "utf-8");
+          const match = content.match(/oauth_token\s*=\s*"([^"]+)"/);
+          if (match && match[1]) return match[1];
+        }
       }
     }
   } catch (e) {

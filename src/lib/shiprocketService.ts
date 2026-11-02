@@ -277,8 +277,8 @@ export async function dispatchShiprocketOrder(
         const itemTot = Number(it.bundle_total || (Number(it.unit_price || it.price || 499) * qty));
         const effectiveUnit = Math.round(itemTot / Math.max(1, qty));
         return {
-          name: it.product_name || it.name || "Purchased Product",
-          sku: it.product_id || "SKU-ZUPE",
+          name: it.product_name || it.name || "Turkiye Jam Herbal Macun",
+          sku: it.product_id || "SKU-TJ",
           units: qty,
           selling_price: effectiveUnit,
         };
@@ -308,10 +308,10 @@ export async function dispatchShiprocketOrder(
           billing_pincode: postalCode,
           billing_state: (order as any).state || "Karnataka",
           billing_country: "India",
-          billing_email: (order as any).customer_email || (order as any).guest_email || "customer@zupestore.in",
+          billing_email: (order as any).customer_email || (order as any).guest_email || "support@turkiyejam.com",
           billing_phone: cleanPhone,
           shipping_is_billing: true,
-          order_items: orderItems.length > 0 ? orderItems : [{ name: "Product", sku: "SKU-ZUPE", units: 1, selling_price: order.total_amount || 499 }],
+          order_items: orderItems.length > 0 ? orderItems : [{ name: "Turkiye Jam Herbal Macun", sku: "SKU-TJ", units: 1, selling_price: order.total_amount || 1099 }],
           payment_method: isCod ? "COD" : "Prepaid",
           sub_total: effectiveShiprocketTotal,
           length: 15,

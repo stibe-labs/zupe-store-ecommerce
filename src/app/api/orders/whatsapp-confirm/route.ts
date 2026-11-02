@@ -68,6 +68,7 @@ export async function GET(req: NextRequest) {
         customerEmail &&
         customerEmail.includes("@") &&
         !customerEmail.endsWith("@customer.zupestore.com") &&
+        !customerEmail.endsWith("@customer.turkiyejam.com") &&
         !ord.confirmation_email_sent
       ) {
         try {

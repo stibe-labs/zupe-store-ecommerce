@@ -1,4 +1,4 @@
-// Customer Security & Authentication Utilities for Zupe Store
+// Customer Security & Authentication Utilities for Turkiye Jam
 // 100% compatible with Cloudflare Workers Edge runtime & Node.js using Web Crypto API
 
 import { verifyAdminSessionToken, ADMIN_COOKIE_NAME } from "./adminAuth";
@@ -134,8 +134,8 @@ export async function getAuthenticatedUser(req: Request): Promise<{
         isAdmin: true,
         user: {
           id: "admin",
-          email: adminSession.email || "admin@zupestore.com",
-          name: "Zupe Administrator",
+          email: adminSession.email || "admin@turkiyejam.com",
+          name: "Turkiye Jam Administrator",
           role: "admin",
           exp: Date.now() + 86400000,
         },

@@ -420,10 +420,10 @@ export default function AdminProductsPage() {
     setFormOverviewBlocks([]);
 
     setFormFeatures([
-      "Premium Quality Build & Finish",
-      "Fast & Intuitive Operation",
-      "Ergonomic Compact Design",
-      "Verified Authentic Zupe Original",
+      "100% Authentic Turkish Botanical Formula",
+      "Traditional Themra Epimedium Recipe",
+      "Tamper-Proof Discreet Packaging",
+      "Verified Authentic Original Import",
     ]);
     setNewFeatureInput("");
 
@@ -628,10 +628,10 @@ export default function AdminProductsPage() {
         ];
       } else {
         initialFeatures = [
-          prod.tagline || "Premium Quality Build & Finish",
-          prod.volume || "Fast & Intuitive Operation",
-          "Ergonomic Compact Design",
-          "Verified Authentic Zupe Original",
+          prod.tagline || "100% Authentic Turkish Botanical Formula",
+          prod.volume || "Traditional Themra Epimedium Recipe",
+          "Tamper-Proof Discreet Packaging",
+          "Verified Authentic Original Import",
         ];
       }
     }
@@ -2061,10 +2061,10 @@ export default function AdminProductsPage() {
                           type="button"
                           onClick={() =>
                             applyPresetPoints([
-                              "Premium Quality Build & Finish",
-                              "Fast 3-Second Operation",
-                              "Ergonomic Compact Design",
-                              "Verified Authentic Zupe Original",
+                              "100% Authentic Turkish Botanical Formula",
+                              "Traditional Themra Epimedium Recipe",
+                              "Tamper-Proof Discreet Packaging",
+                              "Verified Authentic Original Import",
                             ])
                           }
                           className="px-2 py-0.5 text-[10px] bg-orange-100/70 hover:bg-orange-100 text-[#FF7A00] font-bold rounded-lg transition-colors cursor-pointer"

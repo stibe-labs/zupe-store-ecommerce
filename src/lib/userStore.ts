@@ -105,7 +105,7 @@ export async function saveUser(user: UserRecord): Promise<void> {
       [
         user.id,
         user.name,
-        user.email || `${user.id}@customer.zupestore.com`,
+        user.email || `${user.id}@customer.turkiyejam.com`,
         user.password_hash || "",
         user.phone || null,
         user.role || "customer",
@@ -141,7 +141,7 @@ export async function findOrCreateWhatsAppUserAsync({
   const newUser: UserRecord = {
     id: newUserId,
     name: name && name.trim() ? name.trim() : `Customer ${display.slice(-4)}`,
-    email: `${digits}@customer.zupestore.com`,
+    email: `${digits}@customer.turkiyejam.com`,
     password_hash: "",
     phone: display,
     role: "customer",

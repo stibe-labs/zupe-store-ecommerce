@@ -1,4 +1,4 @@
-// Zupe Store ERP Data Store & Business Logic Layer
+// Turkiye Jam ERP Data Store & Business Logic Layer
 import { executeD1Query } from "@/lib/d1";
 import { decrementInventory, restockInventory } from "@/lib/inventoryService";
 
@@ -1299,15 +1299,8 @@ export async function getDashboardKPIs(
         return isNaN(t) || (t >= startMs && t <= endMs);
       };
 
-      const filteredOrders = orders.filter((o) => isInRange(o.created_at));
-      if (filteredOrders.length > 0) {
-        orders = filteredOrders;
-      }
-
-      const filteredExpenses = expenses.filter((e) => isInRange(e.date));
-      if (filteredExpenses.length > 0) {
-        expenses = filteredExpenses;
-      }
+      orders = orders.filter((o) => isInRange(o.created_at));
+      expenses = expenses.filter((e) => isInRange(e.date));
     }
   }
 
@@ -1552,7 +1545,7 @@ let inMemorySettings: ERPIntegrationsSettings = {
     standardShippingFee: 49,
   },
   shopify: {
-    domain: "zupe-store.myshopify.com",
+    domain: "turkiyejam.myshopify.com",
     token: "shpat_live_98a76d54f32e10cba",
     webhookSecret: "whsec_9871122334455",
     autoPushOrders: true,
@@ -1561,7 +1554,7 @@ let inMemorySettings: ERPIntegrationsSettings = {
     lastSyncedAt: new Date().toISOString(),
   },
   shiprocket: {
-    email: "logistics@zupestore.com",
+    email: "support@turkiyejam.com",
     password: "",
     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     pickup_location: "Primary",

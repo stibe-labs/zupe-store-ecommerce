@@ -22,11 +22,12 @@ export async function POST(req: NextRequest) {
     }
 
     const normEmail = (email || "").toLowerCase().trim();
-    const configuredAdminEmail = (process.env.ADMIN_EMAIL || "admin@zupestore.com").toLowerCase().trim();
+    const configuredAdminEmail = (process.env.ADMIN_EMAIL || "admin@turkiyejam.com").toLowerCase().trim();
 
     // 1. Check if email matches SuperAdmin email
     const isAdminEmail =
       normEmail === configuredAdminEmail ||
+      normEmail === "admin@turkiyejam.com" ||
       normEmail === "admin@zupestore.com";
 
     if (isAdminEmail) {
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
           redirect: "/admin",
           user: {
             id: "superadmin",
-            name: adminCheck.name || "Zupe SuperAdmin",
+            name: adminCheck.name || "Turkiye Jam SuperAdmin",
             email: adminCheck.email,
             role: "admin",
           },
@@ -57,7 +58,7 @@ export async function POST(req: NextRequest) {
 
         const userToken = await createUserSessionToken({
           id: "superadmin",
-          name: adminCheck.name || "Zupe SuperAdmin",
+          name: adminCheck.name || "Turkiye Jam SuperAdmin",
           email: adminCheck.email,
           role: "admin",
         });
