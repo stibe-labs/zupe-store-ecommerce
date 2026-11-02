@@ -11,6 +11,8 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { WhatsAppFloatingButton } from "@/components/WhatsAppFloatingButton";
 import { AbandonedCartAutoChecker } from "@/components/AbandonedCartAutoChecker";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { getOrganizationSchema, getWebSiteSchema } from "@/lib/seo";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -34,6 +36,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationSchema = getOrganizationSchema();
+  const websiteSchema = getWebSiteSchema();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -51,6 +56,10 @@ export default function RootLayout({
         className="antialiased font-sans bg-[#F3F4F6] text-[#0F172A]"
         suppressHydrationWarning
       >
+        {/* Core Global Structured Data (Organization & WebSite with SearchAction) */}
+        <JsonLd data={organizationSchema} />
+        <JsonLd data={websiteSchema} />
+
         <LoadingScreen />
         <AuthProvider>
           <WishlistProvider>
