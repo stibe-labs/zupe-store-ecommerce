@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  /* ─── Turkiye Jam Logo Red Brand Palette ─── */
-  --zp-orange: #cb0805;          /* Logo Red / CTA */
-  --zp-accent: #cb0805;
-  --zp-accent-light: #e02320;
-  --zp-accent-dark: #a80604;
-  --zp-amber: #cb0805;           /* Accent */
-  --zp-amber-light: #fdf2f2;
-  --zp-amber-dark: #8c0503;
+  /* ─── Vittal Digital Dubai Electronics Palette ─── */
+  --zp-orange: #003055;          /* Navy / Primary */
+  --zp-accent: #003055;
+  --zp-accent-light: #0284c7;
+  --zp-accent-dark: #00223d;
+  --zp-amber: #f59e0b;           /* Deal Gold / Accent */
+  --zp-amber-light: #fef3c7;
+  --zp-amber-dark: #d97706;
   --zp-charcoal: #0F172A;        /* Text / dark section */
   --zp-charcoal-deep: #020617;
   --zp-charcoal-muted: #334155;

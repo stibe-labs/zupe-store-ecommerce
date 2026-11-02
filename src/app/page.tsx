@@ -12,7 +12,7 @@ export const revalidate = 0;
 async function getInitialProducts(): Promise<Product[]> {
   try {
     const d1Results = await executeD1Query<Product>(
-      "SELECT id, slug, name, price, mrp, stock_count, in_stock FROM products;"
+      "SELECT id, slug, name, subtitle, category, price, mrp, stock_count, poster_image, in_stock, rating, review_count, badge FROM products;"
     );
     if (d1Results && Array.isArray(d1Results) && d1Results.length > 0) {
       return d1Results;
@@ -27,14 +27,14 @@ export default async function Home() {
   const initialProducts = await getInitialProducts();
 
   return (
-    <main className="min-h-screen bg-[#FCFBF8] text-[#1A1A1A] selection:bg-[#fed000] selection:text-stone-900">
-      {/* 1. Vittal Digital Navigation Bar (Floating over Full-Screen Hero) */}
+    <main className="min-h-screen bg-[#FAFBFD] text-slate-900 selection:bg-[#003055] selection:text-white">
+      {/* 1. Vittal Digital Navigation Bar */}
       <Navbar />
 
       {/* 2. Dedicated High-Conversion Vittal Digital Storefront Experience */}
       <VittalDigitalStorefront initialProducts={initialProducts} />
 
-      {/* 3. Brand Footer with Discreet Packaging & Policy Guarantees */}
+      {/* 3. Brand Footer */}
       <Footer />
     </main>
   );

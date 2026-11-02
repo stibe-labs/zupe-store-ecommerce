@@ -19,32 +19,39 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 const COLLECTIONS = [
   {
-    title: "HERBAL PASTE (MACUN)",
-    subtitle: "AUTHENTIC",
-    image: "/products/themra/turkiye-jam-jar-strip.png",
-    href: "/products/turkiye-jam",
+    title: "LAPTOPS & WORKSTATIONS",
+    subtitle: "DUBAI IMPORT",
+    image: "/vittal/ultraslim-laptop-14.png",
+    href: "/products?category=Laptops",
   },
   {
-    title: "SACHET PACKS",
-    subtitle: "ON-THE-GO",
-    image: "/products/themra/turkiye-jam-sachets-box.png",
-    href: "/products/turkiye-jam",
+    title: "SMARTWATCHES",
+    subtitle: "TITANIUM & AMOLED",
+    image: "/vittal/smart-watch-pro.png",
+    href: "/products?category=Smartwatches",
   },
   {
-    title: "240G GLASS JARS",
-    subtitle: "BEST VALUE",
-    image: "/products/themra/turkiye-jam-jar.png",
-    href: "/products/turkiye-jam",
+    title: "AUDIO & EARBUDS",
+    subtitle: "HYBRID ANC",
+    image: "/vittal/wireless-earbuds.png",
+    href: "/products?category=Headphones+%26+Earbuds",
+  },
+  {
+    title: "TABLETS & ACCESSORIES",
+    subtitle: "2K RETINA",
+    image: "/vittal/everyday-tablet-11.png",
+    href: "/products?category=Tablets",
   },
 ];
 
 const POPULAR_SEARCHES = [
-  "Turkish Paste",
-  "Themra Epimedium",
-  "Herbal Macun",
-  "Sachet Pack",
-  "240g Glass Jar",
-  "Turkiye Jam",
+  "UltraSlim Laptop 14",
+  "Smart Watch Pro",
+  "Everyday Tablet 11",
+  "Wireless Earbuds",
+  "Portable Bluetooth Speaker",
+  "Power Bank 10000mAh",
+  "Dubai Electronics",
 ];
 
 export function SearchModal() {

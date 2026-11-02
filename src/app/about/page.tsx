@@ -87,46 +87,46 @@ const VOICES_OF_TRUST = [
   {
     id: 1,
     quote:
-      "The natural stamina and surge of energy is remarkable. Within 45 minutes of a single spoonful in warm water, you feel a deep, warm vitality that stays with you all evening. Original Turkish Themra seal verified!",
-    author: "Rajesh K.",
-    location: "Bangalore, Karnataka",
-    product: "240g Glass Jar + 2 Free Strips",
+      "A simple shopping experience from start to finish. Sourced directly from Dubai, delivery was fast, and the device was 100% brand new with intact manufacturer seal.",
+    author: "Customer A",
+    location: "Mumbai, Maharashtra",
+    product: "UltraSlim Laptop 14",
     rating: 5,
   },
   {
     id: 2,
     quote:
-      "Discreet packaging was my top priority and Vittal Digital delivered flawlessly. Plain brown box with no sensitive product labels. The paste has an authentic rich honey and botanical herbal taste.",
-    author: "Vivek M.",
-    location: "Mumbai, Maharashtra",
-    product: "14 Sachet Strips Box",
+      "Easy to browse and choose the right gadget. The UltraSlim Laptop 14 is blazing fast with incredible battery life and a stunning OLED display. Highly recommended!",
+    author: "Customer B",
+    location: "Bengaluru, Karnataka",
+    product: "UltraSlim Laptop 14",
     rating: 5,
   },
   {
     id: 3,
     quote:
-      "My husband and I noticed a genuine revival in marital closeness and evening energy. Completely natural herbal ingredients with zero synthetic jitters or headaches. Very glad we chose the real Turkish paste.",
-    author: "Anjali & Rohan",
-    location: "Pune, Maharashtra",
-    product: "240g Glass Jar + 2 Free Strips",
+      "Helpful product information and clear updates. Received the Wireless Earbuds in pristine condition with 36hr battery life. Exceptional value for money.",
+    author: "Customer C",
+    location: "New Delhi, Delhi",
+    product: "Wireless Earbuds ANC",
     rating: 5,
   },
   {
     id: 4,
     quote:
-      "Customer support on WhatsApp is lightning-fast and courteous. They gave clear dosage advice before my order arrived. Delivery reached Hyderabad in under 3 days with Cash on Delivery.",
-    author: "Harish P.",
+      "Customer support on WhatsApp is lightning-fast and courteous. They confirmed Dubai retail stock and warranty registration before dispatch. Delivery reached Hyderabad in under 3 days.",
+    author: "Customer D",
     location: "Hyderabad, Telangana",
-    product: "6 Sachet Strips Pack",
+    product: "Smart Watch Pro",
     rating: 5,
   },
   {
     id: 5,
     quote:
-      "Genuine Ottoman herbal formulation. You can instantly tell this is authentic strained Anatolian flower honey combined with Epimedium and Royal Jelly. Worth every single rupee.",
-    author: "Tariq A.",
+      "Genuine Dubai import with full India compatibility. The Everyday Tablet 11 display and quad Dolby speakers are incredible for streaming and work.",
+    author: "Customer E",
     location: "Kochi, Kerala",
-    product: "240g Glass Jar + 2 Free Strips",
+    product: "Everyday Tablet 11",
     rating: 5,
   },
 ];
@@ -269,21 +269,19 @@ export default function AboutPage() {
 
             <div className="text-center">
               {/* Tagline Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#fed000] border-2 border-stone-800 text-xs font-black text-stone-900 uppercase tracking-wider mb-4 shadow-[0_3px_0_0_#2b2b2b]">
-                <Sparkles className="w-3.5 h-3.5 text-stone-900" />
-                <span>Centuries of Anatolian Wisdom</span>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-100 border-2 border-[#003055] text-xs font-black text-[#003055] uppercase tracking-wider mb-4 shadow-[0_3px_0_0_#003055]">
+                <Sparkles className="w-3.5 h-3.5 text-[#003055]" />
+                <span>Dubai Retail Direct Import</span>
               </div>
 
               {/* Title */}
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-tj-serif font-black text-stone-900 tracking-tight leading-tight max-w-3xl mx-auto">
-                The Authentic Vittal Digital Story
+                The Vittal Digital Story
               </h1>
 
               {/* Subtitle */}
               <p className="mt-4 text-sm sm:text-base md:text-lg text-stone-700 max-w-2xl mx-auto leading-relaxed font-medium">
-                We bring 100% genuine Turkish Epimedium Honey Herbal Paste (Themra Macun)
-                directly from Turkey to Indian homes. Pure strained flower honey blended with
-                Epimedium, Royal Jelly, and time-tested Anatolian botanicals.
+                We bring world-class consumer electronics directly from Dubai retail hubs to doorstep locations across India. Enjoy brand-new, factory-sealed hardware with international warranty support and rapid insured air cargo logistics.
               </p>
             </div>
           </div>
@@ -331,47 +329,47 @@ export default function AboutPage() {
               Why Discerning Buyers Choose Vittal Digital
             </h2>
             <p className="mt-2 text-xs sm:text-sm text-stone-600 leading-relaxed font-medium">
-              In a market full of imitation pastes and diluted remedies, we maintain direct, uncompromised sourcing from Turkey with verifiable tamper seals.
+              We connect Indian technology enthusiasts directly with premier electronics from Dubai retail hubs, complete with guaranteed authenticity, 1-year warranty coverage, and insured logistics.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Pillar 1 */}
             <div className="p-6 rounded-3xl bg-white border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] hover:translate-y-[-2px] transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-[#f8bac5] border-2 border-stone-800 text-[#5b1420] flex items-center justify-center mb-4 shadow-[0_2px_0_0_#2b2b2b]">
+              <div className="w-12 h-12 rounded-2xl bg-blue-100 border-2 border-stone-800 text-[#003055] flex items-center justify-center mb-4 shadow-[0_2px_0_0_#2b2b2b]">
                 <Award className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-bold font-tj-serif text-stone-900 mb-2">
-                1. 100% Genuine Import
+                1. 100% Genuine Dubai Import
               </h3>
               <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
-                Imported directly from Turkish certified herbal facilities. Every glass jar features original Themra holograms and authentic batch verification codes.
+                Imported directly from authorized Dubai duty-free and retail distributors. Every device arrives brand new in sealed manufacturer retail packaging.
               </p>
             </div>
 
             {/* Pillar 2 */}
             <div className="p-6 rounded-3xl bg-white border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] hover:translate-y-[-2px] transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-[#fed000] border-2 border-stone-800 text-stone-900 flex items-center justify-center mb-4 shadow-[0_2px_0_0_#2b2b2b]">
-                <Flame className="w-6 h-6 text-[#5b1420]" />
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 border-2 border-stone-800 text-stone-900 flex items-center justify-center mb-4 shadow-[0_2px_0_0_#2b2b2b]">
+                <ShieldCheck className="w-6 h-6 text-[#003055]" />
               </div>
               <h3 className="text-lg font-bold font-tj-serif text-stone-900 mb-2">
-                2. Ancient Botanical Blend
+                2. 1-Year India Warranty
               </h3>
               <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
-                Pure Anatolian strained flower honey, royal jelly, epimedium (horny goat weed), red ginseng, and ginkgo biloba. No synthetic drugs or chemicals.
+                Enjoy complete peace of mind with 1-Year Comprehensive International Warranty support and doorstep hardware assistance across India.
               </p>
             </div>
 
             {/* Pillar 3 */}
             <div className="p-6 rounded-3xl bg-white border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] hover:translate-y-[-2px] transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-[#d1fae5] border-2 border-stone-800 text-[#0e4a3b] flex items-center justify-center mb-4 shadow-[0_2px_0_0_#2b2b2b]">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-100 border-2 border-stone-800 text-emerald-900 flex items-center justify-center mb-4 shadow-[0_2px_0_0_#2b2b2b]">
                 <PackageCheck className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-bold font-tj-serif text-stone-900 mb-2">
-                3. Discreet &amp; Safe Delivery
+                3. Express Air Logistics
               </h3>
               <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
-                Shipped in 100% discreet brown corrugated boxes without any sensitive naming. Includes fast nationwide express dispatch and Cash on Delivery.
+                Insured priority air cargo from customs clearance hubs to your doorstep within 2–4 business days with real-time SMS & WhatsApp updates.
               </p>
             </div>
           </div>

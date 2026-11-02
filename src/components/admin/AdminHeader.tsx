@@ -280,8 +280,8 @@ export default function AdminHeader({
             onClick={() => setShowAdminUserDropdown(!showAdminUserDropdown)}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <div className="w-8 h-8 rounded-full bg-[#5b1420] text-[#fed000] font-extrabold flex items-center justify-center text-xs shadow-sm ring-2 ring-[#fed000]/30">
-              TJ
+            <div className="w-8 h-8 rounded-full bg-[#003055] text-amber-300 font-extrabold flex items-center justify-center text-xs shadow-sm ring-2 ring-blue-500/30">
+              VD
             </div>
             <span className="text-xs sm:text-sm font-semibold text-slate-800 hidden md:inline">
               Administrator
