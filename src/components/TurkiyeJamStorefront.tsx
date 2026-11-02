@@ -224,11 +224,17 @@ const REVIEWS = [
   },
 ];
 
-export function TurkiyeJamStorefront() {
+interface TurkiyeJamStorefrontProps {
+  initialProducts?: Product[];
+}
+
+export function TurkiyeJamStorefront({ initialProducts }: TurkiyeJamStorefrontProps = {}) {
   const router = useRouter();
   const { addItem, openCart } = useCart();
   const [openFaq, setOpenFaq] = useState<number | null>(1); // Question 1 open by default matching SVG
-  const [liveCatalog, setLiveCatalog] = useState<Product[]>(DEFAULT_PRODUCTS);
+  const [liveCatalog, setLiveCatalog] = useState<Product[]>(
+    () => (initialProducts && initialProducts.length > 0 ? initialProducts : DEFAULT_PRODUCTS)
+  );
 
   // Synchronize live stock & pricing from /api/products
   useEffect(() => {
