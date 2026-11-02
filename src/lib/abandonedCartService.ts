@@ -1,5 +1,6 @@
 import { executeD1Query } from "@/lib/d1";
 import { sendAbandonedCartWhatsApp } from "@/lib/whatsappOrderConfirmation";
+import { siteConfig } from "@/config/siteConfig";
 
 /**
  * Checks for any abandoned carts that:
@@ -32,9 +33,7 @@ export async function processOverdueAbandonedCarts(): Promise<number> {
           }
         }
 
-        const recoveryUrl = `https://turkiyejam.com/checkout?recover=${encodeURIComponent(
-          row.recovery_token
-        )}`;
+        const recoveryUrl = siteConfig.getRecoveryUrl(row.recovery_token);
         const source = (row.source === "checkout" ? "checkout" : "cart") as "checkout" | "cart";
 
         const sent = await sendAbandonedCartWhatsApp({

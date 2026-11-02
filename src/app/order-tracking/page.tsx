@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { siteConfig } from "@/config/siteConfig";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   Search,
@@ -103,7 +104,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       },
       {
         title: "Packaging & Quality Inspection",
-        location: "Turkiye Jam Fulfillment Center, Ernakulam",
+        location: siteConfig.fulfillmentCenter,
         timestamp: "In Progress",
         completed: false,
         active: true,
@@ -111,7 +112,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       },
       {
         title: "Courier Handover & AWB Assignment",
-        location: "Ernakulam Logistics Dispatch Bay",
+        location: siteConfig.dispatchBay,
         timestamp: "Expected within 24 business hours",
         completed: false,
         active: false,
@@ -140,7 +141,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       },
       {
         title: "Dispatched from Fulfillment Center",
-        location: "Turkiye Jam Fulfillment Center, Ernakulam",
+        location: siteConfig.fulfillmentCenter,
         timestamp: "Dispatched",
         completed: true,
         active: false,
@@ -169,7 +170,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
     return [
       {
         title: "Order Confirmed & Dispatched",
-        location: "Turkiye Jam Fulfillment Center, Ernakulam",
+        location: siteConfig.fulfillmentCenter,
         timestamp: formatPlacedTime,
         completed: true,
         active: false,
@@ -206,7 +207,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
     return [
       {
         title: "Order Placed & Dispatched",
-        location: "Turkiye Jam Fulfillment Center, Ernakulam",
+        location: siteConfig.fulfillmentCenter,
         timestamp: formatPlacedTime,
         completed: true,
         active: false,
@@ -235,7 +236,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
   return [
     {
       title: "Order Placed & Dispatched",
-      location: "Turkiye Jam Fulfillment Center, Ernakulam",
+      location: siteConfig.fulfillmentCenter,
       timestamp: formatPlacedTime,
       completed: true,
       active: false,
@@ -251,7 +252,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
     },
     {
       title: "Return to Origin (RTO)",
-      location: "Turkiye Jam Fulfillment Center, Ernakulam",
+      location: siteConfig.fulfillmentCenter,
       timestamp: "In Progress",
       completed: true,
       active: true,

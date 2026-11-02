@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { executeD1Query } from "@/lib/d1";
 import { normalizePhoneNumber } from "@/lib/whatsappOtp";
 import { sendAbandonedCartWhatsApp } from "@/lib/whatsappOrderConfirmation";
+import { siteConfig } from "@/config/siteConfig";
 
 export const dynamic = "force-dynamic";
 
@@ -102,7 +103,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const recoveryUrl = `https://turkiyejam.com/checkout?recover=${encodeURIComponent(recoveryToken)}`;
+    const recoveryUrl = siteConfig.getRecoveryUrl(recoveryToken);
 
     if (existingId) {
       // Update existing record

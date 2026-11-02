@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { executeD1Query } from "@/lib/d1";
 import { sendAbandonedCartWhatsApp } from "@/lib/whatsappOrderConfirmation";
 import { processOverdueAbandonedCarts } from "@/lib/abandonedCartService";
+import { siteConfig } from "@/config/siteConfig";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
         ...r,
         items: Array.isArray(items) ? items : [],
         total_amount: Number(r.total_amount) || 0,
-        recovery_url: `https://turkiyejam.com/checkout?recover=${encodeURIComponent(r.recovery_token)}`,
+        recovery_url: siteConfig.getRecoveryUrl(r.recovery_token),
       };
     });
 
@@ -95,7 +96,7 @@ export async function POST(req: NextRequest) {
           try { items = JSON.parse(items); } catch { items = []; }
         }
 
-        const recoveryUrl = `https://turkiyejam.com/checkout?recover=${encodeURIComponent(row.recovery_token)}`;
+        const recoveryUrl = siteConfig.getRecoveryUrl(row.recovery_token);
         const sent = await sendAbandonedCartWhatsApp({
           customerName: row.customer_name || "",
           customerPhone: row.customer_phone,
@@ -147,7 +148,7 @@ export async function POST(req: NextRequest) {
       try { items = JSON.parse(items); } catch { items = []; }
     }
 
-    const recoveryUrl = `https://turkiyejam.com/checkout?recover=${encodeURIComponent(row.recovery_token)}`;
+    const recoveryUrl = siteConfig.getRecoveryUrl(row.recovery_token);
 
     const sent = await sendAbandonedCartWhatsApp({
       customerName: row.customer_name || "",
