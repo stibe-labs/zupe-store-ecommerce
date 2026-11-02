@@ -82,7 +82,7 @@ export default function AccountPage() {
   // Strict Super Admin Verification State (only true for verified admin@zupestore.com)
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
-  // Load products for Recently Viewed carousel
+  // Load products for Recently Viewed carousel/grid
   useEffect(() => {
     fetch("/api/products")
       .then((res) => res.json())
@@ -214,6 +214,25 @@ export default function AccountPage() {
     setIsAddressModalOpen(true);
   };
 
+  const handleSetDefaultAddress = async (id: string) => {
+    try {
+      const target = addresses.find((a) => a.id === id);
+      if (!target) return;
+      const res = await fetch("/api/user/addresses", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...target, is_default: true }),
+      });
+      if (res.ok) {
+        setAddressNotice("Default address updated");
+        setTimeout(() => setAddressNotice(null), 3000);
+        await loadAddresses();
+      }
+    } catch (err) {
+      console.warn("Error setting default address:", err);
+    }
+  };
+
   const handleSaveAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!recipientName.trim() || !addressPhone.trim() || !street.trim() || !city.trim() || !postalCode.trim()) {
@@ -328,7 +347,7 @@ export default function AccountPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FBFBFC] text-[#111111] flex flex-col justify-between">
+      <div className="min-h-screen bg-[#F8F9FA] text-[#111111] flex flex-col justify-between">
         <Navbar />
         <div className="flex-1 flex items-center justify-center py-24">
           <div className="w-10 h-10 border-4 border-[#FF7A00]/20 border-t-[#FF7A00] rounded-full animate-spin" />
@@ -340,7 +359,7 @@ export default function AccountPage() {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="min-h-screen bg-[#FBFBFC] text-[#111111] flex flex-col justify-between">
+      <div className="min-h-screen bg-[#F8F9FA] text-[#111111] flex flex-col justify-between">
         <Navbar />
         <div className="max-w-md mx-auto px-4 py-24 text-center">
           <div className="w-16 h-16 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-4">
@@ -372,91 +391,168 @@ export default function AccountPage() {
 
   const initial = user.name ? user.name.charAt(0).toUpperCase() : "U";
 
+  // Reusable Support Card JSX
+  const SupportCard = () => (
+    <div className="bg-[#0B1220] text-white rounded-2xl p-5 border border-slate-800 shadow-md relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-44 h-44 bg-[#FF7A00]/12 rounded-full blur-2xl pointer-events-none" />
+
+      <div className="relative z-10">
+        <div className="flex items-center gap-1.5 text-[#FF7A00] text-[11px] font-bold uppercase tracking-wider mb-2">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>24/7 DEDICATED SUPPORT</span>
+        </div>
+
+        <h3 className="text-base font-bold text-white mb-1.5 leading-snug">
+          Need help with an order or address change?
+        </h3>
+
+        <p className="text-xs text-slate-300 leading-relaxed mb-4 font-normal">
+          Our support concierge is standing by to resolve courier deliveries, returns, or order modifications.
+        </p>
+
+        <div className="flex items-center gap-2.5">
+          {/* WhatsApp Button */}
+          <a
+            href="https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20need%20help%20with%20my%20order%20or%20account"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 py-2.5 px-3 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer"
+          >
+            <svg className="w-4 h-4 fill-white shrink-0" viewBox="0 0 24 24">
+              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+            </svg>
+            <span>WhatsApp</span>
+          </a>
+
+          {/* Call Us Button */}
+          <a
+            href="tel:+919744122853"
+            className="flex-1 py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 border border-white/10 shadow-sm transition-all active:scale-95 cursor-pointer"
+          >
+            <Phone className="w-4 h-4 shrink-0" />
+            <span>Call Us</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-[#111111] flex flex-col justify-between pb-24 sm:pb-0">
       <Navbar />
 
-      <main className="flex-1 max-w-xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-7 space-y-4">
+      <main className="flex-1 w-full max-w-xl lg:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7 lg:py-8 space-y-4 lg:space-y-6">
         {/* ========================================================
-            1. TOP PROFILE BANNER (DARK GRADIENT CARD)
+            1. TOP PROFILE BANNER (DARK GRADIENT HERO CARD)
            ======================================================== */}
-        <div className="bg-gradient-to-b from-[#181C24] via-[#14171E] to-[#0E1015] text-white rounded-3xl p-5 sm:p-6 shadow-xl border border-white/5 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-[#FF7A00]/12 rounded-full blur-3xl pointer-events-none" />
+        <div className="bg-gradient-to-b from-[#181C24] via-[#14171E] to-[#0E1015] text-white rounded-3xl p-5 sm:p-6 lg:p-7 shadow-xl border border-white/5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF7A00]/12 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 flex items-start gap-4 mb-4">
-            {/* Avatar squircle with initial */}
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#FF7A00] via-[#FF8C26] to-[#FFA742] text-white flex items-center justify-center font-display font-extrabold text-2xl sm:text-3xl shadow-lg shadow-[#FF7A00]/25 shrink-0">
-              {initial}
-            </div>
-
-            {/* Profile Info */}
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <h1 className="text-xl sm:text-2xl font-bold font-display text-white truncate">
-                  {user.name}
-                </h1>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-wide uppercase border border-emerald-500/30">
-                  <ShieldCheck className="w-3 h-3" />
-                  Verified
-                </span>
-                {isSuperAdmin && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FF7A00]/20 text-[#FF9E40] text-[10px] font-bold tracking-wide uppercase border border-[#FF7A00]/40">
-                    <Shield className="w-3 h-3 text-[#FF7A00]" />
-                    Admin
-                  </span>
-                )}
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-6">
+            {/* Left: Avatar & Profile Info */}
+            <div className="flex items-start sm:items-center gap-4">
+              {/* Avatar squircle with initial */}
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#FF7A00] via-[#FF8C26] to-[#FFA742] text-white flex items-center justify-center font-display font-extrabold text-2xl sm:text-3xl shadow-lg shadow-[#FF7A00]/25 shrink-0">
+                {initial}
               </div>
 
-              {/* Phone */}
-              {user.phone ? (
-                <p className="text-xs sm:text-sm text-slate-200 flex items-center gap-2 font-medium mb-0.5">
-                  <Phone className="w-3.5 h-3.5 text-[#FF7A00] shrink-0" />
-                  <span>{user.phone}</span>
-                </p>
-              ) : null}
+              {/* Profile Info */}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <h1 className="text-xl sm:text-2xl font-bold font-display text-white truncate">
+                    {user.name}
+                  </h1>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-wide uppercase border border-emerald-500/30">
+                    <ShieldCheck className="w-3 h-3" />
+                    Verified
+                  </span>
+                  {isSuperAdmin && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FF7A00]/20 text-[#FF9E40] text-[10px] font-bold tracking-wide uppercase border border-[#FF7A00]/40">
+                      <Shield className="w-3 h-3 text-[#FF7A00]" />
+                      Admin
+                    </span>
+                  )}
+                </div>
 
-              {/* Email */}
-              {user.email && !user.email.includes("@customer.zupestore.com") && !user.email.includes("example.com") && !user.email.startsWith("test@") ? (
-                <p className="text-xs text-slate-400 flex items-center gap-2 truncate mb-2.5">
-                  <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                  <span className="truncate">{user.email}</span>
-                </p>
-              ) : null}
+                {/* Phone */}
+                {user.phone ? (
+                  <p className="text-xs sm:text-sm text-slate-200 flex items-center gap-2 font-medium mb-0.5">
+                    <Phone className="w-3.5 h-3.5 text-[#FF7A00] shrink-0" />
+                    <span>{user.phone}</span>
+                  </p>
+                ) : null}
 
-              {/* Edit Profile Details pill button */}
-              <button
-                type="button"
-                onClick={handleOpenProfileModal}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 text-xs font-semibold border border-white/10 transition-colors shadow-xs"
-              >
-                <Edit2 className="w-3 h-3 text-[#FF7A00]" />
-                <span>Edit Profile Details</span>
-              </button>
+                {/* Email */}
+                {user.email && !user.email.includes("@customer.zupestore.com") && !user.email.includes("example.com") && !user.email.startsWith("test@") ? (
+                  <p className="text-xs text-slate-400 flex items-center gap-2 truncate mb-2">
+                    <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                    <span className="truncate">{user.email}</span>
+                  </p>
+                ) : null}
+
+                {/* Edit Profile Details pill button */}
+                <button
+                  type="button"
+                  onClick={handleOpenProfileModal}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 text-xs font-semibold border border-white/10 transition-colors shadow-xs cursor-pointer"
+                >
+                  <Edit2 className="w-3 h-3 text-[#FF7A00]" />
+                  <span>Edit Profile Details</span>
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Bottom Bar: Sign Out + Admin Portal */}
-          <div className="flex items-center justify-between border-t border-white/10 pt-3 relative z-10">
-            <button
-              onClick={() => {
-                logout();
-                router.push("/");
-              }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-slate-200 hover:text-white transition-colors border border-white/10"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Sign Out</span>
-            </button>
+            {/* Right: Actions & Overview Chips on Desktop */}
+            <div className="flex flex-wrap lg:flex-col items-start lg:items-end justify-between lg:justify-center gap-3 border-t lg:border-t-0 border-white/10 pt-3 lg:pt-0">
+              {/* Quick links only visible on desktop for high productivity */}
+              <div className="hidden lg:flex items-center gap-2 text-xs">
+                <Link
+                  href="/orders"
+                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-colors flex items-center gap-1.5"
+                >
+                  <Package className="w-3.5 h-3.5 text-[#FF7A00]" />
+                  <span>My Orders</span>
+                </Link>
+                <Link
+                  href="/wishlist"
+                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-colors flex items-center gap-1.5"
+                >
+                  <Heart className="w-3.5 h-3.5 text-rose-400" />
+                  <span>{totalWishlistItems} Wishlist</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={openCart}
+                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5 text-[#FF7A00]" />
+                  <span>{totalItems} in Cart</span>
+                </button>
+              </div>
 
-            {isSuperAdmin && (
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#FF7A00]/20 hover:bg-[#FF7A00]/30 text-xs font-bold text-[#FF9E40] hover:text-white transition-colors border border-[#FF7A00]/40"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5 text-[#FF7A00]" />
-                <span>Admin Portal</span>
-              </Link>
-            )}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    logout();
+                    router.push("/");
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-slate-200 hover:text-white transition-colors border border-white/10 cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Sign Out</span>
+                </button>
+
+                {isSuperAdmin && (
+                  <Link
+                    href="/admin"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#FF7A00]/20 hover:bg-[#FF7A00]/30 text-xs font-bold text-[#FF9E40] hover:text-white transition-colors border border-[#FF7A00]/40"
+                  >
+                    <LayoutDashboard className="w-3.5 h-3.5 text-[#FF7A00]" />
+                    <span>Admin Portal</span>
+                  </Link>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -469,333 +565,491 @@ export default function AccountPage() {
         )}
 
         {/* ========================================================
-            2. THE 5 NAVIGATION MENU ITEMS (SLEEK CARD ROWS)
+            RESPONSIVE DESKTOP DUAL-COLUMN / MOBILE SINGLE-FEED GRID
            ======================================================== */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-xs divide-y divide-slate-100 overflow-hidden">
-          {/* Row 1: My Orders */}
-          <Link
-            href="/orders"
-            className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50/80 transition-colors group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-50/90 text-[#FF7A00] border border-orange-100/60 flex items-center justify-center shrink-0">
-                <Package className="w-5 h-5 stroke-[2.2]" />
-              </div>
-              <span className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#FF7A00] transition-colors">
-                My Orders
-              </span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
-          </Link>
-
-          {/* Row 2: Order Tracking */}
-          <Link
-            href="/order-tracking"
-            className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50/80 transition-colors group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-50/90 text-[#FF7A00] border border-orange-100/60 flex items-center justify-center shrink-0">
-                <MapPin className="w-5 h-5 stroke-[2.2]" />
-              </div>
-              <span className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#FF7A00] transition-colors">
-                Order Tracking
-              </span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
-          </Link>
-
-          {/* Row 3: My Wishlist */}
-          <Link
-            href="/wishlist"
-            className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50/80 transition-colors group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-50/90 text-[#FF7A00] border border-orange-100/60 flex items-center justify-center shrink-0">
-                <Heart className="w-5 h-5 stroke-[2.2]" />
-              </div>
-              <span className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#FF7A00] transition-colors">
-                My Wishlist
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {totalWishlistItems > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-bold">
-                  {totalWishlistItems} saved
-                </span>
-              )}
-              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
-            </div>
-          </Link>
-
-          {/* Row 4: Delivery Addresses (Expandable) */}
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowAddresses((prev) => !prev)}
-              className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50/80 transition-colors group text-left cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-orange-50/90 text-[#FF7A00] border border-orange-100/60 flex items-center justify-center shrink-0">
-                  <Home className="w-5 h-5 stroke-[2.2]" />
-                </div>
-                <span className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#FF7A00] transition-colors">
-                  Delivery Addresses
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {addresses.length > 0 && (
-                  <span className="text-xs text-slate-400 font-medium">
-                    {addresses.length} saved
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
+          {/* ========================================================
+              LEFT COLUMN: 5 Navigation Menu Rows + Desktop 24/7 Support
+              (On mobile: full width; On desktop: 5 of 12 columns)
+             ======================================================== */}
+          <div className="lg:col-span-5 space-y-4">
+            {/* The 5 Navigation Menu Items (Exact mobile match) */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-xs divide-y divide-slate-100 overflow-hidden">
+              {/* Row 1: My Orders */}
+              <Link
+                href="/orders"
+                className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50/80 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50/90 text-[#FF7A00] border border-orange-100/60 flex items-center justify-center shrink-0">
+                    <Package className="w-5 h-5 stroke-[2.2]" />
+                  </div>
+                  <span className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#FF7A00] transition-colors">
+                    My Orders
                   </span>
-                )}
-                <ChevronRight
-                  className={`w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-transform ${
-                    showAddresses ? "rotate-90 text-[#FF7A00]" : ""
-                  }`}
-                />
-              </div>
-            </button>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
+              </Link>
 
-            {/* Expandable Addresses Management Drawer */}
-            {showAddresses && (
-              <div className="p-4 sm:p-5 bg-slate-50/80 border-t border-slate-100 animate-fadeIn">
-                <div className="flex items-center justify-between mb-3.5">
-                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#FF7A00]" />
-                    <span>Saved Addresses ({addresses.length})</span>
+              {/* Row 2: Order Tracking */}
+              <Link
+                href="/order-tracking"
+                className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50/80 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50/90 text-[#FF7A00] border border-orange-100/60 flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5 stroke-[2.2]" />
+                  </div>
+                  <span className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#FF7A00] transition-colors">
+                    Order Tracking
+                  </span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
+              </Link>
+
+              {/* Row 3: My Wishlist */}
+              <Link
+                href="/wishlist"
+                className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50/80 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50/90 text-[#FF7A00] border border-orange-100/60 flex items-center justify-center shrink-0">
+                    <Heart className="w-5 h-5 stroke-[2.2]" />
+                  </div>
+                  <span className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#FF7A00] transition-colors">
+                    My Wishlist
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {totalWishlistItems > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-bold">
+                      {totalWishlistItems} saved
+                    </span>
+                  )}
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
+                </div>
+              </Link>
+
+              {/* Row 4: Delivery Addresses */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowAddresses((prev) => !prev)}
+                  className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50/80 transition-colors group text-left cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-orange-50/90 text-[#FF7A00] border border-orange-100/60 flex items-center justify-center shrink-0">
+                      <Home className="w-5 h-5 stroke-[2.2]" />
+                    </div>
+                    <span className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#FF7A00] transition-colors">
+                      Delivery Addresses
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {addresses.length > 0 && (
+                      <span className="text-xs text-slate-400 font-medium">
+                        {addresses.length} saved
+                      </span>
+                    )}
+                    <ChevronRight
+                      className={`w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-transform ${
+                        showAddresses ? "rotate-90 text-[#FF7A00]" : ""
+                      }`}
+                    />
+                  </div>
+                </button>
+
+                {/* Expandable Addresses Management Drawer (Mobile & Desktop toggle) */}
+                {showAddresses && (
+                  <div className="p-4 sm:p-5 bg-slate-50/80 border-t border-slate-100 animate-fadeIn">
+                    <div className="flex items-center justify-between mb-3.5">
+                      <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-[#FF7A00]" />
+                        <span>Saved Addresses ({addresses.length})</span>
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={handleOpenAddAddress}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FF7A00] text-white text-xs font-bold hover:bg-[#E66E00] shadow-xs transition-colors cursor-pointer"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Add New</span>
+                      </button>
+                    </div>
+
+                    {loadingAddresses ? (
+                      <div className="py-6 flex items-center justify-center">
+                        <Loader2 className="w-6 h-6 text-[#FF7A00] animate-spin" />
+                      </div>
+                    ) : addresses.length === 0 ? (
+                      <div className="text-center py-6 px-3 rounded-xl bg-white border border-dashed border-slate-200">
+                        <p className="text-xs text-slate-500 mb-2">No delivery addresses saved yet.</p>
+                        <button
+                          type="button"
+                          onClick={handleOpenAddAddress}
+                          className="text-xs font-bold text-[#FF7A00] hover:underline cursor-pointer"
+                        >
+                          + Add First Address
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2.5">
+                        {addresses.map((addr) => (
+                          <div
+                            key={addr.id}
+                            className={`rounded-xl p-3 bg-white border transition-all ${
+                              addr.is_default
+                                ? "border-[#FF7A00]/50 ring-1 ring-[#FF7A00]/20 shadow-xs"
+                                : "border-slate-200"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-xs text-slate-900">{addr.recipient_name}</span>
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600">
+                                  {addr.tag || "Home"}
+                                </span>
+                                {addr.is_default && (
+                                  <span className="px-1.5 py-0.5 rounded-full bg-orange-100 text-[#FF7A00] text-[9px] font-bold">
+                                    Default
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditAddress(addr)}
+                                  className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"
+                                  aria-label="Edit address"
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteAddress(addr.id)}
+                                  className="p-1 text-rose-500 hover:text-rose-700 cursor-pointer"
+                                  aria-label="Delete address"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                            {addr.phone && (
+                              <p className="text-[11px] text-slate-500 mb-0.5">{addr.phone}</p>
+                            )}
+                            <p className="text-[11px] text-slate-600 leading-snug">
+                              {addr.street}, {addr.city}, {addr.state} - {addr.postal_code}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Row 5: Shopping Bag */}
+              <button
+                type="button"
+                onClick={openCart}
+                className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50/80 transition-colors group text-left cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50/90 text-[#FF7A00] border border-orange-100/60 flex items-center justify-center shrink-0">
+                    <ShoppingBag className="w-5 h-5 stroke-[2.2]" />
+                  </div>
+                  <span className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#FF7A00] transition-colors">
+                    Shopping Bag
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {totalItems > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-[#FF7A00] text-white text-[11px] font-bold flex items-center justify-center shadow-xs">
+                      {totalItems}
+                    </span>
+                  )}
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
+                </div>
+              </button>
+            </div>
+
+            {/* Desktop-only placement of 24/7 Support in Left Column */}
+            <div className="hidden lg:block">
+              <SupportCard />
+            </div>
+          </div>
+
+          {/* ========================================================
+              RIGHT COLUMN: Recently Viewed + Desktop Address Manager
+              (On mobile: full width; On desktop: 7 of 12 columns)
+             ======================================================== */}
+          <div className="lg:col-span-7 space-y-4">
+            {/* Recently Viewed Card */}
+            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-xs">
+              <div className="flex items-center justify-between mb-3.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center">
+                    <Eye className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900">
+                    Recently Viewed
                   </h3>
+                </div>
+                <Link
+                  href="/products"
+                  className="text-xs sm:text-sm font-bold text-[#FF7A00] hover:text-[#E66E00] flex items-center gap-1 group"
+                >
+                  <span>View All</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </div>
+
+              {/* Mobile Horizontal Snap Carousel */}
+              <div className="lg:hidden flex gap-2.5 sm:gap-3 overflow-x-auto pb-2 scrollbar-none snap-x">
+                {recentProducts.slice(0, 4).map((prod) => {
+                  const imageSrc = prod.poster_image || prod.images?.[0] || "/zupe-logo.webp";
+                  const inWishlist = isInWishlist(prod.id);
+
+                  return (
+                    <div
+                      key={prod.id}
+                      className="w-[130px] sm:w-[145px] shrink-0 snap-start bg-slate-50/70 rounded-xl p-2 sm:p-2.5 border border-slate-100 flex flex-col justify-between group hover:border-orange-200 transition-colors"
+                    >
+                      <div className="relative aspect-square w-full rounded-lg overflow-hidden bg-white mb-2">
+                        <Image
+                          src={imageSrc}
+                          alt={prod.name || "Product"}
+                          fill
+                          className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleWishlist(prod);
+                          }}
+                          className="absolute top-1 right-1 w-6 h-6 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow-xs text-slate-600 hover:text-rose-500 transition-colors cursor-pointer"
+                        >
+                          <Heart
+                            className={`w-3.5 h-3.5 ${
+                              inWishlist ? "fill-rose-500 text-rose-500" : ""
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      <Link href={`/products/${prod.id}`}>
+                        <h4 className="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 leading-tight mb-2 min-h-[28px] hover:text-[#FF7A00] transition-colors">
+                          {prod.name}
+                        </h4>
+                      </Link>
+
+                      <Link
+                        href={`/products/${prod.id}`}
+                        className="w-full py-1.5 px-2 rounded-lg bg-[#FF7A00] hover:bg-[#E66E00] text-white text-[11px] font-bold flex items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer"
+                      >
+                        <ShoppingCart className="w-3 h-3" />
+                        <span>Buy Now</span>
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Mobile Carousel Pagination Dots */}
+              <div className="lg:hidden flex items-center justify-center gap-1.5 mt-3">
+                <span className="w-2 h-2 rounded-full bg-[#FF7A00]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
+              </div>
+
+              {/* Desktop Spacious 3-Column Product Grid */}
+              <div className="hidden lg:grid grid-cols-3 gap-3.5">
+                {recentProducts.slice(0, 6).map((prod) => {
+                  const imageSrc = prod.poster_image || prod.images?.[0] || "/zupe-logo.webp";
+                  const inWishlist = isInWishlist(prod.id);
+
+                  return (
+                    <div
+                      key={prod.id}
+                      className="bg-slate-50/60 rounded-xl p-3 border border-slate-100 flex flex-col justify-between group hover:border-orange-300 hover:shadow-xs transition-all"
+                    >
+                      <div className="relative aspect-square w-full rounded-lg overflow-hidden bg-white mb-2.5">
+                        <Image
+                          src={imageSrc}
+                          alt={prod.name || "Product"}
+                          fill
+                          className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleWishlist(prod);
+                          }}
+                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow-xs text-slate-600 hover:text-rose-500 transition-colors cursor-pointer"
+                        >
+                          <Heart
+                            className={`w-4 h-4 ${
+                              inWishlist ? "fill-rose-500 text-rose-500" : ""
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      <Link href={`/products/${prod.id}`}>
+                        <h4 className="text-xs font-bold text-slate-900 line-clamp-2 leading-tight mb-1.5 hover:text-[#FF7A00] transition-colors">
+                          {prod.name}
+                        </h4>
+                      </Link>
+
+                      <div className="flex items-center justify-between mb-2 text-xs">
+                        <span className="font-bold text-slate-900">
+                          ₹{Number(prod.price || prod.offer_price || 0).toLocaleString("en-IN")}
+                        </span>
+                        {prod.mrp && Number(prod.mrp) > Number(prod.price || 0) && (
+                          <span className="text-[10px] text-slate-400 line-through">
+                            ₹{Number(prod.mrp).toLocaleString("en-IN")}
+                          </span>
+                        )}
+                      </div>
+
+                      <Link
+                        href={`/products/${prod.id}`}
+                        className="w-full py-1.5 px-3 rounded-lg bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                      >
+                        <ShoppingCart className="w-3.5 h-3.5" />
+                        <span>Buy Now</span>
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Desktop Dedicated Delivery Addresses Manager */}
+            <div className="hidden lg:block bg-white rounded-2xl p-5 border border-slate-100 shadow-xs">
+              <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center">
+                    <Home className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">
+                      Saved Delivery Addresses
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Manage your delivery addresses for 1-click express checkout.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleOpenAddAddress}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add New Address</span>
+                </button>
+              </div>
+
+              {loadingAddresses ? (
+                <div className="py-8 flex items-center justify-center">
+                  <Loader2 className="w-7 h-7 text-[#FF7A00] animate-spin" />
+                </div>
+              ) : addresses.length === 0 ? (
+                <div className="text-center py-8 px-4 rounded-xl bg-slate-50 border border-dashed border-slate-200">
+                  <Home className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-xs font-bold text-slate-700 mb-1">No Delivery Addresses Saved</p>
+                  <p className="text-xs text-slate-500 mb-3">Add your home or office address for faster order fulfillment.</p>
                   <button
                     type="button"
                     onClick={handleOpenAddAddress}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FF7A00] text-white text-xs font-bold hover:bg-[#E66E00] shadow-xs transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-800 hover:bg-slate-50 cursor-pointer shadow-xs"
                   >
-                    <Plus className="w-3 h-3" />
-                    <span>Add New</span>
+                    <Plus className="w-3 h-3 text-[#FF7A00]" />
+                    <span>Add Address</span>
                   </button>
                 </div>
-
-                {loadingAddresses ? (
-                  <div className="py-6 flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 text-[#FF7A00] animate-spin" />
-                  </div>
-                ) : addresses.length === 0 ? (
-                  <div className="text-center py-6 px-3 rounded-xl bg-white border border-dashed border-slate-200">
-                    <p className="text-xs text-slate-500 mb-2">No delivery addresses saved yet.</p>
-                    <button
-                      type="button"
-                      onClick={handleOpenAddAddress}
-                      className="text-xs font-bold text-[#FF7A00] hover:underline cursor-pointer"
+              ) : (
+                <div className="grid grid-cols-2 gap-3.5">
+                  {addresses.map((addr) => (
+                    <div
+                      key={addr.id}
+                      className={`rounded-xl p-3.5 border transition-all flex flex-col justify-between ${
+                        addr.is_default
+                          ? "border-[#FF7A00]/50 bg-orange-50/20 ring-1 ring-[#FF7A00]/20 shadow-xs"
+                          : "border-slate-200 bg-white hover:border-slate-300"
+                      }`}
                     >
-                      + Add First Address
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-2.5">
-                    {addresses.map((addr) => (
-                      <div
-                        key={addr.id}
-                        className={`rounded-xl p-3 bg-white border transition-all ${
-                          addr.is_default
-                            ? "border-[#FF7A00]/50 ring-1 ring-[#FF7A00]/20 shadow-xs"
-                            : "border-slate-200"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1.5">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-1.5">
                             <span className="font-bold text-xs text-slate-900">{addr.recipient_name}</span>
                             <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600">
                               {addr.tag || "Home"}
                             </span>
-                            {addr.is_default && (
-                              <span className="px-1.5 py-0.5 rounded-full bg-orange-100 text-[#FF7A00] text-[9px] font-bold">
-                                Default
-                              </span>
-                            )}
                           </div>
-                          <div className="flex items-center gap-1">
+
+                          {addr.is_default ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FF7A00]/10 text-[#FF7A00] text-[9px] font-bold border border-[#FF7A00]/20">
+                              <Star className="w-2.5 h-2.5 fill-[#FF7A00]" />
+                              Default
+                            </span>
+                          ) : (
                             <button
                               type="button"
-                              onClick={() => handleOpenEditAddress(addr)}
-                              className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"
-                              aria-label="Edit address"
+                              onClick={() => handleSetDefaultAddress(addr.id)}
+                              className="text-[10px] font-semibold text-slate-400 hover:text-[#FF7A00] hover:underline cursor-pointer"
                             >
-                              <Edit2 className="w-3 h-3" />
+                              Set Default
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteAddress(addr.id)}
-                              className="p-1 text-rose-500 hover:text-rose-700 cursor-pointer"
-                              aria-label="Delete address"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
+                          )}
                         </div>
+
                         {addr.phone && (
-                          <p className="text-[11px] text-slate-500 mb-0.5">{addr.phone}</p>
+                          <p className="text-xs text-slate-500 flex items-center gap-1 mb-1 font-medium">
+                            <Phone className="w-3 h-3 text-slate-400" />
+                            <span>{addr.phone}</span>
+                          </p>
                         )}
-                        <p className="text-[11px] text-slate-600 leading-snug">
+
+                        <p className="text-xs text-slate-600 leading-snug mb-3">
                           {addr.street}, {addr.city}, {addr.state} - {addr.postal_code}
                         </p>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
 
-          {/* Row 5: Shopping Bag */}
-          <button
-            type="button"
-            onClick={openCart}
-            className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50/80 transition-colors group text-left cursor-pointer"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-50/90 text-[#FF7A00] border border-orange-100/60 flex items-center justify-center shrink-0">
-                <ShoppingBag className="w-5 h-5 stroke-[2.2]" />
-              </div>
-              <span className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#FF7A00] transition-colors">
-                Shopping Bag
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {totalItems > 0 && (
-                <span className="w-5 h-5 rounded-full bg-[#FF7A00] text-white text-[11px] font-bold flex items-center justify-center shadow-xs">
-                  {totalItems}
-                </span>
-              )}
-              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
-            </div>
-          </button>
-        </div>
-
-        {/* ========================================================
-            3. RECENTLY VIEWED SECTION
-           ======================================================== */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-xs">
-          <div className="flex items-center justify-between mb-3.5">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center">
-                <Eye className="w-4 h-4" />
-              </div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-900">
-                Recently Viewed
-              </h3>
-            </div>
-            <Link
-              href="/products"
-              className="text-xs sm:text-sm font-bold text-[#FF7A00] hover:text-[#E66E00] flex items-center gap-1 group"
-            >
-              <span>View All</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
-          </div>
-
-          {/* Horizontal Product Carousel */}
-          <div className="flex gap-2.5 sm:gap-3 overflow-x-auto pb-2 scrollbar-none snap-x">
-            {recentProducts.slice(0, 4).map((prod) => {
-              const imageSrc = prod.poster_image || prod.images?.[0] || "/zupe-logo.webp";
-              const inWishlist = isInWishlist(prod.id);
-
-              return (
-                <div
-                  key={prod.id}
-                  className="w-[130px] sm:w-[145px] shrink-0 snap-start bg-slate-50/70 rounded-xl p-2 sm:p-2.5 border border-slate-100 flex flex-col justify-between group hover:border-orange-200 transition-colors"
-                >
-                  <div className="relative aspect-square w-full rounded-lg overflow-hidden bg-white mb-2">
-                    <Image
-                      src={imageSrc}
-                      alt={prod.name || "Product"}
-                      fill
-                      className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        toggleWishlist(prod);
-                      }}
-                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow-xs text-slate-600 hover:text-rose-500 transition-colors cursor-pointer"
-                    >
-                      <Heart
-                        className={`w-3.5 h-3.5 ${
-                          inWishlist ? "fill-rose-500 text-rose-500" : ""
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  <Link href={`/products/${prod.id}`}>
-                    <h4 className="text-[11px] sm:text-xs font-semibold text-slate-800 line-clamp-2 leading-tight mb-2 min-h-[28px] hover:text-[#FF7A00] transition-colors">
-                      {prod.name}
-                    </h4>
-                  </Link>
-
-                  <Link
-                    href={`/products/${prod.id}`}
-                    className="w-full py-1.5 px-2 rounded-lg bg-[#FF7A00] hover:bg-[#E66E00] text-white text-[11px] font-bold flex items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer"
-                  >
-                    <ShoppingCart className="w-3 h-3" />
-                    <span>Buy Now</span>
-                  </Link>
+                      <div className="flex items-center justify-end gap-1.5 pt-2 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditAddress(addr)}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+                        >
+                          <Edit2 className="w-3 h-3" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteAddress(addr.id)}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              );
-            })}
+              )}
+            </div>
           </div>
 
-          {/* Carousel Pagination Dots */}
-          <div className="flex items-center justify-center gap-1.5 mt-3">
-            <span className="w-2 h-2 rounded-full bg-[#FF7A00]" />
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-          </div>
-        </div>
-
-        {/* ========================================================
-            4. 24/7 DEDICATED SUPPORT (DARK NAVY CARD)
-           ======================================================== */}
-        <div className="bg-[#0B1220] text-white rounded-2xl p-5 border border-slate-800 shadow-md relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-44 h-44 bg-[#FF7A00]/12 rounded-full blur-2xl pointer-events-none" />
-
-          <div className="relative z-10">
-            <div className="flex items-center gap-1.5 text-[#FF7A00] text-[11px] font-bold uppercase tracking-wider mb-2">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>24/7 DEDICATED SUPPORT</span>
-            </div>
-
-            <h3 className="text-base sm:text-lg font-bold text-white mb-1.5 leading-snug">
-              Need help with an order or address change?
-            </h3>
-
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-4 font-normal">
-              Our support concierge is standing by to resolve courier deliveries, returns, or order modifications.
-            </p>
-
-            <div className="flex items-center gap-2.5">
-              {/* WhatsApp Button */}
-              <a
-                href="https://wa.me/919744122853?text=Hi%20Zupe%20Store%2C%20I%20need%20help%20with%20my%20order%20or%20account"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 py-2.5 px-3 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer"
-              >
-                <svg className="w-4 h-4 fill-white shrink-0" viewBox="0 0 24 24">
-                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
-                </svg>
-                <span>WhatsApp</span>
-              </a>
-
-              {/* Call Us Button */}
-              <a
-                href="tel:+919744122853"
-                className="flex-1 py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 border border-white/10 shadow-sm transition-all active:scale-95 cursor-pointer"
-              >
-                <Phone className="w-4 h-4 shrink-0" />
-                <span>Call Us</span>
-              </a>
-            </div>
+          {/* Mobile-only placement of 24/7 Support at bottom of single feed */}
+          <div className="lg:hidden">
+            <SupportCard />
           </div>
         </div>
       </main>
