@@ -3,11 +3,13 @@
 // Falls back to direct text message if template not yet approved or within 24h window
 
 import { normalizePhoneNumber } from "@/lib/whatsappOtp";
+import { siteConfig } from "@/config/siteConfig";
 
 const DEFAULT_WA_TOKEN =
+  process.env.WHATSAPP_TOKEN ||
   "EAATwm2s3GMYBS7KhJQ2MDiAyAGFS6OwFHiXZAFvfPlyMUg4Jf3wV5e8TPj0PKC8rkE6x9vkzuZANllpjCUHvJaXYAZB6Ursyzc26l0SDJrBEEPJYB4ZB8rjEQ2qTSBI6tEYgZBOTJ47DAmVNAhuyaQAoryvhYiO6vRpAFdE0H61gFXCkwttX5sZCCSyR20kCwOOQZDZD";
-const DEFAULT_WA_PHONE_ID = "1477900698733187";
-const STORE_BASE_URL = "https://turkiyejam.com";
+const DEFAULT_WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || "1477900698733187";
+const STORE_BASE_URL = siteConfig.url;
 
 // Template names - must match exactly what you created in Meta Business Manager
 const TEMPLATE_PREPAID = "turkiyejam_order_update";

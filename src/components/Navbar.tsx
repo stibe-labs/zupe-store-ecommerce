@@ -7,6 +7,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { ShoppingBag, User } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { siteConfig } from "@/config/siteConfig";
 
 export function Navbar() {
   const router = useRouter();
@@ -80,12 +81,12 @@ export function Navbar() {
         <Link
           href="/"
           className="inline-flex items-center group py-1"
-          aria-label="Turkiye Jam Homepage"
+          aria-label={`${siteConfig.name} Homepage`}
         >
           <div className="relative h-10 sm:h-13 w-28 sm:w-36 shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform drop-shadow-md">
             <Image
-              src="/turkiye-jam-logo.svg"
-              alt="Turkiye Jam"
+              src={siteConfig.logoUrl}
+              alt={siteConfig.name}
               fill
               className="object-contain"
               priority

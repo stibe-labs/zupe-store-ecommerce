@@ -32,13 +32,12 @@ export interface SendOrderConfirmationEmailParams {
   courierPartner?: string;
 }
 
-const STORE_BASE_URL =
-  process.env.STORE_BASE_URL ||
-  process.env.NEXT_PUBLIC_BASE_URL ||
-  "https://turkiyejam.com";
+import { siteConfig } from "@/config/siteConfig";
+
+const STORE_BASE_URL = siteConfig.url;
 
 function resolveImageUrl(img?: string): string {
-  if (!img) return `${STORE_BASE_URL}/turkiye-jam-logo.png`;
+  if (!img) return `${STORE_BASE_URL}${siteConfig.logoPng}`;
   if (img.startsWith("http://") || img.startsWith("https://")) return img;
   if (img.startsWith("/")) return `${STORE_BASE_URL}${img}`;
   return `${STORE_BASE_URL}/${img}`;

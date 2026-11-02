@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
+import { siteConfig } from "@/config/siteConfig";
 import {
   Settings,
   ShoppingBag,
@@ -491,7 +492,7 @@ export default function AdminSettingsPage() {
                     <input
                       type="text"
                       readOnly
-                      value="https://turkiyejam.com/api/admin/sync/shopify"
+                      value={siteConfig.getAbsoluteUrl("/api/admin/sync/shopify")}
                       className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-mono text-xs text-slate-600 cursor-not-allowed"
                     />
                   </div>
@@ -621,7 +622,7 @@ export default function AdminSettingsPage() {
                   <input
                     type="text"
                     readOnly
-                    value="https://turkiyejam.com/api/admin/sync/shiprocket"
+                    value={siteConfig.getAbsoluteUrl("/api/admin/sync/shiprocket")}
                     className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-mono text-xs text-slate-600 cursor-not-allowed"
                   />
                 </div>

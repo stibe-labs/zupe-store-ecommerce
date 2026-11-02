@@ -4,10 +4,11 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { MessageCircle, Mail, MapPin, Phone, ShieldCheck, ArrowUpRight, Sparkles } from "lucide-react";
+import { siteConfig } from "@/config/siteConfig";
 
 const SUPPORT_LINKS = [
   { label: "Track Your Order", href: "/order-tracking" },
-  { label: "WhatsApp Order & Care", href: "https://wa.me/916238165935?text=Hi%2C%20I%20have%20an%20inquiry%20about%20Turkiye%20Jam" },
+  { label: "WhatsApp Order & Care", href: `https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20have%20an%20inquiry%20about%20${encodeURIComponent(siteConfig.name)}` },
   { label: "How to Use & Dosage", href: "/#usage" },
   { label: "Customer Reviews", href: "/#reviews" },
   { label: "Authenticity & Heritage", href: "/#about" },
@@ -53,11 +54,11 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-16">
           {/* Brand Logo & Mission */}
           <div className="space-y-3 sm:space-y-4">
-            <Link href="/" className="inline-flex items-center group" aria-label="Turkiye Jam">
+            <Link href="/" className="inline-flex items-center group" aria-label={siteConfig.name}>
               <div className="relative h-11 sm:h-13 w-32 sm:w-36 shrink-0">
                 <Image
-                  src="/turkiye-jam-logo.svg"
-                  alt="Turkiye Jam"
+                  src={siteConfig.logoUrl}
+                  alt={siteConfig.name}
                   fill
                   className="object-contain"
                 />
@@ -125,22 +126,22 @@ export function Footer() {
               <ul className="space-y-2 sm:space-y-2.5 text-xs sm:text-sm text-stone-200">
                 <li>
                   <a
-                    href="https://wa.me/916238165935"
+                    href={`https://wa.me/${siteConfig.whatsappNumber}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 hover:text-[#fed000] transition-colors"
                   >
                     <Phone className="w-3.5 h-3.5 text-[#fed000] shrink-0" />
-                    <span className="text-[11px] sm:text-sm whitespace-nowrap">+91 62381 65935</span>
+                    <span className="text-[11px] sm:text-sm whitespace-nowrap">{siteConfig.supportPhone}</span>
                   </a>
                 </li>
                 <li>
                   <a
-                    href="mailto:support@turkiyejam.com"
+                    href={`mailto:${siteConfig.supportEmail}`}
                     className="inline-flex items-center gap-1.5 hover:text-[#fed000] transition-colors"
                   >
                     <Mail className="w-3.5 h-3.5 text-[#fed000] shrink-0" />
-                    <span className="text-[11px] sm:text-sm truncate max-w-[90px] sm:max-w-none">support@turkiyejam.com</span>
+                    <span className="text-[11px] sm:text-sm truncate max-w-[90px] sm:max-w-none">{siteConfig.supportEmail}</span>
                   </a>
                 </li>
                 <li className="flex items-center gap-1.5 text-stone-300">
@@ -155,7 +156,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-xs text-stone-300 text-center sm:text-left">
           <p>
-            © 2026 Turkiye Jam. This product is not intended to diagnose, treat, cure or prevent any disease.
+            © {new Date().getFullYear()} {siteConfig.name}. This product is not intended to diagnose, treat, cure or prevent any disease.
           </p>
           <p className="text-stone-300/80">
             Prepaid delivery across India in 1–2 days. Cash on delivery available.
