@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import {
   Search,
   Package,
+  PackageCheck,
   Truck,
   Phone,
   CheckCircle2,
@@ -74,6 +75,103 @@ function WhatsAppIcon({ className = "w-4 h-4" }: { className?: string }) {
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.456 5.711 1.457h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
     </svg>
+  );
+}
+
+function DeliveryBoxIllustration({ className = "w-20 h-20 sm:w-24 sm:h-24" }: { className?: string }) {
+  return (
+    <div className={`relative flex-shrink-0 flex items-center justify-center ${className}`}>
+      <svg viewBox="0 0 100 90" className="w-full h-full drop-shadow-sm" fill="none">
+        <ellipse cx="50" cy="78" rx="34" ry="7" fill="#FED7AA" opacity="0.6" />
+        {/* Top Face */}
+        <path d="M50 16 L84 32 L50 48 L16 32 Z" fill="#FDBA74" />
+        <path d="M50 16 L65 23 L50 30 L35 23 Z" fill="#FB923C" opacity="0.4" />
+        {/* Left Face */}
+        <path d="M16 32 L50 48 L50 74 L16 58 Z" fill="#EA580C" />
+        {/* Right Face */}
+        <path d="M50 48 L84 32 L84 58 L50 74 Z" fill="#C2410C" />
+        {/* Tape Strips */}
+        <path d="M44 19 L56 25 L56 48 L44 42 Z" fill="#FED7AA" opacity="0.8" />
+        <path d="M44 42 L56 48 L56 74 L44 68 Z" fill="#FDBA74" opacity="0.9" />
+        {/* Zupe Logo Emblem */}
+        <g transform="translate(24, 44)">
+          <rect x="0" y="0" width="16" height="15" rx="3" fill="#0F172A" opacity="0.9" />
+          <path d="M4 11 L12 11 M4 11 L10 5 L5 5" stroke="#FF7A00" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </g>
+        {/* Sparkle Rays */}
+        <path d="M84 18 L88 13 M90 20 L95 20 M87 25 L92 28" stroke="#FF7A00" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    </div>
+  );
+}
+
+function DeliveryTruckIllustration({ className = "w-20 h-16 sm:w-24 sm:h-20" }: { className?: string }) {
+  return (
+    <div className={`relative flex-shrink-0 flex items-center justify-center ${className}`}>
+      <svg viewBox="0 0 120 80" className="w-full h-full drop-shadow-sm" fill="none">
+        <ellipse cx="60" cy="70" rx="46" ry="5" fill="#FED7AA" opacity="0.6" />
+        {/* Motion lines */}
+        <path d="M4 30 L16 30" stroke="#FF7A00" strokeWidth="2" strokeLinecap="round" />
+        <path d="M1 38 L14 38" stroke="#FF7A00" strokeWidth="2" strokeLinecap="round" />
+        <path d="M6 46 L18 46" stroke="#FF7A00" strokeWidth="2" strokeLinecap="round" />
+        {/* Cargo Body */}
+        <rect x="18" y="16" width="56" height="42" rx="5" fill="#FF7A00" />
+        {/* Truck Cabin */}
+        <path d="M74 28 L90 28 C94 28 97 31 99 35 L104 45 C105 47 106 50 106 53 L106 58 L74 58 Z" fill="#F1F5F9" />
+        {/* Window */}
+        <path d="M78 32 L88 32 C91 32 93 34 94 37 L97 44 L78 44 Z" fill="#38BDF8" opacity="0.85" />
+        {/* Headlight & Bumper */}
+        <rect x="104" y="47" width="2.5" height="4" rx="1" fill="#FBBF24" />
+        <rect x="103" y="53" width="5" height="4" rx="1" fill="#94A3B8" />
+        {/* Zupe Logo on Truck Cargo */}
+        <g transform="translate(36, 24)">
+          <rect x="0" y="0" width="20" height="18" rx="4" fill="white" opacity="0.25" />
+          <path d="M5 13 L15 13 M5 13 L13 5 L6 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </g>
+        <text x="46" y="50" fill="white" fontSize="6.5" fontWeight="bold" textAnchor="middle" letterSpacing="0.4">
+          ZUPE STORE
+        </text>
+        {/* Rear Wheel */}
+        <circle cx="36" cy="60" r="9" fill="#0F172A" />
+        <circle cx="36" cy="60" r="4.5" fill="#94A3B8" />
+        <circle cx="36" cy="60" r="1.5" fill="white" />
+        {/* Front Wheel */}
+        <circle cx="92" cy="60" r="9" fill="#0F172A" />
+        <circle cx="92" cy="60" r="4.5" fill="#94A3B8" />
+        <circle cx="92" cy="60" r="1.5" fill="white" />
+      </svg>
+    </div>
+  );
+}
+
+function DoorstepDeliveryIllustration({ className = "w-18 h-16 sm:w-22 sm:h-20" }: { className?: string }) {
+  return (
+    <div className={`relative flex-shrink-0 flex items-center justify-center ${className}`}>
+      <svg viewBox="0 0 110 90" className="w-full h-full drop-shadow-sm" fill="none">
+        <ellipse cx="55" cy="82" rx="42" ry="6" fill="#FED7AA" opacity="0.6" />
+        {/* Door Frame & Door */}
+        <rect x="36" y="8" width="42" height="72" rx="3" fill="#D97706" opacity="0.8" />
+        <rect x="40" y="12" width="34" height="68" fill="#B45309" />
+        {/* Panels */}
+        <rect x="44" y="17" width="12" height="24" rx="2" fill="#92400E" />
+        <rect x="58" y="17" width="12" height="24" rx="2" fill="#92400E" />
+        <rect x="44" y="46" width="12" height="28" rx="2" fill="#92400E" />
+        <rect x="58" y="46" width="12" height="28" rx="2" fill="#92400E" />
+        <circle cx="68" cy="45" r="2.2" fill="#FDE68A" />
+        {/* Potted Plant */}
+        <path d="M22 66 L30 66 L28 78 L24 78 Z" fill="#EA580C" />
+        <circle cx="26" cy="61" r="5" fill="#10B981" />
+        <circle cx="23" cy="57" r="4" fill="#34D399" />
+        {/* Parcel on Doorstep */}
+        <rect x="43" y="54" width="28" height="24" rx="3" fill="#F59E0B" />
+        <rect x="52" y="54" width="9" height="24" fill="#FCD34D" opacity="0.8" />
+        <path d="M50 68 L56 68 M50 68 L55 62 L51 62" stroke="#0F172A" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Green Checkmark Circle Badge */}
+        <circle cx="78" cy="34" r="9" fill="#10B981" />
+        <circle cx="78" cy="34" r="7.5" fill="#10B981" stroke="white" strokeWidth="1.5" />
+        <path d="M75 34 L77.5 36.5 L81.5 31.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
   );
 }
 
@@ -357,7 +455,7 @@ function OrderTrackingContent() {
   const [liveTracking, setLiveTracking] = useState<any>(null);
   const [copiedAWB, setCopiedAWB] = useState(false);
   const [copiedOrderId, setCopiedOrderId] = useState(false);
-  const [faqOpen, setFaqOpen] = useState<number | null>(null);
+  const [faqOpen, setFaqOpen] = useState<number | null>(0); // First item open by default
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   const journeySectionRef = useRef<HTMLDivElement | null>(null);
@@ -473,19 +571,23 @@ function OrderTrackingContent() {
   const faqs = [
     {
       q: "Where can I find my Order ID or AWB Tracking Number?",
-      a: "Your Order ID (e.g. #1055) was sent in your confirmation WhatsApp message and Email right after purchase. The courier AWB tracking number is shared as soon as the parcel is dispatched.",
+      a: "Find your Order ID in your order confirmation message or account. Your AWB / tracking number is available once the parcel is handed to the courier.",
+      icon: Package,
     },
     {
       q: "How long does standard delivery take?",
       a: "Orders are dispatched within 24 business hours. Typical delivery takes 3 to 5 business days across India.",
+      icon: Truck,
     },
     {
       q: "Can I track my order if I paid via Cash on Delivery (COD)?",
       a: "Yes! All prepaid and COD orders have full live tracking with SMS and WhatsApp milestone notifications.",
+      icon: PackageCheck,
     },
     {
       q: "What should I do if my delivery executive hasn't arrived?",
       a: "You'll receive delivery executive updates on the morning of delivery. If an attempt is missed, our courier partner will automatically re-attempt on the following business day.",
+      icon: Headphones,
     },
   ];
 
@@ -1191,7 +1293,153 @@ function OrderTrackingContent() {
                 </div>
               </div>
 
-              {/* 7. Zupe Care Support Card (Dark Card) */}
+              {/* 7. How Your Order Reaches You (Delivery Process Guide) */}
+              <div className="space-y-4 pt-2">
+                <div className="text-center pt-2 pb-1">
+                  <div className="inline-flex items-center justify-center gap-1.5">
+                    <h3 className="text-xl sm:text-2xl font-display font-extrabold text-gray-900 tracking-tight">
+                      How Your Order <span className="text-[#FF7A00]">Reaches You</span>
+                    </h3>
+                    <span className="text-[#FF7A00] text-base -mt-2">✨</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
+                    A quick look at our fast, safe and reliable delivery process.
+                  </p>
+                  <div className="w-12 h-1 bg-[#FF7A00] rounded-full mx-auto mt-2.5 mb-2" />
+                </div>
+
+                <div className="relative space-y-3">
+                  {/* Dashed orange line connecting the number badges on the left */}
+                  <div className="absolute left-[29px] sm:left-[33px] top-7 bottom-7 w-[2px] border-l-2 border-dashed border-[#FF7A00]/40 z-0 pointer-events-none" />
+
+                  {/* Step 1: Order Dispatched */}
+                  <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
+                    <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
+                        1
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
+                            Order Dispatched
+                          </h4>
+                          <span className="text-[#FF7A00] text-xs">✨</span>
+                        </div>
+                        <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
+                          Orders are carefully packed within 24 hours in tamper-proof parcels with strict quality control.
+                        </p>
+                      </div>
+                    </div>
+                    <DeliveryBoxIllustration />
+                  </div>
+
+                  {/* Step 2: Express Logistics */}
+                  <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
+                    <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
+                        2
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
+                          Express Logistics
+                        </h4>
+                        <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
+                          Shipped through our trusted courier partners (Delhivery, Bluedart, Shadowfax) with live tracking updates.
+                        </p>
+                      </div>
+                    </div>
+                    <DeliveryTruckIllustration />
+                  </div>
+
+                  {/* Step 3: Doorstep Delivery */}
+                  <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
+                    <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
+                        3
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
+                          Doorstep Delivery
+                        </h4>
+                        <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
+                          Get real-time WhatsApp &amp; Email updates, with OTP verification to ensure safe and secure delivery.
+                        </p>
+                      </div>
+                    </div>
+                    <DoorstepDeliveryIllustration />
+                  </div>
+                </div>
+              </div>
+
+              {/* 8. Frequently Asked Questions Accordion */}
+              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center border border-orange-200/80 font-black text-sm flex-shrink-0">
+                    ?
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-gray-900">
+                      Frequently Asked Questions
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Quick answers about your order and delivery.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2.5 pt-1">
+                  {faqs.map((faq, idx) => {
+                    const isOpen = faqOpen === idx;
+                    const IconComponent = faq.icon;
+                    return (
+                      <div
+                        key={idx}
+                        className={`rounded-2xl transition-all ${
+                          isOpen
+                            ? "bg-[#FFF8F4] border border-[#FFD8C2] p-4 shadow-2xs"
+                            : "bg-white p-3.5 sm:p-4 border border-gray-100 hover:border-gray-200 shadow-2xs"
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setFaqOpen(isOpen ? null : idx)}
+                          className="w-full flex items-center justify-between gap-3 text-left cursor-pointer"
+                        >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div
+                              className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                                isOpen
+                                  ? "bg-orange-100/80 text-[#FF7A00]"
+                                  : "bg-orange-50 text-[#FF7A00]"
+                              }`}
+                            >
+                              <IconComponent className="w-4 h-4" />
+                            </div>
+                            <span className="font-extrabold text-xs sm:text-sm text-gray-900">
+                              {faq.q}
+                            </span>
+                          </div>
+                          <div className="text-[#FF7A00] flex-shrink-0 ml-1">
+                            {isOpen ? (
+                              <ChevronUp className="w-4 h-4" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4" />
+                            )}
+                          </div>
+                        </button>
+
+                        {isOpen && (
+                          <div className="mt-3 pt-2.5 border-t border-orange-200/60 pl-12 pr-2 text-xs text-gray-600 leading-relaxed">
+                            {faq.a}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 9. Zupe Care Support Card (Dark Card) */}
               <div className="bg-[#0B1220] rounded-3xl p-5 sm:p-6 text-white shadow-lg border border-gray-800 space-y-4">
                 <div className="flex items-center gap-2 text-[#FF7A00] text-xs font-bold tracking-wider uppercase">
                   <Shield className="w-4 h-4" />
@@ -1235,82 +1483,145 @@ function OrderTrackingContent() {
 
           {/* When no order is looked up yet (Default Guide & FAQs View) */}
           {!selectedOrder && !loading && (
-            <div className="space-y-8 my-6">
-              {/* 3 Step Process Card */}
-              <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-4">
-                <h3 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider text-center">
-                  How Delivery Tracking Works
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3.5">
-                    <div className="w-9 h-9 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
-                      <Package className="w-5 h-5" />
+            <div className="space-y-6 my-4">
+              {/* How Your Order Reaches You */}
+              <div className="space-y-4 pt-2">
+                <div className="text-center pt-2 pb-1">
+                  <div className="inline-flex items-center justify-center gap-1.5">
+                    <h3 className="text-xl sm:text-2xl font-display font-extrabold text-gray-900 tracking-tight">
+                      How Your Order <span className="text-[#FF7A00]">Reaches You</span>
+                    </h3>
+                    <span className="text-[#FF7A00] text-base -mt-2">✨</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
+                    A quick look at our fast, safe and reliable delivery process.
+                  </p>
+                  <div className="w-12 h-1 bg-[#FF7A00] rounded-full mx-auto mt-2.5 mb-2" />
+                </div>
+
+                <div className="relative space-y-3">
+                  <div className="absolute left-[29px] sm:left-[33px] top-7 bottom-7 w-[2px] border-l-2 border-dashed border-[#FF7A00]/40 z-0 pointer-events-none" />
+
+                  {/* Step 1 */}
+                  <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
+                    <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
+                        1
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
+                            Order Dispatched
+                          </h4>
+                          <span className="text-[#FF7A00] text-xs">✨</span>
+                        </div>
+                        <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
+                          Orders are carefully packed within 24 hours in tamper-proof parcels with strict quality control.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-sm text-gray-900">1. Order Dispatched</h4>
-                      <p className="text-xs text-gray-500 leading-relaxed mt-0.5">
-                        Orders are carefully packed in tamper-proof bubble parcels within 24 business hours.
-                      </p>
-                    </div>
+                    <DeliveryBoxIllustration />
                   </div>
 
-                  <div className="flex items-start gap-3.5">
-                    <div className="w-9 h-9 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
-                      <Truck className="w-5 h-5" />
+                  {/* Step 2 */}
+                  <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
+                    <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
+                        2
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
+                          Express Logistics
+                        </h4>
+                        <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
+                          Shipped through our trusted courier partners (Delhivery, Bluedart, Shadowfax) with live tracking updates.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-sm text-gray-900">2. Express Logistics</h4>
-                      <p className="text-xs text-gray-500 leading-relaxed mt-0.5">
-                        Handed over to premier courier partners (DTDC, Bluedart, Delhivery) with live milestone scans.
-                      </p>
-                    </div>
+                    <DeliveryTruckIllustration />
                   </div>
 
-                  <div className="flex items-start gap-3.5">
-                    <div className="w-9 h-9 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
-                      <CheckCircle2 className="w-5 h-5" />
+                  {/* Step 3 */}
+                  <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
+                    <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
+                        3
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
+                          Doorstep Delivery
+                        </h4>
+                        <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
+                          Get real-time WhatsApp &amp; Email updates, with OTP verification to ensure safe and secure delivery.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-sm text-gray-900">3. Doorstep Delivery</h4>
-                      <p className="text-xs text-gray-500 leading-relaxed mt-0.5">
-                        Real-time WhatsApp &amp; SMS alerts ensure your item reaches you safely with OTP verification.
-                      </p>
-                    </div>
+                    <DoorstepDeliveryIllustration />
                   </div>
                 </div>
               </div>
 
               {/* FAQs Accordion */}
-              <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 sm:p-6">
-                <div className="text-center mb-5">
-                  <h3 className="text-lg font-display font-extrabold text-gray-900">
-                    Frequently Asked Questions
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Have questions about delivery? Find quick answers below.
-                  </p>
+              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center border border-orange-200/80 font-black text-sm flex-shrink-0">
+                    ?
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-gray-900">
+                      Frequently Asked Questions
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Quick answers about your order and delivery.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="divide-y divide-gray-100">
+                <div className="space-y-2.5 pt-1">
                   {faqs.map((faq, idx) => {
                     const isOpen = faqOpen === idx;
+                    const IconComponent = faq.icon;
                     return (
-                      <div key={idx} className="py-3">
+                      <div
+                        key={idx}
+                        className={`rounded-2xl transition-all ${
+                          isOpen
+                            ? "bg-[#FFF8F4] border border-[#FFD8C2] p-4 shadow-2xs"
+                            : "bg-white p-3.5 sm:p-4 border border-gray-100 hover:border-gray-200 shadow-2xs"
+                        }`}
+                      >
                         <button
+                          type="button"
                           onClick={() => setFaqOpen(isOpen ? null : idx)}
-                          className="w-full flex items-center justify-between text-left font-bold text-xs sm:text-sm text-gray-900 hover:text-[#FF7A00] transition-colors py-1 cursor-pointer"
+                          className="w-full flex items-center justify-between gap-3 text-left cursor-pointer"
                         >
-                          <span>{faq.q}</span>
-                          {isOpen ? (
-                            <ChevronUp className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          )}
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div
+                              className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                                isOpen
+                                  ? "bg-orange-100/80 text-[#FF7A00]"
+                                  : "bg-orange-50 text-[#FF7A00]"
+                              }`}
+                            >
+                              <IconComponent className="w-4 h-4" />
+                            </div>
+                            <span className="font-extrabold text-xs sm:text-sm text-gray-900">
+                              {faq.q}
+                            </span>
+                          </div>
+                          <div className="text-[#FF7A00] flex-shrink-0 ml-1">
+                            {isOpen ? (
+                              <ChevronUp className="w-4 h-4" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4" />
+                            )}
+                          </div>
                         </button>
+
                         {isOpen && (
-                          <p className="mt-1.5 text-xs text-gray-600 leading-relaxed pl-1 pr-4">
+                          <div className="mt-3 pt-2.5 border-t border-orange-200/60 pl-12 pr-2 text-xs text-gray-600 leading-relaxed">
                             {faq.a}
-                          </p>
+                          </div>
                         )}
                       </div>
                     );
