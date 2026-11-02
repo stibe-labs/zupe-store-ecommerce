@@ -84,9 +84,10 @@ export async function POST(req: NextRequest) {
     let recoveryToken: string = `rec_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`;
 
     try {
+      const raw10 = digits.slice(-10);
       const existing = await executeD1Query<any>(
-        "SELECT id, recovery_token, whatsapp_sent_count, last_whatsapp_sent_at FROM abandoned_checkouts WHERE customer_phone = ? AND status = 'abandoned' ORDER BY created_at DESC LIMIT 1",
-        [digits]
+        "SELECT id, recovery_token, whatsapp_sent_count, last_whatsapp_sent_at FROM abandoned_checkouts WHERE (customer_phone = ? OR customer_phone LIKE ?) AND status = 'abandoned' ORDER BY created_at DESC LIMIT 1",
+        [digits, `%${raw10}%`]
       );
       if (existing && existing.length > 0 && existing[0]?.id) {
         existingId = existing[0].id;
@@ -95,8 +96,9 @@ export async function POST(req: NextRequest) {
         existingLastSentAt = existing[0].last_whatsapp_sent_at || null;
       }
     } catch (e) {
+      const raw10 = digits.slice(-10);
       const mem = inMemoryAbandoned.find(
-        (a) => a.customer_phone === digits && a.status === "abandoned"
+        (a) => (a.customer_phone === digits || a.customer_phone?.endsWith(raw10)) && a.status === "abandoned"
       );
       if (mem) {
         existingId = mem.id;

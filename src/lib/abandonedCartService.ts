@@ -14,6 +14,7 @@ export async function processOverdueAbandonedCarts(): Promise<number> {
   let dispatchedCount = 0;
   const ONE_HOUR_MS = 60 * 60 * 1000; // 1 hour in milliseconds
   const nowMs = Date.now();
+  const processedPhones = new Set<string>();
 
   try {
     const overdue = await executeD1Query<any>(
@@ -34,6 +35,12 @@ export async function processOverdueAbandonedCarts(): Promise<number> {
         }
 
         const phoneDigits = (row.customer_phone || "").replace(/\D/g, "");
+        const rawPhone = phoneDigits.slice(-10);
+
+        if (!rawPhone || processedPhones.has(rawPhone)) {
+          continue;
+        }
+        processedPhones.add(rawPhone);
 
         // Verify if customer has already placed an order since creating this cart
         if (phoneDigits) {
@@ -41,7 +48,7 @@ export async function processOverdueAbandonedCarts(): Promise<number> {
             `SELECT id FROM orders 
              WHERE (shipping_address LIKE ? OR shipping_address LIKE ?)
              ORDER BY created_at DESC LIMIT 1`,
-            [`%${phoneDigits}%`, `%${phoneDigits.slice(-10)}%`]
+            [`%${phoneDigits}%`, `%${rawPhone}%`]
           );
 
           if (recentOrders && recentOrders.length > 0) {
@@ -51,8 +58,8 @@ export async function processOverdueAbandonedCarts(): Promise<number> {
                SET status = 'recovered', 
                    recovered_order_id = ?, 
                    updated_at = CURRENT_TIMESTAMP 
-               WHERE id = ?`,
-              [recentOrders[0].id, row.id]
+               WHERE customer_phone LIKE ? AND status = 'abandoned'`,
+              [recentOrders[0].id, `%${rawPhone}%`]
             );
             continue;
           }
@@ -91,13 +98,13 @@ export async function processOverdueAbandonedCarts(): Promise<number> {
 
         if (sent) {
           dispatchedCount++;
-          // Strictly mark whatsapp_sent_count = 1 so this cart is NEVER reminded again
+          // Strictly mark all abandoned checkouts for this customer so they are NEVER reminded again
           await executeD1Query(
             `UPDATE abandoned_checkouts 
              SET whatsapp_sent_count = 1, 
                  last_whatsapp_sent_at = CURRENT_TIMESTAMP 
-             WHERE id = ?`,
-            [row.id]
+             WHERE customer_phone LIKE ? AND status = 'abandoned'`,
+            [`%${rawPhone}%`]
           );
           console.log(`[1h Abandoned Cart] Dispatched 1-time recovery reminder for ${row.customer_phone}`);
         }
