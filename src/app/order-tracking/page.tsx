@@ -679,6 +679,685 @@ function OrderTrackingContent() {
     { label: "Delivered", icon: Package },
   ];
 
+  /* -------------------------------------------------------------------------- */
+  /* Reusable Sub-Card Renderers (Shared between Mobile Stack & Desktop Grid)   */
+  /* -------------------------------------------------------------------------- */
+
+  // 1. Milestone Stepper Card
+  const renderStepperCard = () => (
+    <div className="bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm">
+      <div className="relative flex items-center justify-between px-2 sm:px-4 max-w-3xl mx-auto">
+        {/* Background Gray Connector Line */}
+        <div className="absolute left-6 right-6 top-5 -translate-y-1/2 h-[3px] bg-gray-100" />
+        {/* Active Orange Connector Line */}
+        <div
+          className="absolute left-6 top-5 -translate-y-1/2 h-[3px] bg-[#FF7A00] transition-all duration-500"
+          style={{
+            width:
+              milestoneStep === 1
+                ? "0%"
+                : milestoneStep === 2
+                ? "33%"
+                : milestoneStep === 3
+                ? "66%"
+                : "calc(100% - 48px)",
+          }}
+        />
+
+        {/* 4 Steps */}
+        {steps.map((st, i) => {
+          const stepNum = i + 1;
+          const isPast = milestoneStep > stepNum;
+          const isCurrent = milestoneStep === stepNum;
+
+          return (
+            <div key={i} className="flex flex-col items-center relative z-10">
+              <div
+                className={`relative w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center transition-all ${
+                  isCurrent
+                    ? "bg-orange-50 text-[#FF7A00] border-2 border-[#FF7A00] shadow-sm ring-4 ring-orange-100"
+                    : isPast
+                    ? "bg-orange-50 text-[#FF7A00] border border-orange-200"
+                    : "bg-gray-50 text-gray-300 border border-gray-200"
+                }`}
+              >
+                <st.icon className="w-5 h-5" />
+                {(isPast || (isCurrent && stepNum === 1)) && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[9px] font-bold border-2 border-white">
+                    ✓
+                  </span>
+                )}
+              </div>
+              <span
+                className={`mt-2 text-[10px] sm:text-xs font-bold text-center tracking-tight ${
+                  isCurrent
+                    ? "text-gray-900 font-extrabold"
+                    : isPast
+                    ? "text-gray-700"
+                    : "text-gray-400"
+                }`}
+              >
+                {st.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  // 2. Order Header Card
+  const renderOrderHeaderCard = () => {
+    if (!selectedOrder) return null;
+    return (
+      <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
+            Order #{cleanOrderId}
+          </h2>
+          <button
+            onClick={() => copyToClipboard(cleanOrderId, "id")}
+            className="p-1 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
+            title="Copy Order ID"
+          >
+            {copiedOrderId ? (
+              <Check className="w-4 h-4 text-emerald-600" />
+            ) : (
+              <Copy className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+
+        <p className="text-xs text-gray-500 flex items-center gap-1.5">
+          <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <span>
+            Placed on{" "}
+            {new Date(selectedOrder.created_at || Date.now()).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        </p>
+
+        {/* Inner Highlight Status Card */}
+        <div className="bg-gradient-to-r from-orange-50 via-amber-50/50 to-orange-50/40 rounded-2xl p-4 border border-orange-200/70 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FF9800] to-[#FF5722] flex items-center justify-center text-white shadow-md shadow-orange-500/20 text-xl flex-shrink-0">
+              📦
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5 text-emerald-700 text-xs font-bold mb-0.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Live Courier Scan</span>
+              </div>
+              <div className="text-sm sm:text-base font-extrabold text-[#FF7A00]">
+                {getStatusTitle(
+                  selectedOrder.delivery_status || selectedOrder.status,
+                  liveTracking?.current_status
+                )}
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() =>
+              fetchTracking(selectedOrder.shopify_order_id || selectedOrder.id || inputTerm, true)
+            }
+            disabled={loading}
+            title="Refresh live status"
+            className="p-2.5 rounded-xl bg-white border border-gray-200/80 hover:bg-gray-50 text-gray-600 hover:text-gray-900 shadow-2xs transition-all active:scale-95 cursor-pointer flex-shrink-0"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-[#FF7A00]" : ""}`} />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // 3. Switch to Prepaid COD Offer Card
+  const renderCodOfferCard = () => {
+    if (!selectedOrder) return null;
+    const isCodPending =
+      isCod &&
+      (selectedOrder.payment_status || "").toLowerCase() !== "paid" &&
+      (selectedOrder.payment_status || "").toLowerCase() !== "completed";
+
+    if (!isCodPending) return null;
+
+    const baseAmount = Number(selectedOrder.total_amount) || 0;
+    const discounted = Math.max(0, baseAmount - 49);
+
+    return (
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border-2 border-[#FF7A00]/40 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#FF7A00] text-white flex items-center justify-center shrink-0 font-bold text-base shadow-sm">
+            ⚡
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <h4 className="font-extrabold text-gray-900 text-xs sm:text-sm">
+                Switch to Prepaid &amp; Save ₹49!
+              </h4>
+              <span className="text-[9px] uppercase font-extrabold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                Discount
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-600 mt-0.5">
+              Pay ₹{discounted.toLocaleString()} online now instead of cash. Free shipping included!
+            </p>
+          </div>
+        </div>
+        <Link
+          href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(
+            selectedOrder.id
+          )}`}
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-extrabold text-xs shadow-sm transition-all whitespace-nowrap active:scale-[0.98]"
+        >
+          <span>Pay ₹{discounted.toLocaleString()} Now</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+    );
+  };
+
+  // 4. Live Shipment Journey Card
+  const renderJourneyCard = () => {
+    if (!selectedOrder) return null;
+    const checkpoints = buildTrackingCheckpoints(selectedOrder, liveTracking);
+
+    return (
+      <div
+        id="live-shipment-journey"
+        ref={journeySectionRef}
+        className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-4"
+      >
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h3 className="text-base font-extrabold text-gray-900 flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
+              <Truck className="w-4 h-4" />
+            </div>
+            <span>Live Shipment Journey</span>
+          </h3>
+          {lastUpdated && (
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Live Status Updated - {lastUpdated}</span>
+            </span>
+          )}
+        </div>
+
+        {/* Timeline Vertical Stack */}
+        <div className="relative pl-6 space-y-3.5 my-2">
+          {/* Vertical connector line */}
+          <div className="absolute left-[11px] top-4 bottom-4 w-[2px] bg-gradient-to-b from-[#FF7A00] via-orange-200 to-gray-200" />
+
+          {checkpoints.map((cp, idx) => (
+            <div key={idx} className="relative">
+              {/* Node Icon */}
+              <div
+                className={`absolute -left-[23px] top-4 w-6 h-6 rounded-full flex items-center justify-center z-10 ${
+                  cp.active
+                    ? "bg-[#FF7A00] ring-4 ring-orange-100 text-white"
+                    : cp.completed
+                    ? "bg-emerald-500 text-white"
+                    : "bg-gray-200 text-gray-400"
+                }`}
+              >
+                {cp.active ? (
+                  <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                ) : cp.completed ? (
+                  <Check className="w-3.5 h-3.5" />
+                ) : (
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                )}
+              </div>
+
+              {/* Checkpoint Detail Card */}
+              <div className="bg-[#F9FAFB] rounded-2xl p-4 border border-gray-100/90 ml-2">
+                <h4
+                  className={`text-sm font-extrabold ${
+                    cp.active ? "text-[#FF7A00]" : "text-gray-900"
+                  }`}
+                >
+                  {cp.title}
+                </h4>
+                {cp.timestamp && (
+                  <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                    <span>{cp.timestamp}</span>
+                  </p>
+                )}
+                {cp.location && (
+                  <p className="text-xs font-semibold text-gray-600 mt-1 flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                    <span>{cp.location}</span>
+                  </p>
+                )}
+                {cp.description && (
+                  <p className="text-xs text-gray-500 leading-relaxed mt-2 pt-2 border-t border-gray-100">
+                    {cp.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // 5. Shipment & Tracking Details Card
+  const renderTrackingDetailsCard = () => {
+    if (!selectedOrder) return null;
+    return (
+      <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-3">
+        <h3 className="text-base font-extrabold text-gray-900 flex items-center gap-2 mb-1">
+          <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
+            <Package className="w-4 h-4" />
+          </div>
+          <span>Shipment &amp; Tracking Details</span>
+        </h3>
+
+        {/* Row 1: Courier Partner */}
+        <div className="bg-[#F9FAFB] rounded-2xl p-3.5 sm:p-4 border border-gray-100 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
+              <Truck className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[11px] text-gray-400 font-medium">Courier Partner</p>
+              <p className="text-sm font-extrabold text-gray-900">
+                {selectedOrder.courier_partner || (hasAwb ? "Courier Partner" : "Assigned upon dispatch")}
+              </p>
+            </div>
+          </div>
+          {selectedOrder.courier_partner ? (
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold italic border border-blue-200">
+              {selectedOrder.courier_partner} &gt;
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 text-[11px] font-semibold border border-gray-200">
+              Standard Express
+            </span>
+          )}
+        </div>
+
+        {/* Row 2: AWB / Waybill Number */}
+        <div className="bg-[#F9FAFB] rounded-2xl p-3.5 sm:p-4 border border-gray-100 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
+              <BarcodeIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[11px] text-gray-400 font-medium">AWB / Waybill Number</p>
+              <p className="text-sm font-mono font-extrabold text-gray-900">
+                {hasAwb ? selectedOrder.shiprocket_awb : "Pending Dispatch"}
+              </p>
+            </div>
+          </div>
+          {hasAwb && (
+            <button
+              onClick={() =>
+                copyToClipboard(selectedOrder.shiprocket_awb!, "awb")
+              }
+              className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+              title="Copy AWB"
+            >
+              {copiedAWB ? (
+                <Check className="w-4 h-4 text-emerald-600" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Row 3: External Tracking */}
+        <div className="bg-[#F9FAFB] rounded-2xl p-3.5 sm:p-4 border border-gray-100 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
+              <ExternalLink className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[11px] text-gray-400 font-medium">External Tracking</p>
+              {hasAwb ? (
+                <a
+                  href={getCourierTrackingUrl(
+                    selectedOrder.courier_partner,
+                    selectedOrder.shiprocket_awb
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs sm:text-sm font-bold text-[#FF7A00] hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Open Courier Portal</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              ) : (
+                <span className="text-xs text-gray-400 font-medium italic block pt-0.5">
+                  Available once dispatched
+                </span>
+              )}
+            </div>
+          </div>
+          {hasAwb ? <ChevronRight className="w-4 h-4 text-gray-400" /> : null}
+        </div>
+      </div>
+    );
+  };
+
+  // 6. Items in this Package Card
+  const renderItemsCard = () => {
+    if (!selectedOrder) return null;
+    return (
+      <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-4">
+        <h3 className="text-base font-extrabold text-gray-900 flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
+            <Package className="w-4 h-4" />
+          </div>
+          <span>Items in this Package</span>
+        </h3>
+
+        {/* Items List */}
+        <div className="divide-y divide-gray-100">
+          {orderItems.length > 0 ? (
+            orderItems.map((it: any, idx: number) => (
+              <div key={idx} className="py-3.5 first:pt-0 last:pb-0 flex items-center gap-3.5">
+                <div className="relative w-14 h-14 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100">
+                  <Image
+                    src={it.image || getProductImageFallback(it.product_name)}
+                    alt={it.product_name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-bold text-gray-900 truncate">
+                    {it.product_name}
+                  </h4>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Qty: {it.quantity}
+                  </p>
+                </div>
+                <div className="text-right flex-shrink-0 font-extrabold text-sm text-gray-900">
+                  ₹{((Number(it.unit_price || it.price) || 0) * (Number(it.quantity) || 1)).toLocaleString()}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="py-3.5 flex items-center gap-3.5">
+              <div className="relative w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center text-[#FF7A00] flex-shrink-0">
+                <Package className="w-6 h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-bold text-gray-900 truncate">
+                  Curated Zupe Item
+                </h4>
+                <p className="text-xs text-gray-400 mt-0.5">Qty: 1</p>
+              </div>
+              <div className="text-right flex-shrink-0 font-extrabold text-sm text-gray-900">
+                ₹{Number(selectedOrder.total_amount || 0).toLocaleString()}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Payment Method */}
+        <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+          <span className="text-gray-500 flex items-center gap-1.5 font-medium">
+            <CreditCard className="w-4 h-4 text-gray-400" />
+            <span>Payment Method</span>
+          </span>
+          <span className="font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span>{isCod ? "Cash on Delivery" : "Prepaid (Completed)"}</span>
+          </span>
+        </div>
+
+        {/* Total Paid */}
+        <div className="pt-2 flex items-center justify-between">
+          <span className="font-extrabold text-sm text-gray-900">
+            Total Paid
+          </span>
+          <span className="bg-[#FF7A00] text-white font-extrabold px-4 py-1.5 rounded-full text-sm shadow-xs shadow-[#FF7A00]/25">
+            ₹{Number(selectedOrder.total_amount || 0).toLocaleString()}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  // 7. Shipping Destination Card
+  const renderDestinationCard = () => {
+    if (!selectedOrder) return null;
+    return (
+      <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-3">
+        <h3 className="text-base font-extrabold text-gray-900 flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
+            <MapPin className="w-4 h-4" />
+          </div>
+          <span>Shipping Destination</span>
+        </h3>
+
+        <div className="space-y-2 pt-1 text-xs">
+          <div className="flex items-center gap-2.5 text-gray-900 font-extrabold text-sm">
+            <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <span>{selectedOrder.customer_name || "Valued Customer"}</span>
+          </div>
+
+          {selectedOrder.shipping_address && (
+            <div className="flex items-start gap-2.5 text-gray-600 leading-relaxed">
+              <Home className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+              <span>{selectedOrder.shipping_address}</span>
+            </div>
+          )}
+
+          {selectedOrder.customer_phone && (
+            <div className="flex items-center gap-2.5 text-gray-600 font-mono">
+              <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <span>Phone: {selectedOrder.customer_phone}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // 8. How Your Order Reaches You Guide Card
+  const renderDeliveryProcessCard = () => (
+    <div className="space-y-4 pt-2">
+      <div className="text-center pt-2 pb-1">
+        <div className="inline-flex items-center justify-center gap-1.5">
+          <h3 className="text-xl sm:text-2xl font-display font-extrabold text-gray-900 tracking-tight">
+            How Your Order <span className="text-[#FF7A00]">Reaches You</span>
+          </h3>
+          <span className="text-[#FF7A00] text-base -mt-2">✨</span>
+        </div>
+        <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
+          A quick look at our fast, safe and reliable delivery process.
+        </p>
+        <div className="w-12 h-1 bg-[#FF7A00] rounded-full mx-auto mt-2.5 mb-2" />
+      </div>
+
+      <div className="relative space-y-3">
+        {/* Dashed orange line connecting the number badges on the left */}
+        <div className="absolute left-[29px] sm:left-[33px] top-7 bottom-7 w-[2px] border-l-2 border-dashed border-[#FF7A00]/40 z-0 pointer-events-none" />
+
+        {/* Step 1: Order Dispatched */}
+        <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
+          <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
+              1
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
+                  Order Dispatched
+                </h4>
+                <span className="text-[#FF7A00] text-xs">✨</span>
+              </div>
+              <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
+                Orders are carefully packed within 24 hours in tamper-proof parcels with strict quality control.
+              </p>
+            </div>
+          </div>
+          <DeliveryBoxIllustration />
+        </div>
+
+        {/* Step 2: Express Logistics */}
+        <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
+          <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
+              2
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
+                Express Logistics
+              </h4>
+              <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
+                Shipped through our trusted courier partners (Delhivery, Bluedart, Shadowfax) with live tracking updates.
+              </p>
+            </div>
+          </div>
+          <DeliveryTruckIllustration />
+        </div>
+
+        {/* Step 3: Doorstep Delivery */}
+        <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
+          <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
+              3
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
+                Doorstep Delivery
+              </h4>
+              <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
+                Get real-time WhatsApp &amp; Email updates, with OTP verification to ensure safe and secure delivery.
+              </p>
+            </div>
+          </div>
+          <DoorstepDeliveryIllustration />
+        </div>
+      </div>
+    </div>
+  );
+
+  // 9. FAQ Accordion Card
+  const renderFaqCard = () => (
+    <div className="bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center border border-orange-200/80 font-black text-sm flex-shrink-0">
+          ?
+        </div>
+        <div>
+          <h3 className="text-base font-extrabold text-gray-900">
+            Frequently Asked Questions
+          </h3>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Quick answers about your order and delivery.
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-2.5 pt-1">
+        {faqs.map((faq, idx) => {
+          const isOpen = faqOpen === idx;
+          const IconComponent = faq.icon;
+          return (
+            <div
+              key={idx}
+              className={`rounded-2xl transition-all ${
+                isOpen
+                  ? "bg-[#FFF8F4] border border-[#FFD8C2] p-4 shadow-2xs"
+                  : "bg-white p-3.5 sm:p-4 border border-gray-100 hover:border-gray-200 shadow-2xs"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => setFaqOpen(isOpen ? null : idx)}
+                className="w-full flex items-center justify-between gap-3 text-left cursor-pointer"
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                      isOpen
+                        ? "bg-orange-100/80 text-[#FF7A00]"
+                        : "bg-orange-50 text-[#FF7A00]"
+                    }`}
+                  >
+                    <IconComponent className="w-4 h-4" />
+                  </div>
+                  <span className="font-extrabold text-xs sm:text-sm text-gray-900">
+                    {faq.q}
+                  </span>
+                </div>
+                <div className="text-[#FF7A00] flex-shrink-0 ml-1">
+                  {isOpen ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </div>
+              </button>
+
+              {isOpen && (
+                <div className="mt-3 pt-2.5 border-t border-orange-200/60 pl-12 pr-2 text-xs text-gray-600 leading-relaxed">
+                  {faq.a}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  // 10. Zupe Care Support Dark Card
+  const renderSupportCard = () => (
+    <div className="bg-[#0B1220] rounded-3xl p-5 sm:p-6 text-white shadow-lg border border-gray-800 space-y-4">
+      <div className="flex items-center gap-2 text-[#FF7A00] text-xs font-bold tracking-wider uppercase">
+        <Shield className="w-4 h-4" />
+        <span className="text-gray-500 font-light">|</span>
+        <span>ZUPE CARE SUPPORT</span>
+      </div>
+
+      <div>
+        <h4 className="text-base sm:text-lg font-extrabold text-white">
+          Need help with this shipment?
+        </h4>
+        <p className="text-xs text-gray-300 mt-1 leading-relaxed">
+          Our support team can help with address issues or courier delivery questions.
+        </p>
+      </div>
+
+      <div className="space-y-2.5 pt-1">
+        <a
+          href={`https://wa.me/919744122853?text=${encodeURIComponent(
+            `Hi Zupe Store, I need help with my Order #${cleanOrderId}`
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-white font-extrabold text-sm transition-all shadow-md active:scale-[0.99] cursor-pointer"
+        >
+          <WhatsAppIcon className="w-4 h-4" />
+          <span>Chat on WhatsApp</span>
+        </a>
+
+        <a
+          href="tel:+919744122853"
+          className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-extrabold text-sm transition-all border border-white/10 active:scale-[0.99] cursor-pointer"
+        >
+          <Phone className="w-4 h-4" />
+          <span>Call +91 97441 22853</span>
+        </a>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[#FBFBFC] text-[#111111] flex flex-col justify-between">
       <Navbar />
@@ -686,7 +1365,7 @@ function OrderTrackingContent() {
       <main className="flex-1 pb-16">
         {/* Hero & Search Header */}
         <div className="pt-8 pb-4 px-4 sm:px-6">
-          <div className="max-w-xl md:max-w-2xl mx-auto text-center">
+          <div className="max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto text-center">
             {/* Live Order Tracking Capsule Pill */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 border border-orange-200/80 mb-3 shadow-2xs">
               <span className="relative flex h-2 w-2">
@@ -825,7 +1504,7 @@ function OrderTrackingContent() {
         </div>
 
         {/* Results Area */}
-        <div className="max-w-xl md:max-w-2xl mx-auto px-4 sm:px-6 mt-4 space-y-4">
+        <div className="w-full max-w-xl lg:max-w-[1600px] mx-auto px-4 sm:px-6 mt-4 space-y-4">
           {/* Error Message */}
           {errorMessage && (
             <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3">
@@ -858,7 +1537,7 @@ function OrderTrackingContent() {
               <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
                 Found {matchedOrders.length} orders matching your search:
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {matchedOrders.map((ord) => {
                   const isSelected = selectedOrder?.id === ord.id;
                   return (
@@ -897,806 +1576,68 @@ function OrderTrackingContent() {
 
           {/* Active Order Tracking Display */}
           {selectedOrder && (
-            <div className="space-y-4">
-              {/* 1. 4-Step Milestone Stepper Card */}
-              <div className="bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm">
-                <div className="relative flex items-center justify-between px-2 sm:px-4">
-                  {/* Background Gray Connector Line */}
-                  <div className="absolute left-6 right-6 top-5 -translate-y-1/2 h-[3px] bg-gray-100" />
-                  {/* Active Orange Connector Line */}
-                  <div
-                    className="absolute left-6 top-5 -translate-y-1/2 h-[3px] bg-[#FF7A00] transition-all duration-500"
-                    style={{
-                      width:
-                        milestoneStep === 1
-                          ? "0%"
-                          : milestoneStep === 2
-                          ? "33%"
-                          : milestoneStep === 3
-                          ? "66%"
-                          : "calc(100% - 48px)",
-                    }}
-                  />
-
-                  {/* 4 Steps */}
-                  {steps.map((st, i) => {
-                    const stepNum = i + 1;
-                    const isPast = milestoneStep > stepNum;
-                    const isCurrent = milestoneStep === stepNum;
-
-                    return (
-                      <div key={i} className="flex flex-col items-center relative z-10">
-                        <div
-                          className={`relative w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center transition-all ${
-                            isCurrent
-                              ? "bg-orange-50 text-[#FF7A00] border-2 border-[#FF7A00] shadow-sm ring-4 ring-orange-100"
-                              : isPast
-                              ? "bg-orange-50 text-[#FF7A00] border border-orange-200"
-                              : "bg-gray-50 text-gray-300 border border-gray-200"
-                          }`}
-                        >
-                          <st.icon className="w-5 h-5" />
-                          {(isPast || (isCurrent && stepNum === 1)) && (
-                            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[9px] font-bold border-2 border-white">
-                              ✓
-                            </span>
-                          )}
-                        </div>
-                        <span
-                          className={`mt-2 text-[10px] sm:text-xs font-bold text-center tracking-tight ${
-                            isCurrent
-                              ? "text-gray-900 font-extrabold"
-                              : isPast
-                              ? "text-gray-700"
-                              : "text-gray-400"
-                          }`}
-                        >
-                          {st.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+            <>
+              {/* Mobile Layout: 100% Identical to before */}
+              <div className="block lg:hidden space-y-4">
+                {renderStepperCard()}
+                {renderOrderHeaderCard()}
+                {renderCodOfferCard()}
+                {renderJourneyCard()}
+                {renderTrackingDetailsCard()}
+                {renderItemsCard()}
+                {renderDestinationCard()}
+                {renderDeliveryProcessCard()}
+                {renderFaqCard()}
+                {renderSupportCard()}
               </div>
 
-              {/* 2. Order Header Card */}
-              <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-3">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
-                    Order #{cleanOrderId}
-                  </h2>
-                  <button
-                    onClick={() => copyToClipboard(cleanOrderId, "id")}
-                    className="p-1 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
-                    title="Copy Order ID"
-                  >
-                    {copiedOrderId ? (
-                      <Check className="w-4 h-4 text-emerald-600" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
+              {/* Desktop Layout: Balanced 2-Column Grid with Full-Width Stepper */}
+              <div className="hidden lg:block space-y-6">
+                {/* 1. Full-Width Stepper Card */}
+                {renderStepperCard()}
 
-                <p className="text-xs text-gray-500 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                  <span>
-                    Placed on{" "}
-                    {new Date(selectedOrder.created_at || Date.now()).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </p>
-
-                {/* Inner Highlight Status Card */}
-                <div className="bg-gradient-to-r from-orange-50 via-amber-50/50 to-orange-50/40 rounded-2xl p-4 border border-orange-200/70 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FF9800] to-[#FF5722] flex items-center justify-center text-white shadow-md shadow-orange-500/20 text-xl flex-shrink-0">
-                      📦
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5 text-emerald-700 text-xs font-bold mb-0.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>Live Courier Scan</span>
-                      </div>
-                      <div className="text-sm sm:text-base font-extrabold text-[#FF7A00]">
-                        {getStatusTitle(
-                          selectedOrder.delivery_status || selectedOrder.status,
-                          liveTracking?.current_status
-                        )}
-                      </div>
-                    </div>
+                {/* 2. Two-Column Grid */}
+                <div className="grid grid-cols-12 gap-6 items-start">
+                  {/* Left Column (col-span-7): Order Header, Live Journey Timeline, Delivery Guide, FAQs */}
+                  <div className="col-span-7 space-y-5">
+                    {renderOrderHeaderCard()}
+                    {renderJourneyCard()}
+                    {renderDeliveryProcessCard()}
+                    {renderFaqCard()}
                   </div>
 
-                  <button
-                    onClick={() =>
-                      fetchTracking(selectedOrder.shopify_order_id || selectedOrder.id || inputTerm, true)
-                    }
-                    disabled={loading}
-                    title="Refresh live status"
-                    className="p-2.5 rounded-xl bg-white border border-gray-200/80 hover:bg-gray-50 text-gray-600 hover:text-gray-900 shadow-2xs transition-all active:scale-95 cursor-pointer flex-shrink-0"
-                  >
-                    <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-[#FF7A00]" : ""}`} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Optional COD Switch to Prepaid Offer */}
-              {(() => {
-                const isCodPending =
-                  isCod &&
-                  (selectedOrder.payment_status || "").toLowerCase() !== "paid" &&
-                  (selectedOrder.payment_status || "").toLowerCase() !== "completed";
-
-                if (!isCodPending) return null;
-
-                const baseAmount = Number(selectedOrder.total_amount) || 0;
-                const discounted = Math.max(0, baseAmount - 49);
-
-                return (
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border-2 border-[#FF7A00]/40 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-[#FF7A00] text-white flex items-center justify-center shrink-0 font-bold text-base shadow-sm">
-                        ⚡
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <h4 className="font-extrabold text-gray-900 text-xs sm:text-sm">
-                            Switch to Prepaid &amp; Save ₹49!
-                          </h4>
-                          <span className="text-[9px] uppercase font-extrabold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
-                            Discount
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-gray-600 mt-0.5">
-                          Pay ₹{discounted.toLocaleString()} online now instead of cash. Free shipping included!
-                        </p>
-                      </div>
-                    </div>
-                    <Link
-                      href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(
-                        selectedOrder.id
-                      )}`}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-extrabold text-xs shadow-sm transition-all whitespace-nowrap active:scale-[0.98]"
-                    >
-                      <span>Pay ₹{discounted.toLocaleString()} Now</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                );
-              })()}
-
-              {/* 3. Live Shipment Journey Card */}
-              {(() => {
-                const checkpoints = buildTrackingCheckpoints(selectedOrder, liveTracking);
-
-                return (
-                  <div
-                    id="live-shipment-journey"
-                    ref={journeySectionRef}
-                    className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-4"
-                  >
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <h3 className="text-base font-extrabold text-gray-900 flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
-                          <Truck className="w-4 h-4" />
-                        </div>
-                        <span>Live Shipment Journey</span>
-                      </h3>
-                      {lastUpdated && (
-                        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span>Live Status Updated - {lastUpdated}</span>
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Timeline Vertical Stack */}
-                    <div className="relative pl-6 space-y-3.5 my-2">
-                      {/* Vertical connector line */}
-                      <div className="absolute left-[11px] top-4 bottom-4 w-[2px] bg-gradient-to-b from-[#FF7A00] via-orange-200 to-gray-200" />
-
-                      {checkpoints.map((cp, idx) => (
-                        <div key={idx} className="relative">
-                          {/* Node Icon */}
-                          <div
-                            className={`absolute -left-[23px] top-4 w-6 h-6 rounded-full flex items-center justify-center z-10 ${
-                              cp.active
-                                ? "bg-[#FF7A00] ring-4 ring-orange-100 text-white"
-                                : cp.completed
-                                ? "bg-emerald-500 text-white"
-                                : "bg-gray-200 text-gray-400"
-                            }`}
-                          >
-                            {cp.active ? (
-                              <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-                            ) : cp.completed ? (
-                              <Check className="w-3.5 h-3.5" />
-                            ) : (
-                              <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                            )}
-                          </div>
-
-                          {/* Checkpoint Detail Card */}
-                          <div className="bg-[#F9FAFB] rounded-2xl p-4 border border-gray-100/90 ml-2">
-                            <h4
-                              className={`text-sm font-extrabold ${
-                                cp.active ? "text-[#FF7A00]" : "text-gray-900"
-                              }`}
-                            >
-                              {cp.title}
-                            </h4>
-                            {cp.timestamp && (
-                              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
-                                <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                                <span>{cp.timestamp}</span>
-                              </p>
-                            )}
-                            {cp.location && (
-                              <p className="text-xs font-semibold text-gray-600 mt-1 flex items-center gap-1.5">
-                                <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                                <span>{cp.location}</span>
-                              </p>
-                            )}
-                            {cp.description && (
-                              <p className="text-xs text-gray-500 leading-relaxed mt-2 pt-2 border-t border-gray-100">
-                                {cp.description}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* 4. Shipment & Tracking Details Card */}
-              <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-3">
-                <h3 className="text-base font-extrabold text-gray-900 flex items-center gap-2 mb-1">
-                  <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
-                    <Package className="w-4 h-4" />
-                  </div>
-                  <span>Shipment &amp; Tracking Details</span>
-                </h3>
-
-                {/* Row 1: Courier Partner */}
-                <div className="bg-[#F9FAFB] rounded-2xl p-3.5 sm:p-4 border border-gray-100 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
-                      <Truck className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-gray-400 font-medium">Courier Partner</p>
-                      <p className="text-sm font-extrabold text-gray-900">
-                        {selectedOrder.courier_partner || (hasAwb ? "Courier Partner" : "Assigned upon dispatch")}
-                      </p>
-                    </div>
-                  </div>
-                  {selectedOrder.courier_partner ? (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold italic border border-blue-200">
-                      {selectedOrder.courier_partner} &gt;
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 text-[11px] font-semibold border border-gray-200">
-                      Standard Express
-                    </span>
-                  )}
-                </div>
-
-                {/* Row 2: AWB / Waybill Number */}
-                <div className="bg-[#F9FAFB] rounded-2xl p-3.5 sm:p-4 border border-gray-100 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
-                      <BarcodeIcon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-gray-400 font-medium">AWB / Waybill Number</p>
-                      <p className="text-sm font-mono font-extrabold text-gray-900">
-                        {hasAwb ? selectedOrder.shiprocket_awb : "Pending Dispatch"}
-                      </p>
-                    </div>
-                  </div>
-                  {hasAwb && (
-                    <button
-                      onClick={() =>
-                        copyToClipboard(selectedOrder.shiprocket_awb!, "awb")
-                      }
-                      className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-                      title="Copy AWB"
-                    >
-                      {copiedAWB ? (
-                        <Check className="w-4 h-4 text-emerald-600" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
-                    </button>
-                  )}
-                </div>
-
-                {/* Row 3: External Tracking */}
-                <div className="bg-[#F9FAFB] rounded-2xl p-3.5 sm:p-4 border border-gray-100 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
-                      <ExternalLink className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-gray-400 font-medium">External Tracking</p>
-                      {hasAwb ? (
-                        <a
-                          href={getCourierTrackingUrl(
-                            selectedOrder.courier_partner,
-                            selectedOrder.shiprocket_awb
-                          )}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs sm:text-sm font-bold text-[#FF7A00] hover:underline inline-flex items-center gap-1"
-                        >
-                          <span>Open Courier Portal</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      ) : (
-                        <span className="text-xs text-gray-400 font-medium italic block pt-0.5">
-                          Available once dispatched
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {hasAwb ? <ChevronRight className="w-4 h-4 text-gray-400" /> : null}
-                </div>
-              </div>
-
-              {/* 5. Items in this Package Card */}
-              <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-4">
-                <h3 className="text-base font-extrabold text-gray-900 flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
-                    <Package className="w-4 h-4" />
-                  </div>
-                  <span>Items in this Package</span>
-                </h3>
-
-                {/* Items List */}
-                <div className="divide-y divide-gray-100">
-                  {orderItems.length > 0 ? (
-                    orderItems.map((it: any, idx: number) => (
-                      <div key={idx} className="py-3.5 first:pt-0 last:pb-0 flex items-center gap-3.5">
-                        <div className="relative w-14 h-14 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100">
-                          <Image
-                            src={it.image || getProductImageFallback(it.product_name)}
-                            alt={it.product_name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-bold text-gray-900 truncate">
-                            {it.product_name}
-                          </h4>
-                          <p className="text-xs text-gray-400 mt-0.5">
-                            Qty: {it.quantity}
-                          </p>
-                        </div>
-                        <div className="text-right flex-shrink-0 font-extrabold text-sm text-gray-900">
-                          ₹{((Number(it.unit_price || it.price) || 0) * (Number(it.quantity) || 1)).toLocaleString()}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="py-3.5 flex items-center gap-3.5">
-                      <div className="relative w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center text-[#FF7A00] flex-shrink-0">
-                        <Package className="w-6 h-6" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-bold text-gray-900 truncate">
-                          Curated Zupe Item
-                        </h4>
-                        <p className="text-xs text-gray-400 mt-0.5">Qty: 1</p>
-                      </div>
-                      <div className="text-right flex-shrink-0 font-extrabold text-sm text-gray-900">
-                        ₹{Number(selectedOrder.total_amount || 0).toLocaleString()}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Payment Method */}
-                <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
-                  <span className="text-gray-500 flex items-center gap-1.5 font-medium">
-                    <CreditCard className="w-4 h-4 text-gray-400" />
-                    <span>Payment Method</span>
-                  </span>
-                  <span className="font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>{isCod ? "Cash on Delivery" : "Prepaid (Completed)"}</span>
-                  </span>
-                </div>
-
-                {/* Total Paid */}
-                <div className="pt-2 flex items-center justify-between">
-                  <span className="font-extrabold text-sm text-gray-900">
-                    Total Paid
-                  </span>
-                  <span className="bg-[#FF7A00] text-white font-extrabold px-4 py-1.5 rounded-full text-sm shadow-xs shadow-[#FF7A00]/25">
-                    ₹{Number(selectedOrder.total_amount || 0).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-
-              {/* 6. Shipping Destination Card */}
-              <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-3">
-                <h3 className="text-base font-extrabold text-gray-900 flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-4 h-4" />
-                  </div>
-                  <span>Shipping Destination</span>
-                </h3>
-
-                <div className="space-y-2 pt-1 text-xs">
-                  <div className="flex items-center gap-2.5 text-gray-900 font-extrabold text-sm">
-                    <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                    <span>{selectedOrder.customer_name || "Valued Customer"}</span>
-                  </div>
-
-                  {selectedOrder.shipping_address && (
-                    <div className="flex items-start gap-2.5 text-gray-600 leading-relaxed">
-                      <Home className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                      <span>{selectedOrder.shipping_address}</span>
-                    </div>
-                  )}
-
-                  {selectedOrder.customer_phone && (
-                    <div className="flex items-center gap-2.5 text-gray-600 font-mono">
-                      <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                      <span>Phone: {selectedOrder.customer_phone}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 7. How Your Order Reaches You (Delivery Process Guide) */}
-              <div className="space-y-4 pt-2">
-                <div className="text-center pt-2 pb-1">
-                  <div className="inline-flex items-center justify-center gap-1.5">
-                    <h3 className="text-xl sm:text-2xl font-display font-extrabold text-gray-900 tracking-tight">
-                      How Your Order <span className="text-[#FF7A00]">Reaches You</span>
-                    </h3>
-                    <span className="text-[#FF7A00] text-base -mt-2">✨</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
-                    A quick look at our fast, safe and reliable delivery process.
-                  </p>
-                  <div className="w-12 h-1 bg-[#FF7A00] rounded-full mx-auto mt-2.5 mb-2" />
-                </div>
-
-                <div className="relative space-y-3">
-                  {/* Dashed orange line connecting the number badges on the left */}
-                  <div className="absolute left-[29px] sm:left-[33px] top-7 bottom-7 w-[2px] border-l-2 border-dashed border-[#FF7A00]/40 z-0 pointer-events-none" />
-
-                  {/* Step 1: Order Dispatched */}
-                  <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
-                    <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
-                        1
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
-                            Order Dispatched
-                          </h4>
-                          <span className="text-[#FF7A00] text-xs">✨</span>
-                        </div>
-                        <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
-                          Orders are carefully packed within 24 hours in tamper-proof parcels with strict quality control.
-                        </p>
-                      </div>
-                    </div>
-                    <DeliveryBoxIllustration />
-                  </div>
-
-                  {/* Step 2: Express Logistics */}
-                  <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
-                    <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
-                        2
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
-                          Express Logistics
-                        </h4>
-                        <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
-                          Shipped through our trusted courier partners (Delhivery, Bluedart, Shadowfax) with live tracking updates.
-                        </p>
-                      </div>
-                    </div>
-                    <DeliveryTruckIllustration />
-                  </div>
-
-                  {/* Step 3: Doorstep Delivery */}
-                  <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
-                    <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
-                        3
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
-                          Doorstep Delivery
-                        </h4>
-                        <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
-                          Get real-time WhatsApp &amp; Email updates, with OTP verification to ensure safe and secure delivery.
-                        </p>
-                      </div>
-                    </div>
-                    <DoorstepDeliveryIllustration />
+                  {/* Right Column (col-span-5): COD Offer, Tracking Details, Items, Address, Zupe Care Support */}
+                  <div className="col-span-5 space-y-5 sticky top-24">
+                    {renderCodOfferCard()}
+                    {renderTrackingDetailsCard()}
+                    {renderItemsCard()}
+                    {renderDestinationCard()}
+                    {renderSupportCard()}
                   </div>
                 </div>
               </div>
-
-              {/* 8. Frequently Asked Questions Accordion */}
-              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center border border-orange-200/80 font-black text-sm flex-shrink-0">
-                    ?
-                  </div>
-                  <div>
-                    <h3 className="text-base font-extrabold text-gray-900">
-                      Frequently Asked Questions
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      Quick answers about your order and delivery.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-2.5 pt-1">
-                  {faqs.map((faq, idx) => {
-                    const isOpen = faqOpen === idx;
-                    const IconComponent = faq.icon;
-                    return (
-                      <div
-                        key={idx}
-                        className={`rounded-2xl transition-all ${
-                          isOpen
-                            ? "bg-[#FFF8F4] border border-[#FFD8C2] p-4 shadow-2xs"
-                            : "bg-white p-3.5 sm:p-4 border border-gray-100 hover:border-gray-200 shadow-2xs"
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setFaqOpen(isOpen ? null : idx)}
-                          className="w-full flex items-center justify-between gap-3 text-left cursor-pointer"
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div
-                              className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
-                                isOpen
-                                  ? "bg-orange-100/80 text-[#FF7A00]"
-                                  : "bg-orange-50 text-[#FF7A00]"
-                              }`}
-                            >
-                              <IconComponent className="w-4 h-4" />
-                            </div>
-                            <span className="font-extrabold text-xs sm:text-sm text-gray-900">
-                              {faq.q}
-                            </span>
-                          </div>
-                          <div className="text-[#FF7A00] flex-shrink-0 ml-1">
-                            {isOpen ? (
-                              <ChevronUp className="w-4 h-4" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4" />
-                            )}
-                          </div>
-                        </button>
-
-                        {isOpen && (
-                          <div className="mt-3 pt-2.5 border-t border-orange-200/60 pl-12 pr-2 text-xs text-gray-600 leading-relaxed">
-                            {faq.a}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* 9. Zupe Care Support Card (Dark Card) */}
-              <div className="bg-[#0B1220] rounded-3xl p-5 sm:p-6 text-white shadow-lg border border-gray-800 space-y-4">
-                <div className="flex items-center gap-2 text-[#FF7A00] text-xs font-bold tracking-wider uppercase">
-                  <Shield className="w-4 h-4" />
-                  <span className="text-gray-500 font-light">|</span>
-                  <span>ZUPE CARE SUPPORT</span>
-                </div>
-
-                <div>
-                  <h4 className="text-base sm:text-lg font-extrabold text-white">
-                    Need help with this shipment?
-                  </h4>
-                  <p className="text-xs text-gray-300 mt-1 leading-relaxed">
-                    Our support team can help with address issues or courier delivery questions.
-                  </p>
-                </div>
-
-                <div className="space-y-2.5 pt-1">
-                  <a
-                    href={`https://wa.me/919744122853?text=${encodeURIComponent(
-                      `Hi Zupe Store, I need help with my Order #${cleanOrderId}`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-white font-extrabold text-sm transition-all shadow-md active:scale-[0.99] cursor-pointer"
-                  >
-                    <WhatsAppIcon className="w-4 h-4" />
-                    <span>Chat on WhatsApp</span>
-                  </a>
-
-                  <a
-                    href="tel:+919744122853"
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-extrabold text-sm transition-all border border-white/10 active:scale-[0.99] cursor-pointer"
-                  >
-                    <Phone className="w-4 h-4" />
-                    <span>Call +91 97441 22853</span>
-                  </a>
-                </div>
-              </div>
-            </div>
+            </>
           )}
 
           {/* When no order is looked up yet (Default Guide & FAQs View) */}
           {!selectedOrder && !loading && (
-            <div className="space-y-6 my-4">
-              {/* How Your Order Reaches You */}
-              <div className="space-y-4 pt-2">
-                <div className="text-center pt-2 pb-1">
-                  <div className="inline-flex items-center justify-center gap-1.5">
-                    <h3 className="text-xl sm:text-2xl font-display font-extrabold text-gray-900 tracking-tight">
-                      How Your Order <span className="text-[#FF7A00]">Reaches You</span>
-                    </h3>
-                    <span className="text-[#FF7A00] text-base -mt-2">✨</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
-                    A quick look at our fast, safe and reliable delivery process.
-                  </p>
-                  <div className="w-12 h-1 bg-[#FF7A00] rounded-full mx-auto mt-2.5 mb-2" />
-                </div>
-
-                <div className="relative space-y-3">
-                  <div className="absolute left-[29px] sm:left-[33px] top-7 bottom-7 w-[2px] border-l-2 border-dashed border-[#FF7A00]/40 z-0 pointer-events-none" />
-
-                  {/* Step 1 */}
-                  <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
-                    <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
-                        1
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
-                            Order Dispatched
-                          </h4>
-                          <span className="text-[#FF7A00] text-xs">✨</span>
-                        </div>
-                        <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
-                          Orders are carefully packed within 24 hours in tamper-proof parcels with strict quality control.
-                        </p>
-                      </div>
-                    </div>
-                    <DeliveryBoxIllustration />
-                  </div>
-
-                  {/* Step 2 */}
-                  <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
-                    <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
-                        2
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
-                          Express Logistics
-                        </h4>
-                        <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
-                          Shipped through our trusted courier partners (Delhivery, Bluedart, Shadowfax) with live tracking updates.
-                        </p>
-                      </div>
-                    </div>
-                    <DeliveryTruckIllustration />
-                  </div>
-
-                  {/* Step 3 */}
-                  <div className="relative z-10 bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 overflow-hidden">
-                    <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF7A00] font-extrabold text-sm flex items-center justify-center flex-shrink-0 border border-orange-100 mt-0.5">
-                        3
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-extrabold text-sm sm:text-base text-gray-900">
-                          Doorstep Delivery
-                        </h4>
-                        <p className="text-xs text-gray-500 leading-relaxed mt-1 max-w-[260px] sm:max-w-sm">
-                          Get real-time WhatsApp &amp; Email updates, with OTP verification to ensure safe and secure delivery.
-                        </p>
-                      </div>
-                    </div>
-                    <DoorstepDeliveryIllustration />
-                  </div>
-                </div>
+            <>
+              {/* Mobile View */}
+              <div className="block lg:hidden space-y-6 my-4">
+                {renderDeliveryProcessCard()}
+                {renderFaqCard()}
               </div>
 
-              {/* FAQs Accordion */}
-              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center border border-orange-200/80 font-black text-sm flex-shrink-0">
-                    ?
-                  </div>
-                  <div>
-                    <h3 className="text-base font-extrabold text-gray-900">
-                      Frequently Asked Questions
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      Quick answers about your order and delivery.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-2.5 pt-1">
-                  {faqs.map((faq, idx) => {
-                    const isOpen = faqOpen === idx;
-                    const IconComponent = faq.icon;
-                    return (
-                      <div
-                        key={idx}
-                        className={`rounded-2xl transition-all ${
-                          isOpen
-                            ? "bg-[#FFF8F4] border border-[#FFD8C2] p-4 shadow-2xs"
-                            : "bg-white p-3.5 sm:p-4 border border-gray-100 hover:border-gray-200 shadow-2xs"
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setFaqOpen(isOpen ? null : idx)}
-                          className="w-full flex items-center justify-between gap-3 text-left cursor-pointer"
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div
-                              className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
-                                isOpen
-                                  ? "bg-orange-100/80 text-[#FF7A00]"
-                                  : "bg-orange-50 text-[#FF7A00]"
-                              }`}
-                            >
-                              <IconComponent className="w-4 h-4" />
-                            </div>
-                            <span className="font-extrabold text-xs sm:text-sm text-gray-900">
-                              {faq.q}
-                            </span>
-                          </div>
-                          <div className="text-[#FF7A00] flex-shrink-0 ml-1">
-                            {isOpen ? (
-                              <ChevronUp className="w-4 h-4" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4" />
-                            )}
-                          </div>
-                        </button>
-
-                        {isOpen && (
-                          <div className="mt-3 pt-2.5 border-t border-orange-200/60 pl-12 pr-2 text-xs text-gray-600 leading-relaxed">
-                            {faq.a}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+              {/* Desktop View: 2-column side-by-side */}
+              <div className="hidden lg:grid lg:grid-cols-2 gap-8 items-start my-8">
+                <div>{renderDeliveryProcessCard()}</div>
+                <div>{renderFaqCard()}</div>
               </div>
-            </div>
+            </>
           )}
 
           {/* Bottom Trust Guarantees Bar */}
-          <div className="flex items-center justify-around gap-2 pt-6 pb-2 text-[11px] sm:text-xs text-gray-600 border-t border-gray-200/60 mt-6">
+          <div className="max-w-4xl mx-auto flex items-center justify-around gap-2 pt-6 pb-2 text-[11px] sm:text-xs text-gray-600 border-t border-gray-200/60 mt-8">
             <div className="flex items-center gap-1.5 font-bold">
               <Zap className="w-4 h-4 text-[#FF7A00]" />
               <span>Instant Updates</span>
