@@ -1075,7 +1075,14 @@ export async function updateERPOrder(
       fieldsToUpdate.push("delivery_status = ?");
       values.push(updates.delivery_status);
       if (updates.status === undefined) {
-        const syncedStatus = updates.delivery_status === "Delivered" ? "Delivered" : updates.delivery_status === "RTO Delivered" ? "Returned" : "Processing";
+        const syncedStatus =
+          updates.delivery_status === "Delivered"
+            ? "Delivered"
+            : updates.delivery_status === "RTO Delivered"
+            ? "Returned"
+            : updates.delivery_status === "In Transit" || updates.delivery_status === "Out for Delivery"
+            ? "Shipped"
+            : "Processing";
         fieldsToUpdate.push("status = ?");
         values.push(syncedStatus);
       }

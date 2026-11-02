@@ -634,8 +634,10 @@ function AdminOrdersContent() {
                 className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
               >
                 <option value="all">All Courier Partners</option>
+                <option value="DTDC">DTDC</option>
                 <option value="Delhivery">Delhivery</option>
                 <option value="Bluedart">Bluedart</option>
+                <option value="India Post">India Post</option>
                 <option value="Xpressbees">Xpressbees</option>
                 <option value="Shadowfax">Shadowfax</option>
               </select>
@@ -1458,8 +1460,10 @@ function AdminOrdersContent() {
                       className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                     >
                       <option value="">Unassigned (Pending Dispatch)</option>
+                      <option value="DTDC">DTDC</option>
                       <option value="Delhivery">Delhivery</option>
                       <option value="Bluedart">Bluedart</option>
+                      <option value="India Post">India Post</option>
                       <option value="Xpressbees">Xpressbees</option>
                       <option value="Shadowfax">Shadowfax</option>
                     </select>

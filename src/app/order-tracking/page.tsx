@@ -851,15 +851,21 @@ function OrderTrackingContent() {
                               {hasRealAwb ? (
                                 <a
                                   href={
-                                    courierName.toLowerCase().includes("bluedart")
+                                    courierName.toLowerCase().includes("dtdc")
+                                      ? `https://track.dtdc.com/tracking?tracking_number=${rawAwb}`
+                                      : courierName.toLowerCase().includes("bluedart")
                                       ? `https://www.bluedart.com/tracking`
+                                      : courierName.toLowerCase().includes("post")
+                                      ? `https://www.indiapost.gov.in/_layouts/15/dpt.cept.tracking/trackconsignment.aspx`
+                                      : courierName.toLowerCase().includes("xpressbees")
+                                      ? `https://www.xpressbees.com/track?isawb=Yes&trackid=${rawAwb}`
                                       : `https://www.delhivery.com/track/package/${rawAwb}`
                                   }
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FF7A00] hover:underline cursor-pointer"
                                 >
-                                  <span>Open Courier Portal</span>
+                                  <span>Open {courierName} Portal</span>
                                   <ExternalLink className="w-3.5 h-3.5" />
                                 </a>
                               ) : (
