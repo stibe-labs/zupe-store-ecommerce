@@ -219,7 +219,10 @@ function getMilestoneStep(status?: string): number {
     norm.includes("transit") ||
     norm.includes("shipped") ||
     norm.includes("dispatched") ||
-    norm.includes("pickup")
+    norm.includes("pickup") ||
+    norm.includes("ndr") ||
+    norm.includes("rto") ||
+    norm.includes("return")
   ) {
     return 2;
   }
@@ -261,8 +264,48 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
   const courier = order.courier_partner || (hasAwb ? "Courier Partner" : "");
   const status = (order.delivery_status || "Processing").toLowerCase();
 
+  // If RTO / Return
+  if (status.includes("rto") || status.includes("return")) {
+    return [
+      {
+        title: status.includes("delivered") ? "Returned to Origin Warehouse" : "RTO Return in Transit",
+        location: "Zupe Fulfillment Center",
+        timestamp: formatPlacedDate,
+        completed: true,
+        active: true,
+        description: `Package returned to fulfillment center. Reason: ${order.ndr_status || "Customer unreachable / returned"}.`,
+      },
+      {
+        title: "Return Delivery Initiated",
+        location: `${city} Logistics Hub`,
+        timestamp: formatPlacedDate,
+        completed: true,
+        active: false,
+        description: `Shipment returned from destination facility via ${courier || "courier partner"}.`,
+      },
+      {
+        title: "Dispatched from Warehouse",
+        location: "Zupe Fulfillment Warehouse",
+        timestamp: formatPlacedDate,
+        completed: true,
+        active: false,
+        description: `Handed over to ${courier || "courier partner"}. AWB: ${
+          order.shiprocket_awb || "Dispatched"
+        }.`,
+      },
+      {
+        title: "Order Placed & Verified",
+        location: "Online Storefront",
+        timestamp: formatPlacedDate,
+        completed: true,
+        active: false,
+        description: "Order placed and acknowledged.",
+      },
+    ];
+  }
+
   // If order is Delivered
-  if (status.includes("delivered") && !status.includes("rto")) {
+  if (status.includes("deliver")) {
     return [
       {
         title: "Delivered Successfully",
@@ -344,8 +387,8 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
     ];
   }
 
-  // If In Transit
-  if (status.includes("in transit") || status.includes("shipped")) {
+  // If In Transit or NDR / Pickup
+  if (status.includes("transit") || status.includes("shipped") || status.includes("ndr") || status.includes("pickup")) {
     return [
       {
         title: "Pickup Requested",
@@ -423,16 +466,24 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
   ];
 }
 
-function getStatusTitle(status?: string): string {
+function getStatusTitle(status?: string, liveCurrentStatus?: string): string {
   const norm = (status || "").toLowerCase();
+  const liveNorm = (liveCurrentStatus || "").toLowerCase();
+
   if (norm.includes("deliver") && !norm.includes("rto")) {
     return "Delivered Successfully";
   }
   if (norm.includes("out for delivery")) {
-    return "Out for Delivery";
+    return "Out for Delivery Today";
+  }
+  if (liveNorm.includes("pickup") || norm.includes("pickup") || norm.includes("ndr")) {
+    return "Pickup Scheduled with Courier";
   }
   if (norm.includes("transit") || norm.includes("shipped")) {
     return "In Transit";
+  }
+  if (norm.includes("rto delivered")) {
+    return "RTO Returned to Origin";
   }
   if (norm.includes("rto") || norm.includes("return")) {
     return "RTO Return Initiated";
@@ -610,8 +661,11 @@ function OrderTrackingContent() {
     return pm.includes("cash on delivery") || pm === "cod";
   }, [selectedOrder]);
 
+  const hasAwb = Boolean(
+    selectedOrder?.shiprocket_awb && selectedOrder.shiprocket_awb.trim() !== ""
+  );
   const hasRealAwb = Boolean(
-    selectedOrder?.shiprocket_awb && !selectedOrder.shiprocket_awb.startsWith("SR-AWB-")
+    hasAwb && !selectedOrder?.shiprocket_awb?.startsWith("SR-AWB-")
   );
 
   const cleanOrderId = (selectedOrder?.shopify_order_id || selectedOrder?.id || "").replace(/^#*/, "");
@@ -950,7 +1004,10 @@ function OrderTrackingContent() {
                         <span>Live Courier Scan</span>
                       </div>
                       <div className="text-sm sm:text-base font-extrabold text-[#FF7A00]">
-                        {getStatusTitle(selectedOrder.delivery_status || selectedOrder.status)}
+                        {getStatusTitle(
+                          selectedOrder.delivery_status || selectedOrder.status,
+                          liveTracking?.current_status
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1116,13 +1173,19 @@ function OrderTrackingContent() {
                     <div>
                       <p className="text-[11px] text-gray-400 font-medium">Courier Partner</p>
                       <p className="text-sm font-extrabold text-gray-900">
-                        {selectedOrder.courier_partner || "DTDC Surface"}
+                        {selectedOrder.courier_partner || (hasAwb ? "Courier Partner" : "Assigned upon dispatch")}
                       </p>
                     </div>
                   </div>
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold italic border border-blue-200">
-                    {selectedOrder.courier_partner || "DTDC"} &gt;
-                  </span>
+                  {selectedOrder.courier_partner ? (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold italic border border-blue-200">
+                      {selectedOrder.courier_partner} &gt;
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 text-[11px] font-semibold border border-gray-200">
+                      Standard Express
+                    </span>
+                  )}
                 </div>
 
                 {/* Row 2: AWB / Waybill Number */}
@@ -1134,30 +1197,25 @@ function OrderTrackingContent() {
                     <div>
                       <p className="text-[11px] text-gray-400 font-medium">AWB / Waybill Number</p>
                       <p className="text-sm font-mono font-extrabold text-gray-900">
-                        {hasRealAwb
-                          ? selectedOrder.shiprocket_awb
-                          : selectedOrder.shiprocket_awb || "7D141219305"}
+                        {hasAwb ? selectedOrder.shiprocket_awb : "Pending Dispatch"}
                       </p>
                     </div>
                   </div>
-                  <button
-                    onClick={() =>
-                      copyToClipboard(
-                        hasRealAwb
-                          ? selectedOrder.shiprocket_awb!
-                          : selectedOrder.shiprocket_awb || "7D141219305",
-                        "awb"
-                      )
-                    }
-                    className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-                    title="Copy AWB"
-                  >
-                    {copiedAWB ? (
-                      <Check className="w-4 h-4 text-emerald-600" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </button>
+                  {hasAwb && (
+                    <button
+                      onClick={() =>
+                        copyToClipboard(selectedOrder.shiprocket_awb!, "awb")
+                      }
+                      className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                      title="Copy AWB"
+                    >
+                      {copiedAWB ? (
+                        <Check className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  )}
                 </div>
 
                 {/* Row 3: External Tracking */}
@@ -1168,21 +1226,27 @@ function OrderTrackingContent() {
                     </div>
                     <div>
                       <p className="text-[11px] text-gray-400 font-medium">External Tracking</p>
-                      <a
-                        href={getCourierTrackingUrl(
-                          selectedOrder.courier_partner,
-                          selectedOrder.shiprocket_awb
-                        )}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs sm:text-sm font-bold text-[#FF7A00] hover:underline inline-flex items-center gap-1"
-                      >
-                        <span>Open Courier Portal</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
+                      {hasAwb ? (
+                        <a
+                          href={getCourierTrackingUrl(
+                            selectedOrder.courier_partner,
+                            selectedOrder.shiprocket_awb
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs sm:text-sm font-bold text-[#FF7A00] hover:underline inline-flex items-center gap-1"
+                        >
+                          <span>Open Courier Portal</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      ) : (
+                        <span className="text-xs text-gray-400 font-medium italic block pt-0.5">
+                          Available once dispatched
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                  {hasAwb ? <ChevronRight className="w-4 h-4 text-gray-400" /> : null}
                 </div>
               </div>
 

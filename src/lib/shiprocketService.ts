@@ -412,7 +412,23 @@ export async function syncShiprocketOrderById(orderId: string): Promise<{
       return { success: false, message: `Order ${cleanId} not found in Shiprocket` };
     }
 
-    const srOrder = orderList[0];
+    const cleanLower = cleanId.toLowerCase();
+    const cleanNoHash = cleanLower.replace(/^#/, "");
+
+    const srOrder = orderList.find((o: any) => {
+      const chId = String(o.channel_order_id || "").toLowerCase();
+      const srId = String(o.id || "").toLowerCase();
+      return (
+        chId === cleanLower ||
+        chId === cleanNoHash ||
+        srId === cleanLower ||
+        srId === cleanNoHash
+      );
+    });
+
+    if (!srOrder) {
+      return { success: false, message: `Order ${cleanId} not found in Shiprocket` };
+    }
     const shipment = srOrder?.shipments?.[0] || srOrder?.shipments || {};
     const awbCode = (shipment?.awb || srOrder?.awb_code || "").toString().trim();
     const courierName = (shipment?.courier_name || shipment?.courier || srOrder?.courier_name || "").toString().trim();
