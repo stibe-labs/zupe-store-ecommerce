@@ -14,6 +14,8 @@ const TEMPLATE_PREPAID = "turkiyejam_order_update";
 const TEMPLATE_COD = "turkiyejam_order_update";
 const TEMPLATE_VERIFY = "turkiyejam_order_verify";
 const TEMPLATE_UPDATE = "turkiyejam_order_update";
+const TEMPLATE_CANCEL_PREPAID = "turkiyejam_order_update";
+const TEMPLATE_CANCEL_COD = "turkiyejam_order_update";
 const TEMPLATE_LANG = "en";
 
 export interface OrderConfirmationParams {
@@ -71,8 +73,8 @@ export async function sendOrderPreConfirmationWhatsApp(
   const cancelUrl = `${STORE_BASE_URL}/api/orders/whatsapp-cancel?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
-  const codDoorstepDue = Math.max(0, totalAmount - 10);
-  const displayAmount = paymentMethod === "cod" ? codDoorstepDue : totalAmount;
+  const codDoorstepDue = totalAmount;
+  const displayAmount = totalAmount;
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
 
   // 1. Try official Meta Template with interactive buttons first (zupe_order_verify)
@@ -103,9 +105,8 @@ export async function sendOrderPreConfirmationWhatsApp(
   const paymentBreakdownText =
     paymentMethod === "cod"
       ? `💰 *Total Amount:* Rs ${totalAmount.toLocaleString("en-IN")}\n` +
-        `💳 *Advance Paid Online:* Rs 10 (Verified)\n` +
-        `📦 *Balance Due at Doorstep:* Rs ${codDoorstepDue.toLocaleString("en-IN")}\n\n`
-      : `💰 *Amount Paid:* Rs ${totalAmount.toLocaleString("en-IN")} (Prepaid Online)\n\n`;
+        `📦 *Payable at Doorstep:* Rs ${totalAmount.toLocaleString("en-IN")} (Cash or UPI)\n\n`
+      : `💰 *Amount Paid:* Rs ${totalAmount.toLocaleString("en-IN")} (Prepaid)\n\n`;
 
   const message =
     `*Order Verification — Turkiye Jam* 🛍️\n\n` +
@@ -206,6 +207,8 @@ async function sendPreConfirmViaTemplate(
   return false;
 }
 
+export const sendWhatsAppOrderConfirmation = sendOrderConfirmationWhatsApp;
+
 export async function sendOrderConfirmationWhatsApp(
   params: OrderConfirmationParams
 ): Promise<void> {
@@ -221,9 +224,8 @@ export async function sendOrderConfirmationWhatsApp(
   const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
   const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
 
-  const advancePaid = 10;
-  const doorstepBalance = Math.max(0, totalAmount - advancePaid); // e.g. 1048 - 10 = 1038
-  const switchPrepaidAmount = Math.max(1, doorstepBalance - 49);  // e.g. saves Rs 49 shipping fee
+  const doorstepBalance = totalAmount;
+  const switchPrepaidAmount = totalAmount;
   const productSubtotal = totalAmount >= 49 ? totalAmount - 49 : totalAmount;
   const firstName = customerName.split(" ")[0] || customerName;
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
@@ -235,7 +237,6 @@ export async function sendOrderConfirmationWhatsApp(
     .join("\n");
   const moreItems = items.length > 3 ? "\n  • ...and " + (items.length - 3) + " more" : "";
   const trackUrl = STORE_BASE_URL + "/order-tracking?query=" + encodeURIComponent(cleanUrlOrderId);
-  const payNowUrl = STORE_BASE_URL + "/checkout?method=prepaid&switch=cod&orderId=" + encodeURIComponent(cleanUrlOrderId);
 
   let message: string;
   if (paymentMethod === "cod") {
@@ -245,15 +246,9 @@ export async function sendOrderConfirmationWhatsApp(
       "📦 *Order ID:* " + displayOrderId + "\n" +
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
       "💰 *Price Breakdown:*\n" +
-      "  • Product Amount: Rs " + productSubtotal.toLocaleString("en-IN") + "\n" +
-      "  • Shipping Charge: Rs 49\n" +
       "  • Total Amount: Rs " + totalAmount.toLocaleString("en-IN") + "\n" +
-      "  • Advance Paid Online: Rs 10 (Received)\n" +
-      "  • *Balance Due at Doorstep: Rs " + doorstepBalance.toLocaleString("en-IN") + "*\n\n" +
-      "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
-      "⚡ *Switch to Prepaid & Save Rs 49!*\n" +
-      "Pay online now — pay only *Rs " + switchPrepaidAmount.toLocaleString("en-IN") + "* instead of Rs " + doorstepBalance.toLocaleString("en-IN") + " at delivery:\n" +
-      payNowUrl + "\n\n" +
+      "  • *Payable on Delivery: Rs " + totalAmount.toLocaleString("en-IN") + " (Cash / UPI)*\n\n" +
+      "🚚 *Estimated Delivery:* 3-5 Business Days\n\n" +
       "📦 *Track Your Order:*\n" +
       trackUrl + "\n\n" +
       "Thank you for shopping with Turkiye Jam!";

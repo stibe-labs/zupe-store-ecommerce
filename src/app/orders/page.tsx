@@ -748,72 +748,38 @@ function OrdersPageContent() {
                         </span>
                       ) : null}
                     </div>
-                    {/* Status Badges & Action Buttons: 2 Symmetrical Rows (Row 1: Status & Pay Now, Row 2: Cash on Delivery & Track) */}
-                    <div className="flex flex-col gap-2.5 w-full sm:w-auto">
-                      {/* Row 1: Status Badge & Pay Now (Save ₹30) Button */}
-                      <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
-                        {/* Status Badge (e.g. Awaiting WhatsApp Confirmation) */}
-                        {getStatusBadge(isDelivered ? "delivered" : ord.order_status, ord.whatsapp_confirm_status)}
+                    {/* Status Badges & Action Buttons */}
+                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                      {/* Status Badge (e.g. Processing, In Transit, Delivered) */}
+                      {getStatusBadge(isDelivered ? "delivered" : ord.order_status, ord.whatsapp_confirm_status)}
 
-                        {/* Top Right Position: Pay Now (Save ₹30) Button for COD, or Payment Badge for Prepaid */}
-                        {isCod && ord.order_status !== "cancelled" ? (
-                          <Link
-                            href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(ord.id)}`}
-                            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-xs font-black tracking-tight btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 border-2 border-stone-800 shadow-[0_3px_0_0_#2b2b2b] transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none w-full sm:w-auto text-center whitespace-nowrap"
-                          >
-                            <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                            <span>Pay Now (Save ₹30)</span>
-                          </Link>
-                        ) : isRefunded ? (
-                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-purple-50 text-purple-700 border-2 border-stone-800 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
-                            <RotateCcw className="w-3.5 h-3.5 shrink-0" />
-                            <span>Refunded</span>
-                          </span>
-                        ) : isPaid ? (
-                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-800 border-2 border-stone-800 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
-                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
-                            <span>Prepaid (Paid)</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-stone-100 text-stone-800 border-2 border-stone-800 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
-                            <ShoppingBag className="w-3.5 h-3.5 text-stone-600 shrink-0" />
-                            <span>Cash on Delivery</span>
-                          </span>
-                        )}
-                      </div>
+                      {/* Cash on Delivery Badge */}
+                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[40px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-bold bg-stone-100 text-stone-800 border-2 border-stone-800 whitespace-nowrap tracking-tight select-none">
+                        <ShoppingBag className="w-3.5 h-3.5 text-stone-600 shrink-0" />
+                        <span>Cash on Delivery</span>
+                      </span>
 
-                      {/* Row 2: Cash on Delivery Badge & Track Package Button */}
+                      {/* Track Package Button */}
                       {ord.order_status !== "cancelled" && (
-                        <div className={`grid ${isCod ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-none"} sm:flex sm:items-center gap-2 w-full sm:w-auto`}>
-                          {/* Cash on Delivery Badge in Row 2 Col 1 */}
-                          {isCod && (
-                            <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-stone-100 text-stone-800 border-2 border-stone-800 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
-                              <ShoppingBag className="w-3.5 h-3.5 text-stone-600 shrink-0" />
-                              <span>Cash on Delivery</span>
-                            </span>
-                          )}
+                        <Link
+                          href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
+                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 min-h-[40px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-bold tracking-tight bg-white hover:bg-stone-50 text-stone-900 border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b] transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none whitespace-nowrap"
+                        >
+                          <Truck className="w-3.5 h-3.5 shrink-0" />
+                          <span>Track Package</span>
+                        </Link>
+                      )}
 
-                          {/* Track Package Button in Row 2 Col 2 */}
-                          <Link
-                            href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
-                            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-bold tracking-tight bg-white hover:bg-stone-50 text-stone-900 border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b] transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none w-full sm:w-auto text-center whitespace-nowrap"
-                          >
-                            <Truck className="w-3.5 h-3.5 shrink-0" />
-                            <span>Track Package</span>
-                          </Link>
-
-                          {/* Rate & Review Button (Delivered) */}
-                          {isDelivered && (
-                            <button
-                              type="button"
-                              onClick={() => handleOpenReviewModal(ord, rawItems[0])}
-                              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-black tracking-tight btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b] transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none w-full sm:w-auto text-center cursor-pointer whitespace-nowrap"
-                            >
-                              <Star className="w-3.5 h-3.5 fill-current shrink-0" />
-                              <span>Rate & Review</span>
-                            </button>
-                          )}
-                        </div>
+                      {/* Rate & Review Button (Delivered) */}
+                      {isDelivered && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenReviewModal(ord, rawItems[0])}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[40px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-black tracking-tight btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b] transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer whitespace-nowrap"
+                        >
+                          <Star className="w-3.5 h-3.5 fill-current shrink-0" />
+                          <span>Rate & Review</span>
+                        </button>
                       )}
                     </div>
                   </div>

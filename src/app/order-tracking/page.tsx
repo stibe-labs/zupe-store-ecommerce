@@ -479,7 +479,7 @@ function OrderTrackingContent() {
     },
     {
       q: "Can I track my order if I paid via Cash on Delivery (COD)?",
-      a: "Yes! All prepaid and COD orders are assigned full real-time tracking numbers with live WhatsApp and Email status updates.",
+      a: "Yes! All orders are assigned full real-time tracking numbers with live WhatsApp and SMS status updates.",
     },
     {
       q: "What should I do if my delivery executive hasn't arrived?",
@@ -748,63 +748,6 @@ function OrderTrackingContent() {
                       </div>
                     </div>
 
-                    {/* Switch to Prepaid Offer Banner for COD orders */}
-                    {(() => {
-                      const isCodOrder =
-                        (selectedOrder.payment_method || "").toLowerCase().includes("cash on delivery") ||
-                        (selectedOrder.payment_method || "").toLowerCase() === "cod";
-                      const isPending =
-                        (selectedOrder.payment_status || "").toLowerCase() !== "paid" &&
-                        (selectedOrder.payment_status || "").toLowerCase() !== "completed";
-
-                      if (!isCodOrder || !isPending) return null;
-
-                      const rawItems = Array.isArray(selectedOrder.items)
-                        ? selectedOrder.items
-                        : typeof selectedOrder.items === "string"
-                        ? JSON.parse(selectedOrder.items || "[]")
-                        : [];
-                      const pSubtotal = rawItems.reduce(
-                        (sum: number, it: any) => sum + (Number(it.unit_price || it.price) || 0) * (Number(it.quantity) || 1),
-                        0
-                      );
-                      let baseCodTotal = Number(selectedOrder.total_amount) || 0;
-                      if (pSubtotal > 0 && baseCodTotal <= pSubtotal) {
-                        baseCodTotal = pSubtotal + 49;
-                      }
-
-                      const discounted = Math.max(0, baseCodTotal - 30);
-
-                      return (
-                        <div className="mx-6 sm:mx-8 mt-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border-2 border-[#FF7A00]/40 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
-                          <div className="flex items-center gap-3.5">
-                            <div className="w-11 h-11 rounded-2xl bg-[#FF7A00] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#FF7A00]/30 font-bold text-lg">
-                              ⚡
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h4 className="font-extrabold text-gray-900 text-sm sm:text-base">
-                                  Switch to Prepaid &amp; Save ₹30!
-                                </h4>
-                                <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
-                                  Instant Discount
-                                </span>
-                              </div>
-                              <p className="text-xs text-gray-600 mt-0.5">
-                                Pay only <strong className="text-gray-900 font-bold">₹{discounted.toLocaleString()}</strong> online now instead of cash at delivery. Enjoy free shipping &amp; priority dispatch!
-                              </p>
-                            </div>
-                          </div>
-                          <Link
-                            href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(selectedOrder.id)}`}
-                            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-[#FF7A00]/25 transition-all whitespace-nowrap active:scale-[0.98]"
-                          >
-                            <span>Pay ₹{discounted.toLocaleString()} Online Now</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </Link>
-                        </div>
-                      );
-                    })()}
 
                     {/* Step Visual Progress Bar */}
                     <div

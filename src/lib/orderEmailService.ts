@@ -138,7 +138,6 @@ export async function sendOrderConfirmationEmail(
   const firstName = (customerName || "Customer").split(" ")[0] || "Customer";
   const estDelivery = calculateEstimatedDelivery(createdAt);
   const trackingUrl = `${STORE_BASE_URL}/order-tracking?query=${encodeURIComponent(orderId)}`;
-  const payNowUrl = `${STORE_BASE_URL}/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(orderId)}`;
 
   // Calculate items subtotal if not provided
   const itemsSubtotal =
@@ -294,33 +293,8 @@ export async function sendOrderConfirmationEmail(
   );
   const itemRowsHtml = itemRows.join("");
 
-  // 3. Switch to Prepaid COD Incentive Box
-  const codIncentiveHtml = isCod
-    ? `
-      <div style="margin: 24px 0; background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%); border: 1.5px dashed #FF7A00; border-radius: 16px; padding: 18px 20px; text-align: left;">
-        <table style="width: 100%; border-collapse: collapse;">
-          <tr>
-            <td style="vertical-align: top; padding-right: 12px; width: 28px;">
-              <span style="font-size: 22px;">⚡</span>
-            </td>
-            <td>
-              <div style="font-size: 14px; font-weight: 700; color: #9A3412;">
-                Save ₹30 Instantly by Switching to Prepaid!
-              </div>
-              <div style="font-size: 12px; color: #7C2D12; line-height: 1.5; margin-top: 4px;">
-                Pay securely online now via UPI, Google Pay, PhonePe, or Cards. You will save ₹30 immediately and your package gets priority express courier dispatch.
-              </div>
-              <div style="margin-top: 12px;">
-                <a href="${payNowUrl}" style="display: inline-block; background: #FF7A00; color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.3px;">
-                  Pay Online & Save ₹30 Now →
-                </a>
-              </div>
-            </td>
-          </tr>
-        </table>
-      </div>
-    `
-    : "";
+  // 3. COD Notice
+  const codIncentiveHtml = "";
 
   // 4. Construct complete premium HTML email
   const html = `
@@ -589,7 +563,6 @@ ${customerPhone ? `Phone: ${customerPhone}` : ""}
 
 TRACK YOUR ORDER:
 ${trackingUrl}
-${isCod ? `\nSWITCH TO PREPAID & SAVE ₹30:\n${payNowUrl}\n` : ""}
 
 Need assistance? Reply to this email at support@turkiyejam.com.
   `.trim();
