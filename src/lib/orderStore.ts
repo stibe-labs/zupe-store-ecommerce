@@ -170,6 +170,100 @@ export function getOrders(userEmail?: string, userPhone?: string, userId?: strin
   });
 }
 
+export async function getOrdersAsync(
+  userEmail?: string,
+  userPhone?: string,
+  userId?: string
+): Promise<OrderRecord[]> {
+  const memOrders = getOrders(userEmail, userPhone, userId);
+
+  try {
+    const { executeD1Query } = await import("@/lib/d1");
+    let query = `
+      SELECT o.*,
+        u.name as u_name, u.phone as u_phone,
+        (SELECT json_group_array(json_object(
+          'product_id', oi.product_id,
+          'name', oi.product_name,
+          'price', oi.unit_price,
+          'quantity', oi.quantity,
+          'image', oi.poster_image
+        )) FROM order_items oi WHERE oi.order_id = o.id) AS items_json
+      FROM orders o
+      LEFT JOIN users u ON u.id = o.user_id
+    `;
+    const conditions: string[] = [];
+    const params: any[] = [];
+
+    if (userId) {
+      conditions.push("o.user_id = ?");
+      params.push(userId);
+    }
+    if (userEmail) {
+      conditions.push("(LOWER(o.guest_email) = ? OR LOWER(u.email) = ?)");
+      params.push(userEmail.toLowerCase().trim(), userEmail.toLowerCase().trim());
+    }
+    if (userPhone) {
+      const cleanPhone = userPhone.replace(/\D/g, "").slice(-10);
+      if (cleanPhone) {
+        conditions.push("(u.phone LIKE ? OR o.shipping_address LIKE ?)");
+        params.push(`%${cleanPhone}%`, `%${cleanPhone}%`);
+      }
+    }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(" OR ")}`;
+    }
+    query += " ORDER BY o.created_at DESC";
+
+    const rows = await executeD1Query<any>(query, params);
+    if (rows && rows.length > 0) {
+      const d1Orders: OrderRecord[] = rows.map((r) => {
+        let items: OrderItem[] = [];
+        try {
+          items = JSON.parse(r.items_json || "[]");
+        } catch (_) {}
+
+        return {
+          id: r.id,
+          user_id: r.user_id,
+          customer_name: r.u_name || "Valued Customer",
+          customer_email: r.guest_email || "",
+          customer_phone: r.u_phone || "",
+          items,
+          total_amount: Number(r.total_amount),
+          subtotal: Number(r.subtotal || r.total_amount),
+          discount_amount: Number(r.discount_amount || 0),
+          shipping_cost: Number(r.shipping_cost || 0),
+          order_status: (r.status || "processing").toLowerCase() as any,
+          payment_method: r.payment_method || "COD",
+          payment_status: (r.payment_status || "Pending").toLowerCase() as any,
+          shipping_address: r.shipping_address || "",
+          city: "",
+          postal_code: "",
+          country: "India",
+          created_at: r.created_at || new Date().toISOString(),
+          tracking_number: r.tracking_number,
+        };
+      });
+
+      const seen = new Set(memOrders.map((o) => o.id));
+      const combined = [...memOrders];
+      for (const d1 of d1Orders) {
+        if (!seen.has(d1.id)) {
+          seen.add(d1.id);
+          combined.push(d1);
+        }
+      }
+      return combined;
+    }
+  } catch (err) {
+    console.warn("getOrdersAsync D1 error:", err);
+  }
+
+  return memOrders;
+}
+
 export function getStorefrontOrderById(orderId: string): OrderRecord | null {
   const norm = (orderId || "").trim().toLowerCase();
   return inMemoryOrders.find((o) => o.id.toLowerCase() === norm) || null;
