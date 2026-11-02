@@ -312,7 +312,7 @@ export default function AdminDashboardPage() {
 
           {/* Timeframe Selector Pills & Custom Date Range */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               {[
                 { id: "today", label: "Today" },
                 { id: "weekly", label: "This Week" },
@@ -568,11 +568,11 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* RIGHT SIDE: Compact Animated Bar Graph (col-span-7) */}
-            <div className="lg:col-span-7 bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-3">
+            <div className="lg:col-span-7 bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-3 overflow-hidden">
               {/* Graph Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
                 <div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <h3 className="font-bold text-slate-900 text-sm sm:text-base tracking-tight">
                       Sales & Profit Velocity
                     </h3>
@@ -586,8 +586,8 @@ export default function AdminDashboardPage() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2.5 text-[11px] font-medium mr-1">
+                <div className="flex items-center justify-between sm:justify-end gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 sm:gap-2.5 text-[10px] sm:text-[11px] font-medium mr-1">
                     <span className="flex items-center gap-1 text-slate-700">
                       <span className="w-2.5 h-2.5 rounded-sm bg-gradient-to-t from-[#FF7A00] to-[#FFA742]" />
                       <span>Sales</span>
@@ -598,10 +598,10 @@ export default function AdminDashboardPage() {
                     </span>
                   </div>
 
-                  <div className="inline-flex p-0.5 bg-slate-100 rounded-lg text-[11px] font-semibold">
+                  <div className="inline-flex p-0.5 bg-slate-100 rounded-lg text-[10px] sm:text-[11px] font-semibold">
                     <button
                       onClick={() => setChartViewMode("dual")}
-                      className={`px-2.5 py-0.5 rounded-md transition-all ${
+                      className={`px-2 sm:px-2.5 py-0.5 rounded-md transition-all ${
                         chartViewMode === "dual"
                           ? "bg-white text-slate-900 shadow-sm"
                           : "text-slate-500 hover:text-slate-900"
@@ -611,7 +611,7 @@ export default function AdminDashboardPage() {
                     </button>
                     <button
                       onClick={() => setChartViewMode("margin")}
-                      className={`px-2.5 py-0.5 rounded-md transition-all ${
+                      className={`px-2 sm:px-2.5 py-0.5 rounded-md transition-all ${
                         chartViewMode === "margin"
                           ? "bg-white text-slate-900 shadow-sm"
                           : "text-slate-500 hover:text-slate-900"
@@ -624,46 +624,56 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* The Compact Visual Bar Chart Container */}
-              <div className="relative pt-3 pb-1">
+              <div className="relative pt-3 pb-1 w-full overflow-hidden">
                 {/* Background Horizontal Grid Lines */}
                 <div className="absolute inset-x-0 top-3 bottom-7 flex flex-col justify-between pointer-events-none opacity-40">
                   <div className="border-b border-dashed border-slate-200 w-full flex justify-end">
-                    <span className="text-[9px] text-slate-400 font-mono pr-1 -mt-2">
+                    <span className="text-[9px] text-slate-400 font-mono pr-1 -mt-2 bg-white/80 px-0.5 rounded">
                       ₹{maxSalesVal.toLocaleString("en-IN")}
                     </span>
                   </div>
                   <div className="border-b border-dashed border-slate-200 w-full flex justify-end">
-                    <span className="text-[9px] text-slate-400 font-mono pr-1 -mt-2">
+                    <span className="text-[9px] text-slate-400 font-mono pr-1 -mt-2 bg-white/80 px-0.5 rounded">
                       ₹{Math.round(maxSalesVal * 0.5).toLocaleString("en-IN")}
                     </span>
                   </div>
                   <div className="border-b border-slate-200 w-full flex justify-end">
-                    <span className="text-[9px] text-slate-400 font-mono pr-1 -mt-2">₹0</span>
+                    <span className="text-[9px] text-slate-400 font-mono pr-1 -mt-2 bg-white/80 px-0.5 rounded">₹0</span>
                   </div>
                 </div>
 
                 {/* Bar Columns Container */}
-                <div className="relative z-10 flex items-end justify-around h-36 sm:h-40 px-2 sm:px-4 gap-2 sm:gap-3">
+                <div className="relative z-10 flex items-end justify-between sm:justify-around h-36 sm:h-40 px-0.5 sm:px-4 gap-1 sm:gap-3 w-full min-w-0">
                   {chartPoints.map((pt, idx) => {
                     const salesHeightPct = maxSalesVal > 0 ? Math.min(100, Math.round((pt.sales / maxSalesVal) * 100)) : 0;
                     const profitHeightPct = maxSalesVal > 0 ? Math.min(100, Math.max(0, Math.round((pt.netProfit / maxSalesVal) * 100))) : 0;
                     const marginHeightPct = Math.min(100, Math.max(0, Math.round(pt.margin * 3.2)));
 
                     const isHovered = hoveredPoint?.label === pt.label;
+                    const isFirst = idx === 0;
+                    const isLast = idx === chartPoints.length - 1;
 
                     return (
                       <div
                         key={pt.label}
                         onMouseEnter={() => setHoveredPoint(pt)}
                         onMouseLeave={() => setHoveredPoint(null)}
-                        className="flex-1 max-w-[85px] flex flex-col items-center h-full justify-end group cursor-pointer relative"
+                        className="flex-1 min-w-0 max-w-[85px] flex flex-col items-center h-full justify-end group cursor-pointer relative"
                       >
                         {/* Floating Tooltip */}
                         {isHovered && (
-                          <div className="absolute -top-20 z-30 bg-slate-900 text-white rounded-xl px-3 py-2 shadow-2xl text-[11px] w-40 pointer-events-none transform -translate-x-1/2 left-1/2 animate-in fade-in zoom-in-95 duration-150">
+                          <div
+                            className={`absolute -top-20 z-30 bg-slate-900 text-white rounded-xl px-2.5 sm:px-3 py-2 shadow-2xl text-[11px] w-36 sm:w-40 pointer-events-none animate-in fade-in zoom-in-95 duration-150 ${
+                              isFirst
+                                ? "left-0 transform-none"
+                                : isLast
+                                ? "right-0 left-auto transform-none"
+                                : "left-1/2 -translate-x-1/2"
+                            }`}
+                          >
                             <p className="font-bold text-slate-200 border-b border-slate-700/60 pb-1 mb-1 flex items-center justify-between text-[10px]">
-                              <span>{pt.label}</span>
-                              <span className="text-slate-400">{pt.orders} orders</span>
+                              <span className="truncate mr-1">{pt.label}</span>
+                              <span className="text-slate-400 shrink-0">{pt.orders} ord</span>
                             </p>
                             <div className="space-y-0.5">
                               <div className="flex justify-between items-center text-slate-300">
@@ -684,10 +694,10 @@ export default function AdminDashboardPage() {
 
                         {/* Bar Visuals */}
                         {chartViewMode === "dual" ? (
-                          <div className="w-full flex items-end justify-center gap-1 sm:gap-1.5 h-[85%]">
+                          <div className="w-full flex items-end justify-center gap-0.5 sm:gap-1.5 h-[85%]">
                             {/* Sales Bar */}
                             <div
-                              className="w-1/2 rounded-t bg-gradient-to-t from-[#FF7A00] to-[#FFA742] shadow-sm transition-all duration-700 ease-out group-hover:brightness-110 relative"
+                              className="w-1/2 max-w-[12px] sm:max-w-[18px] rounded-t bg-gradient-to-t from-[#FF7A00] to-[#FFA742] shadow-sm transition-all duration-700 ease-out group-hover:brightness-110 relative"
                               style={{
                                 height: `${salesHeightPct}%`,
                                 minHeight: pt.sales > 0 ? "5px" : "0px",
@@ -697,7 +707,7 @@ export default function AdminDashboardPage() {
 
                             {/* Profit Bar */}
                             <div
-                              className={`w-1/2 rounded-t transition-all duration-700 ease-out group-hover:brightness-110 relative ${
+                              className={`w-1/2 max-w-[12px] sm:max-w-[18px] rounded-t transition-all duration-700 ease-out group-hover:brightness-110 relative ${
                                 pt.netProfit >= 0
                                   ? "bg-gradient-to-t from-[#10B981] to-[#34D399]"
                                   : "bg-gradient-to-t from-rose-500 to-rose-400"
@@ -713,7 +723,7 @@ export default function AdminDashboardPage() {
                           /* Margin % Mode Bar */
                           <div className="w-full flex items-end justify-center h-[85%]">
                             <div
-                              className={`w-1/2 rounded-t transition-all duration-700 ease-out group-hover:brightness-110 relative ${
+                              className={`w-full max-w-[16px] sm:max-w-[28px] rounded-t transition-all duration-700 ease-out group-hover:brightness-110 relative ${
                                 pt.margin >= 20
                                   ? "bg-gradient-to-t from-emerald-600 to-emerald-400"
                                   : pt.margin >= 10
@@ -735,8 +745,15 @@ export default function AdminDashboardPage() {
 
                         {/* X-Axis Interval Label */}
                         <div className="w-full text-center pt-1.5 border-t border-slate-200">
-                          <span className="text-[10px] font-semibold text-slate-600 group-hover:text-[#FF7A00] transition-colors block truncate">
-                            {pt.label}
+                          <span className="text-[9px] sm:text-[10px] font-semibold text-slate-600 group-hover:text-[#FF7A00] transition-colors block truncate w-full text-center tracking-tight">
+                            {/* On small mobile: show compact "01-05", "26-31" */}
+                            <span className="sm:hidden">
+                              {pt.label.includes(" - ")
+                                ? pt.label.replace(/^[A-Za-z]+\s*/, "").replace(/\s*-\s*/, "-")
+                                : pt.label}
+                            </span>
+                            {/* On tablet/desktop: show full "Oct 01 - 05" */}
+                            <span className="hidden sm:inline">{pt.label}</span>
                           </span>
                         </div>
                       </div>
@@ -747,21 +764,21 @@ export default function AdminDashboardPage() {
 
               {/* Compact Quick Executive Insights Footer */}
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-[11px]">
-                <div className="flex items-center gap-2 p-2 rounded-xl bg-orange-50/70 border border-orange-100">
+                <div className="flex items-center gap-1.5 sm:gap-2 p-2 rounded-xl bg-orange-50/70 border border-orange-100 min-w-0">
                   <Award className="w-3.5 h-3.5 text-[#FF7A00] shrink-0" />
-                  <div className="truncate">
+                  <div className="min-w-0 flex-1 truncate">
                     <span className="text-slate-500 block text-[10px]">Peak Interval:</span>
-                    <span className="font-bold text-slate-900 block truncate">
+                    <span className="font-bold text-slate-900 block truncate text-[10px] sm:text-[11px]">
                       {peakPoint.label} (₹{peakPoint.sales.toLocaleString("en-IN")})
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 p-2 rounded-xl bg-emerald-50/70 border border-emerald-100">
+                <div className="flex items-center gap-1.5 sm:gap-2 p-2 rounded-xl bg-emerald-50/70 border border-emerald-100 min-w-0">
                   <TrendingUp className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                  <div className="truncate">
+                  <div className="min-w-0 flex-1 truncate">
                     <span className="text-slate-500 block text-[10px]">Best Margin:</span>
-                    <span className="font-bold text-emerald-800 block truncate">
+                    <span className="font-bold text-emerald-800 block truncate text-[10px] sm:text-[11px]">
                       {bestMarginPoint.label} ({bestMarginPoint.margin}%)
                     </span>
                   </div>
