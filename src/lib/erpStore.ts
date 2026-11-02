@@ -719,7 +719,22 @@ export async function getERPOrders(filters?: {
         if ((!items || items.length === 0) && mem && mem.items) {
           items = mem.items;
         }
-        return { ...row, items: Array.isArray(items) ? items : [] };
+        const normalizedItems = (Array.isArray(items) ? items : []).map((it: any) => {
+          const name = it.product_name || it.name || it.title || "Turkiye Jam (3 Sachet Pack)";
+          const quantity = Number(it.quantity || it.units || 1);
+          const price = Number(it.unit_price ?? it.price ?? it.selling_price ?? (row.total_amount ? Math.round(row.total_amount / quantity) : 1099)) || 1099;
+          return {
+            ...it,
+            name,
+            product_name: name,
+            quantity,
+            price,
+            unit_price: price,
+            total_price: Number(it.total_price ?? (price * quantity)),
+            image: it.image || it.poster_image || "/tj/turkiye-jam-3-strips.png",
+          };
+        });
+        return { ...row, items: normalizedItems };
       });
 
       combined.sort((a, b) => {

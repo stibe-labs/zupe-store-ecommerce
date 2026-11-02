@@ -41,15 +41,16 @@ interface TrackingCheckpoint {
   description?: string;
 }
 
-function getProductImageFallback(productName: string): string {
+function getProductImageFallback(productName?: string): string {
+  if (!productName) return "/tj/turkiye-jam-3-strips.png";
   const norm = productName.toLowerCase();
   const match = DEFAULT_PRODUCTS.find((p) =>
     p.name.toLowerCase().includes(norm) || norm.includes(p.name.toLowerCase())
   );
   if (match) {
-    return match.poster_image || match.images[0] || "/products/ripple/ripple-amber.jpg";
+    return match.poster_image || match.images[0] || "/tj/turkiye-jam-3-strips.png";
   }
-  return "/products/ripple/ripple-amber.jpg";
+  return "/tj/turkiye-jam-3-strips.png";
 }
 
 function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): TrackingCheckpoint[] {
@@ -802,9 +803,9 @@ function OrderTrackingContent() {
                           !rawAwb.startsWith("SR-") &&
                           !rawAwb.toUpperCase().includes("PENDING")
                         );
-                        const courierName = !isProcessing && selectedOrder.courier_partner && !selectedOrder.courier_partner.toLowerCase().includes("pending")
+                        const courierName = selectedOrder.courier_partner && !selectedOrder.courier_partner.toLowerCase().includes("pending")
                           ? selectedOrder.courier_partner
-                          : "Express Logistics (Assigned at Dispatch)";
+                          : (isProcessing ? "Assigned upon dispatch (e.g. DTDC)" : "Express Logistics");
 
                         return (
                           <div className="mt-8 pt-6 border-t border-gray-200/60 grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -893,30 +894,43 @@ function OrderTrackingContent() {
 
                   <div className="divide-y divide-gray-100">
                     {selectedOrder.items && selectedOrder.items.length > 0 ? (
-                      selectedOrder.items.map((it, idx) => {
+                      selectedOrder.items.map((it: any, idx: number) => {
+                        const productName =
+                          it.product_name || it.name || it.title || "Turkiye Jam (3 Sachet Pack)";
+                        const quantity = Number(it.quantity || it.units || 1);
+                        const unitPrice =
+                          Number(
+                            it.unit_price ??
+                            it.price ??
+                            it.selling_price ??
+                            (selectedOrder.total_amount ? Math.round(selectedOrder.total_amount / quantity) : 1099)
+                          ) || 1099;
+                        const totalPrice =
+                          Number(it.total_price ?? (unitPrice * quantity)) || (unitPrice * quantity);
                         const img =
-                          (it as any).image || getProductImageFallback(it.product_name);
+                          it.image || it.poster_image || getProductImageFallback(productName);
+
                         return (
                           <div key={idx} className="py-4 first:pt-0 last:pb-0 flex items-center gap-4">
                             <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100">
                               <Image
                                 src={img}
-                                alt={it.product_name}
+                                alt={productName}
                                 fill
                                 className="object-cover"
                               />
                             </div>
                             <div className="flex-1 min-w-0">
                               <h4 className="text-sm font-bold text-gray-900 truncate">
-                                {it.product_name}
+                                {productName}
                               </h4>
-                              <p className="text-xs text-gray-500 mt-0.5">
-                                Qty: {it.quantity} × ₹{it.unit_price?.toLocaleString()}
+                              <p className="text-xs text-gray-500 mt-0.5 font-medium">
+                                Qty: {quantity} × ₹{unitPrice.toLocaleString("en-IN")}
                               </p>
                             </div>
                             <div className="text-right">
                               <span className="text-sm font-extrabold text-gray-900">
-                                ₹{(it.unit_price * it.quantity).toLocaleString()}
+                                ₹{totalPrice.toLocaleString("en-IN")}
                               </span>
                             </div>
                           </div>
@@ -924,32 +938,80 @@ function OrderTrackingContent() {
                       })
                     ) : (
                       <div className="py-4 flex items-center gap-4">
-                        <div className="relative w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center text-[#FF7A00]">
-                          <Package className="w-8 h-8" />
+                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100">
+                          <Image
+                            src="/tj/turkiye-jam-3-strips.png"
+                            alt="Turkiye Jam"
+                            fill
+                            className="object-cover"
+                          />
                         </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">Curated Turkiye Jam Order</p>
-                          <p className="text-xs text-gray-500">1 Package</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-gray-900 truncate">Turkiye Jam (3 Sachet Pack)</p>
+                          <p className="text-xs text-gray-500 mt-0.5 font-medium">
+                            Qty: 1 × ₹{(selectedOrder.total_amount || 1099).toLocaleString("en-IN")}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-extrabold text-gray-900">
+                            ₹{(selectedOrder.total_amount || 1099).toLocaleString("en-IN")}
+                          </span>
                         </div>
                       </div>
                     )}
                   </div>
 
                   {/* Pricing Summary */}
-                  <div className="mt-6 pt-4 border-t border-gray-100 space-y-2">
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>Payment Method</span>
-                      <span className="font-semibold text-gray-900">
-                        {selectedOrder.payment_method} ({selectedOrder.payment_status})
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100">
-                      <span>Total Paid</span>
-                      <span className="text-[#FF7A00]">
-                        ₹{selectedOrder.total_amount?.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
+                  {(() => {
+                    const isCod =
+                      (selectedOrder.payment_method || "").toLowerCase().includes("cod") ||
+                      (selectedOrder.payment_method || "").toLowerCase().includes("cash on delivery");
+                    const isPaid =
+                      (selectedOrder.payment_status || "").toLowerCase() === "paid" ||
+                      (selectedOrder.payment_status || "").toLowerCase() === "completed";
+
+                    return (
+                      <div className="mt-6 pt-4 border-t border-gray-100 space-y-2">
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>Payment Method</span>
+                          <span className="font-semibold text-gray-900">
+                            {isCod ? "Cash on Delivery (COD)" : (selectedOrder.payment_method || "Prepaid Online")}
+                          </span>
+                        </div>
+                        {isCod && !isPaid ? (
+                          <>
+                            <div className="flex justify-between text-xs text-gray-500">
+                              <span>Payment Status</span>
+                              <span className="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">
+                                Payable on Delivery
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100">
+                              <span>Payable at Doorstep</span>
+                              <span className="text-[#FF7A00]">
+                                ₹{selectedOrder.total_amount?.toLocaleString("en-IN")}
+                              </span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex justify-between text-xs text-gray-500">
+                              <span>Payment Status</span>
+                              <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                                Paid Online
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100">
+                              <span>Total Paid</span>
+                              <span className="text-emerald-600">
+                                ₹{selectedOrder.total_amount?.toLocaleString("en-IN")}
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Delivery Address & Customer Support */}

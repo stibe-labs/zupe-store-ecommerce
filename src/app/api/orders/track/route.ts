@@ -98,6 +98,25 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      // Ensure items are completely normalized with name, product_name, price, unit_price
+      if (Array.isArray(target.items)) {
+        target.items = target.items.map((it: any) => {
+          const name = it.product_name || it.name || it.title || "Turkiye Jam (3 Sachet Pack)";
+          const quantity = Number(it.quantity || it.units || 1);
+          const price = Number(it.unit_price ?? it.price ?? it.selling_price ?? (target.total_amount ? Math.round(target.total_amount / quantity) : 1099)) || 1099;
+          return {
+            ...it,
+            name,
+            product_name: name,
+            quantity,
+            price,
+            unit_price: price,
+            total_price: Number(it.total_price ?? (price * quantity)),
+            image: it.image || it.poster_image || "/tj/turkiye-jam-3-strips.png",
+          };
+        });
+      }
+
       // If order is newly placed or processing, ensure delivery_status truthfully stays "Processing"
       const currentStatus = (target.status || "").toLowerCase();
       if (
@@ -109,7 +128,9 @@ export async function GET(req: NextRequest) {
       ) {
         if (!isGenuineAwb) {
           target.delivery_status = "Processing";
-          target.courier_partner = "";
+          if (target.courier_partner?.toLowerCase().includes("pending") || target.courier_partner?.toLowerCase().includes("delhivery")) {
+            target.courier_partner = "";
+          }
         }
       }
 
