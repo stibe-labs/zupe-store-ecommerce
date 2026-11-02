@@ -8,6 +8,11 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
+    const host = req.headers.get("host") || "";
+    if (host.includes("workers.dev")) {
+      const canonicalUrl = new URL(req.nextUrl.pathname + req.nextUrl.search, "https://turkiyejam.com");
+      return NextResponse.redirect(canonicalUrl, 301);
+    }
     const { searchParams } = new URL(req.url);
     const rawToken = searchParams.get("token") || "";
     const token = rawToken.startsWith("token=") ? rawToken.replace(/^token=/, "") : rawToken;
