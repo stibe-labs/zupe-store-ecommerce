@@ -272,7 +272,7 @@ function AdminOrdersContent() {
           type: "success",
         });
       } else {
-        const errMsg = data.error || "Failed to generate Shiprocket AWB";
+        const errMsg = data.message || data.error || "Failed to generate Shiprocket AWB";
         setOrderModalMsg({ text: errMsg, type: "error" });
         showToast("error", errMsg);
       }

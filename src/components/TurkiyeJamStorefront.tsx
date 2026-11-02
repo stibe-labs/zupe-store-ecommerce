@@ -276,7 +276,10 @@ export function TurkiyeJamStorefront({ initialProducts }: TurkiyeJamStorefrontPr
     });
 
     const isOutOfStock = found
-      ? found.in_stock === 0 || (found.stock_count !== undefined && Number(found.stock_count) <= 0)
+      ? Number(found.in_stock) === 0 ||
+        found.in_stock === false ||
+        found.in_stock === "0" ||
+        (found.stock_count !== undefined && Number(found.stock_count) <= 0)
       : false;
 
     const price = found && found.price ? Number(found.price) : pkg.price;

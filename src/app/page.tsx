@@ -6,6 +6,7 @@ import { executeD1Query } from "@/lib/d1";
 import { Product } from "@/types/product";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 async function getInitialProducts(): Promise<Product[]> {

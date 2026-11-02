@@ -163,7 +163,7 @@ export default function AdminShipmentsPage() {
         });
       } else {
         setModalMsg({
-          text: data.error || "Failed to generate Shiprocket AWB",
+          text: data.message || data.error || "Failed to generate Shiprocket AWB",
           type: "error",
         });
       }

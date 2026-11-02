@@ -255,9 +255,8 @@ export async function GET(req: NextRequest) {
         const erpOrder = fastrrOrderToERPOrder(fastrrRes);
 
         try {
-          const { registerERPOrderInMemory, createERPOrder } = await import("@/lib/erpStore");
+          const { registerERPOrderInMemory } = await import("@/lib/erpStore");
           registerERPOrderInMemory(erpOrder);
-          await createERPOrder(erpOrder);
         } catch (_) {}
 
         return NextResponse.json({
