@@ -828,7 +828,30 @@ export async function getOrderById(orderId: string): Promise<ERPOrder | null> {
           items = [];
         }
       }
-      const order = { ...row, items: Array.isArray(items) ? items : [] };
+      let itemsList = Array.isArray(items) ? items : [];
+      if (itemsList.length === 0 && row.id) {
+        try {
+          const oiRows = await executeD1Query<any>(
+            `SELECT * FROM order_items WHERE order_id = ?`,
+            [row.id]
+          );
+          if (oiRows && oiRows.length > 0) {
+            itemsList = oiRows.map((it: any) => ({
+              product_id: it.product_id,
+              name: it.product_name || "Turkiye Jam",
+              product_name: it.product_name || "Turkiye Jam",
+              quantity: Number(it.quantity || 1),
+              unit_price: Number(it.unit_price || it.total_price || 0),
+              price: Number(it.unit_price || it.total_price || 0),
+              total_price: Number(it.total_price || 0),
+              image: it.poster_image || "",
+            }));
+          }
+        } catch (oiErr) {
+          console.warn("Failed to load order_items in getOrderById:", oiErr);
+        }
+      }
+      const order = { ...row, items: itemsList };
       inMemoryERPOrders.unshift(order);
       return order;
     }

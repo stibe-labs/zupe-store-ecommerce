@@ -45,6 +45,37 @@ export async function GET(req: NextRequest) {
           try { rawItems = JSON.parse(ord.items); } catch { rawItems = []; }
         }
 
+        if (rawItems.length === 0 && (ord.id || resolvedOrderId)) {
+          try {
+            const { executeD1Query } = await import("@/lib/d1");
+            const oiRows = await executeD1Query<any>(
+              `SELECT * FROM order_items WHERE order_id = ?`,
+              [ord.id || resolvedOrderId]
+            );
+            if (oiRows && oiRows.length > 0) {
+              rawItems = oiRows.map((it: any) => ({
+                name: it.product_name || "Turkiye Jam",
+                product_name: it.product_name || "Turkiye Jam",
+                quantity: Number(it.quantity || 1),
+                unit_price: Number(it.unit_price || it.total_price || 0),
+                price: Number(it.unit_price || it.total_price || 0),
+              }));
+            }
+          } catch (oiErr) {
+            console.warn("Failed to fetch order_items in whatsapp-confirm route:", oiErr);
+          }
+        }
+
+        if (rawItems.length === 0) {
+          rawItems = [{
+            name: "Turkiye Jam (3 Sachet Pack)",
+            product_name: "Turkiye Jam (3 Sachet Pack)",
+            quantity: 1,
+            unit_price: Number(ord.total_amount) || 1099,
+            price: Number(ord.total_amount) || 1099,
+          }];
+        }
+
         const displayOrderId = ord.shopify_order_id || (ord as any).shopify_order_id || ord.id || resolvedOrderId;
 
         await sendOrderConfirmationWhatsApp({
@@ -54,7 +85,7 @@ export async function GET(req: NextRequest) {
           totalAmount: Number(ord.total_amount) || 0,
           paymentMethod: isCod ? "cod" : "prepaid",
           items: rawItems.map((it: any) => ({
-            name: it.product_name || it.name || "Purchased Product",
+            name: it.product_name || it.name || "Turkiye Jam",
             quantity: Number(it.quantity || 1),
             price: Number(it.unit_price || it.price || 0),
           })),
