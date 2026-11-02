@@ -57,6 +57,8 @@ import {
   HowToUseCardRadius,
   HowToUseCardBorder,
   HowToUseCardShadow,
+  ComparisonTableRow,
+  ComparisonTableConfig,
 } from "@/types/product";
 import { DEFAULT_PRODUCTS, getSubcategoriesForCategory } from "@/data/zupeProducts";
 import { HowToUseSection } from "@/components/HowToUseSection";
@@ -124,6 +126,7 @@ const FORM_TABS_LIST = [
   "media",
   "colors",
   "overview",
+  "why_choose",
   "specs",
   "how_to_use",
   "action_videos",
@@ -261,6 +264,15 @@ export default function AdminProductsPage() {
 
   // Tab 5: Product Details & Overview (Dynamic Long-Form Visual Story Blocks)
   const [formOverviewBlocks, setFormOverviewBlocks] = useState<ProductOverviewBlock[]>([]);
+
+  // Tab 6: Why Choose This Product? (Comparison Table)
+  const [formComparisonEnabled, setFormComparisonEnabled] = useState<boolean>(true);
+  const [formComparisonTitle, setFormComparisonTitle] = useState<string>("Why Choose This Product?");
+  const [formComparisonSubtitle, setFormComparisonSubtitle] = useState<string>("See how it compares with common alternatives.");
+  const [formComparisonZupeLabel, setFormComparisonZupeLabel] = useState<string>("Zupestore");
+  const [formComparisonOtherLabel, setFormComparisonOtherLabel] = useState<string>("Regular Alternative");
+  const [formComparisonRows, setFormComparisonRows] = useState<ComparisonTableRow[]>([]);
+  const [newComparisonFeatureInput, setNewComparisonFeatureInput] = useState<string>("");
 
   // Tab 6: Highlights ("Why You'll Love This ❤️")
   const [formFeatures, setFormFeatures] = useState<string[]>([]);
@@ -427,6 +439,19 @@ export default function AdminProductsPage() {
     setFormGalleryImages([]);
     setNewGalleryInput("");
     setFormOverviewBlocks([]);
+
+    setFormComparisonEnabled(true);
+    setFormComparisonTitle("Why Choose This Product?");
+    setFormComparisonSubtitle("See how it compares with common alternatives.");
+    setFormComparisonZupeLabel("Zupestore");
+    setFormComparisonOtherLabel("Regular Alternative");
+    setFormComparisonRows([
+      { id: "row-1", feature: "Premium Quality Build & Finish", zupe: true, other: false },
+      { id: "row-2", feature: "Fast & Intuitive Operation", zupe: true, other: false },
+      { id: "row-3", feature: "Ergonomic Compact Design", zupe: true, other: false },
+      { id: "row-4", feature: "Verified Authentic Zupe Original", zupe: true, other: false },
+    ]);
+    setNewComparisonFeatureInput("");
 
     setFormFeatures([
       "Premium Quality Build & Finish",
@@ -647,6 +672,39 @@ export default function AdminProductsPage() {
     setFormFeatures(initialFeatures);
     setNewFeatureInput("");
 
+    if (prod.comparison_table) {
+      setFormComparisonEnabled(prod.comparison_table.enabled !== false);
+      setFormComparisonTitle(prod.comparison_table.title || "Why Choose This Product?");
+      setFormComparisonSubtitle(prod.comparison_table.subtitle || "See how it compares with common alternatives.");
+      setFormComparisonZupeLabel(prod.comparison_table.zupe_label || "Zupestore");
+      setFormComparisonOtherLabel(prod.comparison_table.other_label || "Regular Alternative");
+      setFormComparisonRows(
+        Array.isArray(prod.comparison_table.rows) && prod.comparison_table.rows.length > 0
+          ? JSON.parse(JSON.stringify(prod.comparison_table.rows))
+          : initialFeatures.map((feat, idx) => ({
+              id: `row-${idx + 1}-${Date.now()}`,
+              feature: feat,
+              zupe: true,
+              other: false,
+            }))
+      );
+    } else {
+      setFormComparisonEnabled(true);
+      setFormComparisonTitle("Why Choose This Product?");
+      setFormComparisonSubtitle("See how it compares with common alternatives.");
+      setFormComparisonZupeLabel("Zupestore");
+      setFormComparisonOtherLabel("Regular Alternative");
+      setFormComparisonRows(
+        initialFeatures.map((feat, idx) => ({
+          id: `row-${idx + 1}-${Date.now()}`,
+          feature: feat,
+          zupe: true,
+          other: false,
+        }))
+      );
+    }
+    setNewComparisonFeatureInput("");
+
     setFormVolume(prod.volume || "");
     setFormMaterial(prod.material || "");
     setFormSpecs(
@@ -783,6 +841,106 @@ export default function AdminProductsPage() {
     });
   };
 
+  // Comparison Table Helpers & Presets
+  const COMPARISON_PRESETS = [
+    {
+      name: "Steam Iron",
+      rows: [
+        { feature: "30s Rapid Heat-Up", zupe: true, other: false },
+        { feature: "Dual Wet & Dry Ironing", zupe: true, other: false },
+        { feature: "180° Foldable Travel Body", zupe: true, other: false },
+        { feature: "Anti-Burn Ceramic Plate", zupe: true, other: false },
+        { feature: "Zero Water Leakage At All Angles", zupe: true, other: false },
+      ],
+    },
+    {
+      name: "Ripple Lamp",
+      rows: [
+        { feature: "Dynamic 360° Rotating Ripple Waves", zupe: true, other: false },
+        { feature: "16 RGB Vibrant Colors + Remote", zupe: true, other: false },
+        { feature: "Whisper-Quiet Internal Rotation Motor", zupe: true, other: false },
+        { feature: "Faceted High-Transmittance Crystal Build", zupe: true, other: false },
+        { feature: "Natural Solid Wood Base + USB Plug", zupe: true, other: false },
+      ],
+    },
+    {
+      name: "Heating Pad",
+      rows: [
+        { feature: "3 Fast Heat Settings (45-65°C)", zupe: true, other: false },
+        { feature: "4 Soothing Vibration Massage Modes", zupe: true, other: false },
+        { feature: "Skin-Friendly Plush Velvet Lining", zupe: true, other: false },
+        { feature: "Wireless USB Rechargeable Battery", zupe: true, other: false },
+      ],
+    },
+    {
+      name: "Cleaning Brush",
+      rows: [
+        { feature: "Scrubs Stubborn Grime Effortlessly", zupe: true, other: false },
+        { feature: "Reaches Narrow Corners & Grout Lines", zupe: true, other: false },
+        { feature: "3 Integrated Cleaning Tools In One", zupe: true, other: false },
+        { feature: "Durable Food-Grade PP & Silicone", zupe: true, other: false },
+      ],
+    },
+    {
+      name: "Defaults",
+      rows: [
+        { feature: "Premium Verified Build Quality & Finish", zupe: true, other: false },
+        { feature: "Fast & Intuitive One-Touch Operation", zupe: true, other: false },
+        { feature: "Ergonomic & Durable Modern Design", zupe: true, other: false },
+        { feature: "100% Genuine Authentic Zupe Verified", zupe: true, other: false },
+      ],
+    },
+  ];
+
+  const addComparisonRow = (customText?: string) => {
+    const text = (customText !== undefined ? customText : newComparisonFeatureInput).trim();
+    if (!text) return;
+    const newRow: ComparisonTableRow = {
+      id: `comp-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      feature: text,
+      zupe: true,
+      other: false,
+    };
+    setFormComparisonRows((prev) => [...prev, newRow]);
+    setNewComparisonFeatureInput("");
+  };
+
+  const removeComparisonRow = (id: string) => {
+    setFormComparisonRows((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const updateComparisonRow = (id: string, field: "feature" | "zupe" | "other", val: any) => {
+    setFormComparisonRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, [field]: val } : r))
+    );
+  };
+
+  const moveComparisonRow = (id: string, direction: "up" | "down") => {
+    setFormComparisonRows((prev) => {
+      const idx = prev.findIndex((r) => r.id === id);
+      if (idx === -1) return prev;
+      if (direction === "up" && idx === 0) return prev;
+      if (direction === "down" && idx === prev.length - 1) return prev;
+      const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+      const copy = [...prev];
+      const temp = copy[idx];
+      copy[idx] = copy[targetIdx];
+      copy[targetIdx] = temp;
+      return copy;
+    });
+  };
+
+  const applyComparisonPreset = (presetRows: { feature: string; zupe: boolean; other: boolean }[]) => {
+    setFormComparisonRows(
+      presetRows.map((r, i) => ({
+        id: `comp-${i + 1}-${Date.now()}`,
+        feature: r.feature,
+        zupe: r.zupe,
+        other: r.other,
+      }))
+    );
+  };
+
   // Step-by-Step wizard navigation helpers
   const handleNextTab = (e?: React.MouseEvent) => {
     if (e) {
@@ -813,6 +971,8 @@ export default function AdminProductsPage() {
     } else if (activeTab === "colors") {
       setActiveTab("overview");
     } else if (activeTab === "overview") {
+      setActiveTab("why_choose");
+    } else if (activeTab === "why_choose") {
       setActiveTab("specs");
     } else if (activeTab === "specs") {
       setActiveTab("how_to_use");
@@ -1157,6 +1317,16 @@ export default function AdminProductsPage() {
       return c;
     });
 
+    const cleanedCompRows = formComparisonRows.filter((r) => r.feature && r.feature.trim());
+    const compTableConfig: ComparisonTableConfig = {
+      enabled: formComparisonEnabled,
+      title: formComparisonTitle.trim() || "Why Choose This Product?",
+      subtitle: formComparisonSubtitle.trim() || "See how it compares with common alternatives.",
+      zupe_label: formComparisonZupeLabel.trim() || "Zupestore",
+      other_label: formComparisonOtherLabel.trim() || "Regular Alternative",
+      rows: cleanedCompRows,
+    };
+
     const payload = {
       ...(editingProduct ? { id: editingProduct.id } : {}),
       slug: generatedSlug,
@@ -1183,7 +1353,10 @@ export default function AdminProductsPage() {
       ),
       volume: formVolume.trim(),
       material: formMaterial.trim(),
-      features: formFeatures.filter(Boolean),
+      comparison_table: compTableConfig,
+      features: cleanedCompRows.length > 0
+        ? cleanedCompRows.map((r) => r.feature.trim())
+        : formFeatures.filter(Boolean),
       specifications: Object.keys(specsObj).length > 0 ? specsObj : undefined,
       whats_in_box: formWhatsInBox.filter(Boolean),
       bundle_tiers: formBundleTiers,
@@ -1858,6 +2031,19 @@ export default function AdminProductsPage() {
 
               <button
                 type="button"
+                onClick={() => setActiveTab("why_choose")}
+                className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                  activeTab === "why_choose"
+                    ? "border-[#FF7A00] text-[#FF7A00]"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>6. Why Choose This? {formComparisonEnabled ? `(${formComparisonRows.length})` : "(Off)"}</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setActiveTab("specs")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   activeTab === "specs"
@@ -1866,7 +2052,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <ListPlus className="w-3.5 h-3.5" />
-                <span>6. Specs & Box</span>
+                <span>7. Specs & Box</span>
               </button>
 
               <button
@@ -1879,7 +2065,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <HelpCircle className="w-3.5 h-3.5" />
-                <span>7. How to Use {formHowToUseEnabled ? `(${formHowToUseSteps.length})` : "(Off)"}</span>
+                <span>8. How to Use {formHowToUseEnabled ? `(${formHowToUseSteps.length})` : "(Off)"}</span>
               </button>
 
               <button
@@ -1892,7 +2078,7 @@ export default function AdminProductsPage() {
                 }`}
               >
                 <Video className="w-3.5 h-3.5" />
-                <span>8. Action Videos ({validFormVideoIds.length})</span>
+                <span>9. Action Videos ({validFormVideoIds.length})</span>
               </button>
             </div>
 
@@ -2131,6 +2317,17 @@ export default function AdminProductsPage() {
                           Steam Iron
                         </button>
                       </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-[#FF7A00] bg-orange-100/70 border border-orange-200/90 rounded-lg p-2.5 mb-2">
+                      <span className="font-semibold">💡 Looking to edit the <strong>&ldquo;Why Choose This Product?&rdquo; Comparison Table</strong>?</span>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("why_choose")}
+                        className="font-bold underline hover:text-orange-800 cursor-pointer ml-2 shrink-0"
+                      >
+                        Go to Step 6 (Comparison Table) →
+                      </button>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
@@ -3656,7 +3853,408 @@ export default function AdminProductsPage() {
               )}
 
               {/* ========================================================
-                  TAB 6: SPECS & BOX (FULLY EDITABLE & DELETABLE INDIVIDUAL ROWS)
+                  TAB 6: WHY CHOOSE THIS PRODUCT? (COMPARISON TABLE)
+                 ======================================================== */}
+              {activeTab === "why_choose" && (
+                <div className="space-y-6">
+                  {/* 1. Header Banner & Enable Toggle */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50/50 border border-orange-200/80 shadow-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-[#FF7A00] text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                          <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-extrabold text-slate-900 text-sm sm:text-base">
+                              Why Choose This Product? (Comparison Table)
+                            </h4>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange-100 text-[#FF7A00] border border-orange-200">
+                              Storefront Feature
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-600 mt-0.5 max-w-xl">
+                            Displays a high-converting side-by-side comparison table on the storefront between Product Details and How-To-Use, proving why Zupe Store is superior to common alternatives.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Enable/Disable Switch */}
+                      <label className="inline-flex items-center gap-2.5 cursor-pointer self-start sm:self-center shrink-0 bg-white px-3.5 py-2 rounded-xl border border-orange-200 shadow-2xs">
+                        <input
+                          type="checkbox"
+                          checked={formComparisonEnabled}
+                          onChange={(e) => setFormComparisonEnabled(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#FF7A00]"></div>
+                        <span className="text-xs font-bold text-slate-800">
+                          {formComparisonEnabled ? "Section Active" : "Section Hidden"}
+                        </span>
+                      </label>
+                    </div>
+
+                    {!formComparisonEnabled && (
+                      <div className="mt-3 p-2.5 rounded-xl bg-amber-100/70 border border-amber-300/60 text-amber-900 text-xs font-semibold flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
+                        <span>The comparison table is currently disabled and will not be displayed on the storefront for this product.</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 2. Customizable Table Titles & Column Labels */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
+                    <h5 className="font-bold text-slate-800 text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#FF7A00]" />
+                      <span>Table Headings &amp; Column Branding</span>
+                    </h5>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Section Heading (Main Title)
+                        </label>
+                        <input
+                          type="text"
+                          value={formComparisonTitle}
+                          onChange={(e) => setFormComparisonTitle(e.target.value)}
+                          placeholder="Why Choose This Product?"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] font-semibold text-slate-900"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Section Subtitle (Tagline)
+                        </label>
+                        <input
+                          type="text"
+                          value={formComparisonSubtitle}
+                          onChange={(e) => setFormComparisonSubtitle(e.target.value)}
+                          placeholder="See how it compares with common alternatives."
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] text-slate-700"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Your Column Header Label (ZupeStore)
+                        </label>
+                        <input
+                          type="text"
+                          value={formComparisonZupeLabel}
+                          onChange={(e) => setFormComparisonZupeLabel(e.target.value)}
+                          placeholder="Zupestore"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] font-bold text-[#FF7A00]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Competitor Column Header Label
+                        </label>
+                        <input
+                          type="text"
+                          value={formComparisonOtherLabel}
+                          onChange={(e) => setFormComparisonOtherLabel(e.target.value)}
+                          placeholder="Regular Alternative"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] font-bold text-slate-800"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Comparison Feature Rows Manager */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <h5 className="font-bold text-slate-800 text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          <span>Comparison Feature Rows ({formComparisonRows.length})</span>
+                        </h5>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Toggle checkmarks or crosses for each feature. Green check represents advantage, red cross represents disadvantage.
+                        </p>
+                      </div>
+
+                      {/* Quick Presets Bar */}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mr-1">
+                          Load Presets:
+                        </span>
+                        {COMPARISON_PRESETS.map((preset) => (
+                          <button
+                            key={preset.name}
+                            type="button"
+                            onClick={() => applyComparisonPreset(preset.rows)}
+                            className="px-2.5 py-1 text-[10px] bg-slate-100 hover:bg-orange-100 text-slate-700 hover:text-[#FF7A00] font-bold rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                          >
+                            {preset.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Feature Rows List */}
+                    <div className="space-y-2.5">
+                      {formComparisonRows.map((row, idx) => (
+                        <div
+                          key={row.id || idx}
+                          className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 p-3 rounded-xl bg-slate-50/80 border border-slate-200 hover:border-slate-300 transition-all shadow-2xs"
+                        >
+                          {/* Row Index Badge */}
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="w-6 h-6 rounded-lg bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center">
+                              {idx + 1}
+                            </span>
+                          </div>
+
+                          {/* Feature Name Input */}
+                          <div className="flex-1 min-w-[200px]">
+                            <input
+                              type="text"
+                              value={row.feature}
+                              onChange={(e) => updateComparisonRow(row.id, "feature", e.target.value)}
+                              placeholder="e.g. 30s Rapid Heat-Up"
+                              className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs sm:text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                            />
+                          </div>
+
+                          {/* ZupeStore Toggle Button */}
+                          <button
+                            type="button"
+                            onClick={() => updateComparisonRow(row.id, "zupe", !row.zupe)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 border ${
+                              row.zupe
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+                                : "bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100"
+                            }`}
+                            title="Click to toggle Zupe Store advantage"
+                          >
+                            {row.zupe ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 stroke-[3] text-emerald-600" />
+                                <span>{formComparisonZupeLabel || "Zupe"}: Included (✓)</span>
+                              </>
+                            ) : (
+                              <>
+                                <X className="w-3.5 h-3.5 stroke-[3] text-rose-600" />
+                                <span>{formComparisonZupeLabel || "Zupe"}: No (✗)</span>
+                              </>
+                            )}
+                          </button>
+
+                          {/* Regular Alternative Toggle Button */}
+                          <button
+                            type="button"
+                            onClick={() => updateComparisonRow(row.id, "other", !row.other)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 border ${
+                              !row.other
+                                ? "bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+                            }`}
+                            title="Click to toggle Regular Alternative disadvantage"
+                          >
+                            {!row.other ? (
+                              <>
+                                <X className="w-3.5 h-3.5 stroke-[3] text-rose-600" />
+                                <span>Alternative: Missing (✗)</span>
+                              </>
+                            ) : (
+                              <>
+                                <Check className="w-3.5 h-3.5 stroke-[3] text-emerald-600" />
+                                <span>Alternative: Included (✓)</span>
+                              </>
+                            )}
+                          </button>
+
+                          {/* Action Buttons: Up, Down, Delete */}
+                          <div className="flex items-center gap-1 shrink-0 self-end sm:self-center">
+                            <button
+                              type="button"
+                              onClick={() => moveComparisonRow(row.id, "up")}
+                              disabled={idx === 0}
+                              className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:hover:text-slate-400 rounded-md hover:bg-slate-200 transition-colors cursor-pointer"
+                              title="Move Up"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveComparisonRow(row.id, "down")}
+                              disabled={idx === formComparisonRows.length - 1}
+                              className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:hover:text-slate-400 rounded-md hover:bg-slate-200 transition-colors cursor-pointer"
+                              title="Move Down"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeComparisonRow(row.id)}
+                              className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+                              title="Delete Row"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {formComparisonRows.length === 0 && (
+                        <div className="text-center py-8 px-4 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 text-slate-500">
+                          <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                          <p className="text-xs font-semibold">No comparison rows added yet.</p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">Click one of the presets above or enter a new feature below.</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Add New Feature Row Bar */}
+                    <div className="pt-2">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={newComparisonFeatureInput}
+                          onChange={(e) => setNewComparisonFeatureInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addComparisonRow();
+                            }
+                          }}
+                          placeholder="Type a new feature or benefit (e.g. 180° Foldable Travel Body) & press Enter..."
+                          className="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => addComparisonRow()}
+                          disabled={!newComparisonFeatureInput.trim()}
+                          className="px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] disabled:bg-slate-300 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+                        >
+                          <Plus className="w-4 h-4 stroke-[2.5]" />
+                          <span>Add Row</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4. Live Storefront Comparison Table Preview */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h5 className="font-bold text-slate-800 text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2">
+                        <Eye className="w-4 h-4 text-[#FF7A00]" />
+                        <span>Live Storefront Preview</span>
+                      </h5>
+                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                        Exact Storefront Appearance
+                      </span>
+                    </div>
+
+                    {/* Preview Table Container */}
+                    <div className="max-w-xl mx-auto my-3 select-none">
+                      {/* Section Title & Subtitle */}
+                      <div className="text-center mb-4">
+                        <h3 className="text-base sm:text-lg font-extrabold text-[#0F172A] tracking-tight leading-tight font-display">
+                          {formComparisonTitle || "Why Choose This Product?"}
+                        </h3>
+                        <p className="text-[11px] sm:text-xs text-slate-500 font-normal mt-0.5 leading-snug">
+                          {formComparisonSubtitle || "See how it compares with common alternatives."}
+                        </p>
+                      </div>
+
+                      {/* Comparison Table Box */}
+                      <div className="rounded-2xl border border-gray-200/90 overflow-hidden shadow-xs bg-white">
+                        <table className="w-full border-collapse text-left">
+                          <thead>
+                            <tr className="border-b border-gray-200">
+                              {/* Features Column */}
+                              <th className="w-[42%] p-2.5 sm:p-3.5 bg-gray-50/90 text-gray-900 font-bold text-xs tracking-tight align-middle">
+                                Features
+                              </th>
+
+                              {/* Zupe Store Product Column (Orange Header) */}
+                              <th className="w-[29%] p-2 sm:p-3 bg-gradient-to-b from-[#FF6A00] to-[#FF7A00] text-white text-center align-middle border-x border-orange-500/30">
+                                <div className="flex flex-col items-center justify-center gap-1">
+                                  <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider block leading-tight text-white line-clamp-1">
+                                    {formComparisonZupeLabel || "Zupestore"}
+                                  </span>
+                                  <span className="text-[9px] sm:text-[10px] font-semibold text-orange-100 block leading-tight line-clamp-1">
+                                    {formName ? formName.split(" ").slice(0, 3).join(" ") : "Product"}
+                                  </span>
+                                  <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-white/20 border border-white/40 shadow-2xs mt-0.5">
+                                    <img
+                                      src={formImage || "/products/ripple-lamp.jpg"}
+                                      alt={formName || "Product"}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                </div>
+                              </th>
+
+                              {/* Regular Alternative Column (Charcoal Header) */}
+                              <th className="w-[29%] p-2 sm:p-3 bg-[#0F172A] text-white text-center align-middle">
+                                <div className="flex flex-col items-center justify-center gap-1">
+                                  <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider block leading-tight text-gray-200 line-clamp-1">
+                                    {formComparisonOtherLabel.split(" ")[0] || "Regular"}
+                                  </span>
+                                  <span className="text-[9px] sm:text-[10px] font-semibold text-gray-400 block leading-tight line-clamp-1">
+                                    {formComparisonOtherLabel.split(" ").slice(1).join(" ") || "Alternative"}
+                                  </span>
+                                  <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-white/10 border border-white/20 shadow-2xs mt-0.5 flex items-center justify-center">
+                                    <div className="w-4 h-4 rounded-full bg-gray-700/80 flex items-center justify-center text-gray-400 text-[9px] font-black">
+                                      vs
+                                    </div>
+                                  </div>
+                                </div>
+                              </th>
+                            </tr>
+                          </thead>
+
+                          <tbody className="divide-y divide-gray-100 text-xs">
+                            {formComparisonRows.map((item, idx) => (
+                              <tr
+                                key={item.id || idx}
+                                className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/40"}
+                              >
+                                <td className="p-2.5 sm:p-3 text-gray-800 font-medium text-[11px] leading-snug align-middle">
+                                  {item.feature}
+                                </td>
+
+                                <td className="p-2 text-center align-middle bg-orange-50/30 border-x border-orange-100/60">
+                                  {item.zupe ? (
+                                    <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center shadow-2xs">
+                                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                    </div>
+                                  ) : (
+                                    <div className="w-5 h-5 rounded-full bg-rose-100 text-rose-500 mx-auto flex items-center justify-center shadow-2xs">
+                                      <X className="w-3.5 h-3.5 stroke-[3]" />
+                                    </div>
+                                  )}
+                                </td>
+
+                                <td className="p-2 text-center align-middle bg-gray-50/20">
+                                  {!item.other ? (
+                                    <div className="w-5 h-5 rounded-full bg-rose-100 text-rose-500 mx-auto flex items-center justify-center shadow-2xs">
+                                      <X className="w-3.5 h-3.5 stroke-[3]" />
+                                    </div>
+                                  ) : (
+                                    <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center shadow-2xs">
+                                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================
+                  TAB 7: SPECS & BOX (FULLY EDITABLE & DELETABLE INDIVIDUAL ROWS)
                  ======================================================== */}
               {activeTab === "specs" && (
                 <div className="space-y-6">
@@ -4643,6 +5241,7 @@ export default function AdminProductsPage() {
                   {activeTab === "media" && "Poster & Gallery"}
                   {activeTab === "colors" && "Colors & Multi-Angle Photos"}
                   {activeTab === "overview" && "Product Details & Overview"}
+                  {activeTab === "why_choose" && "Why Choose This Product? (Comparison Table)"}
                   {activeTab === "specs" && "Specs & Box"}
                   {activeTab === "how_to_use" && "How to Use"}
                   {activeTab === "action_videos" && "Action Videos"}

@@ -14,16 +14,36 @@ export function ProductComparisonTable({
   product,
   className = "",
 }: ProductComparisonTableProps) {
-  // Derive features from product features or sensible e-commerce advantages
-  const featureList: { label: string; zupe: boolean; other: boolean }[] = [];
+  const compConfig = product.comparison_table;
 
-  if (Array.isArray(product.features) && product.features.length >= 3) {
-    product.features.slice(0, 5).forEach((feat) => {
-      featureList.push({
-        label: feat,
-        zupe: true,
-        other: false,
-      });
+  // If explicitly disabled by admin, hide the section
+  if (compConfig && compConfig.enabled === false) {
+    return null;
+  }
+
+  // Derive features from comparison_table or product features or sensible e-commerce advantages
+  const featureList: { label: string; zupe: boolean | string; other: boolean | string }[] = [];
+
+  if (compConfig && Array.isArray(compConfig.rows) && compConfig.rows.length > 0) {
+    compConfig.rows.forEach((r) => {
+      if (r.feature && r.feature.trim()) {
+        featureList.push({
+          label: r.feature.trim(),
+          zupe: r.zupe !== undefined ? r.zupe : true,
+          other: r.other !== undefined ? r.other : false,
+        });
+      }
+    });
+  } else if (Array.isArray(product.features) && product.features.length >= 3) {
+    product.features.slice(0, 6).forEach((feat) => {
+      const featText = typeof feat === "string" ? feat : (feat as any)?.text || String(feat);
+      if (featText.trim()) {
+        featureList.push({
+          label: featText.trim(),
+          zupe: true,
+          other: false,
+        });
+      }
     });
   } else {
     // Dynamic defaults based on product name / category
@@ -63,8 +83,8 @@ export function ProductComparisonTable({
     }
   }
 
-  // Ensure exactly 4-5 rows
-  while (featureList.length < 4) {
+  // Ensure minimum 3 rows if none defined
+  while (featureList.length < 3) {
     featureList.push({
       label: "Tested & verified authentic Zupe performance",
       zupe: true,
@@ -72,7 +92,17 @@ export function ProductComparisonTable({
     });
   }
 
-  const shortName = product.name.split(" ").slice(0, 3).join(" ");
+  const title = compConfig?.title || "Why Choose This Product?";
+  const subtitle = compConfig?.subtitle || "See how it compares with common alternatives.";
+  const zupeLabel = compConfig?.zupe_label || "Zupestore";
+  const otherLabel = compConfig?.other_label || "Regular Alternative";
+
+  // Split otherLabel into main and sub if contains space
+  const otherParts = otherLabel.split(" ");
+  const otherMainLabel = otherParts[0] || "Regular";
+  const otherSubLabel = otherParts.slice(1).join(" ") || "Alternative";
+
+  const shortName = product.name ? product.name.split(" ").slice(0, 3).join(" ") : "Product";
   const fallbackPoster = product.poster_image || product.images?.[0] || "/products/ripple-lamp.jpg";
 
   return (
@@ -80,10 +110,10 @@ export function ProductComparisonTable({
       {/* Section Title */}
       <div className="text-center mb-4 sm:mb-5">
         <h2 className="text-[17px] sm:text-[20px] font-display font-extrabold text-[#0F172A] tracking-tight leading-tight">
-          Why Choose This Product?
+          {title}
         </h2>
         <p className="text-[12px] sm:text-[13px] text-gray-500 font-normal mt-0.5 leading-snug">
-          See how it compares with common alternatives.
+          {subtitle}
         </p>
       </div>
 
@@ -102,7 +132,7 @@ export function ProductComparisonTable({
               <th className="w-[29%] p-2 sm:p-3 bg-gradient-to-b from-[#FF6A00] to-[#FF7A00] text-white text-center align-middle border-x border-orange-500/30">
                 <div className="flex flex-col items-center justify-center gap-1">
                   <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider block leading-tight text-white line-clamp-1">
-                    Zupestore
+                    {zupeLabel}
                   </span>
                   <span className="text-[10px] sm:text-[11px] font-semibold text-orange-100 block leading-tight line-clamp-1">
                     {shortName}
@@ -122,10 +152,10 @@ export function ProductComparisonTable({
               <th className="w-[29%] p-2 sm:p-3 bg-[#0F172A] text-white text-center align-middle">
                 <div className="flex flex-col items-center justify-center gap-1">
                   <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider block leading-tight text-gray-200 line-clamp-1">
-                    Regular
+                    {otherMainLabel}
                   </span>
                   <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 block leading-tight line-clamp-1">
-                    Alternative
+                    {otherSubLabel}
                   </span>
                   <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-lg overflow-hidden bg-white/10 border border-white/20 shadow-2xs mt-0.5 flex items-center justify-center">
                     <div className="w-5 h-5 rounded-full bg-gray-700/80 flex items-center justify-center text-gray-400 text-[10px] font-black">
@@ -149,18 +179,34 @@ export function ProductComparisonTable({
                   {item.label}
                 </td>
 
-                {/* Zupe Column (Green Check) */}
+                {/* Zupe Column (Green Check / Red Cross / Text) */}
                 <td className="p-2 sm:p-3 text-center align-middle bg-orange-50/30 border-x border-orange-100/60">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center shadow-2xs">
-                    <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
-                  </div>
+                  {item.zupe === true ? (
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center shadow-2xs">
+                      <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
+                    </div>
+                  ) : item.zupe === false ? (
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-rose-100 text-rose-500 mx-auto flex items-center justify-center shadow-2xs">
+                      <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
+                    </div>
+                  ) : (
+                    <span className="text-[10px] sm:text-xs font-bold text-emerald-700">{item.zupe}</span>
+                  )}
                 </td>
 
-                {/* Regular Alternative Column (Red Cross) */}
+                {/* Regular Alternative Column (Red Cross / Green Check / Text) */}
                 <td className="p-2 sm:p-3 text-center align-middle bg-gray-50/20">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-rose-100 text-rose-500 mx-auto flex items-center justify-center shadow-2xs">
-                    <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
-                  </div>
+                  {item.other === false ? (
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-rose-100 text-rose-500 mx-auto flex items-center justify-center shadow-2xs">
+                      <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
+                    </div>
+                  ) : item.other === true ? (
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center shadow-2xs">
+                      <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
+                    </div>
+                  ) : (
+                    <span className="text-[10px] sm:text-xs font-bold text-gray-500">{item.other}</span>
+                  )}
                 </td>
               </tr>
             ))}

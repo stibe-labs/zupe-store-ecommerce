@@ -55,6 +55,22 @@ export interface HowToUseConfig {
   steps: HowToUseStep[];
 }
 
+export interface ComparisonTableRow {
+  id: string;
+  feature: string;
+  zupe: boolean | string;
+  other: boolean | string;
+}
+
+export interface ComparisonTableConfig {
+  enabled: boolean;
+  title?: string;
+  subtitle?: string;
+  zupe_label?: string;
+  other_label?: string;
+  rows: ComparisonTableRow[];
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -88,6 +104,7 @@ export interface Product {
   whats_in_box?: string[];
   bundle_tiers?: BuyMoreSaveMoreConfig;
   how_to_use?: HowToUseConfig;
+  comparison_table?: ComparisonTableConfig;
   video_ids?: string[];
   shipping_info?: string[];
   return_info?: string[];
@@ -140,5 +157,6 @@ export interface AdminProductFormData {
   whats_in_box?: string[];
   bundle_tiers?: BuyMoreSaveMoreConfig;
   how_to_use?: HowToUseConfig;
+  comparison_table?: ComparisonTableConfig;
   video_ids?: string[];
 }

@@ -43,6 +43,7 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
   const parsedBox = parseJsonSafe(p.whats_in_box, defaultFound?.whats_in_box || undefined);
   const parsedTiers = parseJsonSafe(p.bundle_tiers, defaultFound?.bundle_tiers || undefined);
   const parsedHowToUse = parseJsonSafe(p.how_to_use, defaultFound?.how_to_use || undefined);
+  const parsedComparisonTable = parseJsonSafe(p.comparison_table, defaultFound?.comparison_table || undefined);
   const parsedVideoIds = parseJsonSafe(p.video_ids, defaultFound?.video_ids || undefined);
 
   const priceNum = Number(p.price);
@@ -166,6 +167,7 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
     whats_in_box: parsedBox,
     bundle_tiers: parsedTiers,
     how_to_use: parsedHowToUse,
+    comparison_table: parsedComparisonTable,
     video_ids: Array.isArray(parsedVideoIds) ? parsedVideoIds : undefined,
     created_at: p.created_at || defaultFound?.created_at || new Date().toISOString(),
   };
@@ -328,6 +330,7 @@ export async function POST(req: NextRequest) {
       whats_in_box,
       bundle_tiers,
       how_to_use,
+      comparison_table,
       video_ids,
     } = body;
 
@@ -469,6 +472,7 @@ export async function POST(req: NextRequest) {
       whats_in_box: whats_in_box !== undefined ? whats_in_box : existingProd?.whats_in_box || undefined,
       bundle_tiers: bundle_tiers !== undefined ? bundle_tiers : existingProd?.bundle_tiers || undefined,
       how_to_use: how_to_use !== undefined ? how_to_use : existingProd?.how_to_use || undefined,
+      comparison_table: comparison_table !== undefined ? comparison_table : existingProd?.comparison_table || undefined,
       video_ids: video_ids !== undefined ? video_ids : existingProd?.video_ids || undefined,
       created_at: existingProd?.created_at || new Date().toISOString(),
     };
@@ -497,6 +501,7 @@ export async function POST(req: NextRequest) {
       const boxJson = newProd.whats_in_box ? JSON.stringify(newProd.whats_in_box) : null;
       const tiersJson = newProd.bundle_tiers ? JSON.stringify(newProd.bundle_tiers) : null;
       const howToUseJson = newProd.how_to_use ? JSON.stringify(newProd.how_to_use) : null;
+      const comparisonTableJson = newProd.comparison_table ? JSON.stringify(newProd.comparison_table) : null;
       const videoIdsJson = newProd.video_ids ? JSON.stringify(newProd.video_ids) : null;
 
       const runSaveQueries = async () => {
@@ -507,7 +512,7 @@ export async function POST(req: NextRequest) {
                  price = ?, mrp = ?, offer_price = ?, cost_price = ?, stock_count = ?, volume = ?,
                  poster_image = ?, images = ?, color = ?, colors = ?, has_colors = ?, overview_blocks = ?, material = ?, badge = ?,
                  in_stock = ?, rating = ?, review_count = ?, sold_count = ?, features = ?,
-                 specifications = ?, whats_in_box = ?, bundle_tiers = ?, how_to_use = ?, video_ids = ?
+                 specifications = ?, whats_in_box = ?, bundle_tiers = ?, how_to_use = ?, comparison_table = ?, video_ids = ?
              WHERE id = ?;`,
             [
               newProd.slug,
@@ -540,6 +545,7 @@ export async function POST(req: NextRequest) {
               boxJson,
               tiersJson,
               howToUseJson,
+              comparisonTableJson,
               videoIdsJson,
               existingRows[0].id,
             ]
@@ -551,9 +557,9 @@ export async function POST(req: NextRequest) {
                price, mrp, offer_price, cost_price, stock_count, volume,
                poster_image, images, color, colors, has_colors, overview_blocks, material, badge,
                in_stock, rating, review_count, sold_count, features,
-               specifications, whats_in_box, bundle_tiers, how_to_use, video_ids
+               specifications, whats_in_box, bundle_tiers, how_to_use, comparison_table, video_ids
              )
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
             [
               newProd.id,
               newProd.slug,
@@ -586,6 +592,7 @@ export async function POST(req: NextRequest) {
               boxJson,
               tiersJson,
               howToUseJson,
+              comparisonTableJson,
               videoIdsJson,
             ]
           );
@@ -611,6 +618,14 @@ export async function POST(req: NextRequest) {
             migrated = true;
           } catch (migErr) {
             console.warn("Could not add how_to_use column:", migErr);
+          }
+        }
+        if (errMsg.includes("comparison_table")) {
+          try {
+            await executeD1Query("ALTER TABLE products ADD COLUMN comparison_table TEXT;");
+            migrated = true;
+          } catch (migErr) {
+            console.warn("Could not add comparison_table column:", migErr);
           }
         }
 
