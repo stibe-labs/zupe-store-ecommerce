@@ -44,4 +44,3 @@ export async function launchFastrrCheckout(items: any[]): Promise<boolean> {
     return false;
   }
 }
-

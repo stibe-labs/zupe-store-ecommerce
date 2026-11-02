@@ -58,21 +58,41 @@ export { normalizeAddressKey, deduplicateAddresses } from "@/lib/addressUtils";
 import { normalizeAddressKey } from "@/lib/addressUtils";
 
 export async function getUserAddresses(
-  email: string,
-  userId?: string
+  email?: string,
+  userId?: string,
+  phone?: string
 ): Promise<UserAddress[]> {
   const normEmail = (email || "").toLowerCase().trim();
-  if (!normEmail) return [];
+  const digits = (phone || "").replace(/\D/g, "");
+  const last10Digits = digits.length >= 10 ? digits.slice(-10) : digits;
+
+  if (!normEmail && !userId && !last10Digits) return [];
 
   await ensureAddressTable();
 
   let addresses: UserAddress[] = [];
 
-  // Query D1 by verified email
+  // Query D1 by verified email, user_id, or phone
   try {
+    const whereClauses: string[] = [];
+    const params: any[] = [];
+
+    if (normEmail) {
+      whereClauses.push("LOWER(user_email) = ?");
+      params.push(normEmail);
+    }
+    if (userId) {
+      whereClauses.push("user_id = ?");
+      params.push(userId);
+    }
+    if (last10Digits) {
+      whereClauses.push("phone LIKE ?");
+      params.push(`%${last10Digits}`);
+    }
+
     const rows = await executeD1Query<any>(
-      `SELECT * FROM addresses WHERE LOWER(user_email) = ? ${userId ? "OR user_id = ?" : ""} ORDER BY is_default DESC, created_at DESC`,
-      userId ? [normEmail, userId] : [normEmail]
+      `SELECT * FROM addresses WHERE (${whereClauses.join(" OR ")}) ORDER BY is_default DESC, created_at DESC`,
+      params
     );
 
     if (rows && rows.length > 0) {
@@ -151,9 +171,73 @@ export async function getUserAddresses(
     console.warn("D1 addresses fetch error:", err);
   }
 
-  // If no address exists yet, check if customer already purchased in the past
+  // If no address exists yet, auto-sync from previous orders in D1 or memory
   if (addresses.length === 0) {
     try {
+      let resolvedUserId = userId;
+      let recipientName = "Valued Customer";
+      let userPhone = phone || "";
+
+      if (last10Digits) {
+        try {
+          const userRows = await executeD1Query<any>(
+            `SELECT id, name, email, phone FROM users WHERE phone LIKE ? LIMIT 1`,
+            [`%${last10Digits}`]
+          );
+          if (userRows && userRows.length > 0) {
+            if (!resolvedUserId) resolvedUserId = userRows[0].id;
+            if (userRows[0].name) recipientName = userRows[0].name;
+            if (userRows[0].phone) userPhone = userRows[0].phone;
+          }
+        } catch {}
+      }
+
+      const orderWhere: string[] = [];
+      const orderParams: any[] = [];
+      if (normEmail) {
+        orderWhere.push("LOWER(guest_email) = ?");
+        orderParams.push(normEmail);
+      }
+      if (resolvedUserId) {
+        orderWhere.push("user_id = ?");
+        orderParams.push(resolvedUserId);
+      }
+
+      if (orderWhere.length > 0) {
+        const pastOrderRows = await executeD1Query<any>(
+          `SELECT * FROM orders WHERE (${orderWhere.join(" OR ")}) ORDER BY created_at DESC LIMIT 1`,
+          orderParams
+        );
+        if (pastOrderRows && pastOrderRows.length > 0) {
+          const ord = pastOrderRows[0];
+          if (ord.shipping_address) {
+            const rawAddr = (ord.shipping_address || "").trim();
+            const pinMatch = rawAddr.match(/\b([1-9][0-9]{5})\b/);
+            const postal = pinMatch ? pinMatch[1] : "";
+            const addrParts = rawAddr.split(",").map((s: string) => s.trim());
+            const city = addrParts.length >= 2 ? addrParts[addrParts.length - 2] : "Local";
+
+            const autoAddress: UserAddress = {
+              id: `addr_auto_${Date.now()}`,
+              user_id: resolvedUserId || ord.user_id,
+              user_email: normEmail || ord.guest_email || `${last10Digits}@turkiyejam.customer`,
+              recipient_name: recipientName !== "Valued Customer" ? recipientName : (addrParts[0] || "Valued Customer"),
+              phone: userPhone,
+              street: rawAddr,
+              city,
+              state: "Kerala",
+              postal_code: postal || "682021",
+              country: "India",
+              is_default: true,
+              tag: "Home",
+              created_at: ord.created_at || new Date().toISOString(),
+            };
+            await saveUserAddress(autoAddress);
+            return [autoAddress];
+          }
+        }
+      }
+
       const pastOrders = getOrders(normEmail);
       if (pastOrders && pastOrders.length > 0) {
         const latestOrder = pastOrders[0];
@@ -161,7 +245,7 @@ export async function getUserAddresses(
           const autoAddress: UserAddress = {
             id: `addr_auto_${Date.now()}`,
             user_id: userId || latestOrder.user_id,
-            user_email: normEmail,
+            user_email: normEmail || `${last10Digits}@turkiyejam.customer`,
             recipient_name: latestOrder.customer_name || "Valued Customer",
             phone: latestOrder.customer_phone || "",
             street: latestOrder.shipping_address,
@@ -319,25 +403,28 @@ export async function setDefaultUserAddress(id: string, email: string): Promise<
 
 export async function syncAddressFromOrder(orderData: {
   customer_name: string;
-  customer_email: string;
+  customer_email?: string;
   customer_phone?: string;
   shipping_address: string;
   city: string;
   postal_code: string;
   user_id?: string;
 }): Promise<UserAddress | null> {
-  if (!orderData.customer_email || !orderData.shipping_address) return null;
+  if (!orderData.shipping_address) return null;
 
-  const email = orderData.customer_email.toLowerCase().trim();
+  const digits = (orderData.customer_phone || "").replace(/\D/g, "");
+  const last10 = digits.length >= 10 ? digits.slice(-10) : digits;
+  const email = (orderData.customer_email || "").toLowerCase().trim() ||
+    (last10 ? `${last10}@turkiyejam.customer` : "customer@turkiyejam.com");
 
   // Also update user's profile phone if customer provided one
-  if (orderData.customer_phone) {
+  if (orderData.customer_phone && orderData.customer_email) {
     try {
       await updateUserAsync(email, { phone: orderData.customer_phone });
     } catch {}
   }
 
-  const existing = await getUserAddresses(email, orderData.user_id);
+  const existing = await getUserAddresses(email, orderData.user_id, orderData.customer_phone);
   const targetKey = normalizeAddressKey(orderData.shipping_address, orderData.postal_code);
 
   // Check if identical address already exists

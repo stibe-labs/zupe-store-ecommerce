@@ -53,12 +53,25 @@ export async function GET(req: NextRequest) {
 
     if (matchedErp.length > 0) {
       const target = matchedErp[0];
-      const awb = (target.shiprocket_awb || (target as any).tracking_number || "").trim();
-      if (awb) {
+      const rawAwb = (target.shiprocket_awb || (target as any).tracking_number || "").trim();
+      const isGenuineAwb =
+        rawAwb &&
+        !rawAwb.startsWith("SR-AWB-") &&
+        !rawAwb.startsWith("SR-") &&
+        !rawAwb.startsWith("TEMP-") &&
+        !rawAwb.toUpperCase().includes("PENDING");
+
+      if (isGenuineAwb) {
         try {
           const { getShiprocketLiveTracking } = await import("@/lib/shiprocketService");
-          liveTracking = await getShiprocketLiveTracking(awb);
-          if (liveTracking?.success) {
+          liveTracking = await getShiprocketLiveTracking(rawAwb);
+          if (
+            liveTracking?.success &&
+            !liveTracking.isPending &&
+            !liveTracking.isSimulated &&
+            Array.isArray(liveTracking.activities) &&
+            liveTracking.activities.length > 0
+          ) {
             let hasChanged = false;
             const updates: Partial<ERPOrder> = {};
             if (liveTracking.delivery_status && liveTracking.delivery_status !== target.delivery_status) {
@@ -82,6 +95,21 @@ export async function GET(req: NextRequest) {
           }
         } catch (e) {
           console.warn("Live track fetch error:", e);
+        }
+      }
+
+      // If order is newly placed or processing, ensure delivery_status truthfully stays "Processing"
+      const currentStatus = (target.status || "").toLowerCase();
+      if (
+        !target.delivery_status ||
+        target.delivery_status === "Processing" ||
+        currentStatus === "processing" ||
+        currentStatus === "pending" ||
+        currentStatus === "confirmed"
+      ) {
+        if (!isGenuineAwb) {
+          target.delivery_status = "Processing";
+          target.courier_partner = "";
         }
       }
 
@@ -136,8 +164,8 @@ export async function GET(req: NextRequest) {
         payment_method: so.payment_method === "Credit Card" ? "Prepaid" : so.payment_method,
         payment_status: so.payment_status === "paid" ? "Completed" : "Pending",
         shipping_address: `${so.shipping_address}, ${so.city} ${so.postal_code}`,
-        shiprocket_awb: (so as any).shiprocket_awb || `SR-AWB-${Math.abs(so.id.split("").reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0)).toString().slice(0, 7)}`,
-        courier_partner: (so as any).courier_partner || "Delhivery",
+        shiprocket_awb: (so as any).shiprocket_awb || (so as any).tracking_number || "",
+        courier_partner: (so as any).courier_partner || "",
         delivery_status:
           so.order_status === "delivered"
             ? "Delivered"
@@ -158,18 +186,35 @@ export async function GET(req: NextRequest) {
       }));
 
       const target = mappedOrders[0];
-      const awb = (target.shiprocket_awb || (target as any).tracking_number || "").trim();
-      if (awb) {
+      const rawAwb = (target.shiprocket_awb || (target as any).tracking_number || "").trim();
+      const isGenuineAwb =
+        rawAwb &&
+        !rawAwb.startsWith("SR-AWB-") &&
+        !rawAwb.startsWith("SR-") &&
+        !rawAwb.startsWith("TEMP-") &&
+        !rawAwb.toUpperCase().includes("PENDING");
+
+      if (isGenuineAwb) {
         try {
           const { getShiprocketLiveTracking } = await import("@/lib/shiprocketService");
-          liveTracking = await getShiprocketLiveTracking(awb);
-          if (liveTracking?.success) {
+          liveTracking = await getShiprocketLiveTracking(rawAwb);
+          if (
+            liveTracking?.success &&
+            !liveTracking.isPending &&
+            !liveTracking.isSimulated &&
+            Array.isArray(liveTracking.activities) &&
+            liveTracking.activities.length > 0
+          ) {
             if (liveTracking.delivery_status) target.delivery_status = liveTracking.delivery_status;
             if (liveTracking.courier_name) target.courier_partner = liveTracking.courier_name;
           }
         } catch (e) {
           console.warn("Live track fetch error on storefront order:", e);
         }
+      }
+
+      if (!isGenuineAwb && target.delivery_status === "Processing") {
+        target.courier_partner = "";
       }
 
       return NextResponse.json({

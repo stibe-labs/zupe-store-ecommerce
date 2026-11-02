@@ -17,4 +17,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: err.message || "Failed to fetch products" }, { status: 500 });
   }
 }
-
