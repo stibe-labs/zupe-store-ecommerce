@@ -267,7 +267,7 @@ export async function POST(req: NextRequest) {
       try {
         const { dispatchShiprocketOrder } = await import("@/lib/shiprocketService");
         const dispatchResult = await dispatchShiprocketOrder(newOrder);
-        if (dispatchResult.success && dispatchResult.awb) {
+        if (dispatchResult.success && dispatchResult.awb && !dispatchResult.isSimulated) {
           liveAwb = dispatchResult.awb;
           liveCourier = dispatchResult.courier;
           (newOrder as any).shiprocket_awb = liveAwb;

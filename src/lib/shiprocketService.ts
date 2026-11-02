@@ -223,41 +223,11 @@ export async function dispatchShiprocketOrder(
     const isCod = ((order as any).payment_method || "").toLowerCase().includes("cod") ||
                   ((order as any).payment_method || "").toLowerCase().includes("cash on delivery");
 
-    // 1. If Sandbox or Test Mode, generate instant compliant carrier AWB
+    // 1. If Shiprocket token is not configured or unavailable, fail gracefully without faking carrier dispatch
     if (isMock) {
-      const prefix = cleanCourier === "Bluedart" ? "BLU" : cleanCourier === "Xpressbees" ? "XPR" : cleanCourier === "Shadowfax" ? "SHD" : "DEL";
-      const awbNumber = `${prefix}-${Date.now().toString().slice(-8)}`;
-      const shipmentId = `SR-SHP-${Date.now().toString().slice(-6)}`;
-
-      try {
-        await executeD1Query(
-          `UPDATE orders 
-           SET shiprocket_awb = ?,
-               tracking_number = ?,
-               courier_partner = ?,
-               delivery_status = 'In Transit',
-               status = 'In Transit'
-           WHERE id = ? OR shopify_order_id = ?;`,
-          [awbNumber, awbNumber, cleanCourier, order.id, (order as any).shopify_order_id || order.id]
-        );
-      } catch (dbErr) {
-        console.warn("Could not save simulated AWB to D1:", dbErr);
-      }
-
-      (order as any).shiprocket_awb = awbNumber;
-      (order as any).tracking_number = awbNumber;
-      (order as any).courier_partner = cleanCourier;
-      (order as any).delivery_status = "In Transit";
-      (order as any).status = "In Transit";
-
       return {
-        success: true,
-        awb: awbNumber,
-        courier: cleanCourier,
-        shipmentId,
-        delivery_status: "In Transit",
-        isSimulated: true,
-        message: `Auto-generated AWB ${awbNumber} with ${cleanCourier}. Status set to In Transit.`,
+        success: false,
+        message: "Shiprocket credentials not connected. Please enter your courier partner (e.g., DTDC) and tracking number manually upon dispatch.",
       };
     }
 

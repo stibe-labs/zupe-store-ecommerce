@@ -450,39 +450,23 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
     }
   }
 
-  // Attempt Automated Dispatch to Shiprocket on WhatsApp Confirmation (only if live integration active)
   const targetOrder: any = ord || erpOrd || (await getOrderById(normId));
-  let finalAwb = targetOrder?.shiprocket_awb || null;
-  let finalCourier = targetOrder?.courier_partner || null;
 
-  try {
-    const { dispatchShiprocketOrder } = await import("@/lib/shiprocketService");
-    const dispatchRes = await dispatchShiprocketOrder(targetOrder);
-    if (dispatchRes.success && dispatchRes.awb && !dispatchRes.isSimulated) {
-      finalAwb = dispatchRes.awb;
-      finalCourier = dispatchRes.courier || finalCourier;
-    }
-  } catch (dispatchErr) {
-    console.warn("Shiprocket dispatch on WhatsApp confirm error:", dispatchErr);
-  }
-
-  // Never fabricate fake AWB or marked In Transit if not actually dispatched by carrier!
-  const isActuallyDispatched = Boolean(finalAwb && !finalAwb.startsWith("SR-AWB-"));
+  // WhatsApp confirmation ONLY confirms customer acceptance.
+  // It does NOT dispatch the order or assign a courier/AWB until the merchant packs and books shipping.
   if (ord) {
-    ord.order_status = isActuallyDispatched ? "shipped" : "processing";
-    (ord as any).shiprocket_awb = finalAwb;
-    (ord as any).courier_partner = finalCourier;
-    (ord as any).delivery_status = isActuallyDispatched ? "In Transit" : "Processing";
+    ord.whatsapp_confirm_status = "confirmed";
+    ord.whatsapp_token_used = true;
+    ord.order_status = ord.order_status === "shipped" || ord.order_status === "delivered" ? ord.order_status : "processing";
   }
 
   try {
+    const existingDelivery = targetOrder?.delivery_status || "Processing";
     await updateERPOrder(normId, {
       whatsapp_confirm_status: "confirmed",
       whatsapp_token_used: true,
-      status: isActuallyDispatched ? "In Transit" : "Processing",
-      delivery_status: isActuallyDispatched ? "In Transit" : "Processing",
-      shiprocket_awb: finalAwb,
-      courier_partner: finalCourier,
+      status: existingDelivery === "Delivered" ? "Delivered" : existingDelivery === "In Transit" ? "In Transit" : "Processing",
+      delivery_status: existingDelivery,
     });
   } catch (e) {
     console.warn("ERP update on WhatsApp confirm error:", e);
@@ -493,7 +477,7 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
 
   return {
     success: true,
-    message: "Order confirmed and automatically dispatched for shipping!",
+    message: "Order confirmed by customer on WhatsApp. Ready for packing and dispatch.",
     order: (finalOrd as any) || undefined,
   };
 }
