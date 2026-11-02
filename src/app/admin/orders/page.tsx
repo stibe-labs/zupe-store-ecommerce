@@ -1440,10 +1440,10 @@ function AdminOrdersContent() {
                       onChange={(e) => setEditDeliveryStatus(e.target.value)}
                       className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                     >
-                      <option value="Processing">Processing</option>
-                      <option value="In Transit">In Transit</option>
-                      <option value="Out for Delivery">Out for Delivery</option>
-                      <option value="Delivered">Delivered</option>
+                      <option value="Processing">Processing (Packed & Ready)</option>
+                      <option value="In Transit">Dispatched / In Transit (Handed to Courier)</option>
+                      <option value="Out for Delivery">Out for Delivery (Doorstep Handover)</option>
+                      <option value="Delivered">Delivered (Completed)</option>
                       <option value="NDR">NDR (Non-Delivery)</option>
                       <option value="RTO Delivered">RTO Delivered</option>
                       <option value="Cancelled">Cancelled</option>
@@ -1497,7 +1497,7 @@ function AdminOrdersContent() {
                       type="text"
                       value={editAWB}
                       onChange={(e) => setEditAWB(e.target.value)}
-                      placeholder="e.g. DEL-82910384"
+                      placeholder="e.g. D12345678 or DTDC Consignment No"
                       className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                     />
                   </div>
