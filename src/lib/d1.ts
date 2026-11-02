@@ -43,6 +43,31 @@ async function getD1Database(): Promise<any | null> {
   return null;
 }
 
+function getLocalCloudflareToken(): string | null {
+  if (process.env.CLOUDFLARE_API_TOKEN) return process.env.CLOUDFLARE_API_TOKEN;
+  if (typeof window !== "undefined") return null;
+
+  try {
+    const fs = require("fs");
+    const os = require("os");
+    const path = require("path");
+    const possiblePaths = [
+      path.join(os.homedir(), "Library", "Preferences", ".wrangler", "config", "default.toml"),
+      path.join(os.homedir(), ".wrangler", "config", "default.toml"),
+    ];
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        const content = fs.readFileSync(p, "utf-8");
+        const match = content.match(/oauth_token\s*=\s*"([^"]+)"/);
+        if (match && match[1]) return match[1];
+      }
+    }
+  } catch (e) {
+    // Non-fatal fallback
+  }
+  return null;
+}
+
 export async function executeD1Query<T = any>(
   query: string,
   params: any[] = []
@@ -67,12 +92,12 @@ export async function executeD1Query<T = any>(
     }
   }
 
-  // 2. Check for Cloudflare REST API execution if account ID and token are present
+  // 2. Check for Cloudflare REST API execution (for local development or external node scripts)
   const accountId =
     process.env.CLOUDFLARE_ACCOUNT_ID || "4eed09d0032a07881825f4e926cb997f";
   const databaseId =
     process.env.CLOUDFLARE_D1_DATABASE_ID || "3a7891a3-6e90-4eab-b448-7c33aaec0c5f";
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN || getLocalCloudflareToken();
 
   if (databaseId && apiToken && accountId) {
     try {

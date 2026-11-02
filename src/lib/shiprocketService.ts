@@ -28,6 +28,7 @@ export interface ShiprocketLiveTrackingResult {
   delivery_status?: ERPOrder["delivery_status"];
   edd?: string;
   activities: LiveTrackingCheckpoint[];
+  isPending?: boolean;
   isSimulated?: boolean;
   error?: string;
 }
@@ -451,17 +452,51 @@ export async function generateShiprocketAWB(
  */
 export async function getShiprocketLiveTracking(awb: string): Promise<ShiprocketLiveTrackingResult> {
   if (!awb || awb.trim() === "") {
-    return { success: false, awb: "", activities: [] };
+    return {
+      success: true,
+      awb: "",
+      courier_name: "",
+      current_status: "Processing",
+      delivery_status: "Processing",
+      activities: [],
+      isPending: true,
+      isSimulated: false,
+    };
   }
 
   const cleanAwb = awb.trim();
+
+  // If AWB is pending, placeholder, or not yet assigned to an actual courier
+  const isPendingAwb =
+    cleanAwb.startsWith("SR-AWB-") ||
+    cleanAwb.startsWith("SR-") ||
+    cleanAwb.startsWith("DEL-") ||
+    cleanAwb.startsWith("BLU-") ||
+    cleanAwb.startsWith("XPR-") ||
+    cleanAwb.startsWith("SHD-") ||
+    cleanAwb.startsWith("TEMP-") ||
+    cleanAwb.toUpperCase().includes("PENDING");
+
+  if (isPendingAwb) {
+    return {
+      success: true,
+      awb: cleanAwb,
+      courier_name: "",
+      current_status: "Processing",
+      delivery_status: "Processing",
+      activities: [],
+      isPending: true,
+      isSimulated: false,
+    };
+  }
+
   const token = await getShiprocketToken();
 
   // If live token is available and this is a live AWB, query Shiprocket carrier tracking API
-  if (token && !cleanAwb.startsWith("SR-AWB-") && !cleanAwb.startsWith("DEL-") && !cleanAwb.startsWith("BLU-") && !cleanAwb.startsWith("XPR-") && !cleanAwb.startsWith("SHD-")) {
+  if (token) {
     try {
       const trackRes = await fetch(
-        `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${cleanAwb}`,
+        `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${encodeURIComponent(cleanAwb)}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -483,7 +518,7 @@ export async function getShiprocketLiveTracking(awb: string): Promise<Shiprocket
             location: act.location || "Logistics Hub",
           }));
 
-          const courierName = shipmentTrack.courier_name || tracking.courier_name || "Delhivery";
+          const courierName = shipmentTrack.courier_name || tracking.courier_name || "";
           const currentStatusRaw = shipmentTrack.current_status || tracking.current_status || "In Transit";
           const statusId = tracking.shipment_status;
           const mapped = mapShiprocketStatus(currentStatusRaw, statusId);
@@ -510,6 +545,7 @@ export async function getShiprocketLiveTracking(awb: string): Promise<Shiprocket
             delivery_status: mapped.deliveryStatus,
             edd: shipmentTrack.edd || undefined,
             activities,
+            isPending: false,
             isSimulated: false,
           };
         }
@@ -519,48 +555,16 @@ export async function getShiprocketLiveTracking(awb: string): Promise<Shiprocket
     }
   }
 
-  // Realistic checkpoints fallback for test/simulated shipments or offline
-  const now = new Date();
-  const formatTime = (offsetHours: number) =>
-    new Date(now.getTime() - offsetHours * 3600000).toLocaleString("en-IN", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
+  // Truthful fallback when order is newly placed / awaiting carrier pickup
   return {
     success: true,
     awb: cleanAwb,
-    courier_name: cleanAwb.startsWith("BLU") ? "Bluedart" : cleanAwb.startsWith("XPR") ? "Xpressbees" : cleanAwb.startsWith("SHD") ? "Shadowfax" : "Delhivery",
-    current_status: "In Transit",
-    delivery_status: "In Transit",
-    edd: new Date(now.getTime() + 48 * 3600000).toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }),
-    activities: [
-      {
-        date: formatTime(2),
-        status: "In Transit",
-        activity: "Package scanned at Central Logistics Sorting Facility",
-        location: "Express Corridor Hub",
-      },
-      {
-        date: formatTime(6),
-        status: "Manifested",
-        activity: "Manifest generated & handed over to courier partner",
-        location: "Zupe Fulfillment Warehouse",
-      },
-      {
-        date: formatTime(10),
-        status: "Order Confirmed",
-        activity: "Order verified & packed for immediate courier dispatch",
-        location: "Primary Warehouse",
-      },
-    ],
-    isSimulated: true,
+    courier_name: "",
+    current_status: "Processing",
+    delivery_status: "Processing",
+    activities: [],
+    isPending: true,
+    isSimulated: false,
   };
 }
 

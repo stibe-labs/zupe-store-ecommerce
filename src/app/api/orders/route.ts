@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createOrder, getOrders, updateOrderStatus, OrderRecord, OrderItem } from "@/lib/orderStore";
+import { createOrder, getOrders, getOrdersAsync, updateOrderStatus, OrderRecord, OrderItem } from "@/lib/orderStore";
 import { getERPOrders } from "@/lib/erpStore";
 import { getAuthenticatedUser } from "@/lib/userAuth";
 
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
       targetPhone = requestedPhone;
     }
 
-    const storefrontOrders = getOrders(targetEmail, targetPhone, targetUserId);
+    const storefrontOrders = await getOrdersAsync(targetEmail, targetPhone, targetUserId);
 
     let combinedOrders = [...storefrontOrders];
 

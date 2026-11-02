@@ -14,11 +14,12 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const queryEmail = searchParams.get("email")?.toLowerCase().trim();
     const userId = searchParams.get("userId") || undefined;
+    const phone = searchParams.get("phone") || auth.user?.phone || undefined;
 
     if (!auth.authenticated || !auth.user) {
-      if (!queryEmail) {
+      if (!queryEmail && !phone && !userId) {
         return NextResponse.json(
-          { success: false, error: "Authentication or email required" },
+          { success: false, error: "Authentication, email, or phone required" },
           { status: 401 }
         );
       }
@@ -27,9 +28,9 @@ export async function GET(req: NextRequest) {
     const targetEmail =
       auth.isAdmin && queryEmail
         ? queryEmail
-        : auth.user
+        : auth.user?.email
         ? auth.user.email
-        : queryEmail!;
+        : queryEmail || "";
 
     if (!auth.isAdmin && auth.user && queryEmail && queryEmail !== auth.user.email) {
       return NextResponse.json(
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const addresses = await getUserAddresses(targetEmail, userId);
+    const addresses = await getUserAddresses(targetEmail, userId || auth.user?.id, phone);
     return NextResponse.json({ success: true, addresses });
   } catch (err: any) {
     return NextResponse.json(

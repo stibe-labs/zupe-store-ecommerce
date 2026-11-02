@@ -51,6 +51,10 @@ function ProductsContent() {
   const initialFilter = searchParams.get("filter") || "";
 
   const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
+
+  useEffect(() => {
+    router.replace("/#shop");
+  }, [router]);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>(initialSubcategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
@@ -378,7 +382,7 @@ function ProductsContent() {
     }
     addToCart(product, 1);
     if (!user) {
-      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
+      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡", "/checkout");
       return;
     }
     router.push("/checkout");

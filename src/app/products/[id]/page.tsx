@@ -861,7 +861,7 @@ export default function ProductDetailPage() {
       return;
     }
     if (!user) {
-      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
+      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡", "/checkout?method=cod");
       return;
     }
     router.push("/checkout?method=cod");
@@ -910,7 +910,7 @@ export default function ProductDetailPage() {
       return;
     }
     if (!user) {
-      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
+      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡", "/checkout?method=upi");
       return;
     }
     router.push("/checkout?method=upi");

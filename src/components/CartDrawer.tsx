@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, Truck, AlertCircle } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { launchFastrrCheckout } from "@/lib/fastrrClient";
 
 export function CartDrawer() {
   const router = useRouter();
@@ -119,7 +120,7 @@ export function CartDrawer() {
                   </div>
                   <p className="text-base font-semibold text-[#2D3436] mb-1">Your cart is empty</p>
                   <Link
-                    href="/products"
+                    href="/#shop"
                     onClick={closeCart}
                     className="inline-flex items-center justify-center px-6 py-2.5 bg-[#cb0805] text-white font-semibold text-sm rounded-xl hover:bg-[#a80604] transition-colors shadow-sm shadow-[#cb0805]/20 cursor-pointer"
                   >
@@ -262,15 +263,17 @@ export function CartDrawer() {
                 <div className="flex flex-col gap-2">
                   <button
                     disabled={hasOutOfStockItems}
-                    onClick={() => {
+                    onClick={async () => {
                       if (hasOutOfStockItems) return;
-                      if (!user) {
-                        closeCart();
-                        openAuthModal("login", "Sign in required: Please log in or create an account to proceed to checkout 🔒");
-                        return;
-                      }
                       closeCart();
-                      router.push("/checkout");
+                      const launched = await launchFastrrCheckout(cart);
+                      if (!launched) {
+                        if (!user) {
+                          openAuthModal("login", "Sign in required: Please log in or create an account to proceed to checkout 🔒", "/checkout");
+                          return;
+                        }
+                        router.push("/checkout");
+                      }
                     }}
                     className={`w-full flex items-center justify-center gap-2 py-3.5 text-white font-semibold rounded-xl transition-colors text-sm ${
                       hasOutOfStockItems

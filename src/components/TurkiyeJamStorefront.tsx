@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { launchFastrrCheckout } from "@/lib/fastrrClient";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 // Motion Animation Variants for Scroll Reveals
@@ -242,21 +243,22 @@ export function TurkiyeJamStorefront() {
     openCart();
   };
 
-  const handleBuyNow = (pkg: typeof PACKAGES[0]) => {
-    addItem(
-      {
-        id: `turkiye-jam-${pkg.id}`,
-        name: `Turkiye Jam (${pkg.name})`,
-        category: "Vitality & Wellness",
-        price: pkg.price,
-        original_price: pkg.mrp,
-        mrp: pkg.mrp,
-        poster_image: pkg.image,
-        color: pkg.name,
-      },
-      1
-    );
-    router.push("/checkout");
+  const handleBuyNow = async (pkg: typeof PACKAGES[0]) => {
+    const item = {
+      id: `turkiye-jam-${pkg.id}`,
+      name: `Turkiye Jam (${pkg.name})`,
+      category: "Vitality & Wellness",
+      price: pkg.price,
+      original_price: pkg.mrp,
+      mrp: pkg.mrp,
+      poster_image: pkg.image,
+      color: pkg.name,
+    };
+    addItem(item, 1);
+    const launched = await launchFastrrCheckout([{ ...item, quantity: 1 }]);
+    if (!launched) {
+      router.push("/checkout");
+    }
   };
 
   const toggleFaq = (id: number) => {
@@ -390,6 +392,7 @@ export function TurkiyeJamStorefront() {
       {/* ─────────────────────────────────────────────────────────────
           SECTION 2: PICK YOUR PACK (Warm Cream + 6 Color-Coded Packs)
       ───────────────────────────────────────────────────────────── */}
+      <div id="products" className="relative -top-20 pointer-events-none" />
       <section
         id="shop"
         className="tj-diamonds-cream text-stone-900 min-h-[100dvh] py-10 sm:py-12 lg:py-16 flex flex-col justify-center relative overflow-hidden"
@@ -418,9 +421,9 @@ export function TurkiyeJamStorefront() {
             whileHover={{ scale: 1.03 }}
             className="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-3 px-3.5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-[#5b1420] text-white text-[11px] sm:text-sm font-semibold shadow-md mt-3 sm:mt-5 cursor-default"
           >
-            <span>Prepaid delivery is ₹60</span>
+            <span>100% Cash on Delivery Available</span>
             <span className="btn-shimmer px-2.5 py-0.5 rounded-full bg-[#fed000] text-black font-black text-[10px] sm:text-xs">
-              Save ₹130 vs cash on delivery
+              Discreet Plain Box Delivery
             </span>
           </motion.div>
 
@@ -507,7 +510,7 @@ export function TurkiyeJamStorefront() {
 
           {/* Footnote note from SVG */}
           <motion.p variants={fadeInUp} className="text-center text-[11px] sm:text-sm text-stone-600 mt-5 sm:mt-8 max-w-3xl mx-auto px-2 sm:px-4">
-            Cash on delivery: ₹190 extra, 3–7 days. Prepaid: ₹60 extra, 1–2 days. Savings are per sachet, compared with the 2 sachet pack.
+            100% Cash on Delivery available across India. Discreet plain box courier dispatch. Savings are per sachet, compared with the 2 sachet pack.
           </motion.p>
         </motion.div>
       </section>
@@ -1029,30 +1032,30 @@ export function TurkiyeJamStorefront() {
                           className="px-4 sm:px-5 pb-4 sm:pb-5 pt-1 text-xs sm:text-sm text-stone-200 border-t border-white/10"
                         >
                           {item.isSpeedBox ? (
-                            <div className="grid grid-cols-2 gap-2 sm:gap-3.5 pt-2">
-                              {/* Mint box for Prepaid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3.5 pt-2">
+                              {/* Box 1: Delivery timeframe */}
                               <motion.div
                                 whileHover={{ scale: 1.02 }}
-                                className="p-3 sm:p-4 rounded-xl bg-[#b9e5e9] text-stone-900 border border-stone-800 shadow-sm cursor-default"
+                                className="p-3 sm:p-4 rounded-xl bg-[#fed000] text-stone-900 border border-stone-800 shadow-sm cursor-default"
                               >
                                 <h4 className="font-tj-serif font-extrabold text-base sm:text-xl">
-                                  1–2 days
+                                  3–5 business days
                                 </h4>
-                                <p className="text-stone-700 font-medium text-[11px] sm:text-sm mt-0.5">
-                                  Prepaid, ₹60 extra
+                                <p className="text-stone-800 font-medium text-[11px] sm:text-sm mt-0.5">
+                                  Express doorstep courier dispatch
                                 </p>
                               </motion.div>
 
-                              {/* Pink box for COD */}
+                              {/* Box 2: COD */}
                               <motion.div
                                 whileHover={{ scale: 1.02 }}
-                                className="p-3 sm:p-4 rounded-xl bg-[#f8bac5] text-stone-900 border border-stone-800 shadow-sm cursor-default"
+                                className="p-3 sm:p-4 rounded-xl bg-white text-stone-900 border border-stone-800 shadow-sm cursor-default"
                               >
                                 <h4 className="font-tj-serif font-extrabold text-base sm:text-xl">
-                                  3–7 days
+                                  100% Cash on Delivery
                                 </h4>
                                 <p className="text-stone-700 font-medium text-[11px] sm:text-sm mt-0.5">
-                                  Cash on delivery, ₹190 extra
+                                  Pay cash or UPI upon delivery
                                 </p>
                               </motion.div>
                             </div>

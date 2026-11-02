@@ -124,16 +124,17 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
       return;
     }
 
-    if (!user) {
-      openAuthModal("login", "Sign in required: Please log in or create an account to proceed with purchase 🛍️");
-      return;
-    }
-
     const addFn = addToCart || addItem;
     if (typeof addFn === "function") {
       const added = addFn(prod, 1);
       if (!added) return;
     }
+
+    if (!user) {
+      openAuthModal("login", "Sign in required: Please log in or create an account to proceed with purchase 🛍️", "/checkout");
+      return;
+    }
+
     router.push("/checkout");
   };
 

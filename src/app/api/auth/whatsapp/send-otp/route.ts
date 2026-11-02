@@ -22,10 +22,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check if phone number is already registered with a customer name
+    let isExistingUser = false;
+    let existingName: string | undefined = undefined;
+
+    try {
+      const { findUserByPhoneAsync } = await import("@/lib/userStore");
+      const existingUser = await findUserByPhoneAsync(phone);
+      if (
+        existingUser?.name &&
+        !existingUser.name.startsWith("Customer ") &&
+        existingUser.name !== "Customer"
+      ) {
+        isExistingUser = true;
+        existingName = existingUser.name;
+      }
+    } catch (checkErr) {
+      console.warn("User lookup check error:", checkErr);
+    }
+
     return NextResponse.json({
       success: true,
       codeSent: result.codeSent ?? true,
       message: result.message,
+      is_existing_user: isExistingUser,
+      name: existingName,
     });
   } catch (err: any) {
     console.error("WhatsApp send OTP error:", err);

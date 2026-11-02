@@ -339,16 +339,16 @@ export function CreatorsReelsSection() {
 
   const handleBuyNowFromModal = (e: React.MouseEvent, video: ProductVideo) => {
     e.stopPropagation();
+    const targetSlug = video.productSlug || video.productId;
+    const checkoutUrl = targetSlug && targetSlug !== "none" && targetSlug !== "all"
+      ? `/checkout?productId=${encodeURIComponent(targetSlug)}&qty=1`
+      : "/checkout";
+
     if (!user) {
-      openAuthModal("login", "Sign in required: Please log in to complete your order 🛍️");
+      openAuthModal("login", "Sign in required: Please log in to complete your order 🛍️", checkoutUrl);
       return;
     }
-    const targetSlug = video.productSlug || video.productId;
-    if (targetSlug && targetSlug !== "none" && targetSlug !== "all") {
-      router.push(`/checkout?productId=${encodeURIComponent(targetSlug)}&qty=1`);
-    } else {
-      router.push("/checkout");
-    }
+    router.push(checkoutUrl);
   };
 
   if (totalItems === 0) return null;

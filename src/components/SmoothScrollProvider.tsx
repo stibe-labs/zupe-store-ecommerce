@@ -49,6 +49,38 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
     lenisRef.current = lenis;
     window.__lenis = lenis;
 
+    // Scroll to hash target on initial load or navigation
+    const scrollToHashTarget = () => {
+      if (typeof window !== "undefined" && window.location.hash) {
+        try {
+          const target = document.querySelector(window.location.hash);
+          if (target) {
+            lenis.scrollTo(target as HTMLElement, {
+              offset: -75,
+              duration: 1.0,
+              easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            });
+            return true;
+          }
+        } catch (_) {}
+      }
+      return false;
+    };
+
+    let timer1: NodeJS.Timeout | null = null;
+    let timer2: NodeJS.Timeout | null = null;
+    if (typeof window !== "undefined" && window.location.hash) {
+      if (!scrollToHashTarget()) {
+        timer1 = setTimeout(scrollToHashTarget, 200);
+        timer2 = setTimeout(scrollToHashTarget, 600);
+      }
+    }
+
+    const handleHashChange = () => {
+      scrollToHashTarget();
+    };
+    window.addEventListener("hashchange", handleHashChange);
+
     // Intercept in-page anchor links for buttery-smooth scrolling
     const handleAnchorClick = (e: MouseEvent) => {
       const link = (e.target as HTMLElement)?.closest?.("a");
@@ -99,6 +131,9 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
 
     return () => {
       document.removeEventListener("click", handleAnchorClick);
+      window.removeEventListener("hashchange", handleHashChange);
+      if (timer1) clearTimeout(timer1);
+      if (timer2) clearTimeout(timer2);
       cancelAnimationFrame(rafId);
       observer.disconnect();
       lenis.destroy();

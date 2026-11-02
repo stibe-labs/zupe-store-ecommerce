@@ -62,7 +62,7 @@ export function MobileBottomNav() {
         <div className="grid grid-cols-5 items-center justify-items-center h-16 px-1 pb-[max(env(safe-area-inset-bottom),0px)] relative">
           {/* 1. Shop (All Products) */}
           <Link
-            href="/products"
+            href="/#shop"
             className={`flex flex-col items-center justify-center w-full h-full py-1 transition-colors ${
               isShopActive ? "text-[#FF7A00]" : "text-gray-400 hover:text-gray-600"
             }`}

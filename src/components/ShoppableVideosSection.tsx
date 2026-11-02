@@ -675,13 +675,6 @@ export function ShoppableVideosSection({
 
   const handleBuyNowFromVideo = (vid: ProductVideo) => {
     if (isCurrentReelOutOfStock) return;
-    if (!user) {
-      openAuthModal(
-        "login",
-        "Sign in required: Please log in or create an account to proceed with purchase 🛍️"
-      );
-      return;
-    }
 
     const attachedItem = {
       id:
@@ -724,6 +717,16 @@ export function ShoppableVideosSection({
     if (typeof addFn === "function") {
       addFn(attachedItem, 1);
     }
+
+    if (!user) {
+      openAuthModal(
+        "login",
+        "Sign in required: Please log in or create an account to proceed with purchase 🛍️",
+        "/checkout"
+      );
+      return;
+    }
+
     router.push("/checkout");
   };
 

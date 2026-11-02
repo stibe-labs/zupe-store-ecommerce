@@ -52,125 +52,78 @@ function getProductImageFallback(productName: string): string {
 }
 
 function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): TrackingCheckpoint[] {
-  // If live carrier scan activities returned from Shiprocket API, render real-time events
-  if (liveTracking?.activities && Array.isArray(liveTracking.activities) && liveTracking.activities.length > 0) {
+  // If REAL live carrier scan activities returned from Shiprocket API, render real-time events
+  if (
+    liveTracking?.activities &&
+    Array.isArray(liveTracking.activities) &&
+    liveTracking.activities.length > 0 &&
+    !liveTracking.isSimulated &&
+    !liveTracking.isPending
+  ) {
     return liveTracking.activities.map((act: any, idx: number) => ({
       title: act.activity || act.status || "Package Scanned",
       location: act.location || "Logistics Hub",
       timestamp: act.date || "",
       completed: true,
       active: idx === 0,
-      description: `Carrier update from ${order.courier_partner || liveTracking.courier_name || "Logistics"}: ${act.activity || act.status}.`,
+      description: `Carrier update from ${order.courier_partner || liveTracking.courier_name || "Logistics Partner"}: ${act.activity || act.status}.`,
     }));
   }
 
-  const dateObj = new Date(order.created_at || Date.now());
-  const formatDate = (offsetHours: number) => {
-    const d = new Date(dateObj.getTime() + offsetHours * 3600000);
-    return d.toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const rawDate = order.created_at ? new Date(order.created_at.replace(" ", "T")) : new Date();
+  const formatPlacedTime = !isNaN(rawDate.getTime())
+    ? rawDate.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "Just now";
 
-  const status = order.delivery_status || "Processing";
+  const status = (order.delivery_status || order.status || "Processing").trim();
   const city = order.shipping_address?.split(",")?.slice(-2)?.[0]?.trim() || "Destination City";
-  const courier = order.courier_partner || "Delhivery";
+  const courier = order.courier_partner || "Express Logistics";
+  const hasAwb = Boolean(
+    order.shiprocket_awb &&
+      !order.shiprocket_awb.startsWith("SR-AWB-") &&
+      !order.shiprocket_awb.startsWith("SR-") &&
+      !order.shiprocket_awb.toUpperCase().includes("PENDING")
+  );
 
-  if (status === "Delivered") {
+  // Status: Processing / Newly Placed (Package is currently being prepared and not yet dispatched)
+  if (status === "Processing" || status.toLowerCase() === "pending" || !status) {
     return [
       {
-        title: "Delivered Successfully",
+        title: "Order Confirmed & Placed",
+        location: "Turkiye Jam Store",
+        timestamp: formatPlacedTime,
+        completed: true,
+        active: false,
+        description: "Order verified and confirmed via WhatsApp. Received at fulfillment queue.",
+      },
+      {
+        title: "Packaging & Quality Inspection",
+        location: "Central Warehouse, Gurugram",
+        timestamp: "In Progress",
+        completed: false,
+        active: true,
+        description: "Items are being picked and packed in tamper-proof discreet plain box.",
+      },
+      {
+        title: "Courier Handover & AWB Assignment",
+        location: "Courier Dispatch Bay",
+        timestamp: "Expected within 24 business hours",
+        completed: false,
+        active: false,
+        description: "Express courier partner (Delhivery/Bluedart) will be assigned and tracking activated upon pickup.",
+      },
+      {
+        title: "Out for Delivery & Doorstep Handover",
         location: `${city} Delivery Address`,
-        timestamp: formatDate(72),
-        completed: true,
-        active: true,
-        description: "Package was handed over directly to recipient. Thank you for shopping with Turkiye Jam!",
-      },
-      {
-        title: "Out for Delivery",
-        location: `${city} Logistics Hub`,
-        timestamp: formatDate(64),
-        completed: true,
-        description: `Executive out for delivery. OTP verification confirmed.`,
-      },
-      {
-        title: "In Transit - Arrived at Regional Hub",
-        location: `${city} Distribution Center`,
-        timestamp: formatDate(48),
-        completed: true,
-        description: `Package arrived at ${city} sorting facility via ${courier}.`,
-      },
-      {
-        title: "Dispatched & Handed to Courier",
-        location: "Turkiye Jam Fulfillment Center, Gurugram",
-        timestamp: formatDate(18),
-        completed: true,
-        description: `Package handed over to ${courier}. AWB: ${order.shiprocket_awb || "Generated"}.`,
-      },
-      {
-        title: "Order Confirmed & Packed",
-        location: "Turkiye Jam Warehouse",
-        timestamp: formatDate(6),
-        completed: true,
-        description: "Quality verification completed. Item packed in eco-friendly tamper-proof bag.",
-      },
-      {
-        title: "Order Placed & Payment Verified",
-        location: "Online Storefront",
-        timestamp: formatDate(0),
-        completed: true,
-        description: "Order has been received and verified by our system.",
-      },
-    ];
-  }
-
-  if (status === "Out for Delivery") {
-    return [
-      {
-        title: "Out for Delivery",
-        location: `${city} Local Hub`,
-        timestamp: formatDate(48),
-        completed: true,
-        active: true,
-        description: `Your shipment is out for delivery today via ${courier}. Please keep your phone reachable.`,
-      },
-      {
-        title: "Arrived at Destination Hub",
-        location: `${city} Hub`,
-        timestamp: formatDate(36),
-        completed: true,
-        description: `Shipment arrived at destination facility and processed for final route.`,
-      },
-      {
-        title: "In Transit Across States",
-        location: "Central Freight Hub",
-        timestamp: formatDate(24),
-        completed: true,
-        description: `Moving between courier terminals via surface express.`,
-      },
-      {
-        title: "Handed over to Courier",
-        location: "Gurugram Warehouse",
-        timestamp: formatDate(12),
-        completed: true,
-        description: `Dispatched with ${courier} (AWB: ${order.shiprocket_awb || "Generated"}).`,
-      },
-      {
-        title: "Order Confirmed & Packed",
-        location: "Turkiye Jam Fulfillment",
-        timestamp: formatDate(4),
-        completed: true,
-        description: "Items picked and packaged securely.",
-      },
-      {
-        title: "Order Placed",
-        location: "Online Storefront",
-        timestamp: formatDate(0),
-        completed: true,
-        description: "Order received successfully.",
+        timestamp: "Estimated 3-5 business days",
+        completed: false,
+        active: false,
+        description: "Payable via Cash on Delivery (COD) or UPI directly to delivery executive.",
       },
     ];
   }
@@ -178,137 +131,147 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
   if (status === "In Transit") {
     return [
       {
-        title: "In Transit",
-        location: "Main Express Corridor",
-        timestamp: formatDate(24),
+        title: "Order Confirmed & Placed",
+        location: "Turkiye Jam Store",
+        timestamp: formatPlacedTime,
+        completed: true,
+        active: false,
+        description: "Order received and verified.",
+      },
+      {
+        title: "Dispatched from Fulfillment Center",
+        location: "Central Warehouse, Gurugram",
+        timestamp: "Dispatched",
+        completed: true,
+        active: false,
+        description: `Package handed over to ${courier}. ${hasAwb ? `AWB: ${order.shiprocket_awb}` : ""}`,
+      },
+      {
+        title: "In Transit to Destination Hub",
+        location: `En Route to ${city}`,
+        timestamp: "In Transit",
         completed: true,
         active: true,
-        description: `Package is on route to ${city} sorting center via ${courier}.`,
+        description: `Shipment is moving through the express logistics corridor to ${city}.`,
       },
       {
-        title: "Dispatched by Logistics Hub",
-        location: "Turkiye Jam Hub, Gurugram",
-        timestamp: formatDate(14),
-        completed: true,
-        description: `Package dispatched with ${courier}. Air/Surface manifest generated.`,
-      },
-      {
-        title: "Packed & Tamper Sealed",
-        location: "Turkiye Jam Fulfillment Center",
-        timestamp: formatDate(5),
-        completed: true,
-        description: "Package sealed with tamper-evident security tape.",
-      },
-      {
-        title: "Order Confirmed",
-        location: "Online Storefront",
-        timestamp: formatDate(0),
-        completed: true,
-        description: "Order placed and acknowledged.",
+        title: "Out for Delivery & Doorstep Handover",
+        location: `${city} Delivery Address`,
+        timestamp: "Upcoming",
+        completed: false,
+        active: false,
+        description: "Payable via Cash on Delivery or UPI upon doorstep handover.",
       },
     ];
   }
 
-  if (status.includes("RTO") || order.status === "Returned") {
+  if (status === "Out for Delivery") {
     return [
       {
-        title: status === "RTO Delivered" ? "Returned to Warehouse" : "Return to Origin Initiated",
-        location: "Warehouse Inspection Hub",
-        timestamp: formatDate(48),
+        title: "Order Confirmed & Dispatched",
+        location: "Central Warehouse",
+        timestamp: formatPlacedTime,
+        completed: true,
+        active: false,
+        description: `Shipped via ${courier}.`,
+      },
+      {
+        title: "Arrived at Local Destination Facility",
+        location: `${city} Hub`,
+        timestamp: "Arrived",
+        completed: true,
+        active: false,
+        description: `Package processed at ${city} courier hub for final-mile route.`,
+      },
+      {
+        title: "Out for Delivery Today",
+        location: `${city} Local Route`,
+        timestamp: "Today",
         completed: true,
         active: true,
-        description: `Return reason: ${order.ndr_status || "Customer unreachable after 3 delivery attempts"}.`,
+        description: `Delivery executive is on route. Please keep your phone reachable.`,
       },
       {
-        title: "Delivery Unsuccessful",
-        location: `${city} Delivery Center`,
-        timestamp: formatDate(36),
-        completed: true,
-        description: "Courier could not deliver package to recipient address.",
-      },
-      {
-        title: "Dispatched to Destination",
-        location: "Origin Transit Hub",
-        timestamp: formatDate(18),
-        completed: true,
-        description: `Shipped via ${courier} under AWB ${order.shiprocket_awb || "N/A"}.`,
-      },
-      {
-        title: "Order Placed",
-        location: "Online Storefront",
-        timestamp: formatDate(0),
-        completed: true,
-        description: "Initial order placement.",
+        title: "Doorstep Handover",
+        location: `${city} Delivery Address`,
+        timestamp: "Expected Today",
+        completed: false,
+        active: false,
+        description: "Cash on delivery payable to delivery partner.",
       },
     ];
   }
 
-  // Default: Processing
+  if (status === "Delivered") {
+    return [
+      {
+        title: "Order Placed & Dispatched",
+        location: "Turkiye Jam Store",
+        timestamp: formatPlacedTime,
+        completed: true,
+        active: false,
+        description: "Order processed and dispatched.",
+      },
+      {
+        title: "In Transit & Out for Delivery",
+        location: `${city} Hub`,
+        timestamp: "Completed",
+        completed: true,
+        active: false,
+        description: `Handled via ${courier}.`,
+      },
+      {
+        title: "Delivered Successfully",
+        location: `${city} Delivery Address`,
+        timestamp: "Delivered",
+        completed: true,
+        active: true,
+        description: "Package was handed over directly to recipient. Thank you for shopping with Turkiye Jam!",
+      },
+    ];
+  }
+
+  // RTO / Return
   return [
     {
-      title: "Processing & Quality Check",
-      location: "Turkiye Jam Central Warehouse",
-      timestamp: formatDate(4),
+      title: "Order Placed & Dispatched",
+      location: "Turkiye Jam Store",
+      timestamp: formatPlacedTime,
       completed: true,
-      active: true,
-      description: "Our fulfillment specialists are carefully assembling and inspecting your items.",
+      active: false,
+      description: "Order processed and dispatched.",
     },
     {
-      title: "Order Placed & Verified",
-      location: "Online Storefront",
-      timestamp: formatDate(0),
+      title: "Delivery Unsuccessful",
+      location: `${city} Hub`,
+      timestamp: "Unsuccessful",
       completed: true,
-      description: "Order successfully confirmed. Warehouse notification dispatched.",
+      active: false,
+      description: order.ndr_status || "Customer unreachable after multiple delivery attempts.",
+    },
+    {
+      title: "Return to Origin (RTO)",
+      location: "Fulfillment Center",
+      timestamp: "In Progress",
+      completed: true,
+      active: true,
+      description: "Shipment returning to sender warehouse.",
     },
   ];
-}
-
-function getStatusBadge(status?: string) {
-  const norm = (status || "Processing").toLowerCase();
-  if (norm.includes("deliver")) {
-    return {
-      label: "Delivered",
-      bg: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      dot: "bg-emerald-500",
-      icon: CheckCircle2,
-    };
-  }
-  if (norm.includes("out for delivery")) {
-    return {
-      label: "Out for Delivery",
-      bg: "bg-purple-50 text-purple-700 border-purple-200",
-      dot: "bg-purple-500",
-      icon: Clock,
-    };
-  }
-  if (norm.includes("transit") || norm.includes("shipped")) {
-    return {
-      label: "In Transit",
-      bg: "bg-sky-50 text-sky-700 border-sky-200",
-      dot: "bg-sky-500",
-      icon: Truck,
-    };
-  }
-  if (norm.includes("rto") || norm.includes("return")) {
-    return {
-      label: "RTO Initiated",
-      bg: "bg-rose-50 text-rose-700 border-rose-200",
-      dot: "bg-rose-500",
-      icon: RotateCcw,
-    };
-  }
-  return {
-    label: "Processing Order",
-    bg: "bg-orange-50 text-[#FF7A00] border-orange-200",
-    dot: "bg-[#FF7A00]",
-    icon: Package,
-  };
 }
 
 function OrderTrackingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const urlQuery = searchParams?.get("query") || searchParams?.get("id") || searchParams?.get("awb") || "";
+  const urlQuery =
+    searchParams?.get("query") ||
+    searchParams?.get("oid") ||
+    searchParams?.get("orderId") ||
+    searchParams?.get("order_id") ||
+    searchParams?.get("id") ||
+    searchParams?.get("awb") ||
+    "";
+  const orderStatus = (searchParams?.get("ost") || "").toUpperCase();
 
   const [inputTerm, setInputTerm] = useState(urlQuery);
   const [loading, setLoading] = useState(false);
@@ -395,7 +358,7 @@ function OrderTrackingContent() {
   useEffect(() => {
     if (urlQuery) {
       setInputTerm(urlQuery);
-      fetchTracking(urlQuery, typeof window !== "undefined" && window.location.hash.includes("live-shipment-journey"));
+      fetchTracking(urlQuery, true);
     }
   }, [urlQuery]);
 
@@ -471,7 +434,7 @@ function OrderTrackingContent() {
     },
     {
       q: "Can I track my order if I paid via Cash on Delivery (COD)?",
-      a: "Yes! All prepaid and COD orders are assigned full real-time tracking numbers with live WhatsApp and Email status updates.",
+      a: "Yes! All orders are assigned full real-time tracking numbers with live WhatsApp and SMS status updates.",
     },
     {
       q: "What should I do if my delivery executive hasn't arrived?",
@@ -554,6 +517,31 @@ function OrderTrackingContent() {
 
         {/* Results / Error Area */}
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 mt-8">
+          {/* Success Banner if redirected from 1-Click Checkout */}
+          {orderStatus === "SUCCESS" && (
+            <div className="mb-8 p-6 rounded-3xl bg-emerald-50 border-2 border-emerald-600/30 text-emerald-950 shadow-[0_4px_0_0_#059669] flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                <CheckCircle2 className="w-7 h-7" />
+              </div>
+              <div className="text-center sm:text-left flex-1">
+                <h2 className="text-lg sm:text-xl font-black font-tj-serif text-emerald-950">
+                  🎉 Order Placed Successfully!
+                </h2>
+                <p className="text-xs sm:text-sm text-emerald-800 mt-1">
+                  Thank you! Your order has been placed via Shiprocket Fastrr. Your items are being carefully packed in discreet plain-box packaging.
+                </p>
+                <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <span className="px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-900 font-bold text-xs">
+                    Discreet Plain Box Packaging
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-900 font-bold text-xs">
+                    Cash on Delivery
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Error Message */}
           {errorMessage && (
             <div className="mb-8 p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3">
@@ -676,14 +664,14 @@ function OrderTrackingContent() {
 
                         {/* Status Badge & Live Sync indicator */}
                         <div className="flex flex-wrap items-center gap-2.5">
-                          {liveTracking && !liveTracking.isSimulated && (
+                          {liveTracking && !liveTracking.isSimulated && !liveTracking.isPending && Array.isArray(liveTracking.activities) && liveTracking.activities.length > 0 && (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                               Live Courier Scan
                             </span>
                           )}
 
-                          {liveTracking?.edd && (
+                          {liveTracking?.edd && !liveTracking.isPending && (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
                               <Clock className="w-3.5 h-3.5" />
                               Est. Delivery: {liveTracking.edd}
@@ -714,64 +702,6 @@ function OrderTrackingContent() {
                         </div>
                       </div>
                     </div>
-
-                    {/* Switch to Prepaid Offer Banner for COD orders */}
-                    {(() => {
-                      const isCodOrder =
-                        (selectedOrder.payment_method || "").toLowerCase().includes("cash on delivery") ||
-                        (selectedOrder.payment_method || "").toLowerCase() === "cod";
-                      const isPending =
-                        (selectedOrder.payment_status || "").toLowerCase() !== "paid" &&
-                        (selectedOrder.payment_status || "").toLowerCase() !== "completed";
-
-                      if (!isCodOrder || !isPending) return null;
-
-                      const rawItems = Array.isArray(selectedOrder.items)
-                        ? selectedOrder.items
-                        : typeof selectedOrder.items === "string"
-                        ? JSON.parse(selectedOrder.items || "[]")
-                        : [];
-                      const pSubtotal = rawItems.reduce(
-                        (sum: number, it: any) => sum + (Number(it.unit_price || it.price) || 0) * (Number(it.quantity) || 1),
-                        0
-                      );
-                      let baseCodTotal = Number(selectedOrder.total_amount) || 0;
-                      if (pSubtotal > 0 && baseCodTotal <= pSubtotal) {
-                        baseCodTotal = pSubtotal + 49;
-                      }
-
-                      const discounted = Math.max(0, baseCodTotal - 30);
-
-                      return (
-                        <div className="mx-6 sm:mx-8 mt-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border-2 border-[#FF7A00]/40 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
-                          <div className="flex items-center gap-3.5">
-                            <div className="w-11 h-11 rounded-2xl bg-[#FF7A00] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#FF7A00]/30 font-bold text-lg">
-                              ⚡
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h4 className="font-extrabold text-gray-900 text-sm sm:text-base">
-                                  Switch to Prepaid &amp; Save ₹30!
-                                </h4>
-                                <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
-                                  Instant Discount
-                                </span>
-                              </div>
-                              <p className="text-xs text-gray-600 mt-0.5">
-                                Pay only <strong className="text-gray-900 font-bold">₹{discounted.toLocaleString()}</strong> online now instead of cash at delivery. Enjoy free shipping &amp; priority dispatch!
-                              </p>
-                            </div>
-                          </div>
-                          <Link
-                            href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(selectedOrder.id)}`}
-                            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-[#FF7A00]/25 transition-all whitespace-nowrap active:scale-[0.98]"
-                          >
-                            <span>Pay ₹{discounted.toLocaleString()} Online Now</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </Link>
-                        </div>
-                      );
-                    })()}
 
                     {/* Step Visual Progress Bar */}
                     <div
@@ -843,65 +773,85 @@ function OrderTrackingContent() {
                         ))}
                       </div>
 
-                      {/* Courier & AWB Details Bar (Moved Under Live Shipment Journey) */}
-                      <div className="mt-8 pt-6 border-t border-gray-200/60 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
-                          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
-                            Courier Partner
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <Truck className="w-4 h-4 text-[#FF7A00]" />
-                            <span className="text-sm font-bold text-gray-900">
-                              {selectedOrder.courier_partner || "Delhivery Logistics"}
-                            </span>
-                          </div>
-                        </div>
+                      {/* Courier & AWB Details Bar */}
+                      {(() => {
+                        const isProcessing = (selectedOrder.delivery_status || selectedOrder.status || "Processing").toLowerCase() === "processing";
+                        const rawAwb = selectedOrder.shiprocket_awb || (selectedOrder as any).tracking_number || "";
+                        const hasRealAwb = Boolean(
+                          rawAwb &&
+                          !rawAwb.startsWith("SR-AWB-") &&
+                          !rawAwb.startsWith("SR-") &&
+                          !rawAwb.toUpperCase().includes("PENDING")
+                        );
+                        const courierName = !isProcessing && selectedOrder.courier_partner && !selectedOrder.courier_partner.toLowerCase().includes("pending")
+                          ? selectedOrder.courier_partner
+                          : "Express Logistics (Assigned at Dispatch)";
 
-                        <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
-                          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
-                            AWB / Waybill Number
-                          </span>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-mono font-bold text-gray-900">
-                              {selectedOrder.shiprocket_awb || "SR-AWB-PENDING"}
-                            </span>
-                            {selectedOrder.shiprocket_awb && (
-                              <button
-                                onClick={() =>
-                                  copyToClipboard(selectedOrder.shiprocket_awb!, "awb")
-                                }
-                                className="p-1 text-gray-400 hover:text-gray-700 cursor-pointer"
-                                title="Copy AWB"
-                              >
-                                {copiedAWB ? (
-                                  <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                ) : (
-                                  <Copy className="w-3.5 h-3.5" />
+                        return (
+                          <div className="mt-8 pt-6 border-t border-gray-200/60 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
+                              <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
+                                Courier Partner
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <Truck className="w-4 h-4 text-[#FF7A00]" />
+                                <span className="text-sm font-bold text-gray-900">
+                                  {courierName}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
+                              <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
+                                AWB / Waybill Number
+                              </span>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-mono font-bold text-gray-900">
+                                  {hasRealAwb ? rawAwb : "Generating upon courier pickup"}
+                                </span>
+                                {hasRealAwb && (
+                                  <button
+                                    onClick={() => copyToClipboard(rawAwb, "awb")}
+                                    className="p-1 text-gray-400 hover:text-gray-700 cursor-pointer"
+                                    title="Copy AWB"
+                                  >
+                                    {copiedAWB ? (
+                                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                    ) : (
+                                      <Copy className="w-3.5 h-3.5" />
+                                    )}
+                                  </button>
                                 )}
-                              </button>
-                            )}
-                          </div>
-                        </div>
+                              </div>
+                            </div>
 
-                        <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
-                          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
-                            External Tracking
-                          </span>
-                          <a
-                            href={
-                              selectedOrder.courier_partner?.toLowerCase().includes("bluedart")
-                                ? `https://www.bluedart.com/tracking`
-                                : `https://www.delhivery.com/track/package/${selectedOrder.shiprocket_awb || ""}`
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FF7A00] hover:underline cursor-pointer"
-                          >
-                            <span>Open Courier Portal</span>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        </div>
-                      </div>
+                            <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
+                              <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
+                                External Tracking
+                              </span>
+                              {hasRealAwb ? (
+                                <a
+                                  href={
+                                    courierName.toLowerCase().includes("bluedart")
+                                      ? `https://www.bluedart.com/tracking`
+                                      : `https://www.delhivery.com/track/package/${rawAwb}`
+                                  }
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FF7A00] hover:underline cursor-pointer"
+                                >
+                                  <span>Open Courier Portal</span>
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+                              ) : (
+                                <span className="text-xs text-stone-500 font-medium">
+                                  Active once dispatched with courier
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 );

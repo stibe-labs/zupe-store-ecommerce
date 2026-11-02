@@ -55,24 +55,28 @@ export async function findUserByEmailAsync(email: string): Promise<UserRecord | 
 }
 
 export async function findUserByPhoneAsync(phone: string): Promise<UserRecord | null> {
-  const { digits, e164 } = normalizePhoneNumber(phone);
+  const { digits, e164, display } = normalizePhoneNumber(phone);
   if (!digits) return null;
 
-  const cached = inMemoryPhoneUsers.get(digits);
+  const raw10 = digits.slice(-10);
+
+  const cached = inMemoryPhoneUsers.get(digits) || inMemoryPhoneUsers.get(raw10);
   if (cached) return cached;
 
   try {
-    // Try matching phone column by E.164 (+91...), raw digits, or partial
+    // Try matching phone column by formatted display (+91 73567 65036), E.164, raw digits, or sanitized digits
     const rows = await executeD1Query<UserRecord>(
       `SELECT * FROM users 
-       WHERE phone = ? OR phone = ? OR phone LIKE ? 
+       WHERE phone = ? OR phone = ? OR phone = ? 
+          OR REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '+', '') LIKE ?
        ORDER BY created_at DESC LIMIT 1`,
-      [e164, digits, `%${digits.slice(-10)}%`]
+      [display, e164, digits, `%${raw10}%`]
     );
 
     if (rows && rows.length > 0) {
       const user = rows[0];
       inMemoryPhoneUsers.set(digits, user);
+      inMemoryPhoneUsers.set(raw10, user);
       if (user.email) inMemoryUsers.set(user.email.toLowerCase().trim(), user);
       return user;
     }

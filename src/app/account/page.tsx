@@ -161,7 +161,7 @@ export default function AccountPage() {
 
     try {
       const res = await fetch(
-        `/api/user/addresses?email=${encodeURIComponent(user.email)}&userId=${encodeURIComponent(user.id || "")}`
+        `/api/user/addresses?email=${encodeURIComponent(user.email || "")}&userId=${encodeURIComponent(user.id || "")}&phone=${encodeURIComponent(user.phone || "")}`
       );
       const data = await res.json();
 
