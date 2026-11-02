@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { FASTRR_CONFIG, computeHmacSha256 } from "@/lib/fastrr";
-import { addOrder } from "@/lib/orderStore";
+import { getFastrrOrderDetails, fastrrOrderToERPOrder } from "@/lib/fastrr";
+import { createERPOrder, registerERPOrderInMemory } from "@/lib/erpStore";
 
 export const dynamic = "force-dynamic";
 
@@ -16,30 +16,25 @@ export async function POST(req: NextRequest) {
     console.log("[Fastrr Order Webhook] Received event:", orderId, payload);
 
     if (orderId) {
-      // Fetch full order details from Shiprocket Checkout API if needed
       try {
-        const detailsBody = JSON.stringify({
-          order_id: orderId,
-          timestamp: new Date().toISOString(),
-        });
-        const hmac = computeHmacSha256(detailsBody);
+        const detailsData = await getFastrrOrderDetails(orderId);
+        if (detailsData && (detailsData.order_id || detailsData.fastrr_order_id)) {
+          const erpOrder = fastrrOrderToERPOrder(detailsData);
+          registerERPOrderInMemory(erpOrder);
+          await createERPOrder(erpOrder);
 
-        const detailsRes = await fetch(`${FASTRR_CONFIG.baseUrl}/api/v1/custom-platform-order/details`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Api-Key": FASTRR_CONFIG.apiKey,
-            "X-Api-HMAC-SHA256": hmac,
-          },
-          body: detailsBody,
-        });
-
-        if (detailsRes.ok) {
-          const detailsData = await detailsRes.json();
-          console.log("[Fastrr Order Details]:", detailsData);
+          // Trigger WhatsApp confirmation if phone is available
+          if (erpOrder.customer_phone) {
+            try {
+              const { sendWhatsAppOrderConfirmation } = await import("@/lib/whatsappOrderConfirmation");
+              await sendWhatsAppOrderConfirmation(erpOrder as any);
+            } catch (waErr) {
+              console.warn("[Fastrr Order Webhook] WhatsApp alert error:", waErr);
+            }
+          }
         }
       } catch (dErr) {
-        console.warn("[Fastrr Order Details] fetch error:", dErr);
+        console.warn("[Fastrr Order Details] fetch/save error:", dErr);
       }
     }
 
@@ -49,4 +44,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
 

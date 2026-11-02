@@ -137,3 +137,100 @@ export function formatProductForShiprocket(p: (typeof TJ_CATALOG_PRODUCTS)[0]) {
   };
 }
 
+/**
+ * Fetch full order details directly from Shiprocket Fastrr Checkout API
+ */
+export async function getFastrrOrderDetails(orderId: string): Promise<any | null> {
+  try {
+    const detailsBody = JSON.stringify({
+      order_id: orderId,
+      timestamp: new Date().toISOString(),
+    });
+    const hmac = computeHmacSha256(detailsBody);
+
+    const res = await fetch(`${FASTRR_CONFIG.baseUrl}/api/v1/custom-platform-order/details`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Api-Key": FASTRR_CONFIG.apiKey,
+        "X-Api-HMAC-SHA256": hmac,
+      },
+      body: detailsBody,
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data.result || data.data || data;
+    }
+    return null;
+  } catch (e) {
+    console.error("[Fastrr] getFastrrOrderDetails error:", e);
+    return null;
+  }
+}
+
+/**
+ * Maps Fastrr checkout order payload to our standard ERPOrder schema
+ */
+export function fastrrOrderToERPOrder(res: any): any {
+  const o = res.result || res;
+  const sAddr = o.shipping_address || {};
+  const customerName =
+    [sAddr.first_name, sAddr.last_name].filter(Boolean).join(" ") ||
+    o.customer_name ||
+    "Customer";
+  const addressStr = [
+    sAddr.line1,
+    sAddr.line2,
+    sAddr.city,
+    sAddr.state,
+    sAddr.pincode,
+    sAddr.country,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const rawItems = o.cart_data?.items || [];
+  const items = rawItems.map((it: any) => ({
+    id: it.variant_id || "2003",
+    name: it.item_catalog_data?.name || it.name || "Turkiye Jam",
+    quantity: it.quantity || 1,
+    price: it.price || it.item_catalog_data?.price || 0,
+    image: it.item_catalog_data?.image_url || "/tj/turkiye-jam-3-strips.png",
+  }));
+
+  const paymentMethod =
+    (o.payment_type || "").toUpperCase().includes("COD") ||
+    (o.payment_type || "").toUpperCase().includes("CASH")
+      ? "COD"
+      : "Prepaid";
+
+  const total = Number(o.total_amount_payable || o.subtotal_price || 0);
+
+  return {
+    id: o.order_id || o.platform_order_id,
+    shopify_order_id: o.fastrr_order_id
+      ? `#TJ-${o.fastrr_order_id.slice(-4)}`
+      : `#TJ-${(o.order_id || "").slice(-4)}`,
+    customer_name: customerName,
+    customer_phone: o.phone || sAddr.phone || "",
+    guest_email: o.email || sAddr.email || "",
+    total_amount: total,
+    product_cost: Math.round(total * 0.42),
+    shipping_cost: Number(o.shipping_charges || 0),
+    rto_shipping_charge: 0,
+    ad_spend_attributed: Math.round(total * 0.15),
+    net_profit: Math.round(total * 0.43),
+    status: "Processing",
+    payment_method: paymentMethod,
+    payment_status: paymentMethod === "COD" ? "Pending" : "Completed",
+    shipping_address: addressStr || "India",
+    shiprocket_awb: o.fastrr_order_id ? `SR-${o.fastrr_order_id}` : "",
+    courier_partner: "Express Logistics",
+    delivery_status: "Processing",
+    created_at: o.order_created_date || new Date().toISOString(),
+    items: items,
+  };
+}
+
+

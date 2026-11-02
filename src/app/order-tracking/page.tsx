@@ -308,7 +308,15 @@ function getStatusBadge(status?: string) {
 function OrderTrackingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const urlQuery = searchParams?.get("query") || searchParams?.get("id") || searchParams?.get("awb") || "";
+  const urlQuery =
+    searchParams?.get("query") ||
+    searchParams?.get("oid") ||
+    searchParams?.get("orderId") ||
+    searchParams?.get("order_id") ||
+    searchParams?.get("id") ||
+    searchParams?.get("awb") ||
+    "";
+  const orderStatus = (searchParams?.get("ost") || "").toUpperCase();
 
   const [inputTerm, setInputTerm] = useState(urlQuery);
   const [loading, setLoading] = useState(false);
@@ -395,7 +403,7 @@ function OrderTrackingContent() {
   useEffect(() => {
     if (urlQuery) {
       setInputTerm(urlQuery);
-      fetchTracking(urlQuery, typeof window !== "undefined" && window.location.hash.includes("live-shipment-journey"));
+      fetchTracking(urlQuery, true);
     }
   }, [urlQuery]);
 
@@ -554,6 +562,31 @@ function OrderTrackingContent() {
 
         {/* Results / Error Area */}
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 mt-8">
+          {/* Success Banner if redirected from 1-Click Checkout */}
+          {orderStatus === "SUCCESS" && (
+            <div className="mb-8 p-6 rounded-3xl bg-emerald-50 border-2 border-emerald-600/30 text-emerald-950 shadow-[0_4px_0_0_#059669] flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                <CheckCircle2 className="w-7 h-7" />
+              </div>
+              <div className="text-center sm:text-left flex-1">
+                <h2 className="text-lg sm:text-xl font-black font-tj-serif text-emerald-950">
+                  🎉 Order Placed Successfully!
+                </h2>
+                <p className="text-xs sm:text-sm text-emerald-800 mt-1">
+                  Thank you! Your order has been placed via Shiprocket Fastrr. Your items are being carefully packed in discreet plain-box packaging.
+                </p>
+                <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <span className="px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-900 font-bold text-xs">
+                    Discreet Plain Box Packaging
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-900 font-bold text-xs">
+                    Cash on Delivery
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Error Message */}
           {errorMessage && (
             <div className="mb-8 p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3">
