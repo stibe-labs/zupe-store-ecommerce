@@ -28,6 +28,7 @@ import {
   Tag,
   Check,
   ShoppingBag,
+  Package,
   Search,
   Smartphone,
   User,
@@ -2780,7 +2781,7 @@ function CheckoutContent() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <h4 className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
-                                Pay Online (Prepaid)
+                                PAY ONLINE (PREPAID)
                               </h4>
                               {paymentMethod === "prepaid" && (
                                 <span className="px-2 py-0.5 rounded-full bg-[#FF7A00] text-white text-[10px] font-extrabold uppercase tracking-wider shadow-2xs">
@@ -2810,15 +2811,6 @@ function CheckoutContent() {
                             transition={{ duration: 0.22, ease: "easeInOut" }}
                             className="overflow-hidden"
                           >
-                            {/* SPECIAL PREPAID OFFER STRIP (Matches Reference Photo 2) */}
-                            <div className="mt-3.5 p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/60 flex items-center justify-between text-xs">
-                              <div className="flex items-center gap-1.5 text-amber-900 font-bold">
-                                <Tag className="w-3.5 h-3.5 text-[#FF7A00]" />
-                                <span className="tracking-wide uppercase text-[10px]">SPECIAL PREPAID OFFER</span>
-                              </div>
-                              <span className="text-[11px] font-semibold text-amber-800">Free Express Shipping applied</span>
-                            </div>
-
                             {/* Pay Now Amount + Free Express Shipping Row */}
                             <div className="flex items-center justify-between pt-3.5 mt-3.5 border-t border-gray-100">
                               <div>
@@ -2894,15 +2886,15 @@ function CheckoutContent() {
                           </div>
 
                           <div className="w-10 h-10 rounded-xl bg-orange-100/60 border border-orange-200/50 flex items-center justify-center text-[#FF7A00] shrink-0">
-                            <ShoppingBag className="w-5 h-5" />
+                            <Package className="w-5 h-5" />
                           </div>
 
                           <div className="min-w-0">
                             <h4 className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
-                              Cash on Delivery (Partial Payment)
+                              CASH ON DELIVERY (PARTIAL PAYMENT)
                             </h4>
                             <p className="text-xs text-gray-500 mt-0.5 truncate">
-                              Pay ₹10 now, pay the rest on delivery
+                              Product price + ₹{codShippingFee > 0 ? codShippingFee : 0} COD handling fee
                             </p>
                           </div>
                         </div>
@@ -2925,32 +2917,42 @@ function CheckoutContent() {
                             transition={{ duration: 0.22, ease: "easeInOut" }}
                             className="overflow-hidden"
                           >
-                            {/* 3-Column Breakdown (Matches Reference Photo 2) */}
-                            <div className="grid grid-cols-3 gap-2 p-3 rounded-xl bg-gray-50/80 border border-gray-100 mt-3 text-center">
-                              <div className="space-y-0.5">
-                                <span className="text-[10px] text-gray-500 flex items-center justify-center gap-1">
-                                  <CreditCard className="w-3 h-3 text-[#FF7A00]" /> Pay now
-                                </span>
-                                <p className="text-sm sm:text-base font-black text-gray-950">₹10</p>
+                            {/* Inner White Breakdown Card (Matches Reference Photo) */}
+                            <div className="mt-3.5 p-3.5 sm:p-4 rounded-xl bg-white border border-gray-100 space-y-2.5">
+                              {/* Row 1: Product price */}
+                              <div className="flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-2.5 text-gray-700">
+                                  <CreditCard className="w-4 h-4 text-gray-400 shrink-0" />
+                                  <span className="font-medium text-gray-800">Product price</span>
+                                </div>
+                                <span className="font-bold text-gray-900">₹{(subtotal - promoDiscount).toLocaleString()}</span>
                               </div>
-                              <div className="space-y-0.5 border-x border-gray-200/70 px-1">
-                                <span className="text-[10px] text-gray-500 flex items-center justify-center gap-1">
-                                  <Truck className="w-3 h-3 text-gray-500" /> Pay on delivery
+
+                              {/* Row 2: COD handling Fee */}
+                              <div className="flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-2.5 text-gray-700">
+                                  <Truck className="w-4 h-4 text-gray-400 shrink-0" />
+                                  <span className="font-medium text-gray-800">COD handling Fee</span>
+                                </div>
+                                <span className="font-bold text-gray-900">
+                                  {codShippingFee > 0 ? `₹${codShippingFee}` : "FREE"}
                                 </span>
-                                <p className="text-sm sm:text-base font-black text-gray-950">₹{codDoorstepBalance.toLocaleString()}</p>
                               </div>
-                              <div className="space-y-0.5">
-                                <span className="text-[10px] text-gray-500 block">Total order cost</span>
-                                <p className="text-sm sm:text-base font-black text-[#FF7A00]">₹{codTotalCost.toLocaleString()}</p>
-                                <span className="text-[9px] text-gray-400 block leading-tight">incl. COD &amp; fast shipping</span>
+
+                              {/* Divider + Total order cost */}
+                              <div className="pt-2.5 border-t border-gray-100 flex items-center justify-between">
+                                <span className="font-bold text-gray-900 text-sm sm:text-base">Total order cost</span>
+                                <span className="font-black text-base sm:text-lg text-gray-950">₹{codTotalCost.toLocaleString()}</span>
                               </div>
                             </div>
 
-                            {/* Transparent Explanation Note */}
-                            <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/60 flex items-start gap-2 mt-2.5">
-                              <ShieldCheck className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
-                              <p className="text-[11px] text-amber-900 leading-snug">
-                                The ₹10 you pay now is part of the ₹{codTotalCost.toLocaleString()} total, not an extra charge.
+                            {/* Notice Box (Matches Reference Photo with requested ₹10 text change) */}
+                            <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/60 flex items-start gap-2.5 mt-2.5">
+                              <div className="w-4 h-4 rounded bg-[#FF7A00] flex items-center justify-center shrink-0 mt-0.5 text-white">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                              </div>
+                              <p className="text-xs sm:text-[13px] text-amber-950 leading-snug">
+                                The ₹10 Advance Payment is charged for Cash on Delivery and is included in the total price.
                               </p>
                             </div>
                           </motion.div>
