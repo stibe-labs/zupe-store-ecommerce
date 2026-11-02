@@ -21,6 +21,7 @@ export interface SiteConfig {
   domain: string;
 
   // Brand & Identity
+  slug: string; // e.g. "turkiyejam" (used for csv filenames, cache keys, identifiers)
   name: string;
   shortName: string;
   tagline: string;
@@ -37,6 +38,10 @@ export interface SiteConfig {
   supportEmail: string;
   supportPhone: string;
   whatsappNumber: string; // Country code + digits, e.g. "916238165935"
+  whatsappWebhookVerifyToken: string;
+
+  // Customer synthetic email domain (for phone-only customers)
+  customerEmailDomain: string;
 
   // Warehouse & Fulfillment (for Shiprocket, Invoices, and Tracking milestones)
   fulfillmentCenter: string;
@@ -49,11 +54,20 @@ export interface SiteConfig {
   getRecoveryUrl: (recoveryToken: string) => string;
   getWhatsAppConfirmUrl: (token: string, orderId: string) => string;
   getWhatsAppCancelUrl: (token: string, orderId: string) => string;
+
+  // Email & Identifier Helpers for White-Labeling
+  isSyntheticEmail: (email?: string | null) => boolean;
+  generateSyntheticEmail: (identifier: string) => string;
 }
+
+const domainHost = cleanUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+const siteSlug = process.env.NEXT_PUBLIC_SITE_SLUG || "turkiyejam";
+const customerDomain = process.env.CUSTOMER_EMAIL_DOMAIN || `customer.${domainHost}`;
 
 export const siteConfig: SiteConfig = {
   url: cleanUrl,
-  domain: cleanUrl.replace(/^https?:\/\//, ""),
+  domain: domainHost,
+  slug: siteSlug,
 
   name: process.env.NEXT_PUBLIC_SITE_NAME || "Turkiye Jam",
   shortName: process.env.NEXT_PUBLIC_SITE_SHORT_NAME || "Turkiye Jam",
@@ -70,13 +84,17 @@ export const siteConfig: SiteConfig = {
   logoPng: process.env.NEXT_PUBLIC_LOGO_PNG || "/turkiye-jam-logo.png",
   faviconUrl: process.env.NEXT_PUBLIC_FAVICON_URL || "/favicon.png",
 
-  supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@turkiyejam.com",
+  supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || `support@${domainHost}`,
   supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE || "+91 73567 65036",
   whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916238165935",
+  whatsappWebhookVerifyToken:
+    process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || `${siteSlug}_wa_secret_2026`,
+
+  customerEmailDomain: customerDomain,
 
   fulfillmentCenter:
     process.env.NEXT_PUBLIC_FULFILLMENT_CENTER ||
-    "Turkiye Jam Fulfillment Center, Ernakulam",
+    `${process.env.NEXT_PUBLIC_SITE_NAME || "Turkiye Jam"} Fulfillment Center, Ernakulam`,
   dispatchBay:
     process.env.NEXT_PUBLIC_DISPATCH_BAY ||
     "Ernakulam Logistics Dispatch Bay",
@@ -103,6 +121,23 @@ export const siteConfig: SiteConfig = {
 
   getWhatsAppCancelUrl(token: string, orderId: string) {
     return `${cleanUrl}/api/orders/whatsapp-cancel?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
+  },
+
+  isSyntheticEmail(email?: string | null): boolean {
+    if (!email || !email.includes("@")) return true;
+    const clean = email.trim().toLowerCase();
+    return (
+      clean.includes("@customer.") ||
+      clean.endsWith(".local") ||
+      clean.endsWith(`@customer.${domainHost}`) ||
+      clean.endsWith(`@${customerDomain}`) ||
+      clean.endsWith("@customer.zupestore.com")
+    );
+  },
+
+  generateSyntheticEmail(identifier: string): string {
+    const digits = identifier.replace(/\D/g, "");
+    return `${digits || identifier}@${customerDomain}`;
   },
 };
 

@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { siteConfig } from "@/config/siteConfig";
 import { useAuth } from "@/context/AuthContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
@@ -505,9 +506,7 @@ export default function AccountPage() {
                   </p>
                 ) : null}
 
-                {user.email &&
-                  !user.email.includes("@customer.zupestore.com") &&
-                  !user.email.includes("@customer.turkiyejam.com") && (
+                {user.email && !siteConfig.isSyntheticEmail(user.email) && (
                   <p className="text-xs text-amber-200/70 flex items-center gap-2 truncate mt-0.5">
                     <Mail className="w-3 h-3 text-amber-300/60 flex-shrink-0" />
                     <span className="truncate">{user.email}</span>

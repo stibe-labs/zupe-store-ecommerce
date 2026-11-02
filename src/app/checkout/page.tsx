@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { siteConfig } from "@/config/siteConfig";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck,
@@ -311,7 +312,7 @@ function CheckoutContent() {
           if (
             chk.customer_email &&
             !chk.customer_email.includes("example.com") &&
-            !chk.customer_email.endsWith("@customer.zupestore.com") &&
+            !siteConfig.isSyntheticEmail(chk.customer_email) &&
             !chk.customer_email.toLowerCase().startsWith("test@")
           ) {
             setEmail(chk.customer_email);
