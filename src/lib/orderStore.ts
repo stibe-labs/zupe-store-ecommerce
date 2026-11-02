@@ -427,39 +427,37 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
     }
   }
 
-  // Instant Automated Dispatch to Shiprocket on WhatsApp Confirmation
+  // Attempt Automated Dispatch to Shiprocket on WhatsApp Confirmation (only if live integration active)
   const targetOrder: any = ord || erpOrd || (await getOrderById(normId));
-  let finalAwb = targetOrder?.shiprocket_awb;
-  let finalCourier = targetOrder?.courier_partner || "Delhivery";
+  let finalAwb = targetOrder?.shiprocket_awb || null;
+  let finalCourier = targetOrder?.courier_partner || null;
 
   try {
     const { dispatchShiprocketOrder } = await import("@/lib/shiprocketService");
     const dispatchRes = await dispatchShiprocketOrder(targetOrder);
-    if (dispatchRes.success && dispatchRes.awb) {
+    if (dispatchRes.success && dispatchRes.awb && !dispatchRes.isSimulated) {
       finalAwb = dispatchRes.awb;
       finalCourier = dispatchRes.courier || finalCourier;
     }
   } catch (dispatchErr) {
-    console.warn("Instant Shiprocket dispatch on WhatsApp confirm error:", dispatchErr);
+    console.warn("Shiprocket dispatch on WhatsApp confirm error:", dispatchErr);
   }
 
-  if (!finalAwb) {
-    finalAwb = `SR-AWB-${Math.floor(1000000 + Math.random() * 9000000)}`;
-  }
-
+  // Never fabricate fake AWB or marked In Transit if not actually dispatched by carrier!
+  const isActuallyDispatched = Boolean(finalAwb && !finalAwb.startsWith("SR-AWB-"));
   if (ord) {
-    ord.order_status = "shipped";
+    ord.order_status = isActuallyDispatched ? "shipped" : "processing";
     (ord as any).shiprocket_awb = finalAwb;
     (ord as any).courier_partner = finalCourier;
-    (ord as any).delivery_status = "In Transit";
+    (ord as any).delivery_status = isActuallyDispatched ? "In Transit" : "Processing";
   }
 
   try {
     await updateERPOrder(normId, {
       whatsapp_confirm_status: "confirmed",
       whatsapp_token_used: true,
-      status: "In Transit",
-      delivery_status: "In Transit",
+      status: isActuallyDispatched ? "In Transit" : "Processing",
+      delivery_status: isActuallyDispatched ? "In Transit" : "Processing",
       shiprocket_awb: finalAwb,
       courier_partner: finalCourier,
     });
