@@ -122,7 +122,7 @@ export function ShoppableVideosSection({
   currentProduct,
   showHeader = true,
   title = "SEE IT IN ACTION",
-  subtitle = "Discover the little details, clever features, and everyday benefits that make a big difference.",
+  subtitle,
   centeredHeader = true,
   variant = "auto",
   className = "",
@@ -951,13 +951,13 @@ export function ShoppableVideosSection({
     <section
       ref={sectionRef}
       className={`w-full max-w-[1600px] mx-auto ${
-        variant === "mobile" ? "px-0" : "px-4 sm:px-6"
-      } ${showHeader ? "py-4 sm:py-8" : "py-2 sm:py-4"} ${className}`}
+        variant === "mobile" ? "px-0 pt-0 pb-2" : "px-4 sm:px-6 py-4 sm:py-8"
+      } ${className}`}
     >
       {/* Section Header */}
       {showHeader && (
         <div
-          className={`mb-3 sm:mb-5 ${
+          className={`mb-2 sm:mb-4 ${
             centeredHeader ? "text-center" : "flex items-center justify-between"
           }`}
         >
@@ -965,9 +965,11 @@ export function ShoppableVideosSection({
             <h2 className="text-[17px] sm:text-2xl font-display font-extrabold text-[#111111] tracking-tight uppercase">
               {title}
             </h2>
-            <p className="text-[11.5px] sm:text-sm text-gray-500 mt-1 leading-snug">
-              {subtitle}
-            </p>
+            {subtitle && (
+              <p className="text-[11.5px] sm:text-sm text-gray-500 mt-1 leading-snug">
+                {subtitle}
+              </p>
+            )}
           </div>
         </div>
       )}
