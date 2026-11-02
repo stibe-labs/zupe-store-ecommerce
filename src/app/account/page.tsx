@@ -441,7 +441,7 @@ export default function AccountPage() {
     <div className="min-h-screen bg-[#F8F9FA] text-[#111111] flex flex-col justify-between pb-24 sm:pb-0">
       <Navbar />
 
-      <main className="flex-1 w-full max-w-xl lg:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7 lg:py-8 space-y-4 lg:space-y-6">
+      <main className="flex-1 w-full max-w-xl lg:max-w-[1600px] mx-auto px-4 sm:px-6 py-4 sm:py-6 lg:py-6 space-y-4 lg:space-y-5">
         {/* ========================================================
             1. TOP PROFILE BANNER (DARK GRADIENT HERO CARD)
            ======================================================== */}
@@ -570,9 +570,9 @@ export default function AccountPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
           {/* ========================================================
               LEFT COLUMN: 5 Navigation Menu Rows + Desktop 24/7 Support
-              (On mobile: full width; On desktop: 5 of 12 columns)
+              (On mobile: full width; On desktop: 4 of 12 columns)
              ======================================================== */}
-          <div className="lg:col-span-5 space-y-4">
+          <div className="lg:col-span-4 space-y-4">
             {/* The 5 Navigation Menu Items (Exact mobile match) */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-xs divide-y divide-slate-100 overflow-hidden">
               {/* Row 1: My Orders */}
@@ -709,10 +709,18 @@ export default function AccountPage() {
                                 <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600">
                                   {addr.tag || "Home"}
                                 </span>
-                                {addr.is_default && (
+                                {addr.is_default ? (
                                   <span className="px-1.5 py-0.5 rounded-full bg-orange-100 text-[#FF7A00] text-[9px] font-bold">
                                     Default
                                   </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSetDefaultAddress(addr.id)}
+                                    className="text-[9px] font-semibold text-slate-400 hover:text-[#FF7A00] hover:underline cursor-pointer"
+                                  >
+                                    Set Default
+                                  </button>
                                 )}
                               </div>
                               <div className="flex items-center gap-1">
@@ -780,10 +788,10 @@ export default function AccountPage() {
           </div>
 
           {/* ========================================================
-              RIGHT COLUMN: Recently Viewed + Desktop Address Manager
-              (On mobile: full width; On desktop: 7 of 12 columns)
+              RIGHT COLUMN: Recently Viewed Showcase
+              (On mobile: full width; On desktop: 8 of 12 columns)
              ======================================================== */}
-          <div className="lg:col-span-7 space-y-4">
+          <div className="lg:col-span-8 space-y-4">
             {/* Recently Viewed Card */}
             <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-xs">
               <div className="flex items-center justify-between mb-3.5">
@@ -864,9 +872,9 @@ export default function AccountPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
               </div>
 
-              {/* Desktop Spacious 3-Column Product Grid */}
-              <div className="hidden lg:grid grid-cols-3 gap-3.5">
-                {recentProducts.slice(0, 6).map((prod) => {
+              {/* Desktop Spacious Product Grid */}
+              <div className="hidden lg:grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5">
+                {recentProducts.slice(0, 8).map((prod) => {
                   const imageSrc = prod.poster_image || prod.images?.[0] || "/zupe-logo.webp";
                   const inWishlist = isInWishlist(prod.id);
 
@@ -927,123 +935,6 @@ export default function AccountPage() {
                   );
                 })}
               </div>
-            </div>
-
-            {/* Desktop Dedicated Delivery Addresses Manager */}
-            <div className="hidden lg:block bg-white rounded-2xl p-5 border border-slate-100 shadow-xs">
-              <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center">
-                    <Home className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900">
-                      Saved Delivery Addresses
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      Manage your delivery addresses for 1-click express checkout.
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleOpenAddAddress}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add New Address</span>
-                </button>
-              </div>
-
-              {loadingAddresses ? (
-                <div className="py-8 flex items-center justify-center">
-                  <Loader2 className="w-7 h-7 text-[#FF7A00] animate-spin" />
-                </div>
-              ) : addresses.length === 0 ? (
-                <div className="text-center py-8 px-4 rounded-xl bg-slate-50 border border-dashed border-slate-200">
-                  <Home className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                  <p className="text-xs font-bold text-slate-700 mb-1">No Delivery Addresses Saved</p>
-                  <p className="text-xs text-slate-500 mb-3">Add your home or office address for faster order fulfillment.</p>
-                  <button
-                    type="button"
-                    onClick={handleOpenAddAddress}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-800 hover:bg-slate-50 cursor-pointer shadow-xs"
-                  >
-                    <Plus className="w-3 h-3 text-[#FF7A00]" />
-                    <span>Add Address</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3.5">
-                  {addresses.map((addr) => (
-                    <div
-                      key={addr.id}
-                      className={`rounded-xl p-3.5 border transition-all flex flex-col justify-between ${
-                        addr.is_default
-                          ? "border-[#FF7A00]/50 bg-orange-50/20 ring-1 ring-[#FF7A00]/20 shadow-xs"
-                          : "border-slate-200 bg-white hover:border-slate-300"
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-xs text-slate-900">{addr.recipient_name}</span>
-                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600">
-                              {addr.tag || "Home"}
-                            </span>
-                          </div>
-
-                          {addr.is_default ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FF7A00]/10 text-[#FF7A00] text-[9px] font-bold border border-[#FF7A00]/20">
-                              <Star className="w-2.5 h-2.5 fill-[#FF7A00]" />
-                              Default
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleSetDefaultAddress(addr.id)}
-                              className="text-[10px] font-semibold text-slate-400 hover:text-[#FF7A00] hover:underline cursor-pointer"
-                            >
-                              Set Default
-                            </button>
-                          )}
-                        </div>
-
-                        {addr.phone && (
-                          <p className="text-xs text-slate-500 flex items-center gap-1 mb-1 font-medium">
-                            <Phone className="w-3 h-3 text-slate-400" />
-                            <span>{addr.phone}</span>
-                          </p>
-                        )}
-
-                        <p className="text-xs text-slate-600 leading-snug mb-3">
-                          {addr.street}, {addr.city}, {addr.state} - {addr.postal_code}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-end gap-1.5 pt-2 border-t border-slate-100">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditAddress(addr)}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
-                        >
-                          <Edit2 className="w-3 h-3" />
-                          <span>Edit</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteAddress(addr.id)}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                          <span>Delete</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 
