@@ -11,15 +11,15 @@ import {
 } from "@/lib/seo";
 
 type PageProps = {
-  params: Promise<{ id: string }> | { id: string };
+  params: Promise<{ id: string }>;
   children: React.ReactNode;
 };
 
 export async function generateMetadata(
-  props: { params: Promise<{ id: string }> | { id: string } },
+  props: { params: Promise<{ id: string }> },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const resolvedParams = await Promise.resolve(props.params);
+  const resolvedParams = await props.params;
   const idOrSlug = resolvedParams?.id;
   const product = await getProductByIdOrSlug(idOrSlug);
 
@@ -89,7 +89,7 @@ export async function generateMetadata(
 }
 
 export default async function ProductLayout(props: PageProps) {
-  const resolvedParams = await Promise.resolve(props.params);
+  const resolvedParams = await props.params;
   const idOrSlug = resolvedParams?.id;
   const product = await getProductByIdOrSlug(idOrSlug);
 
@@ -118,3 +118,4 @@ export default async function ProductLayout(props: PageProps) {
     </>
   );
 }
+

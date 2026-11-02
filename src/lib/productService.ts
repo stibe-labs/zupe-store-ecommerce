@@ -57,3 +57,4 @@ export async function getProductByIdOrSlug(idOrSlug: string): Promise<Product | 
 
   return defaultFound || null;
 }
+

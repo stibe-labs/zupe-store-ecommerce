@@ -41,9 +41,11 @@ export function getOrganizationSchema() {
     telephone: STORE_PHONE,
     address: {
       "@type": "PostalAddress",
-      addressCountry: "IN",
-      addressRegion: "Kerala",
+      streetAddress: "Maradu, Kochi",
       addressLocality: "Kochi",
+      addressRegion: "Kerala",
+      postalCode: "682048",
+      addressCountry: "IN",
     },
     sameAs: [
       "https://www.instagram.com/zupestore.in",
@@ -179,15 +181,15 @@ export function getProductSchema(product: Product) {
           "@type": "ShippingDeliveryTime",
           handlingTime: {
             "@type": "QuantitativeValue",
-            minValue: 1,
-            maxValue: 2,
-            unitCode: "DAY",
+            minValue: 0,
+            maxValue: 1,
+            unitCode: "d",
           },
           transitTime: {
             "@type": "QuantitativeValue",
             minValue: 2,
             maxValue: 5,
-            unitCode: "DAY",
+            unitCode: "d",
           },
         },
       },
@@ -198,6 +200,18 @@ export function getProductSchema(product: Product) {
         merchantReturnDays: 5,
         returnMethod: "https://schema.org/ReturnByMail",
         returnFees: "https://schema.org/FreeReturn",
+        returnLabelSource: "https://schema.org/ReturnLabelCustomerResponsibility",
+        refundType: "https://schema.org/FullRefund",
+        restockingFee: {
+          "@type": "MonetaryAmount",
+          value: "0",
+          currency: "INR",
+        },
+        returnShippingFeesAmount: {
+          "@type": "MonetaryAmount",
+          value: "0",
+          currency: "INR",
+        },
       },
     },
     aggregateRating: {
@@ -218,10 +232,15 @@ export function getProductItemListSchema(products: Product[], listName = "Featur
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: listName,
-    itemListElement: products.slice(0, 12).map((product, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      item: getProductSchema(product),
-    })),
+    itemListElement: products.slice(0, 12).map((product, index) => {
+      const productUrl = `${SITE_URL}/products/${product.slug || product.id}`;
+      return {
+        "@type": "ListItem",
+        position: index + 1,
+        url: productUrl,
+        item: getProductSchema(product),
+      };
+    }),
   };
 }
+
