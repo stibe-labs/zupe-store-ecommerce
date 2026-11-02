@@ -852,7 +852,7 @@ function OrderTrackingContent() {
                                 <a
                                   href={
                                     courierName.toLowerCase().includes("dtdc")
-                                      ? `https://track.dtdc.com/tracking?tracking_number=${rawAwb}`
+                                      ? `https://www.trackcourier.io/track-dtdc-courier?tracking_number=${rawAwb}`
                                       : courierName.toLowerCase().includes("bluedart")
                                       ? `https://www.bluedart.com/tracking`
                                       : courierName.toLowerCase().includes("post")
