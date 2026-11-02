@@ -22,7 +22,7 @@ interface AuthContextType {
   authModalOnSuccess: ((user?: any) => void) | null;
   openAuthModal: (mode?: "login" | "signup", notice?: string, redirectUrl?: string, onSuccess?: (user?: any) => void) => void;
   closeAuthModal: () => void;
-  sendWhatsAppOtp: (phone: string) => Promise<{ success: boolean; message?: string; codeSent?: boolean; otp?: string; error?: string }>;
+  sendWhatsAppOtp: (phone: string) => Promise<{ success: boolean; message?: string; codeSent?: boolean; otp?: string; isExistingUser?: boolean; name?: string; error?: string }>;
   loginWithWhatsApp: (phone: string, otp: string, name?: string) => Promise<{ success: boolean; user?: UserSession; isNew?: boolean; error?: string }>;
   login: (email: string, password: string) => Promise<{ success: boolean; user?: UserSession; redirect?: string; error?: string }>;
   register: (name: string, email: string, password: string, otp: string) => Promise<{ success: boolean; error?: string }>;
@@ -128,6 +128,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         message: data.message,
         codeSent: data.codeSent,
         otp: data.otp,
+        isExistingUser: data.is_existing_user,
+        name: data.name,
       };
     } catch (err: any) {
       return { success: false, error: err.message || "Network error" };
