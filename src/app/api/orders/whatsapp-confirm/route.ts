@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siteConfig } from "@/config/siteConfig";
 import { confirmWhatsAppOrder, getStorefrontOrderById, getOrderByToken } from "@/lib/orderStore";
 import { getOrderById } from "@/lib/erpStore";
 import { sendOrderConfirmationWhatsApp } from "@/lib/whatsappOrderConfirmation";
@@ -66,9 +67,7 @@ export async function GET(req: NextRequest) {
       const customerEmail = (ord.guest_email || ord.customer_email || "").trim();
       if (
         customerEmail &&
-        customerEmail.includes("@") &&
-        !customerEmail.endsWith("@customer.zupestore.com") &&
-        !customerEmail.endsWith("@customer.turkiyejam.com") &&
+        !siteConfig.isSyntheticEmail(customerEmail) &&
         !ord.confirmation_email_sent
       ) {
         try {

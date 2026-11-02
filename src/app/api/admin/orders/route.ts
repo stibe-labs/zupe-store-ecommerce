@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siteConfig } from "@/config/siteConfig";
 import { getERPOrders, updateERPOrder, createERPOrder, getOrderById } from "@/lib/erpStore";
 import { updateStorefrontOrder } from "@/lib/orderStore";
 import { executeD1Query } from "@/lib/d1";
@@ -305,9 +306,7 @@ export async function POST(req: NextRequest) {
       const customerEmail = (ord.guest_email || ord.customer_email || "").trim();
       if (
         customerEmail &&
-        customerEmail.includes("@") &&
-        !customerEmail.endsWith("@customer.zupestore.com") &&
-        !customerEmail.endsWith("@customer.turkiyejam.com") &&
+        !siteConfig.isSyntheticEmail(customerEmail) &&
         !ord.confirmation_email_sent
       ) {
         try {
@@ -527,9 +526,7 @@ export async function POST(req: NextRequest) {
       const customerEmail = (ord.guest_email || ord.customer_email || "").trim();
       if (
         customerEmail &&
-        customerEmail.includes("@") &&
-        !customerEmail.endsWith("@customer.zupestore.com") &&
-        !customerEmail.endsWith("@customer.turkiyejam.com")
+        !siteConfig.isSyntheticEmail(customerEmail)
       ) {
         try {
           await sendOrderCancellationEmail({

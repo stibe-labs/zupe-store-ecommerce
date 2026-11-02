@@ -114,13 +114,7 @@ export async function sendOrderConfirmationEmail(
 
   // 1. Validate customer email: MUST be entered and NOT a synthetic placeholder
   const cleanEmail = (customerEmail || "").trim().toLowerCase();
-  if (
-    !cleanEmail ||
-    !cleanEmail.includes("@") ||
-    cleanEmail.endsWith("@customer.zupestore.com") ||
-    cleanEmail.endsWith("@customer.turkiyejam.com") ||
-    cleanEmail.endsWith(".local")
-  ) {
+  if (siteConfig.isSyntheticEmail(cleanEmail)) {
     console.log(
       `[Order Email Service] ℹ️ Skipping email dispatch for Order ${orderId}: Customer did not provide an optional email at checkout.`
     );

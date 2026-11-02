@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siteConfig } from "@/config/siteConfig";
 
 export const dynamic = "force-dynamic";
 
-const VERIFY_TOKEN = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || "turkiyejam_wa_secret_2026";
+const VERIFY_TOKEN =
+  process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || siteConfig.whatsappWebhookVerifyToken;
 
 /**
  * Meta WhatsApp Cloud API Webhook Verification (GET)

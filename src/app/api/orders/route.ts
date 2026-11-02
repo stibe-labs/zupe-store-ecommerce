@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siteConfig } from "@/config/siteConfig";
 import { createOrder, getOrders, getOrdersAsync, updateOrderStatus, OrderRecord, OrderItem } from "@/lib/orderStore";
 import { getERPOrders } from "@/lib/erpStore";
 import { getAuthenticatedUser } from "@/lib/userAuth";
@@ -72,11 +73,11 @@ export async function GET(req: NextRequest) {
         if (!Array.isArray(rawItems)) rawItems = [];
 
         let items: OrderItem[] = rawItems.map((it: any) => ({
-          product_id: it.product_id || it.id || "ripple-lamp",
-          name: it.product_name || it.name || "Purchased Product",
+          product_id: it.product_id || it.id || `${siteConfig.orderPrefix.toLowerCase()}-item`,
+          name: it.product_name || it.name || `${siteConfig.name} Product`,
           price: Number(it.unit_price || it.price || o.total_amount),
           quantity: Number(it.quantity || 1),
-          image: it.image || it.poster_image || "/products/ripple-lamp.jpg",
+          image: it.image || it.poster_image || siteConfig.logoPng,
           bundle_tier: it.bundle_tier,
           bundle_savings: it.bundle_savings,
           bundle_total: it.bundle_total,
@@ -87,11 +88,11 @@ export async function GET(req: NextRequest) {
         if (items.length === 0) {
           items = [
             {
-              product_id: "turkiye-jam",
-              name: "Themra Epimedium Herbal Macun (Original Turkish Paste)",
-              price: o.total_amount || 2899,
+              product_id: `${siteConfig.orderPrefix.toLowerCase()}-primary`,
+              name: `${siteConfig.name} Primary Item`,
+              price: o.total_amount || 1099,
               quantity: 1,
-              image: "/products/themra/turkiye-jam-jar-strip.png",
+              image: siteConfig.logoPng,
             },
           ];
         }
@@ -333,7 +334,7 @@ export async function POST(req: NextRequest) {
 
     // Automated Order Confirmation Email (Dispatched ONLY if customer provided optional email at checkout)
     const normEmail = (customer_email || "").trim();
-    if (normEmail && normEmail.includes("@") && !normEmail.endsWith("@customer.zupestore.com") && !normEmail.endsWith("@customer.turkiyejam.com")) {
+    if (normEmail && !siteConfig.isSyntheticEmail(normEmail)) {
       try {
         const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
         const { markOrderEmailSent } = await import("@/lib/orderStore");

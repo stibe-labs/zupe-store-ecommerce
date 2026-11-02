@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { siteConfig } from "@/config/siteConfig";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import {
@@ -233,7 +234,7 @@ export default function RTORefundBalancePage() {
     link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
-      `turkiyejam_rto_refund_balance_${new Date().toISOString().split("T")[0]}.csv`
+      `${siteConfig.slug}_rto_refund_balance_${new Date().toISOString().split("T")[0]}.csv`
     );
     document.body.appendChild(link);
     link.click();
