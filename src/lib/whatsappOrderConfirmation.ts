@@ -7,7 +7,7 @@ import { normalizePhoneNumber } from "@/lib/whatsappOtp";
 const DEFAULT_WA_TOKEN =
   "EAATwm2s3GMYBS7KhJQ2MDiAyAGFS6OwFHiXZAFvfPlyMUg4Jf3wV5e8TPj0PKC8rkE6x9vkzuZANllpjCUHvJaXYAZB6Ursyzc26l0SDJrBEEPJYB4ZB8rjEQ2qTSBI6tEYgZBOTJ47DAmVNAhuyaQAoryvhYiO6vRpAFdE0H61gFXCkwttX5sZCCSyR20kCwOOQZDZD";
 const DEFAULT_WA_PHONE_ID = "1477900698733187";
-const STORE_BASE_URL = "https://turkiyejam.stibelabs.workers.dev";
+const STORE_BASE_URL = "https://turkiyejam.com";
 
 // Template names - must match exactly what you created in Meta Business Manager
 const TEMPLATE_PREPAID = "turkiyejam_order_update";
@@ -139,10 +139,10 @@ async function sendPreConfirmViaTemplate(
   // The zupe_order_verify template in Meta Business Manager:
   // - Body with 4 parameters: {{1}}=firstName, {{2}}=orderId, {{3}}=amount, {{4}}=paymentMethod
   // - Button 0 (Confirm Order): Dynamic URL configured with base:
-  //   https://zupe-store.stibelabs.workers.dev/api/orders/whatsapp-confirm?token={{1}}
+  //   https://turkiyejam.com/api/orders/whatsapp-confirm?token={{1}}
   //   Parameter 1: verificationToken (e.g. tok_xxx)
   // - Button 1 (Cancel Order): Dynamic URL configured with base:
-  //   https://zupe-store.stibelabs.workers.dev/orders?cancelPrompt={{1}}
+  //   https://turkiyejam.com/orders?cancelPrompt={{1}}
   //   Parameter 1: clean orderId (e.g. 1567 or ord_xxx)
 
   const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
