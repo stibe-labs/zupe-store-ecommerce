@@ -9,7 +9,10 @@ const DEFAULT_WA_TOKEN =
   process.env.WHATSAPP_TOKEN ||
   "EAATwm2s3GMYBS7KhJQ2MDiAyAGFS6OwFHiXZAFvfPlyMUg4Jf3wV5e8TPj0PKC8rkE6x9vkzuZANllpjCUHvJaXYAZB6Ursyzc26l0SDJrBEEPJYB4ZB8rjEQ2qTSBI6tEYgZBOTJ47DAmVNAhuyaQAoryvhYiO6vRpAFdE0H61gFXCkwttX5sZCCSyR20kCwOOQZDZD";
 const DEFAULT_WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || "1477900698733187";
-const STORE_BASE_URL = siteConfig.url;
+let STORE_BASE_URL = siteConfig.url || "https://turkiyejam.com";
+if (STORE_BASE_URL.includes("workers.dev") || !STORE_BASE_URL.startsWith("http")) {
+  STORE_BASE_URL = "https://turkiyejam.com";
+}
 
 // Template names - must match exactly what you created in Meta Business Manager
 const TEMPLATE_PREPAID = "turkiyejam_order_update";
@@ -65,11 +68,14 @@ export async function sendOrderPreConfirmationWhatsApp(
   const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
 
   const firstName = customerName.split(" ")[0] || customerName;
-  const itemLines = items
+  const safeItems = Array.isArray(items) && items.length > 0
+    ? items
+    : [{ name: "Turkiye Jam (3 Sachet Pack)", quantity: 1, price: totalAmount || 1099 }];
+  const itemLines = safeItems
     .slice(0, 3)
-    .map((it) => `  • ${it.name} (x${it.quantity})`)
+    .map((it) => `  • ${it.name || "Turkiye Jam"} (x${it.quantity || 1})`)
     .join("\n");
-  const more = items.length > 3 ? `\n  • ...and ${items.length - 3} more` : "";
+  const more = safeItems.length > 3 ? `\n  • ...and ${safeItems.length - 3} more` : "";
 
   const confirmUrl = `${STORE_BASE_URL}/api/orders/whatsapp-confirm?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
   const cancelUrl = `${STORE_BASE_URL}/api/orders/whatsapp-cancel?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
@@ -233,11 +239,14 @@ export async function sendOrderConfirmationWhatsApp(
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
   const cleanUrlOrderId = orderId.replace(/^#/, "");
 
-  const itemLines = items
+  const safeItems = Array.isArray(items) && items.length > 0
+    ? items
+    : [{ name: "Turkiye Jam (3 Sachet Pack)", quantity: 1, price: totalAmount || 1099 }];
+  const itemLines = safeItems
     .slice(0, 3)
-    .map(function(it) { return "  • " + it.name + " (x" + it.quantity + ")"; })
+    .map(function(it) { return "  • " + (it.name || "Turkiye Jam") + " (x" + (it.quantity || 1) + ")"; })
     .join("\n");
-  const moreItems = items.length > 3 ? "\n  • ...and " + (items.length - 3) + " more" : "";
+  const moreItems = safeItems.length > 3 ? "\n  • ...and " + (safeItems.length - 3) + " more" : "";
   const trackUrl = STORE_BASE_URL + "/order-tracking?query=" + encodeURIComponent(cleanUrlOrderId);
 
   let message: string;

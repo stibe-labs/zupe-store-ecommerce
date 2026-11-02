@@ -26,6 +26,9 @@
     }
   ],
   "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://turkiyejam.com",
+    "NEXT_PUBLIC_BASE_URL": "https://turkiyejam.com",
+    "STORE_BASE_URL": "https://turkiyejam.com",
     "SMTP_HOST": "mail.stibe.in",
     "SMTP_PORT": "465",
     "SMTP_USER": "support@turkiyejam.com",

@@ -7,11 +7,15 @@
  * rebranding, domain migration, or multi-tenant deployment.
  */
 
-const rawUrl =
+let rawUrl =
   process.env.NEXT_PUBLIC_SITE_URL ||
   process.env.NEXT_PUBLIC_BASE_URL ||
   process.env.STORE_BASE_URL ||
   "https://turkiyejam.com";
+
+if (rawUrl.includes("workers.dev") || !rawUrl.startsWith("http")) {
+  rawUrl = "https://turkiyejam.com";
+}
 
 const cleanUrl = rawUrl.replace(/\/+$/, "");
 
