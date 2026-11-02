@@ -399,33 +399,29 @@ export async function dispatchShiprocketOrder(
         message: `Live AWB ${awbCode} generated via ${courierName}. Status updated to In Transit.`,
       };
     } catch (apiErr: any) {
-      console.warn("[Shiprocket Live API] Dispatch failed, using fallback:", apiErr.message || apiErr);
+      console.warn("[Shiprocket Live API] Dispatch failed:", apiErr.message || apiErr);
 
-      // Safe fallback so operational workflow continues without blocking customer
-      const fallbackAwb = `SR-AWB-${Date.now().toString().slice(-8)}`;
+      // DO NOT fabricate fake courier or fake AWB! Order remains in Processing status until actually dispatched by courier.
       await executeD1Query(
         `UPDATE orders 
-         SET shiprocket_awb = ?,
-             tracking_number = ?,
-             courier_partner = ?,
-             delivery_status = 'In Transit',
-             status = 'In Transit'
+         SET delivery_status = 'Processing',
+             status = 'Processing',
+             courier_partner = NULL,
+             shiprocket_awb = NULL,
+             tracking_number = NULL
          WHERE id = ? OR shopify_order_id = ?;`,
-        [fallbackAwb, fallbackAwb, cleanCourier, order.id, (order as any).shopify_order_id || order.id]
+        [order.id, (order as any).shopify_order_id || order.id]
       );
 
-      (order as any).shiprocket_awb = fallbackAwb;
-      (order as any).courier_partner = cleanCourier;
-      (order as any).delivery_status = "In Transit";
-      (order as any).status = "In Transit";
+      (order as any).delivery_status = "Processing";
+      (order as any).status = "Processing";
+      (order as any).shiprocket_awb = null;
+      (order as any).courier_partner = null;
 
       return {
-        success: true,
-        awb: fallbackAwb,
-        courier: cleanCourier,
-        delivery_status: "In Transit",
-        isSimulated: true,
-        message: `Dispatched with fallback AWB ${fallbackAwb} (${apiErr.message || "API offline"}).`,
+        success: false,
+        delivery_status: "Processing",
+        message: `Shiprocket dispatch pending: ${apiErr.message || "Carrier assignment in progress"}. Package remains in processing.`,
       };
     }
   } catch (err: any) {

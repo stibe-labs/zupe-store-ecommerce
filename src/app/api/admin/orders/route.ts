@@ -216,13 +216,13 @@ export async function POST(req: NextRequest) {
       const targetId = ord.id || order_id;
       const orderDisplayId = ord.shopify_order_id || ord.id || order_id;
 
-      // Assign AWB if not present
+      // Keep real AWB if present, do NOT fabricate fake SR-AWB or default to Delhivery
       const existingAwb = ord.shiprocket_awb;
       const finalAwb =
-        existingAwb && existingAwb.trim() !== ""
+        existingAwb && existingAwb.trim() !== "" && !existingAwb.startsWith("SR-AWB-")
           ? existingAwb
-          : `SR-AWB-${Math.floor(1000000 + Math.random() * 9000000)}`;
-      const finalCourier = ord.courier_partner || "Delhivery";
+          : null;
+      const finalCourier = ord.courier_partner || null;
 
       // 1. Update ERP Store
       const updatedERP = await updateERPOrder(targetId, {

@@ -59,7 +59,7 @@ function AdminOrdersContent() {
 
   // Edit order modal form state
   const [editDeliveryStatus, setEditDeliveryStatus] = useState<string>("Processing");
-  const [editCourier, setEditCourier] = useState<string>("Delhivery");
+  const [editCourier, setEditCourier] = useState<string>("");
   const [editAWB, setEditAWB] = useState<string>("");
   const [editPaymentStatus, setEditPaymentStatus] = useState<string>("Completed");
   const [editRemittance, setEditRemittance] = useState<string>("Pending");
@@ -125,7 +125,7 @@ function AdminOrdersContent() {
   useEffect(() => {
     if (selectedOrder) {
       setEditDeliveryStatus(selectedOrder.delivery_status || "Processing");
-      setEditCourier(selectedOrder.courier_partner || "Delhivery");
+      setEditCourier(selectedOrder.courier_partner || "");
       setEditAWB(selectedOrder.shiprocket_awb || "");
       setEditPaymentStatus(selectedOrder.payment_status || "Pending");
       setEditRemittance(selectedOrder.remittance_status || "Pending");
@@ -804,9 +804,17 @@ function AdminOrdersContent() {
                             </div>
                           ) : (
                             <>
-                              <p className="font-semibold text-slate-800">{ord.courier_partner || "Delhivery"}</p>
-                              <span className="font-mono text-[11px] text-slate-600">
-                                {ord.shiprocket_awb || "Pending"}
+                              <p className="font-semibold text-slate-800">
+                                {ord.courier_partner && ord.courier_partner.trim() !== ""
+                                  ? ord.courier_partner
+                                  : "Unassigned"}
+                              </p>
+                              <span className="font-mono text-[11px] text-slate-500">
+                                {ord.shiprocket_awb &&
+                                !ord.shiprocket_awb.startsWith("SR-AWB-") &&
+                                ord.shiprocket_awb.trim() !== ""
+                                  ? ord.shiprocket_awb
+                                  : "Pending Pickup"}
                               </span>
                             </>
                           )}
@@ -1449,6 +1457,7 @@ function AdminOrdersContent() {
                       onChange={(e) => setEditCourier(e.target.value)}
                       className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                     >
+                      <option value="">Unassigned (Pending Dispatch)</option>
                       <option value="Delhivery">Delhivery</option>
                       <option value="Bluedart">Bluedart</option>
                       <option value="Xpressbees">Xpressbees</option>
