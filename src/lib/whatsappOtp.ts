@@ -251,27 +251,6 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
           if (templateRes.ok && templateData.messages && templateData.messages.length > 0) {
             console.log(`✅ [WhatsApp OTP] Template '${templateName}' (${lang}) accepted by Meta.`);
 
-            // Also dispatch direct text message: if user sent "Hi" in last 24h, this delivers 100% instantly!
-            try {
-              const directBody = `🛍️ *Turkiye Jam Verification Code*\n\nYour one-time login code is: *${otp}*\n\nValid for 3 minutes.\n\n_For your safety, never share this code with anyone._`;
-              await fetch(url, {
-                method: "POST",
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  messaging_product: "whatsapp",
-                  recipient_type: "individual",
-                  to: digits,
-                  type: "text",
-                  text: { preview_url: false, body: directBody },
-                }),
-              });
-            } catch (dErr) {
-              console.warn("Direct text parallel dispatch:", dErr);
-            }
-
             return {
               success: true,
               codeSent: true,
