@@ -200,6 +200,116 @@ const BASE_DESC = "Imported directly from Dubai retail hubs, Vittal Digital brin
 
 export const DEFAULT_PRODUCTS: Product[] = [
   {
+    id: "airpods-pro-2",
+    slug: "airpods-pro-2",
+    name: "Apple AirPods Pro (2nd Generation)",
+    subtitle: "Active Noise Cancellation | Adaptive Transparency | Personalized Spatial Audio | USB-C Charging",
+    category: "Audio & Headphones",
+    subcategory: "Wireless Earbuds",
+    tagline: "Experience Next-Level Sound. Up to 2x more Active Noise Cancellation.",
+    description: "Apple AirPods Pro (2nd generation) with USB-C deliver up to 2x more Active Noise Cancellation, Adaptive Audio, Personalized Spatial Audio, and extended battery life with MagSafe Charging Case.",
+    price: 19990,
+    mrp: 28990,
+    offer_price: 19990,
+    cost_price: 16500,
+    stock_count: 24,
+    volume: "MagSafe USB-C Case / White",
+    poster_image: "/vittal/products/airpods-pro-gallery-1.jpg",
+    images: [
+      "/vittal/products/airpods-pro-gallery-1.jpg",
+      "/vittal/products/airpods-pro-gallery-2.jpg",
+      "/vittal/products/airpods-pro-gallery-3.jpg",
+      "/vittal/products/airpods-pro-gallery-5.jpg",
+      "/vittal/products/airpods-pro.jpg"
+    ],
+    color: "White",
+    material: "Gloss White Polycarbonate",
+    in_stock: 1,
+    rating: 4.6,
+    review_count: 2417,
+    sold_count: "8,200+ Sold",
+    badge: "Bestseller",
+    has_colors: true,
+    colors: [
+      { name: "White", image: "/vittal/products/airpods-pro-gallery-1.jpg", colorHex: "#FFFFFF" },
+      { name: "Black", image: "/vittal/products/airpods-pro-gallery-1.jpg", colorHex: "#0F172A" }
+    ],
+    features: [
+      "Up to 2x more Active Noise Cancellation compared to previous generation",
+      "Adaptive Audio dynamically blends Transparency mode and Active Noise Cancellation",
+      "Personalized Spatial Audio with dynamic head tracking places sound all around you",
+      "MagSafe Charging Case (USB-C) with speaker, lanyard loop, and Precision Finding",
+      "Up to 6 hours of listening time with ANC enabled (up to 30 hours total with case)",
+      "IP54 dust, sweat, and water resistance for both AirPods and charging case"
+    ],
+    specifications: {
+      "Brand": "Apple",
+      "Model": "AirPods Pro (2nd Generation) with MagSafe Case (USB-C)",
+      "Audio Technology": "Apple H2 headphone chip, Custom high-excursion Apple driver",
+      "Noise Control": "Active Noise Cancellation, Adaptive Transparency, Conversation Awareness",
+      "Sensors": "Dual beamforming microphones, inward-facing microphone, skin-detect sensor",
+      "Battery Life": "Up to 6 hours listening time on a single charge (up to 30 hours with case)",
+      "Charging": "MagSafe charger, Apple Watch charger, Qi-certified chargers, or USB-C connector",
+      "Connectivity": "Bluetooth 5.3 wireless technology",
+      "Water Resistance": "IP54 dust, sweat, and water resistant (AirPods and Case)"
+    },
+    whats_in_box: [
+      "AirPods Pro (2nd Generation)",
+      "MagSafe Charging Case (USB-C) with speaker and lanyard loop",
+      "Silicone ear tips (four sizes: XS, S, M, L)",
+      "USB-C Charge Cable",
+      "Documentation & 1-Year India Warranty Certificate"
+    ],
+    shipping_info: COMMON_SHIPPING,
+    return_info: COMMON_RETURNS,
+    how_to_use: COMMON_HOW_TO_USE,
+    reviews_data: {
+      average: 4.6,
+      total: 2417,
+      breakdown: [
+        { star: 5, percentage: 82 },
+        { star: 4, percentage: 12 },
+        { star: 3, percentage: 4 },
+        { star: 2, percentage: 1 },
+        { star: 1, percentage: 1 },
+      ],
+      user_photos: [
+        { image: "/vittal/products/airpods-pro-gallery-1.jpg" },
+        { image: "/vittal/products/airpods-pro-gallery-2.jpg" },
+        { image: "/vittal/products/airpods-pro-gallery-3.jpg" },
+      ],
+      list: [
+        {
+          id: "rev-airpods-1",
+          author: "Rahul S.",
+          avatar: "/avatars/avatar-1.jpg",
+          date: "Yesterday",
+          rating: 5,
+          verified: true,
+          comment: "Authentic sealed Apple AirPods Pro 2 received in Thrissur in just 2 days. The noise cancellation is breathtaking on flights and commutes. Serial verified on Apple Coverage!",
+        },
+        {
+          id: "rev-airpods-2",
+          author: "Ananya M.",
+          avatar: "/avatars/avatar-2.jpg",
+          date: "3 days ago",
+          rating: 5,
+          verified: true,
+          comment: "The USB-C case with lanyard loop is so convenient. Spatial audio with Dolby Atmos sounds like you are right inside a concert hall. Incredible pricing from Vittal Digital.",
+        },
+        {
+          id: "rev-airpods-3",
+          author: "Karthik V.",
+          avatar: "/avatars/avatar-3.jpg",
+          date: "1 week ago",
+          rating: 5,
+          verified: true,
+          comment: "Best purchase this year. The 5% UPI discount worked instantly, and customer care responded on WhatsApp within 2 minutes. 100% genuine Dubai imported stock.",
+        }
+      ],
+    },
+  },
+  {
     id: "ultraslim-laptop-14",
     slug: "ultraslim-laptop-14",
     name: "UltraSlim Laptop 14",
