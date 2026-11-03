@@ -146,6 +146,13 @@ function CheckoutContent() {
   const [confirmedTotal, setConfirmedTotal] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState("");
   const [recoveredBanner, setRecoveredBanner] = useState<string | null>(null);
+  const [isRestoringCart, setIsRestoringCart] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search);
+      return Boolean(p.get("recover") || p.get("recovery") || p.get("rec_token") || p.get("token"));
+    }
+    return false;
+  });
 
   // Urgency Timer (Digital Countdown: Hours, Mins, Secs)
   const [timeLeft, setTimeLeft] = useState(6 * 3600 + 7 * 60 + 24); // 06:07:24
@@ -357,6 +364,10 @@ function CheckoutContent() {
         }
       } catch (err) {
         console.warn("Failed to restore abandoned checkout:", err);
+      } finally {
+        if (isMounted) {
+          setIsRestoringCart(false);
+        }
       }
     }
 
@@ -866,15 +877,6 @@ function CheckoutContent() {
     } catch (e) {}
 
     if (cart.length === 0) {
-      // If customer removed all items from cart, clear their abandoned session
-      fetch("/api/checkout/abandoned", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_phone: clean,
-          action: "clear_empty",
-        }),
-      }).catch(() => {});
       return;
     }
 
@@ -1841,6 +1843,44 @@ function CheckoutContent() {
             >
               Continue Shopping
             </Link>
+          </div>
+        </main>
+
+        <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
+          © 2026 Zupe Store
+        </footer>
+      </div>
+    );
+  }
+
+  // Cart Restoring from WhatsApp Link State
+  if (isRestoringCart && cart.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
+        <header className="py-4 border-b border-gray-100 bg-white">
+          <div className="max-w-5xl mx-auto px-4 flex items-center justify-center">
+            <Link href="/" className="inline-block">
+              <Image
+                src="/zupe-logo.webp"
+                alt="Zupe Store"
+                width={120}
+                height={38}
+                className="h-9 w-auto object-contain"
+                priority
+              />
+            </Link>
+          </div>
+        </header>
+
+        <main className="max-w-md mx-auto py-24 px-4 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-50 flex items-center justify-center text-[#FF7A00] animate-pulse">
+            <ShoppingBag className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-bold font-display text-gray-900 mb-2">Restoring Your Cart...</h2>
+          <p className="text-sm text-gray-500 mb-6">Retrieving your saved order from WhatsApp in 1 click.</p>
+          <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-orange-100/60 text-[#FF7A00] text-xs font-bold">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Loading your items...</span>
           </div>
         </main>
 

@@ -49,18 +49,11 @@ export async function POST(req: NextRequest) {
 
     const { digits, isValid } = normalizePhoneNumber(customer_phone || "");
 
-    // If customer emptied their cart or removed all products, delete the abandoned session
-    if (isValid && (action === "clear_empty" || (Array.isArray(items) && items.length === 0))) {
-      await executeD1Query(
-        "DELETE FROM abandoned_checkouts WHERE customer_phone = ? AND status = 'abandoned'",
-        [digits]
-      );
-      inMemoryAbandoned = inMemoryAbandoned.filter(
-        (a) => !(a.customer_phone === digits && a.status === "abandoned")
-      );
+    // Acknowledge empty cart action without deleting records (preserves WhatsApp recovery links)
+    if (action === "clear_empty") {
       return NextResponse.json({
         success: true,
-        message: "Cart emptied: abandoned session removed",
+        message: "Cart empty state acknowledged",
       });
     }
 

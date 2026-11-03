@@ -274,14 +274,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (cleanPhone.length < 10) return;
 
     if (cart.length === 0) {
-      fetch("/api/checkout/abandoned", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_phone: cleanPhone,
-          action: "clear_empty",
-        }),
-      }).catch(() => {});
       return;
     }
 
