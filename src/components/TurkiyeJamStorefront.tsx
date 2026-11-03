@@ -27,7 +27,6 @@ import {
   ArrowRight,
   Check,
   CreditCard,
-  MapPin,
   BadgeCheck,
   Award,
   Package,
@@ -44,7 +43,7 @@ interface StorefrontProps {
 }
 
 // ---------------------------------------------------------------------------
-// Hero slides data matching reference design
+// Hero slides data with ultra-high-resolution studio photography
 // ---------------------------------------------------------------------------
 const HERO_SLIDES = [
   {
@@ -55,20 +54,20 @@ const HERO_SLIDES = [
     headlineHighlight: "To Life",
     subLabel: "Starting at",
     price: "₹44,990",
-    image: "/vittal/extracted/hero-dualsense.png",
+    image: "/vittal/products/hero-dualsense.jpg",
     imageAlt: "PlayStation 5 DualSense Wireless Controllers in Black and White",
     link: "/products?category=Gaming+%26+Accessories",
   },
   {
     id: 2,
-    label: "NEXT-GEN ULTRABOOKS",
+    label: "NEXT-GEN GAMING LAPTOPS",
     headlineLine1: "Power Your Work",
     headlineLine2: "Anywhere",
     headlineHighlight: "Anytime",
-    subLabel: "Up to 30% Off on",
-    price: "HP & Lenovo",
-    image: "/vittal/extracted/deal-hp-victus.png",
-    imageAlt: "HP Victus Gaming Laptop",
+    subLabel: "Starting at",
+    price: "₹59,990",
+    image: "/vittal/products/hp-victus.jpg",
+    imageAlt: "HP Victus 15 Gaming Laptop",
     link: "/products?category=Laptops",
   },
   {
@@ -79,8 +78,8 @@ const HERO_SLIDES = [
     headlineHighlight: "Every Beat",
     subLabel: "Starting at",
     price: "₹19,990",
-    image: "/vittal/extracted/airpods-max-spotlight.png",
-    imageAlt: "Apple AirPods Max and Audio Gear",
+    image: "/vittal/products/airpods-max-spotlight.jpg",
+    imageAlt: "Apple AirPods Max Studio Headphones",
     link: "/products?category=Headphones+%26+Earbuds",
   },
 ];
@@ -111,7 +110,7 @@ const TRUST_ITEMS = [
 ];
 
 // ---------------------------------------------------------------------------
-// Featured deals product data (Exact 6 cards matching reference design)
+// Featured deals product data (6 items with ultra-sharp studio photos)
 // ---------------------------------------------------------------------------
 const FEATURED_DEALS = [
   {
@@ -122,7 +121,7 @@ const FEATURED_DEALS = [
     discount: 25,
     rating: 4.6,
     reviews: "1,234",
-    image: "/vittal/extracted/deal-hp-victus.png",
+    image: "/vittal/products/hp-victus.jpg",
   },
   {
     id: "airpods-pro-2",
@@ -132,7 +131,7 @@ const FEATURED_DEALS = [
     discount: 30,
     rating: 4.6,
     reviews: "2,417",
-    image: "/vittal/extracted/deal-airpods-pro.png",
+    image: "/vittal/products/airpods-pro.jpg",
   },
   {
     id: "galaxy-watch6",
@@ -142,7 +141,7 @@ const FEATURED_DEALS = [
     discount: 20,
     rating: 4.5,
     reviews: "997",
-    image: "/vittal/extracted/deal-galaxy-watch6.png",
+    image: "/vittal/smart-watch-pro-2.png",
   },
   {
     id: "dualsense-ps5",
@@ -152,7 +151,7 @@ const FEATURED_DEALS = [
     discount: 35,
     rating: 4.7,
     reviews: "3,102",
-    image: "/vittal/extracted/deal-ps5-controller.png",
+    image: "/vittal/products/ps5-controller.jpg",
   },
   {
     id: "jbl-charge-5",
@@ -162,7 +161,7 @@ const FEATURED_DEALS = [
     discount: 28,
     rating: 4.6,
     reviews: "1,876",
-    image: "/vittal/extracted/deal-jbl-charge5.png",
+    image: "/vittal/products/jbl-charge5.jpg",
   },
   {
     id: "iphone-15-128",
@@ -172,7 +171,7 @@ const FEATURED_DEALS = [
     discount: 32,
     rating: 4.8,
     reviews: "4,205",
-    image: "/vittal/extracted/deal-iphone-15.png",
+    image: "/vittal/products/iphone-15.jpg",
   },
 ];
 
@@ -188,7 +187,7 @@ const TRENDING_LEFT = [
     discount: 18,
     rating: 4.6,
     reviews: "2,135",
-    image: "/vittal/extracted/trending-galaxy-s24.png",
+    image: "/vittal/products/galaxy-s24.jpg",
   },
   {
     id: "lenovo-ideapad-slim5",
@@ -198,7 +197,7 @@ const TRENDING_LEFT = [
     discount: 22,
     rating: 4.5,
     reviews: "843",
-    image: "/vittal/extracted/trending-lenovo-ideapad.png",
+    image: "/vittal/products/lenovo-ideapad.jpg",
   },
   {
     id: "galaxy-tab-s9-124",
@@ -208,7 +207,7 @@ const TRENDING_LEFT = [
     discount: 20,
     rating: 4.5,
     reviews: "679",
-    image: "/vittal/extracted/trending-galaxy-tabs9.png",
+    image: "/vittal/products/galaxy-tabs9.jpg",
   },
   {
     id: "boat-rockerz-255pro",
@@ -218,7 +217,7 @@ const TRENDING_LEFT = [
     discount: 15,
     rating: 4.4,
     reviews: "3,921",
-    image: "/vittal/extracted/trending-boat-rockerz.png",
+    image: "/vittal/wireless-earbuds.png",
   },
 ];
 
@@ -230,7 +229,7 @@ const TRENDING_SPOTLIGHT = {
   mrp: 69990,
   rating: 4.7,
   reviews: "1,029",
-  image: "/vittal/extracted/airpods-max-spotlight.png",
+  image: "/vittal/products/airpods-max-spotlight.jpg",
 };
 
 const TRENDING_RIGHT = [
@@ -242,7 +241,7 @@ const TRENDING_RIGHT = [
     discount: 25,
     rating: 4.6,
     reviews: "1,987",
-    image: "/vittal/extracted/trending-apple-watch-se.png",
+    image: "/vittal/smart-watch-pro.png",
   },
   {
     id: "wireless-charger-3in1",
@@ -252,7 +251,7 @@ const TRENDING_RIGHT = [
     discount: 30,
     rating: 4.4,
     reviews: "612",
-    image: "/vittal/extracted/trending-wireless-charger-3in1.png",
+    image: "/vittal/compact-power-bank.png",
   },
   {
     id: "lg-ultragear-27",
@@ -262,7 +261,7 @@ const TRENDING_RIGHT = [
     discount: 20,
     rating: 4.6,
     reviews: "744",
-    image: "/vittal/extracted/trending-lg-ultragear-monitor.png",
+    image: "/vittal/products/lg-ultragear.jpg",
   },
   {
     id: "oneplus-12r-16gb",
@@ -272,7 +271,7 @@ const TRENDING_RIGHT = [
     discount: 18,
     rating: 4.5,
     reviews: "1,349",
-    image: "/vittal/extracted/trending-oneplus-12r.png",
+    image: "/vittal/products/oneplus-12r.jpg",
   },
 ];
 
@@ -404,7 +403,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
   const scrollCategories = (dir: "left" | "right") => {
     if (!categoryScrollRef.current) return;
     categoryScrollRef.current.scrollBy({
-      left: dir === "right" ? 280 : -280,
+      left: dir === "right" ? 320 : -320,
       behavior: "smooth",
     });
   };
@@ -414,20 +413,20 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
   return (
     <div className="bg-[#FFFFFF] text-slate-900 font-sans min-h-screen">
       {/* ===================================================================== */}
-      {/* SECTION 1: HERO CAROUSEL (Royal Blue Curved Radiant Glow + Controllers)*/}
+      {/* SECTION 1: HERO CAROUSEL (Royal Blue Radiant Glow + Product Hero)     */}
       {/* ===================================================================== */}
       <section className="relative w-full overflow-hidden bg-[#001D40]">
         <div
           className="relative w-full transition-all duration-700 ease-out"
           style={{
-            minHeight: "440px",
+            minHeight: "460px",
             background:
-              "radial-gradient(circle at 68% 45%, #0050A4 0%, #002D62 50%, #001633 100%)",
+              "radial-gradient(circle at 70% 48%, #0050A4 0%, #002D62 48%, #001633 100%)",
           }}
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10 sm:py-14 flex flex-col lg:flex-row items-center justify-between min-h-[440px]">
+          <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 flex flex-col lg:flex-row items-center justify-between min-h-[460px]">
             {/* Left Headline & Call-to-action */}
-            <div className="w-full lg:max-w-xl text-white z-10 text-center lg:text-left mb-8 lg:mb-0">
+            <div className="w-full lg:max-w-2xl text-white z-10 text-center lg:text-left mb-8 lg:mb-0">
               <p className="text-xs sm:text-sm font-bold tracking-widest uppercase mb-2 text-[#FFBE00]">
                 {currentHero.label}
               </p>
@@ -448,7 +447,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
               <div>
                 <Link
                   href={currentHero.link}
-                  className="inline-flex items-center gap-2 bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-sm sm:text-base px-7 py-3 rounded-md transition-all shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95"
+                  className="inline-flex items-center gap-2 bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-sm sm:text-base px-8 py-3.5 rounded-lg transition-all shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95"
                 >
                   <span>Shop Now</span>
                   <ArrowRight className="w-4 h-4 stroke-[3]" />
@@ -457,8 +456,8 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
             </div>
 
             {/* Right Hero Product Graphic */}
-            <div className="relative w-full lg:w-1/2 flex items-center justify-center h-64 sm:h-80 lg:h-96">
-              <div className="relative w-full h-full max-w-lg">
+            <div className="relative w-full lg:w-1/2 flex items-center justify-center h-64 sm:h-88 lg:h-[420px]">
+              <div className="relative w-full h-full max-w-xl rounded-2xl overflow-hidden shadow-2xl">
                 <Image
                   src={currentHero.image}
                   alt={currentHero.imageAlt}
@@ -475,7 +474,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
             onClick={() =>
               setActiveSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)
             }
-            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-md"
+            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-md shadow-lg"
             aria-label="Previous slide"
           >
             <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -484,7 +483,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
             onClick={() =>
               setActiveSlide((prev) => (prev + 1) % HERO_SLIDES.length)
             }
-            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-md"
+            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-md shadow-lg"
             aria-label="Next slide"
           >
             <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -498,7 +497,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
                 onClick={() => setActiveSlide(i)}
                 className={`transition-all duration-300 rounded-full ${
                   i === activeSlide
-                    ? "bg-[#FFBE00] w-6 h-2.5"
+                    ? "bg-[#FFBE00] w-7 h-2.5"
                     : "bg-blue-300/40 hover:bg-white/60 w-2.5 h-2.5"
                 }`}
                 aria-label={`Go to slide ${i + 1}`}
@@ -511,11 +510,11 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* ===================================================================== */}
       {/* SECTION 2: FLOATING CATEGORY CAPSULE BAR                              */}
       {/* ===================================================================== */}
-      <section className="relative z-20 max-w-7xl mx-auto px-4 sm:px-8 -mt-6 sm:-mt-8">
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200/80 p-3 sm:p-5 flex items-center justify-between">
+      <section className="relative z-20 max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-8">
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200/80 p-4 sm:p-5 flex items-center justify-between">
           <div
             ref={categoryScrollRef}
-            className="flex items-center gap-6 sm:gap-8 overflow-x-auto scrollbar-hide py-1 w-full"
+            className="flex items-center justify-between gap-6 sm:gap-8 overflow-x-auto scrollbar-hide py-1 w-full"
             style={{ scrollbarWidth: "none" }}
           >
             {CATEGORIES.map((cat) => {
@@ -524,12 +523,12 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
                 <Link
                   key={cat.name}
                   href={cat.link}
-                  className="flex flex-col items-center gap-2 group min-w-[78px] sm:min-w-[90px] shrink-0 text-center"
+                  className="flex flex-col items-center gap-2 group min-w-[85px] sm:min-w-[110px] shrink-0 text-center flex-1"
                 >
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-50 border border-slate-100 group-hover:border-[#002D62] group-hover:bg-blue-50/50 flex items-center justify-center transition-all group-hover:scale-105 shadow-xs">
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#002D62] group-hover:text-[#002D62] transition-colors" />
+                  <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-full bg-slate-50 border border-slate-100 group-hover:border-[#002D62] group-hover:bg-blue-50/50 flex items-center justify-center transition-all group-hover:scale-105 shadow-xs">
+                    <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-[#002D62] group-hover:text-[#002D62] transition-colors" />
                   </div>
-                  <span className="text-[11px] sm:text-xs font-semibold text-slate-700 group-hover:text-[#002D62] leading-tight max-w-[80px]">
+                  <span className="text-[11px] sm:text-xs font-semibold text-slate-700 group-hover:text-[#002D62] leading-tight max-w-[95px]">
                     {cat.name}
                   </span>
                 </Link>
@@ -540,10 +539,10 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
           {/* Right Chevron Button */}
           <button
             onClick={() => scrollCategories("right")}
-            className="hidden md:flex shrink-0 ml-3 w-8 h-8 rounded-full bg-[#002D62] hover:bg-blue-900 text-white items-center justify-center shadow-md transition-colors"
+            className="hidden md:flex shrink-0 ml-4 w-9 h-9 rounded-full bg-[#002D62] hover:bg-blue-900 text-white items-center justify-center shadow-md transition-colors"
             aria-label="Scroll categories right"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       </section>
@@ -551,43 +550,43 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* ===================================================================== */}
       {/* SECTION 3: THREE-COLUMN PROMO BANNERS                                 */}
       {/* ===================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Promo 1: Smartphones */}
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#EAEBFF] via-[#E2E6FF] to-[#D5DCFF] border border-indigo-100 p-6 flex flex-col justify-between min-h-[220px] shadow-sm hover:shadow-md transition-shadow">
-            <div className="z-10 max-w-[170px]">
-              <span className="text-[10px] font-black tracking-wider uppercase bg-[#002D62] text-white px-2 py-0.5 rounded shadow-xs inline-block mb-2">
+          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#EAEBFF] via-[#E2E6FF] to-[#D5DCFF] border border-indigo-100 p-6 sm:p-7 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-shadow">
+            <div className="z-10 max-w-[200px]">
+              <span className="text-[10px] font-black tracking-wider uppercase bg-[#002D62] text-white px-2.5 py-1 rounded shadow-xs inline-block mb-2">
                 BEST DEALS
               </span>
-              <h3 className="text-2xl font-black text-[#002D62] leading-tight mt-1">
+              <h3 className="text-2xl sm:text-3xl font-black text-[#002D62] leading-tight mt-1">
                 Save Up To<br />50% Off
               </h3>
               <p className="text-xs text-slate-600 font-medium mt-1">On Smartphones</p>
               <Link
                 href="/products?category=Smartphones"
-                className="inline-flex items-center gap-1.5 mt-4 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2 rounded-md transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 mt-5 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2.5 rounded-md transition-colors shadow-sm"
               >
                 <span>Shop Now</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            <div className="absolute right-1 bottom-1 w-40 h-44 z-0">
+            <div className="absolute right-3 bottom-2 w-44 h-48 z-0">
               <Image
-                src="/vittal/extracted/promo-smartphones.png"
+                src="/vittal/products/iphone-15.jpg"
                 alt="Smartphone Sale"
                 fill
-                className="object-contain object-bottom-right"
+                className="object-contain object-bottom-right drop-shadow-md rounded-xl"
               />
             </div>
           </div>
 
           {/* Promo 2: Earbuds */}
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#FFF4EB] via-[#FCEAE0] to-[#F5D8CA] border border-orange-100 p-6 flex flex-col justify-between min-h-[220px] shadow-sm hover:shadow-md transition-shadow">
-            <div className="z-10 max-w-[175px]">
-              <span className="text-[10px] font-black tracking-wider uppercase bg-[#002D62] text-white px-2 py-0.5 rounded shadow-xs inline-block mb-2">
+          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#FFF4EB] via-[#FCEAE0] to-[#F5D8CA] border border-orange-100 p-6 sm:p-7 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-shadow">
+            <div className="z-10 max-w-[210px]">
+              <span className="text-[10px] font-black tracking-wider uppercase bg-[#002D62] text-white px-2.5 py-1 rounded shadow-xs inline-block mb-2">
                 NEW ARRIVAL
               </span>
-              <h3 className="text-xl font-black text-[#002D62] leading-tight mt-1">
+              <h3 className="text-xl sm:text-2xl font-black text-[#002D62] leading-tight mt-1">
                 B&O Beoplay E8 3.0
               </h3>
               <p className="text-xs text-slate-600 font-medium mt-1">
@@ -595,29 +594,29 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
               </p>
               <Link
                 href="/products?category=Headphones+%26+Earbuds"
-                className="inline-flex items-center gap-1.5 mt-4 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2 rounded-md transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 mt-5 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2.5 rounded-md transition-colors shadow-sm"
               >
                 <span>Shop Now</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            <div className="absolute right-2 bottom-2 w-36 h-36 z-0">
+            <div className="absolute right-3 bottom-2 w-44 h-44 z-0">
               <Image
-                src="/vittal/extracted/promo-earbuds.png"
+                src="/vittal/products/airpods-pro.jpg"
                 alt="B&O Beoplay E8 3.0"
                 fill
-                className="object-contain object-bottom-right"
+                className="object-contain object-bottom-right drop-shadow-md rounded-xl"
               />
             </div>
           </div>
 
           {/* Promo 3: Smartwatches */}
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#E6F3FA] via-[#D8ECF7] to-[#C9E4F4] border border-sky-100 p-6 flex flex-col justify-between min-h-[220px] shadow-sm hover:shadow-md transition-shadow">
-            <div className="z-10 max-w-[170px]">
-              <span className="text-[10px] font-black tracking-wider uppercase bg-[#002D62] text-white px-2 py-0.5 rounded shadow-xs inline-block mb-2">
+          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#E6F3FA] via-[#D8ECF7] to-[#C9E4F4] border border-sky-100 p-6 sm:p-7 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-shadow">
+            <div className="z-10 max-w-[210px]">
+              <span className="text-[10px] font-black tracking-wider uppercase bg-[#002D62] text-white px-2.5 py-1 rounded shadow-xs inline-block mb-2">
                 TOP SELLER
               </span>
-              <h3 className="text-xl font-black text-[#002D62] leading-tight mt-1">
+              <h3 className="text-xl sm:text-2xl font-black text-[#002D62] leading-tight mt-1">
                 Beauty on Your Wrist
               </h3>
               <p className="text-xs text-slate-600 font-medium mt-1">
@@ -625,18 +624,18 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
               </p>
               <Link
                 href="/products?category=Smartwatches"
-                className="inline-flex items-center gap-1.5 mt-4 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2 rounded-md transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 mt-5 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2.5 rounded-md transition-colors shadow-sm"
               >
                 <span>Shop Now</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            <div className="absolute right-2 bottom-1 w-36 h-44 z-0">
+            <div className="absolute right-3 bottom-2 w-40 h-48 z-0">
               <Image
-                src="/vittal/extracted/promo-smartwatches.png"
+                src="/vittal/smart-watch-pro.png"
                 alt="Smartwatches"
                 fill
-                className="object-contain object-bottom-right"
+                className="object-contain object-bottom-right drop-shadow-md"
               />
             </div>
           </div>
@@ -646,20 +645,22 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* ===================================================================== */}
       {/* SECTION 4: TRUST STRIP (Dubai Sourced, Genuine, Warranty, etc.)       */}
       {/* ===================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-5 border-y border-slate-200/80 my-2">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-4">
+      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-5 border-y border-slate-200/80 my-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-6">
           {TRUST_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.title} className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+              <div key={item.title} className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
                   <Icon className="w-5 h-5 text-[#002D62]" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 leading-tight">
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
                     {item.title}
                   </h4>
-                  <p className="text-[11px] text-slate-500 leading-tight">{item.sub}</p>
+                  <p className="text-[11px] sm:text-xs text-slate-500 leading-tight mt-0.5">
+                    {item.sub}
+                  </p>
                 </div>
               </div>
             );
@@ -670,7 +671,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* ===================================================================== */}
       {/* SECTION 5: TODAY'S FEATURED DEALS (With Golden Countdown Boxes)       */}
       {/* ===================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
+      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-2 border-b border-slate-100">
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
@@ -682,7 +683,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
             </div>
 
             {/* Countdown Box in Golden Yellow */}
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-50 px-3.5 py-1.5 rounded-lg border border-slate-200">
               <span className="text-slate-500 font-semibold mr-1">Deal Ends In :</span>
               <span className="bg-[#FFBE00] text-slate-950 px-2 py-0.5 rounded font-black text-xs min-w-[24px] text-center">
                 {String(timeLeft.hours).padStart(2, "0")}
@@ -707,17 +708,17 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
           </Link>
         </div>
 
-        {/* 6 Product Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
+        {/* 6 Product Cards Grid with Expanded Width */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5">
           {FEATURED_DEALS.map((deal) => {
             const isFav = localWishlist.has(deal.id) || isInWishlist(deal.id);
             return (
               <div
                 key={deal.id}
-                className="bg-white border border-slate-200/90 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-all duration-200 relative group"
+                className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden flex flex-col hover:shadow-xl hover:border-blue-200 transition-all duration-200 relative group"
               >
                 {/* Discount Badge */}
-                <div className="absolute top-2 left-2 z-10 bg-red-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded">
+                <div className="absolute top-2.5 left-2.5 z-10 bg-red-600 text-white text-[11px] font-black px-2 py-0.5 rounded-md shadow-xs">
                   -{deal.discount}%
                 </div>
 
@@ -726,7 +727,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
                   onClick={() =>
                     handleToggleWishlist(deal.id, deal.name, deal.price, deal.image)
                   }
-                  className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-white/90 border border-slate-200 shadow-xs flex items-center justify-center hover:bg-red-50 transition-colors"
+                  className="absolute top-2.5 right-2.5 z-10 w-7 h-7 rounded-full bg-white/90 border border-slate-200 shadow-xs flex items-center justify-center hover:bg-red-50 transition-colors"
                   aria-label="Add to wishlist"
                 >
                   <Heart
@@ -736,43 +737,43 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
                   />
                 </button>
 
-                {/* Product Image */}
+                {/* Product Image on Clean White */}
                 <Link
                   href={`/products/${deal.id}`}
-                  className="relative w-full aspect-square bg-slate-50/50 p-4 flex items-center justify-center overflow-hidden"
+                  className="relative w-full aspect-square bg-slate-50/40 p-4 flex items-center justify-center overflow-hidden"
                 >
                   <Image
                     src={deal.image}
                     alt={deal.name}
                     fill
-                    className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 768px) 50vw, 200px"
+                    className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 50vw, 280px"
                   />
                 </Link>
 
                 {/* Details */}
-                <div className="p-3 flex flex-col flex-1">
+                <div className="p-3.5 flex flex-col flex-1">
                   <Link href={`/products/${deal.id}`}>
-                    <h3 className="text-xs font-bold text-slate-900 leading-snug line-clamp-2 hover:text-[#002D62] transition-colors mb-1 min-h-[32px]">
+                    <h3 className="text-xs sm:text-[13px] font-bold text-slate-900 leading-snug line-clamp-2 hover:text-[#002D62] transition-colors mb-1.5 min-h-[36px]">
                       {deal.name}
                     </h3>
                   </Link>
 
                   {/* Rating */}
                   <div className="flex items-center gap-1 mb-2">
-                    <Star className="w-3 h-3 fill-[#FFBE00] text-[#FFBE00]" />
-                    <span className="text-[11px] font-bold text-slate-800">
+                    <Star className="w-3.5 h-3.5 fill-[#FFBE00] text-[#FFBE00]" />
+                    <span className="text-xs font-bold text-slate-800">
                       {deal.rating}
                     </span>
-                    <span className="text-[10px] text-slate-400">({deal.reviews})</span>
+                    <span className="text-[11px] text-slate-400">({deal.reviews})</span>
                   </div>
 
                   {/* Price */}
-                  <div className="flex items-baseline gap-1.5 mb-3 mt-auto">
-                    <span className="text-sm font-black text-slate-900">
+                  <div className="flex items-baseline gap-2 mb-3.5 mt-auto">
+                    <span className="text-sm sm:text-base font-black text-slate-900">
                       ₹{deal.price.toLocaleString("en-IN")}
                     </span>
-                    <span className="text-[10px] text-slate-400 line-through">
+                    <span className="text-[11px] text-slate-400 line-through">
                       ₹{deal.mrp.toLocaleString("en-IN")}
                     </span>
                   </div>
@@ -780,7 +781,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
                   {/* Add to Cart Yellow Button */}
                   <button
                     onClick={() => handleAddToCart(deal)}
-                    className="w-full py-2 bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 text-xs font-black rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                    className="w-full py-2.5 bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 text-xs font-black rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs"
                   >
                     <ShoppingCart className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>Add to Cart</span>
@@ -795,71 +796,71 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* ===================================================================== */}
       {/* SECTION 6: MIDDLE 3 PROMO FEATURE CARDS (Marshall, PowerBank, Console)*/}
       {/* ===================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Card 1: Marshall Speaker */}
-          <div className="relative rounded-2xl overflow-hidden bg-[#002D62] text-white p-6 flex flex-col justify-between min-h-[160px] shadow-sm">
-            <div className="z-10 max-w-[170px]">
-              <h3 className="text-lg font-black text-white leading-tight">
+          <div className="relative rounded-2xl overflow-hidden bg-[#002D62] text-white p-6 sm:p-7 flex flex-col justify-between min-h-[170px] shadow-sm">
+            <div className="z-10 max-w-[200px]">
+              <h3 className="text-lg sm:text-xl font-black text-white leading-tight">
                 Super Cheap Price
               </h3>
               <p className="text-xs text-blue-200 mt-1">Earn 20% Back in Rewards</p>
               <Link
                 href="/products?category=Speakers"
-                className="inline-flex items-center gap-1.5 mt-4 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-md transition-colors w-fit"
+                className="inline-flex items-center gap-1.5 mt-4 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2 rounded-md transition-colors w-fit"
               >
                 <span>Shop Now</span>
-                <ArrowRight className="w-3 h-3" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            <div className="absolute right-3 bottom-3 w-40 h-28 z-0">
+            <div className="absolute right-4 bottom-3 w-40 h-32 z-0">
               <Image
-                src="/vittal/extracted/mid-marshall.png"
+                src="/vittal/portable-bluetooth-speaker.png"
                 alt="Marshall Speaker"
                 fill
-                className="object-contain object-bottom-right"
+                className="object-contain object-bottom-right drop-shadow-md"
               />
             </div>
           </div>
 
           {/* Card 2: Power Bank */}
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-slate-100 to-blue-50/60 border border-slate-200 p-6 flex flex-col justify-between min-h-[160px] shadow-sm">
-            <div className="z-10 max-w-[170px]">
-              <h3 className="text-base font-black text-slate-900 leading-tight">
+          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-slate-100 to-blue-50/60 border border-slate-200 p-6 sm:p-7 flex flex-col justify-between min-h-[170px] shadow-sm">
+            <div className="z-10 max-w-[200px]">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 leading-tight">
                 Power Bank 10000mAh
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">Compact, Fast &amp; Reliable</p>
               <p className="text-2xl font-black text-slate-900 mt-2">₹799</p>
             </div>
-            <div className="absolute right-4 bottom-2 w-32 h-28 z-0">
+            <div className="absolute right-4 bottom-3 w-36 h-32 z-0">
               <Image
-                src="/vittal/extracted/mid-powerbank.png"
+                src="/vittal/compact-power-bank.png"
                 alt="Power Bank"
                 fill
-                className="object-contain object-bottom-right"
+                className="object-contain object-bottom-right drop-shadow-md"
               />
             </div>
           </div>
 
           {/* Card 3: Console Accessories */}
-          <div className="relative rounded-2xl overflow-hidden bg-[#002D62] text-white p-6 flex flex-col justify-between min-h-[160px] shadow-sm">
-            <div className="z-10 max-w-[175px]">
-              <h3 className="text-base font-black text-white leading-tight">
+          <div className="relative rounded-2xl overflow-hidden bg-[#002D62] text-white p-6 sm:p-7 flex flex-col justify-between min-h-[170px] shadow-sm">
+            <div className="z-10 max-w-[200px]">
+              <h3 className="text-base sm:text-lg font-black text-white leading-tight">
                 Console Accessories
               </h3>
               <p className="text-xs text-blue-200 mt-0.5">for PS5 &amp; Xbox</p>
               <div className="mt-3">
-                <span className="bg-[#FFBE00] text-slate-950 font-black text-xs px-3 py-1 rounded-md inline-block">
+                <span className="bg-[#FFBE00] text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-md inline-block">
                   Up to 30% Off
                 </span>
               </div>
             </div>
-            <div className="absolute right-2 bottom-2 w-36 h-28 z-0">
+            <div className="absolute right-4 bottom-3 w-40 h-32 z-0">
               <Image
-                src="/vittal/extracted/mid-console.png"
+                src="/vittal/products/ps5-controller.jpg"
                 alt="Console Accessories"
                 fill
-                className="object-contain object-bottom-right"
+                className="object-contain object-bottom-right drop-shadow-md"
               />
             </div>
           </div>
@@ -869,7 +870,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* ===================================================================== */}
       {/* SECTION 7: TRENDING THIS WEEK (Asymmetric 3-Column Layout)             */}
       {/* ===================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
+      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Section Header with Tabs */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-2 border-b border-slate-100">
           <div className="flex items-center gap-2">
@@ -879,12 +880,12 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
             </h2>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             {TREND_TABS.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTrendTab(tab)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   activeTrendTab === tab
                     ? "bg-[#002D62] text-white shadow-sm"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -906,7 +907,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
         {/* 3 Columns Layout: Left (2x2) | Center (Spotlight) | Right (2x2) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
           {/* COLUMN 1: LEFT 2x2 GRID (4 cols in 12-grid) */}
-          <div className="lg:col-span-4 grid grid-cols-2 gap-3.5">
+          <div className="lg:col-span-4 grid grid-cols-2 gap-4">
             {TRENDING_LEFT.map((prod) => (
               <TrendingSmallCard
                 key={prod.id}
@@ -921,18 +922,18 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
           {/* COLUMN 2: CENTER AIRPODS MAX SPOTLIGHT (4 cols in 12-grid) */}
           <div className="lg:col-span-4 bg-white border border-slate-200/90 rounded-2xl overflow-hidden hover:shadow-xl transition-shadow flex flex-col justify-between">
             {/* Top Pedestal Graphic */}
-            <div className="relative w-full aspect-square bg-gradient-to-b from-[#FFF0F2] to-[#FFE2E7] flex items-center justify-center p-4">
+            <div className="relative w-full aspect-square bg-gradient-to-b from-[#FFF0F2] to-[#FFE2E7] flex items-center justify-center p-6">
               <Image
                 src={TRENDING_SPOTLIGHT.image}
                 alt={TRENDING_SPOTLIGHT.name}
                 fill
-                className="object-contain p-4 hover:scale-105 transition-transform duration-300"
-                sizes="(max-width: 1024px) 100vw, 400px"
+                className="object-contain p-4 hover:scale-105 transition-transform duration-300 drop-shadow-md rounded-2xl"
+                sizes="(max-width: 1024px) 100vw, 500px"
               />
             </div>
 
             {/* Bottom Details & Buy Action */}
-            <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between bg-white">
+            <div className="p-5 sm:p-6 flex flex-col flex-1 justify-between bg-white">
               <div>
                 <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
                   {TRENDING_SPOTLIGHT.name}
@@ -951,7 +952,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-between gap-3 pt-3.5 border-t border-slate-100">
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-lg font-black text-slate-900">
                     ₹{TRENDING_SPOTLIGHT.price.toLocaleString("en-IN")}
@@ -962,7 +963,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
                 </div>
                 <button
                   onClick={() => handleAddToCart(TRENDING_SPOTLIGHT)}
-                  className="bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-xs px-4 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
+                  className="bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-xs px-5 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
                 >
                   <ShoppingCart className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Add to Cart</span>
@@ -972,7 +973,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
           </div>
 
           {/* COLUMN 3: RIGHT 2x2 GRID (4 cols in 12-grid) */}
-          <div className="lg:col-span-4 grid grid-cols-2 gap-3.5">
+          <div className="lg:col-span-4 grid grid-cols-2 gap-4">
             {TRENDING_RIGHT.map((prod) => (
               <TrendingSmallCard
                 key={prod.id}
@@ -989,11 +990,11 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* ===================================================================== */}
       {/* SECTION 8: NEW COLLECTION FULL-WIDTH BANNER                           */}
       {/* ===================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 pb-14 pt-4">
+      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pb-14 pt-4">
         <div className="w-full bg-gradient-to-r from-[#001428] via-[#002D62] to-[#003B80] rounded-2xl overflow-hidden p-8 sm:p-12 relative flex flex-col md:flex-row items-center justify-between shadow-xl">
           {/* Left Text Content */}
-          <div className="text-white max-w-lg z-10 text-center md:text-left mb-8 md:mb-0">
-            <span className="text-[11px] font-black tracking-widest uppercase text-white bg-white/10 px-3 py-1 rounded-full border border-white/20 inline-block mb-3">
+          <div className="text-white max-w-xl z-10 text-center md:text-left mb-8 md:mb-0">
+            <span className="text-[11px] font-black tracking-widest uppercase text-white bg-white/10 px-3.5 py-1 rounded-full border border-white/20 inline-block mb-3">
               NEW COLLECTION
             </span>
             <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black leading-tight text-white mb-2">
@@ -1004,7 +1005,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
             </p>
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs sm:text-sm px-6 py-3 rounded-lg transition-colors shadow-lg"
+              className="inline-flex items-center gap-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs sm:text-sm px-7 py-3 rounded-lg transition-colors shadow-lg"
             >
               <span>Shop the Collection</span>
               <ArrowRight className="w-4 h-4" />
@@ -1012,12 +1013,12 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
           </div>
 
           {/* Right Product Devices Graphic */}
-          <div className="relative w-full md:w-1/2 h-56 sm:h-72 lg:h-80 z-10 flex items-center justify-center">
+          <div className="relative w-full md:w-1/2 h-64 sm:h-80 lg:h-96 z-10 flex items-center justify-center rounded-2xl overflow-hidden">
             <Image
-              src="/vittal/extracted/bottom-banner-devices.png"
+              src="/vittal/products/bottom-banner-devices.jpg"
               alt="Electronics Collection"
               fill
-              className="object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.5)]"
+              className="object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.5)] rounded-2xl"
             />
           </div>
         </div>
@@ -1027,7 +1028,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* SECTION 9: ALL STORE PRODUCTS (Live Database / Catalog)               */}
       {/* ===================================================================== */}
       {products && products.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-8 py-10 border-t border-slate-200">
+        <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-10 border-t border-slate-200">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl sm:text-2xl font-black text-slate-900">All Products</h2>
             <Link
@@ -1038,7 +1039,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
             {products.slice(0, 10).map((prod) => (
               <div
                 key={prod.id}
@@ -1055,10 +1056,10 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
                     alt={prod.name}
                     fill
                     className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
-                    sizes="200px"
+                    sizes="220px"
                   />
                 </div>
-                <div className="p-3 flex flex-col flex-1">
+                <div className="p-3.5 flex flex-col flex-1">
                   <div className="flex items-center gap-1 mb-1">
                     <Star className="w-3 h-3 fill-[#FFBE00] text-[#FFBE00]" />
                     <span className="text-[10px] font-bold text-slate-700">
@@ -1108,7 +1109,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* SECTION 10: TRUST & WARRANTY FOOTER STRIP                             */}
       {/* ===================================================================== */}
       <section className="bg-slate-50 border-t border-slate-200 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {[
               { icon: BadgeCheck, label: "100% Authentic", desc: "Dubai sourced electronics" },
@@ -1158,68 +1159,68 @@ function TrendingSmallCard({
   onAddToCart: (p: { id: string; name: string; price: number; mrp: number; image: string }) => void;
 }) {
   return (
-    <div className="bg-white border border-slate-200/90 rounded-xl overflow-hidden hover:shadow-md transition-all flex flex-col relative group">
+    <div className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden hover:shadow-lg hover:border-blue-200 transition-all flex flex-col relative group">
       {/* Discount badge */}
-      <div className="absolute top-2 left-2 z-10 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded">
+      <div className="absolute top-2.5 left-2.5 z-10 bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-xs">
         -{prod.discount}%
       </div>
 
       {/* Wishlist button */}
       <button
         onClick={() => onToggleWishlist(prod.id, prod.name, prod.price, prod.image)}
-        className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-white/90 border border-slate-200 shadow-xs flex items-center justify-center hover:bg-red-50 transition-colors"
+        className="absolute top-2.5 right-2.5 z-10 w-7 h-7 rounded-full bg-white/90 border border-slate-200 shadow-xs flex items-center justify-center hover:bg-red-50 transition-colors"
         aria-label="Wishlist"
       >
         <Heart
-          className={`w-3 h-3 transition-colors ${
+          className={`w-3.5 h-3.5 transition-colors ${
             isFav ? "fill-red-500 text-red-500" : "text-slate-400"
           }`}
         />
       </button>
 
-      {/* Image */}
+      {/* Clean Image */}
       <Link
         href={`/products/${prod.id}`}
-        className="relative w-full aspect-square bg-slate-50/50 p-2 flex items-center justify-center overflow-hidden"
+        className="relative w-full aspect-square bg-slate-50/40 p-3 flex items-center justify-center overflow-hidden"
       >
         <Image
           src={prod.image}
           alt={prod.name}
           fill
-          className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
-          sizes="160px"
+          className="object-contain p-2.5 group-hover:scale-105 transition-transform duration-300"
+          sizes="200px"
         />
       </Link>
 
       {/* Text Info */}
-      <div className="p-2.5 flex flex-col flex-1 justify-between">
+      <div className="p-3 flex flex-col flex-1 justify-between">
         <div>
           <Link href={`/products/${prod.id}`}>
-            <h4 className="text-[11px] font-bold text-slate-900 line-clamp-2 leading-snug hover:text-[#002D62] transition-colors mb-1 min-h-[30px]">
+            <h4 className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug hover:text-[#002D62] transition-colors mb-1 min-h-[32px]">
               {prod.name}
             </h4>
           </Link>
           <div className="flex items-center gap-1 mb-1.5">
-            <Star className="w-2.5 h-2.5 fill-[#FFBE00] text-[#FFBE00]" />
-            <span className="text-[10px] font-bold text-slate-800">{prod.rating}</span>
-            <span className="text-[9px] text-slate-400">({prod.reviews})</span>
+            <Star className="w-3 h-3 fill-[#FFBE00] text-[#FFBE00]" />
+            <span className="text-[11px] font-bold text-slate-800">{prod.rating}</span>
+            <span className="text-[10px] text-slate-400">({prod.reviews})</span>
           </div>
         </div>
 
         <div>
-          <div className="flex items-baseline gap-1 mb-2">
-            <span className="text-xs font-black text-slate-900">
+          <div className="flex items-baseline gap-1.5 mb-2.5">
+            <span className="text-xs sm:text-sm font-black text-slate-900">
               ₹{prod.price.toLocaleString("en-IN")}
             </span>
-            <span className="text-[9px] text-slate-400 line-through">
+            <span className="text-[10px] text-slate-400 line-through">
               ₹{prod.mrp.toLocaleString("en-IN")}
             </span>
           </div>
           <button
             onClick={() => onAddToCart(prod)}
-            className="w-full py-1.5 rounded-md bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 text-[10px] font-black flex items-center justify-center gap-1 transition-colors"
+            className="w-full py-2 rounded-lg bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 text-[11px] font-black flex items-center justify-center gap-1.5 transition-colors shadow-xs"
           >
-            <ShoppingCart className="w-3 h-3 stroke-[2.5]" />
+            <ShoppingCart className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Add to Cart</span>
           </button>
         </div>

@@ -57,7 +57,7 @@ export function Footer() {
 
   return (
     <footer className="bg-[#00223D] text-slate-300 border-t border-blue-950/60 pt-12 sm:pt-16 pb-24 md:pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8">
+      <div className="max-w-[1680px] mx-auto px-4 sm:px-8">
         {/* Main Footer Columns (Desktop 4 Columns, Mobile Stacked/Accordion) */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 pb-12 border-b border-blue-900/50">
           {/* Brand Info Column */}

@@ -119,7 +119,7 @@ export function Navbar() {
       {/* TIER 1: TOP ANNOUNCEMENT & TRUST BAR (White/Off-white)              */}
       {/* =================================================================== */}
       <div className="bg-[#FFFFFF] text-slate-600 text-[11px] sm:text-xs py-1.5 px-4 sm:px-8 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-[1680px] mx-auto flex items-center justify-between">
           {/* Left Trust Badges */}
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="flex items-center gap-1.5 font-medium text-slate-700">
@@ -167,7 +167,7 @@ export function Navbar() {
       {/* TIER 2: MAIN BRAND HEADER (Logo, Primary Nav, Contact, User Items)  */}
       {/* =================================================================== */}
       <div className="bg-white border-b border-slate-200/70 py-3 sm:py-3.5 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        <div className="max-w-[1680px] mx-auto flex items-center justify-between gap-4">
           {/* Mobile menu button + Brand Logo */}
           <div className="flex items-center gap-3">
             <button
@@ -318,7 +318,7 @@ export function Navbar() {
       {/* TIER 3: UTILITY BAR (Deep Navy #002D62 with Integrated Search)      */}
       {/* =================================================================== */}
       <div className="bg-[#002D62] text-white py-2 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
+        <div className="max-w-[1680px] mx-auto flex items-center justify-between gap-3 sm:gap-4">
           {/* Shop by Department Dropdown */}
           <div className="relative shrink-0" ref={departmentRef}>
             <button
@@ -373,7 +373,7 @@ export function Navbar() {
           {/* Integrated Search Bar with Yellow Action Button */}
           <form
             onSubmit={handleSearchSubmit}
-            className="flex-1 max-w-2xl hidden md:flex items-center bg-white rounded-lg overflow-hidden shadow-inner border border-white/20"
+            className="flex-1 max-w-3xl hidden md:flex items-center bg-white rounded-lg overflow-hidden shadow-inner border border-white/20"
           >
             {/* Category Dropdown Pill */}
             <div className="relative shrink-0" ref={categorySelectRef}>
