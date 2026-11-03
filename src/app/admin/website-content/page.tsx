@@ -738,7 +738,7 @@ export default function WebsiteContentPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="p-2 rounded-xl bg-orange-50 text-[#FF7A00]">
+                <span className="p-2 rounded-xl bg-orange-50 text-[#002D62]">
                   <Palette className="w-5 h-5" />
                 </span>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-display">
@@ -798,7 +798,7 @@ export default function WebsiteContentPage() {
               onClick={() => setActiveTab("banners")}
               className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                 activeTab === "banners"
-                  ? "border-[#FF7A00] text-[#FF7A00]"
+                  ? "border-[#FF7A00] text-[#002D62]"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -813,13 +813,13 @@ export default function WebsiteContentPage() {
               onClick={() => setActiveTab("promo_cards")}
               className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                 activeTab === "promo_cards"
-                  ? "border-[#FF7A00] text-[#FF7A00]"
+                  ? "border-[#FF7A00] text-[#002D62]"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               <Layers className="w-4 h-4" />
               <span>Promo Dual Cards</span>
-              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-orange-100 text-[#FF7A00] font-extrabold">
+              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-orange-100 text-[#002D62] font-extrabold">
                 2 Cards
               </span>
             </button>
@@ -828,7 +828,7 @@ export default function WebsiteContentPage() {
               onClick={() => setActiveTab("categories")}
               className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                 activeTab === "categories"
-                  ? "border-[#FF7A00] text-[#FF7A00]"
+                  ? "border-[#FF7A00] text-[#002D62]"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -843,7 +843,7 @@ export default function WebsiteContentPage() {
               onClick={() => setActiveTab("showcase")}
               className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                 activeTab === "showcase"
-                  ? "border-[#FF7A00] text-[#FF7A00]"
+                  ? "border-[#FF7A00] text-[#002D62]"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -872,7 +872,7 @@ export default function WebsiteContentPage() {
                 <button
                   type="button"
                   onClick={handleOpenAddBanner}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FF7A00] text-white text-xs font-bold hover:bg-[#E66E00] transition-all shadow-sm cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FFBE00] text-slate-950 text-white text-xs font-bold hover:bg-[#E66E00] transition-all shadow-sm cursor-pointer"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5]" />
                   <span>Add New Hero Banner</span>
@@ -881,7 +881,7 @@ export default function WebsiteContentPage() {
 
               {loading ? (
                 <div className="p-12 text-center bg-white rounded-2xl border border-slate-200">
-                  <RefreshCw className="w-6 h-6 animate-spin text-[#FF7A00] mx-auto mb-2" />
+                  <RefreshCw className="w-6 h-6 animate-spin text-[#002D62] mx-auto mb-2" />
                   <p className="text-xs text-slate-500">Loading hero banners...</p>
                 </div>
               ) : banners.length === 0 ? (
@@ -891,7 +891,7 @@ export default function WebsiteContentPage() {
                   <p className="text-xs text-slate-500 mt-1 mb-4">Click below to add your first banner or restore defaults.</p>
                   <button
                     onClick={handleResetDefaults}
-                    className="px-4 py-2 rounded-xl bg-orange-50 text-[#FF7A00] text-xs font-bold hover:bg-orange-100"
+                    className="px-4 py-2 rounded-xl bg-orange-50 text-[#002D62] text-xs font-bold hover:bg-orange-100"
                   >
                     Load Default Hero Banners
                   </button>
@@ -1023,7 +1023,7 @@ export default function WebsiteContentPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenEditBanner(slide)}
-                            className="p-2 text-slate-600 hover:text-[#FF7A00] hover:bg-orange-50 rounded-xl transition-colors cursor-pointer"
+                            className="p-2 text-slate-600 hover:text-[#002D62] hover:bg-orange-50 rounded-xl transition-colors cursor-pointer"
                             title="Edit banner details"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -1101,7 +1101,7 @@ export default function WebsiteContentPage() {
                   <button
                     type="button"
                     onClick={handleOpenAddCategory}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FF7A00] text-white text-xs font-bold hover:bg-[#E66E00] transition-all shadow-sm cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FFBE00] text-slate-950 text-white text-xs font-bold hover:bg-[#E66E00] transition-all shadow-sm cursor-pointer"
                   >
                     <Plus className="w-4 h-4 stroke-[2.5]" />
                     <span>Add New Category</span>
@@ -1111,7 +1111,7 @@ export default function WebsiteContentPage() {
 
               {loading ? (
                 <div className="p-12 text-center bg-white rounded-2xl border border-slate-200">
-                  <RefreshCw className="w-6 h-6 animate-spin text-[#FF7A00] mx-auto mb-2" />
+                  <RefreshCw className="w-6 h-6 animate-spin text-[#002D62] mx-auto mb-2" />
                   <p className="text-xs text-slate-500">Loading categories...</p>
                 </div>
               ) : categories.length === 0 ? (
@@ -1120,7 +1120,7 @@ export default function WebsiteContentPage() {
                   <p className="text-sm font-bold text-slate-700">No Categories Found</p>
                   <button
                     onClick={handleResetDefaults}
-                    className="mt-3 px-4 py-2 rounded-xl bg-orange-50 text-[#FF7A00] text-xs font-bold hover:bg-orange-100"
+                    className="mt-3 px-4 py-2 rounded-xl bg-orange-50 text-[#002D62] text-xs font-bold hover:bg-orange-100"
                   >
                     Load Default Categories
                   </button>
@@ -1153,7 +1153,7 @@ export default function WebsiteContentPage() {
                                   <div
                                     className={`w-10 h-10 ${shapeClass} flex items-center justify-center font-bold text-xs overflow-hidden shadow-xs shrink-0 ${
                                       cat.bgColor || (isAll ? "bg-[#EEF2FF]" : "bg-orange-50")
-                                    } ${cat.iconColor || (isAll ? "text-[#3B82F6]" : "text-[#FF7A00]")}`}
+                                    } ${cat.iconColor || (isAll ? "text-[#3B82F6]" : "text-[#002D62]")}`}
                                   >
                                     {cat.customIcon ? (
                                       // eslint-disable-next-line @next/next/no-img-element
@@ -1219,7 +1219,7 @@ export default function WebsiteContentPage() {
                                               );
                                             })}
                                             {subs.length > 3 && (
-                                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-orange-50 text-[#FF7A00] text-[10px] font-bold">
+                                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-orange-50 text-[#002D62] text-[10px] font-bold">
                                                 +{subs.length - 3} more
                                               </span>
                                             )}
@@ -1295,7 +1295,7 @@ export default function WebsiteContentPage() {
                                   <button
                                     type="button"
                                     onClick={() => handleOpenEditCategory(cat)}
-                                    className="p-1.5 text-slate-500 hover:text-[#FF7A00] hover:bg-orange-50 rounded-lg transition-colors cursor-pointer"
+                                    className="p-1.5 text-slate-500 hover:text-[#002D62] hover:bg-orange-50 rounded-lg transition-colors cursor-pointer"
                                     title="Edit category"
                                   >
                                     <Edit2 className="w-4 h-4" />
@@ -1592,12 +1592,12 @@ export default function WebsiteContentPage() {
                     value={bannerForm.image}
                     onChange={(e) => setBannerForm({ ...bannerForm, image: e.target.value })}
                     placeholder="Poster image URL or click Upload File"
-                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#002D62]"
                   />
                   <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-black text-white text-xs font-bold transition-all shadow-xs shrink-0">
                     {uploadingPoster ? (
                       <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#FF7A00]" />
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#002D62]" />
                         <span>Uploading...</span>
                       </>
                     ) : (
@@ -1622,7 +1622,7 @@ export default function WebsiteContentPage() {
                       key={preset.label}
                       type="button"
                       onClick={() => setBannerForm({ ...bannerForm, image: preset.url })}
-                      className="px-2 py-0.5 rounded-lg bg-white hover:bg-orange-50 hover:text-[#FF7A00] text-[10px] font-semibold text-slate-600 border border-slate-200 transition-colors"
+                      className="px-2 py-0.5 rounded-lg bg-white hover:bg-orange-50 hover:text-[#002D62] text-[10px] font-semibold text-slate-600 border border-slate-200 transition-colors"
                     >
                       {preset.label}
                     </button>
@@ -1633,13 +1633,13 @@ export default function WebsiteContentPage() {
                 <div className="mt-2.5 p-3 bg-white rounded-xl border border-slate-200/90 space-y-2.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <Sliders className="w-3.5 h-3.5 text-[#FF7A00]" />
+                      <Sliders className="w-3.5 h-3.5 text-[#002D62]" />
                       <span className="text-[11px] font-bold text-slate-800">
                         Desktop Poster Framing & Zoom Adjuster
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded-md bg-orange-50 border border-orange-200 text-[#FF7A00] font-mono text-[10px] font-extrabold">
+                      <span className="px-2 py-0.5 rounded-md bg-orange-50 border border-orange-200 text-[#002D62] font-mono text-[10px] font-extrabold">
                         {bannerForm.imageScale}% Zoom
                       </span>
                       {bannerForm.imageScale !== 100 && (
@@ -1701,7 +1701,7 @@ export default function WebsiteContentPage() {
                         onClick={() => setBannerForm({ ...bannerForm, imageScale: p.scale, imageFit: p.fit })}
                         className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors cursor-pointer ${
                           bannerForm.imageScale === p.scale && bannerForm.imageFit === p.fit
-                            ? "bg-[#FF7A00] text-white"
+                            ? "bg-[#FFBE00] text-slate-950 text-white"
                             : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                         }`}
                       >
@@ -1782,7 +1782,7 @@ export default function WebsiteContentPage() {
                     value={bannerForm.mobileImage}
                     onChange={(e) => setBannerForm({ ...bannerForm, mobileImage: e.target.value })}
                     placeholder="Optional: mobile poster image URL or click Upload"
-                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#002D62]"
                   />
                   <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs shrink-0">
                     {uploadingMobile ? (
@@ -1980,28 +1980,28 @@ export default function WebsiteContentPage() {
                     value={bannerForm.ctaLink}
                     onChange={(e) => setBannerForm({ ...bannerForm, ctaLink: e.target.value })}
                     placeholder="e.g. /products or leave empty if non-clickable"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#002D62]"
                   />
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     <span className="text-[10px] font-bold text-slate-400 self-center">Presets:</span>
                     <button
                       type="button"
                       onClick={() => setBannerForm({ ...bannerForm, ctaLink: "/products" })}
-                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-50 hover:text-[#FF7A00] text-[10px] text-slate-600 transition-colors"
+                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-50 hover:text-[#002D62] text-[10px] text-slate-600 transition-colors"
                     >
                       /products
                     </button>
                     <button
                       type="button"
                       onClick={() => setBannerForm({ ...bannerForm, ctaLink: "/products?category=Tech+%26+Gadgets" })}
-                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-50 hover:text-[#FF7A00] text-[10px] text-slate-600 transition-colors"
+                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-50 hover:text-[#002D62] text-[10px] text-slate-600 transition-colors"
                     >
                       Tech & Gadgets
                     </button>
                     <button
                       type="button"
                       onClick={() => setBannerForm({ ...bannerForm, ctaLink: "/products?category=Home+Essentials" })}
-                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-50 hover:text-[#FF7A00] text-[10px] text-slate-600 transition-colors"
+                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-50 hover:text-[#002D62] text-[10px] text-slate-600 transition-colors"
                     >
                       Home Essentials
                     </button>
@@ -2027,7 +2027,7 @@ export default function WebsiteContentPage() {
                     value={bannerForm.titleLine1}
                     onChange={(e) => setBannerForm({ ...bannerForm, titleLine1: e.target.value })}
                     placeholder="e.g. Mega Sale Banner 2026"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:border-[#002D62]"
                   />
                   <p className="text-[10px] text-slate-400 mt-1">
                     Used as the accessible label and admin identifier.
@@ -2042,7 +2042,7 @@ export default function WebsiteContentPage() {
                   id="banner-active"
                   checked={bannerForm.active}
                   onChange={(e) => setBannerForm({ ...bannerForm, active: e.target.checked })}
-                  className="w-4 h-4 rounded text-[#FF7A00] focus:ring-[#FF7A00]"
+                  className="w-4 h-4 rounded text-[#002D62] focus:ring-[#002D62]"
                 />
                 <label htmlFor="banner-active" className="text-xs font-bold text-slate-800">
                   Active (Display this poster in the home banner rotation)
@@ -2060,7 +2060,7 @@ export default function WebsiteContentPage() {
                 <button
                   type="submit"
                   disabled={saving || uploadingPoster || uploadingMobile}
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#FF7A00] hover:bg-[#E66E00] disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#FFBE00] hover:bg-[#E5AA00] disabled:opacity-50"
                 >
                   {uploadingPoster || uploadingMobile
                     ? "Uploading image to cloud..."
@@ -2117,7 +2117,7 @@ export default function WebsiteContentPage() {
                     });
                   }}
                   placeholder="e.g. Gaming Gear, Pet Essentials, Kitchenware"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#002D62]"
                 />
               </div>
 
@@ -2130,7 +2130,7 @@ export default function WebsiteContentPage() {
                   value={categoryForm.slug}
                   onChange={(e) => setCategoryForm({ ...categoryForm, slug: e.target.value })}
                   placeholder="e.g. Gaming Gear (will be /products?category=Gaming+Gear)"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 focus:outline-none focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 focus:outline-none focus:border-[#002D62]"
                 />
               </div>
 
@@ -2148,7 +2148,7 @@ export default function WebsiteContentPage() {
                   <button
                     type="button"
                     onClick={handleLoadDefaultSubcategories}
-                    className="text-[11px] font-bold text-[#FF7A00] hover:underline cursor-pointer"
+                    className="text-[11px] font-bold text-[#002D62] hover:underline cursor-pointer"
                   >
                     Suggest Presets
                   </button>
@@ -2172,12 +2172,12 @@ export default function WebsiteContentPage() {
                       }
                     }}
                     placeholder="Type subcategory name (e.g. Mobile & Charging)..."
-                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-[#002D62]"
                   />
                   <select
                     value={newSubcategoryIcon}
                     onChange={(e) => setNewSubcategoryIcon(e.target.value)}
-                    className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-2.5 py-2 focus:outline-none focus:border-[#FF7A00] cursor-pointer"
+                    className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-2.5 py-2 focus:outline-none focus:border-[#002D62] cursor-pointer"
                     title="Choose icon for new subcategory"
                   >
                     {AVAILABLE_CATEGORY_ICONS.map((iconName) => (
@@ -2189,7 +2189,7 @@ export default function WebsiteContentPage() {
                   <button
                     type="button"
                     onClick={handleAddSubcategory}
-                    className="px-3.5 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold transition-all shadow-xs shrink-0 flex items-center gap-1 cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold text-xs font-bold transition-all shadow-xs shrink-0 flex items-center gap-1 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>Add</span>
@@ -2207,7 +2207,7 @@ export default function WebsiteContentPage() {
                           className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-slate-50/70 border border-slate-200/60 hover:border-[#FF7A00]/40 transition-colors"
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <div className="w-6 h-6 rounded-md bg-orange-50 text-[#FF7A00] flex items-center justify-center shrink-0 border border-orange-200/50">
+                            <div className="w-6 h-6 rounded-md bg-orange-50 text-[#002D62] flex items-center justify-center shrink-0 border border-orange-200/50">
                               {renderIconOrCustom({
                                 iconName: currentIcon,
                                 fallbackName: sub,
@@ -2221,7 +2221,7 @@ export default function WebsiteContentPage() {
                             <select
                               value={currentIcon}
                               onChange={(e) => handleSubcategoryIconChange(sub, e.target.value)}
-                              className="text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg px-2 py-0.5 focus:outline-none focus:border-[#FF7A00] cursor-pointer"
+                              className="text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg px-2 py-0.5 focus:outline-none focus:border-[#002D62] cursor-pointer"
                               title="Change subcategory icon"
                             >
                               {AVAILABLE_CATEGORY_ICONS.map((iconName) => (
@@ -2276,14 +2276,14 @@ export default function WebsiteContentPage() {
                       onClick={() => setCategoryIconTab("custom")}
                       className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1 ${
                         categoryIconTab === "custom"
-                          ? "bg-white text-[#FF7A00] shadow-xs"
+                          ? "bg-white text-[#002D62] shadow-xs"
                           : "text-slate-500 hover:text-slate-800"
                       }`}
                     >
                       <Upload className="w-3 h-3" />
                       <span>Custom Icon</span>
                       {categoryForm.customIcon && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#FF7A00]" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#FFBE00] text-slate-950" />
                       )}
                     </button>
                   </div>
@@ -2367,7 +2367,7 @@ export default function WebsiteContentPage() {
                             }
                             className={`p-2 rounded-xl flex flex-col items-center gap-1 transition-all border ${
                               isSelected
-                                ? "bg-white border-[#FF7A00] shadow-xs text-[#FF7A00]"
+                                ? "bg-white border-[#FF7A00] shadow-xs text-[#002D62]"
                                 : "bg-white hover:bg-slate-50 border-slate-200/60 text-slate-700"
                             }`}
                             title={preset.label}
@@ -2400,7 +2400,7 @@ export default function WebsiteContentPage() {
                           setCategoryForm({ ...categoryForm, customIcon: e.target.value })
                         }
                         placeholder="Paste image/SVG URL or upload below"
-                        className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                        className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#002D62]"
                       />
                       <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-black text-white text-xs font-bold transition-all shadow-xs shrink-0">
                         <Upload className="w-3.5 h-3.5" />
@@ -2424,7 +2424,7 @@ export default function WebsiteContentPage() {
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-bold text-slate-800 flex items-center gap-1.5">
                             <span>Adjust Icon Size:</span>
-                            <span className="px-1.5 py-0.5 rounded bg-orange-100 text-[#FF7A00] font-mono font-extrabold text-[11px]">
+                            <span className="px-1.5 py-0.5 rounded bg-orange-100 text-[#002D62] font-mono font-extrabold text-[11px]">
                               {categoryForm.iconSize || 85}%
                             </span>
                           </span>
@@ -2443,7 +2443,7 @@ export default function WebsiteContentPage() {
                                 }
                                 className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                                   (categoryForm.iconSize || 85) === sizeOpt.value
-                                    ? "bg-[#FF7A00] text-white shadow-xs"
+                                    ? "bg-[#FFBE00] text-slate-950 text-white shadow-xs"
                                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                                 }`}
                               >
@@ -2493,7 +2493,7 @@ export default function WebsiteContentPage() {
                       Choose Round circle or Edge curved square for the storefront pill.
                     </p>
                   </div>
-                  <span className="text-[11px] font-extrabold text-[#FF7A00] bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
+                  <span className="text-[11px] font-extrabold text-[#002D62] bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
                     {categoryForm.iconShape === "square" ? "Curved Square" : "Round"}
                   </span>
                 </div>
@@ -2505,7 +2505,7 @@ export default function WebsiteContentPage() {
                     onClick={() => setCategoryForm({ ...categoryForm, iconShape: "round" })}
                     className={`p-3 rounded-xl border flex items-center justify-center gap-2.5 text-xs font-bold transition-all cursor-pointer ${
                       categoryForm.iconShape !== "square"
-                        ? "border-[#FF7A00] bg-white text-[#FF7A00] shadow-xs ring-2 ring-[#FF7A00]/20"
+                        ? "border-[#FF7A00] bg-white text-[#002D62] shadow-xs ring-2 ring-[#FF7A00]/20"
                         : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
                     }`}
                   >
@@ -2518,7 +2518,7 @@ export default function WebsiteContentPage() {
                     onClick={() => setCategoryForm({ ...categoryForm, iconShape: "square" })}
                     className={`p-3 rounded-xl border flex items-center justify-center gap-2.5 text-xs font-bold transition-all cursor-pointer ${
                       categoryForm.iconShape === "square"
-                        ? "border-[#FF7A00] bg-white text-[#FF7A00] shadow-xs ring-2 ring-[#FF7A00]/20"
+                        ? "border-[#FF7A00] bg-white text-[#002D62] shadow-xs ring-2 ring-[#FF7A00]/20"
                         : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
                     }`}
                   >
@@ -2534,14 +2534,14 @@ export default function WebsiteContentPage() {
                       type="checkbox"
                       checked={applyShapeToAll}
                       onChange={(e) => setApplyShapeToAll(e.target.checked)}
-                      className="w-4 h-4 rounded text-[#FF7A00] focus:ring-[#FF7A00]"
+                      className="w-4 h-4 rounded text-[#002D62] focus:ring-[#002D62]"
                     />
                     <span>Apply this shape to all category icons</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => handleApplyShapeToAll(categoryForm.iconShape || "round")}
-                    className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold text-slate-700 bg-white hover:bg-orange-50 hover:text-[#FF7A00] border border-slate-200 transition-all cursor-pointer shadow-2xs"
+                    className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold text-slate-700 bg-white hover:bg-orange-50 hover:text-[#002D62] border border-slate-200 transition-all cursor-pointer shadow-2xs"
                   >
                     <span>Apply shape to all now</span>
                   </button>
@@ -2589,7 +2589,7 @@ export default function WebsiteContentPage() {
                     onChange={(e) =>
                       setCategoryForm({ ...categoryForm, showInNavbar: e.target.checked })
                     }
-                    className="w-4 h-4 rounded text-[#FF7A00] focus:ring-[#FF7A00]"
+                    className="w-4 h-4 rounded text-[#002D62] focus:ring-[#002D62]"
                   />
                   <label htmlFor="cat-navbar" className="text-xs font-bold text-slate-800">
                     Display in Navbar Sub-Nav Row
@@ -2604,7 +2604,7 @@ export default function WebsiteContentPage() {
                     onChange={(e) =>
                       setCategoryForm({ ...categoryForm, showInPills: e.target.checked })
                     }
-                    className="w-4 h-4 rounded text-[#FF7A00] focus:ring-[#FF7A00]"
+                    className="w-4 h-4 rounded text-[#002D62] focus:ring-[#002D62]"
                   />
                   <label htmlFor="cat-pills" className="text-xs font-bold text-slate-800">
                     Display in Home Circular Category Pills
@@ -2619,7 +2619,7 @@ export default function WebsiteContentPage() {
                     onChange={(e) =>
                       setCategoryForm({ ...categoryForm, active: e.target.checked })
                     }
-                    className="w-4 h-4 rounded text-[#FF7A00] focus:ring-[#FF7A00]"
+                    className="w-4 h-4 rounded text-[#002D62] focus:ring-[#002D62]"
                   />
                   <label htmlFor="cat-active" className="text-xs font-bold text-slate-800">
                     Active (Include in product catalog dropdowns & filters)
@@ -2638,7 +2638,7 @@ export default function WebsiteContentPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#FF7A00] hover:bg-[#E66E00] disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#FFBE00] hover:bg-[#E5AA00] disabled:opacity-50"
                 >
                   {saving ? "Saving..." : editingCategory ? "Save Changes" : "Create Category"}
                 </button>

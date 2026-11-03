@@ -320,7 +320,7 @@ export default function AdminSettingsPage() {
 
           {loading ? (
             <div className="bg-white rounded-2xl p-12 border border-slate-200/90 flex flex-col items-center justify-center gap-3">
-              <RefreshCw className="w-8 h-8 text-[#FF7A00] animate-spin" />
+              <RefreshCw className="w-8 h-8 text-[#002D62] animate-spin" />
               <p className="text-sm font-semibold text-slate-600">Loading stored integration credentials...</p>
             </div>
           ) : (
@@ -328,7 +328,7 @@ export default function AdminSettingsPage() {
               {/* 1. General Store Profile */}
               <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-4">
                 <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                  <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#002D62] flex items-center justify-center">
                     <Store className="w-4 h-4 stroke-[2.2]" />
                   </div>
                   <div>
@@ -521,7 +521,7 @@ export default function AdminSettingsPage() {
               <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#FF7A00] flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#002D62] flex items-center justify-center">
                       <Truck className="w-4 h-4 stroke-[2.2]" />
                     </div>
                     <div>
@@ -699,7 +699,7 @@ export default function AdminSettingsPage() {
               <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#FF7A00] flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#002D62] flex items-center justify-center">
                       <Mail className="w-4 h-4 stroke-[2.2]" />
                     </div>
                     <div>
@@ -763,7 +763,7 @@ export default function AdminSettingsPage() {
                       type="button"
                       onClick={() => handleTestConnection("email")}
                       disabled={testingProvider === "email" || !testEmailAddress}
-                      className="px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs font-bold transition-all shadow-sm disabled:opacity-50 shrink-0"
+                      className="px-4 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold rounded-xl text-xs font-bold transition-all shadow-sm disabled:opacity-50 shrink-0"
                     >
                       {testingProvider === "email" ? "Dispatching..." : "Send Test Email →"}
                     </button>
@@ -779,7 +779,7 @@ export default function AdminSettingsPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl font-bold shadow-md shadow-orange-500/25 text-xs sm:text-sm transition-all disabled:opacity-60"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold rounded-xl font-bold shadow-md shadow-amber-500/20 text-xs sm:text-sm transition-all disabled:opacity-60"
                 >
                   <Save className={`w-4 h-4 ${saving ? "animate-spin" : ""}`} />
                   <span>{saving ? "Saving All Settings..." : "Save All Settings"}</span>

@@ -293,7 +293,7 @@ export function ShowcaseCollectionsCustomizer({
       <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-orange-50 text-[#FF7A00]">
+            <span className="p-2 rounded-xl bg-orange-50 text-[#002D62]">
               <Sparkles className="w-5 h-5" />
             </span>
             <h2 className="text-lg font-black text-slate-900 tracking-tight">
@@ -321,7 +321,7 @@ export function ShowcaseCollectionsCustomizer({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-5 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E06900] text-white text-xs font-black flex items-center gap-2 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+            className="px-5 py-2 rounded-xl bg-[#FFBE00] text-slate-950 hover:bg-[#E06900] text-white text-xs font-black flex items-center gap-2 transition-all cursor-pointer shadow-sm disabled:opacity-50"
           >
             {saving ? (
               <>
@@ -365,7 +365,7 @@ export function ShowcaseCollectionsCustomizer({
                 <span
                   className={`text-[11px] font-black px-2 py-0.5 rounded-full border ${
                     isActive
-                      ? "bg-orange-50 border-orange-200 text-[#FF7A00]"
+                      ? "bg-orange-50 border-orange-200 text-[#002D62]"
                       : "bg-slate-100 border-slate-200 text-slate-600"
                   }`}
                 >
@@ -432,7 +432,7 @@ export function ShowcaseCollectionsCustomizer({
                 setModalCategory("All");
                 setIsModalOpen(true);
               }}
-              className="px-4 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E06900] text-white text-xs font-black inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="px-4 py-2 rounded-xl bg-[#FFBE00] text-slate-950 hover:bg-[#E06900] text-white text-xs font-black inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Products to {activeMeta.title}</span>
@@ -550,7 +550,7 @@ export function ShowcaseCollectionsCustomizer({
               <div>
                 <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
                   <span>Select Products for {activeMeta.title}</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-[#FF7A00] font-black">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-[#002D62] font-black">
                     {currentProductIds.length} Selected
                   </span>
                 </h3>
@@ -575,7 +575,7 @@ export function ShowcaseCollectionsCustomizer({
                   value={modalSearch}
                   onChange={(e) => setModalSearch(e.target.value)}
                   placeholder="Search products by title, category, or ID..."
-                  className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                  className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                 />
               </div>
 
@@ -587,7 +587,7 @@ export function ShowcaseCollectionsCustomizer({
                     onClick={() => setModalCategory(cat)}
                     className={`px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap transition-colors cursor-pointer ${
                       modalCategory === cat
-                        ? "bg-[#FF7A00] text-white"
+                        ? "bg-[#FFBE00] text-slate-950 text-white"
                         : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
                     }`}
                   >
@@ -625,7 +625,7 @@ export function ShowcaseCollectionsCustomizer({
                         <div
                           className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
                             isChecked
-                              ? "bg-[#FF7A00] border-[#FF7A00] text-white"
+                              ? "bg-[#FFBE00] text-slate-950 border-[#FF7A00] text-white"
                               : "border-slate-300 bg-white"
                           }`}
                         >
@@ -668,7 +668,7 @@ export function ShowcaseCollectionsCustomizer({
                       <span
                         className={`text-[11px] font-bold px-2.5 py-1 rounded-lg shrink-0 ${
                           isChecked
-                            ? "bg-orange-100 text-[#FF7A00]"
+                            ? "bg-orange-100 text-[#002D62]"
                             : "bg-slate-100 text-slate-500"
                         }`}
                       >

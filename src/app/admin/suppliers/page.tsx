@@ -209,7 +209,7 @@ export default function AdminSuppliersPage() {
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                   Suppliers & Credit Balances
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-50 text-[#FF7A00] border border-orange-200">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-50 text-[#002D62] border border-orange-200">
                   {suppliers.length} Vendors Active
                 </span>
               </div>
@@ -224,13 +224,13 @@ export default function AdminSuppliersPage() {
                 disabled={refreshing || loading}
                 className="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm disabled:opacity-60"
               >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-[#FF7A00]" : ""}`} />
+                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-[#002D62]" : ""}`} />
                 <span>Sync</span>
               </button>
 
               <button
                 onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-amber-500/20"
               >
                 <Plus className="w-4 h-4 stroke-[2.5]" />
                 <span>Add Supplier</span>
@@ -253,7 +253,7 @@ export default function AdminSuppliersPage() {
                 <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
                   Active Vendors
                 </span>
-                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center font-bold shrink-0">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-orange-50 text-[#002D62] flex items-center justify-center font-bold shrink-0">
                   <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
@@ -342,7 +342,7 @@ export default function AdminSuppliersPage() {
               <select
                 value={balanceFilter}
                 onChange={(e) => setBalanceFilter(e.target.value)}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 font-medium focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 font-medium focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62] focus:outline-none"
               >
                 <option value="all">All Balance Status</option>
                 <option value="has_credit">Has Available Credit</option>
@@ -369,7 +369,7 @@ export default function AdminSuppliersPage() {
           {/* Supplier Grid */}
           {loading ? (
             <div className="bg-white rounded-2xl p-12 border border-slate-200/90 flex flex-col items-center justify-center gap-3">
-              <RefreshCw className="w-8 h-8 text-[#FF7A00] animate-spin" />
+              <RefreshCw className="w-8 h-8 text-[#002D62] animate-spin" />
               <p className="text-sm font-semibold text-slate-600">Loading supplier profiles & balances...</p>
             </div>
           ) : filteredSuppliers.length === 0 ? (
@@ -467,7 +467,7 @@ export default function AdminSuppliersPage() {
 
                     <Link
                       href={`/admin/rto-refund-balance?supplier_id=${sup.id}`}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-[#FF7A00] hover:text-[#E66E00] hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#002D62] hover:text-[#E66E00] hover:underline"
                     >
                       <span>Open RTO Ledger</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -486,7 +486,7 @@ export default function AdminSuppliersPage() {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto overscroll-contain">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-[#FF7A00]" />
+                <Building2 className="w-5 h-5 text-[#002D62]" />
                 <h3 className="font-bold text-slate-900 text-base">
                   Register New Supplier Partner
                 </h3>
@@ -511,7 +511,7 @@ export default function AdminSuppliersPage() {
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
 
@@ -525,7 +525,7 @@ export default function AdminSuppliersPage() {
                     value={newCode}
                     onChange={(e) => setNewCode(e.target.value.toUpperCase())}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl uppercase font-mono focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl uppercase font-mono focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
               </div>
@@ -540,7 +540,7 @@ export default function AdminSuppliersPage() {
                     placeholder="e.g. Deepak Kumar"
                     value={newContact}
                     onChange={(e) => setNewContact(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
 
@@ -553,7 +553,7 @@ export default function AdminSuppliersPage() {
                     placeholder="+91 98765 00000"
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
               </div>
@@ -568,7 +568,7 @@ export default function AdminSuppliersPage() {
                     placeholder="orders@supplier.com"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
 
@@ -581,7 +581,7 @@ export default function AdminSuppliersPage() {
                     placeholder="0"
                     value={newInitialBalance}
                     onChange={(e) => setNewInitialBalance(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
               </div>
@@ -595,7 +595,7 @@ export default function AdminSuppliersPage() {
                   placeholder="Plot 45, Okhla Phase 3, New Delhi"
                   value={newAddress}
                   onChange={(e) => setNewAddress(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                 />
               </div>
 
@@ -610,7 +610,7 @@ export default function AdminSuppliersPage() {
                 <button
                   type="submit"
                   disabled={formSubmitting}
-                  className="px-5 py-2 bg-[#FF7A00] text-white rounded-xl hover:bg-[#E66E00] font-semibold shadow-sm shadow-orange-500/25 disabled:opacity-60"
+                  className="px-5 py-2 bg-[#FFBE00] text-slate-950 text-white rounded-xl hover:bg-[#E66E00] font-semibold shadow-sm shadow-amber-500/20 disabled:opacity-60"
                 >
                   {formSubmitting ? "Creating..." : "Create Supplier"}
                 </button>
@@ -649,7 +649,7 @@ export default function AdminSuppliersPage() {
                     type="text"
                     value={editContact}
                     onChange={(e) => setEditContact(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
 
@@ -661,7 +661,7 @@ export default function AdminSuppliersPage() {
                     type="text"
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
               </div>
@@ -674,7 +674,7 @@ export default function AdminSuppliersPage() {
                   type="email"
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                 />
               </div>
 
@@ -686,7 +686,7 @@ export default function AdminSuppliersPage() {
                   rows={2}
                   value={editAddress}
                   onChange={(e) => setEditAddress(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                 />
               </div>
 
@@ -701,7 +701,7 @@ export default function AdminSuppliersPage() {
                 <button
                   type="submit"
                   disabled={formSubmitting}
-                  className="px-5 py-2 bg-[#FF7A00] text-white rounded-xl hover:bg-[#E66E00] font-semibold shadow-sm shadow-orange-500/25 disabled:opacity-60"
+                  className="px-5 py-2 bg-[#FFBE00] text-slate-950 text-white rounded-xl hover:bg-[#E66E00] font-semibold shadow-sm shadow-amber-500/20 disabled:opacity-60"
                 >
                   {formSubmitting ? "Saving..." : "Save Changes"}
                 </button>

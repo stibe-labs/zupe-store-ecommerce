@@ -730,19 +730,19 @@ body[style*="overflow: hidden"] {
   --admin-text-muted: #94A3B8;
 }
 
-/* ─── Dark Theme (Optimized to Sidebar #0F172A) ─── */
+/* ─── Dark Theme (Vittal Digital Navy & Gold Aesthetic) ─── */
 [data-admin-theme="dark"] {
-  --admin-canvas: #0B0F19;
-  --admin-header: #0F172A;
-  --admin-card: #141D2F;
-  --admin-card-inner: #0F172A;
-  --admin-well: #182234;
-  --admin-border: rgba(255, 255, 255, 0.08);
-  --admin-border-subtle: rgba(255, 255, 255, 0.05);
+  --admin-canvas: #001D34;
+  --admin-header: #00223D;
+  --admin-card: #002747;
+  --admin-card-inner: #001D34;
+  --admin-well: #00182C;
+  --admin-border: rgba(2, 132, 199, 0.18);
+  --admin-border-subtle: rgba(2, 132, 199, 0.10);
   --admin-text-primary: #F8FAFC;
   --admin-text-body: #E2E8F0;
-  --admin-text-secondary: #CBD5E1;
-  --admin-text-muted: #94A3B8;
+  --admin-text-secondary: #94A3B8;
+  --admin-text-muted: #64748B;
 }
 
 /* Base Canvas & Background in Dark Mode (Excluding the Sidebar) */
@@ -752,14 +752,14 @@ body[style*="overflow: hidden"] {
 [data-admin-theme="dark"] .bg-\[\#F4F6FA\],
 [data-admin-theme="dark"] .bg-\[\#F8FAFC\],
 [data-admin-theme="dark"] main:not(aside *) {
-  background-color: #0B0F19 !important;
+  background-color: #001D34 !important;
   color: #E2E8F0;
 }
 
 /* Admin Top Header in Dark Mode */
 [data-admin-theme="dark"] header:not(aside *) {
-  background-color: #0F172A !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: #00223D !important;
+  border-color: rgba(2, 132, 199, 0.18) !important;
 }
 
 /* All Admin Cards, Widgets, and Sections */
@@ -770,8 +770,8 @@ body[style*="overflow: hidden"] {
 [data-admin-theme="dark"] section[class*="bg-white"]:not(aside):not(aside *),
 [data-admin-theme="dark"] main .bg-white:not(aside):not(aside *),
 [data-admin-theme="dark"] main [class*="bg-white"]:not(aside):not(aside *):not(button):not(a) {
-  background-color: #141D2F !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: #002747 !important;
+  border-color: rgba(2, 132, 199, 0.18) !important;
   color: #E2E8F0;
 }
 

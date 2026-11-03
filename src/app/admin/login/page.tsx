@@ -79,14 +79,14 @@ function AdminLoginForm() {
       )}
 
       {/* Card */}
-      <div className="bg-[#121620]/90 backdrop-blur-xl border border-gray-800/80 rounded-3xl p-7 sm:p-9 shadow-2xl shadow-black/80 relative overflow-hidden">
+      <div className="bg-[#00223D]/95 backdrop-blur-xl border border-blue-900/60 rounded-3xl p-7 sm:p-9 shadow-2xl shadow-blue-950/80 relative overflow-hidden">
         {/* Glow accent */}
-        <div className="absolute top-0 right-0 w-48 h-48 bg-[#FF7A00]/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
+        <div className="absolute top-0 right-0 w-48 h-48 bg-[#FFBE00]/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none -ml-16 -mb-16" />
 
         {/* Header */}
         <div className="text-center mb-7 relative z-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#FF7A00] to-orange-400 text-white shadow-lg shadow-[#FF7A00]/30 mb-4">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#002D62] to-blue-800 text-[#FFBE00] border border-[#FFBE00]/40 shadow-lg shadow-blue-950/50 mb-4">
             <Shield className="w-7 h-7" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-white tracking-tight">
@@ -120,7 +120,7 @@ function AdminLoginForm() {
                 placeholder="admin@vittaldigital.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-800 bg-[#0d1017] text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-blue-900/60 bg-[#001D34] text-sm text-white placeholder:text-slate-400 focus:outline-none focus:border-[#FFBE00] focus:ring-1 focus:ring-[#FFBE00] transition-all"
               />
             </div>
           </div>
@@ -138,7 +138,7 @@ function AdminLoginForm() {
                 placeholder="Enter admin password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-11 py-3 rounded-xl border border-gray-800 bg-[#0d1017] text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
+                className="w-full pl-10 pr-11 py-3 rounded-xl border border-blue-900/60 bg-[#001D34] text-sm text-white placeholder:text-slate-400 focus:outline-none focus:border-[#FFBE00] focus:ring-1 focus:ring-[#FFBE00] transition-all"
               />
               <button
                 type="button"
@@ -154,7 +154,7 @@ function AdminLoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#FF7A00] to-orange-500 hover:from-[#E66E00] hover:to-orange-600 text-white font-bold text-sm shadow-lg shadow-[#FF7A00]/25 transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer active:scale-[0.99]"
+            className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-sm shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer active:scale-[0.99]"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -170,7 +170,7 @@ function AdminLoginForm() {
         {/* Security Notice */}
         <div className="mt-6 pt-5 border-t border-gray-800/80 text-center">
           <p className="text-[11px] text-gray-500 flex items-center justify-center gap-1.5">
-            <Lock className="w-3 h-3 text-[#FF7A00]" />
+            <Lock className="w-3 h-3 text-[#FFBE00]" />
             <span>Authorized access only. All sessions are logged & audited.</span>
           </p>
         </div>
@@ -192,9 +192,9 @@ function AdminLoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <div className="min-h-screen bg-[#090b10] flex flex-col justify-between selection:bg-[#FF7A00]/30 selection:text-white">
+    <div className="min-h-screen bg-[#001D34] flex flex-col justify-between selection:bg-[#FFBE00] text-slate-950/30 selection:text-white">
       {/* Header */}
-      <header className="w-full border-b border-gray-900 bg-[#0d1017]/80 backdrop-blur-md py-4">
+      <header className="w-full border-b border-blue-950 bg-[#00223D]/90 backdrop-blur-md py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="relative h-9 w-32 flex items-center justify-start">
@@ -225,7 +225,7 @@ export default function AdminLoginPage() {
         <Suspense
           fallback={
             <div className="flex flex-col items-center gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-[#FF7A00]" />
+              <Loader2 className="w-8 h-8 animate-spin text-[#FFBE00]" />
               <p className="text-xs text-gray-400">Loading admin portal...</p>
             </div>
           }
@@ -235,7 +235,7 @@ export default function AdminLoginPage() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full py-4 text-center text-[11px] text-gray-600 border-t border-gray-900 bg-[#090b10]">
+      <footer className="w-full py-4 text-center text-[11px] text-gray-600 border-t border-gray-900 bg-[#001D34]">
         Vittal Digital Enterprise ERP System • Secure Management Console
       </footer>
     </div>

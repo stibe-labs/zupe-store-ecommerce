@@ -2,7 +2,7 @@ import React from "react";
 import { AdminThemeProvider } from "@/context/AdminThemeContext";
 
 export const metadata = {
-  title: "Turkiye Jam — Live Production ERP & Admin Panel",
+  title: "Vittal Digital — Live Production ERP & Admin Portal",
   robots: {
     index: false,
     follow: false,

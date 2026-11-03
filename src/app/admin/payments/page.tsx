@@ -144,7 +144,7 @@ export default function AdminPaymentsPage() {
               {activeTab === "cod" && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-amber-500/20"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5]" />
                   <span>Record Remittance</span>
@@ -159,7 +159,7 @@ export default function AdminPaymentsPage() {
               onClick={() => setActiveTab("cod")}
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                 activeTab === "cod"
-                  ? "bg-[#FF7A00] text-white shadow-sm shadow-orange-500/20"
+                  ? "bg-[#FFBE00] text-slate-950 text-white shadow-sm shadow-amber-500/20"
                   : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
               }`}
             >
@@ -180,7 +180,7 @@ export default function AdminPaymentsPage() {
               onClick={() => setActiveTab("prepaid")}
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                 activeTab === "prepaid"
-                  ? "bg-[#FF7A00] text-white shadow-sm shadow-orange-500/20"
+                  ? "bg-[#FFBE00] text-slate-950 text-white shadow-sm shadow-amber-500/20"
                   : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
               }`}
             >
@@ -273,7 +273,7 @@ export default function AdminPaymentsPage() {
                           <td className="py-3.5 px-4 sm:px-6 font-mono text-slate-600 whitespace-nowrap">
                             {rem.remittance_date}
                           </td>
-                          <td className="py-3.5 px-4 font-mono font-bold text-[#FF7A00] whitespace-nowrap">
+                          <td className="py-3.5 px-4 font-mono font-bold text-[#002D62] whitespace-nowrap">
                             {rem.crn_id}
                           </td>
                           <td className="py-3.5 px-4 font-semibold text-slate-800 whitespace-nowrap">
@@ -386,7 +386,7 @@ export default function AdminPaymentsPage() {
                       ) : (
                         prepaidOrders.map((ord) => (
                           <tr key={ord.id} className="hover:bg-slate-50/70">
-                            <td className="py-3.5 px-4 sm:px-6 font-bold text-[#FF7A00] whitespace-nowrap">
+                            <td className="py-3.5 px-4 sm:px-6 font-bold text-[#002D62] whitespace-nowrap">
                               {ord.shopify_order_id || ord.id}
                             </td>
                             <td className="py-3.5 px-4 font-mono text-slate-600 whitespace-nowrap">
@@ -458,7 +458,7 @@ export default function AdminPaymentsPage() {
                     value={crnId}
                     onChange={(e) => setCrnId(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -470,7 +470,7 @@ export default function AdminPaymentsPage() {
                     value={courier}
                     onChange={(e) => setCourier(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62] focus:outline-none"
                   />
                 </div>
               </div>
@@ -486,7 +486,7 @@ export default function AdminPaymentsPage() {
                     value={collected}
                     onChange={(e) => setCollected(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -498,7 +498,7 @@ export default function AdminPaymentsPage() {
                     placeholder="1800"
                     value={deducted}
                     onChange={(e) => setDeducted(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62] focus:outline-none"
                   />
                 </div>
               </div>
@@ -513,7 +513,7 @@ export default function AdminPaymentsPage() {
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -525,7 +525,7 @@ export default function AdminPaymentsPage() {
                     placeholder="HDFC000987654"
                     value={bankUtr}
                     onChange={(e) => setBankUtr(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62] focus:outline-none"
                   />
                 </div>
               </div>
@@ -540,7 +540,7 @@ export default function AdminPaymentsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#FF7A00] text-white rounded-xl hover:bg-[#E66E00] font-semibold shadow-sm shadow-orange-500/25"
+                  className="px-5 py-2 bg-[#FFBE00] text-slate-950 text-white rounded-xl hover:bg-[#E66E00] font-semibold shadow-sm shadow-amber-500/20"
                 >
                   Save Remittance
                 </button>

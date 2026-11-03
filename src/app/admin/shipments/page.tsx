@@ -266,7 +266,7 @@ export default function AdminShipmentsPage() {
                 placeholder="Search AWB, Customer, Order..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
               />
               {search && (
                 <button
@@ -284,7 +284,7 @@ export default function AdminShipmentsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62] focus:outline-none"
               >
                 <option value="all">All Delivery Statuses</option>
                 <option value="NDR">⚠️ NDR Shipments</option>
@@ -298,7 +298,7 @@ export default function AdminShipmentsPage() {
               <select
                 value={courierFilter}
                 onChange={(e) => setCourierFilter(e.target.value)}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] focus:outline-none"
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62] focus:outline-none"
               >
                 <option value="all">All Courier Partners</option>
                 <option value="Delhivery">Delhivery</option>
@@ -369,7 +369,7 @@ export default function AdminShipmentsPage() {
                   ) : (
                     filtered.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/70">
-                      <td className="py-3.5 px-5 font-mono font-bold text-[#FF7A00] whitespace-nowrap">
+                      <td className="py-3.5 px-5 font-mono font-bold text-[#002D62] whitespace-nowrap">
                         {item.shiprocket_awb || "AWB-PENDING"}
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-slate-900 whitespace-nowrap">
@@ -509,7 +509,7 @@ export default function AdminShipmentsPage() {
                 <select
                   value={editDeliveryStatus}
                   onChange={(e) => setEditDeliveryStatus(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                 >
                   <option value="Processing">Processing</option>
                   <option value="In Transit">In Transit</option>
@@ -528,7 +528,7 @@ export default function AdminShipmentsPage() {
                 <select
                   value={editCourier}
                   onChange={(e) => setEditCourier(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                 >
                   <option value="Delhivery">Delhivery</option>
                   <option value="Bluedart">Bluedart</option>
@@ -546,7 +546,7 @@ export default function AdminShipmentsPage() {
                     type="button"
                     onClick={() => handleGenerateAWB(selectedShipment.id, editCourier)}
                     disabled={isGeneratingAWB === selectedShipment.id}
-                    className="text-[11px] font-bold text-[#FF7A00] hover:text-[#E66E00] flex items-center gap-1 disabled:opacity-50"
+                    className="text-[11px] font-bold text-[#002D62] hover:text-[#E66E00] flex items-center gap-1 disabled:opacity-50"
                   >
                     {isGeneratingAWB === selectedShipment.id ? (
                       <>
@@ -555,7 +555,7 @@ export default function AdminShipmentsPage() {
                       </>
                     ) : (
                       <>
-                        <Zap className="w-3 h-3 text-[#FF7A00]" />
+                        <Zap className="w-3 h-3 text-[#002D62]" />
                         <span>Auto-Generate AWB</span>
                       </>
                     )}
@@ -566,7 +566,7 @@ export default function AdminShipmentsPage() {
                   value={editAWB}
                   onChange={(e) => setEditAWB(e.target.value)}
                   placeholder="e.g. DEL-82910384"
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                 />
               </div>
 
@@ -579,7 +579,7 @@ export default function AdminShipmentsPage() {
                   value={editNDR}
                   onChange={(e) => setEditNDR(e.target.value)}
                   placeholder="e.g. Customer Unavailable / None"
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                 />
               </div>
             </div>
@@ -597,7 +597,7 @@ export default function AdminShipmentsPage() {
                 type="button"
                 onClick={handleSaveShipment}
                 disabled={isSaving}
-                className="px-5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 disabled:opacity-50"
+                className="px-5 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold rounded-xl font-semibold text-xs transition-all shadow-sm shadow-amber-500/20 flex items-center gap-1.5 disabled:opacity-50"
               >
                 {isSaving ? (
                   <>

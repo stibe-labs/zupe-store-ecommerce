@@ -1090,7 +1090,7 @@ export default function AdminReviewsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="p-1.5 rounded-lg bg-orange-100 text-[#FF7A00]">
+                <span className="p-1.5 rounded-lg bg-orange-100 text-[#002D62]">
                   <Sparkles className="w-5 h-5 fill-current" />
                 </span>
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
@@ -1118,7 +1118,7 @@ export default function AdminReviewsPage() {
                     onClick={() => setManualModalOpen(true)}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 text-xs font-semibold shadow-xs transition-all cursor-pointer"
                   >
-                    <Plus className="w-3.5 h-3.5 text-[#FF7A00]" />
+                    <Plus className="w-3.5 h-3.5 text-[#002D62]" />
                     <span>Add Review</span>
                   </button>
 
@@ -1127,7 +1127,7 @@ export default function AdminReviewsPage() {
                       setImportModalOpen(true);
                       setImportResult(null);
                     }}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm shadow-orange-500/25 active:scale-[0.98] cursor-pointer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm shadow-amber-500/20 active:scale-[0.98] cursor-pointer"
                   >
                     <Upload className="w-4 h-4" />
                     <span>Import Reviews (CSV)</span>
@@ -1136,7 +1136,7 @@ export default function AdminReviewsPage() {
               ) : (
                 <button
                   onClick={handleOpenAddVideo}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm shadow-orange-500/25 active:scale-[0.98] cursor-pointer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm shadow-amber-500/20 active:scale-[0.98] cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Attach New Video</span>
@@ -1152,7 +1152,7 @@ export default function AdminReviewsPage() {
               onClick={() => setActiveTab("reviews")}
               className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === "reviews"
-                  ? "bg-[#FF7A00] text-white shadow-sm shadow-orange-500/25"
+                  ? "bg-[#FFBE00] text-slate-950 text-white shadow-sm shadow-amber-500/20"
                   : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50"
               }`}
             >
@@ -1165,7 +1165,7 @@ export default function AdminReviewsPage() {
               onClick={() => setActiveTab("videos")}
               className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === "videos"
-                  ? "bg-[#FF7A00] text-white shadow-sm shadow-orange-500/25"
+                  ? "bg-[#FFBE00] text-slate-950 text-white shadow-sm shadow-amber-500/20"
                   : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50"
               }`}
             >
@@ -1262,7 +1262,7 @@ export default function AdminReviewsPage() {
                 placeholder="Search reviews by customer name, comments, or product..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
               />
             </div>
 
@@ -1271,7 +1271,7 @@ export default function AdminReviewsPage() {
               <select
                 value={selectedProductFilter}
                 onChange={(e) => setSelectedProductFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#FF7A00]"
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#002D62]"
               >
                 <option value="all">All Products ({productsList.length})</option>
                 {productsList.map((p) => (
@@ -1285,7 +1285,7 @@ export default function AdminReviewsPage() {
               <select
                 value={selectedSourceFilter}
                 onChange={(e) => setSelectedSourceFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#FF7A00]"
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#002D62]"
               >
                 <option value="all">All Sources</option>
                 <option value="storefront">Turkiye Jam Storefront</option>
@@ -1299,7 +1299,7 @@ export default function AdminReviewsPage() {
               <select
                 value={selectedRatingFilter}
                 onChange={(e) => setSelectedRatingFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#FF7A00]"
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#002D62]"
               >
                 <option value="all">All Ratings</option>
                 <option value="5">5 Stars</option>
@@ -1327,12 +1327,12 @@ export default function AdminReviewsPage() {
 
             {loading ? (
               <div className="py-20 flex flex-col items-center justify-center gap-3">
-                <Loader2 className="w-8 h-8 animate-spin text-[#FF7A00]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#002D62]" />
                 <span className="text-xs font-semibold text-slate-500">Loading reviews database...</span>
               </div>
             ) : filteredReviews.length === 0 ? (
               <div className="py-20 px-4 text-center max-w-sm mx-auto">
-                <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-3">
+                <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#002D62] flex items-center justify-center mx-auto mb-3">
                   <Star className="w-6 h-6 fill-current" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-900">No reviews found</h3>
@@ -1533,7 +1533,7 @@ export default function AdminReviewsPage() {
                   <button
                     type="button"
                     onClick={handleOpenHomeSelector}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#FF7A00] to-[#FF9029] hover:from-[#E66E00] hover:to-[#FF7A00] text-white font-bold rounded-xl text-xs sm:text-sm shadow-md shadow-orange-500/20 active:scale-95 transition-all cursor-pointer"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#FF7A00] to-[#FF9029] hover:from-[#E66E00] hover:to-[#FF7A00] text-white font-bold rounded-xl text-xs sm:text-sm shadow-md shadow-amber-500/20 active:scale-95 transition-all cursor-pointer"
                   >
                     <Sparkles className="w-4 h-4" />
                     <span>Select Home Page Videos ({homeVideoIds.length})</span>
@@ -1623,7 +1623,7 @@ export default function AdminReviewsPage() {
                       placeholder="Search video title or product..."
                       value={videoSearchQuery}
                       onChange={(e) => setVideoSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                     />
                   </div>
 
@@ -1631,7 +1631,7 @@ export default function AdminReviewsPage() {
                   <select
                     value={videoFilterProduct}
                     onChange={(e) => setVideoFilterProduct(e.target.value)}
-                    className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   >
                     <option value="all">All Videos ({videos.length})</option>
                     <option value="home_only">★ Selected for Home Page ({homeVideoIds.length})</option>
@@ -1651,7 +1651,7 @@ export default function AdminReviewsPage() {
                   </span>
                   <button
                     onClick={handleOpenAddVideo}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Attach Video</span>
@@ -1662,7 +1662,7 @@ export default function AdminReviewsPage() {
               {/* Video Grid Cards */}
               {filteredVideos.length === 0 ? (
                 <div className="bg-white rounded-2xl p-12 text-center border border-slate-200/90 shadow-xs">
-                  <div className="w-14 h-14 rounded-2xl bg-orange-50 text-[#FF7A00] mx-auto flex items-center justify-center mb-3">
+                  <div className="w-14 h-14 rounded-2xl bg-orange-50 text-[#002D62] mx-auto flex items-center justify-center mb-3">
                     <Video className="w-7 h-7" />
                   </div>
                   <h3 className="font-bold text-slate-800 text-base">No shoppable videos found</h3>
@@ -1671,7 +1671,7 @@ export default function AdminReviewsPage() {
                   </p>
                   <button
                     onClick={handleOpenAddVideo}
-                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Attach First Video</span>
@@ -1731,7 +1731,7 @@ export default function AdminReviewsPage() {
                             className="absolute inset-0 flex items-center justify-center cursor-pointer group-hover:scale-110 transition-transform"
                             title="Preview Video"
                           >
-                            <div className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-xs border border-white/30 text-white flex items-center justify-center group-hover:bg-[#FF7A00] transition-colors shadow-lg">
+                            <div className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-xs border border-white/30 text-white flex items-center justify-center group-hover:bg-[#FFBE00] text-slate-950 transition-colors shadow-lg">
                               <Play className="w-5 h-5 fill-white ml-0.5" />
                             </div>
                           </button>
@@ -1768,7 +1768,7 @@ export default function AdminReviewsPage() {
                               <Link
                                 href={`/products/${prod.slug}`}
                                 target="_blank"
-                                className="text-slate-400 hover:text-[#FF7A00] shrink-0"
+                                className="text-slate-400 hover:text-[#002D62] shrink-0"
                                 title="View live on store"
                               >
                                 <ExternalLink className="w-3.5 h-3.5" />
@@ -1862,7 +1862,7 @@ export default function AdminReviewsPage() {
             </button>
 
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-2xl bg-orange-100 text-[#FF7A00] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-orange-100 text-[#002D62] flex items-center justify-center">
                 <FileSpreadsheet className="w-5 h-5" />
               </div>
               <div>
@@ -1885,7 +1885,7 @@ export default function AdminReviewsPage() {
                   <select
                     value={defaultImportProduct}
                     onChange={(e) => setDefaultImportProduct(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#002D62]"
                   >
                     <option value="auto">Auto-detect from CSV 'product_slug'</option>
                     {productsList.map((p) => (
@@ -1903,7 +1903,7 @@ export default function AdminReviewsPage() {
                   <select
                     value={defaultImportSource}
                     onChange={(e) => setDefaultImportSource(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#002D62]"
                   >
                     <option value="amazon">Amazon India</option>
                     <option value="flipkart">Flipkart</option>
@@ -1928,7 +1928,7 @@ export default function AdminReviewsPage() {
                   className="hidden"
                 />
                 <div className="w-12 h-12 rounded-full bg-white shadow-xs border border-slate-200 text-slate-500 mx-auto flex items-center justify-center mb-2">
-                  <Upload className="w-5 h-5 text-[#FF7A00]" />
+                  <Upload className="w-5 h-5 text-[#002D62]" />
                 </div>
                 <p className="text-xs font-bold text-slate-800">
                   {csvFile ? csvFile.name : "Click to browse or drag and drop CSV file here"}
@@ -1943,7 +1943,7 @@ export default function AdminReviewsPage() {
                       e.stopPropagation();
                       handleDownloadSampleCSV();
                     }}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#FF7A00] hover:underline"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#002D62] hover:underline"
                   >
                     <Download className="w-3 h-3" />
                     Download Sample CSV Template
@@ -2038,7 +2038,7 @@ export default function AdminReviewsPage() {
                 type="button"
                 onClick={handleImportSubmit}
                 disabled={isImporting || parsedRows.length === 0}
-                className="px-5 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold transition-all shadow-sm shadow-orange-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold text-xs font-bold transition-all shadow-sm shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
               >
                 {isImporting ? (
                   <>
@@ -2092,7 +2092,7 @@ export default function AdminReviewsPage() {
                 <select
                   value={manualForm.productId}
                   onChange={(e) => setManualForm({ ...manualForm, productId: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-[#002D62]"
                 >
                   {productsList.map((p) => (
                     <option key={p.id} value={p.slug || p.id}>
@@ -2111,7 +2111,7 @@ export default function AdminReviewsPage() {
                     placeholder="e.g. Ramesh K."
                     value={manualForm.userName}
                     onChange={(e) => setManualForm({ ...manualForm, userName: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#002D62]"
                   />
                 </div>
                 <div>
@@ -2119,7 +2119,7 @@ export default function AdminReviewsPage() {
                   <select
                     value={manualForm.source}
                     onChange={(e) => setManualForm({ ...manualForm, source: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-[#002D62]"
                   >
                     <option value="amazon">Amazon India</option>
                     <option value="flipkart">Flipkart</option>
@@ -2157,7 +2157,7 @@ export default function AdminReviewsPage() {
                   placeholder="e.g. Awesome quality and fast shipping"
                   value={manualForm.title}
                   onChange={(e) => setManualForm({ ...manualForm, title: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#002D62]"
                 />
               </div>
 
@@ -2169,7 +2169,7 @@ export default function AdminReviewsPage() {
                   placeholder="Write the detailed review experience..."
                   value={manualForm.comment}
                   onChange={(e) => setManualForm({ ...manualForm, comment: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#002D62]"
                 />
               </div>
 
@@ -2180,7 +2180,7 @@ export default function AdminReviewsPage() {
                   placeholder="https://images-amazon.com/..."
                   value={manualForm.images}
                   onChange={(e) => setManualForm({ ...manualForm, images: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#002D62]"
                 />
               </div>
 
@@ -2195,7 +2195,7 @@ export default function AdminReviewsPage() {
                 <button
                   type="submit"
                   disabled={submittingManual}
-                  className="px-5 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold font-bold transition-all shadow-sm shadow-amber-500/20 flex items-center gap-1.5 cursor-pointer"
                 >
                   {submittingManual ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
                   <span>Save Review</span>
@@ -2265,7 +2265,7 @@ export default function AdminReviewsPage() {
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-2xl bg-orange-100 text-[#FF7A00] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-orange-100 text-[#002D62] flex items-center justify-center">
                 <Video className="w-5 h-5" />
               </div>
               <div>
@@ -2288,7 +2288,7 @@ export default function AdminReviewsPage() {
                   <button
                     type="button"
                     onClick={fetchProducts}
-                    className="text-[10px] text-[#FF7A00] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                    className="text-[10px] text-[#002D62] hover:underline font-bold flex items-center gap-1 cursor-pointer"
                     title="Refresh latest products from catalog"
                   >
                     <RefreshCw className="w-2.5 h-2.5" />
@@ -2300,7 +2300,7 @@ export default function AdminReviewsPage() {
                 <button
                   type="button"
                   onClick={() => setProductDropdownOpen((prev) => !prev)}
-                  className="w-full p-2 bg-slate-50 hover:bg-slate-100/80 border border-slate-300 rounded-xl text-left flex items-center justify-between gap-2.5 transition-colors focus:outline-none focus:border-[#FF7A00] cursor-pointer"
+                  className="w-full p-2 bg-slate-50 hover:bg-slate-100/80 border border-slate-300 rounded-xl text-left flex items-center justify-between gap-2.5 transition-colors focus:outline-none focus:border-[#002D62] cursor-pointer"
                 >
                   {selectedAttachedProduct ? (
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -2335,7 +2335,7 @@ export default function AdminReviewsPage() {
 
                   <ChevronDown
                     className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
-                      productDropdownOpen ? "rotate-180 text-[#FF7A00]" : ""
+                      productDropdownOpen ? "rotate-180 text-[#002D62]" : ""
                     }`}
                   />
                 </button>
@@ -2387,7 +2387,7 @@ export default function AdminReviewsPage() {
                           <p className="text-[10px] text-slate-400">Plays as general reel across catalog</p>
                         </div>
                         {!selectedAttachedProduct && (
-                          <Check className="w-4 h-4 text-[#FF7A00] shrink-0" />
+                          <Check className="w-4 h-4 text-[#002D62] shrink-0" />
                         )}
                       </button>
 
@@ -2422,7 +2422,7 @@ export default function AdminReviewsPage() {
                                 {p.category && <span className="truncate">• {p.category}</span>}
                               </div>
                             </div>
-                            {isSel && <Check className="w-4 h-4 text-[#FF7A00] shrink-0" />}
+                            {isSel && <Check className="w-4 h-4 text-[#002D62] shrink-0" />}
                           </button>
                         );
                       })}
@@ -2460,7 +2460,7 @@ export default function AdminReviewsPage() {
                   placeholder="e.g. 3 Heat Modes & Gentle Vibration Test"
                   value={videoForm.title}
                   onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#002D62]"
                 />
               </div>
 
@@ -2469,7 +2469,7 @@ export default function AdminReviewsPage() {
                 <div className="flex items-center justify-between mb-1">
                   <label className="block font-bold text-slate-700">Video URL or Upload File *</label>
                   {isUploadingVideo && (
-                    <span className="text-[10px] text-[#FF7A00] font-bold flex items-center gap-1 animate-pulse">
+                    <span className="text-[10px] text-[#002D62] font-bold flex items-center gap-1 animate-pulse">
                       <Loader2 className="w-2.5 h-2.5 animate-spin" />
                       Uploading video ({videoUploadProgress}%)...
                     </span>
@@ -2483,16 +2483,16 @@ export default function AdminReviewsPage() {
                     placeholder="https://.../video.mp4 (or click Upload to select video file)"
                     value={videoForm.videoUrl}
                     onChange={(e) => setVideoForm({ ...videoForm, videoUrl: e.target.value })}
-                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#002D62]"
                   />
 
                   {/* Upload Button with Live Loading State */}
                   {isUploadingVideo ? (
                     <div
-                      className="px-3.5 py-2 bg-orange-50 border border-[#FF7A00]/40 text-[#FF7A00] rounded-xl font-bold flex items-center gap-1.5 shrink-0 select-none shadow-xs"
+                      className="px-3.5 py-2 bg-orange-50 border border-[#FF7A00]/40 text-[#002D62] rounded-xl font-bold flex items-center gap-1.5 shrink-0 select-none shadow-xs"
                       title="Uploading video to cloud storage..."
                     >
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FF7A00]" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#002D62]" />
                       <span className="text-xs">
                         {videoUploadProgress > 0 ? `Uploading ${videoUploadProgress}%` : "Uploading..."}
                       </span>
@@ -2517,10 +2517,10 @@ export default function AdminReviewsPage() {
                   <div className="mt-2 p-2.5 bg-orange-50/90 border border-orange-200 rounded-xl space-y-1.5 animate-fadeIn">
                     <div className="flex items-center justify-between text-[11px] text-orange-950 font-semibold">
                       <span className="flex items-center gap-1.5 truncate">
-                        <Loader2 className="w-3 h-3 animate-spin text-[#FF7A00] shrink-0" />
+                        <Loader2 className="w-3 h-3 animate-spin text-[#002D62] shrink-0" />
                         <span>Uploading "{uploadedVideoMeta?.name || 'video'}" {uploadedVideoMeta?.size ? `(${uploadedVideoMeta.size})` : ''}</span>
                       </span>
-                      <span className="font-bold text-[#FF7A00] shrink-0">{videoUploadProgress}%</span>
+                      <span className="font-bold text-[#002D62] shrink-0">{videoUploadProgress}%</span>
                     </div>
                     <div className="w-full h-1.5 bg-orange-100 rounded-full overflow-hidden">
                       <div
@@ -2581,7 +2581,7 @@ export default function AdminReviewsPage() {
                 <div className="flex items-center justify-between mb-1">
                   <label className="block font-bold text-slate-700">Thumbnail Poster Image (Optional)</label>
                   {isUploadingPoster && (
-                    <span className="text-[10px] text-[#FF7A00] font-bold flex items-center gap-1 animate-pulse">
+                    <span className="text-[10px] text-[#002D62] font-bold flex items-center gap-1 animate-pulse">
                       <Loader2 className="w-2.5 h-2.5 animate-spin" />
                       Uploading photo ({posterUploadProgress}%)...
                     </span>
@@ -2594,12 +2594,12 @@ export default function AdminReviewsPage() {
                     placeholder="https://.../poster.jpg (leave blank to auto-use product image)"
                     value={videoForm.posterUrl}
                     onChange={(e) => setVideoForm({ ...videoForm, posterUrl: e.target.value })}
-                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#002D62]"
                   />
 
                   {isUploadingPoster ? (
-                    <div className="px-3.5 py-2 bg-orange-50 border border-[#FF7A00]/40 text-[#FF7A00] rounded-xl font-bold flex items-center gap-1.5 shrink-0 select-none shadow-xs">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FF7A00]" />
+                    <div className="px-3.5 py-2 bg-orange-50 border border-[#FF7A00]/40 text-[#002D62] rounded-xl font-bold flex items-center gap-1.5 shrink-0 select-none shadow-xs">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#002D62]" />
                       <span className="text-xs">Uploading...</span>
                     </div>
                   ) : (
@@ -2656,7 +2656,7 @@ export default function AdminReviewsPage() {
                     placeholder="e.g. 29.7k"
                     value={videoForm.viewsText}
                     onChange={(e) => setVideoForm({ ...videoForm, viewsText: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-[#002D62]"
                   />
                 </div>
 
@@ -2665,7 +2665,7 @@ export default function AdminReviewsPage() {
                   <select
                     value={videoForm.badge}
                     onChange={(e) => setVideoForm({ ...videoForm, badge: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 font-semibold focus:outline-none focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 font-semibold focus:outline-none focus:border-[#002D62]"
                   >
                     <option value="NEW">🔥 NEW</option>
                     <option value="TRENDING">⚡ TRENDING</option>
@@ -2719,7 +2719,7 @@ export default function AdminReviewsPage() {
                 <button
                   type="submit"
                   disabled={submittingVideo || isUploadingVideo || isUploadingPoster}
-                  className="px-5 py-2 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-5 py-2 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold font-bold transition-all shadow-sm shadow-amber-500/20 flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {(submittingVideo || isUploadingVideo || isUploadingPoster) && (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -2857,7 +2857,7 @@ export default function AdminReviewsPage() {
                   placeholder="Search reels by title or product..."
                   value={selectorSearch}
                   onChange={(e) => setSelectorSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#FF7A00]"
+                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#002D62]"
                 />
               </div>
 
@@ -2913,7 +2913,7 @@ export default function AdminReviewsPage() {
                         <div
                           className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
                             isSelected
-                              ? "bg-[#FF7A00] border-[#FF7A00] text-white"
+                              ? "bg-[#FFBE00] text-slate-950 border-[#FF7A00] text-white"
                               : "border-slate-300 bg-white"
                           }`}
                         >

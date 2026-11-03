@@ -339,7 +339,7 @@ export default function AbandonedCartsAdminPage() {
           {/* Page Title & Actions Row */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-orange-100 text-[#FF7A00] flex items-center justify-center shadow-xs border border-orange-200/80">
+              <div className="w-11 h-11 rounded-2xl bg-orange-100 text-[#002D62] flex items-center justify-center shadow-xs border border-orange-200/80">
                 <ShoppingCart className="w-6 h-6 stroke-[2.2]" />
               </div>
               <div>
@@ -360,7 +360,7 @@ export default function AbandonedCartsAdminPage() {
               <button
                 onClick={handleSendAllReminders}
                 disabled={broadcasting || stats.abandonedCount === 0}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] disabled:opacity-50 text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25 cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] disabled:opacity-50 text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-amber-500/20 cursor-pointer"
                 title="Send recovery WhatsApp reminders to all unrecovered abandoned carts"
               >
                 {broadcasting ? (
@@ -377,7 +377,7 @@ export default function AbandonedCartsAdminPage() {
                 disabled={refreshing}
                 className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-xs cursor-pointer"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-[#FF7A00]" : ""}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-[#002D62]" : ""}`} />
                 <span>{refreshing ? "Syncing..." : "Refresh"}</span>
               </button>
             </div>
@@ -468,7 +468,7 @@ export default function AbandonedCartsAdminPage() {
                 placeholder="Search by customer, phone, or product..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
               />
               {searchQuery && (
                 <button
@@ -489,7 +489,7 @@ export default function AbandonedCartsAdminPage() {
                   onClick={() => setStatusFilter("abandoned")}
                   className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     statusFilter === "abandoned"
-                      ? "bg-[#FF7A00] text-white shadow-xs"
+                      ? "bg-[#FFBE00] text-slate-950 text-white shadow-xs"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                   }`}
                 >
@@ -500,7 +500,7 @@ export default function AbandonedCartsAdminPage() {
                   onClick={() => setStatusFilter("recovered")}
                   className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     statusFilter === "recovered"
-                      ? "bg-[#FF7A00] text-white shadow-xs"
+                      ? "bg-[#FFBE00] text-slate-950 text-white shadow-xs"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                   }`}
                 >
@@ -511,7 +511,7 @@ export default function AbandonedCartsAdminPage() {
                   onClick={() => setStatusFilter("all")}
                   className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     statusFilter === "all"
-                      ? "bg-[#FF7A00] text-white shadow-xs"
+                      ? "bg-[#FFBE00] text-slate-950 text-white shadow-xs"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                   }`}
                 >
@@ -544,7 +544,7 @@ export default function AbandonedCartsAdminPage() {
             <div className="overflow-x-auto">
               {loading ? (
                 <div className="py-20 text-center">
-                  <RefreshCw className="w-8 h-8 text-[#FF7A00] animate-spin mx-auto mb-3" />
+                  <RefreshCw className="w-8 h-8 text-[#002D62] animate-spin mx-auto mb-3" />
                   <p className="text-sm font-semibold text-slate-600">Loading abandoned carts...</p>
                 </div>
               ) : filteredCheckouts.length === 0 ? (
@@ -656,7 +656,7 @@ export default function AbandonedCartsAdminPage() {
                               )}
 
                               {c.items && c.items.length > 3 && (
-                                <p className="text-[10px] text-[#FF7A00] font-bold pl-10 cursor-pointer hover:underline">
+                                <p className="text-[10px] text-[#002D62] font-bold pl-10 cursor-pointer hover:underline">
                                   +{c.items.length - 3} more item{c.items.length - 3 > 1 ? "s" : ""} in cart →
                                 </p>
                               )}
@@ -695,7 +695,7 @@ export default function AbandonedCartsAdminPage() {
                                   <a
                                     href={`/admin/orders?search=${encodeURIComponent(c.recovered_order_id)}`}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="block text-[11px] text-[#FF7A00] hover:underline font-bold mt-1"
+                                    className="block text-[11px] text-[#002D62] hover:underline font-bold mt-1"
                                     title="View placed order in Orders list"
                                   >
                                     View Order #{c.recovered_order_id.replace(/^ord_\d+_/, "")} →
@@ -814,7 +814,7 @@ export default function AbandonedCartsAdminPage() {
               >
                 <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-orange-100 text-[#FF7A00] flex items-center justify-center border border-orange-200">
+                    <div className="w-9 h-9 rounded-xl bg-orange-100 text-[#002D62] flex items-center justify-center border border-orange-200">
                       <ShoppingCart className="w-5 h-5" />
                     </div>
                     <div>

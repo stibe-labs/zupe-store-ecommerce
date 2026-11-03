@@ -258,7 +258,7 @@ export default function AdminDashboardPage() {
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                   Operations & Profit Command Center
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-50 text-[#FF7A00] border border-orange-200">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-[#002D62] border border-blue-200">
                   Live Edge Sync
                 </span>
               </div>
@@ -266,7 +266,7 @@ export default function AdminDashboardPage() {
                 Real-time Shopify orders, Shiprocket logistics tracking, COD remittance & double-entry supplier credit ledger.
               </p>
               {syncStatus && (
-                <div className="mt-2 text-xs font-semibold text-[#FF7A00] flex items-center gap-1.5 animate-pulse">
+                <div className="mt-2 text-xs font-semibold text-[#002D62] flex items-center gap-1.5 animate-pulse">
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                   <span>{syncStatus}</span>
                 </div>
@@ -292,7 +292,7 @@ export default function AdminDashboardPage() {
 
               <Link
                 href="/admin/rto-refund-balance"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 text-xs sm:text-sm font-black rounded-xl transition-all shadow-sm shadow-amber-500/20"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>
@@ -319,7 +319,7 @@ export default function AdminDashboardPage() {
                   onClick={() => setTimeframe(p.id as any)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                     timeframe === p.id
-                      ? "bg-[#FF7A00] text-white shadow-sm shadow-orange-500/20"
+                      ? "bg-[#002D62] text-white shadow-sm shadow-blue-950/20"
                       : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
                   }`}
                 >
@@ -336,18 +336,18 @@ export default function AdminDashboardPage() {
                   type="date"
                   value={customStartDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium text-xs focus:outline-none focus:ring-1 focus:ring-[#FF7A00]"
+                  className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium text-xs focus:outline-none focus:ring-1 focus:ring-[#002D62]"
                 />
                 <span className="font-semibold text-slate-500">To:</span>
                 <input
                   type="date"
                   value={customEndDate}
                   onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium text-xs focus:outline-none focus:ring-1 focus:ring-[#FF7A00]"
+                  className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium text-xs focus:outline-none focus:ring-1 focus:ring-[#002D62]"
                 />
                 <button
                   onClick={loadDashboardData}
-                  className="px-3 py-1 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-lg font-semibold text-xs transition-all shadow-sm shadow-orange-500/20"
+                  className="px-3 py-1 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 rounded-lg font-black text-xs transition-all shadow-sm shadow-amber-500/20"
                 >
                   Apply Filter
                 </button>
@@ -388,14 +388,14 @@ export default function AdminDashboardPage() {
 
           {/* Order Funnel KPI Cards (Module 1) */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm hover:border-orange-200 transition-all">
+            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm hover:border-blue-200 transition-all">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Total Orders
               </span>
               <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
                 <AnimatedCounter value={kpis.totalOrders} />
               </p>
-              <span className="text-[11px] text-[#FF7A00] font-semibold flex items-center mt-1">
+              <span className="text-[11px] text-[#002D62] font-semibold flex items-center mt-1">
                 <ShoppingBag className="w-3 h-3 mr-1" /> 100% Volume
               </span>
             </div>
@@ -477,7 +477,7 @@ export default function AdminDashboardPage() {
                   <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">
                     Delivered Sales Revenue
                   </span>
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center shrink-0">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-blue-50 text-[#002D62] flex items-center justify-center shrink-0">
                     <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                   </div>
                 </div>
@@ -553,7 +553,7 @@ export default function AdminDashboardPage() {
                   <span className="text-slate-500 truncate">In couriers</span>
                   <Link
                     href="/admin/payments"
-                    className="text-[#FF7A00] font-semibold hover:underline"
+                    className="text-[#002D62] font-semibold hover:underline"
                   >
                     Reconcile →
                   </Link>
@@ -570,7 +570,7 @@ export default function AdminDashboardPage() {
                     <h3 className="font-bold text-slate-900 text-sm sm:text-base tracking-tight">
                       Sales & Profit Velocity
                     </h3>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-[#FF7A00] border border-orange-200">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-[#002D62] border border-blue-200">
                       <BarChart3 className="w-3 h-3" />
                       Live BI
                     </span>
@@ -583,7 +583,7 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-2.5 text-[11px] font-medium mr-1">
                     <span className="flex items-center gap-1 text-slate-700">
-                      <span className="w-2.5 h-2.5 rounded-sm bg-gradient-to-t from-[#FF7A00] to-[#FFA742]" />
+                      <span className="w-2.5 h-2.5 rounded-sm bg-gradient-to-t from-[#002D62] to-[#0284c7]" />
                       <span>Sales</span>
                     </span>
                     <span className="flex items-center gap-1 text-slate-700">
@@ -681,7 +681,7 @@ export default function AdminDashboardPage() {
                           <div className="w-full flex items-end justify-center gap-1 sm:gap-1.5 h-[85%]">
                             {/* Sales Bar */}
                             <div
-                              className="w-1/2 rounded-t bg-gradient-to-t from-[#FF7A00] to-[#FFA742] shadow-sm transition-all duration-700 ease-out group-hover:brightness-110 relative"
+                              className="w-1/2 rounded-t bg-gradient-to-t from-[#002D62] to-[#0284c7] shadow-sm transition-all duration-700 ease-out group-hover:brightness-110 relative"
                               style={{
                                 height: `${salesHeightPct}%`,
                                 minHeight: pt.sales > 0 ? "5px" : "0px",
@@ -711,7 +711,7 @@ export default function AdminDashboardPage() {
                                 pt.margin >= 20
                                   ? "bg-gradient-to-t from-emerald-600 to-emerald-400"
                                   : pt.margin >= 10
-                                  ? "bg-gradient-to-t from-[#FF7A00] to-[#FFA742]"
+                                  ? "bg-gradient-to-t from-[#002D62] to-[#0284c7]"
                                   : "bg-gradient-to-t from-rose-500 to-rose-400"
                               }`}
                               style={{
@@ -729,7 +729,7 @@ export default function AdminDashboardPage() {
 
                         {/* X-Axis Interval Label */}
                         <div className="w-full text-center pt-1.5 border-t border-slate-200">
-                          <span className="text-[10px] font-semibold text-slate-600 group-hover:text-[#FF7A00] transition-colors block truncate">
+                          <span className="text-[10px] font-semibold text-slate-600 group-hover:text-[#002D62] transition-colors block truncate">
                             {pt.label}
                           </span>
                         </div>
@@ -741,8 +741,8 @@ export default function AdminDashboardPage() {
 
               {/* Compact Quick Executive Insights Footer */}
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-[11px]">
-                <div className="flex items-center gap-2 p-2 rounded-xl bg-orange-50/70 border border-orange-100">
-                  <Award className="w-3.5 h-3.5 text-[#FF7A00] shrink-0" />
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-blue-50/70 border border-orange-100">
+                  <Award className="w-3.5 h-3.5 text-[#FFBE00] shrink-0" />
                   <div className="truncate">
                     <span className="text-slate-500 block text-[10px]">Peak Interval:</span>
                     <span className="font-bold text-slate-900 block truncate">
@@ -827,7 +827,7 @@ export default function AdminDashboardPage() {
 
               <Link
                 href="/admin/orders"
-                className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#FF7A00] hover:text-[#E66E00]"
+                className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#002D62] hover:text-[#00223D]"
               >
                 <span>View All Orders</span>
                 <ChevronRight className="w-4 h-4" />
@@ -851,7 +851,7 @@ export default function AdminDashboardPage() {
                 <tbody className="divide-y divide-slate-100 font-medium">
                   {recentOrders.map((ord) => (
                     <tr key={ord.id} className="hover:bg-slate-50/70">
-                      <td className="py-3.5 px-5 font-bold text-[#FF7A00] whitespace-nowrap">
+                      <td className="py-3.5 px-5 font-bold text-[#002D62] whitespace-nowrap">
                         {ord.shopify_order_id}
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
@@ -939,7 +939,7 @@ export default function AdminDashboardPage() {
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         <Link
                           href="/admin/orders"
-                          className="text-xs font-semibold text-[#FF7A00] hover:underline"
+                          className="text-xs font-semibold text-[#002D62] hover:underline"
                         >
                           Details
                         </Link>

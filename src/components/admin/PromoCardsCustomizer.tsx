@@ -217,10 +217,10 @@ export function PromoCardsCustomizer({
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-base sm:text-lg font-bold text-slate-900 font-display flex items-center gap-2">
-              <Layers className="w-5 h-5 text-[#FF7A00]" />
+              <Layers className="w-5 h-5 text-[#002D62]" />
               <span>Promo Dual Cards Customizer</span>
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-orange-100 text-[#FF7A00]">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-orange-100 text-[#002D62]">
               2 Cards Only
             </span>
             {isDirty ? (
@@ -271,7 +271,7 @@ export function PromoCardsCustomizer({
             disabled={saving || !isDirty}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer ${
               isDirty
-                ? "bg-[#FF7A00] text-white hover:bg-[#E66E00] ring-2 ring-[#FF7A00]/30 shadow-md animate-pulse"
+                ? "bg-[#FFBE00] text-slate-950 text-white hover:bg-[#E66E00] ring-2 ring-[#FF7A00]/30 shadow-md animate-pulse"
                 : "bg-slate-100 text-slate-400 cursor-not-allowed"
             }`}
           >
@@ -293,7 +293,7 @@ export function PromoCardsCustomizer({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-800">
           <div>
             <div className="flex items-center gap-2">
-              <Eye className="w-4 h-4 text-[#FF7A00]" />
+              <Eye className="w-4 h-4 text-[#002D62]" />
               <h3 className="text-sm font-bold tracking-tight text-white uppercase tracking-wider">
                 100% Real-time Storefront Preview
               </h3>
@@ -597,7 +597,7 @@ export function PromoCardsCustomizer({
         {/* Workspace Tab Switcher */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Palette className="w-4 h-4 text-[#FF7A00]" />
+            <Palette className="w-4 h-4 text-[#002D62]" />
             <h3 className="text-sm font-bold text-slate-800">
               Customize Card Content & Styling
             </h3>
@@ -609,7 +609,7 @@ export function PromoCardsCustomizer({
               onClick={() => setActiveCardTab("both")}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeCardTab === "both"
-                  ? "bg-[#FF7A00] text-white shadow-xs"
+                  ? "bg-[#FFBE00] text-slate-950 text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -620,7 +620,7 @@ export function PromoCardsCustomizer({
               onClick={() => setActiveCardTab("card-1")}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeCardTab === "card-1"
-                  ? "bg-[#FF7A00] text-white shadow-xs"
+                  ? "bg-[#FFBE00] text-slate-950 text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -631,7 +631,7 @@ export function PromoCardsCustomizer({
               onClick={() => setActiveCardTab("card-2")}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeCardTab === "card-2"
-                  ? "bg-[#FF7A00] text-white shadow-xs"
+                  ? "bg-[#FFBE00] text-slate-950 text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -654,7 +654,7 @@ export function PromoCardsCustomizer({
               {/* Card Title & Mini Indicator */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-orange-100 text-[#FF7A00] font-bold text-xs flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-lg bg-orange-100 text-[#002D62] font-bold text-xs flex items-center justify-center">
                     1
                   </span>
                   <div>
@@ -691,7 +691,7 @@ export function PromoCardsCustomizer({
                     value={card1.bgColor}
                     onChange={(e) => handleUpdateField("card-1", "bgColor", e.target.value)}
                     placeholder="#F9EFE7"
-                    className="flex-1 px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]"
+                    className="flex-1 px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#002D62]"
                   />
                 </div>
                 {/* Presets */}
@@ -738,7 +738,7 @@ export function PromoCardsCustomizer({
                   value={card1.title}
                   onChange={(e) => handleUpdateField("card-1", "title", e.target.value)}
                   placeholder="Upgrade Your Everyday Essentials"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#002D62]"
                 />
               </div>
 
@@ -763,7 +763,7 @@ export function PromoCardsCustomizer({
                   value={card1.subtitle}
                   onChange={(e) => handleUpdateField("card-1", "subtitle", e.target.value)}
                   placeholder="Smart products for a smarter lifestyle."
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF7A00] resize-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#002D62] resize-none"
                 />
               </div>
 
@@ -771,7 +771,7 @@ export function PromoCardsCustomizer({
               <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <ArrowRight className="w-3.5 h-3.5 text-[#FF7A00]" />
+                    <ArrowRight className="w-3.5 h-3.5 text-[#002D62]" />
                     <span>Button Customization</span>
                   </span>
                   {/* Live Mini Button Preview */}
@@ -796,7 +796,7 @@ export function PromoCardsCustomizer({
                       value={card1.ctaText}
                       onChange={(e) => handleUpdateField("card-1", "ctaText", e.target.value)}
                       placeholder="Explore Now"
-                      className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF7A00]"
+                      className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#002D62]"
                     />
                   </div>
 
@@ -816,7 +816,7 @@ export function PromoCardsCustomizer({
                           handleUpdateField("card-1", "ctaLink", val);
                         }
                       }}
-                      className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF7A00] cursor-pointer"
+                      className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#002D62] cursor-pointer"
                     >
                       <optgroup label="Store Categories & Pages">
                         {categoryOptions.map((c) => (
@@ -842,7 +842,7 @@ export function PromoCardsCustomizer({
                       value={card1.ctaLink}
                       onChange={(e) => handleUpdateField("card-1", "ctaLink", e.target.value)}
                       placeholder="/products?category=..."
-                      className="w-full px-3 py-1.5 text-xs font-mono rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF7A00]"
+                      className="w-full px-3 py-1.5 text-xs font-mono rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#002D62]"
                     />
                   </div>
                 )}
@@ -906,7 +906,7 @@ export function PromoCardsCustomizer({
                       Primary Product Photo (Front)
                     </span>
                     <label className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[10px] font-bold text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs">
-                      <Upload className="w-3 h-3 text-[#FF7A00]" />
+                      <Upload className="w-3 h-3 text-[#002D62]" />
                       <span>Upload Photo</span>
                       <input
                         type="file"
@@ -971,7 +971,7 @@ export function PromoCardsCustomizer({
                         </button>
                       )}
                       <label className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[10px] font-bold text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs">
-                        <Upload className="w-3 h-3 text-[#FF7A00]" />
+                        <Upload className="w-3 h-3 text-[#002D62]" />
                         <span>Upload Photo</span>
                         <input
                           type="file"
@@ -1035,7 +1035,7 @@ export function PromoCardsCustomizer({
               {/* Card Title & Mini Indicator */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-orange-100 text-[#FF7A00] font-bold text-xs flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-lg bg-orange-100 text-[#002D62] font-bold text-xs flex items-center justify-center">
                     2
                   </span>
                   <div>
@@ -1072,7 +1072,7 @@ export function PromoCardsCustomizer({
                     value={card2.bgColor}
                     onChange={(e) => handleUpdateField("card-2", "bgColor", e.target.value)}
                     placeholder="#1F2329"
-                    className="flex-1 px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]"
+                    className="flex-1 px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#002D62]"
                   />
                 </div>
                 {/* Presets */}
@@ -1119,7 +1119,7 @@ export function PromoCardsCustomizer({
                   value={card2.title}
                   onChange={(e) => handleUpdateField("card-2", "title", e.target.value)}
                   placeholder="Auto Essentials"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#002D62]"
                 />
               </div>
 
@@ -1144,7 +1144,7 @@ export function PromoCardsCustomizer({
                   value={card2.subtitle}
                   onChange={(e) => handleUpdateField("card-2", "subtitle", e.target.value)}
                   placeholder="Drive in Style and Comfort."
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF7A00] resize-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#002D62] resize-none"
                 />
               </div>
 
@@ -1152,7 +1152,7 @@ export function PromoCardsCustomizer({
               <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <ArrowRight className="w-3.5 h-3.5 text-[#FF7A00]" />
+                    <ArrowRight className="w-3.5 h-3.5 text-[#002D62]" />
                     <span>Button Customization (Solid Static Colors)</span>
                   </span>
                   {/* Live Mini Button Preview */}
@@ -1177,7 +1177,7 @@ export function PromoCardsCustomizer({
                       value={card2.ctaText}
                       onChange={(e) => handleUpdateField("card-2", "ctaText", e.target.value)}
                       placeholder="Shop Now"
-                      className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF7A00]"
+                      className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#002D62]"
                     />
                   </div>
 
@@ -1197,7 +1197,7 @@ export function PromoCardsCustomizer({
                           handleUpdateField("card-2", "ctaLink", val);
                         }
                       }}
-                      className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF7A00] cursor-pointer"
+                      className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#002D62] cursor-pointer"
                     >
                       <optgroup label="Store Categories & Pages">
                         {categoryOptions.map((c) => (
@@ -1223,7 +1223,7 @@ export function PromoCardsCustomizer({
                       value={card2.ctaLink}
                       onChange={(e) => handleUpdateField("card-2", "ctaLink", e.target.value)}
                       placeholder="/products?category=Auto+Essentials"
-                      className="w-full px-3 py-1.5 text-xs font-mono rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF7A00]"
+                      className="w-full px-3 py-1.5 text-xs font-mono rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#002D62]"
                     />
                   </div>
                 )}
@@ -1286,7 +1286,7 @@ export function PromoCardsCustomizer({
                       Primary Product Photo
                     </span>
                     <label className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[10px] font-bold text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs">
-                      <Upload className="w-3 h-3 text-[#FF7A00]" />
+                      <Upload className="w-3 h-3 text-[#002D62]" />
                       <span>Upload Photo</span>
                       <input
                         type="file"
@@ -1343,7 +1343,7 @@ export function PromoCardsCustomizer({
       {isDirty && (
         <div className="sticky bottom-4 z-40 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 animate-slideUp">
           <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#FF7A00] animate-ping" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#FFBE00] text-slate-950 animate-ping" />
             <div>
               <p className="text-xs sm:text-sm font-bold text-white">
                 Unsaved changes in live preview
@@ -1367,7 +1367,7 @@ export function PromoCardsCustomizer({
               type="button"
               onClick={handleSaveToLive}
               disabled={saving}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-extrabold bg-[#FF7A00] text-white hover:bg-[#E66E00] shadow-lg shadow-orange-500/20 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-extrabold bg-[#FFBE00] text-slate-950 text-white hover:bg-[#E66E00] shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
             >
               {saving ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />

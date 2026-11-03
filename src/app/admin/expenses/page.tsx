@@ -198,7 +198,7 @@ export default function AdminExpensesPage() {
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                   Operating Expenses & Ad Spend
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-50 text-[#FF7A00] border border-orange-200">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-50 text-[#002D62] border border-orange-200">
                   Total: ₹{totalExpense.toLocaleString("en-IN")}
                 </span>
               </div>
@@ -213,7 +213,7 @@ export default function AdminExpensesPage() {
                 disabled={isRefreshing || loading}
                 className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm disabled:opacity-60"
               >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-[#FF7A00]" : ""}`} />
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-[#002D62]" : ""}`} />
                 <span>Sync</span>
               </button>
 
@@ -227,7 +227,7 @@ export default function AdminExpensesPage() {
 
               <button
                 onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-amber-500/20"
               >
                 <Plus className="w-4 h-4 stroke-[2.5]" />
                 <span>Add Expense</span>
@@ -239,7 +239,7 @@ export default function AdminExpensesPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {[
               { cat: "Meta Ads", color: "text-purple-600", bg: "bg-purple-50" },
-              { cat: "Shiprocket/shipping", color: "text-[#FF7A00]", bg: "bg-orange-50" },
+              { cat: "Shiprocket/shipping", color: "text-[#002D62]", bg: "bg-orange-50" },
               { cat: "Product cost", color: "text-emerald-600", bg: "bg-emerald-50" },
               { cat: "RTO charges", color: "text-rose-600", bg: "bg-rose-50" },
               { cat: "Software/subscriptions", color: "text-amber-600", bg: "bg-amber-50" },
@@ -327,7 +327,7 @@ export default function AdminExpensesPage() {
                   {loading ? (
                     <tr>
                       <td colSpan={8} className="py-12 text-center">
-                        <RefreshCw className="w-6 h-6 text-[#FF7A00] animate-spin mx-auto mb-2" />
+                        <RefreshCw className="w-6 h-6 text-[#002D62] animate-spin mx-auto mb-2" />
                         <span className="text-slate-500 font-medium">Loading expense records...</span>
                       </td>
                     </tr>
@@ -354,7 +354,7 @@ export default function AdminExpensesPage() {
                         <td className="py-3.5 px-4 font-semibold text-slate-800 whitespace-nowrap">
                           {exp.vendor || "-"}
                         </td>
-                        <td className="py-3.5 px-4 font-mono text-[#FF7A00] whitespace-nowrap">
+                        <td className="py-3.5 px-4 font-mono text-[#002D62] whitespace-nowrap">
                           {exp.reference_no || "-"}
                         </td>
                         <td className="py-3.5 px-4 text-slate-600 max-w-xs truncate">
@@ -406,7 +406,7 @@ export default function AdminExpensesPage() {
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                 >
                   <option value="Meta Ads">Meta Ads</option>
                   <option value="Shiprocket/shipping">Shiprocket/shipping</option>
@@ -428,7 +428,7 @@ export default function AdminExpensesPage() {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
 
@@ -441,7 +441,7 @@ export default function AdminExpensesPage() {
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
               </div>
@@ -456,7 +456,7 @@ export default function AdminExpensesPage() {
                     placeholder="Meta Platforms"
                     value={vendor}
                     onChange={(e) => setVendor(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
 
@@ -469,7 +469,7 @@ export default function AdminExpensesPage() {
                     placeholder="INV-12345"
                     value={referenceNo}
                     onChange={(e) => setReferenceNo(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
               </div>
@@ -483,7 +483,7 @@ export default function AdminExpensesPage() {
                   placeholder="Details of campaign or inventory batch"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                 />
               </div>
 
@@ -498,7 +498,7 @@ export default function AdminExpensesPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 bg-[#FF7A00] text-white rounded-xl hover:bg-[#E66E00] font-semibold shadow-sm shadow-orange-500/25 disabled:opacity-60"
+                  className="px-5 py-2 bg-[#FFBE00] text-slate-950 text-white rounded-xl hover:bg-[#E66E00] font-semibold shadow-sm shadow-amber-500/20 disabled:opacity-60"
                 >
                   {submitting ? "Saving..." : "Save Expense"}
                 </button>

@@ -542,15 +542,15 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1500px] w-full mx-auto space-y-6">
           {/* Studio Header Banner */}
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-950 via-[#132238] to-[#1c2d47] text-white p-6 sm:p-8 shadow-xl border border-slate-800">
-            <div className="absolute right-0 top-0 -mt-10 -mr-10 w-80 h-80 rounded-full bg-[#FF7A00]/10 blur-3xl pointer-events-none" />
+            <div className="absolute right-0 top-0 -mt-10 -mr-10 w-80 h-80 rounded-full bg-[#FFBE00] text-slate-950/10 blur-3xl pointer-events-none" />
             <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <span className="text-xs font-black tracking-widest uppercase text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-md border border-amber-400/20">
                     {siteConfig.name.toUpperCase()}
                   </span>
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-[#FF7A00]/20 text-orange-300 border border-[#FF7A00]/40 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-[#FFBE00] text-slate-950/20 text-orange-300 border border-[#FF7A00]/40 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#002D62]" />
                     Realized Accounting Engine
                   </span>
                 </div>
@@ -634,7 +634,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <Package className="w-5 h-5 text-[#FF7A00]" />
+                    <Package className="w-5 h-5 text-[#002D62]" />
                     <span>Batch Parameters</span>
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5">
@@ -647,7 +647,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                     <select
                       value={selectedProductId}
                       onChange={(e) => handleSelectProduct(e.target.value)}
-                      className="w-full sm:w-auto max-w-full text-xs font-semibold bg-orange-50 hover:bg-orange-100 text-[#FF7A00] border border-orange-200 rounded-xl px-3 py-2 sm:py-1.5 focus:outline-none cursor-pointer truncate"
+                      className="w-full sm:w-auto max-w-full text-xs font-semibold bg-orange-50 hover:bg-orange-100 text-[#002D62] border border-orange-200 rounded-xl px-3 py-2 sm:py-1.5 focus:outline-none cursor-pointer truncate"
                     >
                       <option value="">+ Fill from Store SKU</option>
                       {storeProducts.map((p) => (
@@ -675,7 +675,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       min="0"
                       value={orders}
                       onChange={(e) => setOrders(Math.max(0, parseInt(e.target.value) || 0))}
-                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#002D62]/30 focus:border-[#002D62] transition-all"
                     />
                     <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
                       Dispatched by courier
@@ -694,7 +694,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       onChange={(e) =>
                         setRto(Math.min(orders, Math.max(0, parseInt(e.target.value) || 0)))
                       }
-                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-rose-600 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-rose-600 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#002D62]/30 focus:border-[#002D62] transition-all"
                     />
                     <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
                       Doorstep refusals
@@ -710,7 +710,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       min="0"
                       value={sell}
                       onChange={(e) => setSell(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#002D62]/30 focus:border-[#002D62] transition-all"
                     />
                     <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
                       Checkout price
@@ -726,7 +726,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       min="0"
                       value={cost}
                       onChange={(e) => setCost(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#002D62]/30 focus:border-[#002D62] transition-all"
                     />
                     <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
                       Wholesale cost / unit
@@ -750,7 +750,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       min="0"
                       value={ship}
                       onChange={(e) => setShip(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#002D62]/30 focus:border-[#002D62] transition-all"
                     />
                     <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
                       Total: ₹{calculations.shipping.toLocaleString("en-IN")}
@@ -766,7 +766,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       min="0"
                       value={rtoFee}
                       onChange={(e) => setRtoFee(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#002D62]/30 focus:border-[#002D62] transition-all"
                     />
                     <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
                       Total: ₹{calculations.rtoCost.toLocaleString("en-IN")}
@@ -782,7 +782,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       min="0"
                       value={ads}
                       onChange={(e) => setAds(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-purple-700 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-purple-700 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#002D62]/30 focus:border-[#002D62] transition-all"
                     />
                     <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
                       Campaign ad budget
@@ -798,7 +798,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       min="0"
                       value={other}
                       onChange={(e) => setOther(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#002D62]/30 focus:border-[#002D62] transition-all"
                     />
                     <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
                       Packaging, gateways
@@ -815,7 +815,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                   </span>
                   <button
                     onClick={() => setShowAddSupplierModal(true)}
-                    className="text-xs font-bold text-[#FF7A00] hover:underline flex items-center gap-1"
+                    className="text-xs font-bold text-[#002D62] hover:underline flex items-center gap-1"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>New Supplier</span>
@@ -830,7 +830,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                     <select
                       value={db.selected}
                       onChange={(e) => handleSelectSupplier(e.target.value)}
-                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all cursor-pointer truncate"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#002D62]/30 focus:border-[#002D62] transition-all cursor-pointer truncate"
                     >
                       {Object.keys(db.suppliers).map((name) => (
                         <option key={name} value={name}>
@@ -849,7 +849,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       min="0"
                       value={opening}
                       onChange={(e) => setOpening(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-indigo-700 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-indigo-700 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#002D62]/30 focus:border-[#002D62] transition-all"
                     />
                     <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
                       Available to deduct
@@ -868,7 +868,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       onChange={(e) =>
                         setCreditPct(Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)))
                       }
-                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#002D62]/30 focus:border-[#002D62] transition-all"
                     />
                     <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block truncate">
                       Return credit rate
@@ -884,7 +884,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                       placeholder="e.g. Mini Portable Air Cooler (Batch #4)"
                       value={batchNote}
                       onChange={(e) => setBatchNote(e.target.value)}
-                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00] transition-all"
+                      className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#002D62]/30 focus:border-[#002D62] transition-all"
                     />
                   </div>
                 </div>
@@ -898,7 +898,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
               <div className="flex flex-wrap gap-2.5 pt-2">
                 <button
                   onClick={handleSaveBatch}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-sm transition-all shadow-md shadow-orange-500/25 active:scale-98"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold font-bold text-sm transition-all shadow-md shadow-amber-500/20 active:scale-98"
                 >
                   <Coins className="w-4 h-4" />
                   <span>Save Batch to Supplier Ledger</span>
@@ -1188,7 +1188,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                 <span className="text-[11px] font-bold uppercase tracking-wider text-orange-900 block">
                   Current Available Credit
                 </span>
-                <p className="text-lg sm:text-xl font-black text-[#FF7A00] mt-1">
+                <p className="text-lg sm:text-xl font-black text-[#002D62] mt-1">
                   ₹{Math.round(activeSupplierRecord.opening || 0).toLocaleString("en-IN")}
                 </p>
                 <span className="text-[11px] text-orange-800/80 mt-0.5 block">Deductible on next PO</span>
@@ -1289,7 +1289,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-[#FF7A00]" />
+                <Building2 className="w-5 h-5 text-[#002D62]" />
                 <span>Add New Supplier</span>
               </h3>
               <button
@@ -1309,7 +1309,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
                 placeholder="e.g. ABC Wholesale Trading Co."
                 value={newSupplierName}
                 onChange={(e) => setNewSupplierName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#FF7A00]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#002D62]"
                 autoFocus
               />
             </div>
@@ -1323,7 +1323,7 @@ Batch: ${batchNote || "Reference Batch"} (${calculations.o} Orders • ${calcula
               </button>
               <button
                 onClick={handleAddSupplier}
-                className="px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl text-xs font-bold"
+                className="px-4 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold rounded-xl text-xs font-bold"
               >
                 Create Supplier
               </button>

@@ -118,7 +118,7 @@ export default function AdminSidebar({
       href: "/admin/calculator",
       icon: Calculator,
       badge: "Calc",
-      badgeColor: "bg-orange-500/20 text-[#FF7A00] border border-orange-500/30",
+      badgeColor: "bg-[#FFBE00]/20 text-[#FFBE00] border border-[#FFBE00]/40",
     },
     { name: "Customers", href: "/admin/customers", icon: UserCheck },
     { name: "Settings", href: "/admin/settings", icon: Settings },
@@ -136,13 +136,13 @@ export default function AdminSidebar({
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#0F172A] text-slate-300 flex flex-col justify-between overflow-y-auto overscroll-contain transition-transform duration-300 ease-in-out lg:translate-x-0 border-r border-white/[0.07] ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#00223D] text-slate-300 flex flex-col justify-between overflow-y-auto overscroll-contain transition-transform duration-300 ease-in-out lg:translate-x-0 border-r border-blue-950/80 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Brand / Logo */}
         <div>
-          <div className="h-16 flex items-center justify-between px-6 border-b border-white/[0.08]">
+          <div className="h-16 flex items-center justify-between px-6 border-b border-blue-950/70">
             <Link href="/admin" className="flex items-center gap-3 group">
               <div className="relative h-10 w-32 flex items-center justify-start group-hover:scale-105 transition-transform overflow-hidden flex-shrink-0">
                 <Image
@@ -155,7 +155,7 @@ export default function AdminSidebar({
                 />
               </div>
               <div className="flex flex-col justify-center">
-                <span className="text-[10px] uppercase tracking-widest text-[#FF7A00] font-bold">
+                <span className="text-[10px] uppercase tracking-widest text-[#FFBE00] font-bold">
                   Admin ERP
                 </span>
               </div>
@@ -185,7 +185,7 @@ export default function AdminSidebar({
                   onClick={onCloseMobile}
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group ${
                     isActive
-                      ? "bg-gradient-to-r from-[#FF7A00] to-[#FF6B35] text-white shadow-md shadow-orange-500/25 font-semibold"
+                      ? "bg-[#002D62] text-white border-l-4 border-[#FFBE00] shadow-md shadow-blue-950/50 font-bold"
                       : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
                   }`}
                 >
@@ -218,8 +218,8 @@ export default function AdminSidebar({
         </div>
 
         {/* Bottom Orders Sparkline Card & Brand Footnote */}
-        <div className="p-4 space-y-3 border-t border-white/[0.08]">
-          <div className="p-3 rounded-xl bg-[#181B20] border border-white/[0.08] flex items-center justify-between shadow-inner">
+        <div className="p-4 space-y-3 border-t border-blue-950/70">
+          <div className="p-3 rounded-xl bg-[#001D34] border border-blue-950/70 flex items-center justify-between shadow-inner">
             <div>
               <p className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
                 Total Live Orders
@@ -235,15 +235,15 @@ export default function AdminSidebar({
             </div>
             {/* Mini Sparkline Bar Chart Icon */}
             <div className="w-9 h-7 flex items-end justify-between gap-1 px-1">
-              <div className="w-1.5 h-3 bg-[#FF7A00]/50 rounded-t" />
-              <div className="w-1.5 h-4 bg-[#FF7A00]/80 rounded-t" />
-              <div className="w-1.5 h-6 bg-[#FF7A00] rounded-t" />
+              <div className="w-1.5 h-3 bg-[#FFBE00]/50 rounded-t" />
+              <div className="w-1.5 h-4 bg-[#FFBE00]/80 rounded-t" />
+              <div className="w-1.5 h-6 bg-[#FFBE00] rounded-t" />
             </div>
           </div>
 
           <div className="flex items-center justify-between px-1 pt-1">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-[#FF7A00]/15 text-[#FF7A00] flex items-center justify-center text-xs font-bold">
+              <div className="w-6 h-6 rounded bg-[#FFBE00] text-slate-950 flex items-center justify-center text-xs font-bold">
                 V
               </div>
               <div>
@@ -258,7 +258,7 @@ export default function AdminSidebar({
                 window.location.href = "/";
               }}
               title="Lock Admin Session"
-              className="inline-flex items-center gap-1 p-1.5 rounded-lg text-slate-400 hover:text-[#FF7A00] hover:bg-white/[0.06] transition-colors text-xs"
+              className="inline-flex items-center gap-1 p-1.5 rounded-lg text-slate-400 hover:text-[#FFBE00] hover:bg-white/[0.06] transition-colors text-xs"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Exit</span>

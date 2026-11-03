@@ -597,7 +597,7 @@ function AdminOrdersContent() {
                 placeholder="Search Order ID, Customer, AWB..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
               />
               {search && (
                 <button
@@ -615,7 +615,7 @@ function AdminOrdersContent() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
               >
                 <option value="all">All Delivery Statuses</option>
                 <option value="Pending WhatsApp">⏳ Awaiting WhatsApp Confirmation</option>
@@ -631,7 +631,7 @@ function AdminOrdersContent() {
               <select
                 value={courierFilter}
                 onChange={(e) => setCourierFilter(e.target.value)}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
               >
                 <option value="all">All Courier Partners</option>
                 <option value="DTDC">DTDC</option>
@@ -645,7 +645,7 @@ function AdminOrdersContent() {
               <select
                 value={paymentFilter}
                 onChange={(e) => setPaymentFilter(e.target.value)}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
               >
                 <option value="all">All Payment Methods</option>
                 <option value="COD">Cash on Delivery (COD)</option>
@@ -716,7 +716,7 @@ function AdminOrdersContent() {
                   ) : (
                     orders.map((ord, idx) => (
                       <tr key={ord.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-3.5 px-4 sm:px-6 font-bold text-[#FF7A00] whitespace-nowrap">
+                        <td className="py-3.5 px-4 sm:px-6 font-bold text-[#002D62] whitespace-nowrap">
                           {ord.shopify_order_id}
                         </td>
                         <td className="py-3.5 px-4 text-slate-500 whitespace-nowrap text-xs">
@@ -726,7 +726,7 @@ function AdminOrdersContent() {
                           <p className="font-semibold text-slate-900">{ord.customer_name}</p>
                           <a
                             href={`tel:${ord.customer_phone}`}
-                            className="text-[11px] text-slate-500 hover:text-[#FF7A00] hover:underline flex items-center gap-1"
+                            className="text-[11px] text-slate-500 hover:text-[#002D62] hover:underline flex items-center gap-1"
                           >
                             <Phone className="w-3 h-3" />
                             <span>{ord.customer_phone}</span>
@@ -744,7 +744,7 @@ function AdminOrdersContent() {
 
                             return (
                               <div className="space-y-1">
-                                <span className="block text-[11px] text-[#FF7A00] font-semibold truncate max-w-[200px] mt-0.5">
+                                <span className="block text-[11px] text-[#002D62] font-semibold truncate max-w-[200px] mt-0.5">
                                   📦 {totalQty > 1 ? `${totalQty}× ` : ""}{firstName}
                                   {rawItems.length > 1 ? ` +${rawItems.length - 1} more` : ""}
                                 </span>
@@ -988,9 +988,9 @@ function AdminOrdersContent() {
                                       setOpenMenuOrderId(null);
                                       setSelectedOrder(ord);
                                     }}
-                                    className="w-full px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-[#FF7A00] flex items-center gap-2.5 transition-colors cursor-pointer text-left"
+                                    className="w-full px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-[#002D62] flex items-center gap-2.5 transition-colors cursor-pointer text-left"
                                   >
-                                    <Eye className="w-4 h-4 text-[#FF7A00] shrink-0" />
+                                    <Eye className="w-4 h-4 text-[#002D62] shrink-0" />
                                     <div>
                                       <p className="font-bold text-slate-800">Order 360° Details</p>
                                       <p className="text-[10px] text-slate-400 font-normal">View items & logistics</p>
@@ -1072,7 +1072,7 @@ function AdminOrdersContent() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500 font-medium">Phone:</span>
-                  <a href={`tel:${selectedOrder.customer_phone}`} className="font-bold text-[#FF7A00] hover:underline">
+                  <a href={`tel:${selectedOrder.customer_phone}`} className="font-bold text-[#002D62] hover:underline">
                     {selectedOrder.customer_phone}
                   </a>
                 </div>
@@ -1108,10 +1108,10 @@ function AdminOrdersContent() {
                   <div className="bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 space-y-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                        <ShoppingBag className="w-3.5 h-3.5 text-[#FF7A00]" />
+                        <ShoppingBag className="w-3.5 h-3.5 text-[#002D62]" />
                         Purchased Items ({parsedItems.length})
                       </span>
-                      <span className="text-[11px] font-extrabold text-[#FF7A00] bg-orange-100 px-2 py-0.5 rounded-full">
+                      <span className="text-[11px] font-extrabold text-[#002D62] bg-orange-100 px-2 py-0.5 rounded-full">
                         Total Quantity: {totalUnits} unit{totalUnits === 1 ? "" : "s"}
                       </span>
                     </div>
@@ -1143,7 +1143,7 @@ function AdminOrdersContent() {
                                     className="w-11 h-11 object-cover rounded-lg border border-slate-100 shrink-0"
                                   />
                                 ) : (
-                                  <div className="w-11 h-11 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center font-bold text-xs shrink-0">
+                                  <div className="w-11 h-11 rounded-lg bg-orange-50 text-[#002D62] flex items-center justify-center font-bold text-xs shrink-0">
                                     ZP
                                   </div>
                                 )}
@@ -1152,7 +1152,7 @@ function AdminOrdersContent() {
                                     {itemName}
                                   </p>
                                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FF7A00] text-white">
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FFBE00] text-slate-950 text-white">
                                       Qty: {itemQty}
                                     </span>
                                     <span className="text-slate-600 text-[11px] font-semibold">
@@ -1438,7 +1438,7 @@ function AdminOrdersContent() {
                     <select
                       value={editDeliveryStatus}
                       onChange={(e) => setEditDeliveryStatus(e.target.value)}
-                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                     >
                       <option value="Processing">Processing (Packed & Ready)</option>
                       <option value="In Transit">Dispatched / In Transit (Handed to Courier)</option>
@@ -1457,7 +1457,7 @@ function AdminOrdersContent() {
                     <select
                       value={editCourier}
                       onChange={(e) => setEditCourier(e.target.value)}
-                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                     >
                       <option value="">Unassigned (Pending Dispatch)</option>
                       <option value="DTDC">DTDC</option>
@@ -1478,7 +1478,7 @@ function AdminOrdersContent() {
                         type="button"
                         onClick={handleGenerateAWB}
                         disabled={isGeneratingAWB}
-                        className="text-[10px] font-medium text-slate-500 hover:text-[#FF7A00] flex items-center gap-1 disabled:opacity-50"
+                        className="text-[10px] font-medium text-slate-500 hover:text-[#002D62] flex items-center gap-1 disabled:opacity-50"
                         title="Only use if booking pickups via Shiprocket API"
                       >
                         {isGeneratingAWB ? (
@@ -1488,7 +1488,7 @@ function AdminOrdersContent() {
                           </>
                         ) : (
                           <>
-                            <Zap className="w-3 h-3 text-[#FF7A00]" />
+                            <Zap className="w-3 h-3 text-[#002D62]" />
                             <span>Auto-Generate (Shiprocket API)</span>
                           </>
                         )}
@@ -1499,7 +1499,7 @@ function AdminOrdersContent() {
                       value={editAWB}
                       onChange={(e) => setEditAWB(e.target.value)}
                       placeholder="e.g. D12345678 or DTDC Consignment No"
-                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                     />
                     <p className="mt-1 text-[10px] text-slate-500">
                       💡 Type the tracking / consignment number from your DTDC receipt slip here.
@@ -1513,7 +1513,7 @@ function AdminOrdersContent() {
                     <select
                       value={editRemittance}
                       onChange={(e) => setEditRemittance(e.target.value)}
-                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                     >
                       <option value="Pending">Pending</option>
                       <option value="Remitted">Remitted</option>
@@ -1529,7 +1529,7 @@ function AdminOrdersContent() {
                     <select
                       value={editPaymentStatus}
                       onChange={(e) => setEditPaymentStatus(e.target.value)}
-                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                     >
                       <option value="Pending">Pending</option>
                       <option value="Completed">Completed / Paid</option>
@@ -1617,7 +1617,7 @@ function AdminOrdersContent() {
                 type="button"
                 onClick={handleSaveOrderUpdates}
                 disabled={isSavingOrder}
-                className="px-5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 disabled:opacity-50"
+                className="px-5 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold rounded-xl font-semibold text-xs transition-all shadow-sm shadow-amber-500/20 flex items-center gap-1.5 disabled:opacity-50"
               >
                 {isSavingOrder ? (
                   <>

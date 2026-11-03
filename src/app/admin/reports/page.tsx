@@ -921,13 +921,13 @@ export default function AdminReportsPage() {
                 disabled={refreshing || loading}
                 className="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm disabled:opacity-60"
               >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-[#FF7A00]" : ""}`} />
+                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-[#002D62]" : ""}`} />
                 <span>{refreshing ? "Refreshing..." : "Sync Live"}</span>
               </button>
 
               <button
                 onClick={handleExport}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-amber-500/20"
               >
                 <Download className="w-4 h-4" />
                 <span>Export CSV ({reportType.replace("_", "-").toUpperCase()})</span>
@@ -939,7 +939,7 @@ export default function AdminReportsPage() {
           <div className="bg-white rounded-2xl border border-slate-200/90 p-3 sm:p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 mr-1">
-                <Filter className="w-3.5 h-3.5 text-[#FF7A00]" />
+                <Filter className="w-3.5 h-3.5 text-[#002D62]" />
                 Date Filter:
               </span>
               {[
@@ -983,7 +983,7 @@ export default function AdminReportsPage() {
                 </div>
               )}
 
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-50 border border-orange-200 text-[#FF7A00] rounded-xl text-xs font-semibold">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-50 border border-orange-200 text-[#002D62] rounded-xl text-xs font-semibold">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>{activePeriodLabel}</span>
                 <span className="text-orange-400">•</span>
@@ -1003,7 +1003,7 @@ export default function AdminReportsPage() {
                   <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
                     Delivered Revenue
                   </span>
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-orange-50 text-[#002D62] flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
                     ₹
                   </div>
                 </div>
@@ -1179,7 +1179,7 @@ export default function AdminReportsPage() {
                   onClick={() => setReportType(t.id as any)}
                   className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                     reportType === t.id
-                      ? "bg-[#FF7A00] text-white shadow-sm shadow-orange-500/20"
+                      ? "bg-[#FFBE00] text-slate-950 text-white shadow-sm shadow-amber-500/20"
                       : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
                   }`}
                 >
@@ -1193,7 +1193,7 @@ export default function AdminReportsPage() {
           {/* Loading Skeleton */}
           {loading ? (
             <div className="bg-white rounded-2xl p-12 border border-slate-200/90 flex flex-col items-center justify-center gap-3">
-              <RefreshCw className="w-8 h-8 text-[#FF7A00] animate-spin" />
+              <RefreshCw className="w-8 h-8 text-[#002D62] animate-spin" />
               <p className="text-sm font-semibold text-slate-600">
                 Aggregating real financial statements from database...
               </p>
@@ -1265,7 +1265,7 @@ export default function AdminReportsPage() {
                               >
                                 <td className="py-3.5 px-5 font-bold text-slate-900 whitespace-nowrap">
                                   <div className="flex items-center gap-2">
-                                    <Calendar className={`w-4 h-4 ${isCurrentFilteredRow ? "text-[#FF7A00]" : "text-slate-400"}`} />
+                                    <Calendar className={`w-4 h-4 ${isCurrentFilteredRow ? "text-[#002D62]" : "text-slate-400"}`} />
                                     <span>{row.period}</span>
                                   </div>
                                 </td>
@@ -1297,7 +1297,7 @@ export default function AdminReportsPage() {
                                     parseFloat(row.margin) >= 20
                                       ? "bg-emerald-50 text-emerald-700"
                                       : parseFloat(row.margin) > 0
-                                      ? "bg-orange-50 text-[#FF7A00]"
+                                      ? "bg-orange-50 text-[#002D62]"
                                       : "bg-rose-50 text-rose-700"
                                   }`}>
                                     {row.margin}
@@ -1321,7 +1321,7 @@ export default function AdminReportsPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-slate-900 text-base sm:text-lg flex items-center gap-2">
-                          <Wallet className="w-5 h-5 text-[#FF7A00]" />
+                          <Wallet className="w-5 h-5 text-[#002D62]" />
                           Cash Flow & Supplier Credit Ledger
                         </h3>
                         <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
@@ -1351,7 +1351,7 @@ export default function AdminReportsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-gradient-to-br from-amber-50 to-orange-50/50 p-4 rounded-2xl border border-amber-200 text-slate-800 space-y-1.5">
                       <div className="flex items-center gap-2 font-bold text-amber-900 text-xs sm:text-sm">
-                        <ShoppingBag className="w-4 h-4 text-[#FF7A00]" />
+                        <ShoppingBag className="w-4 h-4 text-[#002D62]" />
                         <span>1. Profit: Delivered Sales Only</span>
                       </div>
                       <p className="text-xs text-slate-600 leading-relaxed">
@@ -1635,7 +1635,7 @@ export default function AdminReportsPage() {
                           Side-by-side verification: Compare a standard 10-order reference benchmark against active store performance.
                         </p>
                       </div>
-                      <span className="text-xs font-semibold px-2.5 py-1 bg-orange-50 border border-orange-200 text-[#FF7A00] rounded-lg self-start sm:self-auto">
+                      <span className="text-xs font-semibold px-2.5 py-1 bg-orange-50 border border-orange-200 text-[#002D62] rounded-lg self-start sm:self-auto">
                         Automated Verification
                       </span>
                     </div>
@@ -1654,7 +1654,7 @@ export default function AdminReportsPage() {
                           <tr>
                             <td className="py-3 px-5 font-semibold text-slate-900">Total Dispatched Orders</td>
                             <td className="py-3 px-5 text-center font-bold text-slate-800">10 orders</td>
-                            <td className="py-3 px-5 text-center font-bold text-[#FF7A00]">{summaryKPIs.totalOrdersCount} orders</td>
+                            <td className="py-3 px-5 text-center font-bold text-[#002D62]">{summaryKPIs.totalOrdersCount} orders</td>
                             <td className="py-3 px-5 text-right text-xs text-slate-500">All non-cancelled customer shipments</td>
                           </tr>
                           <tr>
@@ -1672,7 +1672,7 @@ export default function AdminReportsPage() {
                           <tr className="bg-orange-50/30">
                             <td className="py-3 px-5 font-bold text-slate-900">Delivered Sales Revenue</td>
                             <td className="py-3 px-5 text-center font-black text-slate-900">₹5,600 (7 × ₹800)</td>
-                            <td className="py-3 px-5 text-center font-black text-[#FF7A00]">₹{summaryKPIs.totalRevenue.toLocaleString("en-IN")}</td>
+                            <td className="py-3 px-5 text-center font-black text-[#002D62]">₹{summaryKPIs.totalRevenue.toLocaleString("en-IN")}</td>
                             <td className="py-3 px-5 text-right text-xs text-emerald-700 font-semibold">Counts ONLY delivered orders (RTO earned ₹0)</td>
                           </tr>
                           <tr>
@@ -1771,7 +1771,7 @@ export default function AdminReportsPage() {
                           placeholder="Filter orders, customer, SKU..."
                           value={orderSearchQuery}
                           onChange={(e) => setOrderSearchQuery(e.target.value)}
-                          className="pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#FF7A00] w-60"
+                          className="pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#002D62] w-60"
                         />
                       </div>
                       <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap">
@@ -1808,7 +1808,7 @@ export default function AdminReportsPage() {
                           searchedOrderWiseData.map((ord) => (
                             <tr key={ord.id} className="hover:bg-slate-50/70 transition-colors">
                               <td className="py-3.5 px-4 sm:px-6 whitespace-nowrap">
-                                <span className="font-bold text-[#FF7A00] block">{ord.orderId}</span>
+                                <span className="font-bold text-[#002D62] block">{ord.orderId}</span>
                                 <span className="text-[11px] text-slate-400 font-mono">{ord.date}</span>
                               </td>
                               <td className="py-3.5 px-4 whitespace-nowrap">
@@ -1851,7 +1851,7 @@ export default function AdminReportsPage() {
                                   parseFloat(ord.margin) >= 20
                                     ? "bg-emerald-50 text-emerald-700"
                                     : parseFloat(ord.margin) > 0
-                                    ? "bg-orange-50 text-[#FF7A00]"
+                                    ? "bg-orange-50 text-[#002D62]"
                                     : "bg-rose-50 text-rose-700"
                                 }`}>
                                   {ord.margin}
@@ -2115,9 +2115,9 @@ export default function AdminReportsPage() {
                         <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
                           RTO Credit Recovery Rate
                         </span>
-                        <ShieldCheck className="w-4 h-4 text-[#FF7A00] shrink-0" />
+                        <ShieldCheck className="w-4 h-4 text-[#002D62] shrink-0" />
                       </div>
-                      <p className="text-sm sm:text-lg font-bold text-[#FF7A00]">
+                      <p className="text-sm sm:text-lg font-bold text-[#002D62]">
                         {displayRtoDiagnostics.recoveryRate}
                       </p>
                       <p className="text-[10px] sm:text-xs text-slate-500">
@@ -2170,7 +2170,7 @@ export default function AdminReportsPage() {
                               return (
                                 <tr key={c.courier} className="hover:bg-slate-50/70">
                                   <td className="py-3.5 px-5 font-bold text-slate-900 flex items-center gap-2">
-                                    <Truck className="w-4 h-4 text-[#FF7A00]" />
+                                    <Truck className="w-4 h-4 text-[#002D62]" />
                                     <span>{c.courier}</span>
                                   </td>
                                   <td className="py-3.5 px-4 text-center font-bold text-slate-800">
@@ -2257,7 +2257,7 @@ export default function AdminReportsPage() {
             {/* Modal Header */}
             <div className="p-6 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/40 text-[#FF7A00] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/40 text-[#002D62] flex items-center justify-center">
                   <Calculator className="w-5 h-5" />
                 </div>
                 <div>
@@ -2294,7 +2294,7 @@ export default function AdminReportsPage() {
                     onClick={() => setGuideTab(tab.id as any)}
                     className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
                       guideTab === tab.id
-                        ? "bg-[#FF7A00] text-white shadow-sm"
+                        ? "bg-[#FFBE00] text-slate-950 text-white shadow-sm"
                         : "bg-white hover:bg-slate-200/70 text-slate-600 border border-slate-200/80"
                     }`}
                   >
@@ -2633,7 +2633,7 @@ export default function AdminReportsPage() {
             {/* Modal Footer */}
             <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-xs text-slate-500">
-                <BookOpen className="w-4 h-4 text-[#FF7A00]" />
+                <BookOpen className="w-4 h-4 text-[#002D62]" />
                 <span>Full documentation also available in <strong>docs/ADMIN_CALCULATION_GUIDE.md</strong></span>
               </div>
               <button

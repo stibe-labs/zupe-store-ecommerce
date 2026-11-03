@@ -446,7 +446,7 @@ export default function AdminPromoCodesPage() {
 
             <button
               onClick={handleOpenCreateModal}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-medium text-sm shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-medium text-sm shadow-lg shadow-amber-500/20 hover:shadow-orange-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
               <span>Create Promo Code</span>
@@ -502,7 +502,7 @@ export default function AdminPromoCodesPage() {
                 placeholder="Search promo code or description..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] transition-colors"
+                className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62] transition-colors"
               />
               {searchQuery && (
                 <button
@@ -520,7 +520,7 @@ export default function AdminPromoCodesPage() {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 aria-label="Filter promo codes by status"
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20"
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20"
               >
                 <option value="all">All Statuses</option>
                 <option value="active">Active Only</option>
@@ -532,7 +532,7 @@ export default function AdminPromoCodesPage() {
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
                 aria-label="Filter promo codes by discount type"
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20"
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20"
               >
                 <option value="all">All Types</option>
                 <option value="PERCENTAGE">Percentage (%)</option>
@@ -543,7 +543,7 @@ export default function AdminPromoCodesPage() {
                 value={scopeFilter}
                 onChange={(e) => setScopeFilter(e.target.value)}
                 aria-label="Filter promo codes by product scope"
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20"
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20"
               >
                 <option value="all">All Product Scopes</option>
                 <option value="ALL">All Products (Storewide)</option>
@@ -833,7 +833,7 @@ export default function AdminPromoCodesPage() {
                     placeholder="e.g. SAVE20, WELCOME10"
                     value={formCode}
                     onChange={(e) => setFormCode(e.target.value.toUpperCase())}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold tracking-wider text-orange-600 uppercase focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold tracking-wider text-orange-600 uppercase focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
 
@@ -846,7 +846,7 @@ export default function AdminPromoCodesPage() {
                     placeholder="e.g. 20% off for festival special"
                     value={formDescription}
                     onChange={(e) => setFormDescription(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                   />
                 </div>
               </div>
@@ -898,7 +898,7 @@ export default function AdminPromoCodesPage() {
                         placeholder={formDiscountType === "PERCENTAGE" ? "20" : "100"}
                         value={formDiscountValue}
                         onChange={(e) => setFormDiscountValue(e.target.value)}
-                        className="w-full pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                        className="w-full pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                       />
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
                         {formDiscountType === "PERCENTAGE" ? "%" : "₹"}
@@ -918,7 +918,7 @@ export default function AdminPromoCodesPage() {
                           placeholder="e.g. 200 (Leave blank for no cap)"
                           value={formMaxDiscount}
                           onChange={(e) => setFormMaxDiscount(e.target.value)}
-                          className="w-full pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                          className="w-full pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                         />
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
                           ₹
@@ -937,7 +937,7 @@ export default function AdminPromoCodesPage() {
                           placeholder="e.g. 499 (0 for no minimum)"
                           value={formMinOrder}
                           onChange={(e) => setFormMinOrder(e.target.value)}
-                          className="w-full pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                          className="w-full pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                         />
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
                           ₹
@@ -959,7 +959,7 @@ export default function AdminPromoCodesPage() {
                         placeholder="e.g. 499 (0 for no minimum requirement)"
                         value={formMinOrder}
                         onChange={(e) => setFormMinOrder(e.target.value)}
-                        className="w-full pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                        className="w-full pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                       />
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
                         ₹
@@ -1014,7 +1014,7 @@ export default function AdminPromoCodesPage() {
                       type="datetime-local"
                       value={formExpiresAt}
                       onChange={(e) => setFormExpiresAt(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                     />
                   </div>
 
@@ -1028,7 +1028,7 @@ export default function AdminPromoCodesPage() {
                       placeholder="e.g. 500 (Leave empty for unlimited)"
                       value={formUsageLimit}
                       onChange={(e) => setFormUsageLimit(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                     />
                   </div>
                 </div>
@@ -1092,7 +1092,7 @@ export default function AdminPromoCodesPage() {
                         placeholder="Search product by title..."
                         value={productSearch}
                         onChange={(e) => setProductSearch(e.target.value)}
-                        className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                        className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62]"
                       />
                     </div>
 
@@ -1179,7 +1179,7 @@ export default function AdminPromoCodesPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-sm font-semibold shadow-lg shadow-orange-500/20 disabled:opacity-50 transition-all"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-sm font-semibold shadow-lg shadow-amber-500/20 disabled:opacity-50 transition-all"
                 >
                   {submitting ? "Saving..." : editingCoupon ? "Save Changes" : "Create Code"}
                 </button>
