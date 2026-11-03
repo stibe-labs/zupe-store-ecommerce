@@ -1229,75 +1229,92 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* SECTION 9: ALL STORE PRODUCTS (Live Database / Catalog)               */}
       {/* ===================================================================== */}
       {products && products.length > 0 && (
-        <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-10 border-t border-slate-200">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900">All Products</h2>
+        <section id="shop" className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-slate-200 scroll-mt-24">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-2 h-2 rounded-full bg-[#FFBE00]" />
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Direct From Dubai • 1-Year Warranty
+                </span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+                Explore All Products
+              </h2>
+            </div>
             <Link
               href="/products"
-              className="text-xs sm:text-sm font-bold text-[#002D62] hover:underline flex items-center gap-1"
+              className="text-xs sm:text-sm font-black text-slate-900 hover:text-blue-600 flex items-center gap-1.5 self-start sm:self-auto bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl transition-colors"
             >
-              <span>View Catalog</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>View Full Catalog ({products.length})</span>
+              <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
-            {products.slice(0, 10).map((prod) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
+            {products.slice(0, 15).map((prod) => (
               <div
                 key={prod.id}
-                className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow flex flex-col group"
+                className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col group relative"
               >
-                <div className="relative aspect-square bg-slate-50 p-3 flex items-center justify-center">
+                <div className="relative aspect-square bg-slate-50/80 p-3 flex items-center justify-center">
                   {prod.badge && (
-                    <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-[#002D62] text-white text-[10px] font-bold uppercase">
+                    <span className="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 rounded-md bg-[#EF4444] text-white text-[10px] font-black uppercase shadow-xs">
                       {prod.badge}
                     </span>
                   )}
-                  <Image
-                    src={prod.poster_image}
-                    alt={prod.name}
-                    fill
-                    className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
-                    sizes="220px"
-                  />
-                </div>
-                <div className="p-3.5 flex flex-col flex-1">
-                  <div className="flex items-center gap-1 mb-1">
-                    <Star className="w-3 h-3 fill-[#FFBE00] text-[#FFBE00]" />
-                    <span className="text-[10px] font-bold text-slate-700">
-                      {prod.rating || 4.8}
-                    </span>
-                    <span className="text-[10px] text-slate-400">
-                      ({prod.review_count || 120})
-                    </span>
-                  </div>
-                  <Link href={`/products/${prod.id}`}>
-                    <h3 className="text-xs font-bold text-slate-900 hover:text-[#002D62] transition-colors line-clamp-2 leading-snug mb-1 min-h-[32px]">
-                      {prod.name}
-                    </h3>
+                  <Link href={`/products/${prod.id}`} className="block w-full h-full relative">
+                    <Image
+                      src={prod.poster_image}
+                      alt={prod.name}
+                      fill
+                      className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 220px"
+                    />
                   </Link>
-                  <div className="flex items-baseline gap-1 mb-3 mt-auto pt-2">
-                    <span className="text-sm font-black text-slate-900">
-                      ₹{prod.price.toLocaleString("en-IN")}
-                    </span>
-                    {prod.mrp && prod.mrp > prod.price && (
-                      <span className="text-[10px] text-slate-400 line-through">
-                        ₹{prod.mrp.toLocaleString("en-IN")}
+                </div>
+                <div className="p-4 flex flex-col flex-1 justify-between">
+                  <div>
+                    <div className="flex items-center gap-1 mb-1.5">
+                      <Star className="w-3.5 h-3.5 fill-[#FFBE00] text-[#FFBE00]" />
+                      <span className="text-xs font-bold text-slate-800">
+                        {prod.rating || 4.8}
                       </span>
-                    )}
+                      <span className="text-[11px] text-slate-400">
+                        ({prod.review_count || 120})
+                      </span>
+                    </div>
+                    <Link href={`/products/${prod.id}`}>
+                      <h3 className="text-xs sm:text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors line-clamp-2 leading-snug mb-2 min-h-[34px]">
+                        {prod.name}
+                      </h3>
+                    </Link>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => addItem(prod, 1)}
-                      className="flex-1 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 text-[10px] font-bold flex items-center justify-center gap-1 transition-colors"
-                    >
-                      <ShoppingCart className="w-3 h-3" /> Add
-                    </button>
-                    <button
-                      onClick={() => handleBuyNow(prod)}
-                      className="flex-1 py-1.5 rounded-lg bg-[#002D62] hover:bg-blue-900 text-white text-[10px] font-bold transition-colors"
-                    >
-                      Buy Now
-                    </button>
+                  <div>
+                    <div className="flex items-baseline gap-1.5 mb-3 pt-1 border-t border-slate-100">
+                      <span className="text-base font-black text-slate-900">
+                        ₹{prod.price.toLocaleString("en-IN")}
+                      </span>
+                      {prod.mrp && prod.mrp > prod.price && (
+                        <span className="text-xs text-slate-400 line-through">
+                          ₹{prod.mrp.toLocaleString("en-IN")}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => addItem(prod, 1)}
+                        className="flex-1 py-2 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 text-xs font-black flex items-center justify-center gap-1 transition-colors shadow-xs cursor-pointer"
+                      >
+                        <ShoppingCart className="w-3.5 h-3.5 stroke-[2.5]" />
+                        <span>Add</span>
+                      </button>
+                      <button
+                        onClick={() => handleBuyNow(prod)}
+                        className="flex-1 py-2 rounded-xl bg-[#002D62] hover:bg-blue-900 text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
+                      >
+                        Buy Now
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
