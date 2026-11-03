@@ -13,47 +13,56 @@ import {
   X,
   MapPin,
   ChevronDown,
-  Sparkles,
-  Flame,
   Truck,
   Headphones,
   Laptop,
   Smartphone,
   Watch,
   Tablet,
+  Camera,
+  Gamepad2,
+  Plug,
+  ShieldCheck,
+  BadgeCheck,
   ArrowRight,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useSearch } from "@/context/SearchContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { siteConfig } from "@/config/siteConfig";
 
 export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const isHomePage = pathname === "/";
-  const { totalItems, openCart } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { totalItems, subtotal, openCart } = useCart();
+  const { isAuthenticated, openAuthModal } = useAuth();
   const { openSearch } = useSearch();
+  const { totalWishlistItems } = useWishlist();
 
-  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [categoriesDropdownOpen, setCategoriesDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [departmentOpen, setDepartmentOpen] = useState(false);
+  const [searchCategory, setSearchCategory] = useState("All Categories");
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [recentlyViewedOpen, setRecentlyViewedOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const departmentRef = useRef<HTMLDivElement>(null);
+  const categorySelectRef = useRef<HTMLDivElement>(null);
+  const recentlyViewedRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
+  // Close dropdowns when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setCategoriesDropdownOpen(false);
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (departmentRef.current && !departmentRef.current.contains(target)) {
+        setDepartmentOpen(false);
+      }
+      if (categorySelectRef.current && !categorySelectRef.current.contains(target)) {
+        setCategoryDropdownOpen(false);
+      }
+      if (recentlyViewedRef.current && !recentlyViewedRef.current.contains(target)) {
+        setRecentlyViewedOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -65,58 +74,115 @@ export function Navbar() {
     if (isAuthenticated) {
       router.push("/account");
     } else {
-      router.push("/signin?redirect=/account");
+      openAuthModal("login");
     }
   };
 
-  const navCategories = [
-    { label: "Laptops", href: "/products?category=Laptops", icon: Laptop },
-    { label: "Tablets", href: "/products?category=Tablets", icon: Tablet },
-    { label: "Smartwatches", href: "/products?category=Smartwatches", icon: Watch },
-    { label: "Audio Gadgets", href: "/products?category=Headphones+%26+Earbuds", icon: Headphones },
-    { label: "Smartphones", href: "/products?category=Smartphones", icon: Smartphone },
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchInput.trim()) {
+      const catParam =
+        searchCategory !== "All Categories"
+          ? `&category=${encodeURIComponent(searchCategory)}`
+          : "";
+      router.push(`/products?search=${encodeURIComponent(searchInput.trim())}${catParam}`);
+    } else {
+      openSearch();
+    }
+  };
+
+  const departments = [
+    { name: "Computers & Laptops", href: "/products?category=Laptops", icon: Laptop },
+    { name: "Cameras & Video", href: "/products?category=Cameras", icon: Camera },
+    { name: "Tablets", href: "/products?category=Tablets", icon: Tablet },
+    { name: "Smartphones", href: "/products?category=Smartphones", icon: Smartphone },
+    { name: "Smartwatches", href: "/products?category=Smartwatches", icon: Watch },
+    { name: "Gaming", href: "/products?category=Gaming+%26+Accessories", icon: Gamepad2 },
+    { name: "Audio & Headphones", href: "/products?category=Headphones+%26+Earbuds", icon: Headphones },
+    { name: "Accessories", href: "/products?category=Smart+Gadgets", icon: Plug },
+  ];
+
+  const categoriesList = [
+    "All Categories",
+    "Smartphones",
+    "Laptops",
+    "Headphones & Earbuds",
+    "Smartwatches",
+    "Tablets",
+    "Gaming & Accessories",
+    "Speakers",
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white transition-all duration-200">
-      {/* 1. Top Announcement Bar */}
-      <div className="bg-[#002b4d] text-white text-xs sm:text-[13px] py-1.5 px-3 sm:px-8 border-b border-blue-950/40">
+    <header className="sticky top-0 z-50 w-full bg-white font-sans">
+      {/* =================================================================== */}
+      {/* TIER 1: TOP ANNOUNCEMENT & TRUST BAR (White/Off-white)              */}
+      {/* =================================================================== */}
+      <div className="bg-[#FFFFFF] text-slate-600 text-[11px] sm:text-xs py-1.5 px-4 sm:px-8 border-b border-slate-200">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-medium tracking-tight">
-              Electronics from Dubai. Delivered across India.
+          {/* Left Trust Badges */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="flex items-center gap-1.5 font-medium text-slate-700">
+              <MapPin className="w-3.5 h-3.5 text-[#002D62]" />
+              <span>Dubai Sourced Electronics</span>
+            </span>
+            <span className="text-slate-300">|</span>
+            <span className="flex items-center gap-1.5 font-medium text-slate-700">
+              <BadgeCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Genuine Products</span>
+            </span>
+            <span className="hidden md:inline text-slate-300">|</span>
+            <span className="hidden md:flex items-center gap-1.5 font-medium text-slate-700">
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+              <span>Warranty Across India</span>
             </span>
           </div>
-          <div className="hidden sm:flex items-center gap-1.5 text-blue-200/90 font-medium hover:text-white transition-colors cursor-pointer">
-            <MapPin className="w-3.5 h-3.5 text-amber-400" />
-            <span>Deliver to India</span>
+
+          {/* Right Links */}
+          <div className="flex items-center gap-2 sm:gap-4 font-medium text-slate-600">
+            <span className="hidden sm:inline text-slate-700">
+              Free Express Delivery on Orders Above ₹2,999
+            </span>
+            <span className="hidden sm:inline text-slate-300">|</span>
+            <Link
+              href="/order-tracking"
+              className="hover:text-[#002D62] transition-colors flex items-center gap-1"
+            >
+              <span>Track Order</span>
+            </Link>
+            <span className="text-slate-300">|</span>
+            <a
+              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20need%20help%20with%20Vittal%20Digital`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#002D62] transition-colors flex items-center gap-1"
+            >
+              <span>Help</span>
+            </a>
           </div>
         </div>
       </div>
 
-      {/* 2. Main Header Row */}
-      <div
-        className={`border-b border-slate-200/80 transition-shadow ${
-          isScrolled ? "shadow-sm bg-white/95 backdrop-blur-md" : "bg-white"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-4">
-          {/* Brand Logo & Mobile Drawer Toggle */}
+      {/* =================================================================== */}
+      {/* TIER 2: MAIN BRAND HEADER (Logo, Primary Nav, Contact, User Items)  */}
+      {/* =================================================================== */}
+      <div className="bg-white border-b border-slate-200/70 py-3 sm:py-3.5 px-4 sm:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          {/* Mobile menu button + Brand Logo */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-1.5 text-slate-700 hover:text-slate-900 rounded-lg hover:bg-slate-100"
-              aria-label="Open menu"
+              className="lg:hidden p-2 text-slate-700 hover:text-slate-900 rounded-lg hover:bg-slate-100"
+              aria-label="Open mobile menu"
             >
               <Menu className="w-6 h-6" />
             </button>
 
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="relative h-10 sm:h-12 w-36 sm:w-44">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="relative h-11 w-44 sm:w-52">
                 <Image
-                  src={siteConfig.logoUrl}
-                  alt={siteConfig.name}
+                  src="/vittal-digital-logo.png"
+                  alt="Vittal Digital"
                   fill
                   className="object-contain object-left"
                   priority
@@ -125,322 +191,422 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* Desktop Search Bar */}
-          <div className="hidden lg:flex flex-1 max-w-xl mx-4">
-            <button
-              type="button"
-              onClick={openSearch}
-              className="w-full flex items-center justify-between px-4 py-2 bg-slate-100 hover:bg-slate-200/70 border border-slate-200 rounded-lg text-slate-500 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#003055]"
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-slate-800">
+            <Link
+              href="/"
+              className={`transition-colors ${
+                pathname === "/" ? "text-[#002D62] font-bold" : "hover:text-[#002D62]"
+              }`}
             >
-              <span className="flex items-center gap-2.5">
-                <Search className="w-4 h-4 text-slate-400" />
-                <span>Search electronics...</span>
-              </span>
-              <kbd className="text-[10px] bg-white border border-slate-200 text-slate-400 px-1.5 py-0.5 rounded font-mono">
-                ⌘K
-              </kbd>
-            </button>
-          </div>
+              Home
+            </Link>
+            <Link
+              href="/products"
+              className="hover:text-[#002D62] transition-colors flex items-center gap-1"
+            >
+              <span>Shop</span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            </Link>
+            <Link
+              href="/about"
+              className="hover:text-[#002D62] transition-colors flex items-center gap-1"
+            >
+              <span>Pages</span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            </Link>
+            <Link
+              href="/products"
+              className="hover:text-[#002D62] transition-colors flex items-center gap-1"
+            >
+              <span>Blog</span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            </Link>
+            <a
+              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20have%20an%20inquiry`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#002D62] transition-colors"
+            >
+              Contact
+            </a>
+          </nav>
 
-          {/* User Utility Actions: Account, Wishlist, Cart */}
-          <div className="flex items-center gap-1 sm:gap-4 shrink-0">
-            {/* Account */}
-            <button
-              onClick={handleAccountClick}
-              className="hidden sm:flex items-center gap-1.5 p-2 text-slate-700 hover:text-[#003055] hover:bg-slate-50 rounded-lg transition-colors text-xs sm:text-sm font-semibold"
-              aria-label="User Account"
+          {/* User & Support Actions */}
+          <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+            {/* Customer Support Phone */}
+            <a
+              href="tel:+919600048000"
+              className="hidden xl:flex items-center gap-2 text-slate-800 hover:text-[#002D62] transition-colors group"
             >
-              <User className="w-4 h-4 text-slate-600" />
-              <span>Account</span>
-            </button>
+              <div className="w-9 h-9 rounded-full bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center text-slate-700 group-hover:text-[#002D62] transition-colors">
+                <Headphones className="w-4.5 h-4.5" />
+              </div>
+              <div className="text-left">
+                <span className="block text-[10px] text-slate-400 font-medium uppercase tracking-wider leading-none">
+                  Customer Support
+                </span>
+                <span className="block text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                  +91 96000 48000
+                </span>
+              </div>
+            </a>
 
             {/* Wishlist */}
             <Link
               href="/wishlist"
-              className="hidden sm:flex items-center gap-1.5 p-2 text-slate-700 hover:text-[#003055] hover:bg-slate-50 rounded-lg transition-colors text-xs sm:text-sm font-semibold"
+              className="hidden sm:flex items-center gap-2 text-slate-700 hover:text-[#002D62] transition-colors group"
               aria-label="Wishlist"
             >
-              <Heart className="w-4 h-4 text-slate-600" />
-              <span>Wishlist</span>
-            </Link>
-
-            {/* Cart Button */}
-            <button
-              onClick={openCart}
-              className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-[#003055] hover:bg-[#00223f] text-white rounded-lg font-bold text-xs sm:text-sm transition-all shadow-sm active:scale-95"
-              aria-label="View Shopping Cart"
-            >
               <div className="relative">
-                <ShoppingBag className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 min-w-[17px] h-[17px] px-1 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black flex items-center justify-center">
-                    {totalItems}
+                <Heart className="w-5 h-5 text-slate-700 group-hover:text-[#002D62] transition-colors" />
+                {totalWishlistItems > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-[#FFBE00] text-slate-950 text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center">
+                    {totalWishlistItems}
                   </span>
                 )}
               </div>
-              <span className="font-semibold">Cart</span>
+              <div className="text-left text-xs font-semibold leading-tight">
+                <span className="block text-slate-400 text-[10px]">Wishlist</span>
+                <span className="block text-slate-800 font-bold">({totalWishlistItems})</span>
+              </div>
+            </Link>
+
+            {/* Account */}
+            <button
+              onClick={handleAccountClick}
+              className="hidden sm:flex items-center gap-2 text-slate-700 hover:text-[#002D62] transition-colors group"
+              aria-label="Account"
+            >
+              <div className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center text-slate-700 group-hover:text-[#002D62] transition-colors">
+                <User className="w-4.5 h-4.5" />
+              </div>
+              <div className="text-left text-xs font-semibold leading-tight">
+                <span className="block text-slate-400 text-[10px]">Account</span>
+                <span className="block text-slate-800 font-bold">
+                  {isAuthenticated ? "My Profile" : "Sign In"}
+                </span>
+              </div>
+            </button>
+
+            {/* Cart Button with Yellow Badge & Total */}
+            <button
+              onClick={openCart}
+              className="flex items-center gap-2.5 p-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-slate-50 transition-colors group cursor-pointer"
+              aria-label="View Shopping Cart"
+            >
+              <div className="relative">
+                <div className="w-9 h-9 rounded-full bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center transition-colors">
+                  <ShoppingBag className="w-5 h-5 text-slate-900" />
+                </div>
+                <span className="absolute -top-1 -right-1 bg-[#FFBE00] text-slate-950 text-[10px] font-black rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center border-2 border-white shadow-sm">
+                  {totalItems}
+                </span>
+              </div>
+              <div className="hidden sm:block text-left text-xs leading-tight">
+                <span className="block text-slate-400 text-[10px] font-medium">Cart</span>
+                <span className="block text-slate-900 font-black">
+                  ₹{subtotal.toLocaleString("en-IN")}
+                </span>
+              </div>
             </button>
           </div>
         </div>
-
-        {/* Mobile Search Bar Row (Inside Header) */}
-        <div className="lg:hidden px-4 pb-2.5">
-          <button
-            type="button"
-            onClick={openSearch}
-            className="w-full flex items-center gap-2.5 px-3.5 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 text-sm"
-          >
-            <Search className="w-4 h-4 text-slate-400 shrink-0" />
-            <span className="text-left flex-1 truncate">Search electronics...</span>
-          </button>
-        </div>
       </div>
 
-      {/* 3. Secondary Category & Quick Links Bar (Desktop) */}
-      <div className="hidden lg:block bg-slate-50 border-b border-slate-200 text-sm">
-        <div className="max-w-7xl mx-auto px-8 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            {/* All Categories Dropdown */}
-            <div className="relative" ref={dropdownRef}>
+      {/* =================================================================== */}
+      {/* TIER 3: UTILITY BAR (Deep Navy #002D62 with Integrated Search)      */}
+      {/* =================================================================== */}
+      <div className="bg-[#002D62] text-white py-2 px-4 sm:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
+          {/* Shop by Department Dropdown */}
+          <div className="relative shrink-0" ref={departmentRef}>
+            <button
+              onClick={() => setDepartmentOpen((prev) => !prev)}
+              className="flex items-center gap-2.5 px-3 sm:px-4 py-2 bg-white/10 hover:bg-white/15 active:bg-white/20 text-white rounded-lg font-bold text-xs sm:text-sm transition-colors border border-white/15"
+            >
+              <Menu className="w-4 h-4 text-[#FFBE00]" />
+              <span className="tracking-wide">Shop by Department</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform text-white/80 ${
+                  departmentOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {/* Department Dropdown Menu */}
+            {departmentOpen && (
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white text-slate-800 rounded-xl shadow-2xl border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="px-4 py-2 border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  All Departments
+                </div>
+                {departments.map((dep) => {
+                  const Icon = dep.icon;
+                  return (
+                    <Link
+                      key={dep.name}
+                      href={dep.href}
+                      onClick={() => setDepartmentOpen(false)}
+                      className="flex items-center justify-between px-4 py-2.5 text-slate-700 hover:bg-blue-50 hover:text-[#002D62] text-xs sm:text-sm font-semibold transition-colors"
+                    >
+                      <span className="flex items-center gap-3">
+                        <Icon className="w-4 h-4 text-[#002D62]" />
+                        <span>{dep.name}</span>
+                      </span>
+                      <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                    </Link>
+                  );
+                })}
+                <div className="border-t border-slate-100 mt-2 pt-2 px-4 pb-1">
+                  <Link
+                    href="/products"
+                    onClick={() => setDepartmentOpen(false)}
+                    className="text-xs font-bold text-[#002D62] hover:underline flex items-center gap-1"
+                  >
+                    View All Products →
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Integrated Search Bar with Yellow Action Button */}
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex-1 max-w-2xl hidden md:flex items-center bg-white rounded-lg overflow-hidden shadow-inner border border-white/20"
+          >
+            {/* Category Dropdown Pill */}
+            <div className="relative shrink-0" ref={categorySelectRef}>
               <button
-                onClick={() => setCategoriesDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-2 px-3.5 py-2.5 font-bold text-slate-900 hover:text-[#003055] bg-slate-200/70 hover:bg-slate-200 transition-colors rounded-t-sm"
+                type="button"
+                onClick={() => setCategoryDropdownOpen((prev) => !prev)}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200/80 border-r border-slate-200 transition-colors h-full"
               >
-                <Menu className="w-4 h-4" />
-                <span>All Categories</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform ${
-                    categoriesDropdownOpen ? "rotate-180" : ""
-                  }`}
-                />
+                <span className="max-w-[110px] truncate">{searchCategory}</span>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               </button>
 
-              {categoriesDropdownOpen && (
-                <div className="absolute top-full left-0 w-64 bg-white border border-slate-200 shadow-xl rounded-b-xl py-2 z-50">
-                  {navCategories.map((cat) => {
-                    const Icon = cat.icon;
-                    return (
-                      <Link
-                        key={cat.label}
-                        href={cat.href}
-                        onClick={() => setCategoriesDropdownOpen(false)}
-                        className="flex items-center justify-between px-4 py-2.5 text-slate-700 hover:bg-slate-50 hover:text-[#003055] transition-colors"
-                      >
-                        <span className="flex items-center gap-3 text-sm font-medium">
-                          <Icon className="w-4 h-4 text-slate-500" />
-                          {cat.label}
-                        </span>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-                      </Link>
-                    );
-                  })}
-                  <div className="border-t border-slate-100 mt-2 pt-2">
-                    <Link
-                      href="/products"
-                      onClick={() => setCategoriesDropdownOpen(false)}
-                      className="block px-4 py-2 text-xs font-bold text-[#003055] hover:underline"
+              {categoryDropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 w-52 bg-white text-slate-800 rounded-lg shadow-xl border border-slate-200 py-1.5 z-50">
+                  {categoriesList.map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => {
+                        setSearchCategory(cat);
+                        setCategoryDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 text-xs font-medium hover:bg-blue-50 hover:text-[#002D62] transition-colors ${
+                        searchCategory === cat ? "font-bold text-[#002D62] bg-blue-50/60" : ""
+                      }`}
                     >
-                      View All Products →
-                    </Link>
-                  </div>
+                      {cat}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* Direct Category Links */}
-            <nav className="flex items-center gap-6 text-slate-700 font-medium">
-              <Link
-                href="/products?category=Laptops"
-                className="hover:text-[#003055] transition-colors py-2.5"
-              >
-                Laptops
-              </Link>
-              <Link
-                href="/products?category=Tablets"
-                className="hover:text-[#003055] transition-colors py-2.5"
-              >
-                Tablets
-              </Link>
-              <Link
-                href="/products?category=Smartwatches"
-                className="hover:text-[#003055] transition-colors py-2.5"
-              >
-                Smartwatches
-              </Link>
-              <Link
-                href="/products?category=Headphones+%26+Earbuds"
-                className="hover:text-[#003055] transition-colors py-2.5"
-              >
-                Audio Gadgets
-              </Link>
-              <Link
-                href="/#deals"
-                className="flex items-center gap-1.5 text-red-600 font-bold hover:text-red-700 transition-colors py-2.5"
-              >
-                <Flame className="w-4 h-4 text-red-500 fill-red-500" />
-                <span>Offers</span>
-                <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.2 rounded-full font-extrabold uppercase">
-                  Hot
-                </span>
-              </Link>
-            </nav>
-          </div>
+            {/* Input field */}
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search for electronics, gadgets, accessories..."
+              className="flex-1 px-3.5 py-2 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
+            />
 
-          {/* Quick Utility Links (Track Order, Support) */}
-          <div className="flex items-center gap-5 text-slate-600 text-xs font-semibold">
+            {/* Vibrant Golden Yellow Search Button */}
+            <button
+              type="submit"
+              className="bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 px-4 py-2.5 transition-colors flex items-center justify-center shrink-0"
+              aria-label="Search"
+            >
+              <Search className="w-4 h-4 stroke-[2.5]" />
+            </button>
+          </form>
+
+          {/* Right Utility: Recently Viewed & Order Status */}
+          <div className="hidden lg:flex items-center gap-4 text-xs font-semibold text-white/90">
+            {/* Recently Viewed Dropdown */}
+            <div className="relative" ref={recentlyViewedRef}>
+              <button
+                onClick={() => setRecentlyViewedOpen((prev) => !prev)}
+                className="flex items-center gap-1.5 hover:text-[#FFBE00] transition-colors cursor-pointer"
+              >
+                <span>Recently Viewed</span>
+                <ChevronDown className="w-3 h-3 text-white/70" />
+              </button>
+
+              {recentlyViewedOpen && (
+                <div className="absolute right-0 top-full mt-2 w-72 bg-white text-slate-800 rounded-xl shadow-2xl border border-slate-200 p-3 z-50">
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                    Recently Viewed
+                  </div>
+                  <div className="text-center py-4 text-xs text-slate-500">
+                    No recently viewed items yet.
+                  </div>
+                  <Link
+                    href="/products"
+                    onClick={() => setRecentlyViewedOpen(false)}
+                    className="block text-center text-xs font-bold text-[#002D62] hover:underline pt-2 border-t border-slate-100"
+                  >
+                    Start Exploring Products
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            <span className="text-blue-300/40">|</span>
+
+            {/* Order Status */}
             <Link
               href="/order-tracking"
-              className="flex items-center gap-1.5 hover:text-[#003055] transition-colors"
+              className="flex items-center gap-1.5 hover:text-[#FFBE00] transition-colors"
             >
-              <Truck className="w-3.5 h-3.5 text-slate-500" />
-              <span>Track Order</span>
+              <span>Order Status</span>
+              <ChevronDown className="w-3 h-3 text-white/70" />
             </Link>
-            <a
-              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20have%20an%20inquiry%20regarding%20Vittal%20Digital`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 hover:text-[#003055] transition-colors"
-            >
-              <Headphones className="w-3.5 h-3.5 text-slate-500" />
-              <span>Support</span>
-            </a>
           </div>
+        </div>
+
+        {/* Mobile Search Input Row */}
+        <div className="md:hidden mt-2 pt-1 pb-1">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex items-center bg-white rounded-lg overflow-hidden shadow-inner"
+          >
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search electronics, gadgets..."
+              className="flex-1 px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 px-3.5 py-2 flex items-center justify-center shrink-0"
+            >
+              <Search className="w-4 h-4 stroke-[2.5]" />
+            </button>
+          </form>
         </div>
       </div>
 
-      {/* 4. Mobile Quick Category Horizontal Pills (From Mobile Mockup) */}
-      <div className="lg:hidden overflow-x-auto no-scrollbar bg-slate-50 border-b border-slate-200 px-3 py-2 flex items-center gap-2">
-        <Link
-          href="/products"
-          className="shrink-0 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-semibold text-slate-800 shadow-2xs hover:bg-slate-100"
-        >
-          All Categories
-        </Link>
-        <Link
-          href="/order-tracking"
-          className="shrink-0 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 flex items-center gap-1"
-        >
-          <Truck className="w-3 h-3 text-slate-500" />
-          <span>Track Order</span>
-        </Link>
-        <Link
-          href="/#deals"
-          className="shrink-0 px-3 py-1 bg-red-50 border border-red-200 text-red-700 rounded-full text-xs font-bold shadow-2xs flex items-center gap-1"
-        >
-          <Flame className="w-3 h-3 text-red-500 fill-red-500" />
-          <span>Offers</span>
-        </Link>
-        <a
-          href={`https://wa.me/${siteConfig.whatsappNumber}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-semibold text-slate-700 shadow-2xs flex items-center gap-1"
-        >
-          <Headphones className="w-3 h-3 text-slate-500" />
-          <span>Support</span>
-        </a>
-      </div>
-
-      {/* 5. Mobile Drawer Menu */}
+      {/* =================================================================== */}
+      {/* MOBILE DRAWER / SLIDE-OUT MENU                                      */}
+      {/* =================================================================== */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex">
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col z-10">
-            {/* Drawer Header */}
+
+          {/* Drawer content */}
+          <div className="fixed inset-y-0 left-0 w-[85%] max-w-sm bg-white shadow-2xl flex flex-col z-50 overflow-y-auto">
+            {/* Header */}
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-              <div className="relative h-10 w-36">
+              <div className="relative h-9 w-36">
                 <Image
-                  src={siteConfig.logoUrl}
-                  alt={siteConfig.name}
+                  src="/vittal-digital-logo.png"
+                  alt="Vittal Digital"
                   fill
                   className="object-contain object-left"
                 />
               </div>
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-1 rounded-lg text-slate-500 hover:bg-slate-200"
-                aria-label="Close menu"
+                className="p-1.5 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-200"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Drawer Navigation Links */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              <div>
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                  Electronics Categories
+            {/* Navigation links */}
+            <div className="p-4 space-y-4 flex-1">
+              {/* Primary links */}
+              <div className="space-y-1">
+                <Link
+                  href="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-lg text-sm font-bold text-[#002D62] bg-blue-50"
+                >
+                  Home
+                </Link>
+                <Link
+                  href="/products"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Shop All Products
+                </Link>
+                <Link
+                  href="/order-tracking"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Track Order / Status
+                </Link>
+                <Link
+                  href="/wishlist"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  My Wishlist ({totalWishlistItems})
+                </Link>
+                <button
+                  onClick={(e) => {
+                    setMobileMenuOpen(false);
+                    handleAccountClick(e);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  {isAuthenticated ? "My Account" : "Sign In / Register"}
+                </button>
+              </div>
+
+              {/* Departments */}
+              <div className="border-t border-slate-200 pt-3">
+                <p className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  Shop By Department
                 </p>
                 <div className="space-y-1">
-                  {navCategories.map((cat) => {
-                    const Icon = cat.icon;
+                  {departments.map((dep) => {
+                    const Icon = dep.icon;
                     return (
                       <Link
-                        key={cat.label}
-                        href={cat.href}
+                        key={dep.name}
+                        href={dep.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center justify-between p-2.5 rounded-lg text-slate-800 hover:bg-slate-100 font-medium text-sm"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-[#002D62]"
                       >
-                        <span className="flex items-center gap-3">
-                          <Icon className="w-4 h-4 text-slate-500" />
-                          {cat.label}
-                        </span>
-                        <ArrowRight className="w-4 h-4 text-slate-400" />
+                        <Icon className="w-4 h-4 text-[#002D62]" />
+                        <span>{dep.name}</span>
                       </Link>
                     );
                   })}
                 </div>
               </div>
 
+              {/* Customer Support */}
               <div className="border-t border-slate-200 pt-3">
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                  Customer Assistance
-                </p>
-                <div className="space-y-1">
-                  <Link
-                    href="/order-tracking"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 p-2 rounded-lg text-slate-700 hover:bg-slate-100 text-sm font-medium"
-                  >
-                    <Truck className="w-4 h-4 text-slate-500" />
-                    <span>Track Your Order</span>
-                  </Link>
-                  <Link
-                    href="/wishlist"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 p-2 rounded-lg text-slate-700 hover:bg-slate-100 text-sm font-medium"
-                  >
-                    <Heart className="w-4 h-4 text-slate-500" />
-                    <span>My Wishlist</span>
-                  </Link>
-                  <Link
-                    href="/account"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 p-2 rounded-lg text-slate-700 hover:bg-slate-100 text-sm font-medium"
-                  >
-                    <User className="w-4 h-4 text-slate-500" />
-                    <span>My Account</span>
-                  </Link>
-                  <a
-                    href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20have%20an%20inquiry%20regarding%20Vittal%20Digital`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-2 rounded-lg text-emerald-700 hover:bg-emerald-50 text-sm font-semibold"
-                  >
-                    <Headphones className="w-4 h-4" />
-                    <span>WhatsApp Concierge</span>
-                  </a>
-                </div>
+                <a
+                  href="tel:+919600048000"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <Headphones className="w-5 h-5 text-[#002D62]" />
+                  <div>
+                    <span className="block text-[10px] text-slate-400 font-bold uppercase">
+                      Customer Support
+                    </span>
+                    <span className="block text-sm font-bold text-slate-900">
+                      +91 96000 48000
+                    </span>
+                  </div>
+                </a>
               </div>
-            </div>
-
-            {/* Drawer Footer */}
-            <div className="p-4 border-t border-slate-200 bg-slate-50 text-xs text-slate-500">
-              <p className="font-semibold text-slate-700">Vittal Digital Official Store</p>
-              <p>Imported from Dubai • Delivered across India</p>
             </div>
           </div>
         </div>
