@@ -510,11 +510,11 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* ===================================================================== */}
       {/* SECTION 2: FLOATING CATEGORY CAPSULE BAR                              */}
       {/* ===================================================================== */}
-      <section className="relative z-20 max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-8">
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200/80 p-4 sm:p-5 flex items-center justify-between">
+      <section className="relative z-20 max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 -mt-5 sm:-mt-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-200/80 py-2 sm:py-2.5 px-3 sm:px-6 flex items-center justify-between">
           <div
             ref={categoryScrollRef}
-            className="flex items-center justify-between gap-6 sm:gap-8 overflow-x-auto scrollbar-hide py-1 w-full"
+            className="flex items-center justify-between gap-3 sm:gap-5 overflow-x-auto scrollbar-hide py-0.5 w-full"
             style={{ scrollbarWidth: "none" }}
           >
             {CATEGORIES.map((cat) => {
@@ -523,12 +523,12 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
                 <Link
                   key={cat.name}
                   href={cat.link}
-                  className="flex flex-col items-center gap-2 group min-w-[85px] sm:min-w-[110px] shrink-0 text-center flex-1"
+                  className="flex flex-col items-center gap-1 group min-w-[70px] sm:min-w-[90px] shrink-0 text-center flex-1"
                 >
-                  <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-full bg-slate-50 border border-slate-100 group-hover:border-[#002D62] group-hover:bg-blue-50/50 flex items-center justify-center transition-all group-hover:scale-105 shadow-xs">
-                    <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-[#002D62] group-hover:text-[#002D62] transition-colors" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-50 border border-slate-100 group-hover:border-[#002D62] group-hover:bg-blue-50/50 flex items-center justify-center transition-all group-hover:scale-105 shadow-xs">
+                    <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#002D62] group-hover:text-[#002D62] transition-colors" />
                   </div>
-                  <span className="text-[11px] sm:text-xs font-semibold text-slate-700 group-hover:text-[#002D62] leading-tight max-w-[95px]">
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-slate-700 group-hover:text-[#002D62] leading-tight max-w-[85px]">
                     {cat.name}
                   </span>
                 </Link>
@@ -539,10 +539,10 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
           {/* Right Chevron Button */}
           <button
             onClick={() => scrollCategories("right")}
-            className="hidden md:flex shrink-0 ml-4 w-9 h-9 rounded-full bg-[#002D62] hover:bg-blue-900 text-white items-center justify-center shadow-md transition-colors"
+            className="hidden md:flex shrink-0 ml-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#002D62] hover:bg-blue-900 text-white items-center justify-center shadow-md transition-colors"
             aria-label="Scroll categories right"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
       </section>
@@ -550,7 +550,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* ===================================================================== */}
       {/* SECTION 3: THREE-COLUMN PROMO BANNERS                                 */}
       {/* ===================================================================== */}
-      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-8 sm:pb-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Promo 1: Smartphones */}
           <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#EAEBFF] via-[#E2E6FF] to-[#D5DCFF] border border-indigo-100 p-6 sm:p-7 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-shadow">
