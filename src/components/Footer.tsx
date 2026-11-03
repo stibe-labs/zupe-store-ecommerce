@@ -59,48 +59,53 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-[#00223D] text-slate-300 border-t border-blue-950/60 pt-10 sm:pt-14 pb-24 md:pb-16 font-sans">
+    <footer className="bg-[#00223D] text-slate-300 border-t border-blue-950/60 pt-5 sm:pt-8 pb-24 md:pb-16 font-sans">
       <div className="max-w-[1680px] mx-auto px-4 sm:px-8">
         {/* ================================================================= */}
-        {/* UPPER INSIDE FOOTER: WHITE CURVED CARD (TRUST & WARRANTY STRIP)   */}
+        {/* UPPER INSIDE FOOTER: SLIM WHITE CURVED CARD (4 BADGES IN 1 ROW)   */}
         {/* ================================================================= */}
-        <div className="bg-white text-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl p-6 sm:p-8 mb-10 sm:mb-14">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-center divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+        <div className="bg-white text-slate-900 rounded-xl sm:rounded-2xl md:rounded-3xl border border-slate-200/90 shadow-md py-2.5 px-1.5 sm:py-3.5 sm:px-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-4 divide-x divide-slate-100 items-center text-center">
             {[
               {
                 icon: BadgeCheck,
                 label: "100% Authentic",
-                desc: "Dubai sourced electronics",
+                desc: "Dubai sourced",
               },
               {
                 icon: ShieldCheck,
-                label: "1-Year Warranty",
-                desc: "All-India coverage & service",
+                label: "1-Yr Warranty",
+                fullLabel: "1-Year Warranty",
+                desc: "All-India service",
               },
               {
                 icon: Truck,
-                label: "Express Delivery",
-                desc: "2-4 business days air cargo",
+                label: "Fast Delivery",
+                fullLabel: "Express Delivery",
+                desc: "2-4 days air",
               },
               {
                 icon: Check,
                 label: "Secure Checkout",
-                desc: "UPI, Cards, Net Banking",
+                desc: "UPI & Cards",
               },
-            ].map((item, idx) => {
+            ].map((item) => {
               const Icon = item.icon;
               return (
                 <div
                   key={item.label}
-                  className={`flex flex-col items-center gap-2 ${
-                    idx > 0 ? "pt-4 sm:pt-0 sm:pl-6" : ""
-                  }`}
+                  className="flex flex-col items-center justify-center px-1 sm:px-2 md:px-3 text-center"
                 >
-                  <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shadow-xs mb-1">
-                    <Icon className="w-6 h-6 text-[#002D62]" />
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shadow-2xs mb-0.5 sm:mb-1 shrink-0">
+                    <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-[#002D62]" />
                   </div>
-                  <p className="text-sm font-black text-slate-900">{item.label}</p>
-                  <p className="text-xs text-slate-500 font-medium">{item.desc}</p>
+                  <p className="text-[10px] sm:text-xs md:text-sm font-black text-slate-900 leading-tight">
+                    <span className="sm:hidden">{item.label}</span>
+                    <span className="hidden sm:inline">{item.fullLabel || item.label}</span>
+                  </p>
+                  <p className="text-[8px] sm:text-[10px] md:text-xs text-slate-500 font-medium leading-tight mt-0.5 truncate max-w-full">
+                    {item.desc}
+                  </p>
                 </div>
               );
             })}
