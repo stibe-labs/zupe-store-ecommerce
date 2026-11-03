@@ -101,7 +101,7 @@ export async function executeD1Query<T = any>(
   const accountId =
     process.env.CLOUDFLARE_ACCOUNT_ID || "4eed09d0032a07881825f4e926cb997f";
   const databaseId =
-    process.env.CLOUDFLARE_D1_DATABASE_ID || "3a7891a3-6e90-4eab-b448-7c33aaec0c5f";
+    process.env.CLOUDFLARE_D1_DATABASE_ID || "ff60b17f-319d-42b6-9ff7-2ce4684a91d7";
   const apiToken = process.env.CLOUDFLARE_API_TOKEN || getLocalCloudflareToken();
 
   if (databaseId && apiToken && accountId) {

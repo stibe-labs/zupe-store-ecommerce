@@ -201,7 +201,7 @@ export async function dispatchShiprocketOrder(
     const pickupLocation =
       (config?.pickup_location && config.pickup_location !== "Primary")
         ? config.pickup_location
-        : process.env.SHIPROCKET_PICKUP_LOCATION || "jv ecom";
+        : process.env.SHIPROCKET_PICKUP_LOCATION || "work";
 
     const cleanCourier = preferredCourier.includes("Blue")
       ? "Bluedart"
