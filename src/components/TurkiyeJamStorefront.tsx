@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -107,6 +108,48 @@ const TRUST_ITEMS = [
   { icon: Award, title: "Warranty Across India", sub: "Hassle-free Support" },
   { icon: CreditCard, title: "Secure Payments", sub: "UPI, Cards, Net Banking" },
   { icon: Truck, title: "Express Delivery", sub: "2-4 Days Across India" },
+];
+
+// ---------------------------------------------------------------------------
+// Three Promo Banners Data (All background-removed transparent PNGs)
+// ---------------------------------------------------------------------------
+const PROMO_CARDS = [
+  {
+    id: "smartphones",
+    badge: "BEST DEALS",
+    titleLine1: "Save Up To",
+    titleLine2: "50% Off",
+    subtitle: "On Smartphones",
+    link: "/products?category=Smartphones",
+    image: "/vittal/products/iphone-15-transparent.png",
+    imageAlt: "Smartphone Sale",
+    imageClass: "w-40 sm:w-44 h-44 sm:h-48",
+    bgGradient: "bg-gradient-to-br from-[#EAEBFF] via-[#E2E6FF] to-[#D5DCFF] border-indigo-100",
+  },
+  {
+    id: "earbuds",
+    badge: "NEW ARRIVAL",
+    titleLine1: "B&O Beoplay E8",
+    titleLine2: "3.0 Wireless",
+    subtitle: "True Wireless Earbuds with Rich Sound",
+    link: "/products?category=Headphones+%26+Earbuds",
+    image: "/vittal/products/airpods-pro-transparent.png",
+    imageAlt: "B&O Beoplay E8 3.0",
+    imageClass: "w-40 sm:w-44 h-40 sm:h-44",
+    bgGradient: "bg-gradient-to-br from-[#FFF4EB] via-[#FCEAE0] to-[#F5D8CA] border-orange-100",
+  },
+  {
+    id: "smartwatches",
+    badge: "TOP SELLER",
+    titleLine1: "Beauty on",
+    titleLine2: "Your Wrist",
+    subtitle: "Shop Smartwatches for Every Lifestyle",
+    link: "/products?category=Smartwatches",
+    image: "/vittal/products/smart-watch-1-transparent.png",
+    imageAlt: "Smartwatches",
+    imageClass: "w-36 sm:w-40 h-44 sm:h-48",
+    bgGradient: "bg-gradient-to-br from-[#E6F3FA] via-[#D8ECF7] to-[#C9E4F4] border-sky-100",
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -289,6 +332,8 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
 
   // Hero carousel state
   const [activeSlide, setActiveSlide] = useState(0);
+  // Mobile 3-Card Promo Carousel auto-slides every 3 seconds (came from right side)
+  const [promoSlide, setPromoSlide] = useState(0);
   // Countdown timer state matching reference: [06] : [15] : [48]
   const [timeLeft, setTimeLeft] = useState({ hours: 6, minutes: 15, seconds: 48 });
   // Trending tab state
@@ -304,6 +349,14 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       setActiveSlide((prev) => (prev + 1) % HERO_SLIDES.length);
     }, 5000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Auto-slide mobile promo cards every 3 seconds
+  useEffect(() => {
+    const promoTimer = setInterval(() => {
+      setPromoSlide((prev) => (prev + 1) % PROMO_CARDS.length);
+    }, 3000);
+    return () => clearInterval(promoTimer);
   }, []);
 
   // Countdown timer
@@ -547,96 +600,113 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       </section>
 
       {/* ===================================================================== */}
-      {/* SECTION 3: THREE-COLUMN PROMO BANNERS                                 */}
+      {/* SECTION 3: THREE-COLUMN PROMO BANNERS (Auto-sliding Carousel on Mobile) */}
       {/* ===================================================================== */}
-      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-8 sm:pb-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Promo 1: Smartphones */}
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#EAEBFF] via-[#E2E6FF] to-[#D5DCFF] border border-indigo-100 p-6 sm:p-7 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-shadow">
-            <div className="z-10 max-w-[200px]">
-              <span className="text-[10px] font-black tracking-wider uppercase bg-[#002D62] text-white px-2.5 py-1 rounded shadow-xs inline-block mb-2">
-                BEST DEALS
-              </span>
-              <h3 className="text-2xl sm:text-3xl font-black text-[#002D62] leading-tight mt-1">
-                Save Up To<br />50% Off
-              </h3>
-              <p className="text-xs text-slate-600 font-medium mt-1">On Smartphones</p>
-              <Link
-                href="/products?category=Smartphones"
-                className="inline-flex items-center gap-1.5 mt-5 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2.5 rounded-md transition-colors shadow-sm"
+      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-8 pb-7 sm:pb-10">
+        {/* Desktop View: All 3 cards side-by-side in 3-column grid */}
+        <div className="hidden md:grid md:grid-cols-3 gap-6">
+          {PROMO_CARDS.map((card) => (
+            <div
+              key={card.id}
+              className={`relative rounded-2xl overflow-hidden ${card.bgGradient} border p-6 sm:p-7 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-shadow`}
+            >
+              <div className="z-10 max-w-[210px]">
+                <span className="text-[10px] font-black tracking-wider uppercase bg-[#002D62] text-white px-2.5 py-1 rounded shadow-xs inline-block mb-2">
+                  {card.badge}
+                </span>
+                <h3 className="text-xl sm:text-2xl font-black text-[#002D62] leading-tight mt-1">
+                  {card.titleLine1}
+                  <br />
+                  {card.titleLine2}
+                </h3>
+                <p className="text-xs text-slate-600 font-medium mt-1">
+                  {card.subtitle}
+                </p>
+                <Link
+                  href={card.link}
+                  className="inline-flex items-center gap-1.5 mt-5 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2.5 rounded-md transition-colors shadow-sm"
+                >
+                  <span>Shop Now</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+              <div className={`absolute right-3 bottom-2 ${card.imageClass} z-0`}>
+                <Image
+                  src={card.image}
+                  alt={card.imageAlt}
+                  fill
+                  className="object-contain object-bottom-right drop-shadow-md"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile View: Single card position with 3-second auto-slide animation from the right */}
+        <div className="block md:hidden">
+          <div className="relative w-full overflow-hidden rounded-2xl min-h-[220px]">
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.div
+                key={promoSlide}
+                initial={{ x: "100%", opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: "-100%", opacity: 0 }}
+                transition={{ duration: 0.55, ease: [0.25, 1, 0.5, 1] }}
+                className="w-full"
               >
-                <span>Shop Now</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-            <div className="absolute right-3 bottom-2 w-44 h-48 z-0">
-              <Image
-                src="/vittal/products/iphone-15-transparent.png"
-                alt="Smartphone Sale"
-                fill
-                className="object-contain object-bottom-right drop-shadow-md"
-              />
-            </div>
+                <div
+                  className={`relative rounded-2xl overflow-hidden ${PROMO_CARDS[promoSlide].bgGradient} border p-6 flex flex-col justify-between min-h-[220px] shadow-sm`}
+                >
+                  <div className="z-10 max-w-[200px]">
+                    <span className="text-[10px] font-black tracking-wider uppercase bg-[#002D62] text-white px-2.5 py-1 rounded shadow-xs inline-block mb-2">
+                      {PROMO_CARDS[promoSlide].badge}
+                    </span>
+                    <h3 className="text-xl font-black text-[#002D62] leading-tight mt-1">
+                      {PROMO_CARDS[promoSlide].titleLine1}
+                      <br />
+                      {PROMO_CARDS[promoSlide].titleLine2}
+                    </h3>
+                    <p className="text-xs text-slate-600 font-medium mt-1">
+                      {PROMO_CARDS[promoSlide].subtitle}
+                    </p>
+                    <Link
+                      href={PROMO_CARDS[promoSlide].link}
+                      className="inline-flex items-center gap-1.5 mt-4 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2 rounded-md transition-colors shadow-sm"
+                    >
+                      <span>Shop Now</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                  <div
+                    className={`absolute right-3 bottom-2 ${PROMO_CARDS[promoSlide].imageClass} z-0`}
+                  >
+                    <Image
+                      src={PROMO_CARDS[promoSlide].image}
+                      alt={PROMO_CARDS[promoSlide].imageAlt}
+                      fill
+                      priority
+                      className="object-contain object-bottom-right drop-shadow-md"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
-          {/* Promo 2: Earbuds */}
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#FFF4EB] via-[#FCEAE0] to-[#F5D8CA] border border-orange-100 p-6 sm:p-7 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-shadow">
-            <div className="z-10 max-w-[210px]">
-              <span className="text-[10px] font-black tracking-wider uppercase bg-[#002D62] text-white px-2.5 py-1 rounded shadow-xs inline-block mb-2">
-                NEW ARRIVAL
-              </span>
-              <h3 className="text-xl sm:text-2xl font-black text-[#002D62] leading-tight mt-1">
-                B&O Beoplay E8 3.0
-              </h3>
-              <p className="text-xs text-slate-600 font-medium mt-1">
-                True Wireless Earbuds with Rich Sound
-              </p>
-              <Link
-                href="/products?category=Headphones+%26+Earbuds"
-                className="inline-flex items-center gap-1.5 mt-5 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2.5 rounded-md transition-colors shadow-sm"
-              >
-                <span>Shop Now</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-            <div className="absolute right-3 bottom-2 w-44 h-44 z-0">
-              <Image
-                src="/vittal/products/airpods-pro-transparent.png"
-                alt="B&O Beoplay E8 3.0"
-                fill
-                className="object-contain object-bottom-right drop-shadow-md"
+          {/* Mobile Dots Indicator (3 dots for 3 cards) */}
+          <div className="flex items-center justify-center gap-2 mt-3">
+            {PROMO_CARDS.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setPromoSlide(idx)}
+                className={`transition-all duration-300 rounded-full ${
+                  idx === promoSlide
+                    ? "bg-[#002D62] w-6 h-1.5"
+                    : "bg-slate-300 hover:bg-slate-400 w-1.5 h-1.5"
+                }`}
+                aria-label={`Go to promo card ${idx + 1}`}
               />
-            </div>
-          </div>
-
-          {/* Promo 3: Smartwatches */}
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#E6F3FA] via-[#D8ECF7] to-[#C9E4F4] border border-sky-100 p-6 sm:p-7 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-shadow">
-            <div className="z-10 max-w-[210px]">
-              <span className="text-[10px] font-black tracking-wider uppercase bg-[#002D62] text-white px-2.5 py-1 rounded shadow-xs inline-block mb-2">
-                TOP SELLER
-              </span>
-              <h3 className="text-xl sm:text-2xl font-black text-[#002D62] leading-tight mt-1">
-                Beauty on Your Wrist
-              </h3>
-              <p className="text-xs text-slate-600 font-medium mt-1">
-                Shop Smartwatches for Every Lifestyle
-              </p>
-              <Link
-                href="/products?category=Smartwatches"
-                className="inline-flex items-center gap-1.5 mt-5 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2.5 rounded-md transition-colors shadow-sm"
-              >
-                <span>Shop Now</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-            <div className="absolute right-3 bottom-2 w-40 h-48 z-0">
-              <Image
-                src="/vittal/smart-watch-pro.png"
-                alt="Smartwatches"
-                fill
-                className="object-contain object-bottom-right drop-shadow-md"
-              />
-            </div>
+            ))}
           </div>
         </div>
       </section>
