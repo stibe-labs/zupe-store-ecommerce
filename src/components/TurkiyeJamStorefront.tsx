@@ -155,6 +155,55 @@ const PROMO_CARDS = [
 // ---------------------------------------------------------------------------
 // Featured deals product data (6 items with ultra-sharp studio photos)
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Middle 3 Promo Banners Data (Section 6) with plain background in round frame
+// ---------------------------------------------------------------------------
+const MID_PROMO_CARDS = [
+  {
+    id: "speaker",
+    badge: "AUDIO DEAL",
+    titleLine1: "Super Cheap",
+    titleLine2: "Price",
+    subtitle: "Earn 20% Back in Rewards",
+    theme: "dark",
+    cardBg: "bg-[#002D62] text-white",
+    ctaText: "Shop Now",
+    ctaLink: "/products?category=Speakers",
+    ctaType: "button",
+    image: "/vittal/promo-speaker-nobg.png",
+    imageAlt: "Wireless Bluetooth Speaker",
+  },
+  {
+    id: "powerbank",
+    badge: "COMPACT CHARGER",
+    titleLine1: "Power Bank",
+    titleLine2: "10000mAh",
+    subtitle: "Compact, Fast & Reliable",
+    priceText: "₹799",
+    theme: "light",
+    cardBg: "bg-gradient-to-r from-slate-100 via-white to-blue-50/60 border border-slate-200 text-slate-900",
+    ctaLink: "/products?category=Accessories",
+    ctaType: "price",
+    image: "/vittal/promo-powerbank-nobg.png",
+    imageAlt: "Power Bank 10000mAh",
+  },
+  {
+    id: "console",
+    badge: "GAMING GEAR",
+    titleLine1: "Console",
+    titleLine2: "Accessories",
+    subtitle: "for PS5 & Xbox",
+    badgeText: "Up to 30% Off",
+    theme: "dark",
+    cardBg: "bg-[#002D62] text-white",
+    ctaLink: "/products?category=Gaming+%26+Accessories",
+    ctaType: "badge",
+    image: "/vittal/promo-console-nobg.png",
+    imageAlt: "DualSense Wireless Controller",
+  },
+];
+
 const FEATURED_DEALS = [
   {
     id: "hp-victus-15",
@@ -367,6 +416,17 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
   const [activeSlide, setActiveSlide] = useState(0);
   // Mobile 3-Card Promo Carousel auto-slides every 3 seconds (came from right side)
   const [promoSlide, setPromoSlide] = useState(0);
+  // Middle 3 Promo feature cards auto-slide on mobile every 3 seconds
+  const [midPromoSlide, setMidPromoSlide] = useState(0);
+
+  // Auto-slide middle 3 promo cards on mobile every 3 seconds
+  useEffect(() => {
+    const midTimer = setInterval(() => {
+      setMidPromoSlide((prev) => (prev + 1) % MID_PROMO_CARDS.length);
+    }, 3000);
+    return () => clearInterval(midTimer);
+  }, []);
+
   // Countdown timer state matching reference: [06] : [15] : [48]
   const [timeLeft, setTimeLeft] = useState({ hours: 6, minutes: 15, seconds: 48 });
   // Trending tab state
@@ -909,76 +969,145 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
         </div>
       </section>
 
-      {/* ===================================================================== */}
+            {/* ===================================================================== */}
       {/* SECTION 6: MIDDLE 3 PROMO FEATURE CARDS (Marshall, PowerBank, Console)*/}
       {/* ===================================================================== */}
       <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Card 1: Marshall Speaker */}
-          <div className="relative rounded-2xl overflow-hidden bg-[#002D62] text-white p-6 sm:p-7 flex flex-col justify-between min-h-[170px] shadow-sm">
-            <div className="z-10 max-w-[200px]">
-              <h3 className="text-lg sm:text-xl font-black text-white leading-tight">
-                Super Cheap Price
-              </h3>
-              <p className="text-xs text-blue-200 mt-1">Earn 20% Back in Rewards</p>
+        {/* Desktop View: All 3 cards in responsive 3-column grid */}
+        <div className="hidden md:grid md:grid-cols-3 gap-6">
+          {MID_PROMO_CARDS.map((card) => (
+            <div
+              key={card.id}
+              className={`relative rounded-2xl overflow-hidden ${card.cardBg} p-6 sm:p-7 flex items-center justify-between gap-4 min-h-[175px] shadow-sm hover:shadow-md transition-all group`}
+            >
+              <div className="z-10 flex-1 max-w-[210px]">
+                <h3 className={`text-lg sm:text-xl font-black leading-tight ${card.theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                  {card.titleLine1} {card.titleLine2}
+                </h3>
+                <p className={`text-xs mt-1 font-medium ${card.theme === 'dark' ? 'text-blue-200' : 'text-slate-500'}`}>
+                  {card.subtitle}
+                </p>
+
+                {card.ctaType === "button" && (
+                  <Link
+                    href={card.ctaLink}
+                    className="inline-flex items-center gap-1.5 mt-4 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2 rounded-md transition-colors shadow-xs w-fit"
+                  >
+                    <span>{card.ctaText}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                )}
+
+                {card.ctaType === "price" && (
+                  <Link href={card.ctaLink} className="block mt-3">
+                    <p className="text-2xl font-black text-slate-900 hover:text-blue-600 transition-colors">
+                      {card.priceText}
+                    </p>
+                  </Link>
+                )}
+
+                {card.ctaType === "badge" && (
+                  <Link href={card.ctaLink} className="inline-block mt-3.5">
+                    <span className="bg-[#FFBE00] text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-md inline-block shadow-xs hover:bg-[#E5AA00] transition-colors">
+                      {card.badgeText}
+                    </span>
+                  </Link>
+                )}
+              </div>
+
+              {/* Round-edged white frame containing background-removed product image on plain background */}
               <Link
-                href="/products?category=Speakers"
-                className="inline-flex items-center gap-1.5 mt-4 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-4 py-2 rounded-md transition-colors w-fit"
+                href={card.ctaLink}
+                className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white shadow-md border border-slate-100 flex items-center justify-center p-2.5 overflow-hidden shrink-0 group-hover:scale-105 transition-transform"
               >
-                <span>Shop Now</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <Image
+                  src={card.image}
+                  alt={card.imageAlt}
+                  fill
+                  sizes="(max-width: 640px) 112px, 128px"
+                  className="object-contain p-2 drop-shadow-sm transition-transform duration-300 group-hover:scale-105"
+                />
               </Link>
             </div>
-            <div className="absolute right-4 bottom-3 w-40 h-32 z-0">
-              <Image
-                src="/vittal/portable-bluetooth-speaker.png"
-                alt="Marshall Speaker"
-                fill
-                className="object-contain object-bottom-right drop-shadow-md"
-              />
-            </div>
-          </div>
+          ))}
+        </div>
 
-          {/* Card 2: Power Bank */}
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-slate-100 to-blue-50/60 border border-slate-200 p-6 sm:p-7 flex flex-col justify-between min-h-[170px] shadow-sm">
-            <div className="z-10 max-w-[200px]">
-              <h3 className="text-base sm:text-lg font-black text-slate-900 leading-tight">
-                Power Bank 10000mAh
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">Compact, Fast &amp; Reliable</p>
-              <p className="text-2xl font-black text-slate-900 mt-2">₹799</p>
-            </div>
-            <div className="absolute right-4 bottom-3 w-36 h-32 z-0">
-              <Image
-                src="/vittal/compact-power-bank.png"
-                alt="Power Bank"
-                fill
-                className="object-contain object-bottom-right drop-shadow-md"
-              />
-            </div>
-          </div>
+        {/* Mobile View: Animated 3-second Auto-Slide Carousel from Right */}
+        <div className="md:hidden">
+          <div className="relative overflow-hidden rounded-2xl">
+            <div
+              key={midPromoSlide}
+              className="animate-in fade-in slide-in-from-right duration-500"
+            >
+              <div
+                className={`relative rounded-2xl overflow-hidden ${MID_PROMO_CARDS[midPromoSlide].cardBg} p-5 sm:p-6 flex items-center justify-between gap-3 min-h-[160px] shadow-sm`}
+              >
+                <div className="z-10 flex-1 max-w-[190px]">
+                  <h3 className={`text-base font-black leading-tight ${MID_PROMO_CARDS[midPromoSlide].theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                    {MID_PROMO_CARDS[midPromoSlide].titleLine1} {MID_PROMO_CARDS[midPromoSlide].titleLine2}
+                  </h3>
+                  <p className={`text-[11px] mt-1 font-medium ${MID_PROMO_CARDS[midPromoSlide].theme === 'dark' ? 'text-blue-200' : 'text-slate-500'}`}>
+                    {MID_PROMO_CARDS[midPromoSlide].subtitle}
+                  </p>
 
-          {/* Card 3: Console Accessories */}
-          <div className="relative rounded-2xl overflow-hidden bg-[#002D62] text-white p-6 sm:p-7 flex flex-col justify-between min-h-[170px] shadow-sm">
-            <div className="z-10 max-w-[200px]">
-              <h3 className="text-base sm:text-lg font-black text-white leading-tight">
-                Console Accessories
-              </h3>
-              <p className="text-xs text-blue-200 mt-0.5">for PS5 &amp; Xbox</p>
-              <div className="mt-3">
-                <span className="bg-[#FFBE00] text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-md inline-block">
-                  Up to 30% Off
-                </span>
+                  {MID_PROMO_CARDS[midPromoSlide].ctaType === "button" && (
+                    <Link
+                      href={MID_PROMO_CARDS[midPromoSlide].ctaLink}
+                      className="inline-flex items-center gap-1.5 mt-3.5 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-md transition-colors shadow-xs w-fit"
+                    >
+                      <span>{MID_PROMO_CARDS[midPromoSlide].ctaText}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  )}
+
+                  {MID_PROMO_CARDS[midPromoSlide].ctaType === "price" && (
+                    <Link href={MID_PROMO_CARDS[midPromoSlide].ctaLink} className="block mt-2.5">
+                      <p className="text-xl font-black text-slate-900">
+                        {MID_PROMO_CARDS[midPromoSlide].priceText}
+                      </p>
+                    </Link>
+                  )}
+
+                  {MID_PROMO_CARDS[midPromoSlide].ctaType === "badge" && (
+                    <Link href={MID_PROMO_CARDS[midPromoSlide].ctaLink} className="inline-block mt-3">
+                      <span className="bg-[#FFBE00] text-slate-950 font-black text-xs px-3 py-1 rounded-md inline-block shadow-xs">
+                        {MID_PROMO_CARDS[midPromoSlide].badgeText}
+                      </span>
+                    </Link>
+                  )}
+                </div>
+
+                {/* Round-edged white frame in mobile view */}
+                <Link
+                  href={MID_PROMO_CARDS[midPromoSlide].ctaLink}
+                  className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white shadow-md border border-slate-100 flex items-center justify-center p-2 overflow-hidden shrink-0"
+                >
+                  <Image
+                    src={MID_PROMO_CARDS[midPromoSlide].image}
+                    alt={MID_PROMO_CARDS[midPromoSlide].imageAlt}
+                    fill
+                    sizes="96px"
+                    className="object-contain p-1.5 drop-shadow-sm"
+                  />
+                </Link>
               </div>
             </div>
-            <div className="absolute right-4 bottom-3 w-40 h-32 z-0">
-              <Image
-                src="/vittal/products/ps5-controller-transparent.png"
-                alt="Console Accessories"
-                fill
-                className="object-contain object-bottom-right drop-shadow-md"
+          </div>
+
+          {/* Mobile Dots Indicator */}
+          <div className="flex items-center justify-center gap-2 mt-3">
+            {MID_PROMO_CARDS.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setMidPromoSlide(idx)}
+                className={`transition-all duration-300 rounded-full ${
+                  idx === midPromoSlide
+                    ? "w-6 h-2 bg-[#002D62]"
+                    : "w-2 h-2 bg-slate-300 hover:bg-slate-400"
+                }`}
+                aria-label={`Go to promo card ${idx + 1}`}
               />
-            </div>
+            ))}
           </div>
         </div>
       </section>
