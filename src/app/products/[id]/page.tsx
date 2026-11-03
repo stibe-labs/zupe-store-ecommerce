@@ -54,6 +54,80 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
+// ---------------------------------------------------------------------------
+// Helper: Resolve product synchronously for instant SSR & 0ms client hydration
+// ---------------------------------------------------------------------------
+function resolveProduct(idOrSlug: string): Product {
+  const rawId = decodeURIComponent(idOrSlug || "").trim().toLowerCase();
+  const cleanId = rawId.replace(/[-_ ]+/g, "");
+
+  // 1. Exact ID or exact Slug match
+  const exact = DEFAULT_PRODUCTS.find(
+    (p) => p.id.toLowerCase() === rawId || (p.slug && p.slug.toLowerCase() === rawId)
+  );
+  if (exact) return exact;
+
+  // 2. Normalized alphanumeric match
+  const norm = DEFAULT_PRODUCTS.find(
+    (p) =>
+      p.id.toLowerCase().replace(/[-_ ]+/g, "") === cleanId ||
+      (p.slug && p.slug.toLowerCase().replace(/[-_ ]+/g, "") === cleanId)
+  );
+  if (norm) return norm;
+
+  // 3. Keyword / partial matching
+  if (rawId.includes("victus") || rawId.includes("hp")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "hp-victus-15") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("dualsense") || rawId.includes("ps5") || rawId.includes("controller")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "dualsense-ps5") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("s24") || rawId.includes("galaxy-s24")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "galaxy-s24-256") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("watch6") || rawId.includes("galaxy-watch")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "galaxy-watch6") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("iphone") || rawId.includes("iphone-15")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "iphone-15-128") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("jbl") || rawId.includes("charge")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "jbl-charge-5") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("ideapad") || rawId.includes("lenovo")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "lenovo-ideapad-slim5") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("tab") || rawId.includes("s9")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "galaxy-tab-s9-124") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("ultragear") || rawId.includes("monitor")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "lg-ultragear-27") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("oneplus") || rawId.includes("12r")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "oneplus-12r-16gb") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("max") && rawId.includes("airpod")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "airpods-max-pink") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("airpod")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "airpods-pro-2") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("speaker")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "portable-bluetooth-speaker") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("power") || rawId.includes("bank")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "compact-power-bank") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("watch")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "smart-watch-pro") || DEFAULT_PRODUCTS[0];
+  }
+  if (rawId.includes("laptop")) {
+    return DEFAULT_PRODUCTS.find((p) => p.id === "ultraslim-laptop-14") || DEFAULT_PRODUCTS[0];
+  }
+
+  return DEFAULT_PRODUCTS[0];
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -62,9 +136,13 @@ export default function ProductDetailPage() {
   const { addToCart, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
-  const [product, setProduct] = useState<Product | null>(null);
+  // Initialize synchronously with exact matching product (zero delay / zero default to AirPods)
+  const [product, setProduct] = useState<Product>(() => resolveProduct(idOrSlug));
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
-  const [selectedColor, setSelectedColor] = useState<string>("Standard");
+  const [selectedColor, setSelectedColor] = useState<string>(() => {
+    const p = resolveProduct(idOrSlug);
+    return p.colors && p.colors.length > 0 ? p.colors[0].name : p.color || "Standard";
+  });
   const [quantity, setQuantity] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<"overview" | "specs" | "reviews" | "qa">("overview");
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
@@ -76,82 +154,11 @@ export default function ProductDetailPage() {
   const [showStickyBar, setShowStickyBar] = useState<boolean>(false);
 
   // -------------------------------------------------------------------------
-  // Dynamic Product Resolution (Fixes issue where any product opened was AirPods)
+  // Dynamic Product Resolution (Sync & Live Fetch)
   // -------------------------------------------------------------------------
   useEffect(() => {
     let isMounted = true;
-    const rawId = decodeURIComponent(idOrSlug || "").trim().toLowerCase();
-    const cleanId = rawId.replace(/[-_ ]+/g, "");
-
-    const findMatchingProduct = (): Product => {
-      // 1. Exact ID or exact Slug match
-      const exact = DEFAULT_PRODUCTS.find(
-        (p) => p.id.toLowerCase() === rawId || (p.slug && p.slug.toLowerCase() === rawId)
-      );
-      if (exact) return exact;
-
-      // 2. Normalized alphanumeric match
-      const norm = DEFAULT_PRODUCTS.find(
-        (p) =>
-          p.id.toLowerCase().replace(/[-_ ]+/g, "") === cleanId ||
-          (p.slug && p.slug.toLowerCase().replace(/[-_ ]+/g, "") === cleanId)
-      );
-      if (norm) return norm;
-
-      // 3. Keyword / partial matching
-      if (rawId.includes("victus") || rawId.includes("hp")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "hp-victus-15") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("dualsense") || rawId.includes("ps5") || rawId.includes("controller")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "dualsense-ps5") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("s24") || rawId.includes("galaxy-s24")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "galaxy-s24-256") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("watch6") || rawId.includes("galaxy-watch")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "galaxy-watch6") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("iphone") || rawId.includes("iphone-15")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "iphone-15-128") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("jbl") || rawId.includes("charge")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "jbl-charge-5") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("ideapad") || rawId.includes("lenovo")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "lenovo-ideapad-slim5") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("tab") || rawId.includes("s9")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "galaxy-tab-s9-124") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("ultragear") || rawId.includes("monitor")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "lg-ultragear-27") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("oneplus") || rawId.includes("12r")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "oneplus-12r-16gb") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("max") && rawId.includes("airpod")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "airpods-max-pink") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("airpod")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "airpods-pro-2") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("speaker")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "portable-bluetooth-speaker") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("power") || rawId.includes("bank")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "compact-power-bank") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("watch")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "smart-watch-pro") || DEFAULT_PRODUCTS[0];
-      }
-      if (rawId.includes("laptop")) {
-        return DEFAULT_PRODUCTS.find((p) => p.id === "ultraslim-laptop-14") || DEFAULT_PRODUCTS[0];
-      }
-
-      return DEFAULT_PRODUCTS[0];
-    };
-
-    const targetProduct = findMatchingProduct();
+    const targetProduct = resolveProduct(idOrSlug);
     if (isMounted) {
       setProduct(targetProduct);
       setSelectedImageIndex(0);
@@ -163,6 +170,7 @@ export default function ProductDetailPage() {
     }
 
     // Try fetching fresh live product from API
+    const rawId = decodeURIComponent(idOrSlug || "").trim();
     fetch(`/api/products?id=${encodeURIComponent(rawId)}&_t=${Date.now()}`)
       .then((r) => r.json())
       .then((data) => {
