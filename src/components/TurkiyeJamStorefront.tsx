@@ -54,7 +54,7 @@ const HERO_SLIDES = [
     headlineHighlight: "To Life",
     subLabel: "Starting at",
     price: "₹44,990",
-    image: "/vittal/products/hero-dualsense.jpg",
+    image: "/vittal/products/hero-dualsense-transparent.png",
     imageAlt: "PlayStation 5 DualSense Wireless Controllers in Black and White",
     link: "/products?category=Gaming+%26+Accessories",
   },
@@ -66,7 +66,7 @@ const HERO_SLIDES = [
     headlineHighlight: "Anytime",
     subLabel: "Starting at",
     price: "₹59,990",
-    image: "/vittal/products/hp-victus.jpg",
+    image: "/vittal/products/hp-victus-transparent.png",
     imageAlt: "HP Victus 15 Gaming Laptop",
     link: "/products?category=Laptops",
   },
@@ -78,7 +78,7 @@ const HERO_SLIDES = [
     headlineHighlight: "Every Beat",
     subLabel: "Starting at",
     price: "₹19,990",
-    image: "/vittal/products/airpods-max-spotlight.jpg",
+    image: "/vittal/products/airpods-max-transparent.png",
     imageAlt: "Apple AirPods Max Studio Headphones",
     link: "/products?category=Headphones+%26+Earbuds",
   },
@@ -229,7 +229,7 @@ const TRENDING_SPOTLIGHT = {
   mrp: 69990,
   rating: 4.7,
   reviews: "1,029",
-  image: "/vittal/products/airpods-max-spotlight.jpg",
+  image: "/vittal/products/airpods-max-transparent.png",
 };
 
 const TRENDING_RIGHT = [
@@ -417,53 +417,52 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* ===================================================================== */}
       <section className="relative w-full overflow-hidden bg-[#001D40]">
         <div
-          className="relative w-full transition-all duration-700 ease-out"
+          className="relative w-full transition-all duration-700 ease-out min-h-[185px] sm:min-h-[250px] lg:min-h-[350px]"
           style={{
-            minHeight: "360px",
             background:
               "radial-gradient(circle at 70% 48%, #0050A4 0%, #002D62 48%, #001633 100%)",
           }}
         >
-          <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-9 flex flex-col lg:flex-row items-center justify-between min-h-[360px]">
-            {/* Left Headline & Call-to-action */}
-            <div className="w-full lg:max-w-2xl text-white z-10 text-center lg:text-left mb-6 lg:mb-0">
-              <p className="text-xs sm:text-sm font-bold tracking-widest uppercase mb-1.5 text-[#FFBE00]">
+          <div className="max-w-[1680px] mx-auto px-7 sm:px-12 lg:px-16 py-3.5 sm:py-6 lg:py-8 flex flex-row items-center justify-between min-h-[185px] sm:min-h-[250px] lg:min-h-[350px] gap-2 sm:gap-6">
+            {/* Left Headline, Price & Call-to-action */}
+            <div className="w-[54%] sm:w-[50%] lg:w-[55%] text-left z-10 flex flex-col justify-center">
+              <p className="text-[9px] sm:text-xs lg:text-sm font-bold tracking-wider uppercase mb-0.5 sm:mb-1.5 text-[#FFBE00] truncate">
                 {currentHero.label}
               </p>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-white mb-3">
-                <span>{currentHero.headlineLine1}</span>
-                <br />
+              <h1 className="text-xs sm:text-2xl md:text-3xl lg:text-5xl font-black leading-tight tracking-tight text-white mb-1 sm:mb-3">
+                <span>{currentHero.headlineLine1}</span>{" "}
+                <span className="hidden sm:inline"><br /></span>
                 <span>{currentHero.headlineLine2} </span>
                 <span className="text-[#FFBE00]">{currentHero.headlineHighlight}</span>
               </h1>
-              <div className="mb-5">
-                <span className="text-xs sm:text-sm font-medium text-blue-200 block mb-0.5">
+              <div className="mb-1.5 sm:mb-4 flex items-baseline gap-1.5 sm:gap-2">
+                <span className="text-[9px] sm:text-xs lg:text-sm font-medium text-blue-200">
                   {currentHero.subLabel}
                 </span>
-                <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#FFBE00] tracking-tight">
+                <span className="text-xs sm:text-2xl lg:text-4xl font-black text-[#FFBE00] tracking-tight">
                   {currentHero.price}
                 </span>
               </div>
               <div>
                 <Link
                   href={currentHero.link}
-                  className="inline-flex items-center gap-2 bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-xs sm:text-sm px-7 py-3 rounded-xl transition-all shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95"
+                  className="inline-flex items-center gap-1 sm:gap-2 bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-[9px] sm:text-xs lg:text-sm px-3 sm:px-6 py-1 sm:py-2.5 rounded-md sm:rounded-xl transition-all shadow-md hover:shadow-xl hover:scale-105 active:scale-95"
                 >
                   <span>Shop Now</span>
-                  <ArrowRight className="w-4 h-4 stroke-[3]" />
+                  <ArrowRight className="w-2.5 h-2.5 sm:w-4 sm:h-4 stroke-[3]" />
                 </Link>
               </div>
             </div>
 
-            {/* Right Hero Product Graphic */}
-            <div className="relative w-full lg:w-1/2 flex items-center justify-center h-60 sm:h-72 lg:h-[340px]">
-              <div className="relative w-full h-full max-w-lg">
+            {/* Right Hero Product Graphic (Seamless Transparent PNG) */}
+            <div className="relative w-[46%] sm:w-[50%] lg:w-[45%] flex items-center justify-center h-28 sm:h-52 lg:h-[320px]">
+              <div className="relative w-full h-full max-w-[190px] sm:max-w-md lg:max-w-lg">
                 <Image
                   src={currentHero.image}
                   alt={currentHero.imageAlt}
                   fill
                   priority
-                  className="object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] animate-in fade-in zoom-in-95 duration-500 rounded-2xl"
+                  className="object-contain drop-shadow-[0_12px_28px_rgba(0,0,0,0.55)] animate-in fade-in zoom-in-95 duration-500"
                 />
               </div>
             </div>
@@ -474,31 +473,31 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
             onClick={() =>
               setActiveSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)
             }
-            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-md shadow-lg"
+            className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-6 h-6 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-md shadow-md"
             aria-label="Previous slide"
           >
-            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+            <ChevronLeft className="w-3.5 h-3.5 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
           </button>
           <button
             onClick={() =>
               setActiveSlide((prev) => (prev + 1) % HERO_SLIDES.length)
             }
-            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-md shadow-lg"
+            className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-6 h-6 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-md shadow-md"
             aria-label="Next slide"
           >
-            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+            <ChevronRight className="w-3.5 h-3.5 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
           </button>
 
           {/* Dots Indicator */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+          <div className="absolute bottom-1 sm:bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2">
             {HERO_SLIDES.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setActiveSlide(i)}
                 className={`transition-all duration-300 rounded-full ${
                   i === activeSlide
-                    ? "bg-[#FFBE00] w-7 h-2.5"
-                    : "bg-blue-300/40 hover:bg-white/60 w-2.5 h-2.5"
+                    ? "bg-[#FFBE00] w-4 sm:w-7 h-1 sm:h-2"
+                    : "bg-blue-300/40 hover:bg-white/60 w-1 sm:w-2 h-1 sm:h-2"
                 }`}
                 aria-label={`Go to slide ${i + 1}`}
               />
@@ -510,7 +509,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       {/* ===================================================================== */}
       {/* SECTION 2: FLOATING CATEGORY CAPSULE BAR                              */}
       {/* ===================================================================== */}
-      <section className="relative z-20 max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 -mt-5 sm:-mt-6">
+      <section className="relative z-20 max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 -mt-2.5 sm:-mt-6">
         <div className="bg-white rounded-2xl shadow-lg border border-slate-200/80 py-2 sm:py-2.5 px-3 sm:px-6 flex items-center justify-between">
           <div
             ref={categoryScrollRef}
@@ -572,10 +571,10 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
             </div>
             <div className="absolute right-3 bottom-2 w-44 h-48 z-0">
               <Image
-                src="/vittal/products/iphone-15.jpg"
+                src="/vittal/products/iphone-15-transparent.png"
                 alt="Smartphone Sale"
                 fill
-                className="object-contain object-bottom-right drop-shadow-md rounded-xl"
+                className="object-contain object-bottom-right drop-shadow-md"
               />
             </div>
           </div>
@@ -602,10 +601,10 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
             </div>
             <div className="absolute right-3 bottom-2 w-44 h-44 z-0">
               <Image
-                src="/vittal/products/airpods-pro.jpg"
+                src="/vittal/products/airpods-pro-transparent.png"
                 alt="B&O Beoplay E8 3.0"
                 fill
-                className="object-contain object-bottom-right drop-shadow-md rounded-xl"
+                className="object-contain object-bottom-right drop-shadow-md"
               />
             </div>
           </div>
@@ -857,7 +856,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
             </div>
             <div className="absolute right-4 bottom-3 w-40 h-32 z-0">
               <Image
-                src="/vittal/products/ps5-controller.jpg"
+                src="/vittal/products/ps5-controller-transparent.png"
                 alt="Console Accessories"
                 fill
                 className="object-contain object-bottom-right drop-shadow-md"
@@ -1013,12 +1012,12 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
           </div>
 
           {/* Right Product Devices Graphic */}
-          <div className="relative w-full md:w-1/2 h-64 sm:h-80 lg:h-96 z-10 flex items-center justify-center rounded-2xl overflow-hidden">
+          <div className="relative w-full md:w-1/2 h-64 sm:h-80 lg:h-96 z-10 flex items-center justify-center">
             <Image
-              src="/vittal/products/bottom-banner-devices.jpg"
+              src="/vittal/products/bottom-banner-devices-transparent.png"
               alt="Electronics Collection"
               fill
-              className="object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.5)] rounded-2xl"
+              className="object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.5)]"
             />
           </div>
         </div>
