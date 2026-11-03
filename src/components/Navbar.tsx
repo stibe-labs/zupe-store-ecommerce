@@ -113,7 +113,7 @@ export function Navbar() {
             </button>
 
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="relative h-9 sm:h-11 w-32 sm:w-40">
+              <div className="relative h-10 sm:h-12 w-36 sm:w-44">
                 <Image
                   src={siteConfig.logoUrl}
                   alt={siteConfig.name}
@@ -351,7 +351,7 @@ export function Navbar() {
           <div className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col z-10">
             {/* Drawer Header */}
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-              <div className="relative h-8 w-28">
+              <div className="relative h-10 w-36">
                 <Image
                   src={siteConfig.logoUrl}
                   alt={siteConfig.name}

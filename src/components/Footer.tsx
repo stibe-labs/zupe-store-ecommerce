@@ -63,12 +63,12 @@ export function Footer() {
           {/* Brand Info Column */}
           <div className="md:col-span-4 space-y-4">
             <Link href="/" className="inline-flex items-center group" aria-label={siteConfig.name}>
-              <div className="relative h-10 w-36 shrink-0">
+              <div className="relative h-12 w-44 shrink-0">
                 <Image
-                  src={siteConfig.logoUrl}
+                  src="/vittal-digital-logo-white.png"
                   alt={siteConfig.name}
                   fill
-                  className="object-contain object-left brightness-125"
+                  className="object-contain object-left"
                 />
               </div>
             </Link>

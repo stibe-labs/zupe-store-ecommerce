@@ -84,7 +84,7 @@ export const siteConfig: SiteConfig = {
   legalName: process.env.NEXT_PUBLIC_LEGAL_NAME || "Vittal Digital India",
   orderPrefix: process.env.NEXT_PUBLIC_ORDER_PREFIX || "VD",
 
-  logoUrl: process.env.NEXT_PUBLIC_LOGO_URL || "/vittal-digital-logo.svg",
+  logoUrl: process.env.NEXT_PUBLIC_LOGO_URL || "/vittal-digital-logo.png",
   logoPng: process.env.NEXT_PUBLIC_LOGO_PNG || "/vittal-digital-logo.png",
   faviconUrl: process.env.NEXT_PUBLIC_FAVICON_URL || "/favicon.png",
 

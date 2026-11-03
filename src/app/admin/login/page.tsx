@@ -197,12 +197,12 @@ export default function AdminLoginPage() {
       <header className="w-full border-b border-gray-900 bg-[#0d1017]/80 backdrop-blur-md py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative h-8 w-24 flex items-center justify-start">
+            <div className="relative h-9 w-32 flex items-center justify-start">
               <Image
-                src="/vittal-digital-logo.svg"
+                src="/vittal-digital-logo-white.png"
                 alt="Vittal Digital"
-                width={96}
-                height={32}
+                width={128}
+                height={36}
                 className="object-contain"
               />
             </div>

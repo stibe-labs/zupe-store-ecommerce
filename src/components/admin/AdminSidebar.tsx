@@ -144,13 +144,13 @@ export default function AdminSidebar({
         <div>
           <div className="h-16 flex items-center justify-between px-6 border-b border-white/[0.08]">
             <Link href="/admin" className="flex items-center gap-3 group">
-              <div className="relative h-9 w-28 flex items-center justify-start group-hover:scale-105 transition-transform overflow-hidden flex-shrink-0">
+              <div className="relative h-10 w-32 flex items-center justify-start group-hover:scale-105 transition-transform overflow-hidden flex-shrink-0">
                 <Image
-                  src="/vittal-digital-logo.svg"
+                  src="/vittal-digital-logo-white.png"
                   alt="Vittal Digital"
-                  width={112}
-                  height={36}
-                  className="object-contain w-auto h-8"
+                  width={128}
+                  height={40}
+                  className="object-contain w-auto h-9"
                   priority
                 />
               </div>
