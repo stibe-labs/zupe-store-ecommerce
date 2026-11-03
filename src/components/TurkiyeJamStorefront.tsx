@@ -479,20 +479,20 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
           <div className="max-w-[1680px] mx-auto px-7 sm:px-12 lg:px-16 py-3.5 sm:py-6 lg:py-8 flex flex-row items-center justify-between min-h-[185px] sm:min-h-[250px] lg:min-h-[350px] gap-2 sm:gap-6">
             {/* Left Headline, Price & Call-to-action */}
             <div className="w-[54%] sm:w-[50%] lg:w-[55%] text-left z-10 flex flex-col justify-center">
-              <p className="text-[9px] sm:text-xs lg:text-sm font-bold tracking-wider uppercase mb-0.5 sm:mb-1.5 text-[#FFBE00] truncate">
+              <p className="text-[8px] sm:text-[11px] lg:text-xs font-semibold tracking-widest uppercase mb-0.5 sm:mb-1.5 text-blue-200 truncate">
                 {currentHero.label}
               </p>
-              <h1 className="text-xs sm:text-2xl md:text-3xl lg:text-5xl font-black leading-tight tracking-tight text-white mb-1 sm:mb-3">
+              <h1 className="text-[14px] sm:text-2xl md:text-3xl lg:text-5xl font-black leading-snug sm:leading-tight tracking-tight text-white mb-1 sm:mb-3">
                 <span>{currentHero.headlineLine1}</span>{" "}
                 <span className="hidden sm:inline"><br /></span>
                 <span>{currentHero.headlineLine2} </span>
                 <span className="text-[#FFBE00]">{currentHero.headlineHighlight}</span>
               </h1>
-              <div className="mb-1.5 sm:mb-4 flex items-baseline gap-1.5 sm:gap-2">
-                <span className="text-[9px] sm:text-xs lg:text-sm font-medium text-blue-200">
+              <div className="mb-1.5 sm:mb-4 flex items-baseline gap-1 sm:gap-2">
+                <span className="text-[8px] sm:text-xs lg:text-sm font-medium text-blue-200">
                   {currentHero.subLabel}
                 </span>
-                <span className="text-xs sm:text-2xl lg:text-4xl font-black text-[#FFBE00] tracking-tight">
+                <span className="text-[11px] sm:text-2xl lg:text-4xl font-black text-[#FFBE00] tracking-tight">
                   {currentHero.price}
                 </span>
               </div>
