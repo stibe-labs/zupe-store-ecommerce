@@ -87,3 +87,4 @@ Deploying Vittal Digital to Cloudflare Workers is automated:
 4. **Verify Deployment:**
    - Confirm Wrangler output displays: `Uploaded vittaldigital`
    - Check live site at [vittaldigital.com](https://vittaldigital.com)
+
