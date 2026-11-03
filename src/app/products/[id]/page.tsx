@@ -36,6 +36,14 @@ import {
   HelpCircle,
   ChevronDown,
   Info,
+  Tv,
+  Gamepad2,
+  HardDrive,
+  Cpu,
+  Camera,
+  Watch,
+  Smartphone,
+  Laptop,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -46,78 +54,6 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
-// ---------------------------------------------------------------------------
-// High-res Related Products ("You May Also Like" - 6 products matching design)
-// ---------------------------------------------------------------------------
-const RELATED_AUDIO_PRODUCTS = [
-  {
-    id: "airpods-3rd-gen",
-    name: "Apple AirPods (3rd Gen)",
-    price: 14990,
-    mrp: 19990,
-    discount: 25,
-    rating: 4.5,
-    reviews: "1,324",
-    image: "/vittal/products/airpods-3rd-gen.jpg",
-    link: "/products/airpods-3rd-gen",
-  },
-  {
-    id: "airpods-max-pink",
-    name: "Apple AirPods Max",
-    price: 59990,
-    mrp: 69990,
-    discount: 28,
-    rating: 4.7,
-    reviews: "1,029",
-    image: "/vittal/products/airpods-max-spotlight.jpg",
-    link: "/products/airpods-max",
-  },
-  {
-    id: "galaxy-buds2-pro",
-    name: "Samsung Galaxy Buds2 Pro",
-    price: 17999,
-    mrp: 22999,
-    discount: 20,
-    rating: 4.6,
-    reviews: "2,417",
-    image: "/vittal/products/galaxy-buds2-pro.png",
-    link: "/products/galaxy-buds2-pro",
-  },
-  {
-    id: "sony-wf1000xm5",
-    name: "Sony WF-1000XM5",
-    price: 19990,
-    mrp: 28990,
-    discount: 30,
-    rating: 4.6,
-    reviews: "934",
-    image: "/vittal/products/sony-wf1000xm5.png",
-    link: "/products/sony-wf1000xm5",
-  },
-  {
-    id: "boat-airdopes-280",
-    name: "boAt Airdopes 280 ANC",
-    price: 2799,
-    mrp: 3399,
-    discount: 18,
-    rating: 4.4,
-    reviews: "3,521",
-    image: "/vittal/products/boat-airdopes-280.png",
-    link: "/products/boat-airdopes-280",
-  },
-  {
-    id: "jbl-tune-230nc",
-    name: "JBL Tune 230NC",
-    price: 4749,
-    mrp: 6999,
-    discount: 32,
-    rating: 4.5,
-    reviews: "1,876",
-    image: "/vittal/products/jbl-tune-230nc.png",
-    link: "/products/jbl-tune-230nc",
-  },
-];
-
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -127,13 +63,11 @@ export default function ProductDetailPage() {
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   const [product, setProduct] = useState<Product | null>(null);
-  const [loadingProduct, setLoadingProduct] = useState<boolean>(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
-  const [selectedColor, setSelectedColor] = useState<string>("White");
+  const [selectedColor, setSelectedColor] = useState<string>("Standard");
   const [quantity, setQuantity] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<"overview" | "specs" | "reviews" | "qa">("overview");
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
   const [pincode, setPincode] = useState<string>("680001");
   const [deliveryLocation, setDeliveryLocation] = useState<string>("Thrissur, Kerala - 680001");
   const [editingPincode, setEditingPincode] = useState<boolean>(false);
@@ -141,30 +75,94 @@ export default function ProductDetailPage() {
   const [showToast, setShowToast] = useState<string | null>(null);
   const [showStickyBar, setShowStickyBar] = useState<boolean>(false);
 
-  // Load product data (matches airpods-pro-2, slugs, or fallback)
+  // -------------------------------------------------------------------------
+  // Dynamic Product Resolution (Fixes issue where any product opened was AirPods)
+  // -------------------------------------------------------------------------
   useEffect(() => {
     let isMounted = true;
     const rawId = decodeURIComponent(idOrSlug || "").trim().toLowerCase();
+    const cleanId = rawId.replace(/[-_ ]+/g, "");
 
-    // Match static product instantly
-    const foundStatic =
-      DEFAULT_PRODUCTS.find(
+    const findMatchingProduct = (): Product => {
+      // 1. Exact ID or exact Slug match
+      const exact = DEFAULT_PRODUCTS.find(
+        (p) => p.id.toLowerCase() === rawId || (p.slug && p.slug.toLowerCase() === rawId)
+      );
+      if (exact) return exact;
+
+      // 2. Normalized alphanumeric match
+      const norm = DEFAULT_PRODUCTS.find(
         (p) =>
-          p.id.toLowerCase() === rawId ||
-          p.slug.toLowerCase() === rawId ||
-          (rawId.includes("airpod") && p.id === "airpods-pro-2")
-      ) || DEFAULT_PRODUCTS[0];
+          p.id.toLowerCase().replace(/[-_ ]+/g, "") === cleanId ||
+          (p.slug && p.slug.toLowerCase().replace(/[-_ ]+/g, "") === cleanId)
+      );
+      if (norm) return norm;
 
-    if (foundStatic && isMounted) {
-      setProduct(foundStatic);
-      setSelectedImageIndex(0);
-      if (foundStatic.colors && foundStatic.colors.length > 0) {
-        setSelectedColor(foundStatic.colors[0].name);
+      // 3. Keyword / partial matching
+      if (rawId.includes("victus") || rawId.includes("hp")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "hp-victus-15") || DEFAULT_PRODUCTS[0];
       }
-      setLoadingProduct(false);
+      if (rawId.includes("dualsense") || rawId.includes("ps5") || rawId.includes("controller")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "dualsense-ps5") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("s24") || rawId.includes("galaxy-s24")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "galaxy-s24-256") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("watch6") || rawId.includes("galaxy-watch")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "galaxy-watch6") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("iphone") || rawId.includes("iphone-15")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "iphone-15-128") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("jbl") || rawId.includes("charge")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "jbl-charge-5") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("ideapad") || rawId.includes("lenovo")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "lenovo-ideapad-slim5") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("tab") || rawId.includes("s9")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "galaxy-tab-s9-124") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("ultragear") || rawId.includes("monitor")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "lg-ultragear-27") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("oneplus") || rawId.includes("12r")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "oneplus-12r-16gb") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("max") && rawId.includes("airpod")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "airpods-max-pink") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("airpod")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "airpods-pro-2") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("speaker")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "portable-bluetooth-speaker") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("power") || rawId.includes("bank")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "compact-power-bank") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("watch")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "smart-watch-pro") || DEFAULT_PRODUCTS[0];
+      }
+      if (rawId.includes("laptop")) {
+        return DEFAULT_PRODUCTS.find((p) => p.id === "ultraslim-laptop-14") || DEFAULT_PRODUCTS[0];
+      }
+
+      return DEFAULT_PRODUCTS[0];
+    };
+
+    const targetProduct = findMatchingProduct();
+    if (isMounted) {
+      setProduct(targetProduct);
+      setSelectedImageIndex(0);
+      if (targetProduct.colors && targetProduct.colors.length > 0) {
+        setSelectedColor(targetProduct.colors[0].name);
+      } else if (targetProduct.color) {
+        setSelectedColor(targetProduct.color);
+      }
     }
 
-    // Attempt live API fetch
+    // Try fetching fresh live product from API
     fetch(`/api/products?id=${encodeURIComponent(rawId)}&_t=${Date.now()}`)
       .then((r) => r.json())
       .then((data) => {
@@ -205,15 +203,12 @@ export default function ProductDetailPage() {
 
   const activeProduct = product || DEFAULT_PRODUCTS[0];
 
-  // Gallery images with high-res defaults
+  // -------------------------------------------------------------------------
+  // Product Gallery (Dynamic per product)
+  // -------------------------------------------------------------------------
   const galleryImages = useMemo(() => {
     if (!activeProduct) return [];
-    const isAirPods =
-      activeProduct.id === "airpods-pro-2" ||
-      activeProduct.id.includes("airpod") ||
-      activeProduct.name.toLowerCase().includes("airpod");
-
-    if (isAirPods) {
+    if (activeProduct.id === "airpods-pro-2") {
       return [
         "/vittal/products/airpods-pro-gallery-1.jpg",
         "/vittal/products/airpods-pro-gallery-2.jpg",
@@ -222,7 +217,6 @@ export default function ProductDetailPage() {
         "/vittal/products/airpods-pro.jpg",
       ];
     }
-
     if (activeProduct.images && activeProduct.images.length > 0) {
       return activeProduct.images;
     }
@@ -307,6 +301,151 @@ export default function ProductDetailPage() {
       ? Math.round(((activeProduct.mrp - activeProduct.price) / activeProduct.mrp) * 100)
       : 30;
 
+  // -------------------------------------------------------------------------
+  // Dynamic Category Highlights based on actual product
+  // -------------------------------------------------------------------------
+  const categoryHighlights = useMemo(() => {
+    const cat = (activeProduct.category || "").toLowerCase();
+    const name = activeProduct.name.toLowerCase();
+
+    if (cat.includes("laptop")) {
+      return [
+        { icon: Cpu, label: "High-Performance Multi-Core Processor" },
+        { icon: Zap, label: "Dedicated Ultra-Fast Graphics" },
+        { icon: HardDrive, label: "PCIe Gen4 NVMe High-Speed SSD" },
+        { icon: Tv, label: "144Hz IPS / OLED Vivid Display" },
+        { icon: BatteryCharging, label: "Rapid Charge Long-Life Battery" },
+      ];
+    }
+    if (cat.includes("smartwatch") || name.includes("watch")) {
+      return [
+        { icon: Watch, label: "Super AMOLED Always-On Display" },
+        { icon: Heart, label: "Advanced ECG & Heart Rate Sensor" },
+        { icon: BatteryCharging, label: "Multi-Day Fast Wireless Charging" },
+        { icon: Droplets, label: "5ATM + IP68 Water Resistance" },
+        { icon: Radio, label: "Bluetooth Calling & Dual-Band GPS" },
+      ];
+    }
+    if (cat.includes("smartphones") || name.includes("phone")) {
+      return [
+        { icon: Camera, label: "Pro-Grade High-Resolution Camera" },
+        { icon: Zap, label: "Next-Gen Flagship Processor" },
+        { icon: Tv, label: "120Hz ProXDR / Dynamic AMOLED" },
+        { icon: Radio, label: "5G Cellular with Dual SIM" },
+        { icon: BatteryCharging, label: "All-Day Battery with Fast Charge" },
+      ];
+    }
+    if (cat.includes("gaming") || name.includes("dualsense") || name.includes("controller")) {
+      return [
+        { icon: Gamepad2, label: "Immersive Haptic Feedback" },
+        { icon: Zap, label: "Dynamic Adaptive Force Triggers" },
+        { icon: Radio, label: "Ultra-Low Latency Wireless Connectivity" },
+        { icon: Check, label: "Ergonomic Textured Pro Grip" },
+        { icon: BatteryCharging, label: "Rechargeable USB-C Fast Battery" },
+      ];
+    }
+    if (cat.includes("speaker")) {
+      return [
+        { icon: Volume2, label: "High-Output Punchy 360° Stereo Bass" },
+        { icon: BatteryCharging, label: "Up to 20h Playback with Powerbank" },
+        { icon: Droplets, label: "IP67 Waterproof & Dustproof" },
+        { icon: Radio, label: "Wireless Multi-Speaker Pairing" },
+        { icon: CreditCard, label: "USB-C Fast Charging Interface" },
+      ];
+    }
+    // Default: Audio / Earbuds
+    return [
+      { icon: Volume2, label: "Active Noise Cancellation" },
+      { icon: Radio, label: "Personalized Spatial Audio" },
+      { icon: BatteryCharging, label: "Up to 6 hrs Listening Time (30 hrs with case)" },
+      { icon: CreditCard, label: "USB-C Fast Charging" },
+      { icon: Droplets, label: "IP54 Water & Sweat Resistant" },
+    ];
+  }, [activeProduct]);
+
+  // -------------------------------------------------------------------------
+  // Dynamic Spotlight Banner
+  // -------------------------------------------------------------------------
+  const spotlightBanner = useMemo(() => {
+    const cat = (activeProduct.category || "").toLowerCase();
+    const name = activeProduct.name.toLowerCase();
+
+    if (cat.includes("laptop")) {
+      return {
+        title: "Experience",
+        highlight: "Next-Level Performance",
+        desc: `${activeProduct.name} delivers breakthrough processing speed, thermal precision, and smooth visuals for intense multitasking, creation, and gaming.`,
+        pills: [
+          { icon: Cpu, label: "Next-Gen Processor" },
+          { icon: Zap, label: "Dedicated GPU Speed" },
+          { icon: BatteryCharging, label: "Rapid Fast Charge" },
+          { icon: Tv, label: "High-Refresh Screen" },
+        ],
+      };
+    }
+    if (cat.includes("smartwatch") || name.includes("watch")) {
+      return {
+        title: "Beauty & Power",
+        highlight: "On Your Wrist",
+        desc: `${activeProduct.name} pairs aerospace-grade materials with 24/7 health tracking, sleep coaching, and seamless smartphone notifications.`,
+        pills: [
+          { icon: Watch, label: "AMOLED Always-On" },
+          { icon: Heart, label: "ECG & Heart Rate" },
+          { icon: BatteryCharging, label: "Multi-Day Battery" },
+          { icon: Droplets, label: "Water & Dust Resistant" },
+        ],
+      };
+    }
+    if (cat.includes("smartphones") || name.includes("phone")) {
+      return {
+        title: "Experience",
+        highlight: "Flagship Innovation",
+        desc: `${activeProduct.name} sets the standard with pro-level optics, all-day power efficiency, and fluid 120Hz display clarity.`,
+        pills: [
+          { icon: Camera, label: "High-Res Optics" },
+          { icon: Zap, label: "Blazing Processor" },
+          { icon: BatteryCharging, label: "All-Day Power" },
+          { icon: Radio, label: "5G High Speed" },
+        ],
+      };
+    }
+    if (cat.includes("gaming") || name.includes("controller")) {
+      return {
+        title: "Bring Gaming",
+        highlight: "Worlds To Life",
+        desc: `${activeProduct.name} heightens your gaming senses with adaptive trigger resistance, haptic vibrations, and seamless wireless response.`,
+        pills: [
+          { icon: Gamepad2, label: "Haptic Feedback" },
+          { icon: Zap, label: "Adaptive Triggers" },
+          { icon: BatteryCharging, label: "Rechargeable Battery" },
+          { icon: Radio, label: "Ultra-Low Latency" },
+        ],
+      };
+    }
+    return {
+      title: "Experience",
+      highlight: "Next-Level Sound",
+      desc: "Delivers deep acoustic clarity, active noise cancellation, adaptive transparency, personalized spatial audio, and all-day comfort.",
+      pills: [
+        { icon: Volume2, label: "Active Noise Cancellation" },
+        { icon: Radio, label: "Personalized Spatial Audio" },
+        { icon: BatteryCharging, label: "Up to 30h with Case" },
+        { icon: Droplets, label: "IP54 Water Resistant" },
+      ],
+    };
+  }, [activeProduct]);
+
+  // -------------------------------------------------------------------------
+  // Dynamic Related Products ("You May Also Like")
+  // -------------------------------------------------------------------------
+  const relatedProducts = useMemo(() => {
+    const list = DEFAULT_PRODUCTS.filter((p) => p.id !== activeProduct.id);
+    // Prioritize products in the same category
+    const sameCat = list.filter((p) => p.category === activeProduct.category);
+    const otherCat = list.filter((p) => p.category !== activeProduct.category);
+    return [...sameCat, ...otherCat].slice(0, 6);
+  }, [activeProduct]);
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased selection:bg-[#002D62] selection:text-white">
       {/* 1. Global Navbar */}
@@ -341,13 +480,17 @@ export default function ProductDetailPage() {
               <span className="hidden sm:inline">Home</span>
             </Link>
             <span className="text-slate-300">›</span>
-            <Link href="/products?category=Audio+%26+Headphones" className="hover:text-[#002D62] transition-colors shrink-0">
-              {activeProduct.category || "Audio & Headphones"}
+            <Link href={`/products?category=${encodeURIComponent(activeProduct.category || "All")}`} className="hover:text-[#002D62] transition-colors shrink-0">
+              {activeProduct.category || "Electronics"}
             </Link>
-            <span className="text-slate-300">›</span>
-            <span className="hover:text-[#002D62] transition-colors shrink-0">
-              {activeProduct.subcategory || "Wireless Earbuds"}
-            </span>
+            {activeProduct.subcategory && (
+              <>
+                <span className="text-slate-300">›</span>
+                <span className="hover:text-[#002D62] transition-colors shrink-0">
+                  {activeProduct.subcategory}
+                </span>
+              </>
+            )}
             <span className="text-slate-300">›</span>
             <span className="text-slate-900 font-medium truncate max-w-[160px] sm:max-w-xs md:max-w-md">
               {activeProduct.name}
@@ -402,11 +545,10 @@ export default function ProductDetailPage() {
                   <img
                     src={img}
                     alt={`${activeProduct.name} thumbnail ${idx + 1}`}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200 rounded-lg"
                     loading="lazy"
                   />
-                  {/* Video badge on last thumbnail */}
-                  {idx === galleryImages.length - 1 && (
+                  {idx === galleryImages.length - 1 && galleryImages.length > 3 && (
                     <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
                       <div className="w-5 h-5 rounded-full bg-white/90 text-slate-900 flex items-center justify-center shadow-xs">
                         <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
@@ -417,18 +559,20 @@ export default function ProductDetailPage() {
               ))}
             </div>
 
-            {/* Main Stage Image Box */}
-            <div className="relative flex-1 bg-[#EAF2FD] rounded-2xl sm:rounded-3xl border border-blue-100/70 p-6 sm:p-10 flex items-center justify-center min-h-[340px] sm:min-h-[440px] md:min-h-[460px] overflow-hidden select-none group">
+            {/* ------------------------------------------------------------- */}
+            {/* MAIN STAGE IMAGE BOX - 100% FILLED IN THAT SQUARE             */}
+            {/* ------------------------------------------------------------- */}
+            <div className="relative flex-1 aspect-square rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white overflow-hidden select-none group shadow-sm">
               {/* Bestseller Badge */}
-              <div className="absolute top-4 left-4 z-10 bg-[#FFBE00] text-slate-900 px-3 py-1 rounded-md text-xs font-black tracking-wide flex items-center gap-1.5 shadow-xs">
+              <div className="absolute top-4 left-4 z-10 bg-[#FFBE00] text-slate-900 px-3 py-1 rounded-md text-xs font-black tracking-wide flex items-center gap-1.5 shadow-sm">
                 <span>👑</span>
-                <span>Bestseller</span>
+                <span>{activeProduct.badge || "Bestseller"}</span>
               </div>
 
               {/* Fullscreen Zoom Button */}
               <button
                 onClick={() => setIsLightboxOpen(true)}
-                className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-700 shadow-sm flex items-center justify-center transition-all hover:scale-105"
+                className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-700 shadow-md flex items-center justify-center transition-all hover:scale-105"
                 title="Expand fullscreen"
                 aria-label="Expand image fullscreen"
               >
@@ -438,30 +582,30 @@ export default function ProductDetailPage() {
               {/* Left & Right Chevrons */}
               <button
                 onClick={handlePrevImage}
-                className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-slate-800 shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95"
                 aria-label="Previous image"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={handleNextImage}
-                className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-slate-800 shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95"
                 aria-label="Next image"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
 
-              {/* Product Main Image */}
-              <div className="relative w-full h-[280px] sm:h-[340px] flex items-center justify-center">
+              {/* Product Main Image - 100% FILLED TO CORNERS */}
+              <div className="w-full h-full flex items-center justify-center overflow-hidden bg-slate-50">
                 <img
                   src={currentDisplayImage}
                   alt={activeProduct.name}
-                  className="max-h-full max-w-full object-contain filter drop-shadow-md transition-all duration-300 hover:scale-105"
+                  className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
 
               {/* Dots Carousel Indicator */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10 bg-white/80 backdrop-blur-xs px-3 py-1 rounded-full shadow-xs">
                 {galleryImages.map((_, i) => (
                   <button
                     key={i}
@@ -469,7 +613,7 @@ export default function ProductDetailPage() {
                     className={`transition-all rounded-full ${
                       selectedImageIndex === i
                         ? "bg-[#002D62] w-5 h-2"
-                        : "bg-blue-300/60 hover:bg-blue-400 w-2 h-2"
+                        : "bg-slate-300 hover:bg-slate-400 w-2 h-2"
                     }`}
                     aria-label={`Go to slide ${i + 1}`}
                   />
@@ -484,10 +628,7 @@ export default function ProductDetailPage() {
           <div className="lg:col-span-4 flex flex-col">
             {/* Brand Header */}
             <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 tracking-wide uppercase mb-1">
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 170 170">
-                <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.7-3.04-7.6-7.71-11.71-14.02-6.53-10.12-11.59-21.73-15.18-34.82-3.59-13.1-5.38-25.26-5.38-36.49 0-14.92 3.65-27.42 10.96-37.5 7.31-10.08 16.7-15.22 28.16-15.42 5.06 0 10.68 1.34 16.85 4.02 6.17 2.68 10.15 4.09 11.94 4.23 2.12-.27 6.46-1.8 13.01-4.59 6.55-2.79 12.3-4.04 17.26-3.76 13.09.73 23.49 5.86 31.2 15.4-11.45 6.94-17.06 16.48-16.83 28.62.24 9.49 3.86 17.47 10.86 23.94 7 6.48 15.34 10.15 25.02 11.02-2.12 6.53-4.7 13.09-7.75 19.68zM119.22 31.84c0-7.39 2.67-14.37 8.01-20.93 5.34-6.56 12.01-10.51 20.01-11.85.13 1.07.2 2.05.2 2.94 0 7.32-2.82 14.32-8.47 21-5.65 6.68-12.42 10.6-20.31 11.77-.27-.98-.44-1.96-.44-2.93z" />
-              </svg>
-              <span>Apple</span>
+              <span>{activeProduct.specifications?.Brand || activeProduct.category || "Vittal Digital"}</span>
             </div>
 
             {/* Product Title */}
@@ -497,8 +638,7 @@ export default function ProductDetailPage() {
 
             {/* Subtitle / Key Spec Badges */}
             <p className="text-xs sm:text-sm text-slate-500 font-normal mt-1 leading-relaxed">
-              {activeProduct.subtitle ||
-                "Active Noise Cancellation | Adaptive Transparency | Personalized Spatial Audio | USB-C Charging"}
+              {activeProduct.subtitle || activeProduct.tagline}
             </p>
 
             {/* Ratings & Sold Count */}
@@ -513,7 +653,7 @@ export default function ProductDetailPage() {
               <span className="text-slate-300">|</span>
               <div className="flex items-center gap-1 font-semibold text-slate-900">
                 <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
-                <span>{activeProduct.sold_count || "8,200+ Sold"}</span>
+                <span>{activeProduct.sold_count || "4,800+ Sold"}</span>
               </div>
             </div>
 
@@ -550,37 +690,31 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Color Swatches */}
-            <div className="mt-4">
-              <div className="text-xs font-semibold text-slate-700 mb-2">
-                Color: <span className="text-slate-900 font-bold">{selectedColor}</span>
+            {activeProduct.colors && activeProduct.colors.length > 0 && (
+              <div className="mt-4">
+                <div className="text-xs font-semibold text-slate-700 mb-2">
+                  Color: <span className="text-slate-900 font-bold">{selectedColor}</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  {activeProduct.colors.map((c) => (
+                    <button
+                      key={c.name}
+                      type="button"
+                      onClick={() => setSelectedColor(c.name)}
+                      className={`w-7 h-7 rounded-full border-2 transition-all flex items-center justify-center ${
+                        selectedColor === c.name
+                          ? "border-[#002D62] ring-2 ring-blue-500/30 scale-105"
+                          : "border-slate-300 hover:border-slate-500"
+                      }`}
+                      style={{ backgroundColor: c.colorHex || "#000" }}
+                      aria-label={`Color ${c.name}`}
+                    >
+                      <span className="sr-only">{c.name}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setSelectedColor("White")}
-                  className={`w-7 h-7 rounded-full bg-white border-2 transition-all flex items-center justify-center ${
-                    selectedColor === "White"
-                      ? "border-[#002D62] ring-2 ring-blue-500/30 scale-105"
-                      : "border-slate-300 hover:border-slate-500"
-                  }`}
-                  aria-label="Color White"
-                >
-                  <span className="w-5 h-5 rounded-full bg-white border border-slate-200" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedColor("Black")}
-                  className={`w-7 h-7 rounded-full bg-slate-950 border-2 transition-all flex items-center justify-center ${
-                    selectedColor === "Black"
-                      ? "border-[#002D62] ring-2 ring-blue-500/30 scale-105"
-                      : "border-transparent hover:scale-105"
-                  }`}
-                  aria-label="Color Black"
-                >
-                  <span className="w-5 h-5 rounded-full bg-slate-900 border border-slate-800" />
-                </button>
-              </div>
-            </div>
+            )}
 
             {/* Quantity Stepper & Stock status */}
             <div className="flex items-center justify-between gap-4 mt-5">
@@ -590,7 +724,7 @@ export default function ProductDetailPage() {
                   <button
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                     disabled={quantity <= 1}
-                    className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 disabled:opacity-30 transition-colors"
+                    className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 disabled:opacity-30 transition-colors cursor-pointer"
                     aria-label="Decrease quantity"
                   >
                     <Minus className="w-3.5 h-3.5" />
@@ -600,7 +734,7 @@ export default function ProductDetailPage() {
                   </span>
                   <button
                     onClick={() => setQuantity((q) => Math.min(10, q + 1))}
-                    className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors"
+                    className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
                     aria-label="Increase quantity"
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -613,7 +747,7 @@ export default function ProductDetailPage() {
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <div>
                   <span className="block leading-none">In Stock</span>
-                  <span className="text-[10px] font-normal text-slate-500">Only 24 units left!</span>
+                  <span className="text-[10px] font-normal text-slate-500">Only {activeProduct.stock_count || 24} units left!</span>
                 </div>
               </div>
             </div>
@@ -647,7 +781,7 @@ export default function ProductDetailPage() {
               <div className="flex flex-col items-center">
                 <ShieldCheck className="w-5 h-5 text-[#002D62] mb-1" />
                 <span className="text-[11px] font-bold text-slate-900 leading-tight">1 Year Warranty</span>
-                <span className="text-[10px] text-slate-500">Apple Official</span>
+                <span className="text-[10px] text-slate-500">Official Support</span>
               </div>
               <div className="flex flex-col items-center">
                 <RotateCcw className="w-5 h-5 text-[#002D62] mb-1" />
@@ -675,7 +809,7 @@ export default function ProductDetailPage() {
                 <span className="block text-sm font-black text-emerald-800 leading-tight">
                   In Stock
                 </span>
-                <span className="text-xs text-emerald-700">Only 24 units left!</span>
+                <span className="text-xs text-emerald-700">Only {activeProduct.stock_count || 24} units left!</span>
               </div>
             </div>
 
@@ -689,14 +823,14 @@ export default function ProductDetailPage() {
                 {editingPincode ? (
                   <button
                     onClick={() => setEditingPincode(false)}
-                    className="text-slate-500 hover:text-slate-800 text-xs font-semibold"
+                    className="text-slate-500 hover:text-slate-800 text-xs font-semibold cursor-pointer"
                   >
                     Cancel
                   </button>
                 ) : (
                   <button
                     onClick={() => setEditingPincode(true)}
-                    className="text-[#002D62] hover:underline font-bold text-xs"
+                    className="text-[#002D62] hover:underline font-bold text-xs cursor-pointer"
                   >
                     Change
                   </button>
@@ -715,7 +849,7 @@ export default function ProductDetailPage() {
                   />
                   <button
                     type="submit"
-                    className="bg-[#002D62] text-white px-3 py-1.5 text-xs font-bold rounded-lg hover:bg-blue-900 shrink-0"
+                    className="bg-[#002D62] text-white px-3 py-1.5 text-xs font-bold rounded-lg hover:bg-blue-900 shrink-0 cursor-pointer"
                   >
                     Apply
                   </button>
@@ -735,34 +869,21 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* Key Highlights Card */}
+            {/* Key Highlights Card (Dynamic based on Category) */}
             <div className="bg-slate-50/90 border border-slate-200/80 rounded-2xl p-5 shadow-xs">
               <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider mb-3.5">
                 Key Highlights
               </h3>
               <ul className="space-y-3 text-xs text-slate-700">
-                <li className="flex items-center gap-2.5">
-                  <Volume2 className="w-4 h-4 text-[#002D62] shrink-0" />
-                  <span className="font-semibold text-slate-800">Active Noise Cancellation</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Radio className="w-4 h-4 text-[#002D62] shrink-0" />
-                  <span className="font-semibold text-slate-800">Personalized Spatial Audio</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <BatteryCharging className="w-4 h-4 text-[#002D62] shrink-0" />
-                  <span className="font-semibold text-slate-800">
-                    Up to 6 hrs Listening Time (30 hrs with case)
-                  </span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <CreditCard className="w-4 h-4 text-[#002D62] shrink-0" />
-                  <span className="font-semibold text-slate-800">USB-C Charging</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Droplets className="w-4 h-4 text-[#002D62] shrink-0" />
-                  <span className="font-semibold text-slate-800">IP54 Water & Sweat Resistant</span>
-                </li>
+                {categoryHighlights.map((hl, idx) => {
+                  const Icon = hl.icon;
+                  return (
+                    <li key={idx} className="flex items-center gap-2.5">
+                      <Icon className="w-4 h-4 text-[#002D62] shrink-0" />
+                      <span className="font-semibold text-slate-800">{hl.label}</span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </div>
@@ -801,7 +922,7 @@ export default function ProductDetailPage() {
                   : "bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/80"
               }`}
             >
-              Reviews (2,417)
+              Reviews ({activeProduct.review_count?.toLocaleString() || "2,417"})
             </button>
             <button
               onClick={() => setActiveTab("qa")}
@@ -818,48 +939,35 @@ export default function ProductDetailPage() {
           {/* TAB 1: OVERVIEW */}
           {activeTab === "overview" && (
             <div className="mt-6 sm:mt-8 space-y-6">
-              {/* Feature Spotlight Card ("Experience Next-Level Sound") */}
+              {/* Feature Spotlight Card (Dynamic based on product category) */}
               <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-8 shadow-sm overflow-hidden">
                 <div className="flex-1 max-w-xl">
                   <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
-                    Experience <span className="text-[#0052CC]">Next-Level Sound</span>
+                    {spotlightBanner.title} <span className="text-[#0052CC]">{spotlightBanner.highlight}</span>
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed mt-2.5">
-                    AirPods Pro (2nd generation) deliver up to 2× more Active Noise Cancellation, with Adaptive Transparency, personalized Spatial Audio and all-day comfort.
+                    {spotlightBanner.desc}
                   </p>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-                    <div className="bg-slate-50 border border-slate-200/70 rounded-2xl p-3 text-center flex flex-col items-center">
-                      <Volume2 className="w-5 h-5 text-[#002D62] mb-1.5" />
-                      <span className="text-[11px] font-bold text-slate-900 leading-tight">
-                        2× Active Noise Cancellation
-                      </span>
-                    </div>
-                    <div className="bg-slate-50 border border-slate-200/70 rounded-2xl p-3 text-center flex flex-col items-center">
-                      <Radio className="w-5 h-5 text-[#002D62] mb-1.5" />
-                      <span className="text-[11px] font-bold text-slate-900 leading-tight">
-                        Personalized Spatial Audio
-                      </span>
-                    </div>
-                    <div className="bg-slate-50 border border-slate-200/70 rounded-2xl p-3 text-center flex flex-col items-center">
-                      <BatteryCharging className="w-5 h-5 text-[#002D62] mb-1.5" />
-                      <span className="text-[11px] font-bold text-slate-900 leading-tight">
-                        Up to 30 Hours with Case
-                      </span>
-                    </div>
-                    <div className="bg-slate-50 border border-slate-200/70 rounded-2xl p-3 text-center flex flex-col items-center">
-                      <Droplets className="w-5 h-5 text-[#002D62] mb-1.5" />
-                      <span className="text-[11px] font-bold text-slate-900 leading-tight">
-                        IP54 Water Resistant
-                      </span>
-                    </div>
+                    {spotlightBanner.pills.map((pill, i) => {
+                      const Icon = pill.icon;
+                      return (
+                        <div key={i} className="bg-slate-50 border border-slate-200/70 rounded-2xl p-3 text-center flex flex-col items-center">
+                          <Icon className="w-5 h-5 text-[#002D62] mb-1.5" />
+                          <span className="text-[11px] font-bold text-slate-900 leading-tight">
+                            {pill.label}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Right Visual: Glowing Soundwave Banner with AirPods Earbuds */}
+                {/* Right Visual: Beautiful Glowing Stage with Product Cutout */}
                 <div className="w-full md:w-auto shrink-0 flex items-center justify-center">
                   <div className="relative w-full md:w-[380px] h-[190px] sm:h-[210px] rounded-2xl bg-gradient-to-r from-[#001433] via-[#002D62] to-[#0A4DB0] p-6 overflow-hidden flex items-center justify-center shadow-md">
-                    {/* Glowing Soundwave Waveform SVG */}
+                    {/* Glowing Audio/Electric Waveform SVG */}
                     <svg
                       className="absolute inset-0 w-full h-full opacity-60"
                       viewBox="0 0 400 200"
@@ -887,17 +995,32 @@ export default function ProductDetailPage() {
                       />
                     </svg>
 
-                    {/* Floating Earbuds Isolated Cutout */}
+                    {/* Floating Product Image Cutout */}
                     <div className="relative z-10 w-48 h-36 flex items-center justify-center">
                       <img
-                        src="/vittal/products/airpods-pro-earbuds.png"
-                        alt="Apple AirPods Pro Earbuds Floating"
+                        src={currentDisplayImage}
+                        alt={activeProduct.name}
                         className="max-w-full max-h-full object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]"
                       />
                     </div>
                   </div>
                 </div>
               </div>
+
+              {/* Product Feature Highlights List */}
+              {activeProduct.features && activeProduct.features.length > 0 && (
+                <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm">
+                  <h3 className="text-lg font-black text-slate-900 mb-4">Key Features & Benefits</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    {activeProduct.features.map((feat, idx) => (
+                      <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                        <span className="font-medium leading-relaxed">{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -935,11 +1058,11 @@ export default function ProductDetailPage() {
               <div className="space-y-3">
                 <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer" open>
                   <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
-                    <span>Is this 100% genuine Apple retail stock?</span>
+                    <span>Is this 100% genuine sealed retail stock?</span>
                     <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
                   </summary>
                   <p className="mt-2 text-slate-600 leading-relaxed font-normal">
-                    Yes, absolutely. All our units are sourced directly from authorized Apple distributors in Dubai and come sealed in factory packaging with an active Apple serial number verifiable on checkcoverage.apple.com.
+                    Yes, absolutely. All our items are imported directly from authorized distribution hubs in Dubai and come brand new, sealed in original manufacturer packaging with valid serial numbers.
                   </p>
                 </details>
 
@@ -949,17 +1072,17 @@ export default function ProductDetailPage() {
                     <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
                   </summary>
                   <p className="mt-2 text-slate-600 leading-relaxed font-normal">
-                    You receive 1-year international manufacturer coverage honored at authorized Apple service providers across India. Additionally, Vittal Digital provides direct customer concierge support via WhatsApp for any assistance.
+                    You receive 1-year comprehensive international coverage honored across India. Additionally, Vittal Digital provides direct customer concierge support via WhatsApp for any technical or service assistance.
                   </p>
                 </details>
 
                 <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer">
                   <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
-                    <span>Does it come with USB-C or Lightning charging?</span>
+                    <span>What is the delivery timeline to my address?</span>
                     <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
                   </summary>
                   <p className="mt-2 text-slate-600 leading-relaxed font-normal">
-                    This is the updated 2nd Generation edition featuring the MagSafe Charging Case with USB-C, built-in speaker, lanyard loop, and IP54 dust/water resistance.
+                    Orders are dispatched within 24 hours via express insured air courier. Most major cities across India receive doorstep delivery within 2 to 4 business days with real-time tracking updates.
                   </p>
                 </details>
               </div>
@@ -968,7 +1091,7 @@ export default function ProductDetailPage() {
         </section>
 
         {/* ================================================================= */}
-        {/* YOU MAY ALSO LIKE (6-PRODUCT GRID MATCHING DESIGN)                */}
+        {/* YOU MAY ALSO LIKE (DYNAMIC RELATED PRODUCTS GRID)                 */}
         {/* ================================================================= */}
         <section className="mt-12 sm:mt-16">
           <div className="flex items-center justify-between mb-6">
@@ -976,7 +1099,7 @@ export default function ProductDetailPage() {
               You May Also Like
             </h2>
             <Link
-              href="/products?category=Audio+%26+Headphones"
+              href={`/products?category=${encodeURIComponent(activeProduct.category || "All")}`}
               className="text-xs sm:text-sm font-bold text-[#002D62] hover:underline flex items-center gap-1"
             >
               <span>View All</span>
@@ -985,82 +1108,87 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {RELATED_AUDIO_PRODUCTS.map((prod) => (
-              <div
-                key={prod.id}
-                className="bg-white rounded-2xl border border-slate-200/80 p-3 sm:p-4 flex flex-col justify-between hover:shadow-lg transition-all group"
-              >
-                {/* Top Badges */}
-                <div className="flex items-center justify-between mb-2">
-                  <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded">
-                    -{prod.discount}%
-                  </span>
-                  <button
-                    onClick={() => toggleWishlist({ id: prod.id, name: prod.name, price: prod.price } as any)}
-                    className="text-slate-400 hover:text-rose-500 transition-colors"
-                    aria-label="Wishlist item"
-                  >
-                    <Heart className="w-4 h-4" />
-                  </button>
-                </div>
+            {relatedProducts.map((prod) => {
+              const relDiscount = prod.mrp && prod.price ? Math.round(((prod.mrp - prod.price) / prod.mrp) * 100) : 25;
+              return (
+                <div
+                  key={prod.id}
+                  className="bg-white rounded-2xl border border-slate-200/80 p-3 sm:p-4 flex flex-col justify-between hover:shadow-lg transition-all group"
+                >
+                  {/* Top Badges */}
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded">
+                      -{relDiscount}%
+                    </span>
+                    <button
+                      onClick={() => toggleWishlist(prod)}
+                      className="text-slate-400 hover:text-rose-500 transition-colors"
+                      aria-label="Wishlist item"
+                    >
+                      <Heart className="w-4 h-4" />
+                    </button>
+                  </div>
 
-                {/* Product Photo */}
-                <Link href={prod.link} className="relative w-full h-32 sm:h-36 flex items-center justify-center p-2">
-                  <img
-                    src={prod.image}
-                    alt={prod.name}
-                    className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform"
-                    loading="lazy"
-                  />
-                </Link>
-
-                {/* Information */}
-                <div className="mt-2">
-                  <Link href={prod.link} className="block">
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 hover:text-[#002D62] line-clamp-1">
-                      {prod.name}
-                    </h3>
+                  {/* Product Photo - Filled Square */}
+                  <Link href={`/products/${prod.slug || prod.id}`} className="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center">
+                    <img
+                      src={prod.poster_image || prod.images?.[0] || "/vittal/products/airpods-pro.jpg"}
+                      alt={prod.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      loading="lazy"
+                    />
                   </Link>
 
-                  <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
-                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                    <span className="font-bold text-slate-800">{prod.rating}</span>
-                    <span>({prod.reviews})</span>
+                  {/* Information */}
+                  <div className="mt-2.5">
+                    <Link href={`/products/${prod.slug || prod.id}`} className="block">
+                      <h3 className="text-xs sm:text-sm font-bold text-slate-900 hover:text-[#002D62] line-clamp-1">
+                        {prod.name}
+                      </h3>
+                    </Link>
+
+                    <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
+                      <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                      <span className="font-bold text-slate-800">{prod.rating || 4.6}</span>
+                      <span>({prod.review_count || 1200})</span>
+                    </div>
+
+                    <div className="flex items-baseline gap-1.5 mt-2">
+                      <span className="text-sm sm:text-base font-black text-slate-900">
+                        ₹{(prod.offer_price || prod.price).toLocaleString("en-IN")}
+                      </span>
+                      {prod.mrp && (
+                        <span className="text-[11px] text-slate-400 line-through">
+                          ₹{prod.mrp.toLocaleString("en-IN")}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex items-baseline gap-1.5 mt-2">
-                    <span className="text-sm sm:text-base font-black text-slate-900">
-                      ₹{prod.price.toLocaleString("en-IN")}
-                    </span>
-                    <span className="text-[11px] text-slate-400 line-through">
-                      ₹{prod.mrp.toLocaleString("en-IN")}
-                    </span>
-                  </div>
+                  {/* Yellow Add to Cart Button */}
+                  <button
+                    onClick={() => {
+                      addToCart(
+                        {
+                          id: prod.id,
+                          name: prod.name,
+                          price: prod.offer_price || prod.price,
+                          mrp: prod.mrp,
+                          poster_image: prod.poster_image,
+                        },
+                        1
+                      );
+                      setShowToast(`Added ${prod.name} to Cart!`);
+                      openCart();
+                    }}
+                    className="mt-3 w-full bg-[#FFBE00] hover:bg-yellow-400 text-slate-950 font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                  >
+                    <ShoppingCart className="w-3.5 h-3.5" />
+                    <span>Add to Cart</span>
+                  </button>
                 </div>
-
-                {/* Yellow Add to Cart Button */}
-                <button
-                  onClick={() => {
-                    addToCart(
-                      {
-                        id: prod.id,
-                        name: prod.name,
-                        price: prod.price,
-                        mrp: prod.mrp,
-                        poster_image: prod.image,
-                      },
-                      1
-                    );
-                    setShowToast(`Added ${prod.name} to Cart!`);
-                    openCart();
-                  }}
-                  className="mt-3 w-full bg-[#FFBE00] hover:bg-yellow-400 text-slate-950 font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-                >
-                  <ShoppingCart className="w-3.5 h-3.5" />
-                  <span>Add to Cart</span>
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
@@ -1074,13 +1202,13 @@ export default function ProductDetailPage() {
                 Explore More
               </span>
               <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#FFBE00] leading-tight mt-1">
-                Audio & Headphones
+                {activeProduct.category || "Audio & Electronics"}
               </h3>
               <p className="text-xs sm:text-sm text-blue-100/90 mt-2">
-                Discover world-class studio sound with active noise cancellation, lossless spatial acoustic drivers, and genuine Dubai import warranty.
+                Discover world-class consumer electronics, genuine Dubai import warranty, insured express delivery, and transparent pricing.
               </p>
               <Link
-                href="/products?category=Headphones+%26+Earbuds"
+                href={`/products?category=${encodeURIComponent(activeProduct.category || "All")}`}
                 className="inline-flex items-center gap-2 mt-5 bg-[#FFBE00] hover:bg-yellow-400 text-slate-950 font-black px-6 py-3 rounded-xl text-xs sm:text-sm shadow-md transition-all hover:scale-105"
               >
                 <span>Shop the Collection</span>
@@ -1092,7 +1220,7 @@ export default function ProductDetailPage() {
             <div className="relative z-10 w-full md:w-1/2 flex items-center justify-center">
               <img
                 src="/vittal/products/bottom-banner-devices.jpg"
-                alt="Audio & Headphones devices collection"
+                alt="Electronics devices collection"
                 className="max-h-56 sm:max-h-64 object-contain filter drop-shadow-2xl"
                 loading="lazy"
               />
@@ -1116,7 +1244,7 @@ export default function ProductDetailPage() {
               <img
                 src={currentDisplayImage}
                 alt={activeProduct.name}
-                className="w-11 h-11 rounded-lg object-contain bg-slate-50 border border-slate-200 shrink-0"
+                className="w-11 h-11 rounded-lg object-cover bg-slate-50 border border-slate-200 shrink-0"
               />
               <div className="truncate">
                 <span className="text-xs font-black text-slate-900 block truncate">
