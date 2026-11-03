@@ -15,8 +15,9 @@ import {
   RotateCcw,
   MessageCircle,
   Clock,
-  Sparkles,
   ShieldCheck,
+  Zap,
+  Truck,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { siteConfig } from "@/config/siteConfig";
@@ -47,7 +48,7 @@ export function AuthCard({
   const [name, setName] = useState("");
   const [otp, setOtp] = useState("");
   const [isExistingUser, setIsExistingUser] = useState(false);
-  const [expiryCountdown, setExpiryCountdown] = useState(180); // 3 minutes = 180s real validity
+  const [expiryCountdown, setExpiryCountdown] = useState(180); // 3 minutes = 180s
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,17 +74,14 @@ export function AuthCard({
 
   // Clean and format phone number input: strictly 10 digits
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = e.target.value.replace(/\D/g, ""); // only digits
+    let val = e.target.value.replace(/\D/g, "");
 
-    // If pasted with country code 91 (e.g. 919746301360)
     if (val.startsWith("91") && val.length > 10) {
       val = val.slice(2);
     }
-    // If user enters leading 0 (e.g. 09746301360)
     if (val.startsWith("0")) {
       val = val.replace(/^0+/, "");
     }
-    // Limit strictly to 10 digits
     if (val.length > 10) {
       val = val.slice(0, 10);
     }
@@ -114,7 +112,7 @@ export function AuthCard({
 
     if (res.success) {
       setStep("otp");
-      setExpiryCountdown(180); // 3 minutes = 180s live countdown
+      setExpiryCountdown(180);
       if (res.otp) {
         setOtp(res.otp);
       }
@@ -178,42 +176,39 @@ export function AuthCard({
   };
 
   return (
-    <div className="w-full relative">
-      {/* Notice Banner - matching Section 4 warning banner aesthetic */}
+    <div className="w-full relative font-sans">
+      {/* Notice Banner */}
       {notice && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 sm:mb-5 p-3.5 sm:p-4 rounded-2xl bg-[#5b1420] text-white border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] flex items-start gap-3.5 relative overflow-hidden"
+          className="mb-4 sm:mb-5 p-3.5 sm:p-4 rounded-xl bg-blue-50 text-blue-950 border border-blue-200 shadow-sm flex items-start gap-3 relative overflow-hidden"
         >
-          <div className="w-8 h-8 rounded-full bg-[#fed000] text-black font-black text-base flex items-center justify-center shrink-0 border border-stone-900 shadow-sm mt-0.5">
+          <div className="w-7 h-7 rounded-full bg-[#FFBE00] text-slate-950 font-black text-sm flex items-center justify-center shrink-0 shadow-sm mt-0.5">
             !
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <h4 className="font-tj-serif text-xs font-black text-[#fed000] uppercase tracking-wider">
-                Sign In Required
-              </h4>
-              <span className="text-xs">🔒</span>
-            </div>
-            <p className="text-xs text-stone-200 mt-0.5 leading-relaxed font-medium">
+            <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+              Sign In Required
+            </h4>
+            <p className="text-xs text-slate-600 mt-0.5 leading-relaxed font-medium">
               {notice}
             </p>
           </div>
         </motion.div>
       )}
 
-      {/* Main Form Card - Neo-brutalist Turkiye Jam retro card */}
-      <div className="bg-[#fffdfa] rounded-3xl border-2 border-stone-800 shadow-[0_10px_0_0_#2b2b2b] relative overflow-hidden transition-all duration-300">
+      {/* Main Form Card - Sleek Tech Electronics aesthetic matching Home Page */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xl relative overflow-hidden transition-all duration-300">
         {/* Brand Top Header Banner */}
-        <div className="bg-[#5b1420] px-6 py-4 border-b-2 border-stone-800 relative flex items-center justify-center">
-          <div className="flex items-center justify-center py-0.5">
+        <div className="bg-gradient-to-r from-[#0A2540] via-[#0F172A] to-[#0A2540] px-6 py-4 border-b border-slate-800 relative flex items-center justify-center">
+          <div className="flex items-center justify-center py-1">
             <Image
               src={siteConfig.logoUrl}
               alt={siteConfig.name}
               width={140}
               height={42}
-              className="h-8 w-auto object-contain drop-shadow-md"
+              className="h-8 w-auto object-contain drop-shadow-md brightness-105"
               priority
             />
           </div>
@@ -223,7 +218,7 @@ export function AuthCard({
             <button
               type="button"
               onClick={onClose}
-              className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-[#fed000] hover:bg-[#e6bc00] text-black border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none flex items-center justify-center transition-all cursor-pointer font-bold"
+              className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 flex items-center justify-center transition-colors cursor-pointer"
               aria-label="Close"
             >
               <X className="w-4 h-4 stroke-[2.5]" />
@@ -235,19 +230,17 @@ export function AuthCard({
         <div className="p-6 sm:p-7 relative">
           {/* Header */}
           <div className="text-center mb-6">
-            <p className="font-tj-serif italic text-xs sm:text-sm text-[#8e1c2e] font-semibold">
-              {step === "phone" ? "premium wellness & herbal" : "quick verification"}
-            </p>
-            <h2 className="font-tj-serif text-2xl sm:text-3xl font-black text-stone-900 tracking-tight mt-0.5">
+            <span className="inline-block px-3 py-1 rounded-full bg-blue-50 border border-blue-200/70 text-[#0047AB] font-bold text-[11px] uppercase tracking-wider mb-2">
+              {step === "phone" ? "Dubai Sourced Electronics" : "Quick Verification"}
+            </span>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               {step === "phone" ? (
-                <>
-                  Welcome to <span className="text-[#8e1c2e] italic">{siteConfig.name}</span>
-                </>
+                <>Welcome to {siteConfig.name}</>
               ) : (
                 "Enter Verification Code"
               )}
             </h2>
-            <p className="text-xs sm:text-sm text-stone-600 mt-1.5 font-medium leading-relaxed max-w-sm mx-auto">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 font-medium leading-relaxed max-w-sm mx-auto">
               {step === "phone"
                 ? "Enter your 10-digit mobile number to sign in or create an account"
                 : `Enter the 6-digit code sent to +91 ${phone.length === 10 ? phone.slice(0, 5) + " " + phone.slice(5) : phone}`}
@@ -259,7 +252,7 @@ export function AuthCard({
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="mb-5 p-3.5 rounded-2xl bg-red-50 border-2 border-red-800 text-red-900 text-xs font-bold flex items-center gap-2.5 shadow-[0_2px_0_0_#991b1b]"
+              className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-bold flex items-center gap-2.5 shadow-sm"
             >
               <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-600" />
               <span>{error}</span>
@@ -271,7 +264,7 @@ export function AuthCard({
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="mb-5 p-3.5 rounded-2xl bg-emerald-50 border-2 border-emerald-800 text-emerald-950 text-xs font-bold flex items-center gap-2.5 shadow-[0_2px_0_0_#065f46]"
+              className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-2.5 shadow-sm"
             >
               <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600" />
               <span>{success}</span>
@@ -283,20 +276,20 @@ export function AuthCard({
             <form onSubmit={handleSendOtp} className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block font-tj-serif text-xs font-bold text-stone-800 uppercase tracking-wider">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                     Mobile Number
                   </label>
-                  <span className="text-[11px] font-semibold text-stone-400">
-                    10-digit mobile number
+                  <span className="text-[11px] font-semibold text-slate-400">
+                    10-digit number
                   </span>
                 </div>
                 <div className="flex gap-2">
-                  <div className="inline-flex items-center gap-1.5 px-3.5 py-3 rounded-2xl border-2 border-stone-800 bg-[#fed000] text-black text-sm font-black select-none shrink-0 shadow-[0_2px_0_0_#2b2b2b]">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-bold select-none shrink-0 shadow-sm">
                     <span>🇮🇳</span>
                     <span>+91</span>
                   </div>
                   <div className="relative flex-1">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       type="tel"
                       inputMode="numeric"
@@ -307,7 +300,7 @@ export function AuthCard({
                       placeholder="Enter 10-digit number"
                       value={phone}
                       onChange={handlePhoneChange}
-                      className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-stone-800 text-sm font-bold tracking-wide text-stone-900 bg-white placeholder:text-stone-400 placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-[#731a26] shadow-[0_2px_0_0_#2b2b2b] transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 bg-white placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 shadow-sm transition-all"
                     />
                   </div>
                 </div>
@@ -316,10 +309,10 @@ export function AuthCard({
               <button
                 type="submit"
                 disabled={loading || phone.length !== 10}
-                className="btn-shimmer w-full mt-3 py-3.5 px-5 rounded-2xl bg-[#fed000] hover:bg-[#e6bc00] text-black font-extrabold font-tj-serif text-base border-2 border-stone-800 shadow-[0_5px_0_0_#2b2b2b] hover:shadow-[0_6px_0_0_#2b2b2b] active:translate-y-1 active:shadow-[0_1px_0_0_#2b2b2b] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-3 py-3 px-5 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-sm tracking-wide shadow-sm hover:shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin text-black" />
+                  <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
                 ) : (
                   <>
                     <span>Continue</span>
@@ -329,15 +322,15 @@ export function AuthCard({
               </button>
 
               {/* Trust badges footer */}
-              <div className="mt-6 pt-4 border-t-2 border-stone-200/80 flex items-center justify-center gap-2 flex-wrap">
-                <span className="px-2.5 py-1 rounded-full bg-[#f8bac5] border border-stone-800 text-stone-900 font-bold text-[10px] sm:text-[11px] shadow-xs">
-                  🌿 100% Herbal
+              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center gap-2 flex-wrap">
+                <span className="px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-700 font-bold text-[11px] flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600" /> 100% Genuine
                 </span>
-                <span className="px-2.5 py-1 rounded-full bg-[#b9e5e9] border border-stone-800 text-stone-900 font-bold text-[10px] sm:text-[11px] shadow-xs">
-                  📦 All-India Delivery
+                <span className="px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-700 font-bold text-[11px] flex items-center gap-1">
+                  <Truck className="w-3.5 h-3.5 text-emerald-600" /> All-India Delivery
                 </span>
-                <span className="px-2.5 py-1 rounded-full bg-[#fed000] border border-stone-800 text-black font-bold text-[10px] sm:text-[11px] shadow-xs">
-                  🔒 Official Store
+                <span className="px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-700 font-bold text-[11px] flex items-center gap-1">
+                  <Zap className="w-3.5 h-3.5 text-amber-500" /> 1-Year Warranty
                 </span>
               </div>
             </form>
@@ -347,10 +340,10 @@ export function AuthCard({
           {step === "otp" && (
             <form onSubmit={handleVerifyOtp} className="space-y-4">
               {/* Phone Info & Change button */}
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#fdf2f4] border-2 border-stone-800 text-xs shadow-[0_2px_0_0_#2b2b2b]">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs shadow-sm">
                 <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-[#731a26]" />
-                  <span className="font-tj-serif font-black text-stone-900 text-sm">
+                  <Phone className="w-4 h-4 text-blue-600" />
+                  <span className="font-bold text-slate-900 text-sm">
                     +91 {phone.length === 10 ? `${phone.slice(0, 5)} ${phone.slice(5)}` : phone}
                   </span>
                 </div>
@@ -361,7 +354,7 @@ export function AuthCard({
                     setError(null);
                     setSuccess(null);
                   }}
-                  className="font-bold text-xs text-[#731a26] hover:underline cursor-pointer"
+                  className="font-bold text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
                 >
                   Change
                 </button>
@@ -369,84 +362,73 @@ export function AuthCard({
 
               {/* OTP Input */}
               <div>
-                <label className="block font-tj-serif text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5">
-                  Verification Code
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    6-Digit Code
+                  </label>
+                  <div className="flex items-center gap-1 text-[11px] font-bold text-slate-500">
+                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                    <span>
+                      {expiryCountdown > 0 ? (
+                        <>Expires in <span className="font-mono text-blue-600 font-bold">{formatTime(expiryCountdown)}</span></>
+                      ) : (
+                        <span className="text-red-600 font-bold">Code Expired</span>
+                      )}
+                    </span>
+                  </div>
+                </div>
 
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  required
-                  autoFocus
-                  maxLength={6}
-                  placeholder="• • • • • •"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/[^\d]/g, ""))}
-                  className="w-full px-4 py-3 rounded-2xl border-2 border-stone-800 text-center text-2xl font-mono tracking-[0.4em] font-black text-stone-900 bg-white placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-[#731a26] shadow-[0_2px_0_0_#2b2b2b] transition-all"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    required
+                    autoFocus
+                    placeholder="• • • • • •"
+                    value={otp}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "").slice(0, 6);
+                      setOtp(digits);
+                      if (error) setError(null);
+                    }}
+                    className="w-full text-center tracking-[0.5em] text-xl font-mono font-black py-3 rounded-xl border border-slate-200 text-slate-900 bg-white placeholder:text-slate-300 placeholder:tracking-widest focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 shadow-sm transition-all"
+                  />
+                </div>
 
-                {/* 3-Minute Code Expiration Countdown */}
-                <div className="flex items-center justify-between text-xs px-1 pt-2.5 min-h-[28px]">
-                  {expiryCountdown > 0 ? (
-                    <div className="flex items-center gap-1.5 font-medium text-stone-700">
-                      <Clock className={`w-3.5 h-3.5 ${expiryCountdown > 30 ? "text-emerald-700" : "text-amber-600"}`} />
-                      <span>
-                        Code valid for:{" "}
-                        <strong className="text-stone-900 font-mono font-bold">
-                          {formatTime(expiryCountdown)}
-                        </strong>
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-red-600 font-bold">Code expired</span>
-                      <button
-                        type="button"
-                        onClick={() => handleSendOtp()}
-                        disabled={loading}
-                        className="text-xs font-extrabold text-[#731a26] hover:underline cursor-pointer flex items-center gap-1"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        <span>Resend code</span>
-                      </button>
-                    </div>
-                  )}
+                {/* Resend button */}
+                <div className="flex items-center justify-end mt-1.5">
+                  <button
+                    type="button"
+                    disabled={loading || expiryCountdown > 120}
+                    onClick={() => handleSendOtp()}
+                    className="text-xs font-bold text-blue-600 hover:text-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-1 cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>
+                      {expiryCountdown > 120
+                        ? `Resend in ${expiryCountdown - 120}s`
+                        : "Resend Code"}
+                    </span>
+                  </button>
                 </div>
               </div>
 
-              {/* If existing user, show friendly greeting pill instead of asking for name again! */}
-              {isExistingUser ? (
-                <div className="p-3.5 rounded-2xl bg-stone-100 border-2 border-stone-800 flex items-center justify-between shadow-[0_2px_0_0_#2b2b2b]">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-full bg-[#fed000] text-black font-extrabold flex items-center justify-center text-xs shrink-0 border border-stone-800">
-                      {(name || "T").charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">Signing in as</p>
-                      <p className="text-xs sm:text-sm font-extrabold text-stone-900 truncate">
-                        {name || "Valued Customer"}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400">
-                    Registered User
-                  </span>
-                </div>
-              ) : (
-                /* Only show for new unregistered customers */
+              {/* Optional Name field for new user */}
+              {!isExistingUser && (
                 <div>
-                  <label className="block font-tj-serif text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5">
-                    Your Full Name <span className="text-stone-400 font-normal lowercase">(optional)</span>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Your Full Name <span className="text-slate-400 font-normal lowercase">(optional)</span>
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       type="text"
                       placeholder="e.g. Alex Johnson"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-stone-800 text-sm font-semibold text-stone-900 bg-white placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#731a26] shadow-[0_2px_0_0_#2b2b2b] transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-900 bg-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 shadow-sm transition-all"
                     />
                   </div>
                 </div>
@@ -456,10 +438,10 @@ export function AuthCard({
               <button
                 type="submit"
                 disabled={loading || otp.length < 6 || expiryCountdown <= 0}
-                className="btn-shimmer w-full mt-2 py-3.5 px-4 rounded-2xl bg-[#fed000] hover:bg-[#e6bc00] text-black font-extrabold font-tj-serif text-base border-2 border-stone-800 shadow-[0_5px_0_0_#2b2b2b] hover:shadow-[0_6px_0_0_#2b2b2b] active:translate-y-1 active:shadow-[0_1px_0_0_#2b2b2b] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-2 py-3 px-4 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-sm tracking-wide shadow-sm hover:shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin text-black" />
+                  <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
                 ) : (
                   <>
                     <span>Verify & Continue</span>
@@ -477,9 +459,9 @@ export function AuthCard({
                   onClick={() => {
                     setExpiryCountdown(0);
                   }}
-                  className="inline-flex items-center gap-1.5 text-xs text-emerald-950 font-bold bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-800 px-3.5 py-1.5 rounded-full shadow-[0_2px_0_0_#065f46] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-xs text-emerald-800 font-bold bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3.5 py-1.5 rounded-full transition-colors cursor-pointer"
                 >
-                  <MessageCircle className="w-3.5 h-3.5 text-emerald-700" />
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Didn&apos;t get code? Tap to send &ldquo;Hi&rdquo; on WhatsApp</span>
                 </a>
               </div>

@@ -15,10 +15,10 @@ function LoginRedirectContent() {
   }, [router, searchParams]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center tj-diamonds-cream">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans">
       <div className="flex flex-col items-center gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-[#5b1420]" />
-        <p className="text-sm font-bold text-stone-700">Redirecting to Sign In...</p>
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <p className="text-sm font-bold text-slate-700">Redirecting to Sign In...</p>
       </div>
     </div>
   );
@@ -28,8 +28,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center tj-diamonds-cream">
-          <Loader2 className="w-8 h-8 animate-spin text-[#5b1420]" />
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         </div>
       }
     >
