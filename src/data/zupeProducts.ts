@@ -737,7 +737,11 @@ export const DEFAULT_PRODUCTS: Product[] = [
     stock_count: 14,
     volume: "Over-Ear / Pink",
     poster_image: "/vittal/products/airpods-max-spotlight.jpg",
-    images: ["/vittal/products/airpods-max-spotlight.jpg"],
+    images: [
+      "/vittal/products/airpods-max-spotlight.jpg",
+      "/vittal/products/airpods-max-silver-transparent.png",
+      "/vittal/products/airpods-max-black-transparent.png",
+    ],
     color: "Pink",
     material: "Anodized Aluminum Cups & Breathable Knit Mesh Canopy",
     in_stock: 1,
@@ -746,7 +750,11 @@ export const DEFAULT_PRODUCTS: Product[] = [
     sold_count: "2,100+ Sold",
     badge: "Spotlight",
     has_colors: true,
-    colors: [{"name":"Pink","image":"/vittal/products/airpods-max-spotlight.jpg","colorHex":"#F472B6"},{"name":"Space Gray","image":"/vittal/products/airpods-max-spotlight.jpg","colorHex":"#374151"}],
+    colors: [
+      { name: "Pink", image: "/vittal/products/airpods-max-spotlight.jpg", colorHex: "#F472B6" },
+      { name: "Silver", image: "/vittal/products/airpods-max-silver-transparent.png", colorHex: "#E2E8F0" },
+      { name: "Space Black", image: "/vittal/products/airpods-max-black-transparent.png", colorHex: "#1E2024" }
+    ],
     features: ["Apple-designed 40mm dynamic driver for wide frequency range and rich bass","Pro-level Active Noise Cancellation removes external sound completely","Transparency mode lets outside sound in so you can hear your environment","Personalized Spatial Audio with dynamic head tracking for theater-like sound","Up to 20 hours of listening with ANC and Spatial Audio enabled on a single charge"],
     specifications: {"Brand":"Apple","Driver":"Apple-designed 40mm dynamic driver","Chips":"Apple H1 headphone chip (one in each ear cup)","Battery Life":"Up to 20 hours with ANC / Transparency enabled","Charging":"USB-C Fast Charging (5 mins charge gives 1.5 hours playback)"},
     whats_in_box: ["AirPods Max","Smart Case","USB-C Charge Cable","Documentation"],

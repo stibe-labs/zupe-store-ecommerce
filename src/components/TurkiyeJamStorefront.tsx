@@ -264,16 +264,49 @@ const TRENDING_LEFT = [
   },
 ];
 
-const TRENDING_SPOTLIGHT = {
-  id: "airpods-max-pink",
-  name: "Apple AirPods Max",
-  sub: "Wireless Headphones (USB-C)",
-  price: 59990,
-  mrp: 69990,
-  rating: 4.7,
-  reviews: "1,029",
-  image: "/vittal/products/airpods-max-transparent.png",
-};
+const SPOTLIGHT_VARIANTS = [
+  {
+    id: "airpods-max-pink",
+    slug: "airpods-max-pink",
+    name: "Apple AirPods Max",
+    colorName: "Pink",
+    sub: "Wireless Headphones (USB-C)",
+    price: 59990,
+    mrp: 69990,
+    rating: 4.7,
+    reviews: "1,029",
+    image: "/vittal/products/airpods-max-pink-stage-trans.png",
+    swatchColor: "#F472B6",
+  },
+  {
+    id: "airpods-max-silver",
+    slug: "airpods-max-pink",
+    name: "Apple AirPods Max",
+    colorName: "Silver",
+    sub: "Wireless Headphones (USB-C)",
+    price: 59990,
+    mrp: 69990,
+    rating: 4.7,
+    reviews: "1,029",
+    image: "/vittal/products/airpods-max-silver-stage-trans.png",
+    swatchColor: "#E2E8F0",
+  },
+  {
+    id: "airpods-max-black",
+    slug: "airpods-max-pink",
+    name: "Apple AirPods Max",
+    colorName: "Space Black",
+    sub: "Wireless Headphones (USB-C)",
+    price: 59990,
+    mrp: 69990,
+    rating: 4.7,
+    reviews: "1,029",
+    image: "/vittal/products/airpods-max-black-stage-trans.png",
+    swatchColor: "#1E2024",
+  },
+];
+
+const TRENDING_SPOTLIGHT = SPOTLIGHT_VARIANTS[0];
 
 const TRENDING_RIGHT = [
   {
@@ -341,6 +374,10 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
   // Local quick wishlist tracker
   const [localWishlist, setLocalWishlist] = useState<Set<string>>(new Set());
 
+  // Center Spotlight AirPods Max color carousel (auto-switches every 3 seconds from right)
+  const [spotlightIndex, setSpotlightIndex] = useState(0);
+  const [isSpotlightPaused, setIsSpotlightPaused] = useState(false);
+
   const categoryScrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-slide hero every 5 seconds
@@ -358,6 +395,15 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
     }, 3000);
     return () => clearInterval(promoTimer);
   }, []);
+
+  // Auto-slide center AirPods Max spotlight colors every 3 seconds
+  useEffect(() => {
+    if (isSpotlightPaused) return;
+    const spotlightTimer = setInterval(() => {
+      setSpotlightIndex((prev) => (prev + 1) % SPOTLIGHT_VARIANTS.length);
+    }, 3000);
+    return () => clearInterval(spotlightTimer);
+  }, [isSpotlightPaused]);
 
   // Countdown timer
   useEffect(() => {
@@ -462,6 +508,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
   };
 
   const currentHero = HERO_SLIDES[activeSlide];
+  const currentSpotlight = SPOTLIGHT_VARIANTS[spotlightIndex];
 
   return (
     <div className="bg-[#FFFFFF] text-slate-900 font-sans min-h-screen">
@@ -989,34 +1036,111 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
           </div>
 
           {/* COLUMN 2: CENTER AIRPODS MAX SPOTLIGHT (4 cols in 12-grid) */}
-          <div className="lg:col-span-4 bg-white border border-slate-200/90 rounded-2xl overflow-hidden hover:shadow-xl transition-shadow flex flex-col justify-between">
-            {/* Top Pedestal Graphic */}
-            <div className="relative w-full aspect-square bg-gradient-to-b from-[#FFF0F2] to-[#FFE2E7] flex items-center justify-center p-6">
+          <div
+            className="lg:col-span-4 bg-white border border-slate-200/90 rounded-2xl overflow-hidden hover:shadow-xl transition-shadow flex flex-col justify-between"
+            onMouseEnter={() => setIsSpotlightPaused(true)}
+            onMouseLeave={() => setIsSpotlightPaused(false)}
+          >
+            {/* Top Pedestal Graphic Container - Stays fixed in background */}
+            <div className="relative w-full aspect-square overflow-hidden bg-[#FFF0F2]">
+              {/* STATIONARY STUDIO BACKGROUND & PEDESTAL (Does NOT slide) */}
               <Image
-                src={TRENDING_SPOTLIGHT.image}
-                alt={TRENDING_SPOTLIGHT.name}
+                src="/vittal/products/airpods-max-pedestal-bg.jpg"
+                alt="Studio Pedestal Display"
                 fill
-                className="object-contain p-4 hover:scale-105 transition-transform duration-300 drop-shadow-md rounded-2xl"
+                priority
+                className="object-cover pointer-events-none select-none"
                 sizes="(max-width: 1024px) 100vw, 500px"
               />
+
+              {/* MOVING CUTOUT LAYER: automatically switches every 3 seconds from right */}
+              <div className="absolute inset-0 overflow-hidden">
+                <AnimatePresence mode="popLayout" initial={false}>
+                  <motion.div
+                    key={currentSpotlight.id}
+                    initial={{ x: "100%", opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: "-100%", opacity: 0 }}
+                    transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
+                    className="absolute inset-0 w-full h-full"
+                  >
+                    <Link
+                      href={`/product/${currentSpotlight.slug}`}
+                      className="block w-full h-full relative"
+                    >
+                      <Image
+                        src={currentSpotlight.image}
+                        alt={`${currentSpotlight.name} in ${currentSpotlight.colorName}`}
+                        fill
+                        priority
+                        className="object-cover hover:scale-105 transition-transform duration-300 drop-shadow-md"
+                        sizes="(max-width: 1024px) 100vw, 500px"
+                      />
+                    </Link>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Color dots selection pill */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2.5 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/70 shadow-sm">
+                {SPOTLIGHT_VARIANTS.map((v, idx) => {
+                  const isActive = idx === spotlightIndex;
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSpotlightIndex(idx);
+                      }}
+                      title={`Switch to ${v.colorName}`}
+                      className={`relative flex items-center justify-center transition-all duration-200 rounded-full ${
+                        isActive
+                          ? "ring-2 ring-offset-1 ring-slate-900 scale-110"
+                          : "opacity-70 hover:opacity-100 hover:scale-105"
+                      }`}
+                      style={{ width: "16px", height: "16px" }}
+                    >
+                      <span
+                        className="w-full h-full rounded-full border border-black/15 shadow-inner block"
+                        style={{ backgroundColor: v.swatchColor }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Discount Badge */}
+              <div className="absolute top-3 left-3 z-10">
+                <span className="bg-[#EF4444] text-white text-[11px] font-black px-2.5 py-1 rounded-md shadow-sm tracking-wide">
+                  -14% OFF
+                </span>
+              </div>
             </div>
 
             {/* Bottom Details & Buy Action */}
             <div className="p-5 sm:p-6 flex flex-col flex-1 justify-between bg-white">
               <div>
-                <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
-                  {TRENDING_SPOTLIGHT.name}
-                </h3>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <Link href={`/product/${currentSpotlight.slug}`}>
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug hover:text-blue-600 transition-colors">
+                      {currentSpotlight.name}
+                    </h3>
+                  </Link>
+                  <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
+                    {currentSpotlight.colorName}
+                  </span>
+                </div>
                 <p className="text-xs text-slate-500 font-medium mb-2">
-                  {TRENDING_SPOTLIGHT.sub}
+                  {currentSpotlight.sub}
                 </p>
                 <div className="flex items-center gap-1 mb-3">
                   <Star className="w-3.5 h-3.5 fill-[#FFBE00] text-[#FFBE00]" />
                   <span className="text-xs font-bold text-slate-800">
-                    {TRENDING_SPOTLIGHT.rating}
+                    {currentSpotlight.rating}
                   </span>
                   <span className="text-[11px] text-slate-400">
-                    ({TRENDING_SPOTLIGHT.reviews})
+                    ({currentSpotlight.reviews})
                   </span>
                 </div>
               </div>
@@ -1024,14 +1148,22 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
               <div className="flex items-center justify-between gap-3 pt-3.5 border-t border-slate-100">
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-lg font-black text-slate-900">
-                    ₹{TRENDING_SPOTLIGHT.price.toLocaleString("en-IN")}
+                    ₹{currentSpotlight.price.toLocaleString("en-IN")}
                   </span>
                   <span className="text-xs text-slate-400 line-through">
-                    ₹{TRENDING_SPOTLIGHT.mrp.toLocaleString("en-IN")}
+                    ₹{currentSpotlight.mrp.toLocaleString("en-IN")}
                   </span>
                 </div>
                 <button
-                  onClick={() => handleAddToCart(TRENDING_SPOTLIGHT)}
+                  onClick={() =>
+                    handleAddToCart({
+                      id: currentSpotlight.id,
+                      name: `${currentSpotlight.name} (${currentSpotlight.colorName})`,
+                      price: currentSpotlight.price,
+                      mrp: currentSpotlight.mrp,
+                      image: currentSpotlight.image,
+                    })
+                  }
                   className="bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-xs px-5 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
                 >
                   <ShoppingCart className="w-3.5 h-3.5 stroke-[2.5]" />
