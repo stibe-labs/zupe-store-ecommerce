@@ -1323,32 +1323,7 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
         </section>
       )}
 
-      {/* ===================================================================== */}
-      {/* SECTION 10: TRUST & WARRANTY FOOTER STRIP                             */}
-      {/* ===================================================================== */}
-      <section className="bg-slate-50 border-t border-slate-200 py-8">
-        <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            {[
-              { icon: BadgeCheck, label: "100% Authentic", desc: "Dubai sourced electronics" },
-              { icon: ShieldCheck, label: "1-Year Warranty", desc: "All-India coverage & service" },
-              { icon: Truck, label: "Express Delivery", desc: "2-4 business days air cargo" },
-              { icon: Check, label: "Secure Checkout", desc: "UPI, Cards, Net Banking" },
-            ].map((item) => {
-              const Icon = item.icon;
-              return (
-                <div key={item.label} className="flex flex-col items-center gap-2">
-                  <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center">
-                    <Icon className="w-6 h-6 text-[#002D62]" />
-                  </div>
-                  <p className="text-sm font-bold text-slate-900">{item.label}</p>
-                  <p className="text-xs text-slate-500">{item.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+
     </div>
   );
 }

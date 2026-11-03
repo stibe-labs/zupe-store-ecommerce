@@ -9,6 +9,9 @@ import {
   MapPin,
   Phone,
   ShieldCheck,
+  BadgeCheck,
+  Truck,
+  Check,
   ArrowUpRight,
   Sparkles,
   ChevronDown,
@@ -56,8 +59,54 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-[#00223D] text-slate-300 border-t border-blue-950/60 pt-12 sm:pt-16 pb-24 md:pb-16">
+    <footer className="bg-[#00223D] text-slate-300 border-t border-blue-950/60 pt-10 sm:pt-14 pb-24 md:pb-16 font-sans">
       <div className="max-w-[1680px] mx-auto px-4 sm:px-8">
+        {/* ================================================================= */}
+        {/* UPPER INSIDE FOOTER: WHITE CURVED CARD (TRUST & WARRANTY STRIP)   */}
+        {/* ================================================================= */}
+        <div className="bg-white text-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xl p-6 sm:p-8 mb-10 sm:mb-14">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-center divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+            {[
+              {
+                icon: BadgeCheck,
+                label: "100% Authentic",
+                desc: "Dubai sourced electronics",
+              },
+              {
+                icon: ShieldCheck,
+                label: "1-Year Warranty",
+                desc: "All-India coverage & service",
+              },
+              {
+                icon: Truck,
+                label: "Express Delivery",
+                desc: "2-4 business days air cargo",
+              },
+              {
+                icon: Check,
+                label: "Secure Checkout",
+                desc: "UPI, Cards, Net Banking",
+              },
+            ].map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.label}
+                  className={`flex flex-col items-center gap-2 ${
+                    idx > 0 ? "pt-4 sm:pt-0 sm:pl-6" : ""
+                  }`}
+                >
+                  <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shadow-xs mb-1">
+                    <Icon className="w-6 h-6 text-[#002D62]" />
+                  </div>
+                  <p className="text-sm font-black text-slate-900">{item.label}</p>
+                  <p className="text-xs text-slate-500 font-medium">{item.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Main Footer Columns (Desktop 4 Columns, Mobile Stacked/Accordion) */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 pb-12 border-b border-blue-900/50">
           {/* Brand Info Column */}
@@ -146,7 +195,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Mobile Accordion Sections (From Mobile SVG Mockup) */}
+          {/* Mobile Accordion Sections */}
           <div className="md:hidden space-y-3">
             {/* Mobile Shop Accordion */}
             <div className="border border-blue-900/60 rounded-xl overflow-hidden bg-blue-950/40">
@@ -226,7 +275,7 @@ export function Footer() {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <p>© {new Date().getFullYear()} VITTAL DIGITAL. All rights reserved.</p>
 
-          {/* Payment Badges (UPI, Visa, Mastercard) matching SVG */}
+          {/* Payment Badges (UPI, Visa, Mastercard) */}
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-1 bg-white/10 rounded font-bold text-slate-200 border border-white/15 text-[11px]">
               UPI
