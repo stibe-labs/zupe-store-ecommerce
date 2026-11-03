@@ -118,22 +118,22 @@ export function Navbar() {
       {/* =================================================================== */}
       {/* TIER 1: TOP ANNOUNCEMENT & TRUST BAR (White/Off-white)              */}
       {/* =================================================================== */}
-      <div className="bg-[#FFFFFF] text-slate-600 text-[11px] sm:text-xs py-1.5 px-4 sm:px-8 border-b border-slate-200">
+      <div className="bg-[#FFFFFF] text-slate-600 text-[10px] sm:text-[11px] py-1 px-4 sm:px-6 lg:px-8 border-b border-slate-200">
         <div className="max-w-[1680px] mx-auto flex items-center justify-between">
           {/* Left Trust Badges */}
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="flex items-center gap-1.5 font-medium text-slate-700">
-              <MapPin className="w-3.5 h-3.5 text-[#002D62]" />
+              <MapPin className="w-3 h-3 text-[#002D62]" />
               <span>Dubai Sourced Electronics</span>
             </span>
             <span className="text-slate-300">|</span>
             <span className="flex items-center gap-1.5 font-medium text-slate-700">
-              <BadgeCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <BadgeCheck className="w-3 h-3 text-emerald-600" />
               <span>Genuine Products</span>
             </span>
             <span className="hidden md:inline text-slate-300">|</span>
             <span className="hidden md:flex items-center gap-1.5 font-medium text-slate-700">
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+              <ShieldCheck className="w-3 h-3 text-blue-600" />
               <span>Warranty Across India</span>
             </span>
           </div>
@@ -166,20 +166,20 @@ export function Navbar() {
       {/* =================================================================== */}
       {/* TIER 2: MAIN BRAND HEADER (Logo, Primary Nav, Contact, User Items)  */}
       {/* =================================================================== */}
-      <div className="bg-white border-b border-slate-200/70 py-3 sm:py-3.5 px-4 sm:px-8">
+      <div className="bg-white border-b border-slate-200/70 py-1.5 sm:py-2 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1680px] mx-auto flex items-center justify-between gap-4">
           {/* Mobile menu button + Brand Logo */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-slate-700 hover:text-slate-900 rounded-lg hover:bg-slate-100"
+              className="lg:hidden p-1.5 text-slate-700 hover:text-slate-900 rounded-lg hover:bg-slate-100"
               aria-label="Open mobile menu"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5" />
             </button>
 
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="relative h-11 w-44 sm:w-52">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="relative h-8 sm:h-9 w-36 sm:w-44">
                 <Image
                   src="/vittal-digital-logo.png"
                   alt="Vittal Digital"
@@ -192,7 +192,7 @@ export function Navbar() {
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-slate-800">
+          <nav className="hidden lg:flex items-center gap-6 text-xs sm:text-sm font-semibold text-slate-800">
             <Link
               href="/"
               className={`transition-colors ${
@@ -206,21 +206,21 @@ export function Navbar() {
               className="hover:text-[#002D62] transition-colors flex items-center gap-1"
             >
               <span>Shop</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronDown className="w-3 h-3 text-slate-400" />
             </Link>
             <Link
               href="/about"
               className="hover:text-[#002D62] transition-colors flex items-center gap-1"
             >
               <span>Pages</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronDown className="w-3 h-3 text-slate-400" />
             </Link>
             <Link
               href="/products"
               className="hover:text-[#002D62] transition-colors flex items-center gap-1"
             >
               <span>Blog</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronDown className="w-3 h-3 text-slate-400" />
             </Link>
             <a
               href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20have%20an%20inquiry`}
@@ -233,17 +233,17 @@ export function Navbar() {
           </nav>
 
           {/* User & Support Actions */}
-          <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-5 shrink-0">
             {/* Customer Support Phone */}
             <a
               href="tel:+919600048000"
               className="hidden xl:flex items-center gap-2 text-slate-800 hover:text-[#002D62] transition-colors group"
             >
-              <div className="w-9 h-9 rounded-full bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center text-slate-700 group-hover:text-[#002D62] transition-colors">
-                <Headphones className="w-4.5 h-4.5" />
+              <div className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center text-slate-700 group-hover:text-[#002D62] transition-colors">
+                <Headphones className="w-4 h-4" />
               </div>
               <div className="text-left">
-                <span className="block text-[10px] text-slate-400 font-medium uppercase tracking-wider leading-none">
+                <span className="block text-[9px] text-slate-400 font-medium uppercase tracking-wider leading-none">
                   Customer Support
                 </span>
                 <span className="block text-xs sm:text-sm font-bold text-slate-900 leading-tight">
@@ -255,19 +255,19 @@ export function Navbar() {
             {/* Wishlist */}
             <Link
               href="/wishlist"
-              className="hidden sm:flex items-center gap-2 text-slate-700 hover:text-[#002D62] transition-colors group"
+              className="hidden sm:flex items-center gap-1.5 text-slate-700 hover:text-[#002D62] transition-colors group"
               aria-label="Wishlist"
             >
               <div className="relative">
-                <Heart className="w-5 h-5 text-slate-700 group-hover:text-[#002D62] transition-colors" />
+                <Heart className="w-4.5 h-4.5 text-slate-700 group-hover:text-[#002D62] transition-colors" />
                 {totalWishlistItems > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-[#FFBE00] text-slate-950 text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center">
+                  <span className="absolute -top-1.5 -right-2 bg-[#FFBE00] text-slate-950 text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center">
                     {totalWishlistItems}
                   </span>
                 )}
               </div>
               <div className="text-left text-xs font-semibold leading-tight">
-                <span className="block text-slate-400 text-[10px]">Wishlist</span>
+                <span className="block text-slate-400 text-[9px]">Wishlist</span>
                 <span className="block text-slate-800 font-bold">({totalWishlistItems})</span>
               </div>
             </Link>
@@ -275,14 +275,14 @@ export function Navbar() {
             {/* Account */}
             <button
               onClick={handleAccountClick}
-              className="hidden sm:flex items-center gap-2 text-slate-700 hover:text-[#002D62] transition-colors group"
+              className="hidden sm:flex items-center gap-1.5 text-slate-700 hover:text-[#002D62] transition-colors group"
               aria-label="Account"
             >
-              <div className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center text-slate-700 group-hover:text-[#002D62] transition-colors">
-                <User className="w-4.5 h-4.5" />
+              <div className="w-7.5 h-7.5 rounded-full bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center text-slate-700 group-hover:text-[#002D62] transition-colors">
+                <User className="w-4 h-4" />
               </div>
               <div className="text-left text-xs font-semibold leading-tight">
-                <span className="block text-slate-400 text-[10px]">Account</span>
+                <span className="block text-slate-400 text-[9px]">Account</span>
                 <span className="block text-slate-800 font-bold">
                   {isAuthenticated ? "My Profile" : "Sign In"}
                 </span>
@@ -292,19 +292,19 @@ export function Navbar() {
             {/* Cart Button with Yellow Badge & Total */}
             <button
               onClick={openCart}
-              className="flex items-center gap-2.5 p-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-slate-50 transition-colors group cursor-pointer"
+              className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-lg hover:bg-slate-50 transition-colors group cursor-pointer"
               aria-label="View Shopping Cart"
             >
               <div className="relative">
-                <div className="w-9 h-9 rounded-full bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center transition-colors">
-                  <ShoppingBag className="w-5 h-5 text-slate-900" />
+                <div className="w-8 h-8 rounded-full bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center transition-colors">
+                  <ShoppingBag className="w-4.5 h-4.5 text-slate-900" />
                 </div>
-                <span className="absolute -top-1 -right-1 bg-[#FFBE00] text-slate-950 text-[10px] font-black rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center border-2 border-white shadow-sm">
+                <span className="absolute -top-1 -right-1 bg-[#FFBE00] text-slate-950 text-[9px] font-black rounded-full min-w-[17px] h-[17px] px-1 flex items-center justify-center border-2 border-white shadow-xs">
                   {totalItems}
                 </span>
               </div>
               <div className="hidden sm:block text-left text-xs leading-tight">
-                <span className="block text-slate-400 text-[10px] font-medium">Cart</span>
+                <span className="block text-slate-400 text-[9px] font-medium">Cart</span>
                 <span className="block text-slate-900 font-black">
                   ₹{subtotal.toLocaleString("en-IN")}
                 </span>
@@ -315,17 +315,17 @@ export function Navbar() {
       </div>
 
       {/* =================================================================== */}
-      {/* TIER 3: UTILITY BAR (Deep Navy #002D62 with Integrated Search)      */}
+      {/* TIER 3: UTILITY BAR (Deep Navy #002D62 with Curved Edge Card Style) */}
       {/* =================================================================== */}
-      <div className="bg-[#002D62] text-white py-2 px-4 sm:px-8">
-        <div className="max-w-[1680px] mx-auto flex items-center justify-between gap-3 sm:gap-4">
+      <div className="bg-white py-1.5 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1680px] mx-auto bg-[#002D62] text-white rounded-xl sm:rounded-2xl px-3 sm:px-4 py-1.5 shadow-md flex items-center justify-between gap-3 sm:gap-4">
           {/* Shop by Department Dropdown */}
           <div className="relative shrink-0" ref={departmentRef}>
             <button
               onClick={() => setDepartmentOpen((prev) => !prev)}
-              className="flex items-center gap-2.5 px-3 sm:px-4 py-2 bg-white/10 hover:bg-white/15 active:bg-white/20 text-white rounded-lg font-bold text-xs sm:text-sm transition-colors border border-white/15"
+              className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/15 active:bg-white/20 text-white rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-colors border border-white/15"
             >
-              <Menu className="w-4 h-4 text-[#FFBE00]" />
+              <Menu className="w-3.5 h-3.5 text-[#FFBE00]" />
               <span className="tracking-wide">Shop by Department</span>
               <ChevronDown
                 className={`w-3.5 h-3.5 transition-transform text-white/80 ${
@@ -336,8 +336,8 @@ export function Navbar() {
 
             {/* Department Dropdown Menu */}
             {departmentOpen && (
-              <div className="absolute top-full left-0 mt-2 w-64 bg-white text-slate-800 rounded-xl shadow-2xl border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                <div className="px-4 py-2 border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="px-4 py-2 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   All Departments
                 </div>
                 {departments.map((dep) => {
@@ -347,13 +347,13 @@ export function Navbar() {
                       key={dep.name}
                       href={dep.href}
                       onClick={() => setDepartmentOpen(false)}
-                      className="flex items-center justify-between px-4 py-2.5 text-slate-700 hover:bg-blue-50 hover:text-[#002D62] text-xs sm:text-sm font-semibold transition-colors"
+                      className="flex items-center justify-between px-4 py-2 text-slate-700 hover:bg-blue-50 hover:text-[#002D62] text-xs font-semibold transition-colors"
                     >
                       <span className="flex items-center gap-3">
                         <Icon className="w-4 h-4 text-[#002D62]" />
                         <span>{dep.name}</span>
                       </span>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                      <ArrowRight className="w-3 h-3 text-slate-400" />
                     </Link>
                   );
                 })}
@@ -370,24 +370,24 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Integrated Search Bar with Yellow Action Button */}
+          {/* Integrated Search Bar with Rounded Card Edges & Yellow Action Button */}
           <form
             onSubmit={handleSearchSubmit}
-            className="flex-1 max-w-3xl hidden md:flex items-center bg-white rounded-lg overflow-hidden shadow-inner border border-white/20"
+            className="flex-1 max-w-3xl hidden md:flex items-center bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-inner border border-white/20"
           >
             {/* Category Dropdown Pill */}
             <div className="relative shrink-0" ref={categorySelectRef}>
               <button
                 type="button"
                 onClick={() => setCategoryDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200/80 border-r border-slate-200 transition-colors h-full"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200/80 border-r border-slate-200 transition-colors h-full"
               >
                 <span className="max-w-[110px] truncate">{searchCategory}</span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
               </button>
 
               {categoryDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-52 bg-white text-slate-800 rounded-lg shadow-xl border border-slate-200 py-1.5 z-50">
+                <div className="absolute top-full left-0 mt-1 w-52 bg-white text-slate-800 rounded-xl shadow-xl border border-slate-200 py-1.5 z-50">
                   {categoriesList.map((cat) => (
                     <button
                       key={cat}
@@ -413,13 +413,13 @@ export function Navbar() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search for electronics, gadgets, accessories..."
-              className="flex-1 px-3.5 py-2 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
+              className="flex-1 px-3.5 py-1.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
             />
 
             {/* Vibrant Golden Yellow Search Button */}
             <button
               type="submit"
-              className="bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 px-4 py-2.5 transition-colors flex items-center justify-center shrink-0"
+              className="bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 px-3.5 py-2 transition-colors flex items-center justify-center shrink-0"
               aria-label="Search"
             >
               <Search className="w-4 h-4 stroke-[2.5]" />
@@ -439,11 +439,11 @@ export function Navbar() {
               </button>
 
               {recentlyViewedOpen && (
-                <div className="absolute right-0 top-full mt-2 w-72 bg-white text-slate-800 rounded-xl shadow-2xl border border-slate-200 p-3 z-50">
-                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <div className="absolute right-0 top-full mt-2 w-72 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 p-3 z-50">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
                     Recently Viewed
                   </div>
-                  <div className="text-center py-4 text-xs text-slate-500">
+                  <div className="text-center py-3 text-xs text-slate-500">
                     No recently viewed items yet.
                   </div>
                   <Link
@@ -471,21 +471,21 @@ export function Navbar() {
         </div>
 
         {/* Mobile Search Input Row */}
-        <div className="md:hidden mt-2 pt-1 pb-1">
+        <div className="md:hidden mt-1.5">
           <form
             onSubmit={handleSearchSubmit}
-            className="flex items-center bg-white rounded-lg overflow-hidden shadow-inner"
+            className="flex items-center bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200"
           >
             <input
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search electronics, gadgets..."
-              className="flex-1 px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+              className="flex-1 px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
             />
             <button
               type="submit"
-              className="bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 px-3.5 py-2 flex items-center justify-center shrink-0"
+              className="bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 px-3.5 py-1.5 flex items-center justify-center shrink-0"
             >
               <Search className="w-4 h-4 stroke-[2.5]" />
             </button>

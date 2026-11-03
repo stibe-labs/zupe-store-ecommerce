@@ -419,35 +419,35 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
         <div
           className="relative w-full transition-all duration-700 ease-out"
           style={{
-            minHeight: "460px",
+            minHeight: "360px",
             background:
               "radial-gradient(circle at 70% 48%, #0050A4 0%, #002D62 48%, #001633 100%)",
           }}
         >
-          <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 flex flex-col lg:flex-row items-center justify-between min-h-[460px]">
+          <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-9 flex flex-col lg:flex-row items-center justify-between min-h-[360px]">
             {/* Left Headline & Call-to-action */}
-            <div className="w-full lg:max-w-2xl text-white z-10 text-center lg:text-left mb-8 lg:mb-0">
-              <p className="text-xs sm:text-sm font-bold tracking-widest uppercase mb-2 text-[#FFBE00]">
+            <div className="w-full lg:max-w-2xl text-white z-10 text-center lg:text-left mb-6 lg:mb-0">
+              <p className="text-xs sm:text-sm font-bold tracking-widest uppercase mb-1.5 text-[#FFBE00]">
                 {currentHero.label}
               </p>
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight text-white mb-4">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-white mb-3">
                 <span>{currentHero.headlineLine1}</span>
                 <br />
                 <span>{currentHero.headlineLine2} </span>
                 <span className="text-[#FFBE00]">{currentHero.headlineHighlight}</span>
               </h1>
-              <div className="mb-6">
+              <div className="mb-5">
                 <span className="text-xs sm:text-sm font-medium text-blue-200 block mb-0.5">
                   {currentHero.subLabel}
                 </span>
-                <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#FFBE00] tracking-tight">
+                <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#FFBE00] tracking-tight">
                   {currentHero.price}
                 </span>
               </div>
               <div>
                 <Link
                   href={currentHero.link}
-                  className="inline-flex items-center gap-2 bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-sm sm:text-base px-8 py-3.5 rounded-lg transition-all shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95"
+                  className="inline-flex items-center gap-2 bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-xs sm:text-sm px-7 py-3 rounded-xl transition-all shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95"
                 >
                   <span>Shop Now</span>
                   <ArrowRight className="w-4 h-4 stroke-[3]" />
@@ -456,14 +456,14 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
             </div>
 
             {/* Right Hero Product Graphic */}
-            <div className="relative w-full lg:w-1/2 flex items-center justify-center h-64 sm:h-88 lg:h-[420px]">
-              <div className="relative w-full h-full max-w-xl rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative w-full lg:w-1/2 flex items-center justify-center h-60 sm:h-72 lg:h-[340px]">
+              <div className="relative w-full h-full max-w-lg">
                 <Image
                   src={currentHero.image}
                   alt={currentHero.imageAlt}
                   fill
                   priority
-                  className="object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] animate-in fade-in zoom-in-95 duration-500"
+                  className="object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] animate-in fade-in zoom-in-95 duration-500 rounded-2xl"
                 />
               </div>
             </div>
