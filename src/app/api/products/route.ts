@@ -3,11 +3,12 @@ import { executeD1Query } from "@/lib/d1";
 import { Product } from "@/types/product";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { getProductReviewStatsMap, getProductReviewStats } from "@/lib/reviewStore";
-import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/adminAuth";
+import { ADMIN_COOKIE_NAME, verifyAdminSessionToken, extractAdminToken } from "@/lib/adminAuth";
 import { getMemoryStockOverride, setMemoryStockOverride } from "@/lib/inventoryService";
+import { uploadBase64Media } from "@/lib/r2";
 
 async function checkAdminAuth(req: NextRequest): Promise<boolean> {
-  const token = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+  const token = extractAdminToken(req);
   if (!token) return false;
   const session = await verifyAdminSessionToken(token);
   return session.valid;
@@ -179,6 +180,16 @@ export async function GET(req: NextRequest) {
     const id = searchParams.get("id");
     const slug = searchParams.get("slug");
 
+    const isAdmin = await checkAdminAuth(req);
+    const isNoCache = isAdmin || searchParams.has("_t") || searchParams.has("fresh");
+    const dynamicCacheHeaders = isNoCache
+      ? {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+          Pragma: "no-cache",
+          Expires: "0",
+        }
+      : { "Cache-Control": "public, max-age=15, stale-while-revalidate=60" };
+
     // Fetch live review stats map for perfect synchronization
     const reviewStatsMap = await getProductReviewStatsMap();
 
@@ -218,7 +229,7 @@ export async function GET(req: NextRequest) {
         const formatted = formatDbProduct(d1Results[0], reviewStatsMap);
         return NextResponse.json(
           { success: true, product: formatted, source: "d1" },
-          { headers: { "Cache-Control": "public, max-age=15, stale-while-revalidate=60" } }
+          { headers: dynamicCacheHeaders }
         );
       }
 
@@ -249,7 +260,7 @@ export async function GET(req: NextRequest) {
         const formatted = formatDbProduct(found, reviewStatsMap);
         return NextResponse.json(
           { success: true, product: formatted, source: "cache" },
-          { headers: { "Cache-Control": "public, max-age=15, stale-while-revalidate=60" } }
+          { headers: dynamicCacheHeaders }
         );
       }
 
@@ -266,7 +277,7 @@ export async function GET(req: NextRequest) {
 
       return NextResponse.json(
         { success: true, source: "cloudflare-d1", products: formatted },
-        { headers: { "Cache-Control": "public, max-age=15, stale-while-revalidate=60" } }
+        { headers: dynamicCacheHeaders }
       );
     }
   } catch (err) {
@@ -477,14 +488,82 @@ export async function POST(req: NextRequest) {
       created_at: existingProd?.created_at || new Date().toISOString(),
     };
 
-    // Calculate real dynamic review stats from reviewStore
-    try {
-      const realStats = await getProductReviewStats(newProd.slug || newProd.id);
-      if (realStats && realStats.count > 0) {
-        newProd.rating = realStats.rating;
-        newProd.review_count = realStats.count;
+    // Convert any raw base64 data URLs to clean Cloudflare R2 CDN assets before storing in D1
+    if (newProd.poster_image && newProd.poster_image.startsWith("data:")) {
+      try {
+        newProd.poster_image = await uploadBase64Media(newProd.poster_image, "images");
+      } catch (e) {
+        console.warn("Failed to upload poster_image to R2:", e);
       }
-    } catch {}
+    }
+
+    if (Array.isArray(newProd.images) && newProd.images.length > 0) {
+      newProd.images = await Promise.all(
+        newProd.images.map(async (img) => {
+          if (typeof img === "string" && img.startsWith("data:")) {
+            try {
+              return await uploadBase64Media(img, "images");
+            } catch {
+              return img;
+            }
+          }
+          return img;
+        })
+      );
+    }
+
+    if (Array.isArray(newProd.colors) && newProd.colors.length > 0) {
+      newProd.colors = await Promise.all(
+        newProd.colors.map(async (c: any) => {
+          if (!c || typeof c !== "object") return c;
+          let cImg = c.image;
+          if (typeof cImg === "string" && cImg.startsWith("data:")) {
+            try {
+              cImg = await uploadBase64Media(cImg, "images");
+            } catch {}
+          }
+          let cImgs = c.images;
+          if (Array.isArray(cImgs)) {
+            cImgs = await Promise.all(
+              cImgs.map(async (img: string) => {
+                if (typeof img === "string" && img.startsWith("data:")) {
+                  try {
+                    return await uploadBase64Media(img, "images");
+                  } catch {}
+                }
+                return img;
+              })
+            );
+          }
+          return {
+            ...c,
+            image: cImg,
+            images: cImgs,
+          };
+        })
+      );
+    }
+
+    if (Array.isArray(newProd.overview_blocks) && newProd.overview_blocks.length > 0) {
+      newProd.overview_blocks = await Promise.all(
+        newProd.overview_blocks.map(async (b: any) => {
+          if (!b || typeof b !== "object") return b;
+          if (typeof b.media_url === "string" && b.media_url.startsWith("data:")) {
+            try {
+              const uploaded = await uploadBase64Media(b.media_url, "images");
+              return { ...b, media_url: uploaded };
+            } catch {}
+          }
+          return b;
+        })
+      );
+    }
+
+    // Preserve existing review stats or defaults without redundant heavy group-by query
+    if (existingProd?.rating && existingProd?.review_count) {
+      newProd.rating = existingProd.rating;
+      newProd.review_count = existingProd.review_count;
+    }
 
     // Update or Insert in Cloudflare D1
     try {
@@ -628,19 +707,35 @@ export async function POST(req: NextRequest) {
             console.warn("Could not add comparison_table column:", migErr);
           }
         }
+        if (errMsg.includes("subcategory")) {
+          try {
+            await executeD1Query("ALTER TABLE products ADD COLUMN subcategory TEXT;");
+            migrated = true;
+          } catch (migErr) {
+            console.warn("Could not add subcategory column:", migErr);
+          }
+        }
 
         if (migrated) {
           try {
             await runSaveQueries();
           } catch (retryErr) {
-            console.warn("Retry after adding missing column(s) failed:", retryErr);
+            console.error("Retry after adding missing column(s) failed:", retryErr);
+            throw retryErr;
           }
         } else {
           throw initialErr;
         }
       }
-    } catch (d1Err) {
-      console.error("Could not save to D1:", d1Err);
+    } catch (d1Err: any) {
+      console.error("Critical Cloudflare D1 write failure:", d1Err);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Failed to persist product to Cloudflare D1: " + (d1Err?.message || "Database write error"),
+        },
+        { status: 500 }
+      );
     }
 
     // Synchronize memory stock overrides immediately

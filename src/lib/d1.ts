@@ -13,11 +13,23 @@ async function getD1Database(): Promise<any | null> {
     return cachedDb;
   }
 
-  // 1. Fast direct bindings in globalThis or process.env (0ms CPU)
+  // 1. Direct worker bindings in globalThis (0ms CPU)
   if ((globalThis as any).DB && typeof (globalThis as any).DB.prepare === "function") {
     cachedDb = (globalThis as any).DB;
     return cachedDb;
   }
+
+  // 2. OpenNext Worker global scope context symbol (0ms CPU)
+  try {
+    const cfContextSymbol = Symbol.for("__cloudflare-context__");
+    const cfContext = (globalThis as any)[cfContextSymbol];
+    if (cfContext?.env?.DB && typeof cfContext.env.DB.prepare === "function") {
+      cachedDb = cfContext.env.DB;
+      return cachedDb;
+    }
+  } catch {}
+
+  // 3. Fallback worker global environments
   if ((globalThis as any).__cf_env__?.DB && typeof (globalThis as any).__cf_env__.DB.prepare === "function") {
     cachedDb = (globalThis as any).__cf_env__.DB;
     return cachedDb;
@@ -27,7 +39,7 @@ async function getD1Database(): Promise<any | null> {
     return cachedDb;
   }
 
-  // 2. Try @opennextjs/cloudflare getCloudflareContext
+  // 4. Try @opennextjs/cloudflare getCloudflareContext
   try {
     const { getCloudflareContext } = await import("@opennextjs/cloudflare");
     const ctx = await getCloudflareContext({ async: true });
@@ -51,19 +63,26 @@ export async function executeD1Query<T = any>(
   const db = await getD1Database();
 
   if (db && typeof db.prepare === "function") {
+    const stmt = db.prepare(query);
+    const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
+    const trimmedQuery = query.trim().toUpperCase();
+    const isReadQuery = trimmedQuery.startsWith("SELECT") || trimmedQuery.startsWith("PRAGMA");
+
     try {
-      const stmt = db.prepare(query);
-      const boundStmt = params.length > 0 ? stmt.bind(...params) : stmt;
-      const trimmedQuery = query.trim().toUpperCase();
-      if (trimmedQuery.startsWith("SELECT") || trimmedQuery.startsWith("PRAGMA")) {
+      if (isReadQuery) {
         const res = await boundStmt.all();
         return (res.results as T[]) || [];
       } else {
         const res = await boundStmt.run();
         return (res.results as T[]) || [];
       }
-    } catch (err) {
-      console.warn("D1 direct binding query execution failed:", err);
+    } catch (err: any) {
+      console.error("D1 direct binding query execution failed:", err?.message || err, "SQL:", query.substring(0, 120));
+      // For mutation queries (INSERT/UPDATE/DELETE), rethrow so caller knows persistence failed
+      if (!isReadQuery) {
+        throw err;
+      }
+      return null;
     }
   }
 

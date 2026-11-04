@@ -15,6 +15,18 @@ export async function getR2Bucket(): Promise<any | null> {
     cachedBucket = (globalThis as any).MEDIA_BUCKET;
     return cachedBucket;
   }
+
+  // 2. OpenNext Worker global scope context symbol (0ms CPU)
+  try {
+    const cfContextSymbol = Symbol.for("__cloudflare-context__");
+    const cfContext = (globalThis as any)[cfContextSymbol];
+    if (cfContext?.env?.MEDIA_BUCKET && typeof cfContext.env.MEDIA_BUCKET.put === "function") {
+      cachedBucket = cfContext.env.MEDIA_BUCKET;
+      return cachedBucket;
+    }
+  } catch {}
+
+  // 3. Fallback worker global environments
   if (
     (globalThis as any).__cf_env__?.MEDIA_BUCKET &&
     typeof (globalThis as any).__cf_env__.MEDIA_BUCKET.put === "function"
@@ -27,7 +39,7 @@ export async function getR2Bucket(): Promise<any | null> {
     return cachedBucket;
   }
 
-  // 2. OpenNext Cloudflare context
+  // 4. OpenNext Cloudflare context
   try {
     const { getCloudflareContext } = await import("@opennextjs/cloudflare");
     const ctx = await getCloudflareContext({ async: true });
@@ -104,10 +116,8 @@ export async function uploadMedia(
 
   if (accountId && apiToken) {
     try {
-      const r2Url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/stibe-media/objects/${encodeURIComponent(
-        key
-      )}`;
-      const res = await fetch(r2Url, {
+      const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/stibe-media/objects/${key}`;
+      const res = await fetch(url, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${apiToken}`,
@@ -120,34 +130,31 @@ export async function uploadMedia(
         return `${R2_PUBLIC_BASE_URL}/${key}`;
       }
     } catch (err) {
-      console.warn("Cloudflare R2 REST API upload failed:", err);
+      console.warn("R2 REST API upload failed:", err);
     }
   }
 
-  // 3. Fallback for Node.js local development (writes to public/uploads)
+  // 3. In local Node development only, store in public/uploads as fallback
   try {
-    if (typeof process !== "undefined" && process.versions?.node) {
-      const nodeRequire = eval("require");
-      const fs = nodeRequire("fs");
-      const path = nodeRequire("path");
-      const uploadsDir = path.join(process.cwd(), "public", "uploads", folder);
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-      const localFilePath = path.join(uploadsDir, path.basename(key));
-      const buf = Buffer.isBuffer(fileBuffer)
-        ? fileBuffer
-        : Buffer.from(fileBuffer as ArrayBuffer);
-      fs.writeFileSync(localFilePath, buf);
-      return `/uploads/${folder}/${path.basename(key)}`;
+    const fs = await import("fs");
+    const path = await import("path");
+    const uploadDir = path.join(process.cwd(), "public", "uploads", folder);
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
+    const localFilePath = path.join(uploadDir, path.basename(key));
+    const buf = Buffer.isBuffer(fileBuffer)
+      ? fileBuffer
+      : Buffer.from(fileBuffer as ArrayBuffer);
+    fs.writeFileSync(localFilePath, buf);
+    return `/uploads/${folder}/${path.basename(key)}`;
   } catch {
-    // If running in an edge environment without fs
+    // Edge environment without node:fs
   }
 
-  // As a final fallback if upload couldn't persist
+  // Return base64 or fail
   throw new Error(
-    "Could not upload file to Cloudflare R2 bucket 'stibe-media'. Check worker bindings or credentials."
+    "Could not upload file to Cloudflare R2 bucket 'stibe-media'. Check worker bindings or network."
   );
 }
 
@@ -155,11 +162,15 @@ export async function uploadMedia(
  * Upload a Base64 data URL to R2 and return the CDN URL
  */
 export async function uploadBase64Media(
-  dataUrl: string,
-  folder: "videos" | "images" = "videos"
+  dataUrl?: string | null,
+  folder: "videos" | "images" = "images"
 ): Promise<string> {
-  if (!dataUrl || !dataUrl.startsWith("data:")) {
-    return dataUrl; // Already a regular URL
+  if (!dataUrl || typeof dataUrl !== "string") {
+    return "";
+  }
+
+  if (!dataUrl.startsWith("data:")) {
+    return dataUrl; // Already a clean HTTP/HTTPS or local path URL
   }
 
   const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);

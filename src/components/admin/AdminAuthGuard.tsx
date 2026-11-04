@@ -26,9 +26,24 @@ export default function AdminAuthGuard({
 
     async function checkAuth() {
       try {
+        const localToken =
+          typeof window !== "undefined"
+            ? localStorage.getItem("zupe_admin_token")
+            : null;
+
+        const headers: Record<string, string> = {
+          "Cache-Control": "no-cache",
+        };
+
+        if (localToken) {
+          headers["Authorization"] = `Bearer ${localToken}`;
+          headers["x-admin-token"] = localToken;
+        }
+
         const res = await fetch("/api/admin/auth/verify", {
           cache: "no-store",
-          headers: { "Cache-Control": "no-cache" },
+          headers,
+          credentials: "include", // Essential for cross-subdomain and mobile Safari/Chrome cookies
         });
 
         if (!res.ok) {
@@ -49,11 +64,24 @@ export default function AdminAuthGuard({
         if (isMounted) {
           try {
             localStorage.removeItem("zp_user_session");
+            localStorage.removeItem("zupe_admin_token");
           } catch (e) {}
-          const currentUrl =
+
+          let currentUrl =
             typeof window !== "undefined"
               ? window.location.pathname + window.location.search
               : "/admin";
+
+          // Avoid redirect loops where currentUrl is login page
+          if (
+            !currentUrl ||
+            currentUrl === "/admin/login" ||
+            currentUrl === "/login" ||
+            currentUrl.includes("/login")
+          ) {
+            currentUrl = "/admin";
+          }
+
           window.location.href = `/admin/login?redirect=${encodeURIComponent(
             currentUrl
           )}&notice=${encodeURIComponent("Please sign in to access the Admin Panel.")}`;

@@ -20,7 +20,7 @@ function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const redirectUrl = searchParams.get("redirect") || "/admin";
+  const rawRedirect = searchParams.get("redirect") || "/admin";
   const urlNotice = searchParams.get("notice");
 
   const [email, setEmail] = useState("");
@@ -32,13 +32,22 @@ function AdminLoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail || !cleanPassword) {
+      setError("Please enter your administrator email and password");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch("/api/admin/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
       });
 
       const data = await res.json();
@@ -49,19 +58,41 @@ function AdminLoginForm() {
         return;
       }
 
-      // Sync local user session for client-side state
+      // Sync local user session and token for client-side state & mobile verification
       if (typeof window !== "undefined") {
+        if (data.token) {
+          try {
+            localStorage.setItem("zupe_admin_token", data.token);
+          } catch {}
+        }
         const adminSession = {
           id: "superadmin",
           name: data.user?.name || "Zupe Administrator",
-          email: data.user?.email || email,
+          email: data.user?.email || cleanEmail,
           role: "admin",
         };
-        localStorage.setItem("zp_user_session", JSON.stringify(adminSession));
+        try {
+          localStorage.setItem("zp_user_session", JSON.stringify(adminSession));
+        } catch {}
       }
 
-      // Redirect directly to target admin page
-      window.location.href = redirectUrl.startsWith("/admin") ? redirectUrl : "/admin";
+      // Safely determine target redirect destination (prevent redirect loops to /login or /admin/login)
+      let target = rawRedirect ? decodeURIComponent(rawRedirect) : "/admin";
+      if (
+        !target ||
+        target === "/admin/login" ||
+        target === "/login" ||
+        target.includes("/admin/login") ||
+        target.includes("/login")
+      ) {
+        target = "/admin";
+      }
+      if (!target.startsWith("/") && !target.startsWith("http")) {
+        target = "/" + target;
+      }
+
+      // Perform direct navigation to admin dashboard
+      window.location.href = target;
     } catch (err: any) {
       setError(err.message || "Failed to connect to authentication service");
       setLoading(false);
@@ -117,7 +148,10 @@ function AdminLoginForm() {
                 type="email"
                 required
                 autoComplete="email"
-                placeholder="admin@zupestore.com"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                placeholder="admin@zupestore.in"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-800 bg-[#0d1017] text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all"
@@ -135,6 +169,9 @@ function AdminLoginForm() {
                 type={showPassword ? "text" : "password"}
                 required
                 autoComplete="current-password"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 placeholder="Enter admin password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

@@ -8,7 +8,8 @@ import {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, password } = body;
+    const email = typeof body.email === "string" ? body.email.trim() : "";
+    const password = typeof body.password === "string" ? body.password.trim() : "";
 
     if (!email || !password) {
       return NextResponse.json(
@@ -29,6 +30,7 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({
       success: true,
+      token,
       user: {
         email: verification.email,
         name: verification.name,
@@ -36,7 +38,8 @@ export async function POST(req: NextRequest) {
     });
 
     const host = (req.headers.get("host") || "").toLowerCase().split(":")[0];
-    const cookieDomain = host.endsWith("zupestore.in") ? ".zupestore.in" : undefined;
+    const isZupeStoreDomain = host.endsWith("zupestore.in");
+    const cookieDomain = isZupeStoreDomain ? ".zupestore.in" : undefined;
 
     // Set secure HTTP-only admin cookie
     response.cookies.set({

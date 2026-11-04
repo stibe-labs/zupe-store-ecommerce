@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/adminAuth";
+import {
+  ADMIN_COOKIE_NAME,
+  verifyAdminSessionToken,
+  extractAdminToken,
+} from "@/lib/adminAuth";
 import { USER_COOKIE_NAME, verifyUserSessionToken } from "@/lib/userAuth";
 
 /**
@@ -37,7 +41,7 @@ export async function middleware(req: NextRequest) {
         req.method === "POST" && pathname.startsWith("/api/admin/sync");
 
       if (pathname.startsWith("/api/admin") && !isAuthExempt && !isSyncWebhook) {
-        const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+        const adminToken = extractAdminToken(req);
         if (!adminToken) {
           return applySecurityHeaders(
             NextResponse.json(
@@ -61,7 +65,7 @@ export async function middleware(req: NextRequest) {
 
     // 1B. Admin Login Page (/login or /admin/login)
     const isLoginPage = pathname === "/login" || pathname === "/admin/login";
-    const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+    const adminToken = extractAdminToken(req);
 
     if (isLoginPage) {
       if (adminToken) {
@@ -115,7 +119,7 @@ export async function middleware(req: NextRequest) {
   // =========================================================================
   if (pathname.startsWith("/admin")) {
     if (pathname === "/admin/login") {
-      const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+      const adminToken = extractAdminToken(req);
       if (adminToken) {
         const session = await verifyAdminSessionToken(adminToken);
         if (session.valid) {
@@ -128,7 +132,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // Check for valid Admin Session Token
-    const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+    const adminToken = extractAdminToken(req);
     if (!adminToken) {
       url.pathname = "/admin/login";
       url.searchParams.set("redirect", pathname + (url.search ? url.search : ""));
@@ -157,7 +161,7 @@ export async function middleware(req: NextRequest) {
       (req.method === "POST" && pathname.startsWith("/api/admin/sync"));
 
     if (!isExempt) {
-      const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+      const adminToken = extractAdminToken(req);
       if (!adminToken) {
         return applySecurityHeaders(
           NextResponse.json(
@@ -185,8 +189,7 @@ export async function middleware(req: NextRequest) {
   // 4. CUSTOMER ACCOUNT PAGES (/account, /orders)
   // =========================================================================
   if (pathname === "/account" || pathname === "/orders") {
-    // If accessing /orders with an order-specific query parameter (e.g. from WhatsApp, tracking, or confirmation links),
-    // allow guest customer access without forcing redirect to /signin
+    // If accessing /orders with an order-specific query parameter, allow guest customer access
     if (
       pathname === "/orders" &&
       (url.searchParams.has("confirmed") ||
@@ -201,7 +204,7 @@ export async function middleware(req: NextRequest) {
     }
 
     const userToken = req.cookies.get(USER_COOKIE_NAME)?.value;
-    const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+    const adminToken = extractAdminToken(req);
 
     let hasValidSession = false;
 

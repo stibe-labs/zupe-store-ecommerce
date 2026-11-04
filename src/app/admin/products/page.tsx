@@ -773,13 +773,15 @@ export default function AdminProductsPage() {
     setShowModal(true);
   };
 
-  // Local File Upload Helper (converts to base64 Data URL or path)
-  const handleFileUpload = (
+  // Local File Upload Helper (shows immediate preview and uploads to Cloudflare R2 CDN)
+  const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     onSuccess: (dataUrl: string) => void
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // 1. Immediate local preview for responsive UI
     const reader = new FileReader();
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
@@ -788,6 +790,37 @@ export default function AdminProductsPage() {
       }
     };
     reader.readAsDataURL(file);
+
+    // 2. Asynchronous R2 upload to convert to high-performance CDN URL
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", file.type.startsWith("video/") ? "videos" : "images");
+
+      const localToken = typeof window !== "undefined" ? localStorage.getItem("zupe_admin_token") : null;
+      const headers: Record<string, string> = {};
+      if (localToken) {
+        headers["Authorization"] = `Bearer ${localToken}`;
+        headers["x-admin-token"] = localToken;
+      }
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        headers,
+        body: formData,
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.url) {
+          onSuccess(data.url);
+        }
+      }
+    } catch (err) {
+      console.warn("Background R2 upload sync fallback:", err);
+    }
+
     e.target.value = "";
   };
 
@@ -1387,10 +1420,18 @@ export default function AdminProductsPage() {
     }
 
     try {
+      const localToken = typeof window !== "undefined" ? localStorage.getItem("zupe_admin_token") : null;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (localToken) {
+        headers["Authorization"] = `Bearer ${localToken}`;
+        headers["x-admin-token"] = localToken;
+      }
+
       const res = await fetch("/api/products", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(payload),
+        credentials: "include",
       });
       const data = await res.json();
       if (data.success && data.product) {
@@ -1410,7 +1451,7 @@ export default function AdminProductsPage() {
           setEditingProduct(null);
         }, 900);
       } else {
-        setActionMessage({ text: data.error || "Save failed", type: "error" });
+        setActionMessage({ text: data.error || "Failed to save product to Cloudflare D1", type: "error" });
       }
     } catch (err: any) {
       setActionMessage({
@@ -1424,8 +1465,17 @@ export default function AdminProductsPage() {
 
   const handleDeleteProduct = async (prodId: string) => {
     try {
+      const localToken = typeof window !== "undefined" ? localStorage.getItem("zupe_admin_token") : null;
+      const headers: Record<string, string> = {};
+      if (localToken) {
+        headers["Authorization"] = `Bearer ${localToken}`;
+        headers["x-admin-token"] = localToken;
+      }
+
       const res = await fetch(`/api/products?id=${encodeURIComponent(prodId)}`, {
         method: "DELETE",
+        headers,
+        credentials: "include",
       });
       const data = await res.json();
       if (data.success) {

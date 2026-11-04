@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS products (
     name TEXT NOT NULL,
     subtitle TEXT,
     category TEXT NOT NULL,
+    subcategory TEXT,
     tagline TEXT,
     description TEXT,
     price REAL NOT NULL,
