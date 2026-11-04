@@ -70,6 +70,39 @@ export interface OrderPreConfirmationParams {
  * Tries the official Meta Utility template 'zupe_order_verify' first (delivers to all customers).
  * Falls back to direct text message if template is not yet approved in Meta Business Manager.
  */
+
+/**
+ * Persists an automated system/template WhatsApp message to the D1 database
+ * so it immediately appears in the Admin WhatsApp Web console in real-time.
+ */
+async function logAutomatedMessage(params: {
+  phone: string;
+  customerName?: string | null;
+  content: string;
+  templateName?: string | null;
+  buttons?: any;
+  metaMessageId?: string | null;
+  rawPayload?: any;
+}) {
+  try {
+    const { recordWhatsAppMessage } = await import("@/lib/whatsappChatService");
+    await recordWhatsAppMessage({
+      phone: params.phone,
+      customerName: params.customerName || null,
+      sender: "system",
+      messageType: params.templateName ? "template" : "text",
+      content: params.content,
+      templateName: params.templateName || null,
+      buttons: params.buttons,
+      status: "delivered",
+      metaMessageId: params.metaMessageId || null,
+      rawPayload: params.rawPayload,
+    });
+  } catch (err) {
+    console.warn("[WA Automated Log] Error recording message to chat:", err);
+  }
+}
+
 export async function sendOrderPreConfirmationWhatsApp(
   params: OrderPreConfirmationParams
 ): Promise<boolean> {
@@ -143,6 +176,12 @@ export async function sendOrderPreConfirmationWhatsApp(
     `Team ZupeStore`;
 
   await sendWhatsAppTextMessage(apiUrl, apiToken, digits, message);
+  await logAutomatedMessage({
+    phone: digits,
+    customerName: firstName,
+    content: message,
+    templateName: null,
+  });
   console.log(`✅ [WA Pre-Confirm] Fallback verification message delivered to ${digits} for order ${displayOrderId}`);
   return true;
 }
@@ -223,6 +262,18 @@ async function sendPreConfirmViaTemplate(
         console.log(
           `✅ [WA Pre-Confirm] Official template '${templateName}' delivered to Meta queue for ${to}, messageId: ${data.messages[0].id}`
         );
+        await logAutomatedMessage({
+          phone: to,
+          customerName: firstName,
+          content: `Hi ${firstName}! Thank you for ordering from Zupe Store 🛒\n\nOrder ID: ${orderId}\nProduct: ${productName}\nAmount Payable: ₹${amountPayable.toLocaleString("en-IN")}\nAmount Paid: ₹${amountPaid.toLocaleString("en-IN")}\n\nYour order has been logged into the system and is being processed.`,
+          templateName: templateName,
+          buttons: [
+            { type: "button", text: "Confirm Order" },
+            { type: "button", text: "Cancel Order" },
+          ],
+          metaMessageId: data.messages[0].id,
+          rawPayload: data,
+        });
         return true;
       }
     } catch (err) {
@@ -1154,7 +1205,18 @@ export async function sendPaymentSuccessfulWhatsApp(params: {
       }),
     });
     const data = await res.json() as any;
-    if (res.ok && data.messages?.length > 0) return true;
+    if (res.ok && data.messages?.length > 0) {
+      await logAutomatedMessage({
+        phone: digits,
+        customerName: firstName,
+        content: `🎉 Payment Successful!\n\nHi ${firstName}! 🧡 Your payment is confirmed.\n\nOrder ID: #${cleanOrderId}\nPaid: ₹${paidAmount.toLocaleString("en-IN")}\n\nSit back and relax! Your order updates are on the way. 🚀`,
+        templateName: "zupe_payment_successful",
+        buttons: [{ type: "url", text: "View Order" }],
+        metaMessageId: data.messages[0].id,
+        rawPayload: data,
+      });
+      return true;
+    }
   } catch {}
 
   // 2. Direct message fallback
