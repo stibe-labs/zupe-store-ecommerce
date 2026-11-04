@@ -28,6 +28,8 @@ import {
   Info,
   Clock,
   Filter,
+  Lock,
+  User,
 } from "lucide-react";
 
 interface WhatsAppChat {
@@ -69,7 +71,7 @@ const QUICK_TEMPLATES = [
   },
   {
     title: "Delivery Timeline",
-    text: "Standard delivery takes 3 to 5 business days across India. We will share the tracking link as soon as the courier driver picks up the parcel.",
+    text: "Standard delivery takes 3 to 5 business days across India. We will share the tracking link as soon as the courier picks up the parcel.",
   },
   {
     title: "COD Confirmation",
@@ -109,11 +111,26 @@ export default function WhatsAppAdminPage() {
   const [newChatName, setNewChatName] = useState("");
   const [newChatError, setNewChatError] = useState<string | null>(null);
 
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Reliable scroll-to-bottom helper
+  const scrollToBottom = (smooth = false) => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight + 1000,
+        behavior: smooth ? "smooth" : "auto",
+      });
+    }
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "end" });
+    }
+  };
+
   // Format Phone for display: +91 97781 37954
   const formatPhone = (phone: string) => {
+    if (!phone) return "";
     const digits = phone.replace(/\D/g, "");
     if (digits.startsWith("91") && digits.length === 12) {
       return `+91 ${digits.slice(2, 7)} ${digits.slice(7)}`;
@@ -130,7 +147,7 @@ export default function WhatsAppAdminPage() {
       const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
       if (diffDays === 0) {
-        return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
       } else if (diffDays === 1) {
         return "Yesterday";
       } else if (diffDays < 7) {
@@ -204,6 +221,8 @@ export default function WhatsAppAdminPage() {
         setChats((prev) =>
           prev.map((c) => (c.id === chatId ? { ...c, unread_count: 0 } : c))
         );
+        // Scroll to bottom after messages update
+        setTimeout(() => scrollToBottom(false), 80);
       }
     } catch (err) {
       console.error("Failed to fetch messages:", err);
@@ -227,12 +246,12 @@ export default function WhatsAppAdminPage() {
     }
   }, [activeChat?.id]);
 
-  // Auto-scroll to bottom of chat when new messages arrive
+  // Auto-scroll when messages array changes
   useEffect(() => {
     if (messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      setTimeout(() => scrollToBottom(false), 50);
     }
-  }, [messages]);
+  }, [messages.length]);
 
   // Real-time polling every 5 seconds for live webhook updates
   useEffect(() => {
@@ -268,6 +287,7 @@ export default function WhatsAppAdminPage() {
       created_at: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, optimisticMsg]);
+    setTimeout(() => scrollToBottom(true), 40);
 
     try {
       const res = await fetch("/api/admin/whatsapp/messages", {
@@ -286,10 +306,10 @@ export default function WhatsAppAdminPage() {
           data.error ||
             "Could not deliver message via Meta Cloud API. (Customer 24h window may be closed)."
         );
-        // Refresh thread to show failed status
         fetchMessages(activeChat.id, true);
       } else if (data.messages) {
         setMessages(data.messages);
+        setTimeout(() => scrollToBottom(true), 60);
       }
       fetchChats(true);
     } catch (err: any) {
@@ -377,103 +397,106 @@ export default function WhatsAppAdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6FA] text-slate-800 font-sans flex flex-col">
+    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-[#F0F2F5] text-slate-800 font-sans">
       <AdminSidebar
         mobileOpen={mobileSidebarOpen}
         onCloseMobile={() => setMobileSidebarOpen(false)}
       />
 
-      <div className="lg:pl-64 flex flex-col flex-1 h-screen overflow-hidden">
-        <AdminHeader
-          onOpenMobile={() => setMobileSidebarOpen(true)}
-          onRefresh={() => {
-            setIsRefreshing(true);
-            fetchChats();
-            if (activeChat) fetchMessages(activeChat.id);
-          }}
-          isRefreshing={isRefreshing}
-        />
+      <div className="lg:pl-64 flex flex-col flex-1 h-screen max-h-screen overflow-hidden">
+        {/* Admin Header */}
+        <div className="flex-shrink-0 z-30">
+          <AdminHeader
+            onOpenMobile={() => setMobileSidebarOpen(true)}
+            onRefresh={() => {
+              setIsRefreshing(true);
+              fetchChats();
+              if (activeChat) fetchMessages(activeChat.id);
+            }}
+            isRefreshing={isRefreshing}
+          />
+        </div>
 
-        {/* WhatsApp App Container: Authentic WhatsApp Web Split Layout */}
-        <div className="flex-1 p-2 sm:p-4 overflow-hidden flex flex-col">
-          <div className="w-full flex-1 bg-white rounded-2xl shadow-xl border border-slate-200/80 overflow-hidden flex flex-row relative">
+        {/* WhatsApp App Workspace: Exact WhatsApp Web Split View */}
+        <main className="flex-1 min-h-0 p-1 sm:p-2 lg:p-3 overflow-hidden flex flex-col">
+          <div className="w-full h-full min-h-0 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden flex flex-row relative">
             
             {/* ========================================================================= */}
             {/* LEFT PANE: WhatsApp Conversation List (Desktop always, Mobile when no chat) */}
             {/* ========================================================================= */}
             <div
-              className={`w-full md:w-[360px] lg:w-[410px] xl:w-[440px] flex-shrink-0 flex flex-col bg-white border-r border-slate-200 ${
+              className={`w-full md:w-[350px] lg:w-[380px] xl:w-[410px] flex-shrink-0 flex flex-col min-h-0 bg-white border-r border-[#E9EDEF] ${
                 activeChat ? "hidden md:flex" : "flex"
               }`}
             >
               {/* WhatsApp Profile & Toolbar Header */}
-              <div className="h-16 px-4 bg-[#F0F2F5] border-b border-slate-200/90 flex items-center justify-between select-none">
+              <div className="h-[60px] flex-shrink-0 px-4 bg-[#F0F2F5] border-b border-[#E9EDEF] flex items-center justify-between select-none">
                 <div className="flex items-center gap-3">
-                  <div className="relative w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                  <div className="relative w-10 h-10 rounded-full bg-[#00A884] flex items-center justify-center text-white font-bold text-sm shadow-sm">
                     <span>ZS</span>
-                    <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#25D366] border-2 border-white ring-1 ring-emerald-500" />
+                    <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#25D366] border-2 border-white ring-1 ring-[#00A884]" />
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-slate-800 text-sm">Zupe Store</span>
-                      <ShieldCheck className="w-4 h-4 text-[#25D366] fill-[#25D366]/20" />
+                      <span className="font-semibold text-[#111B21] text-sm tracking-tight">Zupe Store</span>
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#25D366]" />
                     </div>
-                    <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-100/80 px-1.5 py-0.2 rounded">
+                    <span className="text-[11px] font-medium text-[#008069]">
                       +91 97781 37954
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 text-slate-600">
+                <div className="flex items-center gap-0.5 text-[#54656F]">
                   <button
                     onClick={handleSyncOrders}
                     disabled={isSyncingOrders}
-                    title="Sync Customer Orders"
-                    className="p-2 rounded-full hover:bg-slate-200/70 transition-colors"
+                    title="Sync Customer Orders into WhatsApp"
+                    className="p-2 rounded-full hover:bg-slate-200/80 transition-colors"
                   >
-                    <RotateCw className={`w-4 h-4 ${isSyncingOrders ? "animate-spin text-emerald-600" : ""}`} />
+                    <RotateCw className={`w-4 h-4 ${isSyncingOrders ? "animate-spin text-[#00A884]" : ""}`} />
                   </button>
                   <button
                     onClick={() => setShowNewChatModal(true)}
-                    title="Start New Chat"
-                    className="p-2 rounded-full hover:bg-slate-200/70 transition-colors"
+                    title="New Chat — Message any customer phone number directly"
+                    className="p-2 rounded-full hover:bg-slate-200/80 transition-colors"
                   >
-                    <MessageSquarePlus className="w-5 h-5 text-emerald-700" />
+                    <MessageSquarePlus className="w-5 h-5 text-[#008069]" />
                   </button>
                 </div>
               </div>
 
               {/* Meta Cloud API Notice Pill */}
-              <div className="px-3.5 py-2 bg-emerald-50/80 border-b border-emerald-100/80 flex items-center justify-between text-xs text-emerald-900">
+              <div className="flex-shrink-0 px-3.5 py-1.5 bg-[#E7FCE3] border-b border-[#D1FAD0] flex items-center justify-between text-xs text-[#0F5132]">
                 <div className="flex items-center gap-2 truncate">
                   <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
                   <span className="truncate font-medium text-[11px]">
-                    Meta Business Cloud API Live • Two-Way Sync
+                    Meta WhatsApp Business API • Live
                   </span>
                 </div>
                 <button
                   onClick={handleSyncOrders}
-                  className="text-[10px] font-bold text-emerald-700 hover:underline uppercase tracking-wider flex-shrink-0"
+                  className="text-[10px] font-bold text-[#008069] hover:underline uppercase tracking-wider flex-shrink-0"
                 >
                   Sync Orders
                 </button>
               </div>
 
               {/* Search Bar & Filter Pills */}
-              <div className="p-2.5 bg-white border-b border-slate-100 space-y-2">
+              <div className="flex-shrink-0 p-2.5 bg-white border-b border-[#F0F2F5] space-y-2">
                 <div className="relative flex items-center">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+                  <Search className="w-4 h-4 text-[#8696A0] absolute left-3.5 pointer-events-none" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search or start new chat"
-                    className="w-full pl-10 pr-8 py-2 bg-[#F0F2F5] hover:bg-[#E9EDEF] focus:bg-white text-xs sm:text-sm rounded-lg outline-none border border-transparent focus:border-[#00a884] transition-all text-slate-800 placeholder:text-slate-400 font-sans"
+                    className="w-full pl-10 pr-8 py-1.5 bg-[#F0F2F5] focus:bg-white text-xs sm:text-sm rounded-lg outline-none border border-transparent focus:border-[#00A884] transition-all text-[#111B21] placeholder-[#8696A0]"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="absolute right-3 text-slate-400 hover:text-slate-600"
+                      className="absolute right-3 text-[#8696A0] hover:text-[#111B21]"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -495,8 +518,8 @@ export default function WhatsAppAdminPage() {
                       onClick={() => setActiveFilter(tab.id)}
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors flex-shrink-0 ${
                         activeFilter === tab.id
-                          ? "bg-emerald-600 text-white font-semibold shadow-sm"
-                          : "bg-[#F0F2F5] text-slate-600 hover:bg-slate-200"
+                          ? "bg-[#E7FCE3] text-[#008069] font-bold border border-[#A5F3AC]"
+                          : "bg-[#F0F2F5] text-[#54656F] hover:bg-slate-200"
                       }`}
                     >
                       {tab.label}
@@ -506,25 +529,25 @@ export default function WhatsAppAdminPage() {
               </div>
 
               {/* Chat Items List */}
-              <div className="flex-1 overflow-y-auto divide-y divide-slate-100/70">
+              <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-[#F0F2F5]">
                 {loadingChats ? (
-                  <div className="p-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-2">
-                    <RotateCw className="w-5 h-5 animate-spin text-emerald-600" />
+                  <div className="p-8 text-center text-[#8696A0] text-xs flex flex-col items-center justify-center gap-2">
+                    <RotateCw className="w-5 h-5 animate-spin text-[#00A884]" />
                     <span>Loading conversations...</span>
                   </div>
                 ) : chats.length === 0 ? (
                   <div className="p-8 text-center text-slate-500 text-xs flex flex-col items-center justify-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-emerald-50 text-[#00A884] flex items-center justify-center">
                       <ShoppingBag className="w-6 h-6" />
                     </div>
-                    <p className="font-semibold text-slate-700">No chats found</p>
-                    <p className="text-[11px] text-slate-400 max-w-xs">
+                    <p className="font-semibold text-[#111B21]">No chats found</p>
+                    <p className="text-[11px] text-[#8696A0] max-w-xs">
                       Click below to sync recent customer orders into WhatsApp conversations.
                     </p>
                     <button
                       onClick={handleSyncOrders}
                       disabled={isSyncingOrders}
-                      className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition shadow-sm"
+                      className="px-4 py-2 rounded-xl bg-[#00A884] text-white text-xs font-semibold hover:bg-[#008f6f] transition shadow-sm"
                     >
                       {isSyncingOrders ? "Syncing..." : "Sync Customer Orders Now"}
                     </button>
@@ -546,13 +569,13 @@ export default function WhatsAppAdminPage() {
                         onClick={() => setActiveChat(chat)}
                         className={`flex items-center gap-3 px-3.5 py-3 cursor-pointer transition-colors group relative select-none ${
                           isSelected
-                            ? "bg-[#F0F2F5] border-l-4 border-emerald-600"
+                            ? "bg-[#F0F2F5] border-l-4 border-[#00A884]"
                             : "hover:bg-[#F5F6F6] bg-white"
                         }`}
                       >
                         {/* Avatar */}
                         <div className="relative flex-shrink-0">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-slate-200 to-slate-100 border border-slate-200 text-slate-700 font-bold flex items-center justify-center text-sm shadow-inner">
+                          <div className="w-12 h-12 rounded-full bg-[#DFE5E7] text-[#54656F] font-bold flex items-center justify-center text-sm shadow-inner">
                             {initials}
                           </div>
                           {chat.is_pinned === 1 && (
@@ -564,23 +587,23 @@ export default function WhatsAppAdminPage() {
 
                         {/* Middle Text Info */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-0.5">
-                            <span className="font-semibold text-slate-900 text-sm truncate">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-semibold text-[#111B21] text-sm truncate">
                               {displayName}
                             </span>
                             <span
                               className={`text-[11px] flex-shrink-0 ml-2 ${
-                                chat.unread_count > 0 ? "font-bold text-emerald-600" : "text-slate-400"
+                                chat.unread_count > 0 ? "font-bold text-[#25D366]" : "text-[#8696A0]"
                               }`}
                             >
                               {formatTime(chat.last_message_at)}
                             </span>
                           </div>
 
-                          <div className="flex items-center justify-between">
-                            <p className="text-xs text-slate-500 truncate flex items-center gap-1 font-normal">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-xs text-[#667781] truncate flex-1 min-w-0">
                               {chat.last_message?.startsWith("📦") ? (
-                                <span className="text-emerald-700 font-medium">
+                                <span className="text-[#008069] font-medium">
                                   {chat.last_message}
                                 </span>
                               ) : (
@@ -589,17 +612,16 @@ export default function WhatsAppAdminPage() {
                             </p>
 
                             {/* Unread Count or Order Badge */}
-                            <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
-                              {chat.latest_order_id && (
-                                <span className="text-[10px] font-bold bg-orange-100 text-[#FF7A00] px-1.5 py-0.5 rounded">
-                                  #{chat.latest_order_id}
-                                </span>
-                              )}
-                              {chat.unread_count > 0 && (
-                                <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#25D366] text-white text-[11px] font-bold flex items-center justify-center shadow-sm">
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              {chat.unread_count > 0 ? (
+                                <span className="min-w-[19px] h-[19px] px-1 rounded-full bg-[#25D366] text-white text-[10.5px] font-bold flex items-center justify-center shadow-sm">
                                   {chat.unread_count}
                                 </span>
-                              )}
+                              ) : chat.latest_order_id ? (
+                                <span className="text-[10px] font-semibold bg-orange-50 text-[#FF7A00] border border-orange-200 px-1.5 py-0.2 rounded">
+                                  Order
+                                </span>
+                              ) : null}
                             </div>
                           </div>
                         </div>
@@ -625,26 +647,26 @@ export default function WhatsAppAdminPage() {
             {/* RIGHT PANE: Authentic WhatsApp Chat View                                 */}
             {/* ========================================================================= */}
             <div
-              className={`flex-1 flex flex-col bg-[#EFEAE2] relative overflow-hidden ${
+              className={`flex-1 min-w-0 min-h-0 flex flex-col bg-[#EFEAE2] relative overflow-hidden ${
                 activeChat ? "flex" : "hidden md:flex"
               }`}
             >
               {activeChat ? (
                 <>
                   {/* WhatsApp Chat Top Header Bar */}
-                  <div className="h-16 px-4 bg-[#F0F2F5] border-b border-slate-200 flex items-center justify-between select-none z-10 shadow-sm">
+                  <div className="h-[60px] flex-shrink-0 px-4 bg-[#F0F2F5] border-b border-[#E9EDEF] flex items-center justify-between select-none z-10 shadow-sm">
                     <div className="flex items-center gap-3 min-w-0">
                       {/* Back button on mobile */}
                       <button
                         onClick={() => setActiveChat(null)}
-                        className="md:hidden p-1.5 -ml-1 text-slate-600 hover:bg-slate-200 rounded-full"
+                        className="md:hidden p-1.5 -ml-1 text-[#54656F] hover:bg-slate-200 rounded-full"
                       >
                         <ArrowLeft className="w-5 h-5" />
                       </button>
 
                       <div
                         onClick={() => setShowOrderDrawer(true)}
-                        className="w-10 h-10 rounded-full bg-gradient-to-tr from-slate-300 to-slate-200 text-slate-800 font-bold flex items-center justify-center text-sm cursor-pointer shadow-inner flex-shrink-0"
+                        className="w-10 h-10 rounded-full bg-[#DFE5E7] text-[#54656F] font-bold flex items-center justify-center text-sm cursor-pointer shadow-inner flex-shrink-0"
                       >
                         {(activeChat.customer_name || "WA").slice(0, 2).toUpperCase()}
                       </div>
@@ -653,26 +675,27 @@ export default function WhatsAppAdminPage() {
                         onClick={() => setShowOrderDrawer(true)}
                         className="cursor-pointer min-w-0"
                       >
-                        <h2 className="font-bold text-slate-900 text-sm truncate">
+                        <h2 className="font-semibold text-[#111B21] text-sm truncate">
                           {activeChat.customer_name || formatPhone(activeChat.phone)}
                         </h2>
-                        <p className="text-[11px] text-slate-500 truncate flex items-center gap-1.5">
+                        <p className="text-[11px] text-[#667781] truncate flex items-center gap-1.5">
                           <span>{formatPhone(activeChat.phone)}</span>
-                          <span className="w-1 h-1 rounded-full bg-slate-300" />
-                          <span className="text-emerald-700 font-medium">Meta Cloud API</span>
+                          <span className="w-1 h-1 rounded-full bg-slate-400" />
+                          <span className="text-[#008069] font-medium">Meta Cloud API</span>
                         </p>
                       </div>
                     </div>
 
                     {/* Right Header Action Icons */}
-                    <div className="flex items-center gap-1 text-slate-600">
+                    <div className="flex items-center gap-1 text-[#54656F]">
                       {activeChat.latest_order_id && (
                         <button
                           onClick={() => setShowOrderDrawer(!showOrderDrawer)}
                           className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-100 text-[#FF7A00] hover:bg-orange-200 text-xs font-bold transition mr-1"
                         >
                           <ShoppingBag className="w-3.5 h-3.5" />
-                          <span>Order #{activeChat.latest_order_id}</span>
+                          <span className="hidden sm:inline">Order #{activeChat.latest_order_id}</span>
+                          <span className="sm:hidden">Order</span>
                         </button>
                       )}
 
@@ -680,7 +703,7 @@ export default function WhatsAppAdminPage() {
                         onClick={() => handleTogglePin(activeChat)}
                         title={activeChat.is_pinned === 1 ? "Unpin chat" : "Pin chat"}
                         className={`p-2 rounded-full hover:bg-slate-200 transition ${
-                          activeChat.is_pinned === 1 ? "text-amber-500 font-bold" : "text-slate-600"
+                          activeChat.is_pinned === 1 ? "text-amber-500 font-bold" : "text-[#54656F]"
                         }`}
                       >
                         <Pin className="w-4 h-4" />
@@ -692,45 +715,47 @@ export default function WhatsAppAdminPage() {
                         title="Refresh Messages"
                         className="p-2 rounded-full hover:bg-slate-200 transition"
                       >
-                        <RotateCw className={`w-4 h-4 ${loadingMessages ? "animate-spin text-emerald-600" : ""}`} />
+                        <RotateCw className={`w-4 h-4 ${loadingMessages ? "animate-spin text-[#00A884]" : ""}`} />
                       </button>
                     </div>
                   </div>
 
-                  {/* WhatsApp Wallpaper Doodle Pattern Background Overlay */}
+                  {/* WhatsApp Wallpaper Doodle Pattern Background Overlay & Messages Container */}
                   <div
-                    className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 relative"
+                    ref={messagesContainerRef}
+                    className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-3 relative select-text"
                     style={{
-                      backgroundImage: `radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px)`,
+                      backgroundColor: "#efeae2",
+                      backgroundImage: `radial-gradient(#d1d7db 1px, transparent 1px)`,
                       backgroundSize: "20px 20px",
                     }}
                   >
                     {/* Centered Encryption Banner */}
-                    <div className="max-w-md mx-auto my-2 p-2.5 rounded-xl bg-[#FFEECD] text-amber-900 border border-amber-200/80 shadow-sm text-center text-xs space-y-1">
-                      <div className="flex items-center justify-center gap-1.5 font-bold text-[11px] text-amber-800">
-                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    <div className="max-w-md mx-auto my-1.5 p-2 rounded-lg bg-[#FFEECD] text-[#54656F] border border-[#F5E2B8] shadow-sm text-center text-xs space-y-0.5">
+                      <div className="flex items-center justify-center gap-1 font-semibold text-[11px] text-[#7A612A]">
+                        <Lock className="w-3 h-3 text-[#7A612A]" />
                         <span>Meta WhatsApp Business Cloud API (+91 97781 37954)</span>
                       </div>
-                      <p className="text-[11px] leading-relaxed text-amber-900/90 font-normal">
-                        Messages and automated updates are securely routed through Meta's verified servers.
+                      <p className="text-[10.5px] leading-relaxed text-[#54656F] font-normal">
+                        Messages and automated updates are securely routed through Meta's official Cloud servers.
                       </p>
                     </div>
 
                     {/* Date Separator Pill */}
-                    <div className="flex justify-center my-3">
-                      <span className="px-3 py-1 rounded-lg bg-white/90 text-slate-600 text-[11px] font-semibold uppercase tracking-wider shadow-sm border border-slate-200/60">
+                    <div className="flex justify-center my-2">
+                      <span className="px-3 py-0.5 rounded-md bg-white text-[#54656F] text-[11px] font-semibold uppercase tracking-wider shadow-sm border border-slate-200/60">
                         Today
                       </span>
                     </div>
 
                     {/* Message Bubbles */}
                     {loadingMessages ? (
-                      <div className="py-12 text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-2">
-                        <RotateCw className="w-6 h-6 animate-spin text-emerald-600" />
+                      <div className="py-12 text-center text-[#8696A0] text-xs flex flex-col items-center justify-center gap-2">
+                        <RotateCw className="w-6 h-6 animate-spin text-[#00A884]" />
                         <span>Loading conversation thread...</span>
                       </div>
                     ) : messages.length === 0 ? (
-                      <div className="py-12 text-center text-slate-500 text-xs">
+                      <div className="py-12 text-center text-[#8696A0] text-xs">
                         No messages in this conversation yet. Send a message below to start chatting!
                       </div>
                     ) : (
@@ -752,17 +777,17 @@ export default function WhatsAppAdminPage() {
                             className={`flex ${isOutgoing ? "justify-end" : "justify-start"} w-full`}
                           >
                             <div
-                              className={`max-w-[85%] sm:max-w-[70%] rounded-2xl p-3 shadow-[0_1px_2px_rgba(0,0,0,0.1)] relative transition-all ${
+                              className={`max-w-[85%] sm:max-w-[70%] rounded-lg p-2.5 shadow-[0_1px_0.5px_rgba(11,20,26,.13)] relative transition-all ${
                                 isOutgoing
-                                  ? "bg-[#D9FDD3] text-slate-900 rounded-tr-sm"
-                                  : "bg-white text-slate-900 rounded-tl-sm border border-slate-100"
+                                  ? "bg-[#D9FDD3] text-[#111B21] rounded-tr-none"
+                                  : "bg-white text-[#111B21] rounded-tl-none border border-slate-100"
                               }`}
                             >
                               {/* Template / Automation Header Badge */}
                               {isTemplate && (
-                                <div className="mb-2 pb-1.5 border-b border-emerald-600/15 flex items-center justify-between text-[11px] font-bold text-emerald-800">
+                                <div className="mb-2 pb-1.5 border-b border-[#00A884]/20 flex items-center justify-between text-[11px] font-bold text-[#008069]">
                                   <div className="flex items-center gap-1">
-                                    <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                                    <Sparkles className="w-3.5 h-3.5 text-[#00A884]" />
                                     <span>
                                       {msg.template_name === "zupe_order_verify"
                                         ? "Zupe Store Order Verification"
@@ -771,14 +796,14 @@ export default function WhatsAppAdminPage() {
                                         : "Automated Message"}
                                     </span>
                                   </div>
-                                  <span className="text-[9px] bg-emerald-200/80 text-emerald-900 px-1 rounded uppercase font-semibold">
+                                  <span className="text-[9px] bg-[#E7FCE3] text-[#008069] px-1.5 py-0.2 rounded uppercase font-semibold">
                                     Template
                                   </span>
                                 </div>
                               )}
 
                               {/* Message Text Body */}
-                              <div className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed break-words font-sans">
+                              <div className="text-[13.5px] whitespace-pre-wrap leading-relaxed break-words font-sans text-[#111B21]">
                                 {msg.content}
                               </div>
 
@@ -788,7 +813,7 @@ export default function WhatsAppAdminPage() {
                                   {parsedButtons.map((btn, idx) => (
                                     <div
                                       key={idx}
-                                      className="w-full text-center py-1.5 px-3 rounded-lg bg-white/80 hover:bg-white text-emerald-700 font-bold text-xs border border-emerald-300 shadow-sm flex items-center justify-center gap-1.5 select-none"
+                                      className="w-full text-center py-2 px-3 rounded-lg bg-white hover:bg-slate-50 text-[#00A884] font-bold text-xs border border-[#A5F3AC] shadow-sm flex items-center justify-center gap-1.5 select-none"
                                     >
                                       <span>{btn.title || btn.text || "Interactive Button"}</span>
                                     </div>
@@ -797,18 +822,18 @@ export default function WhatsAppAdminPage() {
                               )}
 
                               {/* Timestamp & Status Double Ticks */}
-                              <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-slate-400 select-none">
+                              <div className="mt-1 flex items-center justify-end gap-1 text-[10.5px] text-[#667781] select-none">
                                 <span>{formatTime(msg.created_at)}</span>
                                 {isOutgoing && (
                                   <span>
                                     {msg.status === "read" ? (
                                       <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb]" />
                                     ) : msg.status === "delivered" ? (
-                                      <CheckCheck className="w-3.5 h-3.5 text-slate-400" />
+                                      <CheckCheck className="w-3.5 h-3.5 text-[#8696A0]" />
                                     ) : msg.status === "failed" ? (
                                       <AlertCircle className="w-3.5 h-3.5 text-rose-500" title="Delivery failed" />
                                     ) : (
-                                      <Check className="w-3.5 h-3.5 text-slate-400" />
+                                      <Check className="w-3.5 h-3.5 text-[#8696A0]" />
                                     )}
                                   </span>
                                 )}
@@ -818,12 +843,12 @@ export default function WhatsAppAdminPage() {
                         );
                       })
                     )}
-                    <div ref={messagesEndRef} />
+                    <div ref={messagesEndRef} className="h-1" />
                   </div>
 
                   {/* Send Error Notice Banner */}
                   {sendError && (
-                    <div className="px-4 py-2 bg-rose-50 border-t border-rose-200 text-rose-800 text-xs flex items-center justify-between">
+                    <div className="flex-shrink-0 px-4 py-2 bg-rose-50 border-t border-rose-200 text-rose-800 text-xs flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
                         <span className="leading-snug">{sendError}</span>
@@ -839,7 +864,7 @@ export default function WhatsAppAdminPage() {
 
                   {/* Quick Emojis & Templates Tray */}
                   {showEmojiPicker && (
-                    <div className="px-4 py-2 bg-white border-t border-slate-200 flex items-center gap-2 overflow-x-auto shadow-inner">
+                    <div className="flex-shrink-0 px-4 py-2 bg-white border-t border-slate-200 flex items-center gap-2 overflow-x-auto shadow-inner">
                       <span className="text-xs text-slate-400 font-medium">Quick emojis:</span>
                       {QUICK_EMOJIS.map((emoji) => (
                         <button
@@ -858,7 +883,7 @@ export default function WhatsAppAdminPage() {
                   )}
 
                   {showTemplatesPicker && (
-                    <div className="p-3 bg-white border-t border-slate-200 space-y-2 max-h-48 overflow-y-auto">
+                    <div className="flex-shrink-0 p-3 bg-white border-t border-slate-200 space-y-2 max-h-48 overflow-y-auto">
                       <div className="flex items-center justify-between pb-1 border-b border-slate-100">
                         <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
                           <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />
@@ -890,17 +915,17 @@ export default function WhatsAppAdminPage() {
                     </div>
                   )}
 
-                  {/* WhatsApp Message Input Bar */}
+                  {/* WhatsApp Message Input Bar — Always Pinned at Bottom */}
                   <form
                     onSubmit={handleSendMessage}
-                    className="h-16 px-4 bg-[#F0F2F5] border-t border-slate-200 flex items-center gap-2 select-none"
+                    className="h-[62px] flex-shrink-0 px-3 sm:px-4 bg-[#F0F2F5] border-t border-[#E9EDEF] flex items-center gap-2 select-none z-10"
                   >
                     {/* Emoji toggle */}
                     <button
                       type="button"
                       onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                       className={`p-2 rounded-full transition ${
-                        showEmojiPicker ? "text-emerald-600 bg-slate-200" : "text-slate-500 hover:text-slate-700"
+                        showEmojiPicker ? "text-[#00A884] bg-slate-200" : "text-[#54656F] hover:text-[#111B21]"
                       }`}
                     >
                       <Smile className="w-5 h-5" />
@@ -912,7 +937,7 @@ export default function WhatsAppAdminPage() {
                       onClick={() => setShowTemplatesPicker(!showTemplatesPicker)}
                       title="Quick Customer Response Templates"
                       className={`p-2 rounded-full transition ${
-                        showTemplatesPicker ? "text-emerald-600 bg-slate-200" : "text-slate-500 hover:text-slate-700"
+                        showTemplatesPicker ? "text-[#00A884] bg-slate-200" : "text-[#54656F] hover:text-[#111B21]"
                       }`}
                     >
                       <Sparkles className="w-5 h-5" />
@@ -924,18 +949,18 @@ export default function WhatsAppAdminPage() {
                       type="text"
                       value={inputText}
                       onChange={(e) => setInputText(e.target.value)}
-                      placeholder="Type a message..."
-                      className="flex-1 py-2.5 px-4 bg-white text-xs sm:text-sm rounded-lg outline-none border border-transparent focus:border-[#00a884] shadow-sm text-slate-900 placeholder:text-slate-400 font-sans"
+                      placeholder="Type a message"
+                      className="flex-1 py-2 px-4 bg-white text-xs sm:text-sm rounded-lg outline-none border border-transparent focus:border-[#00A884] shadow-sm text-[#111B21] placeholder-[#8696A0] font-sans"
                     />
 
                     {/* Send Button */}
                     <button
                       type="submit"
                       disabled={!inputText.trim() || isSending}
-                      className={`p-2.5 rounded-full transition-transform shadow-md flex items-center justify-center ${
+                      className={`w-10 h-10 rounded-full transition-transform shadow-sm flex items-center justify-center flex-shrink-0 ${
                         inputText.trim() && !isSending
-                          ? "bg-[#00a884] hover:bg-[#008f6f] text-white active:scale-95"
-                          : "bg-slate-300 text-slate-400 cursor-not-allowed"
+                          ? "bg-[#00A884] hover:bg-[#008f6f] text-white active:scale-95"
+                          : "bg-transparent text-[#8696A0] cursor-not-allowed"
                       }`}
                     >
                       <Send className="w-4 h-4 ml-0.5" />
@@ -946,7 +971,7 @@ export default function WhatsAppAdminPage() {
                 /* Authentic WhatsApp Web Welcome Screen (When no chat is selected) */
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#F0F2F5] select-none">
                   <div className="max-w-md space-y-4">
-                    <div className="relative w-24 h-24 mx-auto bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-full flex items-center justify-center text-white shadow-xl shadow-emerald-500/20">
+                    <div className="relative w-24 h-24 mx-auto bg-gradient-to-tr from-[#00A884] to-[#25D366] rounded-full flex items-center justify-center text-white shadow-xl shadow-emerald-500/20">
                       <Image
                         src="/zupe-logo.webp"
                         alt="Zupe Store"
@@ -957,36 +982,36 @@ export default function WhatsAppAdminPage() {
                     </div>
 
                     <div>
-                      <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
+                      <h2 className="text-xl sm:text-2xl font-bold text-[#111B21]">
                         WhatsApp Web for Zupe Store
                       </h2>
-                      <p className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">
-                        Automated Meta Business Cloud API • Registered: +91 97781 37954
+                      <p className="text-xs sm:text-sm text-[#667781] mt-1 font-medium">
+                        Meta Cloud API • Connected to +91 97781 37954
                       </p>
                     </div>
 
-                    <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
-                      View inbound messages, order verifications, automated OTPs, and reply directly to customers from this dedicated console.
+                    <p className="text-xs text-[#667781] leading-relaxed max-w-sm mx-auto">
+                      View inbound messages, order verifications, automated notifications, and reply directly to customers in real time.
                     </p>
 
                     <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
                       <button
                         onClick={handleSyncOrders}
                         disabled={isSyncingOrders}
-                        className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition shadow-sm"
+                        className="px-5 py-2.5 rounded-xl bg-[#00A884] hover:bg-[#008f6f] text-white font-semibold text-xs transition shadow-sm"
                       >
                         {isSyncingOrders ? "Syncing..." : "Sync Store Customer Chats"}
                       </button>
                       <button
                         onClick={() => setShowNewChatModal(true)}
-                        className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold text-xs transition"
+                        className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-[#111B21] border border-slate-300 font-semibold text-xs transition"
                       >
                         Start New Chat
                       </button>
                     </div>
 
-                    <div className="pt-6 flex items-center justify-center gap-1.5 text-xs text-slate-400">
-                      <ShieldCheck className="w-4 h-4 text-[#25D366]" />
+                    <div className="pt-6 flex items-center justify-center gap-1.5 text-xs text-[#8696A0]">
+                      <Lock className="w-3.5 h-3.5 text-[#25D366]" />
                       <span>End-to-end encrypted via Meta Business Cloud API</span>
                     </div>
                   </div>
@@ -998,35 +1023,35 @@ export default function WhatsAppAdminPage() {
             {/* RIGHT SIDEBAR: Customer & Order Details Drawer                            */}
             {/* ========================================================================= */}
             {showOrderDrawer && activeChat && (
-              <div className="w-72 sm:w-80 bg-white border-l border-slate-200 flex flex-col z-20 shadow-xl flex-shrink-0 animate-in slide-in-from-right duration-200">
-                <div className="h-16 px-4 bg-[#F0F2F5] border-b border-slate-200 flex items-center justify-between">
-                  <h3 className="font-bold text-slate-800 text-sm">Contact Info</h3>
+              <div className="w-72 sm:w-80 bg-white border-l border-[#E9EDEF] flex flex-col z-20 shadow-xl flex-shrink-0 animate-in slide-in-from-right duration-200 min-h-0">
+                <div className="h-[60px] flex-shrink-0 px-4 bg-[#F0F2F5] border-b border-[#E9EDEF] flex items-center justify-between">
+                  <h3 className="font-semibold text-[#111B21] text-sm">Contact Info</h3>
                   <button
                     onClick={() => setShowOrderDrawer(false)}
-                    className="p-1 text-slate-400 hover:text-slate-600 rounded-full"
+                    className="p-1 text-[#54656F] hover:text-[#111B21] rounded-full"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                <div className="p-4 space-y-4 flex-1 overflow-y-auto">
+                <div className="p-4 space-y-4 flex-1 min-h-0 overflow-y-auto">
                   {/* Profile info */}
                   <div className="text-center pb-4 border-b border-slate-100">
-                    <div className="w-16 h-16 mx-auto rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xl flex items-center justify-center shadow-inner">
+                    <div className="w-16 h-16 mx-auto rounded-full bg-[#DFE5E7] text-[#54656F] font-bold text-xl flex items-center justify-center shadow-inner">
                       {(activeChat.customer_name || "WA").slice(0, 2).toUpperCase()}
                     </div>
-                    <h4 className="font-bold text-slate-900 text-base mt-2">
+                    <h4 className="font-bold text-[#111B21] text-base mt-2">
                       {activeChat.customer_name || "Customer"}
                     </h4>
-                    <p className="text-xs text-slate-500 font-medium">
+                    <p className="text-xs text-[#667781] font-medium">
                       {formatPhone(activeChat.phone)}
                     </p>
                   </div>
 
                   {/* Order Context */}
                   <div className="space-y-2">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                      Linked Zupe Store Order
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#8696A0]">
+                      Linked Store Order
                     </span>
 
                     {activeChat.latest_order_id ? (
@@ -1059,14 +1084,14 @@ export default function WhatsAppAdminPage() {
 
                   {/* WhatsApp Automation Status */}
                   <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-                    <p className="font-bold text-slate-800">Automation Settings</p>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="font-bold text-[#111B21]">Automation Settings</p>
+                    <p className="text-[11px] text-[#667781]">
                       Meta Cloud WABA: <span className="font-semibold text-slate-700">Active</span>
                     </p>
-                    <p className="text-[11px] text-slate-500">
-                      Sender Phone: <span className="font-semibold text-emerald-700">+91 97781 37954</span>
+                    <p className="text-[11px] text-[#667781]">
+                      Sender Phone: <span className="font-semibold text-[#008069]">+91 97781 37954</span>
                     </p>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-[11px] text-[#667781]">
                       Webhook: <span className="font-semibold text-slate-700">Live Listening</span>
                     </p>
                   </div>
@@ -1074,21 +1099,26 @@ export default function WhatsAppAdminPage() {
               </div>
             )}
           </div>
-        </div>
+        </main>
       </div>
 
       {/* Start New Chat Modal */}
       {showNewChatModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <MessageSquarePlus className="w-4 h-4 text-emerald-600" />
-                <span>Start New WhatsApp Chat</span>
-              </h3>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-[#E7FCE3] text-[#008069] flex items-center justify-center">
+                  <MessageSquarePlus className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#111B21] text-sm">Start New WhatsApp Chat</h3>
+                  <p className="text-[11px] text-[#8696A0]">Message any customer mobile number</p>
+                </div>
+              </div>
               <button
                 onClick={() => setShowNewChatModal(false)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+                className="text-[#8696A0] hover:text-[#111B21] p-1 rounded-lg"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1110,9 +1140,12 @@ export default function WhatsAppAdminPage() {
                   value={newChatPhone}
                   onChange={(e) => setNewChatPhone(e.target.value)}
                   placeholder="e.g. 9876543210 or +91 98765 43210"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs outline-none focus:border-emerald-600"
+                  className="w-full px-3 py-2 bg-[#F0F2F5] border border-slate-200 rounded-lg text-xs outline-none focus:bg-white focus:border-[#00A884] text-[#111B21]"
                   autoFocus
                 />
+                <p className="text-[10px] text-[#8696A0] mt-1">
+                  Enter 10-digit mobile number or full international format.
+                </p>
               </div>
 
               <div>
@@ -1124,7 +1157,7 @@ export default function WhatsAppAdminPage() {
                   value={newChatName}
                   onChange={(e) => setNewChatName(e.target.value)}
                   placeholder="e.g. Rahul Sharma"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs outline-none focus:border-emerald-600"
+                  className="w-full px-3 py-2 bg-[#F0F2F5] border border-slate-200 rounded-lg text-xs outline-none focus:bg-white focus:border-[#00A884] text-[#111B21]"
                 />
               </div>
 
@@ -1138,9 +1171,9 @@ export default function WhatsAppAdminPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                  className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#00A884] hover:bg-[#008f6f] text-white shadow-sm"
                 >
-                  Start Conversation
+                  Open Conversation
                 </button>
               </div>
             </form>
@@ -1150,4 +1183,3 @@ export default function WhatsAppAdminPage() {
     </div>
   );
 }
-
