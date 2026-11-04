@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useTransition } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { siteConfig } from "@/config/siteConfig";
@@ -26,6 +26,12 @@ import {
   X,
   RotateCcw,
   Sparkles,
+  Plane,
+  BadgeCheck,
+  Award,
+  ChevronRight,
+  Layers,
+  HelpCircle,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -42,15 +48,15 @@ interface TrackingCheckpoint {
 }
 
 function getProductImageFallback(productName?: string): string {
-  if (!productName) return "/tj/turkiye-jam-3-strips.png";
+  if (!productName) return "/vittal/wireless-earbuds.png";
   const norm = productName.toLowerCase();
   const match = DEFAULT_PRODUCTS.find((p) =>
     p.name.toLowerCase().includes(norm) || norm.includes(p.name.toLowerCase())
   );
   if (match) {
-    return match.poster_image || match.images[0] || "/tj/turkiye-jam-3-strips.png";
+    return match.poster_image || match.images[0] || "/vittal/wireless-earbuds.png";
   }
-  return "/tj/turkiye-jam-3-strips.png";
+  return "/vittal/wireless-earbuds.png";
 }
 
 function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): TrackingCheckpoint[] {
@@ -84,7 +90,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
 
   const status = (order.delivery_status || order.status || "Processing").trim();
   const city = order.shipping_address?.split(",")?.slice(-2)?.[0]?.trim() || "Destination City";
-  const courier = order.courier_partner || "Express Logistics";
+  const courier = order.courier_partner || "Express Air Logistics";
   const hasAwb = Boolean(
     order.shiprocket_awb &&
       !order.shiprocket_awb.startsWith("SR-AWB-") &&
@@ -92,40 +98,40 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       !order.shiprocket_awb.toUpperCase().includes("PENDING")
   );
 
-  // Status: Processing / Newly Placed (Package is currently being prepared and not yet dispatched)
+  // Status: Processing / Newly Placed
   if (status === "Processing" || status.toLowerCase() === "pending" || !status) {
     return [
       {
-        title: "Order Confirmed & Placed",
+        title: "Order Confirmed & Verified",
         location: siteConfig.fulfillmentCenter,
         timestamp: formatPlacedTime,
         completed: true,
         active: false,
-        description: "Order verified and confirmed via WhatsApp. Received at fulfillment queue.",
+        description: "Order verified with serial registration and confirmed for fulfillment queue.",
       },
       {
-        title: "Packaging & Quality Inspection",
+        title: "Quality Check & Shockproof Packaging",
         location: siteConfig.fulfillmentCenter,
         timestamp: "In Progress",
         completed: false,
         active: true,
-        description: "Items are being picked and packed in tamper-proof discreet plain box.",
+        description: "Device undergoing multi-point inspection and packed in tamper-proof electronics foam.",
       },
       {
-        title: "Courier Handover & AWB Assignment",
+        title: "Courier Handover & AWB Activation",
         location: siteConfig.dispatchBay,
         timestamp: "Expected within 24 business hours",
         completed: false,
         active: false,
-        description: "Express courier partner will be assigned and tracking activated upon warehouse pickup.",
+        description: "Express air cargo partner assigned and real-time tracking activated upon pickup.",
       },
       {
-        title: "Out for Delivery & Doorstep Handover",
+        title: "Out for Delivery & OTP Verification",
         location: `${city} Delivery Address`,
-        timestamp: "Estimated 3-5 business days",
+        timestamp: "Estimated 2-4 business days",
         completed: false,
         active: false,
-        description: "Payable via Cash on Delivery (COD) or UPI directly to delivery executive.",
+        description: "Secure contactless handover. Cash on Delivery (COD) or UPI payable directly to courier.",
       },
     ];
   }
@@ -133,28 +139,28 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
   if (status === "In Transit") {
     return [
       {
-        title: "Order Confirmed & Placed",
+        title: "Order Confirmed & Verified",
         location: siteConfig.fulfillmentCenter,
         timestamp: formatPlacedTime,
         completed: true,
         active: false,
-        description: "Order received and verified.",
+        description: "Order confirmed and verified.",
       },
       {
-        title: "Dispatched from Fulfillment Center",
+        title: "Dispatched from Fulfillment Hub",
         location: siteConfig.fulfillmentCenter,
         timestamp: "Dispatched",
         completed: true,
         active: false,
-        description: `Package handed over to ${courier}. ${hasAwb ? `AWB: ${order.shiprocket_awb}` : ""}`,
+        description: `Handed over to ${courier}. ${hasAwb ? `AWB: ${order.shiprocket_awb}` : ""}`,
       },
       {
-        title: "In Transit to Destination Hub",
+        title: "In Transit via Air Cargo Corridor",
         location: `En Route to ${city}`,
         timestamp: "In Transit",
         completed: true,
         active: true,
-        description: `Shipment is moving through the express logistics corridor to ${city}.`,
+        description: `Shipment is moving via express transit lines to the ${city} destination airport hub.`,
       },
       {
         title: "Out for Delivery & Doorstep Handover",
@@ -175,10 +181,10 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
         timestamp: formatPlacedTime,
         completed: true,
         active: false,
-        description: `Shipped via ${courier}.`,
+        description: `Dispatched via ${courier}.`,
       },
       {
-        title: "Arrived at Local Destination Facility",
+        title: "Arrived at Destination Facility",
         location: `${city} Hub`,
         timestamp: "Arrived",
         completed: true,
@@ -191,15 +197,15 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
         timestamp: "Today",
         completed: true,
         active: true,
-        description: `Delivery executive is on route. Please keep your phone reachable.`,
+        description: "Delivery executive is on the way. Please keep your phone reachable for OTP.",
       },
       {
-        title: "Doorstep Handover",
+        title: "Doorstep Handover & Inspection",
         location: `${city} Delivery Address`,
         timestamp: "Expected Today",
         completed: false,
         active: false,
-        description: "Cash on delivery payable to delivery partner.",
+        description: "Verify seal upon delivery. Cash or UPI accepted.",
       },
     ];
   }
@@ -228,7 +234,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
         timestamp: "Delivered",
         completed: true,
         active: true,
-        description: `Package was handed over directly to recipient. Thank you for shopping with ${siteConfig.name}!`,
+        description: `Package handed over safely. 1-Year ${siteConfig.name} brand warranty is now active!`,
       },
     ];
   }
@@ -257,7 +263,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       timestamp: "In Progress",
       completed: true,
       active: true,
-      description: "Shipment returning to sender warehouse.",
+      description: "Shipment returning to fulfillment warehouse.",
     },
   ];
 }
@@ -291,11 +297,11 @@ function OrderTrackingContent() {
 
   const scrollToJourney = () => {
     setTimeout(() => {
-      const el = document.getElementById("live-shipment-journey") || journeySectionRef.current;
-      if (el) {
-        const rect = el.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const targetY = rect.top + scrollTop - 85;
+      if (journeySectionRef.current) {
+        const targetY =
+          journeySectionRef.current.getBoundingClientRect().top +
+          window.scrollY -
+          100;
         window.scrollTo({
           top: Math.max(0, targetY),
           behavior: "smooth",
@@ -307,7 +313,7 @@ function OrderTrackingContent() {
   const fetchTracking = async (termToSearch: string, autoScroll = false) => {
     const trimmed = termToSearch.trim();
     if (!trimmed) {
-      setErrorMessage("Please enter an Order ID, AWB number, or Phone/Email");
+      setErrorMessage("Please enter an Order ID, AWB number, or 10-digit Phone");
       setErrorSupport(null);
       return;
     }
@@ -317,7 +323,9 @@ function OrderTrackingContent() {
     setErrorSupport(null);
 
     try {
-      const res = await fetch(`/api/orders/track?query=${encodeURIComponent(trimmed)}&t=${Date.now()}`);
+      const res = await fetch(
+        `/api/orders/track?query=${encodeURIComponent(trimmed)}&t=${Date.now()}`
+      );
       const data = await res.json();
 
       if (data.success && Array.isArray(data.orders) && data.orders.length > 0) {
@@ -343,14 +351,15 @@ function OrderTrackingContent() {
         setSelectedOrder(null);
         setLiveTracking(null);
         setErrorMessage(
-          data.error || `No order found matching "${trimmed}". Please double check your order details.`
+          data.error ||
+            `No order found matching "${trimmed}". Please double check your details or search with your 10-digit mobile number.`
         );
         if (data.support_whatsapp) {
           setErrorSupport(data.support_whatsapp);
         }
       }
-    } catch (err: any) {
-      setErrorMessage("Unable to fetch order status at this moment. Please try again.");
+    } catch {
+      setErrorMessage("Unable to fetch order status at this moment. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -403,8 +412,8 @@ function OrderTrackingContent() {
         return {
           bg: "bg-blue-50 text-blue-700 border-blue-200",
           dot: "bg-blue-500 animate-pulse",
-          icon: Truck,
-          label: "In Transit",
+          icon: Plane,
+          label: "In Transit (Air Cargo)",
         };
       case "RTO Delivered":
       case "RTO Initiated":
@@ -417,10 +426,10 @@ function OrderTrackingContent() {
         };
       default:
         return {
-          bg: "bg-orange-50 text-[#FF7A00] border-orange-200",
-          dot: "bg-[#FF7A00] animate-pulse",
+          bg: "bg-amber-50 text-amber-800 border-amber-200",
+          dot: "bg-amber-500 animate-pulse",
           icon: Clock,
-          label: "Processing at Warehouse",
+          label: "Processing & Quality Inspection",
         };
     }
   };
@@ -428,67 +437,91 @@ function OrderTrackingContent() {
   const faqs = [
     {
       q: "Where can I find my Order ID or AWB Tracking Number?",
-      a: "Your Order ID (e.g., #TJ-1001) was sent in the confirmation email and WhatsApp message right after your purchase. Your courier AWB tracking number (e.g., SR-AWB-9871105) is sent via WhatsApp and Email once the package is dispatched.",
+      a: `Your Order ID (e.g. #${siteConfig.orderPrefix}-1001) is displayed immediately upon placing your order and sent to your WhatsApp and Email. Once your electronics parcel is dispatched from our hub, your courier AWB tracking number (Delhivery, Blue Dart, DTDC) is sent directly via WhatsApp with real-time tracking links.`,
     },
     {
-      q: "How long does standard delivery take?",
-      a: "Orders are dispatched within 24 business hours. Estimated delivery is 5-7 business days across India.",
+      q: "How fast is express delivery across India?",
+      a: "Orders are verified and packaged within 24 business hours. Express air logistics delivery typically takes 2 to 4 business days for metro and tier-1 cities, and 3 to 5 business days for regional destinations.",
     },
     {
-      q: "Can I track my order if I paid via Cash on Delivery (COD)?",
-      a: "Yes! All orders are assigned full real-time tracking numbers with live WhatsApp and SMS status updates.",
+      q: "How are fragile electronics protected during shipping?",
+      a: "Every unit is enclosed in custom anti-static bubble sleeves, reinforced corner cushions, and heavy-duty tamper-proof outer boxes with factory serial verification to ensure it reaches you in pristine condition.",
     },
     {
-      q: "What should I do if my delivery executive hasn't arrived?",
-      a: "On the day of delivery, you will receive the delivery driver's contact details via WhatsApp or notification. If you miss the attempt, the courier will re-attempt delivery on the next working day automatically.",
+      q: "Can I track Cash on Delivery (COD) orders?",
+      a: "Yes! COD orders have full live tracking with real-time milestone scans. You will also receive an SMS/WhatsApp notification on the morning of delivery with OTP verification. You can pay via Cash or UPI QR directly to the courier executive.",
+    },
+    {
+      q: "What should I do if I am unavailable during delivery?",
+      a: "Our courier partners attempt delivery up to 3 times. You will receive the delivery associate's contact details via WhatsApp. You can request a delivery re-attempt or reschedule the date without extra cost.",
+    },
+    {
+      q: "How do I claim the 1-year warranty on my electronics?",
+      a: `Every device purchased from ${siteConfig.name} includes a comprehensive 1-year warranty card with GST invoice. In case of any technical queries or support, simply connect with our dedicated concierge via WhatsApp at +91 73567 65036.`,
     },
   ];
 
   return (
-    <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between">
+    <div className="min-h-screen bg-[#FAFBFD] text-slate-900 flex flex-col justify-between selection:bg-[#002D62] selection:text-white font-sans">
       <Navbar />
 
       <main className="flex-1 pb-20">
-        {/* Hero Section */}
-        <div className="relative pt-28 sm:pt-32 pb-14 px-4 sm:px-6 lg:px-8 border-b border-stone-300">
-          <div className="max-w-4xl mx-auto text-center">
+        {/* ================================================================= */}
+        {/* HERO SECTION: DEEP NAVY GRADIENT MATCHING HOMEPAGE DESIGN        */}
+        {/* ================================================================= */}
+        <section className="relative overflow-hidden bg-gradient-to-b from-[#001D40] via-[#002855] to-[#001D40] text-white pt-10 sm:pt-14 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 border-b border-blue-900/40">
+          {/* Subtle Ambient Radial Lighting */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-blue-500/10 blur-[100px] pointer-events-none" />
+          <div className="absolute -bottom-10 right-10 w-[300px] h-[200px] bg-[#FFBE00]/10 blur-[80px] pointer-events-none" />
+
+          <div className="relative max-w-4xl mx-auto text-center">
+            {/* Breadcrumb Navigation */}
+            <div className="flex items-center justify-center gap-2 text-xs font-medium text-blue-200/70 mb-4">
+              <Link href="/" className="hover:text-white transition-colors">
+                Home
+              </Link>
+              <ChevronRight className="w-3.5 h-3.5 text-blue-300/40" />
+              <span className="text-[#FFBE00] font-semibold">Track Order</span>
+            </div>
+
             {/* Live Tracking Pill */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fed000] text-stone-900 shadow-[0_2px_0_0_#2b2b2b] border-2 border-stone-800 mb-5">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-600 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-[#FFBE00] border border-[#FFBE00]/30 shadow-xs mb-4">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
               </span>
-              <span className="text-xs font-black uppercase tracking-wider text-stone-900">
-                Live Shipment Tracking
+              <span className="text-[11px] font-black uppercase tracking-wider">
+                Live Shipment Radar & Tracking
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-black font-tj-serif text-stone-900 tracking-tight leading-tight">
-              Track Your <span className="text-[#5b1420]">Order</span>
+            <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+              Track Your <span className="text-[#FFBE00]">Order</span>
             </h1>
-            <p className="mt-3 text-sm sm:text-base text-stone-600 max-w-xl mx-auto">
-              Enter your Order Number, Shiprocket AWB, or registered Mobile Number to see instant, live courier updates.
+            <p className="mt-3 text-sm sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
+              Enter your Order ID, courier AWB tracking number, or 10-digit mobile number for real-time delivery milestone updates.
             </p>
 
-            {/* Tracking Search Input Card */}
-            <div className="mt-8 max-w-2xl mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-[0_8px_0_0_#2b2b2b] border-2 border-stone-800 p-2 sm:p-2.5">
+            {/* Tracking Search Input Card (Clean, modern rounded card) */}
+            <div className="mt-8 max-w-2xl mx-auto bg-white rounded-2xl sm:rounded-full shadow-2xl p-2 sm:p-2.5 border border-white/20">
               <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1 flex items-center">
-                  <div className="absolute left-4 text-stone-400">
-                    <Search className="w-5 h-5" />
+                  <div className="absolute left-4 sm:left-5 text-slate-400">
+                    <Search className="w-5 h-5 text-[#002D62]" />
                   </div>
                   <input
                     type="text"
                     value={inputTerm}
                     onChange={(e) => setInputTerm(e.target.value)}
-                    placeholder="Enter Order ID (e.g. #TJ-1001), AWB, or Phone..."
-                    className="w-full pl-12 pr-10 py-3.5 sm:py-4 text-sm sm:text-base bg-transparent text-stone-900 placeholder:text-stone-400 focus:outline-none font-medium"
+                    placeholder="Enter Order ID (e.g. #VD-1001), AWB, or Phone..."
+                    className="w-full pl-12 sm:pl-13 pr-10 py-3.5 sm:py-4 text-sm sm:text-base bg-transparent text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
                   />
                   {inputTerm && (
                     <button
                       type="button"
                       onClick={() => setInputTerm("")}
-                      className="absolute right-3 p-1 text-stone-400 hover:text-stone-600 rounded-full cursor-pointer"
+                      className="absolute right-3 p-1.5 text-slate-400 hover:text-slate-600 rounded-full cursor-pointer transition-colors"
+                      title="Clear"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -498,12 +531,12 @@ function OrderTrackingContent() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl btn-shimmer bg-[#fed000] hover:bg-[#fab005] active:translate-y-0.5 active:shadow-none text-stone-900 font-black text-sm sm:text-base transition-all border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] disabled:opacity-70 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-xl sm:rounded-full bg-[#FFBE00] hover:bg-[#E5AA00] active:scale-95 text-slate-950 font-black text-sm sm:text-base transition-all shadow-md hover:shadow-lg disabled:opacity-70 cursor-pointer shrink-0"
                 >
                   {loading ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-stone-900" />
-                      <span>Checking Status...</span>
+                      <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+                      <span>Locating Parcel...</span>
                     </>
                   ) : (
                     <>
@@ -514,30 +547,109 @@ function OrderTrackingContent() {
                 </button>
               </form>
             </div>
+
+            {/* Quick helper format chips */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-blue-200/80 font-medium">
+              <span className="text-slate-400">Accepted formats:</span>
+              <button
+                type="button"
+                onClick={() => setInputTerm("#VD-")}
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white font-mono text-[11px] transition-colors cursor-pointer"
+              >
+                #VD-1001
+              </button>
+              <button
+                type="button"
+                onClick={() => setInputTerm("SR-AWB-")}
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white font-mono text-[11px] transition-colors cursor-pointer"
+              >
+                Courier AWB
+              </button>
+              <span className="px-2.5 py-1 rounded-lg bg-white/10 border border-white/10 text-white font-mono text-[11px]">
+                10-Digit Mobile
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* ================================================================= */}
+        {/* TRUST BADGES STRIP: SLIM WHITE CURVED CARD (HOMEPAGE MATCH)      */}
+        {/* ================================================================= */}
+        <div className="max-w-5xl mx-auto px-4 -mt-6 sm:-mt-8 relative z-10">
+          <div className="bg-white text-slate-900 rounded-xl sm:rounded-2xl md:rounded-3xl border border-slate-200/90 shadow-md py-3 px-2 sm:py-4 sm:px-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 items-center text-center">
+              {[
+                {
+                  icon: BadgeCheck,
+                  label: "100% Authentic",
+                  desc: "Dubai Sourced Electronics",
+                },
+                {
+                  icon: ShieldCheck,
+                  label: "1-Year Warranty",
+                  desc: "All-India Comprehensive",
+                },
+                {
+                  icon: Truck,
+                  label: "Express Air Cargo",
+                  desc: "2-4 Days Priority Transit",
+                },
+                {
+                  icon: MessageSquare,
+                  label: "Live Milestone Alerts",
+                  desc: "Real-Time WhatsApp Updates",
+                },
+              ].map((item, idx) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={item.label}
+                    className={`flex flex-col items-center justify-center p-2 sm:px-3 text-center ${
+                      idx >= 2 ? "pt-3 sm:pt-2" : ""
+                    }`}
+                  >
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shadow-2xs mb-1.5 shrink-0">
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#002D62]" />
+                    </div>
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                      {item.label}
+                    </span>
+                    <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium leading-tight mt-0.5">
+                      {item.desc}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        {/* Results / Error Area */}
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 mt-8">
-          {/* Success Banner if redirected from 1-Click Checkout */}
+        {/* ================================================================= */}
+        {/* MAIN BODY: RESULTS OR DEFAULT GUIDE CONTENT                      */}
+        {/* ================================================================= */}
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+          {/* Success Banner if redirected from 1-Click Fastrr Checkout */}
           {orderStatus === "SUCCESS" && (
-            <div className="mb-8 p-6 rounded-3xl bg-emerald-50 border-2 border-emerald-600/30 text-emerald-950 shadow-[0_4px_0_0_#059669] flex flex-col sm:flex-row items-center sm:items-start gap-4">
+            <div className="mb-8 p-6 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-950 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-4">
               <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
                 <CheckCircle2 className="w-7 h-7" />
               </div>
               <div className="text-center sm:text-left flex-1">
-                <h2 className="text-lg sm:text-xl font-black font-tj-serif text-emerald-950">
+                <h2 className="text-lg sm:text-xl font-black text-emerald-950">
                   🎉 Order Placed Successfully!
                 </h2>
-                <p className="text-xs sm:text-sm text-emerald-800 mt-1">
-                  Thank you! Your order has been placed via Shiprocket Fastrr. Your items are being carefully packed in discreet plain-box packaging.
+                <p className="text-xs sm:text-sm text-emerald-800 mt-1 leading-relaxed">
+                  Thank you! Your order has been placed. Your devices are undergoing serial verification and being secured in multi-layer shockproof electronics packaging.
                 </p>
                 <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2">
                   <span className="px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-900 font-bold text-xs">
-                    Discreet Plain Box Packaging
+                    1-Year Warranty Activated
                   </span>
                   <span className="px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-900 font-bold text-xs">
-                    Cash on Delivery
+                    Priority Air Dispatch
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-900 font-bold text-xs">
+                    WhatsApp Updates Enabled
                   </span>
                 </div>
               </div>
@@ -546,11 +658,11 @@ function OrderTrackingContent() {
 
           {/* Error Message */}
           {errorMessage && (
-            <div className="mb-8 p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3">
+            <div className="mb-8 p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3 shadow-xs">
               <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-600" />
               <div className="text-sm flex-1">
                 <p className="font-bold">{errorMessage}</p>
-                <p className="text-xs text-rose-600 mt-1">
+                <p className="text-xs text-rose-600 mt-1 leading-relaxed">
                   Tip: Please check your Email/WhatsApp confirmation or try searching with your 10-digit registered mobile number.
                 </p>
                 {errorSupport && (
@@ -562,7 +674,7 @@ function OrderTrackingContent() {
                       className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors shadow-xs"
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
-                      <span>Chat with {siteConfig.name} Support on WhatsApp</span>
+                      <span>Chat with {siteConfig.name} Concierge on WhatsApp</span>
                     </a>
                   </div>
                 )}
@@ -570,10 +682,10 @@ function OrderTrackingContent() {
             </div>
           )}
 
-          {/* If Multiple Orders Match (e.g. searched by phone/email) */}
+          {/* If Multiple Orders Match (e.g. searched by phone number) */}
           {matchedOrders.length > 1 && (
             <div className="mb-8">
-              <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-3">
+              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
                 Found {matchedOrders.length} orders matching your search:
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -586,25 +698,25 @@ function OrderTrackingContent() {
                         setSelectedOrder(ord);
                         scrollToJourney();
                       }}
-                      className={`text-left p-4 rounded-2xl border transition-all ${
+                      className={`text-left p-4 rounded-2xl border transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-orange-50/70 border-[#FF7A00] ring-2 ring-[#FF7A00]/20 shadow-sm"
-                          : "bg-white border-gray-200 hover:border-gray-300 shadow-xs"
+                          ? "bg-blue-50/90 border-[#002D62] ring-2 ring-[#002D62]/20 shadow-sm"
+                          : "bg-white border-slate-200 hover:border-slate-300 shadow-xs"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-sm text-gray-900">
+                        <span className="font-bold text-sm text-slate-900">
                           {ord.shopify_order_id || ord.id}
                         </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
                           {ord.delivery_status || ord.status}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500 truncate">
-                        {ord.items?.[0]?.product_name || `${siteConfig.name} Item`}
+                      <p className="text-xs text-slate-500 truncate">
+                        {ord.items?.[0]?.product_name || `${siteConfig.name} Electronics`}
                       </p>
-                      <p className="text-xs font-semibold text-[#FF7A00] mt-2">
-                        ₹{ord.total_amount?.toLocaleString()}
+                      <p className="text-xs font-bold text-[#002D62] mt-2">
+                        ₹{ord.total_amount?.toLocaleString("en-IN")}
                       </p>
                     </button>
                   );
@@ -613,23 +725,25 @@ function OrderTrackingContent() {
             </div>
           )}
 
-          {/* Active Order Tracking Display */}
+          {/* =============================================================== */}
+          {/* ACTIVE ORDER TRACKING DISPLAY (WHEN SEARCHED)                   */}
+          {/* =============================================================== */}
           {selectedOrder && (
             <div className="space-y-6">
-              {/* Card 1: Top Summary Card */}
+              {/* Card 1: Top Summary & Stepper Card */}
               {(() => {
                 const badge = getStatusBadge(selectedOrder.delivery_status || selectedOrder.status);
                 const BadgeIcon = badge.icon;
                 const checkpoints = buildTrackingCheckpoints(selectedOrder, liveTracking);
 
                 return (
-                  <div className="bg-white rounded-3xl border-2 border-stone-800 shadow-[0_8px_0_0_#2b2b2b] overflow-hidden">
+                  <div className="bg-white rounded-3xl border border-slate-200/90 shadow-md overflow-hidden">
                     {/* Header Strip */}
-                    <div className="p-6 sm:p-8 bg-gradient-to-r from-stone-50 via-white to-amber-50/20 border-b border-stone-200">
+                    <div className="p-6 sm:p-8 bg-gradient-to-r from-slate-50 via-white to-blue-50/30 border-b border-slate-100">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-3">
-                            <h2 className="text-2xl sm:text-3xl font-black font-tj-serif text-stone-900 tracking-tight">
+                            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                               Order {selectedOrder.shopify_order_id || selectedOrder.id}
                             </h2>
                             <button
@@ -639,7 +753,7 @@ function OrderTrackingContent() {
                                   "id"
                                 )
                               }
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                               title="Copy Order ID"
                             >
                               {copiedOrderId ? (
@@ -649,7 +763,7 @@ function OrderTrackingContent() {
                               )}
                             </button>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-slate-500 mt-1">
                             Placed on{" "}
                             {new Date(selectedOrder.created_at || Date.now()).toLocaleDateString(
                               "en-IN",
@@ -666,12 +780,16 @@ function OrderTrackingContent() {
 
                         {/* Status Badge & Live Sync indicator */}
                         <div className="flex flex-wrap items-center gap-2.5">
-                          {liveTracking && !liveTracking.isSimulated && !liveTracking.isPending && Array.isArray(liveTracking.activities) && liveTracking.activities.length > 0 && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                              Live Courier Scan
-                            </span>
-                          )}
+                          {liveTracking &&
+                            !liveTracking.isSimulated &&
+                            !liveTracking.isPending &&
+                            Array.isArray(liveTracking.activities) &&
+                            liveTracking.activities.length > 0 && (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                Live Carrier Scan
+                              </span>
+                            )}
 
                           {liveTracking?.edd && !liveTracking.isPending && (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
@@ -691,15 +809,21 @@ function OrderTrackingContent() {
                           <button
                             onClick={() =>
                               fetchTracking(
-                                selectedOrder.shopify_order_id || selectedOrder.id || inputTerm,
+                                selectedOrder.shopify_order_id ||
+                                  selectedOrder.id ||
+                                  inputTerm,
                                 true
                               )
                             }
                             disabled={loading}
-                            title="Refresh live status from Shiprocket"
-                            className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors border border-gray-200/80 cursor-pointer"
+                            title="Refresh live status from courier"
+                            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200/80 cursor-pointer"
                           >
-                            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-[#FF7A00]" : ""}`} />
+                            <RefreshCw
+                              className={`w-4 h-4 ${
+                                loading ? "animate-spin text-[#002D62]" : ""
+                              }`}
+                            />
                           </button>
                         </div>
                       </div>
@@ -709,11 +833,11 @@ function OrderTrackingContent() {
                     <div
                       id="live-shipment-journey"
                       ref={journeySectionRef}
-                      className="p-6 sm:p-8 border-t border-gray-100 scroll-mt-24"
+                      className="p-6 sm:p-8 border-t border-slate-100 scroll-mt-24"
                     >
                       <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
-                        <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                          <Truck className="w-5 h-5 text-[#FF7A00]" />
+                        <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                          <Truck className="w-5 h-5 text-[#002D62]" />
                           <span>Live Shipment Journey</span>
                         </h3>
                         {lastUpdated && (
@@ -731,59 +855,59 @@ function OrderTrackingContent() {
 
                           return (
                             <div key={idx} className="relative flex items-start gap-3.5 sm:gap-5">
-                              {/* Left Column: Perfectly Centered Indicator & Connecting Line */}
+                              {/* Left Column: Indicator & Connecting Line */}
                               <div className="relative flex flex-col items-center shrink-0 w-8 self-stretch">
-                                {/* Connecting line to NEXT checkpoint */}
                                 {!isLast && (
                                   <div
                                     className={`absolute top-4 -bottom-6 w-0.5 left-1/2 -translate-x-1/2 ${
-                                      cp.completed && (checkpoints[idx + 1]?.completed || checkpoints[idx + 1]?.active)
+                                      cp.completed &&
+                                      (checkpoints[idx + 1]?.completed ||
+                                        checkpoints[idx + 1]?.active)
                                         ? "bg-emerald-400"
-                                        : "bg-orange-200/80"
+                                        : "bg-slate-200"
                                     }`}
                                   />
                                 )}
 
-                                {/* Dot / Icon indicator */}
                                 <div
                                   className={`relative z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 transition-transform ${
                                     cp.active
-                                      ? "bg-[#FF7A00] border-white ring-4 ring-orange-200 text-white shadow-sm"
+                                      ? "bg-[#002D62] border-white ring-4 ring-blue-100 text-white shadow-sm"
                                       : cp.completed
                                       ? "bg-emerald-500 border-white text-white shadow-xs"
-                                      : "bg-stone-100 border-stone-300 text-stone-400"
+                                      : "bg-slate-100 border-slate-300 text-slate-400"
                                   }`}
                                 >
                                   {cp.active ? (
-                                    <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
+                                    <span className="w-2.5 h-2.5 rounded-full bg-[#FFBE00] animate-ping" />
                                   ) : cp.completed ? (
                                     <Check className="w-4 h-4 text-white stroke-[2.5]" />
                                   ) : (
-                                    <span className="w-2 h-2 rounded-full bg-stone-400" />
+                                    <span className="w-2 h-2 rounded-full bg-slate-400" />
                                   )}
                                 </div>
                               </div>
 
                               {/* Content Card */}
-                              <div className="flex-1 bg-stone-50/70 hover:bg-stone-50 rounded-2xl p-4 sm:p-5 border border-stone-200/80 transition-colors">
+                              <div className="flex-1 bg-slate-50/70 hover:bg-slate-50 rounded-2xl p-4 sm:p-5 border border-slate-200/80 transition-colors">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
                                   <h4
                                     className={`text-sm sm:text-base font-bold ${
-                                      cp.active ? "text-[#FF7A00]" : "text-stone-900"
+                                      cp.active ? "text-[#002D62]" : "text-slate-900"
                                     }`}
                                   >
                                     {cp.title}
                                   </h4>
-                                  <span className="text-[11px] sm:text-xs font-semibold text-stone-400">
+                                  <span className="text-[11px] sm:text-xs font-semibold text-slate-400">
                                     {cp.timestamp}
                                   </span>
                                 </div>
-                                <p className="text-xs sm:text-sm font-semibold text-stone-600 mb-1 flex items-center gap-1.5">
-                                  <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                                <p className="text-xs sm:text-sm font-semibold text-slate-600 mb-1 flex items-center gap-1.5">
+                                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                                   <span>{cp.location}</span>
                                 </p>
                                 {cp.description && (
-                                  <p className="text-xs sm:text-sm text-stone-500 leading-relaxed mt-1">
+                                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed mt-1">
                                     {cp.description}
                                   </p>
                                 )}
@@ -795,44 +919,56 @@ function OrderTrackingContent() {
 
                       {/* Courier & AWB Details Bar */}
                       {(() => {
-                        const isProcessing = (selectedOrder.delivery_status || selectedOrder.status || "Processing").toLowerCase() === "processing";
-                        const rawAwb = selectedOrder.shiprocket_awb || (selectedOrder as any).tracking_number || "";
+                        const isProcessing =
+                          (
+                            selectedOrder.delivery_status ||
+                            selectedOrder.status ||
+                            "Processing"
+                          ).toLowerCase() === "processing";
+                        const rawAwb =
+                          selectedOrder.shiprocket_awb ||
+                          (selectedOrder as any).tracking_number ||
+                          "";
                         const hasRealAwb = Boolean(
                           rawAwb &&
-                          !rawAwb.startsWith("SR-AWB-") &&
-                          !rawAwb.startsWith("SR-") &&
-                          !rawAwb.toUpperCase().includes("PENDING")
+                            !rawAwb.startsWith("SR-AWB-") &&
+                            !rawAwb.startsWith("SR-") &&
+                            !rawAwb.toUpperCase().includes("PENDING")
                         );
-                        const courierName = selectedOrder.courier_partner && !selectedOrder.courier_partner.toLowerCase().includes("pending")
-                          ? selectedOrder.courier_partner
-                          : (isProcessing ? "Assigned upon dispatch (e.g. DTDC)" : "Express Logistics");
+                        const courierName =
+                          selectedOrder.courier_partner &&
+                          !selectedOrder.courier_partner.toLowerCase().includes("pending")
+                            ? selectedOrder.courier_partner
+                            : isProcessing
+                            ? "Assigned upon dispatch (e.g. Blue Dart / Delhivery)"
+                            : "Express Air Logistics";
 
                         return (
-                          <div className="mt-8 pt-6 border-t border-gray-200/60 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
-                              <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
+                          <div className="mt-8 pt-6 border-t border-slate-200/60 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100">
+                              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-1">
                                 Courier Partner
                               </span>
                               <div className="flex items-center gap-2">
-                                <Truck className="w-4 h-4 text-[#FF7A00]" />
-                                <span className="text-sm font-bold text-gray-900">
+                                <Truck className="w-4 h-4 text-[#002D62]" />
+                                <span className="text-sm font-bold text-slate-900">
                                   {courierName}
                                 </span>
                               </div>
                             </div>
 
-                            <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
-                              <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
+                            <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100">
+                              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-1">
                                 AWB / Waybill Number
                               </span>
                               <div className="flex items-center justify-between">
-                                <span className="text-sm font-mono font-bold text-gray-900">
+                                <span className="text-sm font-mono font-bold text-slate-900">
                                   {hasRealAwb ? rawAwb : "Generating upon courier pickup"}
                                 </span>
                                 {hasRealAwb && (
                                   <button
                                     onClick={() => copyToClipboard(rawAwb, "awb")}
-                                    className="p-1 text-gray-400 hover:text-gray-700 cursor-pointer"
+                                    className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"
                                     title="Copy AWB"
                                   >
                                     {copiedAWB ? (
@@ -845,9 +981,9 @@ function OrderTrackingContent() {
                               </div>
                             </div>
 
-                            <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
-                              <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
-                                External Tracking
+                            <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100">
+                              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-1">
+                                External Tracking Portal
                               </span>
                               {hasRealAwb ? (
                                 <a
@@ -864,14 +1000,14 @@ function OrderTrackingContent() {
                                   }
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FF7A00] hover:underline cursor-pointer"
+                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#002D62] hover:underline cursor-pointer"
                                 >
                                   <span>Open {courierName} Portal</span>
                                   <ExternalLink className="w-3.5 h-3.5" />
                                 </a>
                               ) : (
-                                <span className="text-xs text-stone-500 font-medium">
-                                  Active once dispatched with courier
+                                <span className="text-xs text-slate-500 font-medium">
+                                  Activated once handed to courier
                                 </span>
                               )}
                             </div>
@@ -886,33 +1022,44 @@ function OrderTrackingContent() {
               {/* Card 2: Items & Delivery Details Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Items in this Shipment */}
-                <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
-                  <h3 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Package className="w-5 h-5 text-[#FF7A00]" />
-                    <span>Items in this Package</span>
+                <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8">
+                  <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <Package className="w-5 h-5 text-[#002D62]" />
+                    <span>Items in this Shipment</span>
                   </h3>
 
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-slate-100">
                     {selectedOrder.items && selectedOrder.items.length > 0 ? (
                       selectedOrder.items.map((it: any, idx: number) => {
                         const productName =
-                          it.product_name || it.name || it.title || `${siteConfig.name} Package`;
+                          it.product_name ||
+                          it.name ||
+                          it.title ||
+                          `${siteConfig.name} Package`;
                         const quantity = Number(it.quantity || it.units || 1);
                         const unitPrice =
                           Number(
                             it.unit_price ??
-                            it.price ??
-                            it.selling_price ??
-                            (selectedOrder.total_amount ? Math.round(selectedOrder.total_amount / quantity) : 1099)
-                          ) || 1099;
+                              it.price ??
+                              it.selling_price ??
+                              (selectedOrder.total_amount
+                                ? Math.round(selectedOrder.total_amount / quantity)
+                                : 2999)
+                          ) || 2999;
                         const totalPrice =
-                          Number(it.total_price ?? (unitPrice * quantity)) || (unitPrice * quantity);
+                          Number(it.total_price ?? unitPrice * quantity) ||
+                          unitPrice * quantity;
                         const img =
-                          it.image || it.poster_image || getProductImageFallback(productName);
+                          it.image ||
+                          it.poster_image ||
+                          getProductImageFallback(productName);
 
                         return (
-                          <div key={idx} className="py-4 first:pt-0 last:pb-0 flex items-center gap-4">
-                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100">
+                          <div
+                            key={idx}
+                            className="py-4 first:pt-0 last:pb-0 flex items-center gap-4"
+                          >
+                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 overflow-hidden flex-shrink-0 border border-slate-100">
                               <Image
                                 src={img}
                                 alt={productName}
@@ -921,15 +1068,21 @@ function OrderTrackingContent() {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-bold text-gray-900 truncate">
+                              <h4 className="text-sm font-bold text-slate-900 truncate">
                                 {productName}
                               </h4>
-                              <p className="text-xs text-gray-500 mt-0.5 font-medium">
+                              <p className="text-xs text-slate-500 mt-0.5 font-medium">
                                 Qty: {quantity} × ₹{unitPrice.toLocaleString("en-IN")}
                               </p>
+                              <div className="mt-1 flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#002D62] bg-blue-50 px-2 py-0.5 rounded">
+                                  <ShieldCheck className="w-3 h-3" />
+                                  1-Yr Warranty
+                                </span>
+                              </div>
                             </div>
                             <div className="text-right">
-                              <span className="text-sm font-extrabold text-gray-900">
+                              <span className="text-sm font-extrabold text-slate-900">
                                 ₹{totalPrice.toLocaleString("en-IN")}
                               </span>
                             </div>
@@ -938,23 +1091,26 @@ function OrderTrackingContent() {
                       })
                     ) : (
                       <div className="py-4 flex items-center gap-4">
-                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100">
+                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 overflow-hidden flex-shrink-0 border border-slate-100">
                           <Image
-                            src="/tj/turkiye-jam-3-strips.png"
+                            src="/vittal/wireless-earbuds.png"
                             alt={siteConfig.name}
                             fill
                             className="object-cover"
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-gray-900 truncate">{siteConfig.name} Package</p>
-                          <p className="text-xs text-gray-500 mt-0.5 font-medium">
-                            Qty: 1 × ₹{(selectedOrder.total_amount || 1099).toLocaleString("en-IN")}
+                          <p className="text-sm font-bold text-slate-900 truncate">
+                            {siteConfig.name} Premium Electronics
+                          </p>
+                          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                            Qty: 1 × ₹
+                            {(selectedOrder.total_amount || 2999).toLocaleString("en-IN")}
                           </p>
                         </div>
                         <div className="text-right">
-                          <span className="text-sm font-extrabold text-gray-900">
-                            ₹{(selectedOrder.total_amount || 1099).toLocaleString("en-IN")}
+                          <span className="text-sm font-extrabold text-slate-900">
+                            ₹{(selectedOrder.total_amount || 2999).toLocaleString("en-IN")}
                           </span>
                         </div>
                       </div>
@@ -965,43 +1121,47 @@ function OrderTrackingContent() {
                   {(() => {
                     const isCod =
                       (selectedOrder.payment_method || "").toLowerCase().includes("cod") ||
-                      (selectedOrder.payment_method || "").toLowerCase().includes("cash on delivery");
+                      (selectedOrder.payment_method || "")
+                        .toLowerCase()
+                        .includes("cash on delivery");
                     const isPaid =
                       (selectedOrder.payment_status || "").toLowerCase() === "paid" ||
                       (selectedOrder.payment_status || "").toLowerCase() === "completed";
 
                     return (
-                      <div className="mt-6 pt-4 border-t border-gray-100 space-y-2">
-                        <div className="flex justify-between text-xs text-gray-500">
+                      <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
+                        <div className="flex justify-between text-xs text-slate-500">
                           <span>Payment Method</span>
-                          <span className="font-semibold text-gray-900">
-                            {isCod ? "Cash on Delivery (COD)" : (selectedOrder.payment_method || "Prepaid Online")}
+                          <span className="font-semibold text-slate-900">
+                            {isCod
+                              ? "Cash on Delivery (COD)"
+                              : selectedOrder.payment_method || "Prepaid Online"}
                           </span>
                         </div>
                         {isCod && !isPaid ? (
                           <>
-                            <div className="flex justify-between text-xs text-gray-500">
+                            <div className="flex justify-between text-xs text-slate-500">
                               <span>Payment Status</span>
                               <span className="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">
                                 Payable on Delivery
                               </span>
                             </div>
-                            <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100">
+                            <div className="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-100">
                               <span>Payable at Doorstep</span>
-                              <span className="text-[#FF7A00]">
+                              <span className="text-[#002D62]">
                                 ₹{selectedOrder.total_amount?.toLocaleString("en-IN")}
                               </span>
                             </div>
                           </>
                         ) : (
                           <>
-                            <div className="flex justify-between text-xs text-gray-500">
+                            <div className="flex justify-between text-xs text-slate-500">
                               <span>Payment Status</span>
                               <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                                Paid Online
+                                Paid Online (Verified)
                               </span>
                             </div>
-                            <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100">
+                            <div className="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-100">
                               <span>Total Paid</span>
                               <span className="text-emerald-600">
                                 ₹{selectedOrder.total_amount?.toLocaleString("en-IN")}
@@ -1017,57 +1177,59 @@ function OrderTrackingContent() {
                 {/* Delivery Address & Customer Support */}
                 <div className="space-y-6">
                   {/* Delivery Address */}
-                  <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
-                    <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-[#FF7A00]" />
+                  <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6">
+                    <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-[#002D62]" />
                       <span>Shipping Destination</span>
                     </h3>
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-sm font-bold text-slate-900">
                       {selectedOrder.customer_name}
                     </p>
-                    <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                       {selectedOrder.shipping_address}
                     </p>
                     {selectedOrder.customer_phone && (
-                      <p className="text-xs text-gray-500 mt-2 font-mono">
+                      <p className="text-xs text-slate-500 mt-2 font-mono">
                         Phone: {selectedOrder.customer_phone}
                       </p>
                     )}
                   </div>
 
-                  {/* Need Help Card */}
-                  <div className="bg-gradient-to-br from-[#111111] to-[#1F2937] rounded-3xl p-6 text-white shadow-md">
-                    <div className="flex items-center gap-2 text-[#FF7A00] mb-2">
+                  {/* Need Help Concierge Card (Deep Navy Theme) */}
+                  <div className="bg-gradient-to-br from-[#001D40] via-[#002654] to-[#001833] rounded-3xl p-6 text-white shadow-md border border-blue-900/40">
+                    <div className="flex items-center gap-2 text-[#FFBE00] mb-2">
                       <ShieldCheck className="w-5 h-5" />
-                      <span className="text-xs font-bold uppercase tracking-wider">
-                        {siteConfig.name} Care Guarantee
+                      <span className="text-xs font-black uppercase tracking-wider">
+                        {siteConfig.name} Concierge
                       </span>
                     </div>
-                    <h4 className="text-base font-bold mb-1">Need help with this shipment?</h4>
-                    <p className="text-xs text-gray-300 leading-relaxed mb-4">
-                      Our concierge team is available 24/7 to resolve address issues or expedite courier deliveries.
+                    <h4 className="text-base font-bold mb-1">
+                      Need help with this shipment?
+                    </h4>
+                    <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                      Our support team can help you update addresses, coordinate courier delivery, or schedule preferred delivery timings.
                     </p>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                       <a
-                        href={`https://wa.me/916238165935?text=${encodeURIComponent(
-                          `Hi ${siteConfig.name}, I need updates on my Order ${
+                        href={`https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
+                          `Hi ${siteConfig.name}, I need assistance with my Order ${
                             selectedOrder.shopify_order_id || selectedOrder.id
                           }`
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors cursor-pointer"
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
                       >
                         <MessageSquare className="w-4 h-4" />
                         <span>Chat on WhatsApp</span>
                       </a>
                       <a
-                        href="tel:+916238165935"
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
+                        href={`tel:${siteConfig.supportPhone}`}
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors border border-white/10 cursor-pointer"
                       >
-                        <Phone className="w-4 h-4" />
-                        <span>Call +91 62381 65935</span>
+                        <Phone className="w-4 h-4 text-[#FFBE00]" />
+                        <span>Call {siteConfig.supportPhone}</span>
                       </a>
                     </div>
                   </div>
@@ -1076,77 +1238,208 @@ function OrderTrackingContent() {
             </div>
           )}
 
-          {/* When no order is looked up yet (Default Guide View) */}
+          {/* =============================================================== */}
+          {/* DEFAULT VIEW WHEN NO ORDER IS SEARCHED YET                      */}
+          {/* =============================================================== */}
           {!selectedOrder && !loading && (
-            <div className="space-y-12 my-8">
-              {/* 3 Step Process */}
+            <div className="space-y-12 my-10">
+              {/* Section Header */}
+              <div className="text-center max-w-xl mx-auto">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-blue-50 text-[#002D62] px-3 py-1 rounded-full border border-blue-100">
+                  How Shipping Works
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2.5 tracking-tight">
+                  Our Express Delivery Process
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                  From our Dubai-import warehouse right to your door with end-to-end security.
+                </p>
+              </div>
+
+              {/* 3 Step Process Cards (Redesigned to match Homepage aesthetic) */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-4">
-                    <Package className="w-6 h-6" />
+                {/* Step 1 */}
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-200 transition-all group flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-blue-50 text-[#002D62] px-2.5 py-1 rounded-full">
+                        Step 01
+                      </span>
+                      <span className="text-xs font-bold text-slate-400">Within 24 Hours</span>
+                    </div>
+
+                    <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#002D62] group-hover:bg-[#FFBE00]/20 transition-colors flex items-center justify-center mb-4">
+                      <Package className="w-6 h-6 text-[#002D62]" />
+                    </div>
+
+                    <h3 className="font-bold text-base sm:text-lg text-slate-900 mb-2">
+                      1. Quality Inspection & Packaging
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                      Every electronic unit undergoes multi-point serial check and is packaged in certified anti-static, shockproof cushions with tamper-evident seals.
+                    </p>
                   </div>
-                  <h3 className="font-bold text-base text-gray-900 mb-1.5">1. Order Dispatched</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    Orders are packaged within 24 hours in tamper-proof bubble parcels with strict quality control.
-                  </p>
+
+                  <div className="mt-5 pt-4 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-bold text-blue-900">
+                    <ShieldCheck className="w-4 h-4 text-[#002D62]" />
+                    <span>Tamper-Proof Factory Seal</span>
+                  </div>
                 </div>
 
-                <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-4">
-                    <Truck className="w-6 h-6" />
+                {/* Step 2 */}
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-200 transition-all group flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full">
+                        Step 02
+                      </span>
+                      <span className="text-xs font-bold text-slate-400">2-4 Days Air Cargo</span>
+                    </div>
+
+                    <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 group-hover:bg-[#FFBE00]/20 transition-colors flex items-center justify-center mb-4">
+                      <Truck className="w-6 h-6 text-amber-600" />
+                    </div>
+
+                    <h3 className="font-bold text-base sm:text-lg text-slate-900 mb-2">
+                      2. Express Air Logistics
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                      Handed over to premier logistics partners (Delhivery, Blue Dart, DTDC, Shadowfax) with live milestone barcode scans at every regional airport hub.
+                    </p>
                   </div>
-                  <h3 className="font-bold text-base text-gray-900 mb-1.5">2. Express Logistics</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    Shipped through premier partners (Delhivery, Bluedart, Shadowfax) with live milestone scans.
-                  </p>
+
+                  <div className="mt-5 pt-4 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-bold text-amber-700">
+                    <Plane className="w-4 h-4 text-amber-600" />
+                    <span>Real-Time Milestone Radar</span>
+                  </div>
                 </div>
 
-                <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle2 className="w-6 h-6" />
+                {/* Step 3 */}
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-200 transition-all group flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full">
+                        Step 03
+                      </span>
+                      <span className="text-xs font-bold text-slate-400">Verified Handover</span>
+                    </div>
+
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100 transition-colors flex items-center justify-center mb-4">
+                      <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                    </div>
+
+                    <h3 className="font-bold text-base sm:text-lg text-slate-900 mb-2">
+                      3. OTP Doorstep Delivery
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                      Instant WhatsApp & SMS alerts with delivery partner contact details. Safe contactless handover with OTP confirmation and flexible COD/UPI payment.
+                    </p>
                   </div>
-                  <h3 className="font-bold text-base text-gray-900 mb-1.5">3. Doorstep Delivery</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    Real-time WhatsApp & Email alerts with OTP verification ensure your item reaches you safely.
-                  </p>
+
+                  <div className="mt-5 pt-4 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
+                    <Award className="w-4 h-4 text-emerald-600" />
+                    <span>1-Year Active Brand Warranty</span>
+                  </div>
                 </div>
               </div>
 
-              {/* FAQs Accordion */}
-              <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-10">
+              {/* Verified Courier Partners Banner */}
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                      Trusted Express Logistics Partners
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      We partner with India&apos;s leading logistics networks to guarantee timely and insured delivery.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                    {["Delhivery Air", "Blue Dart Express", "DTDC Courier", "Shadowfax", "Xpressbees", "India Post Speed"].map((courier) => (
+                      <span
+                        key={courier}
+                        className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200/80 transition-colors"
+                      >
+                        {courier}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* FAQs Accordion (Matching Homepage FAQs Style) */}
+              <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-10">
                 <div className="text-center max-w-xl mx-auto mb-8">
-                  <h3 className="text-xl sm:text-2xl font-display font-extrabold text-gray-900">
+                  <span className="text-[10px] font-black uppercase tracking-wider bg-blue-50 text-[#002D62] px-3 py-1 rounded-full border border-blue-100">
+                    Got Questions?
+                  </span>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-2">
                     Frequently Asked Questions
                   </h3>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Have questions about your delivery or tracking? Find quick answers below.
+                  <p className="text-xs text-slate-500 mt-1">
+                    Find quick answers about delivery timelines, order IDs, courier tracking, and warranty support.
                   </p>
                 </div>
 
-                <div className="divide-y divide-gray-100 max-w-3xl mx-auto">
+                <div className="divide-y divide-slate-100 max-w-3xl mx-auto">
                   {faqs.map((faq, idx) => {
                     const isOpen = faqOpen === idx;
                     return (
-                      <div key={idx} className="py-4">
+                      <div key={idx} className="py-4.5">
                         <button
                           onClick={() => setFaqOpen(isOpen ? null : idx)}
-                          className="w-full flex items-center justify-between text-left font-bold text-sm text-gray-900 hover:text-[#FF7A00] transition-colors py-1"
+                          className="w-full flex items-center justify-between text-left font-bold text-sm sm:text-base text-slate-900 hover:text-[#002D62] transition-colors py-1 cursor-pointer"
                         >
-                          <span>{faq.q}</span>
-                          {isOpen ? (
-                            <ChevronUp className="w-4 h-4 text-gray-400" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
-                          )}
+                          <span className="pr-4">{faq.q}</span>
+                          <div className={`p-1 rounded-full transition-colors ${isOpen ? "bg-blue-50 text-[#002D62]" : "text-slate-400"}`}>
+                            {isOpen ? (
+                              <ChevronUp className="w-4 h-4" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4" />
+                            )}
+                          </div>
                         </button>
                         {isOpen && (
-                          <p className="mt-2 text-xs text-gray-600 leading-relaxed pl-1 pr-6 animate-fadeIn">
+                          <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed pl-1 pr-6 animate-fadeIn">
                             {faq.a}
                           </p>
                         )}
                       </div>
                     );
                   })}
+                </div>
+              </div>
+
+              {/* Help & Support Bottom Card */}
+              <div className="bg-gradient-to-r from-[#001D40] via-[#002B5E] to-[#001D40] rounded-3xl p-6 sm:p-8 text-white text-center shadow-lg border border-blue-900/50">
+                <div className="max-w-xl mx-auto">
+                  <HelpCircle className="w-8 h-8 text-[#FFBE00] mx-auto mb-3" />
+                  <h3 className="text-lg sm:text-xl font-black">
+                    Need Help With Your Shipment or Delivery Address?
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed">
+                    Our customer care team is available 24/7 to assist with live tracking, address corrections, or courier coordination.
+                  </p>
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                    <a
+                      href={`https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
+                        `Hi ${siteConfig.name}, I need help tracking my order.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors shadow-sm cursor-pointer"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span>WhatsApp Support</span>
+                    </a>
+                    <a
+                      href={`tel:${siteConfig.supportPhone}`}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
+                    >
+                      <Phone className="w-4 h-4 text-[#FFBE00]" />
+                      <span>Call Concierge: {siteConfig.supportPhone}</span>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1163,8 +1456,8 @@ export default function OrderTrackingPage() {
   return (
     <React.Suspense
       fallback={
-        <div className="min-h-screen bg-[#FBFBFC] flex items-center justify-center">
-          <RefreshCw className="w-6 h-6 text-[#FF7A00] animate-spin" />
+        <div className="min-h-screen bg-[#FAFBFD] flex items-center justify-center">
+          <RefreshCw className="w-6 h-6 text-[#002D62] animate-spin" />
         </div>
       }
     >
