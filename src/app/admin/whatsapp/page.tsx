@@ -143,13 +143,30 @@ export default function WhatsAppAdminPage() {
     }
   };
 
+  // Helper to attach admin token & credentials to every admin API request
+  const getAuthHeaders = (): Record<string, string> => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("zupe_admin_token") : null;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+      headers["x-admin-token"] = token;
+    }
+    return headers;
+  };
+
   // 1. Fetch Conversations List
   const fetchChats = async (silent = false) => {
     if (!silent) setLoadingChats(true);
     try {
       const filterParam = activeFilter === "orders" ? "all" : activeFilter;
       const res = await fetch(
-        `/api/admin/whatsapp/chats?search=${encodeURIComponent(searchQuery)}&filter=${filterParam}`
+        `/api/admin/whatsapp/chats?search=${encodeURIComponent(searchQuery)}&filter=${filterParam}`,
+        {
+          headers: getAuthHeaders(),
+          credentials: "include",
+        }
       );
       const data = await res.json();
       if (data.success && Array.isArray(data.chats)) {
@@ -176,7 +193,10 @@ export default function WhatsAppAdminPage() {
   const fetchMessages = async (chatId: string, silent = false) => {
     if (!silent) setLoadingMessages(true);
     try {
-      const res = await fetch(`/api/admin/whatsapp/messages?chatId=${encodeURIComponent(chatId)}`);
+      const res = await fetch(`/api/admin/whatsapp/messages?chatId=${encodeURIComponent(chatId)}`, {
+        headers: getAuthHeaders(),
+        credentials: "include",
+      });
       const data = await res.json();
       if (data.success && Array.isArray(data.messages)) {
         setMessages(data.messages);
@@ -252,7 +272,8 @@ export default function WhatsAppAdminPage() {
     try {
       const res = await fetch("/api/admin/whatsapp/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
+        credentials: "include",
         body: JSON.stringify({
           phone: activeChat.phone,
           message: textToSend,
@@ -285,7 +306,8 @@ export default function WhatsAppAdminPage() {
     try {
       const res = await fetch("/api/admin/whatsapp/chats", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
+        credentials: "include",
         body: JSON.stringify({ action: "sync_orders" }),
       });
       const data = await res.json();
@@ -312,7 +334,8 @@ export default function WhatsAppAdminPage() {
     try {
       await fetch("/api/admin/whatsapp/chats", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
+        credentials: "include",
         body: JSON.stringify({ chatId: chat.id, isPinned: Boolean(newPinned) }),
       });
     } catch {}
@@ -329,7 +352,8 @@ export default function WhatsAppAdminPage() {
     try {
       const res = await fetch("/api/admin/whatsapp/chats", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
+        credentials: "include",
         body: JSON.stringify({
           phone: newChatPhone.trim(),
           customerName: newChatName.trim() || undefined,
@@ -1126,3 +1150,4 @@ export default function WhatsAppAdminPage() {
     </div>
   );
 }
+

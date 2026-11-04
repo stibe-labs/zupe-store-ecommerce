@@ -38,3 +38,4 @@ CREATE TABLE IF NOT EXISTS whatsapp_messages (
 CREATE INDEX IF NOT EXISTS idx_wa_chats_last_message ON whatsapp_chats(is_pinned DESC, last_message_at DESC);
 CREATE INDEX IF NOT EXISTS idx_wa_messages_chat_id ON whatsapp_messages(chat_id, created_at ASC);
 CREATE INDEX IF NOT EXISTS idx_wa_messages_meta_id ON whatsapp_messages(meta_message_id);
+
