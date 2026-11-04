@@ -62,19 +62,21 @@ import {
 } from "@/components/CategoryPills";
 
 const IMAGE_PRESETS = [
-  { label: "🏺 240g Glass Jar & Box", url: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg" },
-  { label: "📦 14 Sachet Strips Box", url: "/products/turkiye-jam/turkiye-jam-box-strips.jpg" },
-  { label: "🌿 3-Sachet Pack", url: "/products/turkiye-jam/turkiye-jam-3-strips.jpg" },
-  { label: "⚡ 5-Sachet Pack", url: "/products/turkiye-jam/turkiye-jam-5-strips.jpg" },
-  { label: "✨ Honey Harvest Heritage", url: "/tj/turkiye-jam-gallery-1.jpeg" },
-  { label: "🛡️ Tamper-Proof Discreet Box", url: "/tj/turkiye-jam-gallery-2.jpeg" },
+  { label: "🎮 DualSense PS5 Controllers", url: "/vittal/products/hero-dualsense.jpg" },
+  { label: "💻 HP Victus Gaming Laptop", url: "/vittal/products/hp-victus.jpg" },
+  { label: "🎧 AirPods Max Studio Sound", url: "/vittal/products/airpods-max-spotlight.jpg" },
+  { label: "🛍️ Season Sale Tech Hub", url: "/vittal/hero-season-sale.png" },
+  { label: "📱 iPhones & Flagship Devices", url: "/vittal/products/bottom-banner-devices.jpg" },
+  { label: "⚡ Ultralight Laptops Banner", url: "/vittal/banner-laptops.png" },
+  { label: "🔊 Immersive Audio Banner", url: "/vittal/banner-audio.png" },
+  { label: "⌚ Luxury Smartwatches Banner", url: "/vittal/banner-watches.png" },
 ];
 
 const MOBILE_IMAGE_PRESETS = [
-  { label: "🏺 240g Glass Jar", url: "/products/turkiye-jam/turkiye-jam-jar-and-box.jpg" },
-  { label: "📦 14 Strips Box", url: "/products/turkiye-jam/turkiye-jam-box-strips.jpg" },
-  { label: "🌿 3-Sachet Pack", url: "/products/turkiye-jam/turkiye-jam-3-strips.jpg" },
-  { label: "⚡ 5-Sachet Pack", url: "/products/turkiye-jam/turkiye-jam-5-strips.jpg" },
+  { label: "🎮 DualSense Mobile", url: "/vittal/products/hero-dualsense.jpg" },
+  { label: "🛍️ Season Sale Mobile", url: "/vittal/hero-season-sale-mobile.png" },
+  { label: "💻 Laptops Mobile", url: "/vittal/banner-laptops.png" },
+  { label: "🎧 Audio Mobile", url: "/vittal/banner-audio.png" },
 ];
 
 const CATEGORY_ICON_PRESETS = [
@@ -122,13 +124,17 @@ export default function WebsiteContentPage() {
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [cardViewModes, setCardViewModes] = useState<Record<string, "desktop" | "mobile">>({});
   const [bannerForm, setBannerForm] = useState({
-    badge: "",
-    titleLine1: "",
-    titleLine2: "",
+    badge: "DUALSENSE WIRELESS CONTROLLER",
+    titleLine1: "Bring Gaming",
+    titleLine2: "Worlds To Life",
+    headlineHighlight: "To Life",
+    subLabel: "Starting at",
+    price: "₹44,990",
     description: "",
-    ctaText: "Explore Now",
-    ctaLink: "/products",
-    image: "/products/hero-banner.jpg",
+    ctaText: "Shop Now",
+    ctaLink: "/products?category=Gaming+%26+Accessories",
+    showTextOverlay: true,
+    image: "/vittal/products/hero-dualsense.jpg",
     mobileImage: "",
     imageScale: 100,
     imagePosition: "center",
@@ -136,7 +142,7 @@ export default function WebsiteContentPage() {
     mobileImageScale: 100,
     mobileImagePosition: "center",
     mobileImageFit: "cover" as "cover" | "contain",
-    taglineRight: "Drive In Luxury ♡",
+    taglineRight: "",
     active: true,
   });
   const [uploadingPoster, setUploadingPoster] = useState(false);
@@ -291,13 +297,17 @@ export default function WebsiteContentPage() {
     setEditingBanner(null);
     setPreviewMode("desktop");
     setBannerForm({
-      badge: "PROMO",
-      titleLine1: "New Poster Banner",
-      titleLine2: "",
-      description: "",
+      badge: "DUALSENSE WIRELESS CONTROLLER",
+      titleLine1: "Bring Gaming",
+      titleLine2: "Worlds To Life",
+      headlineHighlight: "To Life",
+      subLabel: "Starting at",
+      price: "₹44,990",
+      description: "Haptic feedback, adaptive triggers, and built-in microphone.",
       ctaText: "Shop Now",
-      ctaLink: "/products",
-      image: "/banners/banner-mega-sale.jpg",
+      ctaLink: "/products?category=Gaming+%26+Accessories",
+      showTextOverlay: true,
+      image: "/vittal/products/hero-dualsense.jpg",
       mobileImage: "",
       imageScale: 100,
       imagePosition: "center",
@@ -315,12 +325,16 @@ export default function WebsiteContentPage() {
     setEditingBanner(b);
     setPreviewMode(b.mobileImage ? "mobile" : "desktop");
     setBannerForm({
-      badge: b.badge,
-      titleLine1: b.titleLine1,
-      titleLine2: b.titleLine2,
-      description: b.description,
-      ctaText: b.ctaText,
+      badge: b.badge || "",
+      titleLine1: b.titleLine1 || "",
+      titleLine2: b.titleLine2 || "",
+      headlineHighlight: b.headlineHighlight || "",
+      subLabel: b.subLabel || "",
+      price: b.price || "",
+      description: b.description || "",
+      ctaText: b.ctaText || "Shop Now",
       ctaLink: b.ctaLink ?? "/products",
+      showTextOverlay: b.showTextOverlay !== false,
       image: b.image,
       mobileImage: b.mobileImage || "",
       imageScale: typeof b.imageScale === "number" ? b.imageScale : 100,
@@ -353,6 +367,14 @@ export default function WebsiteContentPage() {
         if (data.success && data.banners) {
           setBanners(data.banners);
           setBannerModalOpen(false);
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("vittal_banners_updated", { detail: { banners: data.banners } })
+            );
+            window.dispatchEvent(
+              new CustomEvent("tj_banners_updated", { detail: { banners: data.banners } })
+            );
+          }
           showToast("success", "Hero banner updated successfully!");
         } else {
           showToast("error", data.error || "Failed to update banner");
@@ -368,6 +390,14 @@ export default function WebsiteContentPage() {
         if (data.success && data.banners) {
           setBanners(data.banners);
           setBannerModalOpen(false);
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("vittal_banners_updated", { detail: { banners: data.banners } })
+            );
+            window.dispatchEvent(
+              new CustomEvent("tj_banners_updated", { detail: { banners: data.banners } })
+            );
+          }
           showToast("success", "New hero banner published successfully!");
         } else {
           showToast("error", data.error || "Failed to create banner");
@@ -970,78 +1000,134 @@ export default function WebsiteContentPage() {
                             className="transition-transform duration-500 ease-out"
                           />
 
-                          {/* Banner Label & Status Pill */}
-                          <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
-                            <span className="px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md text-white text-[11px] font-bold shadow-sm">
-                              {slide.titleLine1 || "Promo Poster"}
-                            </span>
+                          {/* Banner Overlay Preview */}
+                          {slide.showTextOverlay !== false ? (
+                            <>
+                              <div className="absolute inset-0 bg-gradient-to-r from-[#001D40]/80 via-[#001D40]/35 to-transparent pointer-events-none z-[1]" />
+                              <div className="absolute inset-0 p-3 sm:p-4 flex flex-col justify-center items-start text-left z-10 max-w-[70%]">
+                                {slide.badge && (
+                                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-xs text-[#FFBE00] text-[9px] font-bold uppercase tracking-wider mb-1 shadow-xs">
+                                    <Sparkles className="w-2.5 h-2.5" />
+                                    <span>{slide.badge}</span>
+                                  </div>
+                                )}
+                                <h3 className="text-white font-black text-xs sm:text-sm md:text-base leading-tight drop-shadow-sm">
+                                  {slide.titleLine1 || "Promo Headline"}
+                                  {slide.titleLine2 ? (
+                                    <>
+                                      <br />
+                                      {slide.titleLine2}{" "}
+                                    </>
+                                  ) : " "}
+                                  {slide.headlineHighlight && (
+                                    <span className="text-[#FFBE00]">{slide.headlineHighlight}</span>
+                                  )}
+                                </h3>
+                                {slide.price && (
+                                  <div className="text-white/90 text-[10px] sm:text-xs font-bold mt-1 drop-shadow-xs">
+                                    {slide.subLabel ? (
+                                      <span className="text-slate-300 font-normal mr-1">{slide.subLabel}</span>
+                                    ) : null}
+                                    <span className="text-[#FFBE00] font-black">{slide.price}</span>
+                                  </div>
+                                )}
+                                {slide.ctaText && (
+                                  <div className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#FFBE00] text-black text-[9px] sm:text-[10px] font-black shadow-xs">
+                                    <span>{slide.ctaText}</span>
+                                    <span>→</span>
+                                  </div>
+                                )}
+                              </div>
+                            </>
+                          ) : (
+                            <div className="absolute top-3 left-3 z-10">
+                              <span className="px-2 py-0.5 rounded-md bg-purple-900/80 backdrop-blur-sm text-purple-200 text-[10px] font-bold">
+                                Clean Poster (Overlay Off)
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Zoom & Link Pill */}
+                          <div className="absolute bottom-2 right-2 flex items-center gap-1.5 z-10">
                             {(slide.imageScale && slide.imageScale !== 100) && (
-                              <span className="px-2 py-0.5 rounded-md bg-orange-500 text-white text-[9px] font-extrabold shadow-xs">
+                              <span className="px-1.5 py-0.5 rounded bg-orange-500 text-white text-[9px] font-extrabold shadow-xs">
                                 {slide.imageScale}% Zoom
                               </span>
                             )}
-                          </div>
-
-                          {/* Link Pill */}
-                          <div className="absolute bottom-3 left-3 z-10">
-                            <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-white/90 text-[10px] font-mono">
+                            <span className="px-2 py-0.5 rounded bg-black/60 backdrop-blur-sm text-white/90 text-[9px] font-mono">
                               {slide.ctaLink && slide.ctaLink.trim() !== "" && slide.ctaLink.trim() !== "#"
-                                ? `🔗 ${slide.ctaLink}`
-                                : "🔒 Display Only (No Link)"}
+                                ? slide.ctaLink
+                                : "Display Only"}
                             </span>
                           </div>
 
                           {/* Arrows simulation */}
-                          <div className="absolute left-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 text-slate-800 flex items-center justify-center z-10 backdrop-blur-xs shadow-xs opacity-75">
-                            <ChevronLeft className="w-4 h-4" />
+                          <div className="absolute left-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/80 text-slate-800 flex items-center justify-center z-10 backdrop-blur-xs shadow-xs opacity-75">
+                            <ChevronLeft className="w-3.5 h-3.5" />
                           </div>
-                          <div className="absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 text-slate-800 flex items-center justify-center z-10 backdrop-blur-xs shadow-xs opacity-75">
-                            <ChevronRight className="w-4 h-4" />
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/80 text-slate-800 flex items-center justify-center z-10 backdrop-blur-xs shadow-xs opacity-75">
+                            <ChevronRight className="w-3.5 h-3.5" />
                           </div>
                         </div>
 
                       {/* Card Controls & Details */}
-                      <div className="p-4 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleBannerActive(slide)}
-                            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer ${
-                              slide.active !== false
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                : "bg-slate-200 text-slate-600"
-                            }`}
-                          >
-                            {slide.active !== false ? "● Active on Site" : "○ Paused"}
-                          </button>
-                          <span className="text-xs text-slate-500 font-mono truncate max-w-[140px] sm:max-w-[200px]">
-                            {slide.ctaLink}
-                          </span>
+                      <div className="p-4 bg-slate-50/60 border-t border-slate-100 space-y-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleBannerActive(slide)}
+                              className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer ${
+                                slide.active !== false
+                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  : "bg-slate-200 text-slate-600"
+                              }`}
+                            >
+                              {slide.active !== false ? "● Active on Site" : "○ Paused"}
+                            </button>
+                            <span className="text-xs text-slate-500 font-mono truncate max-w-[140px] sm:max-w-[200px]">
+                              {slide.ctaLink}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditBanner(slide)}
+                              className="p-2 text-slate-600 hover:text-[#002D62] hover:bg-orange-50 rounded-xl transition-colors cursor-pointer"
+                              title="Edit banner details"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setDeleteConfirm({
+                                  type: "banner",
+                                  id: slide.id,
+                                  title: `${slide.titleLine1} ${slide.titleLine2}`,
+                                })
+                              }
+                              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                              title="Delete banner"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
 
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEditBanner(slide)}
-                            className="p-2 text-slate-600 hover:text-[#002D62] hover:bg-orange-50 rounded-xl transition-colors cursor-pointer"
-                            title="Edit banner details"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setDeleteConfirm({
-                                type: "banner",
-                                id: slide.id,
-                                title: `${slide.titleLine1} ${slide.titleLine2}`,
-                              })
-                            }
-                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
-                            title="Delete banner"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                        {/* Text and Headline Summary */}
+                        <div className="pt-2 border-t border-slate-200/70 flex items-center justify-between gap-2 text-xs">
+                          <div className="truncate text-slate-700 font-medium">
+                            <span className="font-bold text-slate-900">{slide.titleLine1 || "Untitled"}</span>
+                            {slide.titleLine2 ? <span> {slide.titleLine2}</span> : null}
+                            {slide.headlineHighlight ? <span className="text-amber-600 font-bold"> {slide.headlineHighlight}</span> : null}
+                          </div>
+                          {slide.price && (
+                            <span className="shrink-0 px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700 font-mono font-bold text-[11px]">
+                              {slide.subLabel ? `${slide.subLabel} ` : ""}{slide.price}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1448,7 +1534,7 @@ export default function WebsiteContentPage() {
                       <div className="relative w-full aspect-[3.4/1] rounded-2xl overflow-hidden bg-slate-200 shadow-md border border-slate-300/60 select-none group">
                         {/* Background Poster Visual */}
                         <Image
-                          src={bannerForm.image || "/banners/banner-mega-sale.jpg"}
+                          src={bannerForm.image || "/vittal/products/hero-dualsense.jpg"}
                           alt={bannerForm.titleLine1 || "Preview"}
                           fill
                           style={{
@@ -1464,6 +1550,59 @@ export default function WebsiteContentPage() {
                           }}
                           className="transition-transform duration-200"
                         />
+
+                        {/* Scrim Overlay */}
+                        {bannerForm.showTextOverlay !== false &&
+                          Boolean(
+                            bannerForm.titleLine1 ||
+                              bannerForm.titleLine2 ||
+                              bannerForm.badge ||
+                              bannerForm.price
+                          ) && (
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#00142D]/90 via-[#001D40]/65 to-transparent pointer-events-none z-5" />
+                          )}
+
+                        {/* Live Text Overlay */}
+                        {bannerForm.showTextOverlay !== false &&
+                          Boolean(
+                            bannerForm.titleLine1 ||
+                              bannerForm.titleLine2 ||
+                              bannerForm.badge ||
+                              bannerForm.price
+                          ) && (
+                            <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-center z-10 text-left pointer-events-none">
+                              {bannerForm.badge && (
+                                <span className="text-[9px] font-black uppercase tracking-wider text-[#FFBE00] mb-0.5">
+                                  {bannerForm.badge}
+                                </span>
+                              )}
+                              {(bannerForm.titleLine1 || bannerForm.titleLine2) && (
+                                <div className="text-sm sm:text-base font-black text-white leading-tight drop-shadow-sm">
+                                  <span>{bannerForm.titleLine1}</span>{" "}
+                                  <span className="text-[#FFBE00]">{bannerForm.titleLine2}</span>
+                                </div>
+                              )}
+                              {(bannerForm.subLabel || bannerForm.price) && (
+                                <div className="mt-1 flex items-baseline gap-1 text-xs">
+                                  {bannerForm.subLabel && (
+                                    <span className="text-blue-200 text-[10px]">{bannerForm.subLabel}</span>
+                                  )}
+                                  {bannerForm.price && (
+                                    <span className="text-[#FFBE00] font-black text-xs sm:text-sm">
+                                      {bannerForm.price}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                              {bannerForm.ctaText && (
+                                <div className="mt-1.5">
+                                  <span className="inline-flex items-center gap-1 bg-[#FFBE00] text-slate-950 font-black text-[9px] px-2.5 py-0.5 rounded shadow-xs">
+                                    {bannerForm.ctaText} →
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )}
 
                         {/* Chevron controls simulation */}
                         <div className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 text-slate-800 flex items-center justify-center z-20 backdrop-blur-xs shadow-xs">
@@ -1503,8 +1642,8 @@ export default function WebsiteContentPage() {
                             <Menu className="w-4 h-4 text-slate-800" />
                             <Search className="w-3.5 h-3.5 text-slate-500" />
                           </div>
-                          <span className="font-extrabold text-xs tracking-tight text-slate-900 font-display">
-                            TURKIYE <span className="text-[#fed000]">JAM</span>
+                          <span className="font-extrabold text-xs tracking-tight text-[#002D62] font-display">
+                            VITTAL <span className="text-[#FFBE00]">DIGITAL</span>
                           </span>
                           <div className="flex items-center gap-2">
                             <Heart className="w-3.5 h-3.5 text-slate-700" />
@@ -1516,7 +1655,7 @@ export default function WebsiteContentPage() {
                         <div className="p-2.5 bg-slate-50">
                           <div className="relative aspect-[2.35/1] rounded-xl overflow-hidden bg-slate-200 shadow-xs border border-slate-200 select-none">
                             <Image
-                              src={bannerForm.mobileImage || bannerForm.image || "/banners/banner-mega-sale.jpg"}
+                              src={bannerForm.mobileImage || bannerForm.image || "/vittal/products/hero-dualsense.jpg"}
                               alt={bannerForm.titleLine1 || "Preview"}
                               fill
                               style={{
@@ -1532,6 +1671,49 @@ export default function WebsiteContentPage() {
                               }}
                               className="transition-transform duration-200"
                             />
+
+                            {/* Scrim Overlay Mobile */}
+                            {bannerForm.showTextOverlay !== false &&
+                              Boolean(
+                                bannerForm.titleLine1 ||
+                                  bannerForm.titleLine2 ||
+                                  bannerForm.badge ||
+                                  bannerForm.price
+                              ) && (
+                                <div className="absolute inset-0 bg-gradient-to-r from-[#00142D]/90 via-[#001D40]/65 to-transparent pointer-events-none z-5" />
+                              )}
+
+                            {/* Live Text Overlay Mobile */}
+                            {bannerForm.showTextOverlay !== false &&
+                              Boolean(
+                                bannerForm.titleLine1 ||
+                                  bannerForm.titleLine2 ||
+                                  bannerForm.badge ||
+                                  bannerForm.price
+                              ) && (
+                                <div className="absolute inset-0 p-2.5 flex flex-col justify-center z-10 text-left pointer-events-none">
+                                  {bannerForm.badge && (
+                                    <span className="text-[7px] font-black uppercase tracking-wider text-[#FFBE00] mb-0.5 truncate">
+                                      {bannerForm.badge}
+                                    </span>
+                                  )}
+                                  {(bannerForm.titleLine1 || bannerForm.titleLine2) && (
+                                    <div className="text-[11px] font-black text-white leading-tight drop-shadow-sm line-clamp-1">
+                                      <span>{bannerForm.titleLine1}</span>{" "}
+                                      <span className="text-[#FFBE00]">{bannerForm.titleLine2}</span>
+                                    </div>
+                                  )}
+                                  {(bannerForm.subLabel || bannerForm.price) && (
+                                    <div className="mt-0.5 flex items-baseline gap-1 text-[9px]">
+                                      {bannerForm.price && (
+                                        <span className="text-[#FFBE00] font-black">
+                                          {bannerForm.price}
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                           </div>
 
                           {/* Dots */}
@@ -1966,72 +2148,186 @@ export default function WebsiteContentPage() {
                 </div>
               </div>
 
-              {/* Destination Link & Banner Label */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-bold text-slate-700">
-                      Destination Click Link (Optional)
-                    </label>
-                    <span className="text-[10px] text-slate-400">Tapping banner opens URL</span>
+              {/* ============================================================ */}
+              {/* BANNER HEADINGS & TEXT OVERLAY CONTROLS                      */}
+              {/* ============================================================ */}
+              <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200 space-y-3.5">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5 text-[#002D62]" />
+                      <span>Headings & Text Overlay Settings</span>
+                    </h4>
+                    <p className="text-[11px] text-slate-500">
+                      Customize the text, price, and Shop Now button displayed over this 1 background image.
+                    </p>
                   </div>
-                  <input
-                    type="text"
-                    value={bannerForm.ctaLink}
-                    onChange={(e) => setBannerForm({ ...bannerForm, ctaLink: e.target.value })}
-                    placeholder="e.g. /products or leave empty if non-clickable"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#002D62]"
-                  />
-                  <div className="flex flex-wrap gap-1 mt-1.5">
-                    <span className="text-[10px] font-bold text-slate-400 self-center">Presets:</span>
-                    <button
-                      type="button"
-                      onClick={() => setBannerForm({ ...bannerForm, ctaLink: "/products" })}
-                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-50 hover:text-[#002D62] text-[10px] text-slate-600 transition-colors"
-                    >
-                      /products
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setBannerForm({ ...bannerForm, ctaLink: "/products?category=Tech+%26+Gadgets" })}
-                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-50 hover:text-[#002D62] text-[10px] text-slate-600 transition-colors"
-                    >
-                      Tech & Gadgets
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setBannerForm({ ...bannerForm, ctaLink: "/products?category=Home+Essentials" })}
-                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-50 hover:text-[#002D62] text-[10px] text-slate-600 transition-colors"
-                    >
-                      Home Essentials
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setBannerForm({ ...bannerForm, ctaLink: "" })}
-                      className="px-2 py-0.5 rounded bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-[10px] text-slate-600 transition-colors"
-                    >
-                      Non-Clickable (Empty)
-                    </button>
-                  </div>
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    Shoppers who click/tap the banner image will navigate here. Leave empty if you want it to be display-only.
-                  </p>
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={bannerForm.showTextOverlay}
+                      onChange={(e) =>
+                        setBannerForm({ ...bannerForm, showTextOverlay: e.target.checked })
+                      }
+                      className="w-4 h-4 rounded text-[#002D62] focus:ring-[#002D62]"
+                    />
+                    <span className="text-xs font-bold text-slate-800">
+                      Show Text Overlay
+                    </span>
+                  </label>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Banner Name / Alt Text (For Reference)
+                {bannerForm.showTextOverlay && (
+                  <div className="space-y-3 animate-fadeIn">
+                    {/* Badge & CTA Button */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Eyebrow Badge / Category Label
+                        </label>
+                        <input
+                          type="text"
+                          value={bannerForm.badge}
+                          onChange={(e) => setBannerForm({ ...bannerForm, badge: e.target.value })}
+                          placeholder="e.g. DUALSENSE WIRELESS CONTROLLER"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#002D62]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Button Text (CTA)
+                        </label>
+                        <input
+                          type="text"
+                          value={bannerForm.ctaText}
+                          onChange={(e) => setBannerForm({ ...bannerForm, ctaText: e.target.value })}
+                          placeholder="e.g. Shop Now"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#002D62]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Headline Line 1 & Line 2 */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Main Headline (Line 1) *
+                        </label>
+                        <input
+                          type="text"
+                          value={bannerForm.titleLine1}
+                          onChange={(e) => setBannerForm({ ...bannerForm, titleLine1: e.target.value })}
+                          placeholder="e.g. Bring Gaming"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:border-[#002D62]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Headline (Line 2)
+                        </label>
+                        <input
+                          type="text"
+                          value={bannerForm.titleLine2}
+                          onChange={(e) => setBannerForm({ ...bannerForm, titleLine2: e.target.value })}
+                          placeholder="e.g. Worlds To Life"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:border-[#002D62]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Highlight Phrase & Price */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Gold Highlight Phrase
+                        </label>
+                        <input
+                          type="text"
+                          value={bannerForm.headlineHighlight}
+                          onChange={(e) =>
+                            setBannerForm({ ...bannerForm, headlineHighlight: e.target.value })
+                          }
+                          placeholder="e.g. To Life (renders in #FFBE00)"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-amber-700 focus:outline-none focus:border-[#002D62]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Sub-label (Before Price)
+                        </label>
+                        <input
+                          type="text"
+                          value={bannerForm.subLabel}
+                          onChange={(e) => setBannerForm({ ...bannerForm, subLabel: e.target.value })}
+                          placeholder="e.g. Starting at"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-[#002D62]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Price / Callout
+                        </label>
+                        <input
+                          type="text"
+                          value={bannerForm.price}
+                          onChange={(e) => setBannerForm({ ...bannerForm, price: e.target.value })}
+                          placeholder="e.g. ₹44,990 or UP TO 40% OFF"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-black text-amber-700 focus:outline-none focus:border-[#002D62]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Description Paragraph */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Short Description / Subtext (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={bannerForm.description}
+                        onChange={(e) => setBannerForm({ ...bannerForm, description: e.target.value })}
+                        placeholder="e.g. Haptic feedback, adaptive triggers, and built-in microphone."
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#002D62]"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Destination Link */}
+              <div className="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-slate-700">
+                    Destination Click Link (When Tapped / Clicked)
                   </label>
-                  <input
-                    type="text"
-                    value={bannerForm.titleLine1}
-                    onChange={(e) => setBannerForm({ ...bannerForm, titleLine1: e.target.value })}
-                    placeholder="e.g. Mega Sale Banner 2026"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:border-[#002D62]"
-                  />
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    Used as the accessible label and admin identifier.
-                  </p>
+                  <span className="text-[10px] text-slate-400">Opens this page upon click</span>
+                </div>
+                <input
+                  type="text"
+                  value={bannerForm.ctaLink}
+                  onChange={(e) => setBannerForm({ ...bannerForm, ctaLink: e.target.value })}
+                  placeholder="e.g. /products?category=Gaming+%26+Accessories or /#deals"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#002D62]"
+                />
+                <div className="flex flex-wrap gap-1 pt-0.5">
+                  <span className="text-[10px] font-bold text-slate-400 self-center">Presets:</span>
+                  {[
+                    { label: "🎮 Gaming Gear", url: "/products?category=Gaming+%26+Accessories" },
+                    { label: "💻 Laptops", url: "/products?category=Laptops" },
+                    { label: "🎧 Audio & Sound", url: "/products?category=Headphones+%26+Earbuds" },
+                    { label: "📱 Smartphones", url: "/products?category=Smartphones" },
+                    { label: "🛍️ Deals", url: "/#deals" },
+                    { label: "All Products", url: "/products" },
+                  ].map((p) => (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={() => setBannerForm({ ...bannerForm, ctaLink: p.url })}
+                      className="px-2 py-0.5 rounded bg-white hover:bg-orange-50 hover:text-[#002D62] text-[10px] text-slate-600 border border-slate-200 transition-colors"
+                    >
+                      {p.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 

@@ -6,10 +6,14 @@ export interface HeroBannerSlide {
   badge?: string;
   titleLine1?: string;
   titleLine2?: string;
+  headlineHighlight?: string; // Optional gold highlight phrase (e.g. "To Life")
+  subLabel?: string;          // Optional sub-label before price (e.g. "Starting at")
+  price?: string;             // Optional price / discount (e.g. "₹44,990")
   description?: string;
   ctaText?: string;
   ctaLink?: string; // Optional: destination URL when tapping banner
-  image: string; // Desktop view photo (16:9 / landscape)
+  showTextOverlay?: boolean; // When false, renders banner image clean without text overlay
+  image: string; // Desktop view photo (1 direct background image 16:9 / landscape)
   mobileImage?: string; // Mobile view photo (4:5 / 1:1 portrait)
   imageScale?: number; // Desktop zoom level in % (50 to 200, default 100)
   imagePosition?: string; // CSS object-position (e.g. "center", "top", "bottom")
@@ -45,46 +49,76 @@ export interface StoreCategory {
 
 export const DEFAULT_HERO_BANNERS: HeroBannerSlide[] = [
   {
+    id: "vittal-dualsense",
+    badge: "DUALSENSE WIRELESS CONTROLLER",
+    titleLine1: "Bring Gaming",
+    titleLine2: "Worlds To Life",
+    headlineHighlight: "To Life",
+    subLabel: "Starting at",
+    price: "₹44,990",
+    description: "Haptic feedback, adaptive triggers, and built-in microphone in midnight black and classic white.",
+    ctaText: "Shop Now",
+    ctaLink: "/products?category=Gaming+%26+Accessories",
+    showTextOverlay: true,
+    image: "/vittal/products/hero-dualsense.jpg",
+    mobileImage: "/vittal/products/hero-dualsense.jpg",
+    taglineRight: "Dubai Direct Import",
+    active: true,
+    order: 1,
+  },
+  {
     id: "vittal-season-sale",
     badge: "VITTAL DIGITAL SEASON SALE",
     titleLine1: "Big Tech.",
     titleLine2: "Bigger Possibilities.",
+    headlineHighlight: "Bigger Possibilities.",
+    subLabel: "Dubai Import",
+    price: "UP TO 40% OFF",
     description: "Explore seasonal offers on your favourite electronics imported from Dubai, delivered across India.",
     ctaText: "Shop the Sale",
     ctaLink: "/#deals",
+    showTextOverlay: true,
     image: "/vittal/hero-season-sale.png",
     mobileImage: "/vittal/hero-season-sale-mobile.png",
     taglineRight: "UP TO 40% OFF",
     active: true,
-    order: 1,
+    order: 2,
   },
   {
     id: "vittal-laptops",
     badge: "WORK & CREATIVITY",
     titleLine1: "Power Your Work",
     titleLine2: "Built for Your Next Big Idea",
+    headlineHighlight: "Big Idea",
+    subLabel: "Starting at",
+    price: "₹59,990",
     description: "High-performance ultraportables with 2.8K OLED screens and all-day battery life.",
     ctaText: "Explore Laptops",
     ctaLink: "/products?category=Laptops",
-    image: "/vittal/banner-laptops.png",
-    mobileImage: "/vittal/banner-laptops.png",
+    showTextOverlay: true,
+    image: "/vittal/products/hp-victus.jpg",
+    mobileImage: "/vittal/products/hp-victus.jpg",
     taglineRight: "Dubai Direct Retail",
     active: true,
-    order: 2,
+    order: 3,
   },
   {
     id: "vittal-audio",
     badge: "IMMERSIVE SOUND",
     titleLine1: "Feel Every Beat",
     titleLine2: "Your World. Better Sound.",
+    headlineHighlight: "Better Sound.",
+    subLabel: "Starting at",
+    price: "₹19,990",
     description: "Active Noise Cancellation earbuds and heavy bass speakers with up to 36-hour playback.",
     ctaText: "Explore Audio",
     ctaLink: "/products?category=Headphones+%26+Earbuds",
-    image: "/vittal/banner-audio.png",
-    mobileImage: "/vittal/banner-audio.png",
+    showTextOverlay: true,
+    image: "/vittal/products/airpods-max-spotlight.jpg",
+    mobileImage: "/vittal/products/airpods-max-spotlight.jpg",
     taglineRight: "1-Year Warranty",
     active: true,
-    order: 3,
+    order: 4,
   },
 ];
 

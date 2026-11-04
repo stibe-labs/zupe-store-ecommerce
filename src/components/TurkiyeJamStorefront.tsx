@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -38,9 +38,11 @@ import {
   VITTAL_DIGITAL_DEALS,
   VittalDigitalProduct,
 } from "@/data/zupeProducts";
+import { HeroBannerSlide, DEFAULT_HERO_BANNERS } from "@/lib/storeContent";
 
 interface StorefrontProps {
   initialProducts?: Product[];
+  initialBanners?: HeroBannerSlide[];
 }
 
 // ---------------------------------------------------------------------------
@@ -402,7 +404,10 @@ const TRENDING_RIGHT = [
 
 const TREND_TABS = ["Best Seller", "Sales", "Featured", "New Products"];
 
-export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
+export function VittalDigitalStorefront({
+  initialProducts,
+  initialBanners,
+}: StorefrontProps) {
   const router = useRouter();
   const { addItem, openCart } = useCart();
   const { toggleWishlist: toggleWishlistContext, isInWishlist } = useWishlist();
@@ -412,8 +417,62 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
       ? initialProducts
       : DEFAULT_PRODUCTS;
 
+  // Dynamic Banners from Admin Website-Content / D1
+  const [banners, setBanners] = useState<HeroBannerSlide[]>(
+    initialBanners && initialBanners.length > 0 ? initialBanners : DEFAULT_HERO_BANNERS
+  );
+
+  // Sync client-side with /api/content/banners and listen for admin updates
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const res = await fetch("/api/content/banners");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.banners) && data.banners.length > 0) {
+          setBanners(data.banners);
+        }
+      } catch (err) {
+        // preserve initial banners
+      }
+    };
+
+    if (!initialBanners || initialBanners.length === 0) {
+      fetchBanners();
+    }
+
+    const handleUpdated = (e: any) => {
+      if (e.detail?.banners && Array.isArray(e.detail.banners)) {
+        setBanners(e.detail.banners);
+      } else {
+        fetchBanners();
+      }
+    };
+
+    window.addEventListener("vittal_banners_updated", handleUpdated);
+    window.addEventListener("tj_banners_updated", handleUpdated);
+    return () => {
+      window.removeEventListener("vittal_banners_updated", handleUpdated);
+      window.removeEventListener("tj_banners_updated", handleUpdated);
+    };
+  }, [initialBanners]);
+
+  const activeBanners = useMemo(() => {
+    const filtered = banners.filter((b) => b.active !== false);
+    return filtered.length > 0 ? filtered : DEFAULT_HERO_BANNERS;
+  }, [banners]);
+
   // Hero carousel state
   const [activeSlide, setActiveSlide] = useState(0);
+
+  // Auto-slide hero every 5 seconds
+  useEffect(() => {
+    if (activeBanners.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % activeBanners.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [activeBanners.length]);
+
   // Mobile 3-Card Promo Carousel auto-slides every 3 seconds (came from right side)
   const [promoSlide, setPromoSlide] = useState(0);
   // Middle 3 Promo feature cards auto-slide on mobile every 3 seconds
@@ -567,102 +626,198 @@ export function VittalDigitalStorefront({ initialProducts }: StorefrontProps) {
     });
   };
 
-  const currentHero = HERO_SLIDES[activeSlide];
+  const currentHero = activeBanners[activeSlide] || activeBanners[0];
   const currentSpotlight = SPOTLIGHT_VARIANTS[spotlightIndex];
+
+  const hasOverlayText =
+    currentHero &&
+    currentHero.showTextOverlay !== false &&
+    Boolean(
+      currentHero.badge ||
+        currentHero.titleLine1 ||
+        currentHero.titleLine2 ||
+        currentHero.price ||
+        currentHero.description
+    );
 
   return (
     <div className="bg-[#FFFFFF] text-slate-900 font-sans min-h-screen">
       {/* ===================================================================== */}
-      {/* SECTION 1: HERO CAROUSEL (Royal Blue Radiant Glow + Product Hero)     */}
+      {/* SECTION 1: DYNAMIC HERO BANNER (1 Direct Background Image + Overlay)  */}
       {/* ===================================================================== */}
       <section className="relative w-full overflow-hidden bg-[#001D40]">
-        <div
-          className="relative w-full transition-all duration-700 ease-out min-h-[185px] sm:min-h-[250px] lg:min-h-[350px]"
-          style={{
-            background:
-              "radial-gradient(circle at 70% 48%, #0050A4 0%, #002D62 48%, #001633 100%)",
-          }}
-        >
-          <div className="max-w-[1680px] mx-auto px-7 sm:px-12 lg:px-16 py-3.5 sm:py-6 lg:py-8 flex flex-row items-center justify-between min-h-[185px] sm:min-h-[250px] lg:min-h-[350px] gap-2 sm:gap-6">
-            {/* Left Headline, Price & Call-to-action */}
-            <div className="w-[54%] sm:w-[50%] lg:w-[55%] text-left z-10 flex flex-col justify-center">
-              <p className="text-[8px] sm:text-[11px] lg:text-xs font-semibold tracking-widest uppercase mb-0.5 sm:mb-1.5 text-blue-200 truncate">
-                {currentHero.label}
-              </p>
-              <h1 className="text-[14px] sm:text-2xl md:text-3xl lg:text-5xl font-black leading-snug sm:leading-tight tracking-tight text-white mb-1 sm:mb-3">
-                <span>{currentHero.headlineLine1}</span>{" "}
-                <span className="hidden sm:inline"><br /></span>
-                <span>{currentHero.headlineLine2} </span>
-                <span className="text-[#FFBE00]">{currentHero.headlineHighlight}</span>
-              </h1>
-              <div className="mb-1.5 sm:mb-4 flex items-baseline gap-1 sm:gap-2">
-                <span className="text-[8px] sm:text-xs lg:text-sm font-medium text-blue-200">
-                  {currentHero.subLabel}
-                </span>
-                <span className="text-[11px] sm:text-2xl lg:text-4xl font-black text-[#FFBE00] tracking-tight">
-                  {currentHero.price}
-                </span>
-              </div>
-              <div>
-                <Link
-                  href={currentHero.link}
-                  className="inline-flex items-center gap-1 sm:gap-2 bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-[9px] sm:text-xs lg:text-sm px-3 sm:px-6 py-1 sm:py-2.5 rounded-md sm:rounded-xl transition-all shadow-md hover:shadow-xl hover:scale-105 active:scale-95"
-                >
-                  <span>Shop Now</span>
-                  <ArrowRight className="w-2.5 h-2.5 sm:w-4 sm:h-4 stroke-[3]" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Right Hero Product Graphic (Seamless Transparent PNG) */}
-            <div className="relative w-[46%] sm:w-[50%] lg:w-[45%] flex items-center justify-center h-28 sm:h-52 lg:h-[320px]">
-              <div className="relative w-full h-full max-w-[190px] sm:max-w-md lg:max-w-lg">
+        <div className="relative w-full transition-all duration-700 ease-out min-h-[190px] sm:min-h-[280px] md:min-h-[360px] lg:min-h-[440px] flex items-center">
+          {/* Direct 1 Background Image (No separate cutout image) */}
+          <div className="absolute inset-0 w-full h-full select-none">
+            {currentHero.mobileImage ? (
+              <>
+                <div className="block sm:hidden relative w-full h-full">
+                  <Image
+                    src={currentHero.mobileImage}
+                    alt={currentHero.titleLine1 || currentHero.badge || "Hero Banner"}
+                    fill
+                    priority
+                    style={{
+                      objectFit: currentHero.mobileImageFit || "cover",
+                      objectPosition: currentHero.mobileImagePosition || "center",
+                      transform: `scale(${(currentHero.mobileImageScale || 100) / 100})`,
+                    }}
+                    className="transition-all duration-700 ease-out"
+                  />
+                </div>
+                <div className="hidden sm:block relative w-full h-full">
+                  <Image
+                    src={currentHero.image}
+                    alt={currentHero.titleLine1 || currentHero.badge || "Hero Banner"}
+                    fill
+                    priority
+                    style={{
+                      objectFit: currentHero.imageFit || "cover",
+                      objectPosition: currentHero.imagePosition || "center",
+                      transform: `scale(${(currentHero.imageScale || 100) / 100})`,
+                    }}
+                    className="transition-all duration-700 ease-out"
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="relative w-full h-full">
                 <Image
                   src={currentHero.image}
-                  alt={currentHero.imageAlt}
+                  alt={currentHero.titleLine1 || currentHero.badge || "Hero Banner"}
                   fill
                   priority
-                  className="object-contain drop-shadow-[0_12px_28px_rgba(0,0,0,0.55)] animate-in fade-in zoom-in-95 duration-500"
+                  style={{
+                    objectFit: currentHero.imageFit || "cover",
+                    objectPosition: currentHero.imagePosition || "center",
+                    transform: `scale(${(currentHero.imageScale || 100) / 100})`,
+                  }}
+                  className="transition-all duration-700 ease-out"
                 />
               </div>
-            </div>
+            )}
           </div>
+
+          {/* Scrim Overlay when text is present to guarantee 100% legibility */}
+          {hasOverlayText && (
+            <div className="absolute inset-0 bg-gradient-to-r from-[#001228]/90 via-[#001D40]/65 to-transparent sm:from-[#001228]/85 sm:via-[#001D40]/45 sm:to-transparent pointer-events-none z-1" />
+          )}
+
+          {/* Full Banner Click Link if display-only without explicit button */}
+          {currentHero.ctaLink && !currentHero.ctaText && (
+            <Link
+              href={currentHero.ctaLink}
+              className="absolute inset-0 z-10"
+              aria-label={currentHero.titleLine1 || "Banner link"}
+            />
+          )}
+
+          {/* Text & Headings Overlay Content */}
+          {hasOverlayText && (
+            <div className="relative max-w-[1680px] w-full mx-auto px-6 sm:px-12 lg:px-16 py-4 sm:py-8 lg:py-12 z-10 pointer-events-none">
+              <div className="w-[85%] sm:w-[65%] md:w-[58%] lg:w-[52%] text-left pointer-events-auto flex flex-col justify-center">
+                {currentHero.badge && (
+                  <p className="text-[8px] sm:text-[11px] lg:text-xs font-semibold tracking-widest uppercase mb-1 sm:mb-1.5 text-blue-200 truncate">
+                    {currentHero.badge}
+                  </p>
+                )}
+
+                {(currentHero.titleLine1 || currentHero.titleLine2) && (
+                  <h1 className="text-[15px] sm:text-2xl md:text-3xl lg:text-5xl font-black leading-snug sm:leading-tight tracking-tight text-white mb-1 sm:mb-3 drop-shadow-sm">
+                    {currentHero.titleLine1 && <span>{currentHero.titleLine1}</span>}{" "}
+                    {currentHero.titleLine1 && currentHero.titleLine2 && (
+                      <span className="hidden sm:inline"><br /></span>
+                    )}
+                    {currentHero.titleLine2 && (
+                      <span>
+                        {currentHero.headlineHighlight && currentHero.titleLine2.includes(currentHero.headlineHighlight) ? (
+                          <>
+                            {currentHero.titleLine2.replace(currentHero.headlineHighlight, "").trim()}{" "}
+                            <span className="text-[#FFBE00]">{currentHero.headlineHighlight}</span>
+                          </>
+                        ) : (
+                          <span className="text-[#FFBE00]">{currentHero.titleLine2}</span>
+                        )}
+                      </span>
+                    )}
+                  </h1>
+                )}
+
+                {currentHero.description && (
+                  <p className="text-[9px] sm:text-xs lg:text-sm text-slate-200 line-clamp-2 max-w-lg mb-1.5 sm:mb-3 leading-relaxed drop-shadow-xs">
+                    {currentHero.description}
+                  </p>
+                )}
+
+                {(currentHero.subLabel || currentHero.price) && (
+                  <div className="mb-2 sm:mb-4 flex items-baseline gap-1 sm:gap-2">
+                    {currentHero.subLabel && (
+                      <span className="text-[8px] sm:text-xs lg:text-sm font-medium text-blue-200">
+                        {currentHero.subLabel}
+                      </span>
+                    )}
+                    {currentHero.price && (
+                      <span className="text-[12px] sm:text-2xl lg:text-4xl font-black text-[#FFBE00] tracking-tight drop-shadow-xs">
+                        {currentHero.price}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {currentHero.ctaText && (
+                  <div>
+                    <Link
+                      href={currentHero.ctaLink || "/products"}
+                      className="inline-flex items-center gap-1 sm:gap-2 bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-[9px] sm:text-xs lg:text-sm px-3 sm:px-6 py-1 sm:py-2.5 rounded-md sm:rounded-xl transition-all shadow-md hover:shadow-xl hover:scale-105 active:scale-95"
+                    >
+                      <span>{currentHero.ctaText}</span>
+                      <ArrowRight className="w-2.5 h-2.5 sm:w-4 sm:h-4 stroke-[3]" />
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Slider Prev / Next Arrows */}
-          <button
-            onClick={() =>
-              setActiveSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)
-            }
-            className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-6 h-6 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-md shadow-md"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft className="w-3.5 h-3.5 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
-          </button>
-          <button
-            onClick={() =>
-              setActiveSlide((prev) => (prev + 1) % HERO_SLIDES.length)
-            }
-            className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-6 h-6 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-md shadow-md"
-            aria-label="Next slide"
-          >
-            <ChevronRight className="w-3.5 h-3.5 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
-          </button>
-
-          {/* Dots Indicator */}
-          <div className="absolute bottom-1 sm:bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2">
-            {HERO_SLIDES.map((_, i) => (
+          {activeBanners.length > 1 && (
+            <>
               <button
-                key={i}
-                onClick={() => setActiveSlide(i)}
-                className={`transition-all duration-300 rounded-full ${
-                  i === activeSlide
-                    ? "bg-[#FFBE00] w-4 sm:w-7 h-1 sm:h-2"
-                    : "bg-blue-300/40 hover:bg-white/60 w-1 sm:w-2 h-1 sm:h-2"
-                }`}
-                aria-label={`Go to slide ${i + 1}`}
-              />
-            ))}
-          </div>
+                onClick={() =>
+                  setActiveSlide((prev) => (prev - 1 + activeBanners.length) % activeBanners.length)
+                }
+                className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-6 h-6 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-md shadow-md cursor-pointer"
+                aria-label="Previous slide"
+              >
+                <ChevronLeft className="w-3.5 h-3.5 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
+              </button>
+              <button
+                onClick={() =>
+                  setActiveSlide((prev) => (prev + 1) % activeBanners.length)
+                }
+                className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-6 h-6 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-md shadow-md cursor-pointer"
+                aria-label="Next slide"
+              >
+                <ChevronRight className="w-3.5 h-3.5 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
+              </button>
+
+              {/* Dots Indicator */}
+              <div className="absolute bottom-1.5 sm:bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2">
+                {activeBanners.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveSlide(i)}
+                    className={`transition-all duration-300 rounded-full cursor-pointer ${
+                      i === activeSlide
+                        ? "bg-[#FFBE00] w-4 sm:w-7 h-1 sm:h-2"
+                        : "bg-blue-300/40 hover:bg-white/60 w-1 sm:w-2 h-1 sm:h-2"
+                    }`}
+                    aria-label={`Go to slide ${i + 1}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </section>
 
