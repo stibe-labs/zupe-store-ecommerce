@@ -727,3 +727,268 @@ ${STORE_BASE_URL}
   }
 }
 
+export interface SendAdminNewOrderNotificationEmailParams {
+  orderId: string;
+  customerName: string;
+  customerPhone?: string;
+  customerEmail?: string;
+  shippingAddress: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  totalAmount: number;
+  currentlyPaid?: number;
+  paymentMethod: string;
+  items: Array<{
+    name?: string;
+    product_name?: string;
+    quantity?: number;
+    price?: number;
+    unit_price?: number;
+    bundle_total?: number;
+  }>;
+  createdAt?: string;
+}
+
+/**
+ * Sends an instant formal new order notification email to the admin orders inbox:
+ * zupestoreorders@gmail.com
+ * Dispatched immediately whenever a customer places an order (COD or Prepaid).
+ */
+export async function sendAdminNewOrderNotificationEmail(
+  params: SendAdminNewOrderNotificationEmailParams
+): Promise<{ success: boolean; error?: string }> {
+  const {
+    orderId,
+    customerName,
+    customerPhone = "Not provided",
+    customerEmail,
+    shippingAddress,
+    city,
+    postalCode,
+    totalAmount,
+    currentlyPaid,
+    paymentMethod,
+    items,
+    createdAt,
+  } = params;
+
+  let adminEmail = process.env.ADMIN_ORDERS_EMAIL;
+  if (!adminEmail) {
+    try {
+      const { getCloudflareContext } = require("@opennextjs/cloudflare");
+      const ctx = getCloudflareContext();
+      if (ctx?.env?.ADMIN_ORDERS_EMAIL) {
+        adminEmail = ctx.env.ADMIN_ORDERS_EMAIL;
+      }
+    } catch {}
+  }
+  const targetEmail = (adminEmail || "zupestoreorders@gmail.com").trim();
+
+  const isCod =
+    (paymentMethod || "").toLowerCase().includes("cash on delivery") ||
+    (paymentMethod || "").toLowerCase() === "cod";
+
+  const total = Number(totalAmount || 0);
+  const paid =
+    currentlyPaid !== undefined
+      ? Number(currentlyPaid)
+      : isCod
+      ? 0
+      : total;
+  const balance = Math.max(0, total - paid);
+
+  const cleanOrderId = (orderId || "").startsWith("#") ? orderId : `#${orderId}`;
+  const orderDate = createdAt
+    ? new Date(createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+    : new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+
+  const itemsRowsHtml = (items || [])
+    .map((it, idx) => {
+      const name = it.product_name || it.name || `Item #${idx + 1}`;
+      const qty = Number(it.quantity || 1);
+      const unitPrice = Number(it.unit_price || it.price || 0);
+      const subtotal = it.bundle_total || unitPrice * qty;
+      return `
+        <tr>
+          <td style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #0f172a; font-weight: 600;">${name}</td>
+          <td style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #0f172a; text-align: center; font-weight: 700;">${qty}</td>
+          <td style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #475569; text-align: right;">₹${unitPrice.toLocaleString("en-IN")}</td>
+          <td style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #0f172a; text-align: right; font-weight: 700;">₹${subtotal.toLocaleString("en-IN")}</td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  const itemsText = (items || [])
+    .map((it, idx) => {
+      const name = it.product_name || it.name || `Item #${idx + 1}`;
+      const qty = Number(it.quantity || 1);
+      const unitPrice = Number(it.unit_price || it.price || 0);
+      const subtotal = it.bundle_total || unitPrice * qty;
+      return `${idx + 1}. ${name} (Qty: ${qty}) - ₹${unitPrice.toLocaleString("en-IN")} each | Subtotal: ₹${subtotal.toLocaleString("en-IN")}`;
+    })
+    .join("\n");
+
+  const fullAddress = `${shippingAddress}${city ? `, ${city}` : ""}${postalCode ? ` - ${postalCode}` : ""}`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>New Order Placed - ${cleanOrderId}</title>
+    </head>
+    <body style="margin: 0; padding: 24px; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
+      <div style="max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+        
+        <!-- Header -->
+        <div style="background-color: #0f172a; padding: 20px 24px; border-bottom: 3px solid #ff7a00;">
+          <h2 style="margin: 0; color: #ffffff; font-size: 18px; font-weight: 700; letter-spacing: 0.3px;">
+            🛒 New Order Placed — Zupe Store
+          </h2>
+          <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">
+            Order ID: <strong style="color: #ff7a00; font-size: 14px;">${cleanOrderId}</strong> &bull; Placed at ${orderDate} IST
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div style="padding: 24px;">
+
+          <!-- Order Summary Details -->
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 22px; font-size: 13px;">
+            <tr>
+              <td style="padding: 9px 12px; background: #f8fafc; border: 1px solid #e2e8f0; width: 36%; color: #64748b; font-weight: 600;">Order Number:</td>
+              <td style="padding: 9px 12px; border: 1px solid #e2e8f0; font-weight: 700; color: #0f172a;">${cleanOrderId}</td>
+            </tr>
+            <tr>
+              <td style="padding: 9px 12px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; font-weight: 600;">Customer Name:</td>
+              <td style="padding: 9px 12px; border: 1px solid #e2e8f0; font-weight: 700; color: #0f172a;">${customerName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 9px 12px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; font-weight: 600;">Customer Phone:</td>
+              <td style="padding: 9px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #0f172a;">
+                <a href="tel:${customerPhone}" style="color: #ff7a00; text-decoration: none;">${customerPhone}</a>
+              </td>
+            </tr>
+            ${
+              customerEmail
+                ? `
+            <tr>
+              <td style="padding: 9px 12px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; font-weight: 600;">Customer Email:</td>
+              <td style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #334155;">${customerEmail}</td>
+            </tr>`
+                : ""
+            }
+            <tr>
+              <td style="padding: 9px 12px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; font-weight: 600;">Payment Method:</td>
+              <td style="padding: 9px 12px; border: 1px solid #e2e8f0; font-weight: 700; color: #0f172a;">${paymentMethod}</td>
+            </tr>
+            <tr>
+              <td style="padding: 9px 12px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; font-weight: 600;">Total Price:</td>
+              <td style="padding: 9px 12px; border: 1px solid #e2e8f0; font-size: 15px; font-weight: 800; color: #0f172a;">₹${total.toLocaleString("en-IN")}</td>
+            </tr>
+            <tr>
+              <td style="padding: 9px 12px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; font-weight: 600;">Currently Paid:</td>
+              <td style="padding: 9px 12px; border: 1px solid #e2e8f0; font-weight: 700; color: #059669;">₹${paid.toLocaleString("en-IN")}</td>
+            </tr>
+            ${
+              balance > 0
+                ? `
+            <tr>
+              <td style="padding: 9px 12px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; font-weight: 600;">Balance Due at Delivery:</td>
+              <td style="padding: 9px 12px; border: 1px solid #e2e8f0; font-weight: 700; color: #d97706;">₹${balance.toLocaleString("en-IN")}</td>
+            </tr>`
+                : ""
+            }
+          </table>
+
+          <!-- Purchased Items -->
+          <div style="margin: 20px 0 8px 0; font-size: 13px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">
+            📦 Purchased Items (${(items || []).length} ${(items || []).length === 1 ? "item" : "items"})
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 22px;">
+            <thead>
+              <tr style="background: #f1f5f9; text-align: left;">
+                <th style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #475569; font-weight: 600;">Item</th>
+                <th style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #475569; font-weight: 600; text-align: center; width: 50px;">Qty</th>
+                <th style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #475569; font-weight: 600; text-align: right; width: 90px;">Price</th>
+                <th style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #475569; font-weight: 600; text-align: right; width: 90px;">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsRowsHtml}
+            </tbody>
+          </table>
+
+          <!-- Delivery Address -->
+          <div style="margin: 20px 0 8px 0; font-size: 13px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">
+            📍 Delivery Address
+          </div>
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; font-size: 13px; line-height: 1.6; color: #334155;">
+            <strong>${customerName}</strong><br>
+            ${fullAddress}<br>
+            Phone: <strong>${customerPhone}</strong>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #f8fafc; padding: 12px 24px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #64748b;">
+          Automated Order Notification &bull; Delivered to <strong>${targetEmail}</strong>
+        </div>
+
+      </div>
+    </body>
+    </html>
+  `;
+
+  const textBody = `
+NEW ORDER PLACED — ZUPE STORE
+=========================================
+Order Number:    ${cleanOrderId}
+Order Date:      ${orderDate} IST
+
+CUSTOMER DETAILS
+-----------------------------------------
+Customer Name:   ${customerName}
+Phone Number:    ${customerPhone}
+Email:           ${customerEmail || "Not provided"}
+
+PAYMENT & AMOUNTS
+-----------------------------------------
+Payment Method:  ${paymentMethod}
+Total Price:     ₹${total.toLocaleString("en-IN")}
+Currently Paid:  ₹${paid.toLocaleString("en-IN")}
+${balance > 0 ? `Balance Due:     ₹${balance.toLocaleString("en-IN")}\n` : ""}
+PURCHASED ITEMS
+-----------------------------------------
+${itemsText}
+
+DELIVERY ADDRESS
+-----------------------------------------
+${customerName}
+${fullAddress}
+Phone: ${customerPhone}
+=========================================
+  `.trim();
+
+  try {
+    const res = await sendEmail({
+      to: targetEmail,
+      subject: `🛒 [New Order Placed] ${cleanOrderId} - ₹${total.toLocaleString("en-IN")} - ${customerName}`,
+      html,
+      text: textBody,
+    });
+    if (res.success) {
+      console.log(`[Order Email Service] ✅ Admin new order notification email sent to ${targetEmail} for order ${cleanOrderId}`);
+    } else {
+      console.warn(`[Order Email Service] ⚠️ Admin email failed: ${res.error}`);
+    }
+    return res;
+  } catch (err: any) {
+    console.error(`[Order Email Service] Admin notification email exception:`, err);
+    return { success: false, error: err.message };
+  }
+}
+

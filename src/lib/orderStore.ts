@@ -160,6 +160,43 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
 
   // (Note: Inventory decrement is cleanly handled once inside createERPOrder)
 
+  // 3. Dispatch formal new order notification email to admin (zupestoreorders@gmail.com)
+  try {
+    const { sendAdminNewOrderNotificationEmail } = await import("@/lib/orderEmailService");
+    const displayOrderId = (order as any).shopify_order_id || order.id;
+    const isCod =
+      (order.payment_method || "").toLowerCase().includes("cash on delivery") ||
+      (order.payment_method || "").toLowerCase() === "cod";
+    const advancePaid = (order as any).advance_paid;
+    const paidAmount =
+      advancePaid !== undefined
+        ? Number(advancePaid)
+        : order.payment_status === "paid"
+        ? Number(order.total_amount)
+        : isCod
+        ? 0
+        : Number(order.total_amount);
+
+    sendAdminNewOrderNotificationEmail({
+      orderId: displayOrderId,
+      customerName: order.customer_name,
+      customerPhone: order.customer_phone,
+      customerEmail: order.customer_email,
+      shippingAddress: order.shipping_address,
+      city: order.city,
+      postalCode: order.postal_code,
+      totalAmount: Number(order.total_amount),
+      currentlyPaid: paidAmount,
+      paymentMethod: order.payment_method,
+      items: order.items,
+      createdAt: order.created_at,
+    }).catch((err) => {
+      console.warn("[OrderStore] Failed to send admin new order email:", err);
+    });
+  } catch (adminMailErr) {
+    console.warn("[OrderStore] Admin email dispatch error:", adminMailErr);
+  }
+
   return order;
 }
 
