@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRazorpayOrder, RAZORPAY_KEY_ID } from "@/lib/razorpay";
+import { createRazorpayOrder, getRazorpayCredentials } from "@/lib/razorpay";
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       orderId: order.id,
       amount: order.amount,
       currency: order.currency,
-      keyId: RAZORPAY_KEY_ID,
+      keyId: getRazorpayCredentials().keyId,
     });
   } catch (err: any) {
     console.error("Error creating Razorpay order:", err);

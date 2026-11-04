@@ -1,13 +1,33 @@
 import crypto from "crypto";
 
+const DEFAULT_KEY_ID = "rzp_test_TtfV4hJwr48ruO";
+const DEFAULT_KEY_SECRET = "LxiqYWXJS4LUSoyqS89n90zz";
+
+export function getRazorpayCredentials(): { keyId: string; keySecret: string } {
+  let keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID;
+  let keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+  try {
+    const { getCloudflareContext } = require("@opennextjs/cloudflare");
+    const ctx = getCloudflareContext();
+    if (ctx?.env) {
+      keyId = ctx.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || ctx.env.RAZORPAY_KEY_ID || keyId;
+      keySecret = ctx.env.RAZORPAY_KEY_SECRET || keySecret;
+    }
+  } catch {}
+
+  return {
+    keyId: keyId || DEFAULT_KEY_ID,
+    keySecret: keySecret || DEFAULT_KEY_SECRET,
+  };
+}
+
 export const RAZORPAY_KEY_ID =
   process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
   process.env.RAZORPAY_KEY_ID ||
-  "rzp_test_TtfV4hJwr48ruO";
+  DEFAULT_KEY_ID;
 
-export const RAZORPAY_KEY_SECRET =
-  process.env.RAZORPAY_KEY_SECRET ||
-  "LxiqYWXJS4LUSoyqS89n90zz";
+export const RAZORPAY_KEY_SECRET = DEFAULT_KEY_SECRET;
 
 export interface CreateOrderParams {
   amount: number; // in INR rupees
@@ -42,9 +62,12 @@ export async function createRazorpayOrder({
 }: CreateOrderParams): Promise<RazorpayOrderResponse> {
   const amountInPaise = Math.round(amount * 100);
 
-  const authHeader = `Basic ${Buffer.from(
-    `${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`
-  ).toString("base64")}`;
+  const { keyId, keySecret } = getRazorpayCredentials();
+  const rawAuth = `${keyId}:${keySecret}`;
+  const encodedAuth = typeof Buffer !== "undefined"
+    ? Buffer.from(rawAuth).toString("base64")
+    : btoa(rawAuth);
+  const authHeader = `Basic ${encodedAuth}`;
 
   const response = await fetch("https://api.razorpay.com/v1/orders", {
     method: "POST",
@@ -89,7 +112,7 @@ export function verifyRazorpaySignature({
 
   try {
     const generatedSignature = crypto
-      .createHmac("sha256", RAZORPAY_KEY_SECRET)
+      .createHmac("sha256", getRazorpayCredentials().keySecret)
       .update(`${orderId}|${paymentId}`)
       .digest("hex");
 
@@ -127,9 +150,12 @@ export async function refundRazorpayPayment({
   amount?: number; // In Rupees; if not provided, full payment amount is refunded
   notes?: Record<string, string>;
 }): Promise<RazorpayRefundResponse> {
-  const authHeader = `Basic ${Buffer.from(
-    `${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`
-  ).toString("base64")}`;
+  const { keyId, keySecret } = getRazorpayCredentials();
+  const rawAuth = `${keyId}:${keySecret}`;
+  const encodedAuth = typeof Buffer !== "undefined"
+    ? Buffer.from(rawAuth).toString("base64")
+    : btoa(rawAuth);
+  const authHeader = `Basic ${encodedAuth}`;
 
   const bodyPayload: any = { notes };
   if (amount !== undefined && amount > 0) {
@@ -215,7 +241,7 @@ export async function getRazorpayPaymentDetails(paymentId: string): Promise<Razo
 
   try {
     const authHeader = `Basic ${Buffer.from(
-      `${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`
+      `${RAZORPAY_KEY_ID}:${getRazorpayCredentials().keySecret}`
     ).toString("base64")}`;
 
     const res = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(cleanId)}`, {
@@ -281,7 +307,7 @@ export async function getRazorpayPaymentByOrderId(razorpayOrderId: string): Prom
 
   try {
     const authHeader = `Basic ${Buffer.from(
-      `${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`
+      `${RAZORPAY_KEY_ID}:${getRazorpayCredentials().keySecret}`
     ).toString("base64")}`;
 
     const res = await fetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(cleanId)}/payments`, {
