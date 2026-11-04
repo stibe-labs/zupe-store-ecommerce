@@ -10,6 +10,7 @@ import { SearchModal } from "@/components/SearchModal";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { WhatsAppFloatingButton } from "@/components/WhatsAppFloatingButton";
 import { AbandonedCartAutoChecker } from "@/components/AbandonedCartAutoChecker";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { siteConfig } from "@/config/siteConfig";
 import "./globals.css";
 
@@ -147,6 +148,7 @@ export default function RootLayout({
                   <SearchModal />
                   <WhatsAppFloatingButton />
                   <AbandonedCartAutoChecker />
+                  <MobileBottomNav />
                 </SmoothScrollProvider>
               </SearchProvider>
             </CartProvider>

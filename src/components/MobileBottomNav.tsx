@@ -1,166 +1,312 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import Image from "next/image";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import {
+  Home,
   Store,
   Search,
-  Home,
   ShoppingBag,
   User,
-  X,
-  ArrowRight,
-  Sparkles,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useSearch } from "@/context/SearchContext";
 
+/**
+ * Generates the SVG path for the floating bottom navigation bar with a
+ * dynamically morphing concave notch around the active circular indicator.
+ */
+function getNavSvgPath(
+  W: number,
+  H: number = 62,
+  r: number = 22,
+  cx: number,
+  notch_w: number = 36,
+  depth: number = 30
+): string {
+  // Clamp cx safely within bounds
+  const safeCx = Math.max(r, Math.min(W - r, cx));
+  const x_notch_left = Math.max(r, safeCx - notch_w);
+  const x_notch_right = Math.min(W - r, safeCx + notch_w);
+
+  const cp1_x = Math.max(r, safeCx - 18);
+  const cp2_x = safeCx - 14;
+  const cp3_x = safeCx + 14;
+  const cp4_x = Math.min(W - r, safeCx + 18);
+
+  return [
+    `M ${r} 0`,
+    `L ${x_notch_left.toFixed(2)} 0`,
+    `C ${cp1_x.toFixed(2)} 0, ${cp2_x.toFixed(2)} ${depth}, ${safeCx.toFixed(2)} ${depth}`,
+    `C ${cp3_x.toFixed(2)} ${depth}, ${cp4_x.toFixed(2)} 0, ${x_notch_right.toFixed(2)} 0`,
+    `L ${(W - r).toFixed(2)} 0`,
+    `A ${r} ${r} 0 0 1 ${W} ${r}`,
+    `L ${W} ${(H - r).toFixed(2)}`,
+    `A ${r} ${r} 0 0 1 ${(W - r).toFixed(2)} ${H}`,
+    `L ${r} ${H}`,
+    `A ${r} ${r} 0 0 1 0 ${(H - r).toFixed(2)}`,
+    `L 0 ${r}`,
+    `A ${r} ${r} 0 0 1 ${r} 0`,
+    "Z",
+  ].join(" ");
+}
+
 export function MobileBottomNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { totalItems, openCart } = useCart();
+  const { totalItems, openCart, isOpen: isCartOpen } = useCart();
   const { isAuthenticated } = useAuth();
   const { isSearchOpen, openSearch } = useSearch();
 
-  // Hide bottom bar on admin dashboard and during checkout flow
+  const containerRef = useRef<HTMLDivElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  const [navWidth, setNavWidth] = useState(380);
+
+  // Measure container width responsively
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        const w = containerRef.current.clientWidth;
+        if (w > 0) {
+          setNavWidth(w);
+        }
+      }
+    };
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
+
+  // Equal 5-item distribution centers
+  const pad = Math.round(navWidth * 0.12);
+  const step = (navWidth - 2 * pad) / 4;
+  const centers = useMemo(
+    () => [pad, pad + step, pad + 2 * step, pad + 3 * step, pad + 4 * step],
+    [navWidth, pad, step]
+  );
+
+  // Determine active index
+  const getRouteIndex = () => {
+    if (isSearchOpen) return 2;
+    if (isCartOpen) return 3;
+    if (pathname === "/") return 0;
+    if (pathname?.startsWith("/products")) return 1;
+    if (
+      pathname === "/account" ||
+      pathname === "/signin" ||
+      pathname === "/login"
+    ) {
+      return 4;
+    }
+    return 0; // Default Home
+  };
+
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+
+  // Spring animation values
+  const motionX = useMotionValue(centers[0]);
+  const springX = useSpring(motionX, {
+    stiffness: 340,
+    damping: 26,
+    mass: 0.8,
+  });
+
+  // Keep spring and path synced to route changes
+  useEffect(() => {
+    const targetIdx = getRouteIndex();
+    setActiveIndex(targetIdx);
+    motionX.set(centers[targetIdx]);
+  }, [pathname, isSearchOpen, isCartOpen, centers]);
+
+  // Synchronously drive the SVG dynamic curved notch via Framer Motion spring
+  useEffect(() => {
+    const unsubscribe = springX.on("change", (latestX) => {
+      if (pathRef.current) {
+        pathRef.current.setAttribute("d", getNavSvgPath(navWidth, 62, 22, latestX));
+      }
+    });
+    return () => unsubscribe();
+  }, [springX, navWidth]);
+
+  // Navigation Items
+  const navItems = [
+    {
+      label: "Home",
+      href: "/",
+      inactiveIcon: <Home className="w-5 h-5 stroke-[1.9]" />,
+      activeIcon: <Home className="w-5 h-5 stroke-[2.2]" />,
+      action: () => {
+        if (pathname === "/" && !isSearchOpen && !isCartOpen) {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+          router.push("/");
+        }
+      },
+    },
+    {
+      label: "Shop",
+      href: "/products",
+      inactiveIcon: <Store className="w-5 h-5 stroke-[1.9]" />,
+      activeIcon: <Store className="w-5 h-5 stroke-[2.2]" />,
+      action: () => {
+        router.push("/products");
+      },
+    },
+    {
+      label: "Search",
+      inactiveIcon: <Search className="w-5 h-5 stroke-[1.9]" />,
+      activeIcon: <Search className="w-5 h-5 stroke-[2.2]" />,
+      action: () => {
+        openSearch();
+      },
+    },
+    {
+      label: "Bag",
+      inactiveIcon: <ShoppingBag className="w-5 h-5 stroke-[1.9]" />,
+      activeIcon: <ShoppingBag className="w-5 h-5 stroke-[2.2]" />,
+      action: () => {
+        openCart();
+      },
+    },
+    {
+      label: "Account",
+      href: "/account",
+      inactiveIcon: <User className="w-5 h-5 stroke-[1.9]" />,
+      activeIcon: <User className="w-5 h-5 stroke-[2.2]" />,
+      action: () => {
+        if (isAuthenticated) {
+          router.push("/account");
+        } else {
+          router.push(
+            "/signin?redirect=/account&notice=Please sign in to view your profile and orders"
+          );
+        }
+      },
+    },
+  ];
+
+  const handleItemClick = (index: number) => {
+    if (index === activeIndex) {
+      if (index === 0 && pathname === "/") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
+
+    setActiveIndex(index);
+    motionX.set(centers[index]);
+    navItems[index].action();
+  };
+
+  // Hide on admin dashboard and checkout flows
   if (
     pathname?.startsWith("/admin") ||
-    pathname?.startsWith("/checkout") ||
-    pathname?.match(/^\/products\/[^?]+/) // Hide on single product page so sticky 'Buy Now' bar is unobstructed
+    pathname?.startsWith("/checkout")
   ) {
     return null;
   }
 
-  // Active status helper
-  const isShopActive = pathname?.startsWith("/products") && !isSearchOpen;
-  const isHomeActive = pathname === "/" && !isSearchOpen;
-  const isAccountActive =
-    (pathname === "/account" || pathname === "/signin" || pathname === "/login") &&
-    !isSearchOpen;
-
-  const handleAccountClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (isAuthenticated) {
-      router.push("/account");
-    } else {
-      router.push(
-        "/signin?redirect=/account&notice=Please sign in to view your profile and orders"
-      );
-    }
-  };
+  const initialD = getNavSvgPath(navWidth, 62, 22, centers[activeIndex]);
 
   return (
-    <>
-      {/* Main Sticky Bottom Navigation Bar */}
-      <nav
-        aria-label="Mobile Navigation"
-        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/98 backdrop-blur-md border-t border-gray-100/90 shadow-[0_-4px_25px_rgba(0,0,0,0.06)]"
+    <nav
+      aria-label="Mobile Bottom Navigation"
+      ref={containerRef}
+      style={{
+        bottom: "max(12px, env(safe-area-inset-bottom, 12px))",
+      }}
+      className="fixed inset-x-3 sm:hidden z-40 max-w-[420px] mx-auto select-none pointer-events-auto h-[62px]"
+    >
+      {/* 1. Dynamic SVG Background with Morphing Curved Notch */}
+      <svg
+        width="100%"
+        height="62"
+        viewBox={`0 0 ${navWidth} 62`}
+        className="w-full h-full overflow-visible"
+        style={{
+          filter: "drop-shadow(0 10px 25px rgba(0, 29, 64, 0.12))",
+        }}
       >
-        <div className="grid grid-cols-5 items-center justify-items-center h-16 px-1 pb-[max(env(safe-area-inset-bottom),0px)] relative">
-          {/* 1. Shop (All Products) */}
-          <Link
-            href="/#shop"
-            className={`flex flex-col items-center justify-center w-full h-full py-1 transition-colors ${
-              isShopActive ? "text-[#FF7A00]" : "text-gray-400 hover:text-gray-600"
-            }`}
-          >
-            <Store className={`w-5 h-5 ${isShopActive ? "stroke-[2.5]" : "stroke-[2]"}`} />
-            <span
-              className={`text-[10px] mt-1 ${
-                isShopActive ? "font-bold text-[#FF7A00]" : "font-medium text-gray-500"
-              }`}
-            >
-              Shop
-            </span>
-          </Link>
+        <path
+          ref={pathRef}
+          d={initialD}
+          fill="#FFFFFF"
+          stroke="#F1F5F9"
+          strokeWidth="1"
+        />
+      </svg>
 
-          {/* 2. Search (Triggers animated Collections search modal!) */}
-          <button
-            type="button"
-            onClick={openSearch}
-            className={`flex flex-col items-center justify-center w-full h-full py-1 transition-colors cursor-pointer ${
-              isSearchOpen ? "text-[#FF7A00]" : "text-gray-400 hover:text-gray-600"
-            }`}
-            aria-label="Search products"
+      {/* 2. Floating Circular Active Indicator (Rises above the curved notch) */}
+      <motion.div
+        style={{
+          x: springX,
+          left: -24, // Centers the 48px bubble at cx
+        }}
+        className="absolute -top-3 z-20 w-12 h-12 rounded-full bg-[#001D40] text-white flex items-center justify-center shadow-[0_8px_18px_rgba(0,29,64,0.35)] border-[3px] border-white pointer-events-none"
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={activeIndex}
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.5, opacity: 0 }}
+            transition={{ duration: 0.16, ease: "easeOut" }}
+            className="flex items-center justify-center text-white"
           >
-            <Search className={`w-5 h-5 ${isSearchOpen ? "stroke-[2.5]" : "stroke-[2]"}`} />
-            <span
-              className={`text-[10px] mt-1 ${
-                isSearchOpen ? "font-bold text-[#FF7A00]" : "font-medium text-gray-500"
-              }`}
-            >
-              Search
-            </span>
-          </button>
+            {navItems[activeIndex].activeIcon}
+          </motion.div>
+        </AnimatePresence>
 
-          {/* 3. Home (Raised Center Circle - Exact Match to Reference Image) */}
-          <Link
-            href="/"
-            className="flex flex-col items-center justify-center relative -top-3.5 group"
-            aria-label="Go to Home"
-          >
-            <div
-              className={`w-13 h-13 rounded-full flex items-center justify-center shadow-lg transition-transform group-active:scale-95 border-4 border-white ${
-                isHomeActive
-                  ? "bg-[#111827] shadow-black/25 ring-2 ring-[#FF7A00]/40"
-                  : "bg-[#111827] shadow-black/15 opacity-90"
-              }`}
-            >
-              <Home className="w-5 h-5 text-white stroke-[2.2]" />
-            </div>
-            <span
-              className={`text-[10px] mt-0.5 tracking-tight ${
-                isHomeActive ? "font-bold text-[#111111]" : "font-semibold text-gray-500"
-              }`}
-            >
-              Home
-            </span>
-          </Link>
+        {/* Active Bag Notification Badge */}
+        {activeIndex === 3 && totalItems > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-sm">
+            {totalItems}
+          </span>
+        )}
+      </motion.div>
 
-          {/* 4. Bag (Slide open CartDrawer!) */}
-          <button
-            type="button"
-            onClick={openCart}
-            className="flex flex-col items-center justify-center w-full h-full py-1 transition-colors relative text-gray-400 hover:text-[#FF7A00] anim-tap-bounce active:text-[#FF7A00] cursor-pointer"
-            aria-label="Open Shopping Bag"
-          >
-            <div className="relative">
-              <ShoppingBag className="w-5 h-5 stroke-[2]" />
-              {totalItems > 0 && (
-                <span className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] px-1 rounded-full bg-[#E02B2B] text-white text-[9px] font-extrabold flex items-center justify-center leading-none border-2 border-white shadow-xs">
-                  {totalItems}
-                </span>
-              )}
-            </div>
-            <span className="text-[10px] mt-1 font-medium text-gray-500">
-              Bag
-            </span>
-          </button>
+      {/* 3. Inactive Outline Navigation Icons */}
+      <div className="absolute inset-0 z-10 pointer-events-none">
+        {navItems.map((item, index) => {
+          const isActive = activeIndex === index;
+          const cx = centers[index];
 
-          {/* 5. Account (Profile if signed in, else Sign In) */}
-          <button
-            onClick={handleAccountClick}
-            className={`flex flex-col items-center justify-center w-full h-full py-1 transition-colors ${
-              isAccountActive ? "text-[#FF7A00]" : "text-gray-400 hover:text-gray-600"
-            }`}
-            aria-label="Account details"
-          >
-            <User
-              className={`w-5 h-5 ${isAccountActive ? "stroke-[2.5]" : "stroke-[2]"}`}
-            />
-            <span
-              className={`text-[10px] mt-1 ${
-                isAccountActive ? "font-bold text-[#FF7A00]" : "font-medium text-gray-500"
-              }`}
+          return (
+            <button
+              key={item.label}
+              type="button"
+              onClick={() => handleItemClick(index)}
+              style={{
+                left: cx,
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+              }}
+              aria-label={item.label}
+              className="absolute w-12 h-12 flex items-center justify-center cursor-pointer pointer-events-auto group touch-manipulation focus:outline-none"
             >
-              Account
-            </span>
-          </button>
-        </div>
-      </nav>
-    </>
+              {/* Inactive Icon: Fades out cleanly when active */}
+              <span
+                className={`transition-all duration-200 flex items-center justify-center text-[#001D40]/75 group-hover:text-[#001D40] group-active:scale-90 ${
+                  isActive
+                    ? "opacity-0 scale-50 pointer-events-none"
+                    : "opacity-100 scale-100"
+                }`}
+              >
+                {item.inactiveIcon}
+
+                {/* Inactive Bag Badge */}
+                {index === 3 && totalItems > 0 && (
+                  <span className="absolute top-1.5 right-1.5 min-w-[16px] h-[16px] px-1 rounded-full bg-[#E02B2B] text-white text-[9px] font-extrabold flex items-center justify-center border-2 border-white shadow-xs">
+                    {totalItems}
+                  </span>
+                )}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
   );
 }

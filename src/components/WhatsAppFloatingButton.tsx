@@ -22,7 +22,7 @@ export function WhatsAppFloatingButton() {
   return (
     <aside
       aria-label="WhatsApp Support"
-      className="fixed z-40 right-3.5 sm:right-6 bottom-4 sm:bottom-6 flex items-center group select-none pointer-events-auto"
+      className="fixed z-40 right-3.5 sm:right-6 bottom-22 sm:bottom-6 flex items-center group select-none pointer-events-auto"
     >
       {/* Tooltip on Desktop Hover */}
       <div
