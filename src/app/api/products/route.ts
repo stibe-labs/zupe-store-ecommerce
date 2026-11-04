@@ -17,7 +17,7 @@ async function checkAdminAuth(req: NextRequest): Promise<boolean> {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-let serverProductsCache: Product[] = [...DEFAULT_PRODUCTS];
+let serverProductsCache: Product[] = [];
 
 function parseJsonSafe<T>(val: any, fallback: T): T {
   if (val === null || val === undefined || val === "") return fallback;
@@ -269,7 +269,7 @@ export async function GET(req: NextRequest) {
 
     // Full catalog query
     const d1Results = await executeD1Query<Product>("SELECT * FROM products ORDER BY created_at DESC;");
-    if (d1Results && Array.isArray(d1Results) && d1Results.length > 0) {
+    if (d1Results && Array.isArray(d1Results)) {
       const formatted = d1Results.map((p: any) => formatDbProduct(p, reviewStatsMap));
 
       // Sync memory cache

@@ -82,7 +82,9 @@ export function TopPickzSection({
   useEffect(() => {
     measureStepWidth();
     window.addEventListener("resize", measureStepWidth);
-    return () => window.removeEventListener("resize", measureStepWidth);
+    if (displayProducts.length === 0) return null;
+
+  return () => window.removeEventListener("resize", measureStepWidth);
   }, [measureStepWidth]);
 
   // Track if Top Pickz is visible in viewport to prevent background CPU cycles

@@ -31,6 +31,8 @@ export function FeaturedProducts() {
 
   const featured = products.slice(0, 4);
 
+  if (featured.length === 0) return null;
+
   return (
     <section className="py-20 lg:py-28 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

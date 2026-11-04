@@ -82,6 +82,8 @@ export function DealsSection({ initialProductIds }: DealsSectionProps = {}) {
     router.push("/checkout");
   };
 
+  if (dealProducts.length === 0) return null;
+
   return (
     <section className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6">
       {/* Header */}

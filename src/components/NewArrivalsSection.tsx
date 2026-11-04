@@ -50,6 +50,8 @@ export function NewArrivalsSection({ initialProductIds }: NewArrivalsSectionProp
     return products.slice(5, 10);
   }, [curatedIds, products]);
 
+  if (newArrivals.length === 0) return null;
+
   return (
     <section className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6">
       {/* Header */}
