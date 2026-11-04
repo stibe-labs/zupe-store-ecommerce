@@ -746,6 +746,9 @@ export interface SendAdminNewOrderNotificationEmailParams {
     price?: number;
     unit_price?: number;
     bundle_total?: number;
+    offer_label?: string;
+    bundle_tier?: number;
+    bundle_savings?: number;
   }>;
   createdAt?: string;
 }
@@ -809,9 +812,13 @@ export async function sendAdminNewOrderNotificationEmail(
       const qty = Number(it.quantity || 1);
       const unitPrice = Number(it.unit_price || it.price || 0);
       const subtotal = it.bundle_total || unitPrice * qty;
+      const offerLabel = (it as any).offer_label || ((it as any).bundle_tier ? `Buy ${(it as any).bundle_tier} - Extra Savings` : "");
       return `
         <tr>
-          <td style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #0f172a; font-weight: 600;">${name}</td>
+          <td style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #0f172a; font-weight: 600;">
+            ${name}
+            ${offerLabel ? `<div style="font-size: 11px; color: #ea580c; font-weight: 700; margin-top: 3px;">✨ ${offerLabel}</div>` : ""}
+          </td>
           <td style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #0f172a; text-align: center; font-weight: 700;">${qty}</td>
           <td style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #475569; text-align: right;">₹${unitPrice.toLocaleString("en-IN")}</td>
           <td style="padding: 9px 12px; border: 1px solid #e2e8f0; color: #0f172a; text-align: right; font-weight: 700;">₹${subtotal.toLocaleString("en-IN")}</td>
@@ -826,7 +833,8 @@ export async function sendAdminNewOrderNotificationEmail(
       const qty = Number(it.quantity || 1);
       const unitPrice = Number(it.unit_price || it.price || 0);
       const subtotal = it.bundle_total || unitPrice * qty;
-      return `${idx + 1}. ${name} (Qty: ${qty}) - ₹${unitPrice.toLocaleString("en-IN")} each | Subtotal: ₹${subtotal.toLocaleString("en-IN")}`;
+      const offer = (it as any).offer_label ? ` [${(it as any).offer_label}]` : "";
+      return `${idx + 1}. ${name}${offer} (Qty: ${qty}) - ₹${unitPrice.toLocaleString("en-IN")} each | Subtotal: ₹${subtotal.toLocaleString("en-IN")}`;
     })
     .join("\n");
 
