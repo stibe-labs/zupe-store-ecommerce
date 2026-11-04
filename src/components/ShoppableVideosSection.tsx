@@ -22,90 +22,8 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 
 // Fallback seed creator videos matching home page for guaranteed playback
-const SEED_CREATOR_VIDEOS: ProductVideo[] = [
-  {
-    id: "creator-vid-01",
-    productId: "watch",
-    title: "Titan Minimalist Watch Hands-on",
-    videoUrl:
-      "https://pub-abec22fbfdb8446490341e69eabe6a1c.r2.dev/videos/1791519244046-VID_20260913_013314_447-9d231d.mp4",
-    posterUrl: "",
-    viewsText: "28.4k",
-    badge: "POPULAR",
-    productName: "Titan Minimalist Analog Watch",
-    productPrice: 1799,
-    productMrp: 2999,
-    productSlug: "watch",
-    productImage:
-      "https://www.titan.co.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw429f4592/images/Titan/Catalog/10011NM01_1.jpg?sw=600&sh=600",
-    active: true,
-    createdAt: "2026-03-08T12:00:00.000Z",
-  },
-  {
-    id: "creator-vid-02",
-    productId: "water-ripple-lamp",
-    title: "Dynamic Water Ripple Night Light",
-    videoUrl: "/videos/creator-flower.mp4",
-    posterUrl: "/products/ripple/ripple-amber.jpg",
-    viewsText: "42.1k",
-    badge: "TRENDING",
-    productName: "Water Ripple Crystal Lamp",
-    productPrice: 650,
-    productMrp: 1099,
-    productSlug: "dynamic-water-ripple-night-light",
-    productImage: "/products/ripple/ripple-amber.jpg",
-    active: true,
-    createdAt: "2026-03-05T12:00:00.000Z",
-  },
-  {
-    id: "creator-vid-03",
-    productId: "menstrual-heating-pad",
-    title: "Portable Heating Pad Experience",
-    videoUrl: "/videos/creator-bear.mp4",
-    posterUrl: "/products/heating-pad/pad-pink-1.jpg",
-    viewsText: "31.5k",
-    badge: "HOT",
-    productName: "Portable Menstrual Heating Pad",
-    productPrice: 799,
-    productMrp: 1149,
-    productSlug: "portable-menstrual-heating-pad",
-    productImage: "/products/heating-pad.jpg",
-    active: true,
-    createdAt: "2026-03-01T10:00:00.000Z",
-  },
-  {
-    id: "creator-vid-04",
-    productId: "mini-portable-steam-iron",
-    title: "Handheld Steam Iron Unboxing & Test",
-    videoUrl: "/videos/creator-sintel.mp4",
-    posterUrl: "/products/iron/iron-teal-1.jpg",
-    viewsText: "19.8k",
-    badge: "NEW",
-    productName: "Mini Handheld Garment Steamer",
-    productPrice: 599,
-    productMrp: 1199,
-    productSlug: "mini-portable-steam-iron",
-    productImage: "/products/steam-iron.jpg",
-    active: true,
-    createdAt: "2026-02-28T09:00:00.000Z",
-  },
-  {
-    id: "creator-vid-05",
-    productId: "foldable-mini-washer",
-    title: "Compact Washer Delicate Clothes Demo",
-    videoUrl: "/videos/creator-bunny.mp4",
-    posterUrl: "/products/washer/washer-purple-1.jpg",
-    viewsText: "37.2k",
-    badge: "MUST HAVE",
-    productName: "Portable Mini Foldable Washer",
-    productPrice: 1299,
-    productMrp: 1949,
-    productSlug: "portable-mini-foldable-washer-spin-dryer",
-    productImage: "/products/foldable-washer.jpg",
-    active: true,
-    createdAt: "2026-02-15T15:30:00.000Z",
-  },
-];
+// Clean seed videos for store owner handover
+const SEED_CREATOR_VIDEOS: ProductVideo[] = [];
 
 interface ShoppableVideosSectionProps {
   currentProduct?: Product;
@@ -132,7 +50,7 @@ export function ShoppableVideosSection({
   const { user, openAuthModal } = useAuth();
   const { addToCart, addItem } = useCart();
 
-  const [videos, setVideos] = useState<ProductVideo[]>(currentProduct ? [] : SEED_CREATOR_VIDEOS);
+  const [videos, setVideos] = useState<ProductVideo[]>([]);
   const [catalog, setCatalog] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 

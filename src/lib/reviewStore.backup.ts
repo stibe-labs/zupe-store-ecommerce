@@ -1,0 +1,652 @@
+// Product Reviews Data Layer (Cloudflare D1 + In-Memory Fallback)
+import { executeD1Query } from "@/lib/d1";
+import { uploadBase64Media } from "@/lib/r2";
+
+export interface ProductReview {
+  id: string;
+  productId: string;
+  orderId?: string;
+  userName: string;
+  userEmail?: string;
+  rating: number; // 1 to 5
+  title?: string;
+  comment: string;
+  images?: string[]; // Array of image URLs / Data URLs
+  reviewerPhoto?: string; // Reviewer avatar image URL / Data URL
+  verifiedPurchase: boolean;
+  createdAt: string;
+  helpfulCount?: number;
+  source?: string; // 'storefront' | 'amazon' | 'flipkart' | 'meesho' | 'judge.me' | 'loox' | 'custom'
+}
+
+export const SEED_REVIEWS: ProductReview[] = [
+  // Dynamic Water Ripple Night Light
+  {
+    id: "rev-ripple-1",
+    productId: "dynamic-water-ripple-night-light",
+    orderId: "ord_zupe_1001",
+    userName: "Rohit Sharma",
+    userEmail: "rohit.s@gmail.com",
+    rating: 5,
+    title: "Mesmerizing visual effect in bedroom!",
+    comment:
+      "The rotating water ripple projection looks absolutely cinematic on the ceiling. Acrylic crystal body feels heavy and luxurious, and the solid wood base gives it a premium organic touch. Remote control makes changing colors super easy.",
+    images: ["/products/ripple/ripple-amber.jpg", "/products/ripple/ripple-amber-angle2.jpg"],
+    verifiedPurchase: true,
+    createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+    helpfulCount: 24,
+    source: "storefront",
+  },
+  {
+    id: "rev-ripple-2",
+    productId: "water-ripple-lamp",
+    orderId: "ord_zupe_1002",
+    userName: "Ananya Patel",
+    userEmail: "ananya.p@gmail.com",
+    rating: 5,
+    title: "10/10 aesthetic, exactly like the videos",
+    comment:
+      "Arrived in 2 days in sturdy bubble packaging. 16 different color modes let me set the mood from peaceful ocean blue to warm amber night light. Guests always compliment this piece!",
+    images: ["/products/ripple/ripple-blue.jpg"],
+    verifiedPurchase: true,
+    createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+    helpfulCount: 18,
+    source: "storefront",
+  },
+  {
+    id: "rev-ripple-3",
+    productId: "dynamic-water-ripple-night-light",
+    userName: "Vikram Menon",
+    rating: 4,
+    title: "Great build quality and brightness",
+    comment:
+      "Very relaxing lighting for evening wind-down or reading. Power cable is decent length. Highly recommended for modern room decor.",
+    images: ["/products/ripple/ripple-pink.jpg"],
+    verifiedPurchase: true,
+    createdAt: new Date(Date.now() - 12 * 86400000).toISOString(),
+    helpfulCount: 9,
+    source: "amazon",
+  },
+
+  // TF20 Multipurpose Powerbank with Airpods
+  {
+    id: "rev-powerbank-1",
+    productId: "tf20-multipurpose-powerbank-with-airpods",
+    userName: "Arjun Nair",
+    rating: 5,
+    title: "Game changer for daily commute & travel",
+    comment:
+      "Charges my phone while keeping the earbuds fully juiced. Audio quality has punchy bass and clear vocals. The digital percentage LED display is extremely handy.",
+    images: ["/products/powerbank-earbuds.jpg"],
+    verifiedPurchase: true,
+    createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+    helpfulCount: 31,
+    source: "flipkart",
+  },
+  {
+    id: "rev-powerbank-2",
+    productId: "powerbank-earbuds",
+    userName: "Sneha Kapoor",
+    rating: 5,
+    title: "Sleek compact design, connects in 1 second",
+    comment:
+      "Super convenient 2-in-1 innovation. Battery backup easily lasts through my full weekend trip. Earbuds fit securely without falling out during workouts.",
+    verifiedPurchase: true,
+    createdAt: new Date(Date.now() - 9 * 86400000).toISOString(),
+    helpfulCount: 14,
+    source: "storefront",
+  },
+
+  // Solar Helicopter Car Fragrance
+  {
+    id: "rev-heli-1",
+    productId: "car-fragrance-helicopter",
+    userName: "Priya Deshmukh",
+    rating: 5,
+    title: "Solar rotor spins like real aircraft in sunlight!",
+    comment:
+      "Looks top-tier on my car dashboard. Rotor starts spinning automatically as soon as direct daylight hits the solar panel. Cologne ring smells refreshing and not overwhelming.",
+    images: ["/products/helicopter-perfume.jpg"],
+    verifiedPurchase: true,
+    createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+    helpfulCount: 42,
+    source: "amazon",
+  },
+  {
+    id: "rev-heli-2",
+    productId: "helicopter-perfume",
+    userName: "Aman Verma",
+    rating: 5,
+    title: "Best dashboard accessory I have bought",
+    comment:
+      "Zinc alloy build is metallic and sturdy. The 3M adhesive pad holds firmly even over bumpy roads. Everyone who gets into my car asks where I got it from.",
+    images: ["/products/helicopter/heli-black-1.jpg"],
+    verifiedPurchase: true,
+    createdAt: new Date(Date.now() - 10 * 86400000).toISOString(),
+    helpfulCount: 20,
+    source: "storefront",
+  },
+
+  // Mini Portable Steam Iron
+  {
+    id: "rev-iron-1",
+    productId: "mini-portable-steam-iron",
+    userName: "Kavita Rao",
+    rating: 5,
+    title: "Ergonomic foldable handle and fast heating",
+    comment:
+      "Heats up in under 30 seconds. Compact enough to slip into any travel pouch. Easily straightens out wrinkles on cotton shirts, linen, and silk dresses.",
+    images: ["/products/iron/iron-teal-1.jpg"],
+    verifiedPurchase: true,
+    createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
+    helpfulCount: 15,
+    source: "amazon",
+  },
+];
+
+// In-Memory store for fast local & worker fallback
+let inMemoryReviews: ProductReview[] = [...SEED_REVIEWS];
+
+export async function ensureReviewTable(): Promise<void> {
+  try {
+    await executeD1Query(`
+      CREATE TABLE IF NOT EXISTS product_reviews (
+        id TEXT PRIMARY KEY,
+        product_id TEXT NOT NULL,
+        order_id TEXT,
+        user_name TEXT NOT NULL,
+        user_email TEXT,
+        rating INTEGER NOT NULL,
+        title TEXT,
+        comment TEXT NOT NULL,
+        images TEXT,
+        reviewer_photo TEXT,
+        verified_purchase INTEGER DEFAULT 1,
+        helpful_count INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        source TEXT DEFAULT 'storefront'
+      );
+    `);
+    // Attempt adding column to existing table if not present
+    await executeD1Query(`ALTER TABLE product_reviews ADD COLUMN reviewer_photo TEXT;`).catch(() => {});
+  } catch (err) {
+    console.warn("Could not ensure product_reviews table in D1:", err);
+  }
+}
+
+/**
+ * Safely parse review images from DB (handles JSON array, data URLs, or comma-separated strings)
+ */
+function parseReviewImages(imagesRaw: any): string[] {
+  if (!imagesRaw) return [];
+  if (Array.isArray(imagesRaw)) return imagesRaw.filter(Boolean);
+  if (typeof imagesRaw === "string") {
+    const trimmed = imagesRaw.trim();
+    if (!trimmed) return [];
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return parsed.filter(Boolean);
+    } catch {
+      // Not JSON, check if single data URL or comma separated
+      if (trimmed.startsWith("data:image/")) {
+        return [trimmed];
+      }
+      return trimmed.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+  }
+  return [];
+}
+
+/**
+ * Get all reviews matching a product ID or slug
+ */
+export async function getReviewsByProduct(productId: string): Promise<ProductReview[]> {
+  const rawId = decodeURIComponent(productId || "").trim().toLowerCase();
+  const slugId = rawId.replace(/[\s_]+/g, "-");
+  const cleanId = rawId.replace(/[-_ ]+/g, " ");
+
+  const isMatching = (pid: string) => {
+    const pRaw = (pid || "").toLowerCase().trim();
+    if (!pRaw) return false;
+    const pSlug = pRaw.replace(/[\s_]+/g, "-");
+    const pClean = pRaw.replace(/[-_ ]+/g, " ");
+
+    if (pRaw === rawId || pSlug === slugId || pClean === cleanId) return true;
+    if (pClean && cleanId && (pClean === cleanId || pClean.includes(cleanId) || cleanId.includes(pClean))) return true;
+    if (pSlug && slugId && (pSlug === slugId || pSlug.includes(slugId) || slugId.includes(pSlug))) return true;
+
+    // Known alias mappings
+    const aliases: Record<string, string[]> = {
+      "hot-weels": ["hot-wheels", "hot wheels", "hot weels", "hot-wheels-assorted-car-set", "hot wheels assorted car set", "assorted car set"],
+      "hot-wheels": ["hot-weels", "hot wheels", "hot weels", "hot-wheels-assorted-car-set", "hot wheels assorted car set"],
+      "mini-portable-steam-iron": ["mini-steam-iron", "steam-iron", "mini steam iron", "portable steam iron"],
+      "mini-steam-iron": ["mini-portable-steam-iron", "steam-iron", "mini portable steam iron", "portable steam iron"],
+      "dynamic-water-ripple-night-light": ["ripple-lamp", "water-ripple-lamp", "ripple light"],
+      "portable-menstrual-heating-pad": ["menstrual-heating-pad", "heating-pad"],
+      "car-fragrance-helicopter": ["helicopter-perfume", "solar-helicopter"],
+      "tf20-multipurpose-powerbank-with-airpods": ["powerbank-earbuds", "tf20-powerbank"],
+    };
+
+    const keysToCheck = [slugId, rawId, cleanId];
+    for (const key of keysToCheck) {
+      const mapped = aliases[key] || [];
+      if (
+        mapped.some((m) => {
+          const mSlug = m.replace(/[\s_]+/g, "-");
+          const mClean = m.replace(/[-_ ]+/g, " ");
+          return (
+            m === pRaw ||
+            mSlug === pSlug ||
+            mClean === pClean ||
+            pClean.includes(mClean) ||
+            mClean.includes(pClean)
+          );
+        })
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  // 1. Try D1 table query
+  try {
+    const rows = await executeD1Query<any>(
+      `SELECT * FROM product_reviews ORDER BY created_at DESC LIMIT 2000`
+    );
+
+    if (rows && rows.length > 0) {
+      const d1Reviews: ProductReview[] = rows
+        .filter((r) => isMatching(String(r.product_id)))
+        .map((r) => ({
+          id: String(r.id),
+          productId: String(r.product_id),
+          orderId: r.order_id || undefined,
+          userName: r.user_name || "Verified Customer",
+          userEmail: r.user_email || undefined,
+          rating: Number(r.rating) || 5,
+          title: r.title || undefined,
+          comment: r.comment || "",
+          images: parseReviewImages(r.images),
+          reviewerPhoto: r.reviewer_photo || r.reviewerPhoto || undefined,
+          verifiedPurchase: r.verified_purchase !== 0,
+          createdAt: r.created_at || new Date().toISOString(),
+          helpfulCount: Number(r.helpful_count) || 0,
+          source: r.source || "storefront",
+        }));
+
+      // Merge with memory reviews (user-submitted reviews take priority)
+      const existingIds = new Set(d1Reviews.map((r) => r.id));
+      const memoryMatches = inMemoryReviews.filter(
+        (r) => isMatching(r.productId) && !existingIds.has(r.id)
+      );
+
+      return [...memoryMatches, ...d1Reviews];
+    }
+  } catch (err) {
+    console.warn("D1 getReviewsByProduct query failed, using memory store:", err);
+  }
+
+  // 2. Memory store fallback
+  const matches = inMemoryReviews.filter((r) => isMatching(r.productId));
+
+  return matches.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+/**
+ * Get all reviews with optional filters (for Super Admin dashboard)
+ */
+export async function getAllReviews(options?: {
+  productId?: string;
+  source?: string;
+  rating?: number;
+  search?: string;
+}): Promise<ProductReview[]> {
+  let all: ProductReview[] = [];
+
+  try {
+    const rows = await executeD1Query<any>(
+      `SELECT * FROM product_reviews ORDER BY created_at DESC LIMIT 5000`
+    );
+
+    if (rows && rows.length > 0) {
+      const d1Reviews: ProductReview[] = rows.map((r) => ({
+        id: String(r.id),
+        productId: String(r.product_id),
+        orderId: r.order_id || undefined,
+        userName: r.user_name || "Verified Customer",
+        userEmail: r.user_email || undefined,
+        rating: Number(r.rating) || 5,
+        title: r.title || undefined,
+        comment: r.comment || "",
+        images: parseReviewImages(r.images),
+        reviewerPhoto: r.reviewer_photo || r.reviewerPhoto || undefined,
+        verifiedPurchase: r.verified_purchase !== 0,
+        createdAt: r.created_at || new Date().toISOString(),
+        helpfulCount: Number(r.helpful_count) || 0,
+        source: r.source || "storefront",
+      }));
+
+      const existingIds = new Set(d1Reviews.map((r) => r.id));
+      const memoryUnique = inMemoryReviews.filter((r) => !existingIds.has(r.id));
+      all = [...memoryUnique, ...d1Reviews];
+    } else {
+      all = [...inMemoryReviews];
+    }
+  } catch (err) {
+    console.warn("D1 getAllReviews failed, falling back to memory:", err);
+    all = [...inMemoryReviews];
+  }
+
+  // Apply filters
+  if (options) {
+    if (options.productId && options.productId !== "all") {
+      const pid = options.productId.toLowerCase().trim();
+      all = all.filter((r) => r.productId.toLowerCase() === pid || r.productId.toLowerCase().includes(pid));
+    }
+    if (options.source && options.source !== "all") {
+      const src = options.source.toLowerCase().trim();
+      all = all.filter((r) => (r.source || "storefront").toLowerCase() === src);
+    }
+    if (options.rating && options.rating > 0) {
+      all = all.filter((r) => r.rating === Number(options.rating));
+    }
+    if (options.search && options.search.trim()) {
+      const q = options.search.toLowerCase().trim();
+      all = all.filter(
+        (r) =>
+          r.userName.toLowerCase().includes(q) ||
+          r.comment.toLowerCase().includes(q) ||
+          (r.title && r.title.toLowerCase().includes(q)) ||
+          r.productId.toLowerCase().includes(q)
+      );
+    }
+  }
+
+  return all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+/**
+ * Add a new product review
+ */
+export async function addReview(newRev: {
+  productId: string;
+  orderId?: string;
+  userName: string;
+  userEmail?: string;
+  rating: number;
+  title?: string;
+  comment: string;
+  images?: string[];
+  reviewerPhoto?: string;
+  verifiedPurchase?: boolean;
+  createdAt?: string;
+  source?: string;
+}): Promise<ProductReview> {
+  // Upload base64 customer product images to Cloudflare R2 media storage
+  const processedImages: string[] = [];
+  if (Array.isArray(newRev.images)) {
+    for (const img of newRev.images) {
+      if (typeof img === "string" && img.startsWith("data:")) {
+        try {
+          const cdnUrl = await uploadBase64Media(img, "images");
+          processedImages.push(cdnUrl || img);
+        } catch (uploadErr) {
+          console.warn("Could not upload customer review photo to R2:", uploadErr);
+          // If image is too large, avoid passing raw 1MB string to SQLite
+          if (img.length < 50000) {
+            processedImages.push(img);
+          }
+        }
+      } else if (img) {
+        processedImages.push(img);
+      }
+    }
+  }
+
+  // Upload base64 reviewer avatar if provided
+  let processedReviewerPhoto = (newRev.reviewerPhoto || "").trim() || undefined;
+  if (processedReviewerPhoto && processedReviewerPhoto.startsWith("data:")) {
+    try {
+      const cdnAvatar = await uploadBase64Media(processedReviewerPhoto, "images");
+      processedReviewerPhoto = cdnAvatar || undefined;
+    } catch {
+      if (processedReviewerPhoto.length > 50000) {
+        processedReviewerPhoto = undefined;
+      }
+    }
+  }
+
+  const review: ProductReview = {
+    id: "rev-" + Date.now().toString(36) + "-" + Math.random().toString(36).substring(2, 6),
+    productId: newRev.productId.trim(),
+    orderId: newRev.orderId?.trim(),
+    userName: newRev.userName.trim() || "Verified Customer",
+    userEmail: newRev.userEmail?.trim(),
+    rating: Math.max(1, Math.min(5, Number(newRev.rating) || 5)),
+    title: (newRev.title || "").trim(),
+    comment: newRev.comment.trim(),
+    images: processedImages,
+    reviewerPhoto: processedReviewerPhoto,
+    verifiedPurchase: newRev.verifiedPurchase !== false,
+    createdAt: newRev.createdAt || new Date().toISOString(),
+    helpfulCount: 0,
+    source: (newRev.source || "storefront").toLowerCase().trim(),
+  };
+
+  // Add to memory list at the top
+  inMemoryReviews = [review, ...inMemoryReviews];
+
+  // Persist to D1
+  try {
+    await executeD1Query(
+      `INSERT INTO product_reviews 
+       (id, product_id, order_id, user_name, user_email, rating, title, comment, images, reviewer_photo, verified_purchase, helpful_count, created_at, source)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+      [
+        review.id,
+        review.productId,
+        review.orderId || null,
+        review.userName,
+        review.userEmail || null,
+        review.rating,
+        review.title || null,
+        review.comment,
+        JSON.stringify(review.images || []),
+        review.reviewerPhoto || null,
+        review.verifiedPurchase ? 1 : 0,
+        review.createdAt,
+        review.source,
+      ]
+    );
+  } catch (err) {
+    console.warn("Failed to insert review into D1 product_reviews (query 1):", err);
+    // Fallback if reviewer_photo column doesn't exist yet
+    try {
+      await executeD1Query(
+        `INSERT INTO product_reviews 
+         (id, product_id, order_id, user_name, user_email, rating, title, comment, images, verified_purchase, helpful_count, created_at, source)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+        [
+          review.id,
+          review.productId,
+          review.orderId || null,
+          review.userName,
+          review.userEmail || null,
+          review.rating,
+          review.title || null,
+          review.comment,
+          JSON.stringify(review.images || []),
+          review.verifiedPurchase ? 1 : 0,
+          review.createdAt,
+          review.source,
+        ]
+      );
+    } catch (insertErr) {
+      console.warn("Failed to insert review into D1 product_reviews (fallback query 2):", insertErr);
+    }
+  }
+
+  return review;
+}
+
+/**
+ * Bulk add reviews (for CSV / Excel import)
+ */
+export async function bulkAddReviews(
+  reviewsList: Array<{
+    productId: string;
+    userName?: string;
+    userEmail?: string;
+    rating: number;
+    title?: string;
+    comment: string;
+    images?: string[];
+    reviewerPhoto?: string;
+    verifiedPurchase?: boolean;
+    createdAt?: string;
+    source?: string;
+  }>
+): Promise<{ inserted: number; errors: number }> {
+  let inserted = 0;
+  let errors = 0;
+
+  for (const item of reviewsList) {
+    try {
+      if (!item.productId || !item.comment) {
+        errors++;
+        continue;
+      }
+      await addReview({
+        productId: item.productId,
+        userName: item.userName || "Verified Customer",
+        userEmail: item.userEmail,
+        rating: Math.max(1, Math.min(5, Number(item.rating) || 5)),
+        title: item.title,
+        comment: item.comment,
+        images: item.images,
+        reviewerPhoto: item.reviewerPhoto,
+        verifiedPurchase: item.verifiedPurchase !== false,
+        createdAt: item.createdAt,
+        source: item.source || "import",
+      });
+      inserted++;
+    } catch {
+      errors++;
+    }
+  }
+
+  return { inserted, errors };
+}
+
+/**
+ * Delete a review by ID
+ */
+export async function deleteReview(reviewId: string): Promise<boolean> {
+  inMemoryReviews = inMemoryReviews.filter((r) => r.id !== reviewId);
+  try {
+    await executeD1Query(`DELETE FROM product_reviews WHERE id = ?`, [reviewId]);
+    return true;
+  } catch (err) {
+    console.warn("Failed to delete review from D1:", err);
+    return false;
+  }
+}
+
+/**
+ * Increment helpful count for a review
+ */
+export async function markReviewHelpful(reviewId: string): Promise<number> {
+  const mem = inMemoryReviews.find((r) => r.id === reviewId);
+  if (mem) {
+    mem.helpfulCount = (mem.helpfulCount || 0) + 1;
+  }
+
+  try {
+    await executeD1Query(
+      `UPDATE product_reviews SET helpful_count = helpful_count + 1 WHERE id = ?`,
+      [reviewId]
+    );
+  } catch {}
+
+  return mem?.helpfulCount || 1;
+}
+
+/**
+ * Get aggregated review stats (count & average rating) for all products
+ */
+// TTL cache for review stats map — expensive D1 GROUP BY query
+let reviewStatsCachedAt = 0;
+const REVIEW_STATS_TTL_MS = 60_000; // 60 seconds
+let cachedStatsMap: Map<string, { count: number; rating: number }> | null = null;
+
+export async function getProductReviewStatsMap(): Promise<Map<string, { count: number; rating: number }>> {
+  const now = Date.now();
+  if (cachedStatsMap && now - reviewStatsCachedAt < REVIEW_STATS_TTL_MS) {
+    return cachedStatsMap;
+  }
+
+  const statsMap = new Map<string, { count: number; sum: number; rating: number }>();
+
+  // 1. Accumulate from memory fallback
+  for (const r of inMemoryReviews) {
+    const key = r.productId.toLowerCase().trim();
+    const existing = statsMap.get(key) || { count: 0, sum: 0, rating: 5.0 };
+    existing.count += 1;
+    existing.sum += Number(r.rating) || 5;
+    existing.rating = Number((existing.sum / existing.count).toFixed(1));
+    statsMap.set(key, existing);
+  }
+
+  // 2. Query D1 for actual database stats
+  try {
+    const rows = await executeD1Query<any>(
+      `SELECT lower(product_id) as pid, COUNT(*) as c, AVG(rating) as avg_rating 
+       FROM product_reviews 
+       GROUP BY lower(product_id)`
+    );
+
+    if (rows && Array.isArray(rows) && rows.length > 0) {
+      for (const row of rows) {
+        const key = String(row.pid || "").trim();
+        const count = Number(row.c) || 0;
+        const avg = Number(Number(row.avg_rating || 5).toFixed(1));
+        if (key && count > 0) {
+          statsMap.set(key, { count, sum: count * avg, rating: avg });
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Could not query review stats map from D1:", err);
+  }
+
+  const finalMap = new Map<string, { count: number; rating: number }>();
+  statsMap.forEach((val, key) => {
+    finalMap.set(key, { count: val.count, rating: val.rating });
+  });
+
+  // Cache the result
+  cachedStatsMap = finalMap;
+  reviewStatsCachedAt = Date.now();
+
+  return finalMap;
+}
+
+/**
+ * Get aggregated review stats for a single product ID or slug
+ */
+export async function getProductReviewStats(productId: string): Promise<{ count: number; rating: number } | null> {
+  const norm = productId.toLowerCase().trim();
+  const map = await getProductReviewStatsMap();
+
+  if (map.has(norm)) return map.get(norm)!;
+
+  for (const [key, val] of map.entries()) {
+    if (key === norm || key.includes(norm) || norm.includes(key)) {
+      return val;
+    }
+  }
+
+  return null;
+}
