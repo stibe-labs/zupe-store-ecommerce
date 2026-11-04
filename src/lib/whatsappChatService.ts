@@ -141,8 +141,9 @@ export async function recordWhatsAppMessage(params: {
            ORDER BY created_at DESC LIMIT 1`,
           [`%${phoneDigits.slice(-10)}%`, `%${phoneDigits}%`]
         );
-        if (orderMatch?.results?.length && orderMatch.results[0].customer_name) {
-          customerName = orderMatch.results[0].customer_name;
+        const orderMatchRows = Array.isArray(orderMatch) ? orderMatch : (orderMatch as any)?.results || [];
+        if (orderMatchRows.length && orderMatchRows[0].customer_name) {
+          customerName = orderMatchRows[0].customer_name;
         }
       } catch {}
     }
@@ -259,7 +260,7 @@ export async function getWhatsAppChatsList(options?: {
     sql += ` ORDER BY is_pinned DESC, last_message_at DESC LIMIT 100`;
 
     const res = await executeD1Query<WhatsAppChat>(sql, params);
-    const chats = res?.results || [];
+    const chats = (Array.isArray(res) ? res : (res as any)?.results) || [];
 
     // Enrich chats with recent order info if available
     for (const chat of chats) {
@@ -272,8 +273,9 @@ export async function getWhatsAppChatsList(options?: {
            ORDER BY created_at DESC LIMIT 1`,
           [`%${last10Digits}%`]
         );
-        if (orderRes?.results?.length) {
-          const o = orderRes.results[0];
+        const orderResRows = Array.isArray(orderRes) ? orderRes : (orderRes as any)?.results || [];
+        if (orderResRows.length) {
+          const o = orderResRows[0];
           chat.latest_order_id = o.id;
           chat.latest_order_amount = o.total_amount;
           chat.latest_order_status = o.status;
@@ -309,7 +311,7 @@ export async function getWhatsAppChatMessages(
       [phoneDigits]
     );
 
-    return res?.results || [];
+    return (Array.isArray(res) ? res : (res as any)?.results) || [];
   } catch (err) {
     console.error("[WhatsAppChatService] getWhatsAppChatMessages error:", err);
     return [];
@@ -427,7 +429,7 @@ export async function syncCustomerOrdersToWhatsAppChats(): Promise<{
        ORDER BY created_at DESC LIMIT 60`
     );
 
-    const orders = ordersRes?.results || [];
+    const orders = (Array.isArray(ordersRes) ? ordersRes : (ordersRes as any)?.results) || [];
     let synced = 0;
 
     for (const order of orders) {
@@ -477,7 +479,8 @@ export async function syncCustomerOrdersToWhatsAppChats(): Promise<{
         [phoneDigits]
       );
 
-      if (!msgCheck?.results?.[0]?.count) {
+      const msgCheckRows = Array.isArray(msgCheck) ? msgCheck : (msgCheck as any)?.results || [];
+      if (!msgCheckRows[0]?.count) {
         // Create initial order confirmation notification bubble
         const msgId = `init_${order.id}_${Date.now()}`;
         await executeD1Query(
