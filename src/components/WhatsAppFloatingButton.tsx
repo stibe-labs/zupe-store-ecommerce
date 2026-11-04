@@ -1,12 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 
 export function WhatsAppFloatingButton() {
   const pathname = usePathname();
   const [isHovered, setIsHovered] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   // Hide WhatsApp floating button on admin dashboard pages
   if (pathname?.startsWith("/admin")) {
@@ -22,7 +30,15 @@ export function WhatsAppFloatingButton() {
   return (
     <aside
       aria-label="WhatsApp Support"
-      className="fixed z-40 right-3.5 sm:right-6 bottom-22 sm:bottom-6 flex items-center group select-none pointer-events-auto"
+      style={
+        isMobile
+          ? {
+              bottom:
+                "max(88px, calc(env(safe-area-inset-bottom, 12px) + 76px))",
+            }
+          : undefined
+      }
+      className="fixed z-40 right-3.5 sm:right-6 bottom-[88px] sm:bottom-6 flex items-center group select-none pointer-events-auto"
     >
       {/* Tooltip on Desktop Hover */}
       <div
@@ -36,7 +52,7 @@ export function WhatsAppFloatingButton() {
         <span>Chat on WhatsApp</span>
       </div>
 
-      {/* 3. Main Floating Button with Ambient Glow Rings */}
+      {/* Main Floating Button with Ambient Glow Rings */}
       <div className="relative flex items-center justify-center">
         {/* Radiating Ambient Pulse Wave Rings */}
         <span className="absolute -inset-1.5 rounded-full bg-[#25D366] opacity-30 animate-ping pointer-events-none" />
@@ -48,24 +64,16 @@ export function WhatsAppFloatingButton() {
           rel="noopener noreferrer"
           aria-label="Chat with Vittal Digital on WhatsApp"
           whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
+          whileTap={{ scale: 0.92 }}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          className="relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white shadow-[0_10px_30px_rgba(37,211,102,0.55)] hover:shadow-[0_14px_40px_rgba(37,211,102,0.75)] transition-colors cursor-pointer border border-white/25"
+          className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-[0_8px_25px_rgba(37,211,102,0.45)] hover:shadow-[0_12px_30px_rgba(37,211,102,0.6)] transition-shadow duration-300 focus:outline-none"
         >
-          {/* Active Online Green Dot Badge */}
-          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75" />
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-400 border-2 border-stone-900" />
-          </span>
-
-          {/* Official WhatsApp SVG Vector Icon */}
           <svg
-            viewBox="0 0 32 32"
-            className="w-6 h-6 sm:w-7 sm:h-7 fill-white drop-shadow-sm"
-            xmlns="http://www.w3.org/2000/svg"
+            className="w-6 h-6 sm:w-7 sm:h-7 fill-current"
+            viewBox="0 0 24 24"
           >
-            <path d="M16 0c-8.837 0-16 7.163-16 16 0 2.825 0.737 5.607 2.137 8.048l-2.137 7.952 8.135-2.133c2.378 1.3 5.068 1.985 7.865 1.985 8.837 0 16-7.163 16-16s-7.163-16-16-16zM16 29.333c-2.483 0-4.912-0.669-7.042-1.938l-0.505-0.3-5.235 1.373 1.398-5.105-0.329-0.523c-1.391-2.213-2.128-4.779-2.128-7.407 0-7.352 5.981-13.333 13.333-13.333s13.333 5.981 13.333 13.333c0 7.352-5.981 13.333-13.333 13.333zM23.307 19.349c-0.4-0.2-2.368-1.168-2.735-1.301s-0.633-0.2-0.9 0.2c-0.267 0.4-1.033 1.301-1.267 1.568s-0.467 0.3-0.867 0.1c-0.4-0.2-1.689-0.623-3.217-1.985-1.189-1.060-1.992-2.369-2.225-2.769s-0.025-0.616 0.175-0.815c0.18-0.179 0.4-0.467 0.6-0.7s0.267-0.4 0.4-0.667c0.133-0.267 0.067-0.5-0.033-0.7s-0.9-2.169-1.233-2.969c-0.325-0.78-0.655-0.674-0.9-0.686s-0.5-0.013-0.767-0.013c-0.267 0-0.7 0.1-1.067 0.5s-1.4 1.368-1.4 3.335c0 1.967 1.433 3.868 1.633 4.135s2.822 4.309 6.837 6.042c0.955 0.413 1.701 0.659 2.283 0.844 0.96 0.305 1.833 0.262 2.523 0.159 0.77-0.115 2.368-0.968 2.701-1.901s0.333-1.734 0.233-1.901c-0.1-0.167-0.367-0.267-0.767-0.467z" />
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c0.971.53 1.764.813 2.8.813 3.182 0 5.768-2.587 5.768-5.766 0-3.179-2.586-5.766-5.772-5.766zm3.393 8.188c-.145.407-.84.774-1.168.825-.327.051-.724.08-2.146-.49-1.815-.729-2.986-2.584-3.076-2.705-.09-.12-1.077-1.433-1.077-2.733 0-1.301.681-1.942.923-2.203.242-.26.529-.326.705-.326.177 0 .354.002.508.01.163.008.382-.062.597.454.223.535.764 1.865.831 2.001.067.136.111.296.022.473-.088.177-.133.288-.264.441-.133.155-.28.346-.399.465-.133.133-.271.277-.117.542.155.266.689 1.135 1.479 1.838 1.019.907 1.879 1.189 2.146 1.322.267.133.423.111.579-.067.155-.178.665-.774.843-1.039.177-.266.355-.221.598-.133.244.088 1.549.73 1.815.863.266.133.444.199.51.31.066.111.066.643-.079 1.05z" />
           </svg>
         </motion.a>
       </div>
