@@ -25,6 +25,7 @@ import {
   ShoppingCart,
   Tag,
   Calculator,
+  MessageCircle,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -86,6 +87,13 @@ export default function AdminSidebar({
       href: "/admin/orders",
       icon: ShoppingBag,
       badge: ordersCount > 0 ? String(ordersCount) : undefined,
+    },
+    {
+      name: "WhatsApp",
+      href: "/admin/whatsapp",
+      icon: MessageCircle,
+      badge: "Live",
+      badgeColor: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
     },
     {
       name: "Abandoned Carts",
