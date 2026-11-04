@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Store,
@@ -10,9 +9,6 @@ import {
   Home,
   ShoppingBag,
   User,
-  X,
-  ArrowRight,
-  Sparkles,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -25,8 +21,36 @@ export function MobileBottomNav() {
   const { isAuthenticated } = useAuth();
   const { isSearchOpen, openSearch } = useSearch();
 
-  // Hide bottom bar on admin dashboard and during checkout flow
+  // Instant check if running on admin subdomain or within admin dashboard
+  const [isAdminState, setIsAdminState] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname.toLowerCase();
+      const isSub =
+        host.startsWith("admin.") ||
+        host.includes("admin.localhost") ||
+        document.documentElement.getAttribute("data-is-admin") === "true" ||
+        Boolean(document.getElementById("admin-root"));
+
+      if (isSub) {
+        setIsAdminState(true);
+      }
+    }
+  }, []);
+
+  const isClientAdmin =
+    typeof window !== "undefined" &&
+    (window.location.hostname.toLowerCase().startsWith("admin.") ||
+      window.location.hostname.toLowerCase().includes("admin.localhost") ||
+      document.documentElement.getAttribute("data-is-admin") === "true" ||
+      Boolean(document.getElementById("admin-root")));
+
+  // Hide bottom bar on admin dashboard (both /admin routes and admin.zupestore.in subdomain),
+  // during checkout flow, and on single product pages.
   if (
+    isClientAdmin ||
+    isAdminState ||
     pathname?.startsWith("/admin") ||
     pathname?.startsWith("/checkout") ||
     pathname?.match(/^\/products\/[^?]+/) // Hide on single product page so sticky 'Buy Now' bar is unobstructed
@@ -96,7 +120,7 @@ export function MobileBottomNav() {
             </span>
           </button>
 
-          {/* 3. Home (Raised Center Circle - Exact Match to Reference Image) */}
+          {/* 3. Home (Raised Center Circle) */}
           <Link
             href="/"
             className="flex flex-col items-center justify-center relative -top-3.5 group"

@@ -1,14 +1,37 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 export function WhatsAppFloatingButton() {
   const pathname = usePathname();
   const [isHovered, setIsHovered] = useState(false);
+  const [isAdminState, setIsAdminState] = useState(false);
 
-  // Hide WhatsApp floating button on admin dashboard pages
-  if (pathname?.startsWith("/admin")) {
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname.toLowerCase();
+      const isSub =
+        host.startsWith("admin.") ||
+        host.includes("admin.localhost") ||
+        document.documentElement.getAttribute("data-is-admin") === "true" ||
+        Boolean(document.getElementById("admin-root"));
+
+      if (isSub) {
+        setIsAdminState(true);
+      }
+    }
+  }, []);
+
+  const isClientAdmin =
+    typeof window !== "undefined" &&
+    (window.location.hostname.toLowerCase().startsWith("admin.") ||
+      window.location.hostname.toLowerCase().includes("admin.localhost") ||
+      document.documentElement.getAttribute("data-is-admin") === "true" ||
+      Boolean(document.getElementById("admin-root")));
+
+  // Hide WhatsApp floating button on admin dashboard pages and admin subdomain
+  if (isClientAdmin || isAdminState || pathname?.startsWith("/admin")) {
     return null;
   }
 
@@ -49,13 +72,14 @@ export function WhatsAppFloatingButton() {
           <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-400 border-2 border-white" />
         </span>
 
-        {/* Official WhatsApp SVG Vector Icon */}
+        {/* WhatsApp Official Vector Logo SVG */}
         <svg
           viewBox="0 0 32 32"
-          className="w-6 h-6 sm:w-7 sm:h-7 fill-white drop-shadow-xs"
-          xmlns="http://www.w3.org/2000/svg"
+          fill="currentColor"
+          className="w-6 h-6 sm:w-7 sm:h-7"
+          aria-hidden="true"
         >
-          <path d="M16 0c-8.837 0-16 7.163-16 16 0 2.825 0.737 5.607 2.137 8.048l-2.137 7.952 8.135-2.133c2.378 1.3 5.068 1.985 7.865 1.985 8.837 0 16-7.163 16-16s-7.163-16-16-16zM16 29.333c-2.483 0-4.912-0.669-7.042-1.938l-0.505-0.3-5.235 1.373 1.398-5.105-0.329-0.523c-1.391-2.213-2.128-4.779-2.128-7.407 0-7.352 5.981-13.333 13.333-13.333s13.333 5.981 13.333 13.333c0 7.352-5.981 13.333-13.333 13.333zM23.307 19.349c-0.4-0.2-2.368-1.168-2.735-1.301s-0.633-0.2-0.9 0.2c-0.267 0.4-1.033 1.301-1.267 1.568s-0.467 0.3-0.867 0.1c-0.4-0.2-1.689-0.623-3.217-1.985-1.189-1.060-1.992-2.369-2.225-2.769s-0.025-0.616 0.175-0.815c0.18-0.179 0.4-0.467 0.6-0.7s0.267-0.4 0.4-0.667c0.133-0.267 0.067-0.5-0.033-0.7s-0.9-2.169-1.233-2.969c-0.325-0.78-0.655-0.674-0.9-0.686s-0.5-0.013-0.767-0.013c-0.267 0-0.7 0.1-1.067 0.5s-1.4 1.368-1.4 3.335c0 1.967 1.433 3.868 1.633 4.135s2.822 4.309 6.837 6.042c0.955 0.413 1.701 0.659 2.283 0.844 0.96 0.305 1.833 0.262 2.523 0.159 0.77-0.115 2.368-0.968 2.701-1.901s0.333-1.734 0.233-1.901c-0.1-0.167-0.367-0.267-0.767-0.467z" />
+          <path d="M16 2a13.9 13.9 0 0 0-12 20.9L2 30l7.3-1.9A13.9 13.9 0 1 0 16 2zm0 25.5a11.5 11.5 0 0 1-5.9-1.6l-.4-.3-4.4 1.1 1.2-4.3-.3-.5A11.6 11.6 0 1 1 16 27.5zm6.4-8.6c-.3-.2-2-.1-2.3-1.1-.3-.2-.5-.3-.7.1-.2.3-.8 1.1-1 1.3-.2.2-.4.2-.7.1a9.2 9.2 0 0 1-2.7-1.7 10.2 10.2 0 0 1-1.9-2.3c-.2-.3 0-.5.1-.7.2-.2.3-.4.5-.6.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6-.1-.2-.7-1.7-1-2.3-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4s-1.2 1.2-1.2 2.8 1.2 3.3 1.4 3.5c.2.2 2.4 3.6 5.7 5.1 3.4 1.4 3.4 1 4 1s2-.8 2.2-1.6c.3-.8.3-1.5.2-1.6-.1-.1-.3-.2-.6-.4z" />
         </svg>
       </a>
     </aside>

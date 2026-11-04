@@ -17,6 +17,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         dangerouslySetInnerHTML={{
           __html: `
             try {
+              document.documentElement.setAttribute('data-is-admin', 'true');
+              if (document.body) document.body.classList.add('is-admin');
               var t = localStorage.getItem('zupe_admin_theme');
               if (t === 'dark') {
                 document.documentElement.setAttribute('data-admin-theme', 'dark');
@@ -27,9 +29,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           `,
         }}
       />
-      <AdminThemeProvider>
-        <AdminAuthGuard>{children}</AdminAuthGuard>
-      </AdminThemeProvider>
+      <div id="admin-root" data-is-admin="true" className="is-admin w-full min-h-screen">
+        <AdminThemeProvider>
+          <AdminAuthGuard>{children}</AdminAuthGuard>
+        </AdminThemeProvider>
+      </div>
     </>
   );
 }

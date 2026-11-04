@@ -580,6 +580,16 @@ body[style*="overflow: hidden"] {
   will-change: transform, opacity;
 }
 
+/* Hide live storefront components (mobile bottom bar & WhatsApp button) on Admin Dashboard */
+html[data-is-admin="true"] nav[aria-label="Mobile Navigation"],
+html[data-is-admin="true"] aside[aria-label="WhatsApp Support"],
+body.is-admin nav[aria-label="Mobile Navigation"],
+body.is-admin aside[aria-label="WhatsApp Support"],
+#admin-root ~ nav[aria-label="Mobile Navigation"],
+#admin-root ~ aside[aria-label="WhatsApp Support"] {
+  display: none !important;
+}
+
 /* ==========================================================================
    ADMIN DASHBOARD THEME SYSTEM (LIGHT / DARK SWITCHER)
    Exclusively applies to Admin Panel [data-admin-theme] and #admin-root.
