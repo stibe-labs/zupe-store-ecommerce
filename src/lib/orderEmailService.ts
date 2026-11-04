@@ -786,7 +786,7 @@ export async function sendAdminNewOrderNotificationEmail(
       }
     } catch {}
   }
-  const targetEmail = (adminEmail || "zupestoreorders@gmail.com").trim();
+  const targetEmail = (adminEmail || "zupetoreorders@gmail.com").trim();
 
   const isCod =
     (paymentMethod || "").toLowerCase().includes("cash on delivery") ||
