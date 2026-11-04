@@ -25,6 +25,7 @@ import {
   XCircle,
   MoreVertical,
   Tag,
+  Package,
 } from "lucide-react";
 import { ERPOrder } from "@/lib/erpStore";
 
@@ -43,6 +44,7 @@ function AdminOrdersContent() {
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [courierFilter, setCourierFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<ERPOrder | null>(null);
+  const [itemsPreviewOrder, setItemsPreviewOrder] = useState<ERPOrder | null>(null);
 
   const isFiltered =
     search.trim() !== "" ||
@@ -122,6 +124,21 @@ function AdminOrdersContent() {
       };
     }
   }, [selectedOrder]);
+
+  // Lock background body scroll when items preview modal is open
+  useEffect(() => {
+    if (itemsPreviewOrder) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [itemsPreviewOrder]);
 
   useEffect(() => {
     if (selectedOrder) {
@@ -808,10 +825,19 @@ function AdminOrdersContent() {
 
                             return (
                               <div className="space-y-1">
-                                <span className="block text-[11px] text-[#FF7A00] font-semibold truncate max-w-[200px] mt-0.5">
-                                  📦 {totalQty > 1 ? `${totalQty}× ` : ""}{firstName}
-                                  {rawItems.length > 1 ? ` +${rawItems.length - 1} more` : ""}
-                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setItemsPreviewOrder(ord)}
+                                  className="group flex items-center gap-1.5 text-left text-[11px] font-bold text-[#FF7A00] hover:text-[#E65100] bg-orange-50/90 hover:bg-orange-100/90 px-2 py-1 rounded-md border border-orange-200 transition-all cursor-pointer mt-1 shadow-2xs"
+                                  title="Click to view all purchased products, images & quantities"
+                                >
+                                  <Package className="w-3.5 h-3.5 text-[#FF7A00] shrink-0 group-hover:scale-110 transition-transform" />
+                                  <span className="truncate max-w-[185px]">
+                                    {totalQty > 1 ? `${totalQty}× ` : ""}{firstName}
+                                    {rawItems.length > 1 ? ` +${rawItems.length - 1} more` : ""}
+                                  </span>
+                                  <Eye className="w-3 h-3 text-orange-400 group-hover:text-[#E65100] shrink-0 ml-0.5" />
+                                </button>
                                 {bundleItem && (
                                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-extrabold bg-gradient-to-r from-orange-100 to-amber-100 text-[#E65100] border border-orange-200">
                                     <span>✨</span>
@@ -2055,6 +2081,192 @@ function AdminOrdersContent() {
           </div>
         </div>
       )}
+
+      {/* Quick Purchased Products Preview Popup Modal */}
+      {itemsPreviewOrder && (() => {
+        let previewItems: any[] = [];
+        if (Array.isArray(itemsPreviewOrder.items)) {
+          previewItems = itemsPreviewOrder.items;
+        } else if (typeof itemsPreviewOrder.items === "string") {
+          try {
+            previewItems = JSON.parse(itemsPreviewOrder.items);
+          } catch {
+            previewItems = [];
+          }
+        }
+        if (previewItems.length === 0 && (itemsPreviewOrder as any).product_name) {
+          previewItems = [
+            {
+              product_name: (itemsPreviewOrder as any).product_name,
+              quantity: 1,
+              unit_price: itemsPreviewOrder.total_amount,
+              image: (itemsPreviewOrder as any).image || "",
+            },
+          ];
+        }
+        const totalUnits = previewItems.reduce((acc, it) => acc + Number(it.quantity || 1), 0);
+
+        return (
+          <div
+            className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setItemsPreviewOrder(null);
+            }}
+          >
+            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+              {/* Header */}
+              <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-orange-50/70 via-amber-50/40 to-white">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-[#FF7A00]/10 border border-[#FF7A00]/20 flex items-center justify-center text-[#FF7A00] shrink-0">
+                    <ShoppingBag className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-slate-900">Purchased Products</h3>
+                      <span className="text-xs font-mono font-bold text-[#FF7A00] bg-orange-100/80 px-2 py-0.5 rounded-md shrink-0">
+                        {itemsPreviewOrder.shopify_order_id || itemsPreviewOrder.id}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5 truncate">
+                      Customer: <strong className="text-slate-800">{itemsPreviewOrder.customer_name}</strong>
+                      {itemsPreviewOrder.customer_phone ? ` (${itemsPreviewOrder.customer_phone})` : ""}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setItemsPreviewOrder(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0 ml-2"
+                  title="Close popup"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Items List */}
+              <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5 divide-y divide-slate-100 flex-1">
+                {previewItems.length === 0 ? (
+                  <div className="py-8 text-center text-slate-400 text-sm">
+                    <Package className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+                    No products recorded for this order.
+                  </div>
+                ) : (
+                  previewItems.map((it: any, i: number) => {
+                    const name = it.product_name || it.name || `Item #${i + 1}`;
+                    const qty = Number(it.quantity || 1);
+                    const unitPrice = Number(it.unit_price || it.price || 0);
+                    const subtotal = it.bundle_total || (unitPrice * qty);
+                    const img = it.image || it.poster_image || it.img || it.product_image || "";
+                    const offerLabel =
+                      it.offer_label ||
+                      (it.bundle_tier && Number(it.bundle_tier) > 1
+                        ? `Buy ${it.bundle_tier} Save More`
+                        : null);
+
+                    return (
+                      <div key={i} className={`flex items-start gap-3.5 ${i > 0 ? "pt-3.5" : ""}`}>
+                        {/* Product Image Thumbnail */}
+                        <div className="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200/90 overflow-hidden shrink-0 flex items-center justify-center relative shadow-2xs">
+                          {img ? (
+                            <img
+                              src={img}
+                              alt={name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = "none";
+                              }}
+                            />
+                          ) : null}
+                          <Package className="w-6 h-6 text-slate-400 absolute -z-0" />
+                        </div>
+
+                        {/* Product Details */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-slate-900 leading-snug break-words">
+                            {name}
+                          </h4>
+                          {offerLabel && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-gradient-to-r from-orange-100 to-amber-100 text-[#E65100] border border-orange-200 mt-1">
+                              <span>✨</span>
+                              <span>{offerLabel}</span>
+                            </span>
+                          )}
+                          <div className="flex items-center gap-2.5 mt-1.5 text-xs text-slate-500">
+                            <span>
+                              Unit Price: <strong className="text-slate-800">₹{unitPrice.toLocaleString("en-IN")}</strong>
+                            </span>
+                            {it.bundle_savings ? (
+                              <span className="text-emerald-600 font-semibold text-[11px]">
+                                (Saved ₹{it.bundle_savings})
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+
+                        {/* Quantity Pill & Price Subtotal */}
+                        <div className="text-right shrink-0">
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg text-xs font-black bg-orange-100 text-[#E65100] border border-orange-200/80 shadow-2xs">
+                            Qty: {qty}
+                          </span>
+                          <p className="text-sm font-black text-slate-900 mt-1.5">
+                            ₹{subtotal.toLocaleString("en-IN")}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+                  <span className="text-xs text-slate-500">
+                    Total: <strong className="text-slate-800">{previewItems.length} items</strong> ({totalUnits} units)
+                  </span>
+                  <span className="text-xs text-slate-300">•</span>
+                  <span className="text-sm font-black text-[#FF7A00]">
+                    ₹{Number(itemsPreviewOrder.total_amount || 0).toLocaleString("en-IN")}
+                  </span>
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                      itemsPreviewOrder.payment_method === "COD" ||
+                      (itemsPreviewOrder.payment_method &&
+                        itemsPreviewOrder.payment_method.toLowerCase().includes("cash"))
+                        ? "bg-amber-100 text-amber-800 border border-amber-200"
+                        : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                    }`}
+                  >
+                    {itemsPreviewOrder.payment_method}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const target = itemsPreviewOrder;
+                      setItemsPreviewOrder(null);
+                      setSelectedOrder(target);
+                    }}
+                    className="flex-1 sm:flex-none px-3.5 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+                  >
+                    <span>Manage 360°</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setItemsPreviewOrder(null)}
+                    className="flex-1 sm:flex-none px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm shadow-orange-500/25"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Floating Toast Notification Alert */}
       {toastMessage && (
