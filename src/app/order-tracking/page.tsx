@@ -128,7 +128,7 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       {
         title: "Out for Delivery & OTP Verification",
         location: `${city} Delivery Address`,
-        timestamp: "Estimated 2-4 business days",
+        timestamp: "Estimated 5-7 business days",
         completed: false,
         active: false,
         description: "Secure contactless handover. Cash on Delivery (COD) or UPI payable directly to courier.",
@@ -441,7 +441,7 @@ function OrderTrackingContent() {
     },
     {
       q: "How fast is express delivery across India?",
-      a: "Orders are verified and packaged within 24 business hours. Express air logistics delivery typically takes 2 to 4 business days for metro and tier-1 cities, and 3 to 5 business days for regional destinations.",
+      a: "Orders are verified and packaged within 24 business hours. Express air logistics delivery typically takes 5 to 7 business days across metro, tier-1, and regional destinations in India.",
     },
     {
       q: "How are fragile electronics protected during shipping?",
@@ -592,7 +592,7 @@ function OrderTrackingContent() {
                 {
                   icon: Truck,
                   label: "Express Air Cargo",
-                  desc: "2-4 Days Priority Transit",
+                  desc: "5-7 Days Priority Transit",
                 },
                 {
                   icon: MessageSquare,
@@ -1293,7 +1293,7 @@ function OrderTrackingContent() {
                       <span className="text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full">
                         Step 02
                       </span>
-                      <span className="text-xs font-bold text-slate-400">2-4 Days Air Cargo</span>
+                      <span className="text-xs font-bold text-slate-400">5-7 Days Air Cargo</span>
                     </div>
 
                     <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 group-hover:bg-[#FFBE00]/20 transition-colors flex items-center justify-center mb-4">

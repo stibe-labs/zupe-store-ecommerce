@@ -1527,7 +1527,7 @@ function CheckoutContent() {
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
               <span className="text-gray-500">Estimated Delivery:</span>
-              <span className="font-semibold text-gray-900">3 - 5 Business Days</span>
+              <span className="font-semibold text-gray-900">5 - 7 Business Days</span>
             </div>
             <div className="flex justify-between items-start py-1.5 border-b border-gray-100">
               <span className="text-gray-500">Delivery Address:</span>
@@ -2437,7 +2437,7 @@ function CheckoutContent() {
                           <Truck className="w-3.5 h-3.5 text-[#780016]" />
                           <span className="tracking-wide uppercase text-[10px]">COURIER DISPATCH</span>
                         </div>
-                        <span className="text-[11px] font-semibold text-emerald-800">3–5 Business Days • Discreet Plain Box</span>
+                        <span className="text-[11px] font-semibold text-emerald-800">5–7 Business Days • Discreet Plain Box</span>
                       </div>
 
                       {/* Payable on Delivery Row */}

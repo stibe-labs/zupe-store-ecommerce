@@ -78,7 +78,7 @@ export default function TermsAndConditionsPage() {
       content: (
         <div className="space-y-3">
           <p>
-            Vittal Digital directly manages the packaging and shipping of every order to ensure reliable, discreet, and safe delivery. Shipping times typically range from 24 to 48 hours for express prepaid orders and 2–4 business days nationwide across India.
+            Vittal Digital directly manages the packaging and shipping of every order to ensure reliable, discreet, and safe delivery. Shipping times typically range from 24 to 48 hours for express prepaid orders and 5–7 business days nationwide across India.
           </p>
           <p>
             While we strive for prompt dispatch, Vittal Digital is not responsible for unforeseen delays caused by logistics partners, natural events, or regional restrictions.

@@ -13,7 +13,6 @@ import {
   ShoppingCart,
   Zap,
   ShieldCheck,
-  Truck,
   Headphones,
   Laptop,
   Smartphone,
@@ -27,10 +26,6 @@ import {
   ChevronRight,
   ArrowRight,
   Check,
-  CreditCard,
-  BadgeCheck,
-  Award,
-  Package,
 } from "lucide-react";
 import { Product } from "@/types/product";
 import {
@@ -57,16 +52,6 @@ const CATEGORIES = [
   { name: "Accessories", icon: Plug, link: "/products?category=Smart+Gadgets" },
 ];
 
-// ---------------------------------------------------------------------------
-// Trust strip items
-// ---------------------------------------------------------------------------
-const TRUST_ITEMS = [
-  { icon: Package, title: "Dubai Sourced", sub: "Original Products" },
-  { icon: BadgeCheck, title: "100% Genuine", sub: "Authentic & Verified" },
-  { icon: Award, title: "Warranty Across India", sub: "Hassle-free Support" },
-  { icon: CreditCard, title: "Secure Payments", sub: "UPI, Cards, Net Banking" },
-  { icon: Truck, title: "Express Delivery", sub: "2-4 Days Across India" },
-];
 
 // ---------------------------------------------------------------------------
 // Three Promo Banners Data (All background-removed transparent PNGs)
@@ -673,32 +658,7 @@ export function VittalDigitalStorefront({
         </div>
       </section>
 
-      {/* ===================================================================== */}
-      {/* SECTION 4: TRUST STRIP (Dubai Sourced, Genuine, Warranty, etc.)       */}
-      {/* ===================================================================== */}
-      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-5 border-y border-slate-200/80 my-2">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-6">
-          {TRUST_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div key={item.title} className="flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-                  <Icon className="w-5 h-5 text-[#002D62]" />
-                </div>
-                <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
-                    {item.title}
-                  </h4>
-                  <p className="text-[11px] sm:text-xs text-slate-500 leading-tight mt-0.5">
-                    {item.sub}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
+      
       {/* ===================================================================== */}
       {/* SECTION 5: TODAY'S FEATURED DEALS (With Golden Countdown Boxes)       */}
       {/* ===================================================================== */}

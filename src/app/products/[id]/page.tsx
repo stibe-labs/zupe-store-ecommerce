@@ -784,7 +784,7 @@ export default function ProductDetailPage() {
               <div className="flex flex-col items-center">
                 <Truck className="w-5 h-5 text-[#002D62] mb-1" />
                 <span className="text-[11px] font-bold text-slate-900 leading-tight">Express Delivery</span>
-                <span className="text-[10px] text-slate-500">2–4 Days</span>
+                <span className="text-[10px] text-slate-500">5–7 Days</span>
               </div>
               <div className="flex flex-col items-center">
                 <ShieldCheck className="w-5 h-5 text-[#002D62] mb-1" />
@@ -1090,7 +1090,7 @@ export default function ProductDetailPage() {
                     <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
                   </summary>
                   <p className="mt-2 text-slate-600 leading-relaxed font-normal">
-                    Orders are dispatched within 24 hours via express insured air courier. Most major cities across India receive doorstep delivery within 2 to 4 business days with real-time tracking updates.
+                    Orders are dispatched within 24 hours via express insured air courier. Most major cities across India receive doorstep delivery within 5 to 7 business days with real-time tracking updates.
                   </p>
                 </details>
               </div>

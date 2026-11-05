@@ -259,7 +259,7 @@ export async function sendOrderConfirmationWhatsApp(
       "💰 *Price Breakdown:*\n" +
       "  • Total Amount: Rs " + totalAmount.toLocaleString("en-IN") + "\n" +
       "  • *Payable on Delivery: Rs " + totalAmount.toLocaleString("en-IN") + " (Cash / UPI)*\n\n" +
-      "🚚 *Estimated Delivery:* 3-5 Business Days\n\n" +
+      "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
       "📦 *Track Your Order:*\n" +
       trackUrl + "\n\n" +
       "Thank you for shopping with Turkiye Jam!";

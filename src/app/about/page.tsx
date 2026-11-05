@@ -16,6 +16,8 @@ import {
   Truck,
   Headphones,
   BadgeCheck,
+  CreditCard,
+  Package,
   Plane,
   Lock,
   MessageCircle,
@@ -87,6 +89,15 @@ function CountUpNumber({
     </div>
   );
 }
+
+// Authentic Vittal Digital core trust promises
+const TRUST_ITEMS = [
+  { icon: Package, title: "Dubai Sourced", sub: "Original Products" },
+  { icon: BadgeCheck, title: "100% Genuine", sub: "Authentic & Verified" },
+  { icon: Award, title: "Warranty Across India", sub: "Hassle-free Support" },
+  { icon: CreditCard, title: "Secure Payments", sub: "UPI, Cards, Net Banking" },
+  { icon: Truck, title: "Express Delivery", sub: "5-7 Days Across India" },
+];
 
 // Authentic Vittal Digital customer reviews
 const VOICES_OF_TRUST = [
@@ -300,6 +311,34 @@ export default function AboutPage() {
         </section>
 
         {/* ========================================================
+            TRUST STRIP (Dubai Sourced, Genuine, Warranty, etc.)
+           ======================================================== */}
+        <section className="py-5 sm:py-6 border-b border-slate-200/80 bg-white shadow-2xs">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+              {TRUST_ITEMS.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.title} className="flex items-center gap-3">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                      <Icon className="w-5 h-5 text-[#002D62]" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-semibold text-slate-900 leading-tight">
+                        {item.title}
+                      </h4>
+                      <p className="text-[11px] sm:text-xs text-slate-500 leading-tight mt-0.5">
+                        {item.sub}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
             2. COUNTED METRICS BANNER
            ======================================================== */}
         <section className="py-8 sm:py-12 border-b border-slate-200/80 bg-white">
@@ -340,7 +379,7 @@ export default function AboutPage() {
 
               {/* Stat 4 */}
               <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 sm:p-6 text-center transition-all hover:bg-white hover:shadow-md">
-                <CountUpNumber target={3} suffix=" Days" duration={1500} />
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#001D40] tracking-tight">5–7 Days</div>
                 <span className="block mt-2 text-xs sm:text-sm font-semibold text-slate-900">
                   Avg. Insured Air Delivery
                 </span>
@@ -422,7 +461,7 @@ export default function AboutPage() {
               </div>
               <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
                 <Check className="w-3.5 h-3.5" />
-                <span>2-4 Business Days</span>
+                <span>5-7 Business Days</span>
               </div>
             </div>
 

@@ -82,7 +82,7 @@ export function Footer() {
                 icon: Truck,
                 label: "Fast Delivery",
                 fullLabel: "Express Delivery",
-                desc: "2-4 days air",
+                desc: "5-7 days air",
               },
               {
                 icon: Check,

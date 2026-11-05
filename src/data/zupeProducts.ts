@@ -73,7 +73,7 @@ const COMMON_FEATURES = [
   "Direct Import from Dubai (UAE Retail Stock with Authenticity Guarantee)",
   "100% Compatible with Indian Telecommunications, 5G & 230V Standards",
   "1-Year Comprehensive International Warranty with Doorstep Service in India",
-  "Insured Express Air Logistics: 2–4 Business Days Doorstep Delivery",
+  "Insured Express Air Logistics: 5–7 Business Days Doorstep Delivery",
   "Tamper-Evident Safety Packaging with Holographic Verification Seal",
   "Hassle-Free 7-Day Replacement Guarantee for Hardware Defects",
 ];
