@@ -29,12 +29,12 @@ export interface ProductOverviewBlock {
   media_caption?: string;
 }
 
-export type HowToUseMediaType = "image" | "gif" | "video";
-export type HowToUseMediaFit = "contain" | "cover";
-export type HowToUseSectionBg = "white" | "soft_gray" | "light_orange";
-export type HowToUseCardRadius = "rounded-xl" | "rounded-2xl" | "rounded-3xl";
-export type HowToUseCardBorder = "subtle" | "orange" | "none";
-export type HowToUseCardShadow = "none" | "sm" | "md" | "lg";
+export type HowToUseMediaType = "image" | "gif" | "video" | string;
+export type HowToUseMediaFit = "contain" | "cover" | string;
+export type HowToUseSectionBg = "white" | "soft_gray" | "light_orange" | string;
+export type HowToUseCardRadius = "rounded-xl" | "rounded-2xl" | "rounded-3xl" | string;
+export type HowToUseCardBorder = "subtle" | "orange" | "none" | string;
+export type HowToUseCardShadow = "none" | "sm" | "md" | "lg" | string;
 
 export interface HowToUseStep {
   id: string;
@@ -77,7 +77,7 @@ export interface Product {
   in_stock: number;
   rating?: number;
   review_count?: number;
-  badge?: "New" | "Sale" | "Trending" | "Limited" | "";
+  badge?: "New" | "Sale" | "Trending" | "Limited" | string;
   created_at?: string;
   sold_count?: string;
   has_colors?: boolean;

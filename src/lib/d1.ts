@@ -43,34 +43,78 @@ async function getD1Database(): Promise<any | null> {
   return null;
 }
 
-function getLocalCloudflareToken(): string | null {
+async function getLocalCloudflareToken(): Promise<string | null> {
   if (process.env.CLOUDFLARE_API_TOKEN) return process.env.CLOUDFLARE_API_TOKEN;
-  if (typeof window !== "undefined") return null;
+  if (typeof window !== "undefined" || process.env.NODE_ENV === "production") return null;
 
   try {
-    if (typeof process !== "undefined" && (process as any).versions?.node) {
-      const fsMod = "fs";
-      const osMod = "os";
-      const pathMod = "path";
-      const fs = require(fsMod);
-      const os = require(osMod);
-      const path = require(pathMod);
-      const possiblePaths = [
-        path.join(os.homedir(), "Library", "Preferences", ".wrangler", "config", "default.toml"),
-        path.join(os.homedir(), ".wrangler", "config", "default.toml"),
-      ];
-      for (const p of possiblePaths) {
-        if (fs.existsSync(p)) {
-          const content = fs.readFileSync(p, "utf-8");
-          const match = content.match(/oauth_token\s*=\s*"([^"]+)"/);
-          if (match && match[1]) return match[1];
-        }
+    const req = typeof eval === "function" ? eval("require") : null;
+    if (!req) return null;
+    const fs = req("fs");
+    const os = req("os");
+    const path = req("path");
+    const possiblePaths = [
+      path.join(os.homedir(), "Library", "Preferences", ".wrangler", "config", "default.toml"),
+      path.join(os.homedir(), ".wrangler", "config", "default.toml"),
+    ];
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        const content = fs.readFileSync(p, "utf-8");
+        const match = content.match(/oauth_token\s*=\s*"([^"]+)"/);
+        if (match && match[1]) return match[1];
       }
     }
   } catch (e) {
     // Non-fatal fallback
   }
   return null;
+}
+
+async function executeViaWranglerCli<T = any>(
+  query: string,
+  params: any[] = []
+): Promise<T[] | null> {
+  if (typeof window !== "undefined" || process.env.NODE_ENV === "production") return null;
+  try {
+    const req = typeof eval === "function" ? eval("require") : null;
+    if (!req) return null;
+    const { execFile } = req("child_process");
+    let formattedQuery = query;
+    if (params.length > 0) {
+      let pIdx = 0;
+      formattedQuery = query.replace(/\?/g, () => {
+        const val = params[pIdx++];
+        if (val === null || val === undefined) return "NULL";
+        if (typeof val === "number") return String(val);
+        return `'${String(val).replace(/'/g, "''")}'`;
+      });
+    }
+
+    return new Promise((resolve) => {
+      execFile(
+        "npx",
+        ["wrangler", "d1", "execute", "turkiyejam-db", "--remote", "--json", "--command", formattedQuery],
+        { timeout: 10000 },
+        (error: any, stdout: string) => {
+          if (error) {
+            console.warn("Wrangler CLI D1 execution error:", error.message);
+            return resolve(null);
+          }
+          try {
+            const data = JSON.parse(stdout);
+            if (Array.isArray(data) && data[0]?.results) {
+              return resolve(data[0].results as T[]);
+            }
+          } catch (e) {
+            // failed to parse
+          }
+          resolve(null);
+        }
+      );
+    });
+  } catch (err) {
+    return null;
+  }
 }
 
 export async function executeD1Query<T = any>(
@@ -97,12 +141,12 @@ export async function executeD1Query<T = any>(
     }
   }
 
-  // 2. Check for Cloudflare REST API execution (for local development or external node scripts)
+  // 2. Check for Cloudflare REST API execution (for local development)
   const accountId =
     process.env.CLOUDFLARE_ACCOUNT_ID || "4eed09d0032a07881825f4e926cb997f";
   const databaseId =
     process.env.CLOUDFLARE_D1_DATABASE_ID || "3a7891a3-6e90-4eab-b448-7c33aaec0c5f";
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN || getLocalCloudflareToken();
+  const apiToken = await getLocalCloudflareToken();
 
   if (databaseId && apiToken && accountId) {
     try {
@@ -124,10 +168,18 @@ export async function executeD1Query<T = any>(
         if (json.success && json.result && json.result[0]?.results) {
           return json.result[0].results as T[];
         }
+      } else {
+        console.warn("Cloudflare D1 REST API status not ok:", res.status);
       }
     } catch (err) {
       console.warn("Cloudflare D1 REST API query failed:", err);
     }
+  }
+
+  // 3. Fallback to Wrangler CLI proxy for localhost Node.js execution
+  const cliRows = await executeViaWranglerCli<T>(query, params);
+  if (cliRows) {
+    return cliRows;
   }
 
   return null;

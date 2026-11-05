@@ -85,6 +85,25 @@ export async function sendOrderPreConfirmationWhatsApp(
   const displayAmount = totalAmount;
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
 
+  // Log to internal WhatsApp desk
+  try {
+    const { recordOutboundSystemMessage } = await import("@/lib/whatsappStore");
+    await recordOutboundSystemMessage(
+      customerPhone,
+      `*Order Verification — Turkiye Jam* 🛍️\n\nHi ${firstName}! Thank you for placing your order (${displayOrderId}). Total: ₹${totalAmount} (${paymentMethodLabel}).\n\nPlease confirm your order:\n${confirmUrl}`,
+      "order_card",
+      {
+        orderData: {
+          orderId,
+          totalAmount,
+          itemsSummary: safeItems.map((it) => `${it.name || "Turkiye Jam"} (x${it.quantity || 1})`).join(", "),
+          status: "Awaiting WA",
+          paymentMethod: paymentMethodLabel,
+        },
+      }
+    );
+  } catch (logErr) {}
+
   // 1. Try official Meta Template with interactive buttons first (zupe_order_verify)
   let templateSent = false;
   try {
@@ -242,6 +261,25 @@ export async function sendOrderConfirmationWhatsApp(
   const safeItems = Array.isArray(items) && items.length > 0
     ? items
     : [{ name: "Turkiye Jam (3 Sachet Pack)", quantity: 1, price: totalAmount || 1099 }];
+
+  // Log confirmation to internal WhatsApp desk
+  try {
+    const { recordOutboundSystemMessage } = await import("@/lib/whatsappStore");
+    await recordOutboundSystemMessage(
+      customerPhone,
+      `🎉 *Order Confirmed — Turkiye Jam* 🌿\n\nYour order (${displayOrderId}) of ₹${totalAmount} has been confirmed and submitted for packing & dispatch!`,
+      "order_card",
+      {
+        orderData: {
+          orderId,
+          totalAmount,
+          itemsSummary: safeItems.map((it) => `${it.name || "Turkiye Jam"} (x${it.quantity || 1})`).join(", "),
+          status: "Confirmed",
+          paymentMethod: paymentMethod === "cod" ? "COD" : "Prepaid",
+        },
+      }
+    );
+  } catch (logErr) {}
   const itemLines = safeItems
     .slice(0, 3)
     .map(function(it) { return "  • " + (it.name || "Turkiye Jam") + " (x" + (it.quantity || 1) + ")"; })

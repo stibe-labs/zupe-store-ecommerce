@@ -22,8 +22,12 @@ export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const { pathname } = url;
 
-  // -- 0. Canonical Domain Enforcement: Redirect all *.workers.dev requests immediately to turkiyejam.com --
-  if (host.includes("workers.dev")) {
+  // -- 0. Canonical Domain Enforcement: Redirect all *.workers.dev requests immediately to turkiyejam.com (except webhooks) --
+  if (
+    host.includes("workers.dev") &&
+    !pathname.startsWith("/api/webhooks") &&
+    !pathname.startsWith("/api/whatsapp-webhook")
+  ) {
     const targetUrl = new URL(pathname + url.search, "https://turkiyejam.com");
     return NextResponse.redirect(targetUrl, 301);
   }

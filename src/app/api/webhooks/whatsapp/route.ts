@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { siteConfig } from "@/config/siteConfig";
+import { recordInboundCustomerMessage } from "@/lib/whatsappStore";
 
 export const dynamic = "force-dynamic";
 
@@ -54,13 +55,47 @@ export async function POST(req: NextRequest) {
             }
           }
 
-          // 2. Inbound customer messages (e.g. user sends "Hi")
+          // 2. Inbound customer messages (e.g. text, button replies, interactive choices, media)
           if (value.messages && Array.isArray(value.messages)) {
             for (const msg of value.messages) {
+              let bodyText = "";
+              let msgType: "text" | "image" | "voice" | "document" = "text";
+              let mediaUrl: string | undefined = undefined;
+
+              if (msg.type === "text" && msg.text?.body) {
+                bodyText = msg.text.body;
+              } else if (msg.type === "interactive") {
+                bodyText =
+                  msg.interactive?.button_reply?.title ||
+                  msg.interactive?.list_reply?.title ||
+                  msg.interactive?.button_reply?.id ||
+                  "Interactive response";
+              } else if (msg.type === "button") {
+                bodyText = msg.button?.text || msg.button?.payload || "Button clicked";
+              } else if (msg.type === "image") {
+                msgType = "image";
+                bodyText = msg.image?.caption || "📷 Image";
+                mediaUrl = msg.image?.id ? `https://graph.facebook.com/v21.0/${msg.image.id}` : undefined;
+              } else if (msg.type === "audio" || msg.type === "voice") {
+                msgType = "voice";
+                bodyText = "🎤 Voice note";
+              } else if (msg.type === "document") {
+                msgType = "document";
+                bodyText = msg.document?.filename || "📄 Document";
+              } else {
+                bodyText = msg.text?.body || `[${msg.type || "Inbound message"}]`;
+              }
+
               console.log(
                 `📩 [WhatsApp Inbound] From ${msg.from} (${msg.type}):`,
-                msg.text ? msg.text.body : msg.type
+                bodyText
               );
+
+              try {
+                await recordInboundCustomerMessage(msg.from, bodyText, msgType, mediaUrl);
+              } catch (e) {
+                console.warn("Failed to record inbound WhatsApp message:", e);
+              }
             }
           }
         }

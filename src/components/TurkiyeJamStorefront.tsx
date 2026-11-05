@@ -277,8 +277,8 @@ export function TurkiyeJamStorefront({ initialProducts }: TurkiyeJamStorefrontPr
 
     const isOutOfStock = found
       ? Number(found.in_stock) === 0 ||
-        found.in_stock === false ||
-        found.in_stock === "0" ||
+        (found.in_stock as any) === false ||
+        (found.in_stock as any) === "0" ||
         (found.stock_count !== undefined && Number(found.stock_count) <= 0)
       : false;
 

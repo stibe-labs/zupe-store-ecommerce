@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
@@ -1244,6 +1245,14 @@ function AdminOrdersContent() {
                       </p>
                     </div>
                   </div>
+                  <Link
+                    href={`/admin/whatsapp?chat=${encodeURIComponent(selectedOrder.customer_phone || selectedOrder.id)}`}
+                    className="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0"
+                    title="Open live chat with customer in Turkiye Jam WhatsApp desk"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>WhatsApp Desk</span>
+                  </Link>
                 </div>
               )}
 
@@ -1304,6 +1313,14 @@ function AdminOrdersContent() {
                       </p>
                     </div>
                   </div>
+                  <Link
+                    href={`/admin/whatsapp?chat=${encodeURIComponent(selectedOrder.customer_phone || selectedOrder.id)}`}
+                    className="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0"
+                    title="Open live chat with customer in Turkiye Jam WhatsApp desk"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>WhatsApp Desk</span>
+                  </Link>
                 </div>
 
                 {/* Interactive Action Bar inside WhatsApp Card */}

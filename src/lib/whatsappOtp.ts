@@ -178,6 +178,15 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
   const otp = await generatePhoneOTPAsync(digits);
   console.log(`\n📱 [WhatsApp OTP] Generated for ${display} (${digits}): ${otp}\n`);
 
+  // Record this outbound OTP message in the Turkiye Jam Internal WhatsApp Desk
+  const otpMessageContent = `🛍️ *Turkiye Jam Verification Code*\n\nYour one-time login code is: *${otp}*\n\nUse this code to access your Turkiye Jam account. Valid for 3 minutes.\n\n_For your safety, never share this code with anyone._`;
+  try {
+    const { recordOutboundSystemMessage } = await import("@/lib/whatsappStore");
+    await recordOutboundSystemMessage(rawPhone, otpMessageContent, "text");
+  } catch (logErr) {
+    console.warn("Could not record OTP in whatsappStore:", logErr);
+  }
+
   const token = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
   const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
 

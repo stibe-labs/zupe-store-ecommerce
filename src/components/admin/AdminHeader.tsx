@@ -91,12 +91,12 @@ export default function AdminHeader({
   ];
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200/80 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
+    <header className="h-16 bg-white dark:bg-[#0F172A] border-b border-slate-200/80 dark:border-white/[0.08] sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
       {/* Left: Mobile hamburger & Global Search */}
       <div className="flex items-center gap-3 flex-1 max-w-xl">
         <button
           onClick={onOpenMobile}
-          className="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100"
+          className="lg:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10"
           aria-label="Open sidebar"
         >
           <Menu className="w-5 h-5" />
@@ -109,13 +109,13 @@ export default function AdminHeader({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search orders, customers, AWB..."
-            className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] transition-all"
+            className="w-full pl-9 pr-8 py-2 bg-slate-50 dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 rounded-xl text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] transition-all"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full hover:bg-slate-200/60"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-0.5 rounded-full hover:bg-slate-200/60 dark:hover:bg-white/10"
               aria-label="Clear admin search"
             >
               <X className="w-3.5 h-3.5" />
@@ -130,7 +130,7 @@ export default function AdminHeader({
           <button
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="p-2 text-slate-500 hover:text-[#FF7A00] hover:bg-orange-50 rounded-xl transition-all"
+            className="p-2 text-slate-500 hover:text-[#FF7A00] hover:bg-orange-50 dark:hover:bg-white/5 rounded-xl transition-all"
             title="Refresh ERP Data"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-[#FF7A00]" : ""}`} />
@@ -140,7 +140,7 @@ export default function AdminHeader({
         <Link
           href="/"
           target="_blank"
-          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-[#FF7A00] hover:bg-orange-50 hover:border-orange-200 rounded-xl border border-slate-200/70 transition-all"
+          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-[#FF7A00] dark:hover:text-[#FF7A00] hover:bg-orange-50 dark:hover:bg-orange-950/20 hover:border-orange-200 dark:hover:border-orange-500/30 rounded-xl border border-slate-200/70 dark:border-white/10 transition-all"
         >
           <span>Live Storefront</span>
           <ExternalLink className="w-3.5 h-3.5" />
@@ -175,7 +175,7 @@ export default function AdminHeader({
         <div className="relative" ref={rangeRef}>
           <button
             onClick={() => setShowRangeDropdown(!showRangeDropdown)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 transition-all"
+            className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 transition-all"
           >
             <Calendar className="w-4 h-4 text-slate-500" />
             <span className="hidden sm:inline">{selectedRange}</span>
@@ -183,7 +183,7 @@ export default function AdminHeader({
           </button>
 
           {showRangeDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
+            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
               {dateOptions.map((opt) => (
                 <button
                   key={opt}
@@ -191,8 +191,8 @@ export default function AdminHeader({
                     setSelectedRange(opt);
                     setShowRangeDropdown(false);
                   }}
-                  className={`w-full text-left px-4 py-2 hover:bg-slate-50 font-medium ${
-                    selectedRange === opt ? "text-[#FF7A00] bg-orange-50/80 font-semibold" : "text-slate-700"
+                  className={`w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-white/5 font-medium ${
+                    selectedRange === opt ? "text-[#FF7A00] bg-orange-50/80 dark:bg-orange-500/10 font-semibold" : "text-slate-700 dark:text-slate-200"
                   }`}
                 >
                   {opt}
@@ -206,7 +206,7 @@ export default function AdminHeader({
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl relative transition-all"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl relative transition-all"
             title="Notifications & Alerts"
           >
             <Bell className="w-4 h-4" />
@@ -218,23 +218,23 @@ export default function AdminHeader({
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in">
-              <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in text-slate-800 dark:text-slate-100">
+              <div className="px-4 py-2 border-b border-slate-100 dark:border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <h4 className="font-bold text-slate-900 text-sm">ERP Alerts</h4>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">ERP Alerts</h4>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange-100 text-[#FF7A00]">
                     {alerts.length} New
                   </span>
                 </div>
                 <button
                   onClick={() => setAlerts([])}
-                  className="text-xs text-slate-400 hover:text-slate-600 font-medium"
+                  className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-medium"
                 >
                   Clear all
                 </button>
               </div>
 
-              <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
+              <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-white/5">
                 {alerts.length === 0 ? (
                   <div className="p-6 text-center text-xs text-slate-400">
                     No new alerts. All operations running smoothly!
@@ -247,21 +247,21 @@ export default function AdminHeader({
                         key={alt.id}
                         href={alt.href}
                         onClick={() => setShowNotifications(false)}
-                        className="p-3.5 flex items-start gap-3 hover:bg-slate-50 transition-colors block"
+                        className="p-3.5 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors block"
                       >
                         <div className={`p-2 rounded-xl shrink-0 ${alt.iconColor}`}>
                           <Icon className="w-4 h-4" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <p className="text-xs font-bold text-slate-900 truncate">
+                            <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                               {alt.title}
                             </p>
                             <span className="text-[10px] text-slate-400 font-mono">
                               {alt.time}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
                             {alt.description}
                           </p>
                         </div>
@@ -275,7 +275,7 @@ export default function AdminHeader({
         </div>
 
         {/* User Avatar & Dropdown */}
-        <div className="relative pl-2 border-l border-slate-200" ref={userRef}>
+        <div className="relative pl-2 border-l border-slate-200 dark:border-white/10" ref={userRef}>
           <button
             onClick={() => setShowAdminUserDropdown(!showAdminUserDropdown)}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -283,29 +283,29 @@ export default function AdminHeader({
             <div className="w-8 h-8 rounded-full bg-[#5b1420] text-[#fed000] font-extrabold flex items-center justify-center text-xs shadow-sm ring-2 ring-[#fed000]/30">
               TJ
             </div>
-            <span className="text-xs sm:text-sm font-semibold text-slate-800 hidden md:inline">
+            <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 hidden md:inline">
               Administrator
             </span>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden md:inline" />
           </button>
 
           {showAdminUserDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
-              <div className="px-4 py-2 border-b border-slate-100">
-                <p className="font-bold text-slate-900">Turkiye Jam Admin</p>
+            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
+              <div className="px-4 py-2 border-b border-slate-100 dark:border-white/10">
+                <p className="font-bold text-slate-900 dark:text-white">Turkiye Jam Admin</p>
                 <p className="text-[11px] text-slate-400">admin@turkiyejam.com</p>
               </div>
               <Link
                 href="/admin/settings"
                 onClick={() => setShowAdminUserDropdown(false)}
-                className="block px-4 py-2 text-slate-700 hover:text-[#FF7A00] hover:bg-orange-50/60 font-medium"
+                className="block px-4 py-2 text-slate-700 dark:text-slate-200 hover:text-[#FF7A00] dark:hover:text-[#FF7A00] hover:bg-orange-50/60 dark:hover:bg-white/5 font-medium"
               >
                 Store Settings
               </Link>
               <Link
                 href="/admin/reports"
                 onClick={() => setShowAdminUserDropdown(false)}
-                className="block px-4 py-2 text-slate-700 hover:text-[#FF7A00] hover:bg-orange-50/60 font-medium"
+                className="block px-4 py-2 text-slate-700 dark:text-slate-200 hover:text-[#FF7A00] dark:hover:text-[#FF7A00] hover:bg-orange-50/60 dark:hover:bg-white/5 font-medium"
               >
                 P&L Reports
               </Link>
@@ -315,7 +315,7 @@ export default function AdminHeader({
                   toggleTheme();
                   setShowAdminUserDropdown(false);
                 }}
-                className="w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-slate-700 hover:text-[#FF7A00] hover:bg-orange-50/60 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-[#FF7A00] dark:hover:text-[#FF7A00] hover:bg-orange-50/60 dark:hover:bg-white/5 transition-colors"
               >
                 <span className="flex items-center gap-2">
                   {theme === "dark" ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-slate-500" />}
@@ -330,7 +330,7 @@ export default function AdminHeader({
                   await fetch("/api/admin/auth/logout", { method: "POST" });
                   window.location.href = "/";
                 }}
-                className="w-full text-left px-4 py-2 text-rose-600 hover:bg-rose-50 font-semibold border-t border-slate-100"
+                className="w-full text-left px-4 py-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 font-semibold border-t border-slate-100 dark:border-white/10"
               >
                 Lock & Sign Out
               </button>
