@@ -81,7 +81,7 @@ function CountUpNumber({
   }, [hasStarted, target, duration]);
 
   return (
-    <div ref={ref} className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#001D40] tracking-tight">
+    <div ref={ref} className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#001D40] tracking-tight">
       {count.toLocaleString()}
       {suffix}
     </div>
@@ -276,18 +276,18 @@ export default function AboutPage() {
                 Home
               </Link>
               <BreadcrumbChevron className="w-3.5 h-3.5 text-slate-400" />
-              <span className="font-semibold text-slate-900">About Us</span>
+              <span className="font-medium text-slate-800">About Us</span>
             </nav>
 
             <div className="text-center max-w-3xl mx-auto">
               {/* Tagline Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-xs font-bold text-[#002D62] mb-4 shadow-2xs">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-xs font-semibold text-[#002D62] mb-4 shadow-2xs">
                 <Sparkles className="w-3.5 h-3.5 text-[#002D62]" />
                 <span>Dubai Retail Direct Sourcing • 100% Factory Sealed</span>
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-slate-900 tracking-tight leading-tight">
                 The Vittal Digital Story
               </h1>
 
@@ -308,7 +308,7 @@ export default function AboutPage() {
               {/* Stat 1 */}
               <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 sm:p-6 text-center transition-all hover:bg-white hover:shadow-md">
                 <CountUpNumber target={100} suffix="%" duration={1600} />
-                <span className="block mt-2 text-xs sm:text-sm font-bold text-slate-900">
+                <span className="block mt-2 text-xs sm:text-sm font-semibold text-slate-900">
                   Dubai Retail Stock
                 </span>
                 <span className="block mt-0.5 text-[11px] sm:text-xs text-slate-500 font-medium">
@@ -319,7 +319,7 @@ export default function AboutPage() {
               {/* Stat 2 */}
               <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 sm:p-6 text-center transition-all hover:bg-white hover:shadow-md">
                 <CountUpNumber target={1} suffix=" Yr" duration={1400} />
-                <span className="block mt-2 text-xs sm:text-sm font-bold text-slate-900">
+                <span className="block mt-2 text-xs sm:text-sm font-semibold text-slate-900">
                   Pan-India Warranty
                 </span>
                 <span className="block mt-0.5 text-[11px] sm:text-xs text-slate-500 font-medium">
@@ -330,7 +330,7 @@ export default function AboutPage() {
               {/* Stat 3 */}
               <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 sm:p-6 text-center transition-all hover:bg-white hover:shadow-md">
                 <CountUpNumber target={15000} suffix="+" duration={1800} />
-                <span className="block mt-2 text-xs sm:text-sm font-bold text-slate-900">
+                <span className="block mt-2 text-xs sm:text-sm font-semibold text-slate-900">
                   Happy Tech Buyers
                 </span>
                 <span className="block mt-0.5 text-[11px] sm:text-xs text-slate-500 font-medium">
@@ -341,7 +341,7 @@ export default function AboutPage() {
               {/* Stat 4 */}
               <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 sm:p-6 text-center transition-all hover:bg-white hover:shadow-md">
                 <CountUpNumber target={3} suffix=" Days" duration={1500} />
-                <span className="block mt-2 text-xs sm:text-sm font-bold text-slate-900">
+                <span className="block mt-2 text-xs sm:text-sm font-semibold text-slate-900">
                   Avg. Insured Air Delivery
                 </span>
                 <span className="block mt-0.5 text-[11px] sm:text-xs text-slate-500 font-medium">
@@ -357,10 +357,10 @@ export default function AboutPage() {
            ======================================================== */}
         <section className="py-12 sm:py-16 lg:py-20 max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#002D62] bg-blue-50 px-3 py-1 rounded-full border border-blue-200/70 inline-block mb-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#002D62] bg-blue-50 px-3 py-1 rounded-full border border-blue-200/70 inline-block mb-3">
               The Vittal Digital Guarantee
             </span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-slate-900 tracking-tight">
               Why Discerning Buyers Choose Us
             </h2>
             <p className="mt-2.5 text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
@@ -375,14 +375,14 @@ export default function AboutPage() {
                 <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#002D62] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform border border-blue-100">
                   <BadgeCheck className="w-6 h-6" />
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
+                <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">
                   100% Genuine Dubai Stock
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
                   Direct procurement from authorized Dubai duty-free and retail hubs. Each item arrives brand new in sealed manufacturer retail packaging with serial number authenticity.
                 </p>
               </div>
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-semibold text-[#002D62]">
+              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-medium text-[#002D62]">
                 <Check className="w-3.5 h-3.5" />
                 <span>Verified Seals</span>
               </div>
@@ -394,14 +394,14 @@ export default function AboutPage() {
                 <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform border border-amber-200/60">
                   <ShieldCheck className="w-6 h-6 text-[#002D62]" />
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
+                <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">
                   1-Year Pan-India Warranty
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
                   Enjoy complete peace of mind with 1-Year Comprehensive Warranty coverage, backed by our technical repair centers and dedicated doorstep assistance across India.
                 </p>
               </div>
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-semibold text-[#002D62]">
+              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-medium text-[#002D62]">
                 <Check className="w-3.5 h-3.5" />
                 <span>All-India Service</span>
               </div>
@@ -413,14 +413,14 @@ export default function AboutPage() {
                 <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform border border-emerald-100">
                   <Plane className="w-6 h-6 text-emerald-600" />
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
+                <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">
                   Express Insured Air Cargo
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
                   Priority air logistics with 100% transit insurance. Track your parcel in real-time with automated SMS and WhatsApp milestone notifications right to your doorstep.
                 </p>
               </div>
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
+              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
                 <Check className="w-3.5 h-3.5" />
                 <span>2-4 Business Days</span>
               </div>
@@ -432,14 +432,14 @@ export default function AboutPage() {
                 <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform border border-purple-100">
                   <Headphones className="w-6 h-6 text-[#002D62]" />
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
+                <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">
                   Live WhatsApp Care
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
                   Real human technical care available via WhatsApp (+91 916238165935). Need live unboxing advice, tracking updates, or setup help? We are just a message away.
                 </p>
               </div>
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-semibold text-[#002D62]">
+              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-medium text-[#002D62]">
                 <Check className="w-3.5 h-3.5" />
                 <span>Instant Responses</span>
               </div>
@@ -453,13 +453,13 @@ export default function AboutPage() {
         <section className="py-12 sm:py-16 bg-white border-y border-slate-200/80">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#002D62] bg-blue-50 px-3 py-1 rounded-full border border-blue-200/70 inline-block mb-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#002D62] bg-blue-50 px-3 py-1 rounded-full border border-blue-200/70 inline-block mb-3">
                 Seamless Logistics Process
               </span>
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
                 From Dubai Hubs Directly to Your Hands
               </h2>
-              <p className="mt-2 text-xs sm:text-sm text-slate-600">
+              <p className="mt-2 text-xs sm:text-sm text-slate-600 font-normal">
                 Every order follows our strict 4-step quality, clearance, and courier workflow.
               </p>
             </div>
@@ -491,13 +491,13 @@ export default function AboutPage() {
                   key={item.step}
                   className="relative p-6 rounded-2xl bg-slate-50 border border-slate-200/80 hover:bg-blue-50/40 transition-colors"
                 >
-                  <span className="text-3xl font-bold text-[#002D62]/20 font-mono block mb-2">
+                  <span className="text-3xl font-semibold text-[#002D62]/25 font-mono block mb-2">
                     {item.step}
                   </span>
-                  <h4 className="text-sm sm:text-base font-bold text-slate-900 mb-2">
+                  <h4 className="text-sm sm:text-base font-semibold text-slate-900 mb-2">
                     {item.title}
                   </h4>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
                     {item.desc}
                   </p>
                 </div>
@@ -512,14 +512,14 @@ export default function AboutPage() {
         <section className="py-14 sm:py-20 bg-gradient-to-b from-[#F8FAFC] to-white overflow-hidden border-b border-slate-200/80">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-10 max-w-xl mx-auto">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-[#002D62] text-xs font-bold uppercase tracking-wider mb-3">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-[#002D62] text-xs font-semibold uppercase tracking-wider mb-3">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#002D62]" />
                 <span>Verified Buyer Reviews</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
                 Voices of Trust Across India
               </h2>
-              <p className="mt-1.5 text-xs sm:text-sm text-slate-600 max-w-md mx-auto font-medium">
+              <p className="mt-1.5 text-xs sm:text-sm text-slate-600 max-w-md mx-auto font-normal">
                 Real customer feedback from tech enthusiasts and professionals who upgraded with Vittal Digital.
               </p>
             </div>
@@ -584,17 +584,17 @@ export default function AboutPage() {
                       <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 text-xs sm:text-sm">
+                            <span className="font-semibold text-slate-900 text-xs sm:text-sm">
                               {item.author}
                             </span>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                               <CheckCircle2 className="w-2.5 h-2.5" /> Verified Buyer
                             </span>
                           </div>
-                          <span className="text-[11px] text-slate-500 font-medium">{item.location}</span>
+                          <span className="text-[11px] text-slate-500 font-normal">{item.location}</span>
                         </div>
 
-                        <span className="text-[11px] font-semibold text-[#002D62] bg-blue-50 border border-blue-100 px-3 py-1 rounded-full self-start sm:self-auto">
+                        <span className="text-[11px] font-medium text-[#002D62] bg-blue-50 border border-blue-100 px-3 py-1 rounded-full self-start sm:self-auto">
                           {item.product}
                         </span>
                       </div>
@@ -654,12 +654,12 @@ export default function AboutPage() {
             <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-amber-500/15 blur-3xl pointer-events-none" />
 
             <div className="relative z-10 max-w-2xl mx-auto">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-semibold text-white/90 mb-4 border border-white/15">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-medium text-white/90 mb-4 border border-white/15">
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                 <span>Ready to Upgrade Your Electronics?</span>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-white tracking-tight leading-tight">
                 Experience Genuine Dubai Tech Delivered Across India
               </h2>
 
@@ -670,7 +670,7 @@ export default function AboutPage() {
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link
                   href="/products"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-white hover:bg-slate-100 text-[#001D40] text-sm font-bold shadow-md hover:shadow-lg transition-all"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-white hover:bg-slate-100 text-[#001D40] text-sm font-semibold shadow-md hover:shadow-lg transition-all"
                 >
                   <span>Explore All Products</span>
                   <ArrowRight className="w-4 h-4" />
@@ -680,7 +680,7 @@ export default function AboutPage() {
                   href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Digital%2C%20I%20have%20an%20inquiry%20about%20a%20product`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Chat on WhatsApp</span>
