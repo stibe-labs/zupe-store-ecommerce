@@ -100,7 +100,7 @@ export function NewArrivalsSection({ initialProductIds }: NewArrivalsSectionProp
                   </Link>
 
                   {isOutOfStock && (
-                    <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-md bg-red-600 text-white text-[10px] font-black uppercase tracking-wider shadow-xs">
+                    <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-md bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider shadow-xs">
                       Sold Out
                     </div>
                   )}

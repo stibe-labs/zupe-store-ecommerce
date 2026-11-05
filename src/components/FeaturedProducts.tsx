@@ -151,7 +151,7 @@ export function FeaturedProducts() {
                     )}
                   </div>
                   {product.in_stock === 0 || (product.stock_count !== undefined && product.stock_count <= 0) ? (
-                    <span className="text-[11px] font-black text-red-600 bg-red-50 border border-red-200 px-2 py-1 rounded-lg uppercase tracking-tight">
+                    <span className="text-[11px] font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-1 rounded-lg uppercase tracking-tight">
                       Out of Stock
                     </span>
                   ) : (

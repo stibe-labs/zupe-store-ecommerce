@@ -81,7 +81,7 @@ function CountUpNumber({
   }, [hasStarted, target, duration]);
 
   return (
-    <div ref={ref} className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#001D40] tracking-tight">
+    <div ref={ref} className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#001D40] tracking-tight">
       {count.toLocaleString()}
       {suffix}
     </div>
@@ -287,7 +287,7 @@ export default function AboutPage() {
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight leading-tight">
                 The Vittal Digital Story
               </h1>
 
@@ -360,7 +360,7 @@ export default function AboutPage() {
             <span className="text-xs font-bold uppercase tracking-wider text-[#002D62] bg-blue-50 px-3 py-1 rounded-full border border-blue-200/70 inline-block mb-3">
               The Vittal Digital Guarantee
             </span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight">
               Why Discerning Buyers Choose Us
             </h2>
             <p className="mt-2.5 text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
@@ -456,7 +456,7 @@ export default function AboutPage() {
               <span className="text-xs font-bold uppercase tracking-wider text-[#002D62] bg-blue-50 px-3 py-1 rounded-full border border-blue-200/70 inline-block mb-3">
                 Seamless Logistics Process
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
                 From Dubai Hubs Directly to Your Hands
               </h2>
               <p className="mt-2 text-xs sm:text-sm text-slate-600">
@@ -491,7 +491,7 @@ export default function AboutPage() {
                   key={item.step}
                   className="relative p-6 rounded-2xl bg-slate-50 border border-slate-200/80 hover:bg-blue-50/40 transition-colors"
                 >
-                  <span className="text-3xl font-black text-[#002D62]/20 font-mono block mb-2">
+                  <span className="text-3xl font-bold text-[#002D62]/20 font-mono block mb-2">
                     {item.step}
                   </span>
                   <h4 className="text-sm sm:text-base font-bold text-slate-900 mb-2">
@@ -516,7 +516,7 @@ export default function AboutPage() {
                 <ShieldCheck className="w-3.5 h-3.5 text-[#002D62]" />
                 <span>Verified Buyer Reviews</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
                 Voices of Trust Across India
               </h2>
               <p className="mt-1.5 text-xs sm:text-sm text-slate-600 max-w-md mx-auto font-medium">
@@ -659,7 +659,7 @@ export default function AboutPage() {
                 <span>Ready to Upgrade Your Electronics?</span>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight">
                 Experience Genuine Dubai Tech Delivered Across India
               </h2>
 

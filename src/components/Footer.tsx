@@ -99,7 +99,7 @@ export function Footer() {
                   <div className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shadow-2xs mb-0.5 sm:mb-1 shrink-0">
                     <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-[#002D62]" />
                   </div>
-                  <p className="text-[10px] sm:text-xs md:text-sm font-black text-slate-900 leading-tight">
+                  <p className="text-[10px] sm:text-xs md:text-sm font-bold text-slate-900 leading-tight">
                     <span className="sm:hidden">{item.label}</span>
                     <span className="hidden sm:inline">{item.fullLabel || item.label}</span>
                   </p>

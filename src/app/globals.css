@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
 :root {
   /* ─── Vittal Digital Dubai Electronics Palette ─── */
   --zp-orange: #003055;          /* Navy / Primary */
@@ -20,8 +25,8 @@
   --zp-slate: #64748B;
   
   /* ─── Typography ─── */
-  --font-display: 'Outfit', system-ui, sans-serif;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'Space Grotesk', monospace;
   
   /* ─── Motion ─── */
@@ -33,7 +38,10 @@
 html {
   background-color: var(--zp-cloud);
   color: var(--zp-charcoal);
-  font-family: var(--font-sans);
+  font-family: var(--font-sans) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
 }
 
@@ -85,7 +93,7 @@ p, li, span:not([class*="tracking"]), label, td, th, blockquote {
 
 /* ─── Turkiye Jam Design System ─── */
 .font-tj-serif {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: var(--font-sans) !important;
 }
 .font-tj-cursive {
   font-family: 'Caveat', cursive, sans-serif;
@@ -335,7 +343,10 @@ html.lenis body {
 }
 
 .font-sans {
-  font-family: var(--font-sans);
+  font-family: var(--font-sans) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .font-mono {
@@ -1104,7 +1115,7 @@ body[style*="overflow: hidden"] {
    FURNEXA LUXURY SHOWROOM DESIGN TOKENS
 ───────────────────────────────────────────────────────────── */
 .font-display {
-  font-family: 'Bricolage Grotesque', 'Outfit', sans-serif;
+  font-family: var(--font-sans) !important;
   letter-spacing: -0.02em;
 }
 
@@ -1114,7 +1125,7 @@ body[style*="overflow: hidden"] {
 
 /* Furnexa Giant Hero Typography */
 .furnexa-hero-title {
-  font-family: 'Bricolage Grotesque', 'Outfit', sans-serif;
+  font-family: var(--font-sans) !important;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: -0.03em;
@@ -1142,7 +1153,27 @@ body[style*="overflow: hidden"] {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.12);
 }
 
+/* ─────────────────────────────────────────────────────────────
+   MODERN STANDARD TYPOGRAPHY & WEIGHT NORMALIZATION
+   Calibrate excessive boldness across the entire site
+───────────────────────────────────────────────────────────── */
+.font-black {
+  font-weight: 700 !important;
+}
 
+.font-extrabold {
+  font-weight: 600 !important;
+}
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans) !important;
+  letter-spacing: -0.015em;
+}
 
-
+.font-display,
+.font-body,
+.furnexa-hero-title,
+.font-tj-serif,
+.font-tj-cursive {
+  font-family: var(--font-sans) !important;
+}

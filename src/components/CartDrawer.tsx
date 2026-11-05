@@ -76,7 +76,7 @@ export function CartDrawer() {
                 <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900">
                   <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
                 </div>
-                <h2 className="font-black text-lg text-slate-900">
+                <h2 className="font-bold text-lg text-slate-900">
                   Your Cart
                 </h2>
                 <span className="text-xs font-bold bg-slate-100 text-slate-800 px-2.5 py-0.5 rounded-full">
@@ -102,7 +102,7 @@ export function CartDrawer() {
                       ? `Add ₹${freeShippingRemaining.toLocaleString("en-IN")} more for free express shipping`
                       : "🎉 You've unlocked free express shipping!"}
                   </span>
-                  <span className="text-[11px] font-black text-emerald-700">
+                  <span className="text-[11px] font-bold text-emerald-700">
                     {Math.round(shippingProgress)}%
                   </span>
                 </div>
@@ -128,14 +128,14 @@ export function CartDrawer() {
                   <div className="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-4 text-slate-400">
                     <ShoppingBag className="w-10 h-10 stroke-[1.5]" />
                   </div>
-                  <p className="text-base font-black text-slate-900 mb-1">Your cart is empty</p>
+                  <p className="text-base font-bold text-slate-900 mb-1">Your cart is empty</p>
                   <p className="text-xs text-slate-500 max-w-xs mb-5">
                     Browse our top gadgets, headphones, and electronics imported from Dubai.
                   </p>
                   <Link
                     href="/#shop"
                     onClick={closeCart}
-                    className="inline-flex items-center justify-center px-6 py-2.5 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-black text-sm rounded-xl transition-all shadow-sm cursor-pointer"
+                    className="inline-flex items-center justify-center px-6 py-2.5 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold text-sm rounded-xl transition-all shadow-sm cursor-pointer"
                   >
                     Start Shopping
                   </Link>
@@ -174,7 +174,7 @@ export function CartDrawer() {
                           />
                           {isOutOfStock && (
                             <div className="absolute inset-0 bg-red-900/40 flex items-center justify-center p-1 text-center">
-                              <span className="text-[9px] font-black tracking-wider uppercase text-white bg-red-600 px-1.5 py-0.5 rounded shadow">
+                              <span className="text-[9px] font-bold tracking-wider uppercase text-white bg-red-600 px-1.5 py-0.5 rounded shadow">
                                 Sold Out
                               </span>
                             </div>
@@ -205,7 +205,7 @@ export function CartDrawer() {
 
                           <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200/60">
                             <div className="flex items-baseline gap-1.5">
-                              <span className="text-sm font-black text-slate-900">
+                              <span className="text-sm font-bold text-slate-900">
                                 ₹{item.price.toLocaleString("en-IN")}
                               </span>
                               {item.mrp && item.mrp > item.price ? (
@@ -265,7 +265,7 @@ export function CartDrawer() {
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-slate-600">Subtotal</span>
-                  <span className="text-xl font-black text-slate-900">
+                  <span className="text-xl font-bold text-slate-900">
                     ₹{subtotal.toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -290,7 +290,7 @@ export function CartDrawer() {
                         router.push("/checkout");
                       }
                     }}
-                    className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-black text-sm tracking-wide transition-all ${
+                    className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm tracking-wide transition-all ${
                       hasOutOfStockItems
                         ? "bg-slate-300 text-slate-500 cursor-not-allowed opacity-80"
                         : "bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 shadow-md hover:shadow-lg active:scale-[0.99] cursor-pointer"
