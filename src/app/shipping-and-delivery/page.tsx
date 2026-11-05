@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import {
   Truck,
-  ArrowLeft,
   Clock,
   Package,
   Layers,
@@ -18,280 +17,259 @@ import {
   ArrowRight,
   ExternalLink,
   PackageSearch,
+  ChevronRight as BreadcrumbChevron,
+  MessageCircle,
+  Plane,
+  Box,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
-  title: "Shipping & Delivery Policy | Vittal Digital",
+  title: "Shipping & Delivery Policy | Vittal Digital — Dubai Sourced Flagship Electronics",
   description:
-    "Learn about Vittal Digital shipping and delivery across India, including order processing times, delivery timelines, express shipping, discreet plain packaging, and support.",
+    "Learn about Vittal Digital's express insured air logistics, 5-7 business days delivery timeline across India, shockproof packaging, and real-time WhatsApp tracking.",
 };
 
 export default function ShippingAndDeliveryPage() {
   return (
-    <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col justify-between selection:bg-[#002D62] selection:text-white font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-28 sm:pt-32 pb-16 w-full">
+      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-16 w-full">
         {/* Navigation Breadcrumb */}
-        <div className="mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm text-stone-600 hover:text-[#5b1420] transition-colors mb-4 font-bold"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 mb-6">
+          <Link href="/" className="hover:text-[#002D62] transition-colors">
+            Home
           </Link>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#f8bac5] border-2 border-stone-800 flex items-center justify-center text-[#5b1420] shadow-[0_3px_0_0_#2b2b2b]">
-              <Truck className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-black font-tj-serif text-stone-900 tracking-tight">
-                Shipping and Delivery
-              </h1>
-              <p className="text-xs sm:text-sm text-stone-600">
-                Discreet plain-box nationwide express delivery policy
-              </p>
-            </div>
+          <BreadcrumbChevron className="w-3.5 h-3.5 text-slate-400" />
+          <span className="font-medium text-slate-800">Shipping &amp; Delivery</span>
+        </nav>
+
+        {/* Header Intro */}
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-xs font-semibold text-[#002D62] mb-3 shadow-2xs">
+            <Truck className="w-3.5 h-3.5 text-[#002D62]" />
+            <span>Priority Air Logistics • Pan-India Doorstep Delivery</span>
           </div>
 
-          <div className="bg-white border-2 border-stone-800 rounded-3xl p-6 shadow-[0_4px_0_0_#2b2b2b] text-sm sm:text-base text-stone-700 leading-relaxed">
-            At <strong className="text-stone-900">Vittal Digital</strong>, we ensure every order is handled with maximum privacy and care — from tamper-proof plain box packaging to express doorstep delivery. All our products are <strong className="text-stone-900">100% authentic Turkish Themra Epimedium Macun imports</strong> with genuine verification seals.
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-slate-900 tracking-tight leading-tight">
+            Shipping and Delivery Policy
+          </h1>
+          <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed font-normal">
+            Fast, insured express air cargo delivering factory-sealed flagship electronics directly from Dubai retail hubs to your doorstep.
+          </p>
+
+          <div className="mt-5 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs text-xs sm:text-sm text-slate-600 leading-relaxed">
+            At <strong className="font-semibold text-slate-900">Vittal Digital</strong>, we personally oversee every step of your shipment — from serialized barcode scanning and multi-layer shockproof boxing to priority express air transit. Every parcel is <strong className="font-semibold text-slate-900">100% insured against loss, transit damage, or handling defects</strong> until it is safely handed over to you.
           </div>
         </div>
 
-        {/* Quick Order Tracking Action Banner */}
-        <div className="bg-gradient-to-r from-orange-500 via-[#FF7A00] to-amber-500 rounded-2xl p-4 sm:p-5 text-white shadow-md shadow-orange-500/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        {/* Live Order Tracking Action Banner */}
+        <div className="bg-gradient-to-r from-[#001D40] via-[#002D62] to-[#0A3D78] rounded-2xl p-5 sm:p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0 text-white">
-              <PackageSearch className="w-6 h-6" />
+            <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0 text-white">
+              <PackageSearch className="w-6 h-6 text-[#FFBE00]" />
             </div>
             <div>
-              <h3 className="font-bold text-base sm:text-lg text-white">Looking to track your order?</h3>
-              <p className="text-xs sm:text-sm text-white/90">
-                Redirect to our live tracking portal using your Order ID or Mobile Number.
+              <h3 className="font-semibold text-base sm:text-lg text-white">Looking to track your parcel?</h3>
+              <p className="text-xs sm:text-sm text-blue-100/90 mt-0.5">
+                Check live GPS milestone scans using your Order ID or registered mobile number.
               </p>
             </div>
           </div>
           <Link
             href="/order-tracking"
-            className="inline-flex items-center justify-center gap-2 bg-white text-[#FF7A00] hover:bg-orange-50 font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm flex-shrink-0 active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-2 bg-[#FFBE00] hover:bg-[#e6ab00] text-[#001D40] font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition-all shadow-xs shrink-0 active:scale-[0.98]"
           >
             <span>Track Your Order</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
-        {/* Quick Highlights Cards */}
+        {/* 3 Key Highlights Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center mb-3">
-              <Clock className="w-5 h-5" />
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 text-[#002D62] flex items-center justify-center mb-3">
+              <Clock className="w-4 h-4" />
             </div>
-            <h4 className="font-semibold text-gray-900 text-sm">Processing Time</h4>
-            <p className="text-xs text-gray-500 mt-1">1-3 business days standard processing</p>
+            <h4 className="font-semibold text-slate-900 text-xs sm:text-sm">24-Hour Dispatch</h4>
+            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              Same-day serial number allocation, quality inspection, and courier handover.
+            </p>
           </div>
-          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
-              <BadgePercent className="w-5 h-5" />
+
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center mb-3">
+              <Plane className="w-4 h-4" />
             </div>
-            <h4 className="font-semibold text-gray-900 text-sm">Free Delivery</h4>
-            <p className="text-xs text-gray-500 mt-1">On all orders above ₹999</p>
+            <h4 className="font-semibold text-slate-900 text-xs sm:text-sm">5–7 Days Delivery</h4>
+            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              Priority insured air cargo transit nationwide across all Indian pin codes.
+            </p>
           </div>
-          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
-              <Truck className="w-5 h-5" />
+
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-100 text-amber-700 flex items-center justify-center mb-3">
+              <ShieldCheck className="w-4 h-4" />
             </div>
-            <h4 className="font-semibold text-gray-900 text-sm">Delivery Window</h4>
-            <p className="text-xs text-gray-500 mt-1">5-7 business days across India</p>
+            <h4 className="font-semibold text-slate-900 text-xs sm:text-sm">100% Transit Insurance</h4>
+            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              Full monetary coverage against loss, theft, or courier damage during transit.
+            </p>
           </div>
         </div>
 
-        {/* Main Content Sections */}
-        <div className="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-gray-100 space-y-9 text-sm sm:text-base text-gray-600 leading-relaxed">
-          {/* 1. Order Processing */}
+        {/* Policy Details Container */}
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-xs space-y-8 text-xs sm:text-sm text-slate-600 leading-relaxed">
+          {/* Section 1 */}
           <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg border-b border-gray-100 pb-2">
-              <Clock className="w-5 h-5 text-[#FF7A00]" />
-              <h2>Order Processing</h2>
+            <div className="flex items-center gap-2.5 text-slate-900 font-semibold text-base sm:text-lg border-b border-slate-100 pb-2.5">
+              <Box className="w-5 h-5 text-[#002D62]" />
+              <h2>1. Order Processing &amp; Serialization</h2>
             </div>
             <p>
-              Once you place an order, our team begins preparing it for dispatch. Standard processing time is <strong className="text-gray-900">1-3 business days</strong>. During festive or high-demand periods, order handling may take slightly longer. Once your order is shipped, you&apos;ll receive a confirmation email and WhatsApp message with full tracking details.
+              Once your order is confirmed, our fulfillment hub allocates a genuine, factory-sealed Dubai retail unit. We verify the manufacturer serial number, scan the warranty barcode, and pack the device in specialized transit enclosures within <strong className="font-semibold text-slate-900">24 business hours</strong>.
+            </p>
+            <p>
+              You receive an immediate order confirmation via Email and WhatsApp containing your dedicated Order ID (e.g., #VD-1001) and order summary.
             </p>
           </section>
 
-          {/* 2. Estimated Delivery Timeline */}
+          {/* Section 2 */}
           <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg border-b border-gray-100 pb-2">
-              <Truck className="w-5 h-5 text-[#FF7A00]" />
-              <h2>Estimated Delivery Timeline</h2>
-            </div>
-            <ul className="space-y-2 list-disc list-inside pl-2 text-gray-700">
-              <li>
-                <strong className="text-gray-900">Standard Shipping (Across India):</strong> 5-7 business days
-              </li>
-              <li>
-                <strong className="text-gray-900">Remote or Rural Areas:</strong> May take an additional 2-3 business days
-              </li>
-            </ul>
-            <p className="text-xs sm:text-sm bg-gray-50 border border-gray-200/80 rounded-xl p-3 text-gray-600">
-              <strong className="text-gray-900">Note:</strong> Delivery times are estimates and may vary due to logistics delays, weather conditions, or regional restrictions. Vittal Digital always strives to ensure timely deliveries through trusted courier partners.
-            </p>
-          </section>
-
-          {/* 3. Shipping Charges */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg border-b border-gray-100 pb-2">
-              <BadgePercent className="w-5 h-5 text-[#FF7A00]" />
-              <h2>Shipping Charges</h2>
-            </div>
-            <ul className="space-y-2 list-disc list-inside pl-2 text-gray-700">
-              <li>
-                <strong className="text-gray-900">Free Shipping:</strong> Available on all orders above ₹999
-              </li>
-              <li>
-                Orders below ₹999 may incur a standard shipping fee ranging from ₹79-₹199, depending on location and product category.
-              </li>
-            </ul>
-          </section>
-
-          {/* 4. Tracking Information with Redirect Option */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg border-b border-gray-100 pb-2">
-              <Package className="w-5 h-5 text-[#FF7A00]" />
-              <h2>Tracking Information</h2>
+            <div className="flex items-center gap-2.5 text-slate-900 font-semibold text-base sm:text-lg border-b border-slate-100 pb-2.5">
+              <Truck className="w-5 h-5 text-[#002D62]" />
+              <h2>2. Delivery Timelines Across India</h2>
             </div>
             <p>
-              After dispatch, you&apos;ll receive a <strong className="text-gray-900">tracking link</strong> via WhatsApp and Email. Tracking updates generally take <strong className="text-gray-900">24-48 hours</strong> to become active after shipment. You can use this link to follow your package until it&apos;s delivered safely to your doorstep.
+              We partner with premier national express air carriers (Delhivery Express, Blue Dart Apex, DTDC Air) to maintain rapid, predictable delivery:
             </p>
-            
-            {/* Inline Redirect to Order Tracking */}
-            <div className="bg-orange-50/70 border border-orange-200/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-3">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FF7A00]/10 text-[#FF7A00] flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Search className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-gray-900">Live Order Tracking Portal</h4>
-                  <p className="text-xs text-gray-600 mt-0.5">
-                    Redirect to our order tracking system for real-time Delhivery &amp; courier status checkpoints.
-                  </p>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
+                <span className="text-[10px] font-semibold text-[#002D62] uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">Tier-1 &amp; Metros</span>
+                <h4 className="font-semibold text-xs sm:text-sm text-slate-900 mt-2">5 to 6 Business Days</h4>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
+                  Delhi NCR, Mumbai, Bengaluru, Chennai, Hyderabad, Kolkata, Pune, Ahmedabad.
+                </p>
               </div>
-              <Link
-                href="/order-tracking"
-                className="inline-flex items-center justify-center gap-2 bg-[#FF7A00] hover:bg-[#e06b00] text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm flex-shrink-0 active:scale-[0.98]"
-              >
-                <span>Go to Order Tracking</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </Link>
+
+              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
+                <span className="text-[10px] font-semibold text-[#002D62] uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">Tier-2 &amp; Regional</span>
+                <h4 className="font-semibold text-xs sm:text-sm text-slate-900 mt-2">6 to 7 Business Days</h4>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
+                  Major state capitals, commercial centers, and district headquarters nationwide.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
+                <span className="text-[10px] font-semibold text-[#002D62] uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">Remote &amp; Islands</span>
+                <h4 className="font-semibold text-xs sm:text-sm text-slate-900 mt-2">7 to 8 Business Days</h4>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
+                  North-East states, Jammu &amp; Kashmir, Andaman &amp; Nicobar, Lakshadweep.
+                </p>
+              </div>
             </div>
           </section>
 
-          {/* 5. Multiple Shipments */}
+          {/* Section 3 */}
           <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg border-b border-gray-100 pb-2">
-              <Layers className="w-5 h-5 text-[#FF7A00]" />
-              <h2>Multiple Shipments</h2>
+            <div className="flex items-center gap-2.5 text-slate-900 font-semibold text-base sm:text-lg border-b border-slate-100 pb-2.5">
+              <Layers className="w-5 h-5 text-[#002D62]" />
+              <h2>3. Heavy-Duty Shockproof Packaging Standards</h2>
             </div>
             <p>
-              To ensure faster delivery, your order might be shipped in multiple packages if it contains multiple items. Each shipment will have its own tracking ID and will be delivered individually. Rest assured — you&apos;ll receive all your products.
+              To ensure fragile screens, lenses, and sensitive internal chips arrive in pristine condition, we deploy a 3-layer protective packaging system:
             </p>
-          </section>
-
-          {/* 6. Delivery Attempts */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg border-b border-gray-100 pb-2">
-              <CheckCircle2 className="w-5 h-5 text-[#FF7A00]" />
-              <h2>Delivery Attempts</h2>
-            </div>
-            <p>
-              Our courier partners will attempt delivery <strong className="text-gray-900">up to 3 times</strong>. If you are unavailable, they may contact you for rescheduling. In case of non-delivery after multiple attempts, the parcel may be returned to us. Please contact our team immediately if this happens so we can assist you further.
-            </p>
-          </section>
-
-          {/* 7. Service Coverage */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg border-b border-gray-100 pb-2">
-              <MapPin className="w-5 h-5 text-[#FF7A00]" />
-              <h2>Service Coverage</h2>
-            </div>
-            <ul className="space-y-2 list-disc list-inside pl-2 text-gray-700">
-              <li>We currently deliver across all major cities and towns in India.</li>
-              <li>Deliveries are not available to P.O. boxes, APO/FPO/DPO addresses, or restricted zones.</li>
+            <ul className="space-y-2 list-none">
+              <li className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span><strong className="font-semibold text-slate-900">Anti-Static Inner Sleeve:</strong> Neutralizes electrostatic discharge risks during flight cargo movement.</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span><strong className="font-semibold text-slate-900">High-Density Shock Cushions:</strong> Thick corner reinforcement preventing drop or compression impact.</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span><strong className="font-semibold text-slate-900">Holographic Tamper Seal:</strong> Void-detecting security tape that visibly indicates any unauthorized opening attempt.</span>
+              </li>
             </ul>
           </section>
 
-          {/* 8. Damaged, Missing, or Lost Orders */}
+          {/* Section 4 */}
           <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg border-b border-gray-100 pb-2">
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
-              <h2>Damaged, Missing, or Lost Orders</h2>
+            <div className="flex items-center gap-2.5 text-slate-900 font-semibold text-base sm:text-lg border-b border-slate-100 pb-2.5">
+              <MessageCircle className="w-5 h-5 text-[#002D62]" />
+              <h2>4. Real-Time WhatsApp &amp; SMS Milestone Tracking</h2>
             </div>
             <p>
-              All parcels are securely packed and checked before dispatch. In the rare case that your order arrives damaged, incomplete, or appears lost in transit, please contact us within <strong className="text-gray-900">24 hours of delivery</strong> at <strong className="text-gray-900">support@vittaldigital.com</strong>.
+              As soon as your shipment is dispatched, you receive a direct tracking link with your courier Air Waybill (AWB) number. Automated notifications are sent at each key event:
             </p>
-            <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 text-amber-950 flex items-start gap-3">
-              <Video className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm">
-                To process your claim smoothly, please provide a <strong className="text-amber-950">clear unboxing video</strong> showing the issue. After verification, we will arrange a replacement or initiate a refund as per our{" "}
-                <Link href="/return" className="text-[#FF7A00] font-semibold underline hover:text-[#e06b00]">
-                  Return Policy
+            <ul className="space-y-1.5 list-none pl-2">
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#002D62]" />
+                <span><strong className="font-semibold text-slate-900">Order Dispatched:</strong> Handed over to air cargo with active AWB link.</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#002D62]" />
+                <span><strong className="font-semibold text-slate-900">Hub Arrival:</strong> Landed at your destination city airport logistics terminal.</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#002D62]" />
+                <span><strong className="font-semibold text-slate-900">Out for Delivery:</strong> Executive name and contact details with delivery OTP.</span>
+              </li>
+            </ul>
+          </section>
+
+          {/* Section 5 */}
+          <section className="space-y-3">
+            <div className="flex items-center gap-2.5 text-slate-900 font-semibold text-base sm:text-lg border-b border-slate-100 pb-2.5">
+              <Video className="w-5 h-5 text-[#002D62]" />
+              <h2>5. Doorstep Handover &amp; Unboxing Recommendation</h2>
+            </div>
+            <p>
+              Deliveries are conducted via secure contactless handover requiring an SMS OTP shared only when the physical parcel is in your presence.
+            </p>
+            <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-4 text-xs text-amber-950 space-y-1.5">
+              <div className="flex items-center gap-2 font-semibold text-amber-900">
+                <AlertTriangle className="w-4 h-4 text-amber-700" />
+                <span>Always Record a Continuous Unboxing Video</span>
+              </div>
+              <p>
+                When receiving your electronics package, inspect the outer tamper-evident holographic tape. We strongly advise recording a continuous unboxing video from before opening the box through powering on the device. This guarantees immediate zero-hassle coverage under our{" "}
+                <Link href="/return" className="text-[#002D62] font-semibold underline underline-offset-2">
+                  7-Day Replacement Guarantee
                 </Link>.
               </p>
             </div>
           </section>
+        </div>
 
-          {/* 9. Customs, Duties & Taxes */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg border-b border-gray-100 pb-2">
-              <FileText className="w-5 h-5 text-[#FF7A00]" />
-              <h2>Customs, Duties &amp; Taxes</h2>
-            </div>
-            <p>
-              All prices shown on Vittal Digital are inclusive of applicable Indian taxes. If any regional tax or surcharge applies at the delivery location, it will be calculated at checkout. Vittal Digital is not responsible for any additional local charges imposed by authorities post-shipment.
-            </p>
-          </section>
-
-          {/* 10. Our Commitment */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg border-b border-gray-100 pb-2">
-              <ShieldCheck className="w-5 h-5 text-[#FF7A00]" />
-              <h2>Our Commitment</h2>
-            </div>
-            <p>
-              We value your time and trust. Vittal Digital is committed to providing fast, reliable, and safe delivery for every order. From packaging to tracking, our dedicated team ensures your products reach you in perfect condition.
-            </p>
-          </section>
-
-          {/* 11. Need Assistance? */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-gray-900 font-bold text-lg border-b border-gray-100 pb-2">
-              <Mail className="w-5 h-5 text-[#FF7A00]" />
-              <h2>Need Assistance?</h2>
-            </div>
-            <p>
-              For order-related queries or delivery support, feel free to reach out to our customer care team at:
-            </p>
-            <div className="flex flex-wrap items-center gap-3 pt-1">
-              <a
-                href="mailto:support@vittaldigital.com"
-                className="inline-flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-950 font-semibold px-4 py-2 rounded-xl hover:bg-orange-100 transition-colors"
-              >
-                📧 support@vittaldigital.com
-              </a>
-              <a
-                href="https://wa.me/916238165935?text=Hi%20Vittal%20Digital%2C%20I%20have%20an%20inquiry%20about%20shipping"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-950 font-semibold px-4 py-2 rounded-xl hover:bg-emerald-100 transition-colors"
-              >
-                💬 WhatsApp Support
-              </a>
-            </div>
-          </section>
+        {/* Contact Help Strip */}
+        <div className="mt-8 bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold text-slate-900">Have questions regarding your shipment?</h3>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5 font-normal">Our logistics coordinators are available on WhatsApp and email to assist you.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href="mailto:support@vittaldigital.com"
+              className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-[#002D62] text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-blue-200 transition-colors"
+            >
+              <Mail className="w-4 h-4 text-[#002D62]" />
+              support@vittaldigital.com
+            </a>
+            <a
+              href="https://wa.me/916238165935?text=Hi%20Vittal%20Digital%2C%20I%20have%20a%20query%20about%20shipping"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-[#25D366]/30 transition-colors"
+            >
+              <MessageCircle className="w-4 h-4 text-[#25D366]" />
+              WhatsApp: +91 916238165935
+            </a>
+          </div>
         </div>
       </main>
 

@@ -2,182 +2,263 @@ import React from "react";
 import Link from "next/link";
 import {
   FileText,
-  ArrowLeft,
   ShieldCheck,
-  CheckCircle2,
-  Mail,
-  AlertCircle,
   CreditCard,
   Truck,
   RotateCcw,
-  Lock,
-  UserCheck,
   Sparkles,
+  Award,
+  Lock,
+  Scale,
+  Building2,
+  Mail,
+  ChevronRight as BreadcrumbChevron,
+  MessageCircle,
+  HelpCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
-  title: "Terms and Conditions | Vittal Digital",
+  title: "Terms and Conditions | Vittal Digital — Dubai Sourced Flagship Electronics",
   description:
-    "Read the Terms and Conditions governing your use of the Vittal Digital website, online shopping services, purchases, payments, orders, and returns in India.",
+    "Review the terms and conditions governing purchases, payments, 1-year warranty coverage, express shipping, and authentic Dubai retail consumer electronics from Vittal Digital.",
 };
 
 export default function TermsAndConditionsPage() {
   const termsList = [
     {
-      id: "website-use",
-      number: "1",
-      title: "Use of Our Website",
+      id: "platform-use",
+      number: "01",
+      title: "Use of Our Platform",
       icon: Sparkles,
       content: (
-        <p>
-          By accessing or using <strong className="text-gray-900">Vittal Digital</strong>, you agree to comply with these Terms and Conditions. You must be at least 18 years old or accessing the site under the supervision of a parent or legal guardian. You agree to use our website solely for lawful purposes and refrain from any actions that may harm, disrupt, or misuse the platform.
-        </p>
+        <div className="space-y-3">
+          <p>
+            By accessing or using <strong className="font-semibold text-slate-900">Vittal Digital</strong> (accessible at{" "}
+            <a href="https://vittaldigital.com" className="text-[#002D62] font-semibold underline underline-offset-2">
+              vittaldigital.com
+            </a>
+            ), you agree to comply with and be bound by these Terms and Conditions. You represent that you are at least 18 years of age or accessing our platform under the direct supervision of a parent or legal guardian.
+          </p>
+          <p>
+            You agree to use our website strictly for lawful consumer shopping purposes and refrain from transmitting malicious code, attempting unauthorized server access, scraping product catalog data, or misrepresenting your identity.
+          </p>
+        </div>
       ),
     },
     {
-      id: "products-quality",
-      number: "2",
-      title: "Products and Quality Assurance",
+      id: "authenticity-sourcing",
+      number: "02",
+      title: "Direct Dubai Retail Sourcing & Hardware Authenticity",
       icon: ShieldCheck,
       content: (
         <div className="space-y-3">
           <p>
-            At <strong className="text-gray-900">Vittal Digital</strong>, every product listed on our platform is <strong className="text-gray-900">100% authentic, tamper-proof sealed, and directly imported from Turkey</strong> to ensure you receive only genuine herbal macun paste. We take complete responsibility for product handling, packaging, and discreet express shipping.
+            Every product showcased and sold on <strong className="font-semibold text-slate-900">Vittal Digital</strong> is <strong className="font-semibold text-slate-900">100% brand-new, factory-sealed, and sourced directly from authorized retail and duty-free distributors in Dubai (United Arab Emirates)</strong>.
           </p>
-          <ul className="list-disc list-inside space-y-1.5 pl-2 text-gray-700">
-            <li>Product descriptions, dosage guidelines, and packaging options are provided for clarity.</li>
-            <li>We reserve the right to modify, update, or discontinue any package tier without prior notice.</li>
-            <li>Vittal Digital guarantees authentic Themra herbal paste formulation with original holograms.</li>
+          <ul className="space-y-2 list-none text-slate-600">
+            <li className="flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span>All consumer hardware is 100% genuine with intact manufacturer tamper seals and verifiable international serial numbers.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span>Smartphones, tablets, and cellular smartwatches are fully factory-unlocked and compatible with Indian 5G, 4G LTE, VoLTE, and Wi-Fi networks (Airtel, Jio, Vi).</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span>Chargers, power adapters, and voltage profiles meet Indian 230V 50Hz electrical standards.</span>
+            </li>
           </ul>
         </div>
       ),
     },
     {
-      id: "pricing-payments",
-      number: "3",
-      title: "Pricing and Payments",
+      id: "pricing-payment",
+      number: "03",
+      title: "Pricing, Invoicing & Secure Payments",
       icon: CreditCard,
       content: (
         <div className="space-y-3">
           <p>
-            All prices displayed on Vittal Digital are in INR (₹) inclusive of all applicable taxes. We reserve the right to adjust pricing, promotional discounts, or bundle offers. Payments can be completed online via UPI, Cards, Netbanking, or via Cash on Delivery (COD) across India.
+            All prices listed on Vittal Digital are expressed in Indian Rupees (INR ₹) and are fully inclusive of all applicable import duties and goods &amp; services taxes. There are no hidden fees or extra surcharges added at final checkout.
           </p>
-          <p className="bg-red-50/60 border border-red-100 rounded-xl p-3 text-red-950 font-medium text-sm">
-            Vittal Digital ensures that all payment transactions are encrypted and processed safely through verified RBI-compliant gateways.
+          <p>
+            We support certified online payments via <strong className="font-semibold text-slate-900">Razorpay</strong>, utilizing 256-bit bank-grade TLS encryption. Accepted methods include:
           </p>
+          <ul className="space-y-1.5 list-none pl-1 text-slate-600">
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#002D62]" />
+              <span>UPI (Google Pay, PhonePe, Paytm, BHIM, CRED)</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#002D62]" />
+              <span>Major Credit &amp; Debit Cards (Visa, Mastercard, RuPay, American Express)</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#002D62]" />
+              <span>Net Banking across 50+ major Indian commercial banks</span>
+            </li>
+          </ul>
+          <div className="bg-blue-50/70 border border-blue-200/70 rounded-xl p-3.5 text-xs text-slate-700 leading-relaxed">
+            <strong className="font-semibold text-slate-900">Payment Security:</strong> Vittal Digital never stores or processes raw credit/debit card numbers or UPI PINs. All financial transactions are managed securely by RBI-licensed payment aggregators.
+          </div>
         </div>
       ),
     },
     {
-      id: "shipping-delivery",
-      number: "4",
-      title: "Shipping and Delivery",
+      id: "shipping-logistics",
+      number: "04",
+      title: "Insured Express Air Logistics & Shipping",
       icon: Truck,
       content: (
         <div className="space-y-3">
           <p>
-            Vittal Digital directly manages the packaging and shipping of every order to ensure reliable, discreet, and safe delivery. Shipping times typically range from 24 to 48 hours for express prepaid orders and 5–7 business days nationwide across India.
+            We manage the packaging and dispatch of every order through priority air cargo logistics to ensure prompt, secure, and fully trackable delivery across India.
           </p>
-          <p>
-            While we strive for prompt dispatch, Vittal Digital is not responsible for unforeseen delays caused by logistics partners, natural events, or regional restrictions.
-          </p>
+          <ul className="space-y-2 list-none text-slate-600">
+            <li className="flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span><strong className="font-semibold text-slate-900">Dispatch Timeline:</strong> Orders are verified, serialized, and handed over to logistics partners within 24 business hours.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span><strong className="font-semibold text-slate-900">Transit Timeline:</strong> Standard express air delivery typically takes <strong className="font-semibold text-slate-900">5 to 7 business days</strong> nationwide across India.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span><strong className="font-semibold text-slate-900">100% Transit Insurance:</strong> All shipments carry full transit coverage against loss, courier mishandling, or physical in-transit damage.</span>
+            </li>
+          </ul>
         </div>
       ),
     },
     {
-      id: "returns-refunds",
-      number: "5",
-      title: "Returns and Refunds",
+      id: "warranty-support",
+      number: "05",
+      title: "1-Year Pan-India Warranty Coverage",
+      icon: Award,
+      content: (
+        <div className="space-y-3">
+          <p>
+            All electronics and gadgets purchased from Vittal Digital are backed by our <strong className="font-semibold text-slate-900">1-Year Comprehensive Warranty Support</strong> across India.
+          </p>
+          <p>
+            This warranty safeguards your investment against inherent hardware defects, motherboard malfunctions, internal display component failures, and manufacturing faults under normal intended usage. We provide dedicated doorstep courier repair pickup and certified technician service across 28 states.
+          </p>
+          <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 text-xs text-slate-600 leading-relaxed">
+            <strong className="font-semibold text-slate-900">Warranty Exclusions:</strong> Warranty does not cover accidental physical liquid spills, severe drops/cracked screens caused after receipt, unofficial software flashing/rooting, or repairs carried out by unauthorized third-party workshops.
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "replacements-returns",
+      number: "06",
+      title: "7-Day Replacement Guarantee & Return Terms",
       icon: RotateCcw,
       content: (
         <div className="space-y-3">
           <p>
-            We stand by the quality of every product we deliver with our <strong className="text-gray-900">15-day unused strip refund guarantee</strong>.
+            We maintain a customer-friendly <strong className="font-semibold text-slate-900">7-Day Replacement Guarantee</strong> for items received in physically damaged condition, with out-of-the-box hardware defects, or differing from the confirmed model.
           </p>
-          <ul className="list-disc list-inside space-y-1.5 pl-2 text-gray-700">
-            <li>For damaged parcels, please report with an unboxing video to <strong className="text-gray-900">support@vittaldigital.com</strong> or WhatsApp within <strong className="text-gray-900">48 hours of delivery</strong>.</li>
-            <li>Once reviewed and verified, our team will process the replacement or refund accordingly.</li>
+          <ul className="space-y-2 list-none text-slate-600">
+            <li className="flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span><strong className="font-semibold text-slate-900">Mandatory Unboxing Video:</strong> A continuous, uncut video recorded from before breaking the outer courier seal to verifying the hardware condition is mandatory to validate any physical transit damage or missing component claim.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span><strong className="font-semibold text-slate-900">Notification Window:</strong> Issues must be reported to our WhatsApp support (+91 916238165935) or email within 48 hours of doorstep delivery.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span>Detailed step-by-step instructions can be viewed in our full{" "}
+                <Link href="/return" className="text-[#002D62] font-semibold underline underline-offset-2">
+                  Return &amp; Refund Policy
+                </Link>.
+              </span>
+            </li>
           </ul>
-          <p className="pt-1">
-            For more details, please visit our{" "}
-            <Link href="/return" className="text-[#5b1420] font-bold underline hover:text-[#7d1c2e]">
-              Return Policy
-            </Link>{" "}
-            page.
+        </div>
+      ),
+    },
+    {
+      id: "cancellations-refunds",
+      number: "07",
+      title: "Order Cancellation & Rapid Refund Timelines",
+      icon: CreditCard,
+      content: (
+        <div className="space-y-3">
+          <p>
+            You can cancel any order free of charge at any time prior to courier dispatch directly from your <strong className="font-semibold text-slate-900">My Orders</strong> portal or by reaching out to our live WhatsApp care.
           </p>
+          <p>
+            Upon cancellation or approved return, a 100% full refund is initiated back to your original payment method:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-xl p-3 text-xs text-slate-800">
+              <strong className="font-semibold text-emerald-900 block mb-0.5">UPI Payments (GPay, PhonePe, Paytm)</strong>
+              Credited back within <strong className="font-semibold text-slate-900">2 to 4 hours</strong>.
+            </div>
+            <div className="bg-blue-50/70 border border-blue-200/70 rounded-xl p-3 text-xs text-slate-800">
+              <strong className="font-semibold text-[#002D62] block mb-0.5">Credit/Debit Cards &amp; Netbanking</strong>
+              Credited within <strong className="font-semibold text-slate-900">2 to 4 business days</strong>.
+            </div>
+          </div>
         </div>
       ),
     },
     {
       id: "intellectual-property",
-      number: "6",
-      title: "Intellectual Property",
-      icon: Lock,
+      number: "08",
+      title: "Intellectual Property & Manufacturer Trademarks",
+      icon: Scale,
       content: (
         <p>
-          All content, including text, images, product designs, logos, and graphics on Vittal Digital, is the intellectual property of <strong className="text-gray-900">Vittal Digital</strong> and its licensors. Unauthorized use, reproduction, or modification of any material is strictly prohibited.
+          All product brand names, logos, registered trademarks, and specifications (including Apple, Samsung, Sony, Bang &amp; Olufsen, and others) displayed on Vittal Digital are the exclusive property of their respective manufacturer brand owners. Vittal Digital operates as an independent procurement and retail direct importer and does not claim ownership over manufacturer trademarks.
         </p>
       ),
     },
     {
-      id: "user-accounts",
-      number: "7",
-      title: "User Accounts",
-      icon: UserCheck,
+      id: "liability-governing-law",
+      number: "09",
+      title: "Governing Law & Legal Jurisdiction",
+      icon: Building2,
       content: (
         <p>
-          When creating an account on Vittal Digital, you agree to provide accurate and current information. You are responsible for safeguarding your login credentials and for all activities under your account. Vittal Digital reserves the right to suspend or terminate accounts found to be in violation of our policies or involved in fraudulent activities.
+          These Terms and Conditions and any transaction executed through Vittal Digital shall be governed by and construed in accordance with the laws of the Republic of India. Any dispute, claim, or controversy arising out of or relating to your purchase or use of the website shall be subject to the exclusive jurisdiction of the competent civil courts situated in <strong className="font-semibold text-slate-900">Bengaluru, Karnataka, India</strong>.
         </p>
       ),
     },
     {
-      id: "limitation-liability",
-      number: "8",
-      title: "Limitation of Liability",
-      icon: AlertCircle,
-      content: (
-        <p>
-          Vittal Digital shall not be held liable for any indirect, incidental, or consequential damages arising from the use of our website, products, or services, including but not limited to data loss, loss of profits, or delays beyond our control.
-        </p>
-      ),
-    },
-    {
-      id: "policy-updates",
-      number: "9",
-      title: "Policy Updates",
-      icon: ShieldCheck,
-      content: (
-        <p>
-          Vittal Digital reserves the right to revise, modify, or update these Terms &amp; Conditions at any time without prior notice. Continued use of the website after changes are posted constitutes your acceptance of the updated terms.
-        </p>
-      ),
-    },
-    {
-      id: "contact-us",
+      id: "customer-care",
       number: "10",
-      title: "Contact Us",
+      title: "Customer Inquiries & Formal Notices",
       icon: Mail,
       content: (
         <div className="space-y-3">
           <p>
-            For any questions or concerns related to these Terms and Conditions, please contact our support team at:
+            If you have any questions, clarifications, or feedback regarding these Terms and Conditions, please contact our support desk:
           </p>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 pt-1">
             <a
               href="mailto:support@vittaldigital.com"
-              className="inline-flex items-center gap-2 bg-stone-100 border-2 border-stone-800 text-stone-900 font-bold px-4 py-2 rounded-xl hover:bg-stone-200 transition-colors shadow-[0_2px_0_0_#2b2b2b]"
+              className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-[#002D62] text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl border border-blue-200 transition-colors"
             >
-              📧 support@vittaldigital.com
+              <Mail className="w-4 h-4 text-[#002D62]" />
+              support@vittaldigital.com
             </a>
             <a
-              href="https://wa.me/916238165935?text=Hi%20Vittal%20Digital%2C%20I%20have%20a%20question%20about%20your%20terms"
+              href="https://wa.me/916238165935?text=Hi%20Vittal%20Digital%2C%20I%20have%20a%20question%20regarding%20terms"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-[#d1fae5] border-2 border-stone-800 text-[#0e4a3b] font-bold px-4 py-2 rounded-xl hover:bg-emerald-200 transition-colors shadow-[0_2px_0_0_#2b2b2b]"
+              className="inline-flex items-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl border border-[#25D366]/30 transition-colors"
             >
-              💬 WhatsApp: +91 62381 65935
+              <MessageCircle className="w-4 h-4 text-[#25D366]" />
+              WhatsApp: +91 916238165935
             </a>
           </div>
         </div>
@@ -186,53 +267,87 @@ export default function TermsAndConditionsPage() {
   ];
 
   return (
-    <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col justify-between selection:bg-[#002D62] selection:text-white font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-28 sm:pt-32 pb-16 w-full">
+      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-16 w-full">
         {/* Navigation Breadcrumb */}
-        <div className="mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm text-stone-600 hover:text-[#5b1420] transition-colors mb-4 font-bold"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 mb-6">
+          <Link href="/" className="hover:text-[#002D62] transition-colors">
+            Home
           </Link>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#f8bac5] border-2 border-stone-800 flex items-center justify-center text-[#5b1420] shadow-[0_3px_0_0_#2b2b2b]">
-              <FileText className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-tj-serif font-black text-stone-900 tracking-tight">
-                Terms and Conditions
-              </h1>
-              <p className="text-xs sm:text-sm text-stone-600 font-medium">
-                Official terms of use &amp; policies for Vittal Digital
-              </p>
-            </div>
+          <BreadcrumbChevron className="w-3.5 h-3.5 text-slate-400" />
+          <span className="font-medium text-slate-800">Terms &amp; Conditions</span>
+        </nav>
+
+        {/* Page Header */}
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-xs font-semibold text-[#002D62] mb-3 shadow-2xs">
+            <FileText className="w-3.5 h-3.5 text-[#002D62]" />
+            <span>Official Policy Agreement • Updated November 2026</span>
+          </div>
+
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-slate-900 tracking-tight leading-tight">
+            Terms and Conditions
+          </h1>
+          <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed font-normal">
+            Please read these terms and conditions carefully before placing orders or using our consumer electronics shopping platform.
+          </p>
+
+          <div className="mt-5 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs text-xs sm:text-sm text-slate-600 leading-relaxed">
+            At <strong className="font-semibold text-slate-900">Vittal Digital</strong>, we provide a direct, certified bridge between authorized Dubai retail distributors and discerning technology buyers across India. Every order includes guaranteed brand-new, factory-sealed hardware, 1-year pan-India warranty support, and fully insured express air cargo logistics.
           </div>
         </div>
 
-        {/* Content Container */}
-        <div className="bg-white rounded-3xl p-6 sm:p-10 border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] divide-y divide-stone-200">
+        {/* Terms Accordion / Stacked Card Container */}
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-xs divide-y divide-slate-100">
           {termsList.map((item) => {
+            const Icon = item.icon;
             return (
-              <section key={item.id} className="py-7 first:pt-0 last:pb-0 space-y-3">
+              <section key={item.id} className="py-6 first:pt-0 last:pb-0 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#fed000] border-2 border-stone-800 text-stone-900 flex items-center justify-center font-black text-sm flex-shrink-0 shadow-[0_2px_0_0_#2b2b2b]">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 text-[#002D62] flex items-center justify-center font-semibold text-xs shrink-0">
                     {item.number}
                   </div>
-                  <h2 className="text-lg sm:text-xl font-bold font-tj-serif text-stone-900 flex items-center gap-2">
-                    {item.title}
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-4 h-4 text-[#002D62]" />
+                    <h2 className="text-base sm:text-lg font-semibold text-slate-900">
+                      {item.title}
+                    </h2>
+                  </div>
                 </div>
-                <div className="text-sm sm:text-base text-stone-700 leading-relaxed pl-11">
+                <div className="text-xs sm:text-sm text-slate-600 leading-relaxed pl-11">
                   {item.content}
                 </div>
               </section>
             );
           })}
+        </div>
+
+        {/* Contact Help Strip */}
+        <div className="mt-8 bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold text-slate-900">Have questions about our terms?</h3>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5 font-normal">Our customer advisory team is available to assist you Monday through Saturday.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href="mailto:support@vittaldigital.com"
+              className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-[#002D62] text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-blue-200 transition-colors"
+            >
+              <Mail className="w-4 h-4 text-[#002D62]" />
+              support@vittaldigital.com
+            </a>
+            <a
+              href="https://wa.me/916238165935?text=Hi%20Vittal%20Digital%2C%20I%20have%20a%20question"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-[#25D366]/30 transition-colors"
+            >
+              <MessageCircle className="w-4 h-4 text-[#25D366]" />
+              WhatsApp Help
+            </a>
+          </div>
         </div>
       </main>
 
