@@ -55,7 +55,7 @@ export default function ChatInputDock({
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const [isRecordingVoice, setIsRecordingVoice] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
-  const [sendLiveMeta, setSendLiveMeta] = useState(false);
+  const [sendLiveMeta, setSendLiveMeta] = useState(true);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recordingTimerRef = useRef<any>(null);

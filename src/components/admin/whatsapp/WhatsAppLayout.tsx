@@ -163,8 +163,9 @@ export default function WhatsAppLayout() {
         const sentMsg = data.message;
         setMessages((prev) => [...prev, sentMsg]);
 
-        // If also dispatching live via Meta Cloud API
-        if (payload.sendLiveMeta && activeConversation?.customerPhone) {
+        // Broadcast live via Meta Cloud API by default
+        const shouldSendLive = payload.sendLiveMeta !== false;
+        if (shouldSendLive && activeConversation?.customerPhone) {
           fetch("/api/admin/whatsapp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -173,53 +174,30 @@ export default function WhatsAppLayout() {
               recipientPhone: activeConversation.customerPhone,
               messageText: payload.content,
             }),
-          }).catch(() => {});
+          })
+            .then((res) => res.json())
+            .then((metaRes) => {
+              if (metaRes.success) {
+                setMessages((prev) =>
+                  prev.map((m) => (m.id === sentMsg.id ? { ...m, status: "sent" } : m))
+                );
+              }
+            })
+            .catch(() => {});
         }
 
-        // 1. Live status progression: sending -> sent -> delivered -> read
+        // Live status progression: sending -> sent -> delivered
         setTimeout(() => {
           setMessages((prev) =>
-            prev.map((m) => (m.id === sentMsg.id ? { ...m, status: "sent" } : m))
+            prev.map((m) => (m.id === sentMsg.id && m.status === "sending" ? { ...m, status: "sent" } : m))
           );
-        }, 500);
+        }, 600);
 
         setTimeout(() => {
           setMessages((prev) =>
             prev.map((m) => (m.id === sentMsg.id ? { ...m, status: "delivered" } : m))
           );
-        }, 1300);
-
-        setTimeout(() => {
-          setMessages((prev) =>
-            prev.map((m) => (m.id === sentMsg.id ? { ...m, status: "read" } : m))
-          );
-        }, 2400);
-
-        // 2. Simulated Customer Auto-Reply
-        setTimeout(() => {
-          setIsCustomerTyping(true);
-        }, 2800);
-
-        setTimeout(async () => {
-          setIsCustomerTyping(false);
-          try {
-            const replyRes = await fetch("/api/admin/whatsapp", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                action: "simulate_reply",
-                conversationId: activeConversationId,
-              }),
-            });
-            const replyData = await replyRes.json();
-            if (replyData.success && replyData.message) {
-              setMessages((prev) => [...prev, replyData.message]);
-              waAudio.playIncomingChime();
-            }
-          } catch (e) {
-            console.warn("Failed simulated reply:", e);
-          }
-        }, 5200);
+        }, 1500);
       }
     } catch (e) {
       console.warn("Failed to send message:", e);
