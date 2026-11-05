@@ -18,6 +18,10 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=(self)"
   );
+  response.headers.set(
+    "Strict-Transport-Security",
+    "max-age=63072000; includeSubDomains; preload"
+  );
   return response;
 }
 
@@ -26,6 +30,20 @@ export async function middleware(req: NextRequest) {
   const host = rawHost.toLowerCase().split(":")[0];
   const url = req.nextUrl.clone();
   const { pathname } = url;
+
+  // =========================================================================
+  // 0. ENFORCE HTTPS REDIRECT (Fixes Google Chrome "Site Not Secure" Warning)
+  // =========================================================================
+  const proto = req.headers.get("x-forwarded-proto");
+  const isLocal =
+    host === "localhost" ||
+    host.startsWith("127.0.0.1") ||
+    host.endsWith(".localhost");
+
+  if (!isLocal && (proto === "http" || url.protocol === "http:")) {
+    const httpsUrl = new URL(`https://${rawHost}${pathname}${url.search}`);
+    return applySecurityHeaders(NextResponse.redirect(httpsUrl, 301));
+  }
 
   const isAdminSubdomain =
     host.startsWith("admin.") || host.startsWith("admin.localhost");
