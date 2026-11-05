@@ -8,15 +8,15 @@ import {
   useMotionValue,
   useSpring,
 } from "framer-motion";
-import { Home, Store, Search, ShoppingBag, User } from "lucide-react";
-import { useCart } from "@/context/CartContext";
+import { Home, Store, Search, Heart, User } from "lucide-react";
+import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { useSearch } from "@/context/SearchContext";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { totalItems, openCart, isOpen: isCartOpen } = useCart();
+  const { totalWishlistItems } = useWishlist();
   const { isAuthenticated } = useAuth();
   const { isSearchOpen, openSearch } = useSearch();
 
@@ -49,7 +49,7 @@ export function MobileBottomNav() {
     };
   }, []);
 
-  // ── Navigation items (order: Shop, Search, Home[center], Bag, Account) ─────
+  // ── Navigation items (order: Shop, Search, Home[center], Wishlist, Account) ─
   const navItems = useMemo(
     () => [
       {
@@ -66,7 +66,7 @@ export function MobileBottomNav() {
         label: "Home",
         icon: <Home className="w-[20px] h-[20px]" strokeWidth={2.2} />,
         action: () => {
-          if (pathname === "/" && !isSearchOpen && !isCartOpen) {
+          if (pathname === "/" && !isSearchOpen) {
             window.scrollTo({ top: 0, behavior: "smooth" });
           } else {
             router.push("/");
@@ -74,9 +74,9 @@ export function MobileBottomNav() {
         },
       },
       {
-        label: "Bag",
-        icon: <ShoppingBag className="w-[20px] h-[20px]" strokeWidth={1.9} />,
-        action: () => openCart(),
+        label: "Wishlist",
+        icon: <Heart className="w-[20px] h-[20px]" strokeWidth={1.9} />,
+        action: () => router.push("/wishlist"),
       },
       {
         label: "Account",
@@ -92,7 +92,7 @@ export function MobileBottomNav() {
         },
       },
     ],
-    [router, openSearch, openCart, isAuthenticated, pathname, isSearchOpen, isCartOpen]
+    [router, openSearch, isAuthenticated, pathname, isSearchOpen]
   );
 
   // ── Equal 5-slot item centers ───────────────────────────────────────────────
@@ -105,7 +105,7 @@ export function MobileBottomNav() {
   // ── Active index determination ──────────────────────────────────────────────
   const getActiveIndex = () => {
     if (isSearchOpen) return 1; // Search
-    if (isCartOpen) return 3;   // Bag
+    if (pathname === "/wishlist") return 3; // Wishlist
     if (pathname === "/") return 2; // Home (center)
     if (pathname?.startsWith("/products")) return 0; // Shop
     if (
@@ -133,7 +133,7 @@ export function MobileBottomNav() {
     const idx = getActiveIndex();
     setActiveIndex(idx);
     motionX.set(centers[idx]);
-  }, [pathname, isSearchOpen, isCartOpen, centers]);
+  }, [pathname, isSearchOpen, centers]);
 
   // ── Route guard ────────────────────────────────────────────────────────────
   if (pathname?.startsWith("/admin") || pathname?.startsWith("/checkout")) {
@@ -179,10 +179,10 @@ export function MobileBottomNav() {
               </motion.span>
             </AnimatePresence>
 
-            {/* Bag badge when active */}
-            {activeIndex === 3 && totalItems > 0 && (
+            {/* Wishlist badge when active */}
+            {activeIndex === 3 && totalWishlistItems > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-sm leading-none">
-                {totalItems > 9 ? "9+" : totalItems}
+                {totalWishlistItems > 9 ? "9+" : totalWishlistItems}
               </span>
             )}
           </div>
@@ -224,10 +224,10 @@ export function MobileBottomNav() {
                 >
                   {item.icon}
 
-                  {/* Bag badge when inactive */}
-                  {index === 3 && totalItems > 0 && !isActive && (
+                  {/* Wishlist badge when inactive */}
+                  {index === 3 && totalWishlistItems > 0 && !isActive && (
                     <span className="absolute -top-2 -right-2 min-w-[16px] h-[16px] px-1 rounded-full bg-[#E02B2B] text-white text-[9px] font-extrabold flex items-center justify-center border-2 border-white shadow-xs leading-none">
-                      {totalItems > 9 ? "9+" : totalItems}
+                      {totalWishlistItems > 9 ? "9+" : totalWishlistItems}
                     </span>
                   )}
                 </span>

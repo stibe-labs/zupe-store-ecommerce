@@ -228,24 +228,6 @@ export function Navbar() {
 
           {/* User & Support Actions */}
           <div className="flex items-center gap-2.5 sm:gap-5 shrink-0">
-            {/* Customer Support Phone */}
-            <a
-              href="tel:+919600048000"
-              className="hidden xl:flex items-center gap-2 text-slate-800 hover:text-[#002D62] transition-colors group"
-            >
-              <div className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center text-slate-700 group-hover:text-[#002D62] transition-colors">
-                <Headphones className="w-4 h-4" />
-              </div>
-              <div className="text-left">
-                <span className="block text-[9px] text-slate-400 font-medium uppercase tracking-wider leading-none">
-                  Customer Support
-                </span>
-                <span className="block text-xs sm:text-sm font-bold text-slate-900 leading-tight">
-                  +91 96000 48000
-                </span>
-              </div>
-            </a>
-
             {/* Wishlist */}
             <Link
               href="/wishlist"
