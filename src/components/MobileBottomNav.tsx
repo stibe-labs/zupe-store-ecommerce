@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   motion,
+  AnimatePresence,
   useMotionValue,
   useSpring,
-  useTransform,
 } from "framer-motion";
 import { Home, Store, Search, ShoppingBag, User } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -14,8 +14,14 @@ import { useAuth } from "@/context/AuthContext";
 import { useSearch } from "@/context/SearchContext";
 
 // ─── SVG Path Generator ───────────────────────────────────────────────────────
-// Generates the floating nav bar with a deep concave notch that cradles the
-// raised circular active indicator. Geometry precisely matches the reference video.
+// Generates the pill-shaped nav bar with a smooth concave notch that wraps the
+// raised circular active indicator. Geometry tuned to match reference video.
+//
+// W, H: viewBox dimensions
+// r: corner radius (H/2 for a perfect pill)
+// cx: horizontal center of the active indicator
+// notch_hw: half-width of notch from center (tighter = more like reference)
+// depth: how deep the notch dips below the bar's top edge
 function getNavSvgPath(
   W: number,
   H: number,
@@ -24,35 +30,35 @@ function getNavSvgPath(
   notch_hw: number,
   depth: number
 ): string {
-  // Ensure notch boundaries never collide with corner arcs
-  const safeCx = Math.max(r + notch_hw, Math.min(W - r - notch_hw, cx));
-  const x1 = safeCx - notch_hw;
-  const x2 = safeCx + notch_hw;
+  const safeCx = Math.max(r, Math.min(W - r, cx));
+  const x1 = Math.max(r, safeCx - notch_hw);
+  const x2 = Math.min(W - r, safeCx + notch_hw);
 
-  // Cubic Bézier control points for smooth tangent entry and trough
-  const lp1x = safeCx - notch_hw * 0.45;
-  const lp2x = safeCx - notch_hw * 0.35;
-  const rp1x = safeCx + notch_hw * 0.35;
-  const rp2x = safeCx + notch_hw * 0.45;
+  // Left notch bezier: flat approach → smooth dip to depth
+  // Control points create the characteristic "hugging" curve
+  const lp1x = Math.max(r, safeCx - notch_hw * 0.4);
+  const lp2x = Math.max(r, safeCx - notch_hw * 0.1);
+  const rp1x = Math.min(W - r, safeCx + notch_hw * 0.1);
+  const rp2x = Math.min(W - r, safeCx + notch_hw * 0.4);
 
   return [
     `M ${r} 0`,
     `L ${x1.toFixed(2)} 0`,
-    // Left concave scoop: horizontal entry at x1 → trough at safeCx, depth
+    // Left shoulder: flat → concave dip
     `C ${lp1x.toFixed(2)} 0, ${lp2x.toFixed(2)} ${depth}, ${safeCx.toFixed(2)} ${depth}`,
-    // Right concave scoop: trough at safeCx, depth → horizontal exit at x2
+    // Right shoulder: concave dip → flat
     `C ${rp1x.toFixed(2)} ${depth}, ${rp2x.toFixed(2)} 0, ${x2.toFixed(2)} 0`,
     `L ${(W - r).toFixed(2)} 0`,
-    // Top-right corner arc
+    // Top-right pill corner
     `A ${r} ${r} 0 0 1 ${W} ${r}`,
     `L ${W} ${(H - r).toFixed(2)}`,
-    // Bottom-right corner arc
+    // Bottom-right pill corner
     `A ${r} ${r} 0 0 1 ${(W - r).toFixed(2)} ${H}`,
     `L ${r} ${H}`,
-    // Bottom-left corner arc
+    // Bottom-left pill corner
     `A ${r} ${r} 0 0 1 0 ${(H - r).toFixed(2)}`,
     `L 0 ${r}`,
-    // Top-left corner arc
+    // Top-left pill corner
     `A ${r} ${r} 0 0 1 ${r} 0`,
     "Z",
   ].join(" ");
@@ -70,29 +76,16 @@ export function MobileBottomNav() {
   const pathRef = useRef<SVGPathElement>(null);
   const [navWidth, setNavWidth] = useState(380);
 
-  // ── Reference geometry constants ──────────────────────────────────────────
-  const BAR_H = 64;       // px - bar height
-  const BAR_R = 18;       // px - smooth corner radius
-  const CIRCLE_D = 48;    // px - circular active indicator diameter
-  const CIRCLE_R = CIRCLE_D / 2; // 24px
-  const CIRCLE_CY = 0;    // px - center aligned with top edge of bar (rises 24px, dips 24px)
-  const NOTCH_HW = 34;    // px - half-width of scoop
-  const NOTCH_DEPTH = 28; // px - deep concave scoop (leaves ~4px clearance around circle)
-
-  // ── Equal 5-slot item centers with safe flank padding ───────────────────────
-  // pad = BAR_R + NOTCH_HW + 2 ensures notch never collides with corner arcs
-  const pad = BAR_R + NOTCH_HW + 2; // 18 + 34 + 2 = 54px
-  const step = (navWidth - 2 * pad) / 4;
-  const centers = useMemo(
-    () => [
-      pad,
-      pad + step,
-      navWidth / 2,
-      navWidth - pad - step,
-      navWidth - pad,
-    ],
-    [navWidth, pad, step]
-  );
+  // ── Bar geometry constants ──────────────────────────────────────────────────
+  const BAR_H = 68;        // px - bar total height
+  const BAR_R = 34;        // px - corner radius (= H/2 for pill)
+  const CIRCLE_D = 50;     // px - active indicator circle diameter
+  const CIRCLE_R = CIRCLE_D / 2; // 25px
+  // Circle center sits 12px ABOVE the bar's top edge
+  // → circle rises 37px above bar, dips 13px into notch
+  const CIRCLE_Y_OFFSET = -12; // negative = above bar top
+  const NOTCH_HW = 36;    // px - half-width of notch (tighter = more reference-like)
+  const NOTCH_DEPTH = CIRCLE_R + CIRCLE_Y_OFFSET + 2; // = 15px (accommodates circle's lower arc)
 
   // ── Responsive width measurement ───────────────────────────────────────────
   useEffect(() => {
@@ -119,17 +112,17 @@ export function MobileBottomNav() {
     () => [
       {
         label: "Shop",
-        icon: <Store className="w-5 h-5" strokeWidth={1.9} />,
+        icon: <Store className="w-[20px] h-[20px]" strokeWidth={1.9} />,
         action: () => router.push("/products"),
       },
       {
         label: "Search",
-        icon: <Search className="w-5 h-5" strokeWidth={1.9} />,
+        icon: <Search className="w-[20px] h-[20px]" strokeWidth={1.9} />,
         action: () => openSearch(),
       },
       {
         label: "Home",
-        icon: <Home className="w-5 h-5" strokeWidth={2.2} />,
+        icon: <Home className="w-[20px] h-[20px]" strokeWidth={2.2} />,
         action: () => {
           if (pathname === "/" && !isSearchOpen && !isCartOpen) {
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -140,12 +133,12 @@ export function MobileBottomNav() {
       },
       {
         label: "Bag",
-        icon: <ShoppingBag className="w-5 h-5" strokeWidth={1.9} />,
+        icon: <ShoppingBag className="w-[20px] h-[20px]" strokeWidth={1.9} />,
         action: () => openCart(),
       },
       {
         label: "Account",
-        icon: <User className="w-5 h-5" strokeWidth={1.9} />,
+        icon: <User className="w-[20px] h-[20px]" strokeWidth={1.9} />,
         action: () => {
           if (isAuthenticated) {
             router.push("/account");
@@ -160,18 +153,19 @@ export function MobileBottomNav() {
     [router, openSearch, openCart, isAuthenticated, pathname, isSearchOpen, isCartOpen]
   );
 
+  // ── Equal 5-slot item centers ───────────────────────────────────────────────
+  const slotW = navWidth / 5;
+  const centers = useMemo(
+    () => navItems.map((_, i) => (i + 0.5) * slotW),
+    [navWidth, slotW]
+  );
+
   // ── Active index determination ──────────────────────────────────────────────
-  const getActiveIndex = useCallback(() => {
+  const getActiveIndex = () => {
     if (isSearchOpen) return 1; // Search
     if (isCartOpen) return 3;   // Bag
     if (pathname === "/") return 2; // Home (center)
-    if (
-      pathname?.startsWith("/products") ||
-      pathname?.startsWith("/product") ||
-      pathname?.startsWith("/category")
-    ) {
-      return 0; // Shop
-    }
+    if (pathname?.startsWith("/products")) return 0; // Shop
     if (
       pathname === "/account" ||
       pathname === "/signin" ||
@@ -180,66 +174,51 @@ export function MobileBottomNav() {
       return 4; // Account
     }
     return 2; // Default: Home (center)
-  }, [pathname, isSearchOpen, isCartOpen]);
+  };
 
-  const [activeIndex, setActiveIndex] = useState(() => getActiveIndex());
+  const [activeIndex, setActiveIndex] = useState(2); // Home = default
 
   // ── Spring-driven horizontal position ──────────────────────────────────────
-  const motionX = useMotionValue(centers[activeIndex]);
+  const motionX = useMotionValue(centers[2]); // Start at Home
   const springX = useSpring(motionX, {
-    stiffness: 380,
-    damping: 30,
-    mass: 0.8,
+    stiffness: 350,
+    damping: 28,
+    mass: 0.9,
   });
-
-  // Animated SVG path value via useTransform (evaluated at 60fps)
-  const pathD = useTransform(springX, (x) =>
-    getNavSvgPath(navWidth, BAR_H, BAR_R, x, NOTCH_HW, NOTCH_DEPTH)
-  );
-
-  // Helper to directly update SVG path
-  const updateSvgPath = useCallback(
-    (cx: number, width: number) => {
-      if (pathRef.current) {
-        pathRef.current.setAttribute(
-          "d",
-          getNavSvgPath(width, BAR_H, BAR_R, cx, NOTCH_HW, NOTCH_DEPTH)
-        );
-      }
-    },
-    [BAR_H, BAR_R, NOTCH_HW, NOTCH_DEPTH]
-  );
 
   // ── Sync active index with route/modal state ────────────────────────────────
   useEffect(() => {
     const idx = getActiveIndex();
     setActiveIndex(idx);
     motionX.set(centers[idx]);
-  }, [getActiveIndex, centers, motionX]);
+  }, [pathname, isSearchOpen, isCartOpen, centers]);
 
   // ── Drive SVG notch morphing synchronously with spring ─────────────────────
   useEffect(() => {
-    updateSvgPath(springX.get(), navWidth);
     const unsub = springX.on("change", (x) => {
-      updateSvgPath(x, navWidth);
+      pathRef.current?.setAttribute(
+        "d",
+        getNavSvgPath(navWidth, BAR_H, BAR_R, x, NOTCH_HW, NOTCH_DEPTH)
+      );
     });
     return unsub;
-  }, [springX, navWidth, updateSvgPath]);
+  }, [springX, navWidth]);
 
   // ── Route guard ────────────────────────────────────────────────────────────
   if (pathname?.startsWith("/admin") || pathname?.startsWith("/checkout")) {
     return null;
   }
 
+  const initialD = getNavSvgPath(
+    navWidth, BAR_H, BAR_R, centers[activeIndex], NOTCH_HW, NOTCH_DEPTH
+  );
+
   return (
     <nav
       ref={containerRef}
       aria-label="Mobile Bottom Navigation"
-      style={{
-        bottom: "max(12px, env(safe-area-inset-bottom, 12px))",
-        height: `${BAR_H}px`,
-      }}
-      className="fixed inset-x-3 sm:hidden z-40 max-w-[430px] mx-auto select-none pointer-events-auto"
+      style={{ bottom: "max(12px, env(safe-area-inset-bottom, 12px))", height: `${BAR_H}px` }}
+      className="fixed inset-x-3 sm:hidden z-40 max-w-[430px] mx-auto select-none"
     >
       {/* ── 1. Dynamic SVG bar with morphing concave notch ── */}
       <svg
@@ -247,69 +226,65 @@ export function MobileBottomNav() {
         height={BAR_H}
         viewBox={`0 0 ${navWidth} ${BAR_H}`}
         className="absolute inset-0 w-full overflow-visible"
-        style={{
-          filter: "drop-shadow(0 10px 25px rgba(0, 29, 64, 0.12))",
-        }}
+        style={{ filter: "drop-shadow(0 8px 24px rgba(0,29,64,0.13))" }}
       >
-        <motion.path
+        <path
           ref={pathRef}
-          d={pathD}
+          d={initialD}
           fill="#FFFFFF"
           stroke="#E8ECF2"
           strokeWidth="1"
         />
       </svg>
 
-      {/* ── 2. Raised circular active indicator (cradled in the notch) ── */}
+      {/* ── 2. Raised circular active indicator ── */}
+      {/* Positioned so its center is CIRCLE_Y_OFFSET px relative to bar top */}
       <motion.div
         className="absolute z-20 pointer-events-none"
         style={{
+          // x spring drives horizontal center
+          // We offset by -CIRCLE_R so the div's left edge is correct
           x: springX,
-          left: -CIRCLE_R, // Centers the 48px bubble at cx
-          top: CIRCLE_CY - CIRCLE_R, // top = 0 - 24 = -24px (rises 24px above bar)
+          left: -CIRCLE_R,
+          // Vertically: center at CIRCLE_Y_OFFSET from bar top
+          top: CIRCLE_Y_OFFSET - CIRCLE_R,
           width: CIRCLE_D,
           height: CIRCLE_D,
         }}
       >
-        {/* Navy Bubble with subtle transit hop and elevation shadow */}
-        <motion.div
-          key={activeIndex}
-          initial={{ y: -6, scale: 0.94 }}
-          animate={{ y: 0, scale: 1 }}
-          transition={{
-            type: "spring",
-            stiffness: 450,
-            damping: 24,
-            mass: 0.7,
-          }}
-          className="w-full h-full rounded-full bg-[#001D40] flex items-center justify-center border-2 border-white"
+        {/* Outer ring (white border) */}
+        <div
+          className="w-full h-full rounded-full bg-[#001D40] flex items-center justify-center"
           style={{
-            boxShadow: "0 8px 20px rgba(0, 29, 64, 0.35)",
+            boxShadow: "0 6px 20px rgba(0,29,64,0.32), 0 0 0 3px #FFFFFF",
           }}
         >
-          {/* Active white icon with smooth transition */}
-          <motion.span
-            key={`icon-${activeIndex}`}
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.16, ease: "easeOut" }}
-            className="flex items-center justify-center text-white"
-          >
-            {navItems[activeIndex].icon}
-          </motion.span>
+          {/* Active icon with crossfade */}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={activeIndex}
+              initial={{ scale: 0.55, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.55, opacity: 0 }}
+              transition={{ duration: 0.14, ease: "easeOut" }}
+              className="flex items-center justify-center text-white"
+            >
+              {navItems[activeIndex].icon}
+            </motion.span>
+          </AnimatePresence>
 
-          {/* Bag notification badge when active */}
+          {/* Bag badge when active */}
           {activeIndex === 3 && totalItems > 0 && (
             <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-sm leading-none">
               {totalItems > 9 ? "9+" : totalItems}
             </span>
           )}
-        </motion.div>
+        </div>
       </motion.div>
 
       {/* ── 3. Clickable icon buttons (all 5 items) ── */}
       <div
-        className="absolute inset-0 z-10 pointer-events-none"
+        className="absolute inset-0 z-10"
         style={{ height: BAR_H }}
       >
         {navItems.map((item, index) => {
@@ -336,26 +311,28 @@ export function MobileBottomNav() {
                 left: cx,
                 top: "50%",
                 transform: "translate(-50%, -50%)",
-                width: 48,
-                height: 48,
+                width: 44,
+                height: 44,
               }}
               aria-label={item.label}
-              className="flex items-center justify-center cursor-pointer pointer-events-auto touch-manipulation focus:outline-none group"
+              className="flex items-center justify-center cursor-pointer touch-manipulation focus:outline-none group"
             >
-              {/* Inactive outline icon in Vittal Navy */}
+              {/* Inactive icon — fades when active, shows when inactive */}
               <span
-                className="relative flex items-center justify-center text-[#001D40]/75 group-hover:text-[#001D40] group-active:scale-90 transition-all duration-200"
+                className="relative flex items-center justify-center transition-all duration-200"
                 style={{
-                  opacity: isActive ? 0 : 1,
+                  color: "#001D40",
+                  opacity: isActive ? 0 : 0.72,
                   transform: isActive ? "scale(0.5)" : "scale(1)",
                   pointerEvents: isActive ? "none" : "auto",
+                  transition: "opacity 200ms ease, transform 200ms ease",
                 }}
               >
                 {item.icon}
 
                 {/* Bag badge when inactive */}
                 {index === 3 && totalItems > 0 && !isActive && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-1 rounded-full bg-[#E02B2B] text-white text-[9px] font-extrabold flex items-center justify-center border-2 border-white shadow-sm leading-none">
+                  <span className="absolute -top-2 -right-2 min-w-[16px] h-[16px] px-1 rounded-full bg-[#E02B2B] text-white text-[9px] font-extrabold flex items-center justify-center border-2 border-white shadow-sm leading-none">
                     {totalItems > 9 ? "9+" : totalItems}
                   </span>
                 )}
