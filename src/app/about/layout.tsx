@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Us | Vittal Digital — Authentic & Verified Delights",
+  title: "About Us | Vittal Digital — Dubai Sourced Flagship Electronics",
   description:
-    "Discover Vittal Digital's heritage, commitment to premium authentic quality, and our mission to bring premium wellness delicacies to Indian homes.",
+    "Discover the Vittal Digital story: authentic Dubai retail electronics sourced directly, 1-year comprehensive warranty support, and express insured air cargo across India.",
 };
 
 export default function AboutLayout({
