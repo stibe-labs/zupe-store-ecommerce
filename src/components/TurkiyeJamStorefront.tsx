@@ -28,6 +28,7 @@ import {
   Check,
 } from "lucide-react";
 import { Product } from "@/types/product";
+import { addRecentlyViewed } from "@/lib/recentlyViewed";
 import {
   DEFAULT_PRODUCTS,
   VITTAL_DIGITAL_DEALS,
@@ -1206,7 +1207,7 @@ export function VittalDigitalStorefront({
                       {prod.badge}
                     </span>
                   )}
-                  <Link href={`/products/${prod.id}`} className="block w-full h-full relative">
+                  <Link onClick={() => addRecentlyViewed(prod)} href={`/products/${prod.id}`} className="block w-full h-full relative">
                     <Image
                       src={prod.poster_image}
                       alt={prod.name}

@@ -25,12 +25,15 @@ import {
   ShieldCheck,
   BadgeCheck,
   ArrowRight,
+  Clock,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useSearch } from "@/context/SearchContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { siteConfig } from "@/config/siteConfig";
+import { useRecentlyViewed, addRecentlyViewed } from "@/lib/recentlyViewed";
+import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 export function Navbar() {
   const router = useRouter();
@@ -46,6 +49,7 @@ export function Navbar() {
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [recentlyViewedOpen, setRecentlyViewedOpen] = useState(false);
+  const { items: recentlyViewedItems, clear: clearRecentlyViewedItems } = useRecentlyViewed();
 
   const departmentRef = useRef<HTMLDivElement>(null);
   const categorySelectRef = useRef<HTMLDivElement>(null);
@@ -409,26 +413,143 @@ export function Navbar() {
               <button
                 onClick={() => setRecentlyViewedOpen((prev) => !prev)}
                 className="flex items-center gap-1.5 hover:text-[#FFBE00] transition-colors cursor-pointer"
+                aria-label="Toggle Recently Viewed Products"
               >
                 <span>Recently Viewed</span>
+                {recentlyViewedItems.length > 0 && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#FFBE00] inline-block" />
+                )}
                 <ChevronDown className="w-3 h-3 text-white/70" />
               </button>
 
               {recentlyViewedOpen && (
-                <div className="absolute right-0 top-full mt-2 w-72 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 p-3 z-50">
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                    Recently Viewed
+                <div className="absolute right-0 top-full mt-2 w-80 sm:w-88 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200/90 p-3.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                  {/* Dropdown Header */}
+                  <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-slate-100">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-[#002D62]" />
+                      <span className="text-[11px] font-bold text-slate-900 tracking-wide uppercase">
+                        Recently Viewed {recentlyViewedItems.length > 0 && `(${recentlyViewedItems.length})`}
+                      </span>
+                    </div>
+                    {recentlyViewedItems.length > 0 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          clearRecentlyViewedItems();
+                        }}
+                        className="text-[10px] font-medium text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                      >
+                        Clear All
+                      </button>
+                    )}
                   </div>
-                  <div className="text-center py-3 text-xs text-slate-500">
-                    No recently viewed items yet.
+
+                  {/* Dropdown Body */}
+                  {recentlyViewedItems.length > 0 ? (
+                    <div className="max-h-[340px] overflow-y-auto space-y-1.5 pr-0.5 divide-y divide-slate-100/70">
+                      {recentlyViewedItems.map((item) => (
+                        <Link
+                          key={item.id}
+                          href={`/products/${item.id || item.slug}`}
+                          onClick={() => setRecentlyViewedOpen(false)}
+                          className="pt-1.5 first:pt-0 block group"
+                        >
+                          <div className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-slate-50 transition-colors">
+                            <div className="w-12 h-12 rounded-lg bg-slate-50 border border-slate-200/80 p-1 shrink-0 flex items-center justify-center overflow-hidden">
+                              <img
+                                src={item.poster_image || "/vittal-digital-logo.png"}
+                                alt={item.name}
+                                className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = "/vittal-digital-logo.png";
+                                }}
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h5 className="text-xs font-semibold text-slate-900 group-hover:text-[#002D62] transition-colors truncate">
+                                {item.name}
+                              </h5>
+                              <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                                {item.category || "Flagship Electronics"}
+                              </p>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <span className="text-xs font-bold text-[#002D62]">
+                                  ₹{item.price.toLocaleString("en-IN")}
+                                </span>
+                                {item.mrp && item.mrp > item.price && (
+                                  <span className="text-[10px] text-slate-400 line-through">
+                                    ₹{item.mrp.toLocaleString("en-IN")}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#002D62] group-hover:translate-x-0.5 transition-all shrink-0" />
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-3 text-center">
+                      <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto mb-2 text-[#002D62]">
+                        <Clock className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-semibold text-slate-800">
+                        No recently viewed items yet.
+                      </p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Items you browse will show up here for quick access.
+                      </p>
+
+                      {/* Popular Right Now Recommendations */}
+                      <div className="mt-3 pt-3 border-t border-slate-100 text-left">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                          Popular Right Now
+                        </span>
+                        <div className="space-y-1.5">
+                          {DEFAULT_PRODUCTS.slice(0, 2).map((pop) => (
+                            <Link
+                              key={pop.id}
+                              href={`/products/${pop.id}`}
+                              onClick={() => {
+                                addRecentlyViewed(pop);
+                                setRecentlyViewedOpen(false);
+                              }}
+                              className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-slate-50 transition-colors group"
+                            >
+                              <div className="w-9 h-9 rounded-md bg-slate-50 border border-slate-200/80 p-0.5 shrink-0 flex items-center justify-center overflow-hidden">
+                                <img
+                                  src={pop.poster_image}
+                                  alt={pop.name}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <span className="block text-[11px] font-semibold text-slate-900 group-hover:text-[#002D62] truncate">
+                                  {pop.name}
+                                </span>
+                                <span className="text-[10px] font-bold text-[#002D62]">
+                                  ₹{pop.price.toLocaleString("en-IN")}
+                                </span>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Dropdown Footer */}
+                  <div className="pt-2.5 mt-2 border-t border-slate-100">
+                    <Link
+                      href="/products"
+                      onClick={() => setRecentlyViewedOpen(false)}
+                      className="flex items-center justify-center gap-1.5 text-center text-xs font-bold text-[#002D62] hover:text-[#001D40] py-1 transition-colors"
+                    >
+                      <span>Explore All Products</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
-                  <Link
-                    href="/products"
-                    onClick={() => setRecentlyViewedOpen(false)}
-                    className="block text-center text-xs font-bold text-[#002D62] hover:underline pt-2 border-t border-slate-100"
-                  >
-                    Start Exploring Products
-                  </Link>
                 </div>
               )}
             </div>

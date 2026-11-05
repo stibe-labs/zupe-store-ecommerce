@@ -53,6 +53,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { addRecentlyViewed } from "@/lib/recentlyViewed";
 
 // ---------------------------------------------------------------------------
 // Helper: Resolve product synchronously for instant SSR & 0ms client hydration
@@ -152,6 +153,13 @@ export default function ProductDetailPage() {
   const [tempPincode, setTempPincode] = useState<string>("680001");
   const [showToast, setShowToast] = useState<string | null>(null);
   const [showStickyBar, setShowStickyBar] = useState<boolean>(false);
+
+  // Record to Recently Viewed
+  useEffect(() => {
+    if (product && (product.id || product.slug)) {
+      addRecentlyViewed(product);
+    }
+  }, [product]);
 
   // -------------------------------------------------------------------------
   // Dynamic Product Resolution (Sync & Live Fetch)

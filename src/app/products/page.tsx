@@ -38,6 +38,7 @@ import {
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { DEFAULT_PRODUCTS, doesCategoryMatch } from "@/data/zupeProducts";
+import { addRecentlyViewed } from "@/lib/recentlyViewed";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { getClientProducts } from "@/lib/productsClientCache";
