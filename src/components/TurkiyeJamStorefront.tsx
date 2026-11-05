@@ -510,7 +510,7 @@ export function VittalDigitalStorefront({
       {/* ===================================================================== */}
       {/* SECTION 1: CATEGORY CAPSULE BAR                                       */}
       {/* ===================================================================== */}
-      <section className="relative z-20 max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 mb-2 sm:mb-4">
+      <section className="relative z-20 max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 mb-1.5 sm:mb-2">
         <div className="bg-white rounded-2xl shadow-lg border border-slate-200/80 py-2 sm:py-2.5 px-3 sm:px-6 flex items-center justify-between">
           <div
             ref={categoryScrollRef}
@@ -550,7 +550,7 @@ export function VittalDigitalStorefront({
       {/* ===================================================================== */}
       {/* SECTION 3: THREE-COLUMN PROMO BANNERS (Auto-sliding Carousel on Mobile) */}
       {/* ===================================================================== */}
-      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-8 pb-7 sm:pb-10">
+      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-2 pb-5 sm:pb-8">
         {/* Desktop View: All 3 cards side-by-side in 3-column grid */}
         <div className="hidden md:grid md:grid-cols-3 gap-6">
           {PROMO_CARDS.map((card) => (
@@ -665,27 +665,24 @@ export function VittalDigitalStorefront({
       {/* ===================================================================== */}
       <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-2 border-b border-slate-100">
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-            <div className="flex items-center gap-2">
-              <Zap className="w-6 h-6 text-[#FFBE00] fill-[#FFBE00]" />
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                Today&apos;s Featured Deals
-              </h2>
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 sm:mb-6 pb-2 border-b border-slate-100">
+          <div className="flex items-center gap-2.5 sm:gap-4 flex-wrap sm:flex-nowrap">
+            <h2 className="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight whitespace-nowrap">
+              Today&apos;s Featured Deals
+            </h2>
 
-            {/* Countdown Box in Golden Yellow */}
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-50 px-3.5 py-1.5 rounded-lg border border-slate-200">
-              <span className="text-slate-500 font-semibold mr-1">Deal Ends In :</span>
-              <span className="bg-[#FFBE00] text-slate-950 px-2 py-0.5 rounded font-bold text-xs min-w-[24px] text-center">
+            {/* Countdown Box in Golden Yellow (Beside heading on its right side) */}
+            <div className="flex items-center gap-1 text-[11px] sm:text-xs font-bold text-slate-600 bg-slate-50 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-slate-200 shrink-0">
+              <span className="text-slate-500 font-semibold mr-0.5">Deal Ends In :</span>
+              <span className="bg-[#FFBE00] text-slate-950 px-1.5 sm:px-2 py-0.5 rounded font-bold text-[11px] sm:text-xs min-w-[20px] sm:min-w-[24px] text-center">
                 {String(timeLeft.hours).padStart(2, "0")}
               </span>
               <span className="font-bold text-slate-400">:</span>
-              <span className="bg-[#FFBE00] text-slate-950 px-2 py-0.5 rounded font-bold text-xs min-w-[24px] text-center">
+              <span className="bg-[#FFBE00] text-slate-950 px-1.5 sm:px-2 py-0.5 rounded font-bold text-[11px] sm:text-xs min-w-[20px] sm:min-w-[24px] text-center">
                 {String(timeLeft.minutes).padStart(2, "0")}
               </span>
               <span className="font-bold text-slate-400">:</span>
-              <span className="bg-[#FFBE00] text-slate-950 px-2 py-0.5 rounded font-bold text-xs min-w-[24px] text-center">
+              <span className="bg-[#FFBE00] text-slate-950 px-1.5 sm:px-2 py-0.5 rounded font-bold text-[11px] sm:text-xs min-w-[20px] sm:min-w-[24px] text-center">
                 {String(timeLeft.seconds).padStart(2, "0")}
               </span>
             </div>
@@ -693,7 +690,7 @@ export function VittalDigitalStorefront({
 
           <Link
             href="/products"
-            className="text-xs sm:text-sm font-bold text-[#002D62] hover:underline flex items-center gap-1"
+            className="text-xs sm:text-sm font-bold text-[#002D62] hover:underline flex items-center gap-1 shrink-0 self-end sm:self-auto"
           >
             <span>View All Deals</span>
             <ArrowRight className="w-3.5 h-3.5" />

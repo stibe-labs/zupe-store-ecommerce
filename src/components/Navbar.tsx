@@ -303,10 +303,11 @@ export function Navbar() {
           <div className="relative shrink-0" ref={departmentRef}>
             <button
               onClick={() => setDepartmentOpen((prev) => !prev)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/15 active:bg-white/20 text-white rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-colors border border-white/15"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 bg-white/10 hover:bg-white/15 active:bg-white/20 text-white rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-colors border border-white/15 shrink-0"
             >
               <Menu className="w-3.5 h-3.5 text-[#FFBE00]" />
-              <span className="tracking-wide">Shop by Department</span>
+              <span className="tracking-wide md:hidden">Categories</span>
+              <span className="tracking-wide hidden md:inline">Shop by Department</span>
               <ChevronDown
                 className={`w-3.5 h-3.5 transition-transform text-white/80 ${
                   departmentOpen ? "rotate-180" : ""
@@ -353,10 +354,10 @@ export function Navbar() {
           {/* Integrated Search Bar with Rounded Card Edges & Yellow Action Button */}
           <form
             onSubmit={handleSearchSubmit}
-            className="flex-1 max-w-3xl hidden md:flex items-center bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-inner border border-white/20"
+            className="flex-1 max-w-3xl flex items-center bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-inner border border-white/20 h-8 sm:h-auto"
           >
             {/* Category Dropdown Pill */}
-            <div className="relative shrink-0" ref={categorySelectRef}>
+            <div className="relative shrink-0 hidden md:block" ref={categorySelectRef}>
               <button
                 type="button"
                 onClick={() => setCategoryDropdownOpen((prev) => !prev)}
@@ -393,13 +394,13 @@ export function Navbar() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search for electronics, gadgets, accessories..."
-              className="flex-1 px-3.5 py-1.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
+              className="flex-1 px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none min-w-0"
             />
 
             {/* Vibrant Golden Yellow Search Button */}
             <button
               type="submit"
-              className="bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 px-3.5 py-2 transition-colors flex items-center justify-center shrink-0"
+              className="bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 px-2.5 sm:px-3.5 py-1.5 sm:py-2 transition-colors flex items-center justify-center shrink-0"
               aria-label="Search"
             >
               <Search className="w-4 h-4 stroke-[2.5]" />
@@ -565,28 +566,6 @@ export function Navbar() {
               <ChevronDown className="w-3 h-3 text-white/70" />
             </Link>
           </div>
-        </div>
-
-        {/* Mobile Search Input Row */}
-        <div className="md:hidden mt-1.5">
-          <form
-            onSubmit={handleSearchSubmit}
-            className="flex items-center bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200"
-          >
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search electronics, gadgets..."
-              className="flex-1 px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 px-3.5 py-1.5 flex items-center justify-center shrink-0"
-            >
-              <Search className="w-4 h-4 stroke-[2.5]" />
-            </button>
-          </form>
         </div>
       </div>
 
