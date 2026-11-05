@@ -1051,86 +1051,59 @@ export function VittalDigitalStorefront({
           </Link>
         </div>
 
-        {/* 6 Product Cards Grid with Expanded Width */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5">
+        {/* 6 Product Cards Grid: 3 columns on mobile (2 rows of 3 like Flipkart reference), 6 on desktop */}
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-6 gap-2 sm:gap-3.5 lg:gap-4">
           {FEATURED_DEALS.map((deal) => {
-            const isFav = localWishlist.has(deal.id) || isInWishlist(deal.id);
             return (
-              <div
+              <Link
                 key={deal.id}
-                className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden flex flex-col hover:shadow-xl hover:border-blue-200 transition-all duration-200 relative group"
+                href={`/products/${deal.id}`}
+                onClick={() => {
+                  try {
+                    addRecentlyViewed({
+                      id: deal.id,
+                      name: deal.name,
+                      price: deal.price,
+                      mrp: deal.mrp,
+                      poster_image: deal.image,
+                      category: "Electronics",
+                    });
+                  } catch {}
+                }}
+                className="group flex flex-col cursor-pointer"
               >
-                {/* Discount Badge */}
-                <div className="absolute top-2.5 left-2.5 z-10 bg-red-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-md shadow-xs">
-                  -{deal.discount}%
-                </div>
-
-                {/* Wishlist Heart */}
-                <button
-                  onClick={() =>
-                    handleToggleWishlist(deal.id, deal.name, deal.price, deal.image)
-                  }
-                  className="absolute top-2.5 right-2.5 z-10 w-7 h-7 rounded-full bg-white/90 border border-slate-200 shadow-xs flex items-center justify-center hover:bg-red-50 transition-colors"
-                  aria-label="Add to wishlist"
-                >
-                  <Heart
-                    className={`w-3.5 h-3.5 transition-colors ${
-                      isFav ? "fill-red-500 text-red-500" : "text-slate-400"
-                    }`}
-                  />
-                </button>
-
-                {/* Product Image on Clean White */}
-                <Link
-                  href={`/products/${deal.id}`}
-                  className="relative w-full aspect-square bg-slate-50/40 p-4 flex items-center justify-center overflow-hidden"
-                >
+                {/* Product Image Container with Rating Pill */}
+                <div className="relative w-full aspect-square rounded-xl sm:rounded-2xl bg-[#F6F7F9] p-2 sm:p-3 flex items-center justify-center overflow-hidden border border-slate-100 transition-all duration-200 group-hover:border-slate-300 group-hover:shadow-sm">
                   <Image
                     src={deal.image}
                     alt={deal.name}
                     fill
-                    className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 768px) 50vw, 280px"
+                    sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 200px"
+                    className="object-contain p-1.5 sm:p-2 group-hover:scale-105 transition-transform duration-300"
                   />
-                </Link>
 
-                {/* Details */}
-                <div className="p-3.5 flex flex-col flex-1">
-                  <Link href={`/products/${deal.id}`}>
-                    <h3 className="text-xs sm:text-[13px] font-bold text-slate-900 leading-snug line-clamp-2 hover:text-[#002D62] transition-colors mb-1.5 min-h-[36px]">
-                      {deal.name}
-                    </h3>
-                  </Link>
-
-                  {/* Rating */}
-                  <div className="flex items-center gap-1 mb-2">
-                    <Star className="w-3.5 h-3.5 fill-[#FFBE00] text-[#FFBE00]" />
-                    <span className="text-xs font-bold text-slate-800">
-                      {deal.rating}
-                    </span>
-                    <span className="text-[11px] text-slate-400">({deal.reviews})</span>
+                  {/* Rating Tag in Bottom-Left of Image (matching Flipkart reference) */}
+                  <div className="absolute bottom-1.5 left-1.5 bg-white/95 backdrop-blur-xs text-slate-800 text-[10px] sm:text-[11px] font-bold px-1.5 py-0.5 rounded shadow-xs flex items-center gap-0.5 border border-slate-100/80 leading-none">
+                    <span>{deal.rating}</span>
+                    <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-emerald-600 text-emerald-600 inline" />
                   </div>
-
-                  {/* Price */}
-                  <div className="flex items-baseline gap-2 mb-3.5 mt-auto">
-                    <span className="text-sm sm:text-base font-bold text-slate-900">
-                      ₹{deal.price.toLocaleString("en-IN")}
-                    </span>
-                    <span className="text-[11px] text-slate-400 line-through">
-                      ₹{deal.mrp.toLocaleString("en-IN")}
-                    </span>
-                  </div>
-
-                  {/* Add to Cart Yellow Button */}
-                  <button
-                    onClick={() => handleAddToCart(deal)}
-                    className="w-full py-2.5 bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs"
-                  >
-                    <ShoppingCart className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>Add to Cart</span>
-                  </button>
                 </div>
-              </div>
+
+                {/* Product Title (1-line truncate like reference) */}
+                <h3 className="text-slate-800 text-xs sm:text-[13px] font-medium leading-tight truncate mt-1.5 group-hover:text-[#002D62] transition-colors">
+                  {deal.name}
+                </h3>
+
+                {/* Price Row: strikethrough MRP first, then bold Price (matching Flipkart reference) */}
+                <div className="flex items-baseline gap-1 sm:gap-1.5 mt-0.5">
+                  <span className="text-[10px] sm:text-xs text-slate-400 line-through font-normal">
+                    ₹{deal.mrp.toLocaleString("en-IN")}
+                  </span>
+                  <span className="text-xs sm:text-sm font-bold text-slate-900">
+                    ₹{deal.price.toLocaleString("en-IN")}
+                  </span>
+                </div>
+              </Link>
             );
           })}
         </div>
