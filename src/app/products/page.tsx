@@ -201,6 +201,9 @@ function ProductsContent() {
 
   // Filtered and sorted products
   const filteredProducts = useMemo(() => {
+    if (!Array.isArray(products) || products.length === 0) {
+      return [];
+    }
     const query = searchQuery.trim().toLowerCase();
     const queryTokens = query ? query.split(/\s+/).filter(Boolean) : [];
     const filterLower = activeFilter.toLowerCase();

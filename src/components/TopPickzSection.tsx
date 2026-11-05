@@ -82,8 +82,6 @@ export function TopPickzSection({
   useEffect(() => {
     measureStepWidth();
     window.addEventListener("resize", measureStepWidth);
-    if (displayProducts.length === 0) return null;
-
   return () => window.removeEventListener("resize", measureStepWidth);
   }, [measureStepWidth]);
 
