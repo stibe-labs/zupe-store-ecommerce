@@ -42,6 +42,7 @@ import {
   Monitor,
   Smartphone,
   Video,
+  Loader2,
 } from "lucide-react";
 import {
   Product,
@@ -261,6 +262,7 @@ export default function AdminProductsPage() {
   const [dragOverGalleryIdx, setDragOverGalleryIdx] = useState<number | null>(null);
   const [draggedAngleKey, setDraggedAngleKey] = useState<string | null>(null);
   const [dragOverAngleKey, setDragOverAngleKey] = useState<string | null>(null);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   // Tab 5: Product Details & Overview (Dynamic Long-Form Visual Story Blocks)
   const [formOverviewBlocks, setFormOverviewBlocks] = useState<ProductOverviewBlock[]>([]);
@@ -773,25 +775,16 @@ export default function AdminProductsPage() {
     setShowModal(true);
   };
 
-  // Local File Upload Helper (shows immediate preview and uploads to Cloudflare R2 CDN)
+  // Cloudflare R2 Media Upload Helper (Single-invocation callback with permanent CDN URL)
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    onSuccess: (dataUrl: string) => void
+    onSuccess: (uploadedUrl: string) => void
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 1. Immediate local preview for responsive UI
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl) {
-        onSuccess(dataUrl);
-      }
-    };
-    reader.readAsDataURL(file);
+    setIsUploadingMedia(true);
 
-    // 2. Asynchronous R2 upload to convert to high-performance CDN URL
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -815,10 +808,33 @@ export default function AdminProductsPage() {
         const data = await res.json();
         if (data.success && data.url) {
           onSuccess(data.url);
+          setIsUploadingMedia(false);
+          e.target.value = "";
+          return;
         }
       }
+
+      // Offline / network failure fallback: only invoke FileReader if cloud upload was unsuccessful
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        if (dataUrl) {
+          onSuccess(dataUrl);
+        }
+        setIsUploadingMedia(false);
+      };
+      reader.readAsDataURL(file);
     } catch (err) {
-      console.warn("Background R2 upload sync fallback:", err);
+      console.warn("Cloud upload error, falling back to local dataUrl:", err);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        if (dataUrl) {
+          onSuccess(dataUrl);
+        }
+        setIsUploadingMedia(false);
+      };
+      reader.readAsDataURL(file);
     }
 
     e.target.value = "";
@@ -1122,14 +1138,16 @@ export default function AdminProductsPage() {
   };
 
   const addAnglePhotoToColor = (colorIdx: number, photoUrl: string) => {
-    if (!photoUrl.trim()) return;
+    const trimmed = photoUrl.trim();
+    if (!trimmed) return;
     setFormColors((prev) =>
       prev.map((c, i) => {
         if (i !== colorIdx) return c;
         const currentImgs = Array.isArray(c.images) ? c.images : [];
+        if (currentImgs.includes(trimmed)) return c;
         return {
           ...c,
-          images: [...currentImgs, photoUrl.trim()],
+          images: [...currentImgs, trimmed],
         };
       })
     );
@@ -1224,8 +1242,9 @@ export default function AdminProductsPage() {
 
   // Gallery image helpers
   const addGalleryImage = () => {
-    if (!newGalleryInput.trim()) return;
-    setFormGalleryImages((prev) => [...prev, newGalleryInput.trim()]);
+    const trimmed = newGalleryInput.trim();
+    if (!trimmed) return;
+    setFormGalleryImages((prev) => (prev.includes(trimmed) ? prev : [...prev, trimmed]));
     setNewGalleryInput("");
   };
 
@@ -2914,19 +2933,31 @@ export default function AdminProductsPage() {
                         className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                       />
                       <label
-                        className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 shrink-0"
+                        className={`px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 shrink-0 ${
+                          isUploadingMedia ? "opacity-60 cursor-not-allowed pointer-events-none" : ""
+                        }`}
                         title="Upload Image File"
                       >
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>Upload File</span>
+                        {isUploadingMedia ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="w-3.5 h-3.5" />
+                        )}
+                        <span>{isUploadingMedia ? "Uploading..." : "Upload File"}</span>
                         <input
                           type="file"
                           accept="image/*"
+                          disabled={isUploadingMedia}
                           className="hidden"
                           onChange={(e) =>
-                            handleFileUpload(e, (dataUrl) => {
-                              setFormImage(dataUrl);
-                              setFormGalleryImages((prev) => (prev.includes(dataUrl) ? prev : [dataUrl, ...prev]));
+                            handleFileUpload(e, (uploadedUrl) => {
+                              setFormGalleryImages((prev) => {
+                                if (formImage && prev.includes(formImage)) {
+                                  return prev.map((img) => (img === formImage ? uploadedUrl : img));
+                                }
+                                return prev.includes(uploadedUrl) ? prev : [uploadedUrl, ...prev];
+                              });
+                              setFormImage(uploadedUrl);
                             })
                           }
                         />
@@ -3129,18 +3160,27 @@ export default function AdminProductsPage() {
                         }}
                       />
                       <label
-                        className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1 shrink-0"
+                        className={`px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1 shrink-0 ${
+                          isUploadingMedia ? "opacity-60 cursor-not-allowed pointer-events-none" : ""
+                        }`}
                         title="Upload Gallery Photo"
                       >
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>Upload</span>
+                        {isUploadingMedia ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="w-3.5 h-3.5" />
+                        )}
+                        <span>{isUploadingMedia ? "Uploading..." : "Upload"}</span>
                         <input
                           type="file"
                           accept="image/*"
+                          disabled={isUploadingMedia}
                           className="hidden"
                           onChange={(e) =>
-                            handleFileUpload(e, (dataUrl) =>
-                              setFormGalleryImages((prev) => [...prev, dataUrl])
+                            handleFileUpload(e, (uploadedUrl) =>
+                              setFormGalleryImages((prev) =>
+                                prev.includes(uploadedUrl) ? prev : [...prev, uploadedUrl]
+                              )
                             )
                           }
                         />
@@ -3524,18 +3564,25 @@ export default function AdminProductsPage() {
                                 }}
                               />
                               <label
-                                className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1 shrink-0"
+                                className={`px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1 shrink-0 ${
+                                  isUploadingMedia ? "opacity-60 cursor-not-allowed pointer-events-none" : ""
+                                }`}
                                 title="Upload Photo File"
                               >
-                                <Upload className="w-3 h-3" />
-                                <span>Upload</span>
+                                {isUploadingMedia ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Upload className="w-3 h-3" />
+                                )}
+                                <span>{isUploadingMedia ? "Uploading..." : "Upload"}</span>
                                 <input
                                   type="file"
                                   accept="image/*"
+                                  disabled={isUploadingMedia}
                                   className="hidden"
                                   onChange={(e) =>
-                                    handleFileUpload(e, (dataUrl) =>
-                                      addAnglePhotoToColor(cIdx, dataUrl)
+                                    handleFileUpload(e, (uploadedUrl) =>
+                                      addAnglePhotoToColor(cIdx, uploadedUrl)
                                     )
                                   }
                                 />
@@ -3774,18 +3821,25 @@ export default function AdminProductsPage() {
                                 className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                               />
                               <label
-                                className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 shrink-0"
+                                className={`px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 shrink-0 ${
+                                  isUploadingMedia ? "opacity-60 cursor-not-allowed pointer-events-none" : ""
+                                }`}
                                 title="Upload Photo or GIF File from Computer"
                               >
-                                <Upload className="w-3.5 h-3.5" />
-                                <span>Upload File</span>
+                                {isUploadingMedia ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Upload className="w-3.5 h-3.5" />
+                                )}
+                                <span>{isUploadingMedia ? "Uploading..." : "Upload File"}</span>
                                 <input
                                   type="file"
                                   accept="image/*,video/*,.gif"
+                                  disabled={isUploadingMedia}
                                   className="hidden"
                                   onChange={(e) =>
-                                    handleFileUpload(e, (dataUrl) =>
-                                      updateOverviewBlock(block.id, "media_url", dataUrl)
+                                    handleFileUpload(e, (uploadedUrl) =>
+                                      updateOverviewBlock(block.id, "media_url", uploadedUrl)
                                     )
                                   }
                                 />
