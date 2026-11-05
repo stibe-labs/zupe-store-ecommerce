@@ -361,9 +361,31 @@ export function VittalDigitalStorefront({
   const [customerName, setCustomerName] = useState<string | null>(null);
 
   useEffect(() => {
+    // Only accept real human customer names; reject auto-generated placeholders like "Customer 2385", "Customer", "User", etc.
+    const isValidCustomerName = (rawName?: string | null): boolean => {
+      if (!rawName) return false;
+      const trimmed = rawName.trim();
+      if (!trimmed) return false;
+      const lower = trimmed.toLowerCase();
+
+      if (
+        lower.startsWith("customer") ||
+        lower.startsWith("user") ||
+        lower.startsWith("guest") ||
+        lower === "valued customer" ||
+        lower === "admin" ||
+        lower === "null" ||
+        lower === "undefined" ||
+        /^\+?\d+$/.test(trimmed)
+      ) {
+        return false;
+      }
+      return true;
+    };
+
     const resolveName = () => {
-      if (user?.name && user.name.trim()) {
-        const first = user.name.trim().split(/\s+/)[0];
+      if (isValidCustomerName(user?.name)) {
+        const first = user!.name.trim().split(/\s+/)[0];
         setCustomerName(first.charAt(0).toUpperCase() + first.slice(1).toLowerCase());
         return;
       }
@@ -377,8 +399,8 @@ export function VittalDigitalStorefront({
             localStorage.getItem("user_name"),
           ];
           for (const c of candidates) {
-            if (c && c.trim()) {
-              const first = c.trim().split(/\s+/)[0];
+            if (isValidCustomerName(c)) {
+              const first = c!.trim().split(/\s+/)[0];
               setCustomerName(first.charAt(0).toUpperCase() + first.slice(1).toLowerCase());
               return;
             }
@@ -386,7 +408,7 @@ export function VittalDigitalStorefront({
           const session = localStorage.getItem("zp_user_session");
           if (session) {
             const parsed = JSON.parse(session);
-            if (parsed?.name && parsed.name.trim()) {
+            if (isValidCustomerName(parsed?.name)) {
               const first = parsed.name.trim().split(/\s+/)[0];
               setCustomerName(first.charAt(0).toUpperCase() + first.slice(1).toLowerCase());
               return;
@@ -505,12 +527,27 @@ export function VittalDigitalStorefront({
         price: 26990,
         mrp: 34990,
         image: "/vittal/products/airpods-max-black-stage-trans.png",
-        badge: "Premium",
+      },
+      {
+        id: "dualsense-ps5",
+        slug: "dualsense-ps5",
+        name: "PS5 DualSense Controller",
+        price: 4799,
+        mrp: 7490,
+        image: "/vittal/products/ps5-controller.jpg",
+      },
+      {
+        id: "iphone-15-128",
+        slug: "iphone-15-128",
+        name: "iPhone 15 (128GB)",
+        price: 62990,
+        mrp: 92990,
+        image: "/vittal/products/iphone-15.jpg",
       },
     ];
 
     for (const p of topPurchased) {
-      if (list.length >= 8) break;
+      if (list.length >= 10) break;
       if (!seen.has(p.id) && !seen.has(p.slug)) {
         seen.add(p.id);
         list.push(p);
@@ -877,34 +914,29 @@ export function VittalDigitalStorefront({
 
       {/* ===================================================================== */}
       {/* SECTION 4: STILL LOOKING FOR THIS? (Personalized Product Carousel)    */}
-      {/* 3 cards + 25% of 4th in 1 row; auto-slides every 5 seconds            */}
+      {/* Mobile: 3 cards + 25% of 4th; Desktop: 6 cards + 25% of 7th in 1 row   */}
       {/* ===================================================================== */}
-      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-3 sm:pt-4 sm:pb-4">
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#001D40] via-[#002D62] to-[#0A3D78] p-3.5 sm:p-5 lg:p-6 shadow-xl border border-[#0A3D78]/50">
+      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-2.5 pb-2.5 sm:pt-3 sm:pb-3">
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#001D40] via-[#002D62] to-[#0A3D78] p-3 sm:p-4 lg:py-3.5 lg:px-5 shadow-xl border border-[#0A3D78]/50">
           {/* Ambient decorative glowing lights */}
           <div className="absolute -top-16 -right-16 w-56 h-56 bg-amber-400/15 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-sky-400/10 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Banner Header */}
-          <div className="relative z-10 flex items-center justify-between gap-3 mb-3 sm:mb-4">
-            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0 shadow-sm">
-                <Sparkles className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-white tracking-tight truncate">
-                  {customerName ? (
-                    <>
-                      <span className="text-[#FFBE00] font-black">{customerName}</span>, still looking for this?
-                    </>
-                  ) : (
-                    "Are you still looking for this?"
-                  )}
-                </h2>
-                <p className="text-[11px] sm:text-xs text-slate-300/90 font-medium hidden sm:block mt-0.5">
-                  Handpicked favorites based on your browsing and trending Dubai electronics
-                </p>
-              </div>
+          {/* Banner Header (Star icon removed as requested) */}
+          <div className="relative z-10 flex items-center justify-between gap-3 mb-2.5 sm:mb-3">
+            <div className="min-w-0">
+              <h2 className="text-sm sm:text-base lg:text-lg font-bold text-white tracking-tight truncate">
+                {customerName ? (
+                  <>
+                    <span className="text-[#FFBE00] font-black">{customerName}</span>, still looking for this?
+                  </>
+                ) : (
+                  "Are you still looking for this?"
+                )}
+              </h2>
+              <p className="text-[11px] sm:text-xs text-slate-300/90 font-medium hidden sm:block mt-0.5">
+                Handpicked favorites based on your browsing and trending Dubai electronics
+              </p>
             </div>
 
             {/* Right Controls */}
@@ -935,14 +967,14 @@ export function VittalDigitalStorefront({
             </div>
           </div>
 
-          {/* Product Carousel Track: 3 full products + 25% of 4th product in 1 row */}
+          {/* Product Carousel Track: 3 + 25% on mobile, 6 + 25% on desktop */}
           <div
             ref={stillLookingTrackRef}
             onMouseEnter={() => setIsStillLookingHovered(true)}
             onMouseLeave={() => setIsStillLookingHovered(false)}
             onTouchStart={() => setIsStillLookingHovered(true)}
             onTouchEnd={() => setIsStillLookingHovered(false)}
-            className="relative z-10 flex items-stretch gap-2.5 sm:gap-3 overflow-x-auto scrollbar-hide py-1 snap-x select-none"
+            className="relative z-10 flex items-stretch gap-2.5 overflow-x-auto scrollbar-hide py-1 snap-x select-none"
             style={{
               scrollbarWidth: "none",
               msOverflowStyle: "none",
@@ -963,26 +995,20 @@ export function VittalDigitalStorefront({
                       mrp: item.mrp,
                       poster_image: item.image,
                       category: "Electronics",
-                      badge: item.badge,
                     });
                   } catch {}
                 }}
-                className="shrink-0 snap-start bg-white rounded-xl sm:rounded-2xl p-2 sm:p-2.5 shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-100/90 flex flex-col justify-between group hover:-translate-y-0.5 cursor-pointer w-[calc((100%-25px)/3.25)] sm:w-[calc((100%-30px)/3.25)] md:w-[calc((100%-36px)/3.25)] lg:w-[calc((100%-36px)/3.25)] xl:w-[calc((100%-48px)/4.25)]"
+                className="shrink-0 snap-start bg-white rounded-xl sm:rounded-2xl p-2 sm:p-2.5 shadow-sm hover:shadow-md transition-all duration-300 border border-slate-100 flex flex-col justify-between group hover:-translate-y-0.5 cursor-pointer w-[calc((100%-25px)/3.25)] sm:w-[calc((100%-35px)/4.25)] md:w-[calc((100%-45px)/5.25)] lg:w-[calc((100%-60px)/6.25)]"
               >
-                {/* Product Image */}
-                <div className="relative w-full aspect-square rounded-lg bg-slate-50/90 mb-1.5 sm:mb-2 flex items-center justify-center overflow-hidden">
+                {/* Product Image (Badges removed as requested) */}
+                <div className="relative w-full aspect-square rounded-lg bg-slate-50/90 mb-1.5 flex items-center justify-center overflow-hidden">
                   <Image
                     src={item.image}
                     alt={item.name}
                     fill
-                    sizes="(max-width: 640px) 33vw, 25vw"
+                    sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 180px"
                     className="object-contain p-1 sm:p-1.5 group-hover:scale-105 transition-transform duration-300"
                   />
-                  {item.badge && (
-                    <span className="absolute top-1 left-1 bg-[#FFBE00] text-slate-950 font-extrabold text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded shadow-xs leading-none">
-                      {item.badge}
-                    </span>
-                  )}
                 </div>
 
                 {/* Product Title (clamped like reference) */}
