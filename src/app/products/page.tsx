@@ -332,9 +332,9 @@ function ProductsContent() {
       {/* ===================================================================== */}
       {/* MAIN CATALOG WORKSPACE: Sidebar Filters + Products Grid               */}
       {/* ===================================================================== */}
-      <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+      <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 w-full">
         {/* Controls Bar: Result Count & Sort Options */}
-        <div className="flex items-center justify-between gap-3 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
           <div className="text-xs sm:text-sm font-bold text-slate-600">
             Showing <span className="text-slate-900 font-black">{filteredProducts.length}</span> {filteredProducts.length === 1 ? "device" : "devices"}
             {selectedCategory !== "All" && (

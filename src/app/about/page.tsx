@@ -394,7 +394,7 @@ export default function AboutPage() {
         {/* ========================================================
             3. CORE VALUE PILLARS
            ======================================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 max-w-6xl mx-auto px-4 sm:px-6">
+        <section className="py-8 sm:py-10 lg:py-12 max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#002D62] bg-blue-50 px-3 py-1 rounded-full border border-blue-200/70 inline-block mb-3">
               The Vittal Digital Guarantee
@@ -489,7 +489,7 @@ export default function AboutPage() {
         {/* ========================================================
             4. HOW THE DUBAI-TO-INDIA BRIDGE WORKS
            ======================================================== */}
-        <section className="py-12 sm:py-16 bg-white border-y border-slate-200/80">
+        <section className="py-8 sm:py-10 bg-white border-y border-slate-200/80">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
               <span className="text-xs font-semibold uppercase tracking-wider text-[#002D62] bg-blue-50 px-3 py-1 rounded-full border border-blue-200/70 inline-block mb-3">
@@ -686,7 +686,7 @@ export default function AboutPage() {
         {/* ========================================================
             6. FINAL CALL TO ACTION (CTA)
            ======================================================== */}
-        <section className="py-12 sm:py-16 max-w-5xl mx-auto px-4 sm:px-6">
+        <section className="py-8 sm:py-10 max-w-5xl mx-auto px-4 sm:px-6">
           <div className="rounded-3xl bg-[#001D40] text-white p-8 sm:p-12 md:p-14 text-center relative overflow-hidden shadow-2xl">
             {/* Ambient Lighting Gradients */}
             <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-blue-600/20 blur-3xl pointer-events-none" />
