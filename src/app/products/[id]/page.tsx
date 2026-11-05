@@ -1791,11 +1791,14 @@ export default function ProductDetailPage() {
             {/* ========================================================
                 HOW TO USE (STEP-BY-STEP REUSABLE CAROUSEL)
                ======================================================== */}
-            {product.how_to_use && (
-              <div className="mt-8 pt-6 border-t border-gray-100">
-                <HowToUseSection config={product.how_to_use} />
-              </div>
-            )}
+            {product.how_to_use &&
+              product.how_to_use.enabled !== false &&
+              Array.isArray(product.how_to_use.steps) &&
+              product.how_to_use.steps.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-gray-100">
+                  <HowToUseSection config={product.how_to_use} />
+                </div>
+              )}
 
             {/* ========================================================
                 COLLAPSIBLE ACCORDIONS (SPECIFICATIONS, WHAT'S IN THE BOX, ETC.)

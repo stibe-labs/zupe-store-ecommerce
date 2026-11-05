@@ -22,6 +22,7 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
   const { addToCart, addItem } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [catalog, setCatalog] = useState<Product[]>(DEFAULT_PRODUCTS);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Fetch live products on client mount to ensure real-time ratings & updates
   useEffect(() => {
@@ -86,10 +87,6 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
     return scored.slice(0, 10).map((s) => s.product);
   }, [catalog, currentProduct]);
 
-  if (!matchingProducts || matchingProducts.length === 0) {
-    return null;
-  }
-
   const handleAddToCart = (e: React.MouseEvent, prod: Product) => {
     e.preventDefault();
     e.stopPropagation();
@@ -153,14 +150,16 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
     }
   };
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
       const offset = direction === "left" ? -300 : 300;
       scrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
     }
   };
+
+  if (!matchingProducts || matchingProducts.length === 0) {
+    return null;
+  }
 
   return (
     <section className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 pt-6 pb-2 sm:pt-10 sm:pb-6 border-t border-gray-100">

@@ -224,46 +224,46 @@ export function HowToUseSection({
   const scrollLeftRef = useRef(0);
   const isDraggingRef = useRef(false);
 
-  // 1. Guard conditions: If disabled or 0 steps, do not render anything
-  if (!config || config.enabled === false || !Array.isArray(config.steps) || config.steps.length === 0) {
-    return null;
-  }
-
-  const steps = config.steps;
+  const isEnabled = Boolean(
+    config && config.enabled !== false && Array.isArray(config.steps) && config.steps.length > 0
+  );
+  const steps = isEnabled && config?.steps ? config.steps : [];
+  const stepsCount = steps.length;
 
   // 2. Styling Tokens Mapping
   const sectionBgClass =
-    config.section_bg === "soft_gray"
+    config?.section_bg === "soft_gray"
       ? "bg-[#F3F4F6]"
-      : config.section_bg === "light_orange"
+      : config?.section_bg === "light_orange"
       ? "bg-[#FFF3E8]"
       : "bg-white";
 
   const cardRadiusClass =
-    config.card_radius === "rounded-xl"
+    config?.card_radius === "rounded-xl"
       ? "rounded-xl"
-      : config.card_radius === "rounded-3xl"
+      : config?.card_radius === "rounded-3xl"
       ? "rounded-3xl"
       : "rounded-2xl";
 
   const cardBorderClass =
-    config.card_border === "orange"
+    config?.card_border === "orange"
       ? "border border-[#FF7A00]/40 shadow-[0_0_0_1px_rgba(255,122,0,0.12)]"
-      : config.card_border === "none"
+      : config?.card_border === "none"
       ? "border-0"
       : "border border-gray-100";
 
   const cardShadowClass =
-    config.card_shadow === "none"
+    config?.card_shadow === "none"
       ? "shadow-none"
-      : config.card_shadow === "sm"
+      : config?.card_shadow === "sm"
       ? "shadow-xs"
-      : config.card_shadow === "lg"
+      : config?.card_shadow === "lg"
       ? "shadow-md"
       : "shadow-2xs";
 
   // Check scroll positions for desktop arrow buttons and mobile active pagination dot
   const updateScrollState = useCallback(() => {
+    if (!isEnabled) return;
     const el = carouselRef.current;
     if (!el) return;
 
@@ -274,19 +274,20 @@ export function HowToUseSection({
     const totalScrollable = el.scrollWidth - el.clientWidth;
     if (totalScrollable > 0) {
       const scrollRatio = el.scrollLeft / totalScrollable;
-      const maxIndex = steps.length - 1;
+      const maxIndex = stepsCount - 1;
       const newActive = Math.round(scrollRatio * maxIndex);
       setActiveMobileIndex(Math.min(maxIndex, Math.max(0, newActive)));
     } else {
       setActiveMobileIndex(0);
     }
-  }, [steps.length]);
+  }, [isEnabled, stepsCount]);
 
   useEffect(() => {
+    if (!isEnabled) return;
     updateScrollState();
     window.addEventListener("resize", updateScrollState);
     return () => window.removeEventListener("resize", updateScrollState);
-  }, [updateScrollState]);
+  }, [isEnabled, updateScrollState]);
 
   // Desktop Navigation Arrow Click Handlers
   const scrollByDirection = (direction: "left" | "right") => {
@@ -323,6 +324,11 @@ export function HowToUseSection({
   const handleMouseUpOrLeave = () => {
     isMouseDownRef.current = false;
   };
+
+  // Guard condition: If disabled or 0 steps, do not render anything
+  if (!isEnabled || steps.length === 0) {
+    return null;
+  }
 
   return (
     <section
