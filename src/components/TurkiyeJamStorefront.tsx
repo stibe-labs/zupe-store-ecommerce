@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useAuth } from "@/context/AuthContext";
 import {
   Star,
   ShoppingCart,
@@ -26,9 +27,10 @@ import {
   ChevronRight,
   ArrowRight,
   Check,
+  Sparkles,
 } from "lucide-react";
 import { Product } from "@/types/product";
-import { addRecentlyViewed } from "@/lib/recentlyViewed";
+import { addRecentlyViewed, useRecentlyViewed } from "@/lib/recentlyViewed";
 import {
   DEFAULT_PRODUCTS,
   VITTAL_DIGITAL_DEALS,
@@ -352,6 +354,220 @@ export function VittalDigitalStorefront({
   const router = useRouter();
   const { addItem, openCart } = useCart();
   const { toggleWishlist: toggleWishlistContext, isInWishlist } = useWishlist();
+  const { user } = useAuth();
+  const { items: recentlyViewedItems } = useRecentlyViewed();
+
+  // Customer Name State (Personalized "Ijas, still looking for this?" or fallback "Are you still looking for this?")
+  const [customerName, setCustomerName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const resolveName = () => {
+      if (user?.name && user.name.trim()) {
+        const first = user.name.trim().split(/\s+/)[0];
+        setCustomerName(first.charAt(0).toUpperCase() + first.slice(1).toLowerCase());
+        return;
+      }
+      if (typeof window !== "undefined") {
+        try {
+          const candidates = [
+            localStorage.getItem("vittal_customer_name"),
+            localStorage.getItem("customer_name"),
+            localStorage.getItem("fastrr_customer_name"),
+            localStorage.getItem("zupe_checkout_name"),
+            localStorage.getItem("user_name"),
+          ];
+          for (const c of candidates) {
+            if (c && c.trim()) {
+              const first = c.trim().split(/\s+/)[0];
+              setCustomerName(first.charAt(0).toUpperCase() + first.slice(1).toLowerCase());
+              return;
+            }
+          }
+          const session = localStorage.getItem("zp_user_session");
+          if (session) {
+            const parsed = JSON.parse(session);
+            if (parsed?.name && parsed.name.trim()) {
+              const first = parsed.name.trim().split(/\s+/)[0];
+              setCustomerName(first.charAt(0).toUpperCase() + first.slice(1).toLowerCase());
+              return;
+            }
+          }
+        } catch {}
+      }
+      setCustomerName(null);
+    };
+
+    resolveName();
+    window.addEventListener("storage", resolveName);
+    return () => window.removeEventListener("storage", resolveName);
+  }, [user?.name]);
+
+  // Combined product list for "Still Looking For These?" (recently viewed + top purchased suggestions >= 8 items)
+  const stillLookingProducts = useMemo(() => {
+    const list: Array<{
+      id: string;
+      slug: string;
+      name: string;
+      price: number;
+      mrp: number;
+      image: string;
+      badge?: string;
+    }> = [];
+    const seen = new Set<string>();
+
+    // 1. Prioritize customer's recently viewed products (from search or detail pages)
+    if (Array.isArray(recentlyViewedItems) && recentlyViewedItems.length > 0) {
+      for (const item of recentlyViewedItems) {
+        const id = item.id || item.slug || "";
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        list.push({
+          id,
+          slug: item.slug || id,
+          name: item.name,
+          price: item.price || 999,
+          mrp: item.mrp && item.mrp > (item.price || 999) ? item.mrp : Math.round((item.price || 999) * 1.3),
+          image: item.poster_image || "/vittal-digital-logo.png",
+          badge: item.badge || "Recently Viewed",
+        });
+      }
+    }
+
+    // 2. Supplement with top-purchased flagship suggestions so there are always at least 8 products
+    const topPurchased = [
+      {
+        id: "airpods-pro-2",
+        slug: "airpods-pro-2",
+        name: "Apple AirPods Pro (2nd Gen)",
+        price: 19990,
+        mrp: 28990,
+        image: "/vittal/products/airpods-pro-gallery-1.jpg",
+        badge: "Top Seller",
+      },
+      {
+        id: "smart-watch-pro",
+        slug: "smart-watch-pro",
+        name: "Smart Watch Pro AMOLED",
+        price: 5999,
+        mrp: 7999,
+        image: "/vittal/smart-watch-pro.png",
+        badge: "Trending",
+      },
+      {
+        id: "wireless-earbuds",
+        slug: "wireless-earbuds",
+        name: "Wireless Earbuds Hybrid ANC",
+        price: 2999,
+        mrp: 3999,
+        image: "/vittal/wireless-earbuds.png",
+        badge: "Deal",
+      },
+      {
+        id: "portable-bluetooth-speaker",
+        slug: "portable-bluetooth-speaker",
+        name: "Portable Bluetooth Speaker 24W",
+        price: 3999,
+        mrp: 4999,
+        image: "/vittal/portable-bluetooth-speaker.png",
+        badge: "Dubai Import",
+      },
+      {
+        id: "compact-power-bank",
+        slug: "compact-power-bank",
+        name: "Compact Power Bank 10000mAh",
+        price: 1499,
+        mrp: 2499,
+        image: "/vittal/compact-power-bank.png",
+        badge: "Fast Charge",
+      },
+      {
+        id: "galaxy-tab-s9",
+        slug: "galaxy-tab-s9",
+        name: "Samsung Galaxy Tab S9 (12.4\")",
+        price: 64999,
+        mrp: 81999,
+        image: "/vittal/products/galaxy-tabs9.jpg",
+        badge: "Flagship",
+      },
+      {
+        id: "victus-15",
+        slug: "victus-15",
+        name: "HP Victus 15 Gaming Laptop",
+        price: 58990,
+        mrp: 74990,
+        image: "/vittal/products/victus-15.jpg",
+        badge: "Best Deal",
+      },
+      {
+        id: "sony-wh1000xm5",
+        slug: "sony-wh1000xm5",
+        name: "Sony WH-1000XM5 ANC",
+        price: 26990,
+        mrp: 34990,
+        image: "/vittal/products/airpods-max-black-stage-trans.png",
+        badge: "Premium",
+      },
+    ];
+
+    for (const p of topPurchased) {
+      if (list.length >= 8) break;
+      if (!seen.has(p.id) && !seen.has(p.slug)) {
+        seen.add(p.id);
+        list.push(p);
+      }
+    }
+
+    return list;
+  }, [recentlyViewedItems]);
+
+  // Carousel ref & auto-slide state
+  const stillLookingTrackRef = useRef<HTMLDivElement>(null);
+  const [isStillLookingHovered, setIsStillLookingHovered] = useState(false);
+
+  const scrollStillLookingNext = useCallback(() => {
+    const track = stillLookingTrackRef.current;
+    if (!track) return;
+    const firstChild = track.firstElementChild as HTMLElement | null;
+    if (!firstChild) return;
+
+    const gap = 12;
+    const step = firstChild.offsetWidth + gap;
+    const maxScroll = track.scrollWidth - track.clientWidth;
+
+    if (track.scrollLeft + step >= maxScroll - 8) {
+      track.scrollTo({ left: 0, behavior: "smooth" });
+    } else {
+      track.scrollBy({ left: step, behavior: "smooth" });
+    }
+  }, []);
+
+  const scrollStillLookingPrev = useCallback(() => {
+    const track = stillLookingTrackRef.current;
+    if (!track) return;
+    const firstChild = track.firstElementChild as HTMLElement | null;
+    if (!firstChild) return;
+
+    const gap = 12;
+    const step = firstChild.offsetWidth + gap;
+
+    if (track.scrollLeft <= 8) {
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      track.scrollTo({ left: maxScroll, behavior: "smooth" });
+    } else {
+      track.scrollBy({ left: -step, behavior: "smooth" });
+    }
+  }, []);
+
+  // Auto-scroll every 5 seconds (left side's product slides out, new product enters from right)
+  useEffect(() => {
+    if (isStillLookingHovered) return;
+
+    const timer = setInterval(() => {
+      scrollStillLookingNext();
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [isStillLookingHovered, scrollStillLookingNext]);
 
   const products =
     initialProducts && initialProducts.length > 0
@@ -654,6 +870,144 @@ export function VittalDigitalStorefront({
                 }`}
                 aria-label={`Go to promo card ${idx + 1}`}
               />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===================================================================== */}
+      {/* SECTION 4: STILL LOOKING FOR THIS? (Personalized Product Carousel)    */}
+      {/* 3 cards + 25% of 4th in 1 row; auto-slides every 5 seconds            */}
+      {/* ===================================================================== */}
+      <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-3 sm:pt-4 sm:pb-4">
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#001D40] via-[#002D62] to-[#0A3D78] p-3.5 sm:p-5 lg:p-6 shadow-xl border border-[#0A3D78]/50">
+          {/* Ambient decorative glowing lights */}
+          <div className="absolute -top-16 -right-16 w-56 h-56 bg-amber-400/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-sky-400/10 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Banner Header */}
+          <div className="relative z-10 flex items-center justify-between gap-3 mb-3 sm:mb-4">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0 shadow-sm">
+                <Sparkles className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-white tracking-tight truncate">
+                  {customerName ? (
+                    <>
+                      <span className="text-[#FFBE00] font-black">{customerName}</span>, still looking for this?
+                    </>
+                  ) : (
+                    "Are you still looking for this?"
+                  )}
+                </h2>
+                <p className="text-[11px] sm:text-xs text-slate-300/90 font-medium hidden sm:block mt-0.5">
+                  Handpicked favorites based on your browsing and trending Dubai electronics
+                </p>
+              </div>
+            </div>
+
+            {/* Right Controls */}
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href="/products"
+                className="text-[11px] sm:text-xs font-semibold text-amber-300 hover:text-amber-200 flex items-center gap-1 transition-colors px-2 py-1 rounded-md hover:bg-white/10"
+              >
+                <span>View All</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <div className="hidden sm:flex items-center gap-1.5 ml-1">
+                <button
+                  onClick={scrollStillLookingPrev}
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white flex items-center justify-center transition-all border border-white/15 cursor-pointer"
+                  aria-label="Previous products"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={scrollStillLookingNext}
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white flex items-center justify-center transition-all border border-white/15 cursor-pointer"
+                  aria-label="Next products"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Product Carousel Track: 3 full products + 25% of 4th product in 1 row */}
+          <div
+            ref={stillLookingTrackRef}
+            onMouseEnter={() => setIsStillLookingHovered(true)}
+            onMouseLeave={() => setIsStillLookingHovered(false)}
+            onTouchStart={() => setIsStillLookingHovered(true)}
+            onTouchEnd={() => setIsStillLookingHovered(false)}
+            className="relative z-10 flex items-stretch gap-2.5 sm:gap-3 overflow-x-auto scrollbar-hide py-1 snap-x select-none"
+            style={{
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
+            {stillLookingProducts.map((item, idx) => (
+              <Link
+                key={`${item.id}-${idx}`}
+                href={`/products/${item.slug || item.id}`}
+                onClick={() => {
+                  try {
+                    addRecentlyViewed({
+                      id: item.id,
+                      slug: item.slug,
+                      name: item.name,
+                      price: item.price,
+                      mrp: item.mrp,
+                      poster_image: item.image,
+                      category: "Electronics",
+                      badge: item.badge,
+                    });
+                  } catch {}
+                }}
+                className="shrink-0 snap-start bg-white rounded-xl sm:rounded-2xl p-2 sm:p-2.5 shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-100/90 flex flex-col justify-between group hover:-translate-y-0.5 cursor-pointer w-[calc((100%-25px)/3.25)] sm:w-[calc((100%-30px)/3.25)] md:w-[calc((100%-36px)/3.25)] lg:w-[calc((100%-36px)/3.25)] xl:w-[calc((100%-48px)/4.25)]"
+              >
+                {/* Product Image */}
+                <div className="relative w-full aspect-square rounded-lg bg-slate-50/90 mb-1.5 sm:mb-2 flex items-center justify-center overflow-hidden">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    sizes="(max-width: 640px) 33vw, 25vw"
+                    className="object-contain p-1 sm:p-1.5 group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {item.badge && (
+                    <span className="absolute top-1 left-1 bg-[#FFBE00] text-slate-950 font-extrabold text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded shadow-xs leading-none">
+                      {item.badge}
+                    </span>
+                  )}
+                </div>
+
+                {/* Product Title (clamped like reference) */}
+                <h3 className="text-slate-800 font-semibold text-[11px] sm:text-xs leading-tight line-clamp-1 mb-1 group-hover:text-[#002D62] transition-colors">
+                  {item.name}
+                </h3>
+
+                {/* Product Price & Action */}
+                <div className="flex items-center justify-between gap-1 mt-auto pt-0.5">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[12px] sm:text-sm font-bold text-[#002D62] tracking-tight">
+                      ₹{item.price.toLocaleString("en-IN")}
+                    </span>
+                    {item.mrp > item.price && (
+                      <span className="text-[9px] sm:text-[10px] text-slate-400 line-through hidden xs:inline">
+                        ₹{item.mrp.toLocaleString("en-IN")}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-amber-600 group-hover:text-amber-700 flex items-center gap-0.5 shrink-0 group-hover:translate-x-0.5 transition-transform">
+                    <span>View</span>
+                    <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                  </span>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
