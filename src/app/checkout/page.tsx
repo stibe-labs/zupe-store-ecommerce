@@ -129,6 +129,7 @@ function CheckoutContent() {
     clearCart,
     removeFromCart,
     freeShippingThreshold,
+    standardShippingFee,
     outOfStockItemIds,
     hasOutOfStockItems,
     checkCartStock,
@@ -1017,10 +1018,7 @@ function CheckoutContent() {
     }
   };
 
-  // Delivery Fee: ₹49 for COD, ₹0 Free Delivery for Online Payment
   const isCod = paymentMethod === "cod";
-  const shippingFee = isCod ? 49 : 0;
-  const codAdvance = 0;
   const totalItemCount = cart.reduce((sum, it) => sum + it.quantity, 0);
 
   // Buy More Save More calculations
@@ -1045,15 +1043,22 @@ function CheckoutContent() {
   const gstAmount = Math.round(effectiveSubtotal - (effectiveSubtotal / 1.18));
   const totalDiscount = savings + bundleSavings + promoDiscount;
 
-  // Online Payment: Exact advertised price with 100% Free Express Delivery
-  const onlineGrandTotal = effectiveSubtotal;
+  // Delivery Fee: Synchronized dynamically with Admin Settings (Free Shipping Min Order & Standard Fee)
+  const isFreeDelivery = effectiveSubtotal >= freeShippingThreshold;
+  const baseShippingFee = isFreeDelivery ? 0 : standardShippingFee;
+  const codFee = isCod ? 49 : 0;
+  const shippingFee = baseShippingFee + codFee;
+  const codAdvance = 0;
 
-  // Cash on Delivery: Advertised price + ₹49 courier fee
-  const codGrandTotal = effectiveSubtotal + 49;
+  // Online Payment: Exact advertised price + standard shipping fee (if below threshold)
+  const onlineGrandTotal = effectiveSubtotal + baseShippingFee;
+
+  // Cash on Delivery: Advertised price + standard shipping fee + ₹49 courier fee
+  const codGrandTotal = effectiveSubtotal + baseShippingFee + codFee;
 
   const grandTotal = isCod ? codGrandTotal : onlineGrandTotal;
   const payableNow = isCod ? 49 : onlineGrandTotal;
-  const doorstepBalance = isCod ? effectiveSubtotal : 0;
+  const doorstepBalance = isCod ? (effectiveSubtotal + baseShippingFee) : 0;
 
   // Total MRP for comparison pill
   const totalMrp = cart.reduce((sum, it) => {
@@ -1365,7 +1370,7 @@ function CheckoutContent() {
       const isCod = paymentMethod === "cod";
       const chargeAmount = isCod ? 49 : onlineGrandTotal;
       const totalOrderAmount = isCod ? codGrandTotal : onlineGrandTotal;
-      const balanceDueAmount = isCod ? onlineGrandTotal : 0;
+      const balanceDueAmount = isCod ? doorstepBalance : 0;
 
       const orderPayload = {
         amount: chargeAmount,
@@ -1383,7 +1388,7 @@ function CheckoutContent() {
         promo_code: appliedPromo || undefined,
         promo_discount: promoDiscount || undefined,
         gst_amount: gstAmount,
-        shipping_cost: isCod ? 49 : 0,
+        shipping_cost: baseShippingFee + (isCod ? 49 : 0),
         user_id: user?.id,
         items: cart.map((c) => ({
           product_id: c.id,
@@ -3174,12 +3179,22 @@ function CheckoutContent() {
                         <span className="flex items-center gap-1.5">
                           Delivery Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
                         </span>
-                        {paymentMethod === "online" ? (
-                          <span className="font-bold text-emerald-700">FREE (Saved ₹49)</span>
+                        {isFreeDelivery ? (
+                          <span className="font-bold text-emerald-700">
+                            FREE {standardShippingFee > 0 ? `(Saved ₹${standardShippingFee})` : ""}
+                          </span>
                         ) : (
-                          <span className="font-semibold text-gray-900">+₹49 (Courier &amp; COD Fee)</span>
+                          <span className="font-semibold text-gray-900">
+                            ₹{baseShippingFee.toLocaleString("en-IN")}
+                          </span>
                         )}
                       </div>
+                      {isCod && (
+                        <div className="flex justify-between text-gray-600">
+                          <span>Courier &amp; COD Handling Fee</span>
+                          <span className="font-semibold text-gray-900">+₹49</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Total Payable Box */}
@@ -3187,7 +3202,11 @@ function CheckoutContent() {
                       <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100/90 flex items-center justify-between">
                         <div>
                           <p className="text-sm font-bold text-gray-900">Total Payable (Online)</p>
-                          <p className="text-[11px] text-stone-600 font-medium">Free Express Delivery included</p>
+                          <p className="text-[11px] text-stone-600 font-medium">
+                            {isFreeDelivery
+                              ? "Free Express Delivery included"
+                              : `Includes ₹${baseShippingFee} Standard Shipping`}
+                          </p>
                         </div>
                         <span className="text-xl font-black text-gray-950">
                           ₹{onlineGrandTotal.toLocaleString()}
@@ -3526,12 +3545,22 @@ function CheckoutContent() {
                   <span className="flex items-center gap-1.5">
                     Delivery Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
                   </span>
-                  {paymentMethod === "online" ? (
-                    <span className="font-bold text-emerald-700">FREE (Saved ₹49)</span>
+                  {isFreeDelivery ? (
+                    <span className="font-bold text-emerald-700">
+                      FREE {standardShippingFee > 0 ? `(Saved ₹${standardShippingFee})` : ""}
+                    </span>
                   ) : (
-                    <span className="font-semibold text-gray-900">+₹49 (Courier &amp; COD Fee)</span>
+                    <span className="font-semibold text-gray-900">
+                      ₹{baseShippingFee.toLocaleString("en-IN")}
+                    </span>
                   )}
                 </div>
+                {isCod && (
+                  <div className="flex justify-between text-gray-600">
+                    <span>Courier &amp; COD Handling Fee</span>
+                    <span className="font-semibold text-gray-900">+₹49</span>
+                  </div>
+                )}
               </div>
 
               {/* Total Payable Box */}
@@ -3539,7 +3568,11 @@ function CheckoutContent() {
                 <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100/90 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-bold text-gray-900">Total Payable (Online)</p>
-                    <p className="text-[11px] text-stone-600 font-medium">Free Express Delivery included</p>
+                    <p className="text-[11px] text-stone-600 font-medium">
+                      {isFreeDelivery
+                        ? "Free Express Delivery included"
+                        : `Includes ₹${baseShippingFee} Standard Shipping`}
+                    </p>
                   </div>
                   <span className="text-xl font-black text-gray-950">
                     ₹{onlineGrandTotal.toLocaleString()}

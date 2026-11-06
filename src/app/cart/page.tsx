@@ -33,6 +33,7 @@ export default function CartPage() {
     totalItems,
     subtotal,
     freeShippingThreshold,
+    standardShippingFee,
     freeShippingRemaining,
     openCart,
   } = useCart();
@@ -71,7 +72,7 @@ export default function CartPage() {
     }
   };
 
-  const shippingFee = subtotal >= freeShippingThreshold || subtotal === 0 ? 0 : 99;
+  const shippingFee = subtotal >= freeShippingThreshold || subtotal === 0 ? 0 : standardShippingFee;
   const grandTotal = Math.max(0, subtotal - discount + shippingFee);
 
   if (cart.length === 0) {

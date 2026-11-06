@@ -61,6 +61,7 @@ interface CartContextType {
   subtotal: number;
   savings: number;
   freeShippingThreshold: number;
+  standardShippingFee: number;
   freeShippingRemaining: number;
   outOfStockItemIds: string[];
   hasOutOfStockItems: boolean;
@@ -75,8 +76,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [outOfStockItemIds, setOutOfStockItemIds] = useState<string[]>([]);
-  const FREE_SHIPPING_THRESHOLD = 1499;
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState<number>(499);
+  const [standardShippingFee, setStandardShippingFee] = useState<number>(49);
   const GUEST_CART_KEY = "zp_guest_cart";
+
+  // Dynamically load Free Shipping Min Order and Standard Shipping Fee from Admin Settings
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && data?.storeProfile) {
+          if (typeof data.storeProfile.freeShippingThreshold === "number") {
+            setFreeShippingThreshold(data.storeProfile.freeShippingThreshold);
+          }
+          if (typeof data.storeProfile.standardShippingFee === "number") {
+            setStandardShippingFee(data.storeProfile.standardShippingFee);
+          }
+        }
+      })
+      .catch((e) => console.warn("Failed to load store shipping policy:", e));
+  }, []);
 
   const checkCartStock = async (): Promise<string[]> => {
     if (cart.length === 0) {
@@ -488,7 +507,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     0
   );
   const savings = Math.max(0, mrpTotal - subtotal);
-  const freeShippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
+  const freeShippingRemaining = Math.max(0, freeShippingThreshold - subtotal);
 
   return (
     <CartContext.Provider
@@ -506,7 +525,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         totalItems,
         subtotal,
         savings,
-        freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
+        freeShippingThreshold,
+        standardShippingFee,
         freeShippingRemaining,
         outOfStockItemIds,
         hasOutOfStockItems: outOfStockItemIds.length > 0,
