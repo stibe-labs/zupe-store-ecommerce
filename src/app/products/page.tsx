@@ -271,7 +271,8 @@ function ProductsContent() {
         }
 
         // Category filter
-        if (!doesCategoryMatch(product.category, selectedCategory, dynamicCategories)) {
+        const productCategories = product.categories && product.categories.length > 0 ? product.categories : product.category;
+        if (!doesCategoryMatch(productCategories, selectedCategory, dynamicCategories)) {
           return false;
         }
 
@@ -280,9 +281,11 @@ function ProductsContent() {
           return false;
         }
 
-        // Multi-keyword token search matching across name, tagline, description, category, and badge
+        // Multi-keyword token search matching across name, tagline, description, categories, subcategories, and badge
         if (queryTokens.length > 0) {
-          const searchable = `${product.name} ${product.tagline} ${product.description} ${product.category} ${product.badge || ""}`.toLowerCase();
+          const catStr = Array.isArray(product.categories) ? product.categories.join(" ") : (product.category || "");
+          const subcatStr = Array.isArray(product.subcategories) ? product.subcategories.join(" ") : (product.subcategory || "");
+          const searchable = `${product.name} ${product.tagline} ${product.description} ${catStr} ${subcatStr} ${product.badge || ""}`.toLowerCase();
           const matchesAllTokens = queryTokens.every((token) => searchable.includes(token));
           if (!matchesAllTokens) return false;
         }

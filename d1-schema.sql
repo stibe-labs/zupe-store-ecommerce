@@ -51,6 +51,8 @@ CREATE TABLE IF NOT EXISTS products (
     review_count INTEGER DEFAULT 0,
     supplier_id TEXT,
     supplier_name TEXT,
+    categories TEXT,
+    subcategories TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

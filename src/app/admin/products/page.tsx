@@ -195,11 +195,77 @@ export default function AdminProductsPage() {
   const [formName, setFormName] = useState("");
   const [formSubtitle, setFormSubtitle] = useState("");
   const [formSlug, setFormSlug] = useState("");
+  const [formCategories, setFormCategories] = useState<string[]>(["Home Essentials"]);
   const [formCategory, setFormCategory] = useState("Home Essentials");
+  const [formSubcategories, setFormSubcategories] = useState<string[]>([]);
   const [formSubcategory, setFormSubcategory] = useState("");
+  const [customSubcategoryInput, setCustomSubcategoryInput] = useState("");
+  const [showCustomSubInput, setShowCustomSubInput] = useState(false);
   const [formBadge, setFormBadge] = useState("");
   const [formTagline, setFormTagline] = useState("");
   const [formDescription, setFormDescription] = useState("");
+
+  const addCategoryToForm = (catToAdd: string) => {
+    const trimmed = catToAdd.trim();
+    if (!trimmed) return;
+    setFormCategories((prev) => {
+      if (prev.includes(trimmed)) return prev;
+      const next = [...prev, trimmed];
+      if (next.length === 1 || !formCategory) setFormCategory(trimmed);
+      return next;
+    });
+  };
+
+  const removeCategoryFromForm = (catToRemove: string) => {
+    setFormCategories((prev) => {
+      const next = prev.filter((c) => c !== catToRemove);
+      const newPrimary = next[0] || "";
+      setFormCategory(newPrimary);
+      return next;
+    });
+  };
+
+  const setPrimaryCategory = (cat: string) => {
+    setFormCategories((prev) => {
+      const remaining = prev.filter((c) => c !== cat);
+      return [cat, ...remaining];
+    });
+    setFormCategory(cat);
+  };
+
+  const addSubcategoryToForm = (subToAdd: string) => {
+    const trimmed = subToAdd.trim();
+    if (!trimmed) return;
+    setFormSubcategories((prev) => {
+      if (prev.includes(trimmed)) return prev;
+      const next = [...prev, trimmed];
+      if (next.length === 1 || !formSubcategory) setFormSubcategory(trimmed);
+      return next;
+    });
+  };
+
+  const removeSubcategoryFromForm = (subToRemove: string) => {
+    setFormSubcategories((prev) => {
+      const next = prev.filter((s) => s !== subToRemove);
+      setFormSubcategory(next[0] || "");
+      return next;
+    });
+  };
+
+  const allAvailableSubcategories = useMemo(() => {
+    const subSet = new Set<string>();
+    const catsToInspect = formCategories.length > 0 ? formCategories : (formCategory ? [formCategory] : []);
+    catsToInspect.forEach((cat) => {
+      const subs = getSubcategoriesForCategory(cat, dynamicCategories);
+      subs.forEach((s) => subSet.add(s));
+    });
+    if (subSet.size === 0) {
+      PRODUCT_CATEGORIES_DATA.forEach((group) => {
+        group.subcategories.forEach((s) => subSet.add(s));
+      });
+    }
+    return Array.from(subSet);
+  }, [formCategories, formCategory, dynamicCategories]);
 
   // Tab 2: Pricing & Stock
   const [formPrice, setFormPrice] = useState("");
@@ -426,8 +492,12 @@ export default function AdminProductsPage() {
     setFormName("");
     setFormSubtitle("");
     setFormSlug("");
+    setFormCategories(["Home & Living"]);
     setFormCategory("Home & Living");
+    setFormSubcategories(["Home Comfort & Utility"]);
     setFormSubcategory("Home Comfort & Utility");
+    setShowCustomSubInput(false);
+    setCustomSubcategoryInput("");
     setFormBadge("");
     setFormTagline("");
     setFormDescription("");
@@ -529,8 +599,19 @@ export default function AdminProductsPage() {
     setFormName(prod.name || "");
     setFormSubtitle(prod.subtitle || "");
     setFormSlug(prod.slug || "");
-    setFormCategory(prod.category || "Home & Living");
-    setFormSubcategory(prod.subcategory || "");
+    const initialCats = Array.isArray(prod.categories) && prod.categories.length > 0
+      ? prod.categories
+      : (prod.category ? [prod.category] : ["Home & Living"]);
+    setFormCategories(initialCats);
+    setFormCategory(initialCats[0] || prod.category || "Home & Living");
+
+    const initialSubs = Array.isArray(prod.subcategories) && prod.subcategories.length > 0
+      ? prod.subcategories
+      : (prod.subcategory ? [prod.subcategory] : []);
+    setFormSubcategories(initialSubs);
+    setFormSubcategory(initialSubs[0] || prod.subcategory || "");
+    setShowCustomSubInput(false);
+    setCustomSubcategoryInput("");
     setFormBadge(prod.badge || "");
     setFormTagline(prod.tagline || "");
     setFormDescription(prod.description || "");
@@ -1401,8 +1482,10 @@ export default function AdminProductsPage() {
       slug: generatedSlug,
       name: formName.trim(),
       subtitle: formSubtitle.trim(),
-      category: formCategory.trim(),
-      subcategory: formSubcategory.trim(),
+      category: formCategory.trim() || formCategories[0] || "Home Essentials",
+      categories: formCategories.length > 0 ? formCategories : [formCategory.trim() || "Home Essentials"],
+      subcategory: formSubcategory.trim() || formSubcategories[0] || "",
+      subcategories: formSubcategories.length > 0 ? formSubcategories : (formSubcategory.trim() ? [formSubcategory.trim()] : []),
       badge: formBadge,
       tagline: formTagline.trim(),
       description: formDescription.trim(),
@@ -1526,18 +1609,30 @@ export default function AdminProductsPage() {
   };
 
   // Categories list
-  const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
+  const categories = Array.from(
+    new Set(
+      products
+        .flatMap((p) => (p.categories && p.categories.length > 0 ? p.categories : [p.category]))
+        .filter(Boolean)
+    )
+  );
 
   // Filtered products
   const filtered = products.filter((p) => {
-    if (categoryFilter !== "all" && p.category !== categoryFilter) return false;
+    if (categoryFilter !== "all") {
+      const matchCat = (p.categories && p.categories.includes(categoryFilter)) || p.category === categoryFilter;
+      if (!matchCat) return false;
+    }
     if (stockFilter === "in_stock" && p.in_stock !== 1) return false;
     if (stockFilter === "out_of_stock" && p.in_stock === 1) return false;
     if (search.trim()) {
       const s = search.toLowerCase();
+      const allCats = Array.isArray(p.categories) ? p.categories.join(" ") : (p.category || "");
+      const allSubs = Array.isArray(p.subcategories) ? p.subcategories.join(" ") : (p.subcategory || "");
       return (
         p.name.toLowerCase().includes(s) ||
-        p.category.toLowerCase().includes(s) ||
+        allCats.toLowerCase().includes(s) ||
+        allSubs.toLowerCase().includes(s) ||
         (p.tagline && p.tagline.toLowerCase().includes(s)) ||
         (p.slug && p.slug.toLowerCase().includes(s))
       );
@@ -1819,10 +1914,18 @@ export default function AdminProductsPage() {
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2">
+                                <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
                                   <span className="font-medium text-slate-600">
                                     {prod.category}
                                   </span>
+                                  {prod.categories && prod.categories.length > 1 && (
+                                    <span
+                                      className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-orange-100 text-orange-800"
+                                      title={prod.categories.join(", ")}
+                                    >
+                                      +{prod.categories.length - 1} more
+                                    </span>
+                                  )}
                                   <span>•</span>
                                   <span className="font-mono text-slate-400 text-[10px]">
                                     /{prod.slug}
@@ -2261,62 +2364,236 @@ export default function AdminProductsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                        Category *
-                      </label>
+                  {/* Multi-Category & Multi-Subcategory Configuration Box */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-50 via-white to-orange-50/20 border border-slate-200/90 shadow-sm space-y-4">
+                    {/* 1. Multi-Select Categories */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-800">
+                          <span>Categories</span>
+                          <span className="text-[10px] font-medium text-orange-600 bg-orange-100/90 px-1.5 py-0.5 rounded-full">
+                            Multi-Select
+                          </span>
+                        </label>
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          {formCategories.length} selected {formCategories.length > 0 && `(Primary: ${formCategory})`}
+                        </span>
+                      </div>
+
+                      {/* Selected Category Badges / Pills */}
+                      <div className="flex flex-wrap items-center gap-1.5 min-h-[38px] p-2 bg-white border border-slate-200/90 rounded-xl">
+                        {formCategories.length === 0 ? (
+                          <span className="text-xs text-slate-400 italic px-1">
+                            No categories selected. Please choose at least one below.
+                          </span>
+                        ) : (
+                          formCategories.map((cat, idx) => {
+                            const isPrimary = idx === 0 || cat === formCategory;
+                            return (
+                              <span
+                                key={cat}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all shadow-sm ${
+                                  isPrimary
+                                    ? "bg-gradient-to-r from-orange-500 to-[#FF7A00] text-white ring-2 ring-orange-200"
+                                    : "bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200"
+                                }`}
+                              >
+                                {isPrimary ? (
+                                  <span className="text-[9px] bg-white/25 px-1 py-0.5 rounded font-bold uppercase tracking-wider">
+                                    Primary
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => setPrimaryCategory(cat)}
+                                    title="Click to make this the primary category for URL breadcrumbs"
+                                    className="text-[10px] text-slate-500 hover:text-orange-600 underline font-normal cursor-pointer"
+                                  >
+                                    Set Main
+                                  </button>
+                                )}
+                                <span>{cat}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => removeCategoryFromForm(cat)}
+                                  title="Remove category"
+                                  className={`rounded-full p-0.5 transition-colors cursor-pointer ${
+                                    isPrimary ? "hover:bg-white/30 text-white" : "hover:bg-slate-300 text-slate-500"
+                                  }`}
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </span>
+                            );
+                          })
+                        )}
+                      </div>
+
+                      {/* Dropdown to add more categories */}
                       <select
-                        required
-                        value={formCategory}
+                        value=""
                         onChange={(e) => {
-                          const newCat = e.target.value;
-                          setFormCategory(newCat);
-                          const subs = getSubcategoriesForCategory(newCat, dynamicCategories);
-                          if (subs.length > 0) {
-                            setFormSubcategory(subs[0]);
-                          } else {
-                            setFormSubcategory("");
+                          if (e.target.value) {
+                            addCategoryToForm(e.target.value);
                           }
                         }}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] cursor-pointer"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] cursor-pointer"
                       >
-                        <option value="" disabled>
-                          Select Category...
-                        </option>
+                        <option value="">+ Add / Select Category to assign...</option>
                         {dynamicCategories.length > 0 && (
                           <optgroup label="── Store Customizer Categories ──">
                             {dynamicCategories.map((cat) => (
-                              <option key={cat.id} value={cat.name}>
-                                {cat.name}
+                              <option
+                                key={cat.id}
+                                value={cat.name}
+                                disabled={formCategories.includes(cat.name)}
+                              >
+                                {formCategories.includes(cat.name) ? `✓ ${cat.name} (Added)` : cat.name}
                               </option>
                             ))}
                           </optgroup>
                         )}
-                        {PRODUCT_CATEGORIES_DATA.map((group) => (
-                          <option key={group.main} value={group.main}>
-                            {group.main}
-                          </option>
-                        ))}
+                        <optgroup label="── Catalog Categories ──">
+                          {PRODUCT_CATEGORIES_DATA.map((group) => (
+                            <option
+                              key={group.main}
+                              value={group.main}
+                              disabled={formCategories.includes(group.main)}
+                            >
+                              {formCategories.includes(group.main) ? `✓ ${group.main} (Added)` : group.main}
+                            </option>
+                          ))}
+                        </optgroup>
                       </select>
                     </div>
 
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                        Subcategory
-                      </label>
-                      <select
-                        value={formSubcategory}
-                        onChange={(e) => setFormSubcategory(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] cursor-pointer"
-                      >
-                        <option value="">None / General</option>
-                        {getSubcategoriesForCategory(formCategory, dynamicCategories).map((sub) => (
-                          <option key={sub} value={sub}>
-                            {sub}
-                          </option>
-                        ))}
-                      </select>
+                    {/* 2. Multi-Select Subcategories */}
+                    <div className="space-y-2 pt-3 border-t border-slate-200/80">
+                      <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-800">
+                          <span>Subcategories</span>
+                          <span className="text-[10px] font-medium text-blue-600 bg-blue-100/90 px-1.5 py-0.5 rounded-full">
+                            Multi-Select
+                          </span>
+                        </label>
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          {formSubcategories.length} selected
+                        </span>
+                      </div>
+
+                      {/* Selected Subcategory Badges / Pills */}
+                      <div className="flex flex-wrap items-center gap-1.5 min-h-[38px] p-2 bg-white border border-slate-200/90 rounded-xl">
+                        {formSubcategories.length === 0 ? (
+                          <span className="text-xs text-slate-400 italic px-1">
+                            No subcategories selected (Optional - product will show in general category browse).
+                          </span>
+                        ) : (
+                          formSubcategories.map((sub) => (
+                            <span
+                              key={sub}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-900 border border-blue-200 shadow-sm"
+                            >
+                              <span>{sub}</span>
+                              <button
+                                type="button"
+                                onClick={() => removeSubcategoryFromForm(sub)}
+                                title="Remove subcategory"
+                                className="rounded-full p-0.5 hover:bg-blue-200 text-blue-600 transition-colors cursor-pointer"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </span>
+                          ))
+                        )}
+                      </div>
+
+                      {/* Dropdown to add subcategories & Custom toggle */}
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <select
+                          value=""
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              addSubcategoryToForm(e.target.value);
+                            }
+                          }}
+                          className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] cursor-pointer"
+                        >
+                          <option value="">+ Add Subcategory from catalog...</option>
+                          {allAvailableSubcategories.map((sub) => (
+                            <option
+                              key={sub}
+                              value={sub}
+                              disabled={formSubcategories.includes(sub)}
+                            >
+                              {formSubcategories.includes(sub) ? `✓ ${sub} (Added)` : sub}
+                            </option>
+                          ))}
+                        </select>
+
+                        <button
+                          type="button"
+                          onClick={() => setShowCustomSubInput(!showCustomSubInput)}
+                          className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 whitespace-nowrap transition-colors cursor-pointer shadow-sm"
+                        >
+                          {showCustomSubInput ? "Cancel Custom" : "+ Custom Subcategory"}
+                        </button>
+                      </div>
+
+                      {/* Optional Custom Subcategory Input */}
+                      {showCustomSubInput && (
+                        <div className="flex items-center gap-2 pt-1">
+                          <input
+                            type="text"
+                            value={customSubcategoryInput}
+                            onChange={(e) => setCustomSubcategoryInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                if (customSubcategoryInput.trim()) {
+                                  addSubcategoryToForm(customSubcategoryInput.trim());
+                                  setCustomSubcategoryInput("");
+                                  setShowCustomSubInput(false);
+                                }
+                              }
+                            }}
+                            placeholder="Type custom subcategory and press Add..."
+                            className="flex-1 px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (customSubcategoryInput.trim()) {
+                                addSubcategoryToForm(customSubcategoryInput.trim());
+                                setCustomSubcategoryInput("");
+                                setShowCustomSubInput(false);
+                              }
+                            }}
+                            className="px-3 py-1.5 bg-[#FF7A00] text-white text-xs font-bold rounded-xl hover:bg-[#e06c00] transition-colors cursor-pointer"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Quick click suggestions for unselected subcategories */}
+                      {allAvailableSubcategories.filter((s) => !formSubcategories.includes(s)).length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                          <span className="text-[10px] font-semibold text-slate-400">Suggestions:</span>
+                          {allAvailableSubcategories
+                            .filter((s) => !formSubcategories.includes(s))
+                            .slice(0, 8)
+                            .map((s) => (
+                              <button
+                                key={s}
+                                type="button"
+                                onClick={() => addSubcategoryToForm(s)}
+                                className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-700 border border-slate-200 hover:border-blue-300 transition-colors cursor-pointer"
+                              >
+                                + {s}
+                              </button>
+                            ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 

@@ -46,6 +46,10 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
   const parsedHowToUse = parseJsonSafe(p.how_to_use, defaultFound?.how_to_use || undefined);
   const parsedComparisonTable = parseJsonSafe(p.comparison_table, defaultFound?.comparison_table || undefined);
   const parsedVideoIds = parseJsonSafe(p.video_ids, defaultFound?.video_ids || undefined);
+  const rawCategories = parseJsonSafe<string[]>(p.categories, defaultFound?.categories || (p.category ? [p.category] : []));
+  const parsedCategories = Array.isArray(rawCategories) ? rawCategories.filter(Boolean) : (p.category ? [p.category] : []);
+  const rawSubcategories = parseJsonSafe<string[]>(p.subcategories, defaultFound?.subcategories || (p.subcategory ? [p.subcategory] : []));
+  const parsedSubcategories = Array.isArray(rawSubcategories) ? rawSubcategories.filter(Boolean) : (p.subcategory ? [p.subcategory] : []);
 
   const priceNum = Number(p.price);
   const mrpNum = Number(p.mrp ?? p.price);
@@ -141,8 +145,10 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
       slug: p.slug,
       name: p.name,
       subtitle: p.subtitle ?? defaultFound?.subtitle ?? "",
-      category: p.category,
-      subcategory: p.subcategory ?? defaultFound?.subcategory ?? "",
+      category: p.category || (parsedCategories[0] || ""),
+      categories: parsedCategories.length > 0 ? parsedCategories : (p.category ? [p.category] : []),
+      subcategory: p.subcategory ?? defaultFound?.subcategory ?? (parsedSubcategories[0] || ""),
+      subcategories: parsedSubcategories.length > 0 ? parsedSubcategories : (p.subcategory ? [p.subcategory] : []),
       tagline: p.tagline ?? defaultFound?.tagline ?? "",
       description: p.description ?? defaultFound?.description ?? "",
       price: priceNum,
@@ -317,7 +323,9 @@ export async function POST(req: NextRequest) {
       name,
       subtitle,
       category,
+      categories,
       subcategory,
+      subcategories,
       tagline,
       description,
       price,
@@ -454,14 +462,44 @@ export async function POST(req: NextRequest) {
         ? Boolean(existingProd.has_colors)
         : Array.isArray(colors) && colors.length > 0 && !(colors.length === 1 && colors[0].name?.toLowerCase() === "standard");
 
+    // Multi-category and multi-subcategory normalization
+    let resolvedCategories: string[] = [];
+    if (Array.isArray(categories) && categories.length > 0) {
+      resolvedCategories = categories.map((c) => String(c).trim()).filter(Boolean);
+    } else if (category && typeof category === "string" && category.trim()) {
+      resolvedCategories = [category.trim()];
+    } else if (existingProd?.categories && Array.isArray(existingProd.categories) && existingProd.categories.length > 0) {
+      resolvedCategories = existingProd.categories;
+    } else if (existingProd?.category) {
+      resolvedCategories = [existingProd.category];
+    } else {
+      resolvedCategories = ["Gadgets"];
+    }
+
+    let resolvedSubcategories: string[] = [];
+    if (Array.isArray(subcategories) && subcategories.length > 0) {
+      resolvedSubcategories = subcategories.map((s) => String(s).trim()).filter(Boolean);
+    } else if (subcategory && typeof subcategory === "string" && subcategory.trim()) {
+      resolvedSubcategories = [subcategory.trim()];
+    } else if (existingProd?.subcategories && Array.isArray(existingProd.subcategories) && existingProd.subcategories.length > 0) {
+      resolvedSubcategories = existingProd.subcategories;
+    } else if (existingProd?.subcategory) {
+      resolvedSubcategories = [existingProd.subcategory];
+    }
+
+    const primaryCategory = resolvedCategories[0] || (category !== undefined ? category : existingProd?.category || "Gadgets");
+    const primarySubcategory = resolvedSubcategories[0] || (subcategory !== undefined ? subcategory : existingProd?.subcategory || "");
+
     const newProd: Product = {
       ...(existingProd || {}),
       id: prodId,
       slug: prodSlug,
       name: name !== undefined ? name : existingProd?.name || "Product",
       subtitle: subtitle !== undefined ? subtitle : existingProd?.subtitle || "",
-      category: category !== undefined ? category : existingProd?.category || "Gadgets",
-      subcategory: subcategory !== undefined ? subcategory : existingProd?.subcategory || "",
+      category: primaryCategory,
+      categories: resolvedCategories,
+      subcategory: primarySubcategory,
+      subcategories: resolvedSubcategories,
       tagline: tagline !== undefined ? tagline : existingProd?.tagline || "",
       description: description !== undefined ? description : existingProd?.description || "",
       price: priceNum,
@@ -588,6 +626,8 @@ export async function POST(req: NextRequest) {
       const howToUseJson = newProd.how_to_use ? JSON.stringify(newProd.how_to_use) : null;
       const comparisonTableJson = newProd.comparison_table ? JSON.stringify(newProd.comparison_table) : null;
       const videoIdsJson = newProd.video_ids ? JSON.stringify(newProd.video_ids) : null;
+      const categoriesJson = JSON.stringify(newProd.categories || []);
+      const subcategoriesJson = JSON.stringify(newProd.subcategories || []);
 
       const runSaveQueries = async () => {
         if (existingRows && existingRows.length > 0) {
@@ -597,7 +637,8 @@ export async function POST(req: NextRequest) {
                  price = ?, mrp = ?, offer_price = ?, cost_price = ?, supplier_id = ?, supplier_name = ?, stock_count = ?, volume = ?,
                  poster_image = ?, images = ?, color = ?, colors = ?, has_colors = ?, overview_blocks = ?, material = ?, badge = ?,
                  in_stock = ?, rating = ?, review_count = ?, sold_count = ?, features = ?,
-                 specifications = ?, whats_in_box = ?, bundle_tiers = ?, how_to_use = ?, comparison_table = ?, video_ids = ?
+                 specifications = ?, whats_in_box = ?, bundle_tiers = ?, how_to_use = ?, comparison_table = ?, video_ids = ?,
+                 categories = ?, subcategories = ?
              WHERE id = ?;`,
             [
               newProd.slug,
@@ -634,6 +675,8 @@ export async function POST(req: NextRequest) {
               howToUseJson,
               comparisonTableJson,
               videoIdsJson,
+              categoriesJson,
+              subcategoriesJson,
               existingRows[0].id,
             ]
           );
@@ -644,9 +687,10 @@ export async function POST(req: NextRequest) {
                price, mrp, offer_price, cost_price, supplier_id, supplier_name, stock_count, volume,
                poster_image, images, color, colors, has_colors, overview_blocks, material, badge,
                in_stock, rating, review_count, sold_count, features,
-               specifications, whats_in_box, bundle_tiers, how_to_use, comparison_table, video_ids
+               specifications, whats_in_box, bundle_tiers, how_to_use, comparison_table, video_ids,
+               categories, subcategories
              )
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
             [
               newProd.id,
               newProd.slug,
@@ -683,6 +727,8 @@ export async function POST(req: NextRequest) {
               howToUseJson,
               comparisonTableJson,
               videoIdsJson,
+              categoriesJson,
+              subcategoriesJson,
             ]
           );
         }
@@ -739,6 +785,22 @@ export async function POST(req: NextRequest) {
             migrated = true;
           } catch (migErr) {
             console.warn("Could not add supplier_name column:", migErr);
+          }
+        }
+        if (errMsg.includes("categories")) {
+          try {
+            await executeD1Query("ALTER TABLE products ADD COLUMN categories TEXT;");
+            migrated = true;
+          } catch (migErr) {
+            console.warn("Could not add categories column:", migErr);
+          }
+        }
+        if (errMsg.includes("subcategories")) {
+          try {
+            await executeD1Query("ALTER TABLE products ADD COLUMN subcategories TEXT;");
+            migrated = true;
+          } catch (migErr) {
+            console.warn("Could not add subcategories column:", migErr);
           }
         }
 

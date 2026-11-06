@@ -135,9 +135,14 @@ export function getSubcategoriesForCategory(categoryName: string, dynamicCategor
   return found ? found.subcategories : [];
 }
 
-export function doesCategoryMatch(productCategory: string, selectedCategory: string, dynamicCategories?: any[]): boolean {
+export function doesCategoryMatch(productCategory: string | string[] | undefined, selectedCategory: string, dynamicCategories?: any[]): boolean {
   if (!selectedCategory || selectedCategory.toLowerCase() === "all" || selectedCategory.toLowerCase() === "all categories") return true;
   if (!productCategory) return false;
+
+  if (Array.isArray(productCategory)) {
+    return productCategory.some((cat) => doesCategoryMatch(cat, selectedCategory, dynamicCategories));
+  }
+
   const pLower = productCategory.trim().toLowerCase();
   const sLower = selectedCategory.trim().toLowerCase();
   if (pLower === sLower) return true;
@@ -169,13 +174,21 @@ export function doesSubcategoryMatch(product: Product, selectedSubcategory: stri
   if (!selectedSubcategory || selectedSubcategory.toLowerCase() === "all") return true;
   const sLower = selectedSubcategory.trim().toLowerCase();
 
-  // 1. Direct subcategory field match
+  // 1. Check array subcategories
+  if (Array.isArray(product.subcategories) && product.subcategories.some((sub) => sub && sub.trim().toLowerCase() === sLower)) {
+    return true;
+  }
+
+  // 2. Direct subcategory field match
   if (product.subcategory && product.subcategory.trim().toLowerCase() === sLower) {
     return true;
   }
 
-  // 2. Category column matches subcategory name directly (e.g., category: "Kitchen & Dining")
+  // 3. Category column or categories array matches subcategory name directly
   if (product.category && product.category.trim().toLowerCase() === sLower) {
+    return true;
+  }
+  if (Array.isArray(product.categories) && product.categories.some((cat) => cat && cat.trim().toLowerCase() === sLower)) {
     return true;
   }
 
