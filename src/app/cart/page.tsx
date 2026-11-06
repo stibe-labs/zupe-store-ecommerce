@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,7 @@ import {
   Truck,
   Tag,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -35,6 +36,12 @@ export default function CartPage() {
     freeShippingRemaining,
     openCart,
   } = useCart();
+
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  useEffect(() => {
+    router.prefetch("/checkout");
+  }, [router]);
 
   React.useEffect(() => {
     openCart();
@@ -312,17 +319,24 @@ export default function CartPage() {
 
               {/* Checkout CTA */}
               <button
+                disabled={isNavigating}
                 onClick={() => {
-                  if (!user) {
-                    openAuthModal("login", "Sign in required: Please log in or create an account to proceed to checkout 🔒", "/checkout");
-                    return;
-                  }
+                  setIsNavigating(true);
                   router.push("/checkout");
                 }}
-                className="w-full py-4 px-6 rounded-2xl btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 font-black text-sm border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-4 px-6 rounded-2xl btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 font-black text-sm border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
               >
-                <span>Proceed to Checkout</span>
-                <ArrowRight className="w-4 h-4" />
+                {isNavigating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-stone-900" />
+                    <span>Opening Checkout...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Proceed to Checkout</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
 
               <div className="flex items-center justify-center gap-2 text-[11px] text-stone-500 font-semibold">

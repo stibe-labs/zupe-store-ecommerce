@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Lock,
   ArrowRight,
+  ArrowLeft,
   ChevronDown,
   ChevronUp,
   Loader2,
@@ -1768,46 +1769,40 @@ function CheckoutContent() {
 
   return (
     <div className="min-h-screen tj-diamonds-cream text-stone-900 antialiased selection:bg-[#fed000] selection:text-stone-900">
-      {/* 1. TOP TRUST HEADER */}
-      <header className="relative border-b-2 border-stone-800 bg-[#5b1420] pt-4 pb-4 sm:pt-5 sm:pb-5 overflow-hidden shadow-md">
-        <div className="relative max-w-5xl mx-auto px-4 flex flex-col items-center text-center space-y-2">
+      {/* 1. TOP CLEAN MINIMAL HEADER */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200/80 shadow-2xs">
+        <div className="max-w-5xl mx-auto px-4 h-16 sm:h-18 flex items-center justify-between gap-4">
+          {/* Back to Store */}
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors group py-2"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5 text-gray-600" />
+            <span className="hidden sm:inline">Continue Shopping</span>
+            <span className="sm:hidden text-[11px]">Store</span>
+          </Link>
+
           {/* Centered Logo */}
-          <Link href="/" className="inline-block transition-transform active:scale-95">
+          <Link href="/" className="inline-block transition-transform hover:opacity-95">
             <Image
               src="/turkiye-jam-logo.svg"
               alt="Turkiye Jam"
               width={140}
-              height={45}
-              className="h-9 sm:h-10 w-auto object-contain mx-auto drop-shadow-md"
+              height={40}
+              className="h-8 sm:h-9 w-auto object-contain"
               priority
             />
           </Link>
 
-          {/* Secure Checkout Heading */}
-          <div>
-            <div className="flex items-center justify-center gap-1.5 text-white font-tj-serif font-black text-base sm:text-lg">
-              <Lock className="w-4 h-4 text-[#fed000]" />
-              <span>100% Encrypted Safe Checkout</span>
+          {/* Secure Checkout Trust Badge */}
+          <div className="flex items-center gap-2 text-right">
+            <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
+              <ShieldCheck className="w-4 h-4 stroke-[2.2]" />
             </div>
-            <p className="text-[11px] sm:text-xs text-stone-200 font-medium mt-0.5">
-              Direct import from Turkey • Tamper-proof packaging
-            </p>
-          </div>
-
-          {/* 3 Genuine Trust Badges in Neo-brutalist pill design */}
-          <div className="flex items-center justify-center gap-1 sm:gap-2 flex-nowrap overflow-x-auto max-w-full px-1 pt-1 text-xs font-bold scrollbar-none">
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#fed000] border-2 border-stone-800 text-stone-900 text-[10px] sm:text-xs shadow-[0_2px_0_0_#2b2b2b] whitespace-nowrap shrink-0">
-              <ShieldCheck className="w-3.5 h-3.5 text-stone-900" />
-              <span>100% Authentic Paste</span>
-            </span>
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white border-2 border-stone-800 text-stone-900 text-[10px] sm:text-xs shadow-[0_2px_0_0_#2b2b2b] whitespace-nowrap shrink-0">
-              <Truck className="w-3.5 h-3.5 text-[#5b1420]" />
-              <span>Discreet Express Shipping</span>
-            </span>
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#d1fae5] border-2 border-stone-800 text-[#0e4a3b] text-[10px] sm:text-xs shadow-[0_2px_0_0_#2b2b2b] whitespace-nowrap shrink-0">
-              <Lock className="w-3.5 h-3.5 text-[#0e4a3b]" />
-              <span>Cash on Delivery</span>
-            </span>
+            <div className="hidden sm:block text-left">
+              <p className="text-[11px] font-bold text-gray-900 leading-tight">100% Secure Checkout</p>
+              <p className="text-[10px] text-gray-400 leading-tight">256-Bit SSL Encrypted</p>
+            </div>
           </div>
         </div>
       </header>

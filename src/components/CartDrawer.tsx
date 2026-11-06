@@ -1,17 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, Truck, AlertCircle } from "lucide-react";
+import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, Truck, AlertCircle, Loader2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
 
 export function CartDrawer() {
   const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
   const { user, openAuthModal } = useAuth();
   const {
     cart,
@@ -29,6 +30,18 @@ export function CartDrawer() {
   } = useCart();
 
   const shippingProgress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
+
+  // Prefetch checkout chunk for instant response
+  useEffect(() => {
+    router.prefetch("/checkout");
+  }, [router]);
+
+  // Reset navigating state when cart is closed
+  useEffect(() => {
+    if (!isOpen) {
+      setIsNavigating(false);
+    }
+  }, [isOpen]);
 
   // Freeze background scroll when Cart Drawer is open
   React.useEffect(() => {
@@ -262,31 +275,58 @@ export function CartDrawer() {
                 )}
                 <div className="flex flex-col gap-2">
                   <button
-                    disabled={hasOutOfStockItems}
+                    disabled={hasOutOfStockItems || isNavigating}
                     onClick={() => {
-                      if (hasOutOfStockItems) return;
-                      closeCart();
+                      if (hasOutOfStockItems || isNavigating) return;
+                      setIsNavigating(true);
                       router.push("/checkout");
                     }}
-                    className={`w-full flex items-center justify-center gap-2 py-3.5 text-white font-semibold rounded-xl transition-colors text-sm ${
-                      hasOutOfStockItems
-                        ? "bg-gray-400 cursor-not-allowed opacity-80 shadow-none"
-                        : "bg-[#cb0805] hover:bg-[#a80604] shadow-lg shadow-[#cb0805]/25 cursor-pointer"
+                    className={`w-full flex items-center justify-center gap-2 py-3.5 text-white font-semibold rounded-xl transition-all text-sm ${
+                      hasOutOfStockItems || isNavigating
+                        ? "bg-stone-400 cursor-not-allowed opacity-90 shadow-none"
+                        : "bg-[#cb0805] hover:bg-[#a80604] shadow-lg shadow-[#cb0805]/25 cursor-pointer active:scale-[0.99]"
                     }`}
                   >
-                    {hasOutOfStockItems ? "⚠️ Remove Out of Stock Items" : "Proceed to Checkout"}
-                    {!hasOutOfStockItems && <ArrowRight className="w-4 h-4" />}
+                    {isNavigating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-white" />
+                        <span>Opening Checkout...</span>
+                      </>
+                    ) : hasOutOfStockItems ? (
+                      "⚠️ Remove Out of Stock Items"
+                    ) : (
+                      <>
+                        <span>Proceed to Checkout</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
                   </button>
                 </div>
                 <button
                   onClick={closeCart}
-                  className="w-full text-center text-xs text-[#636E72] hover:text-[#cb0805] transition-colors py-2"
+                  disabled={isNavigating}
+                  className="w-full text-center text-xs text-[#636E72] hover:text-[#cb0805] transition-colors py-2 disabled:opacity-50"
                 >
                   Continue Shopping
                 </button>
               </div>
             )}
           </motion.div>
+
+          {/* Fullscreen smooth loading backdrop during checkout navigation */}
+          {isNavigating && (
+            <div className="fixed inset-0 z-[99999] bg-stone-900/50 backdrop-blur-xs flex flex-col items-center justify-center px-4 animate-in fade-in duration-150">
+              <div className="bg-white rounded-2xl p-6 shadow-2xl flex flex-col items-center gap-3 text-center max-w-xs w-full border border-gray-100">
+                <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#780016]">
+                  <Loader2 className="w-6 h-6 animate-spin text-[#780016]" />
+                </div>
+                <div>
+                  <p className="font-bold text-sm text-gray-900">Opening Secure Checkout...</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Preparing your order details</p>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
     </AnimatePresence>
