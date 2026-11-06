@@ -49,6 +49,8 @@ CREATE TABLE IF NOT EXISTS products (
     in_stock INTEGER DEFAULT 1,
     rating REAL DEFAULT 4.9,
     review_count INTEGER DEFAULT 0,
+    supplier_id TEXT,
+    supplier_name TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

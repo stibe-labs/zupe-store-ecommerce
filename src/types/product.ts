@@ -84,6 +84,8 @@ export interface Product {
   mrp: number;
   offer_price: number;
   cost_price?: number;
+  supplier_id?: string;
+  supplier_name?: string;
   stock_count: number;
   volume?: string;
   poster_image: string;
@@ -140,6 +142,8 @@ export interface AdminProductFormData {
   mrp: number;
   offer_price?: number;
   cost_price?: number;
+  supplier_id?: string;
+  supplier_name?: string;
   stock_count: number;
   in_stock: number;
   poster_image: string;

@@ -208,6 +208,9 @@ export default function AdminProductsPage() {
   const [formStock, setFormStock] = useState("50");
   const [formInStock, setFormInStock] = useState(true);
   const [formBundleTiers, setFormBundleTiers] = useState<BuyMoreSaveMoreConfig>(DEFAULT_BUNDLE_TIERS);
+  const [formSupplierId, setFormSupplierId] = useState("");
+  const [formSupplierName, setFormSupplierName] = useState("");
+  const [suppliersList, setSuppliersList] = useState<{ id: string; name: string; code: string; available_rto_balance?: number }[]>([]);
 
   // Buy More Save More helpers
   const updateBundleTier = (idx: number, field: keyof BuyMoreSaveMoreTier, value: any) => {
@@ -406,6 +409,15 @@ export default function AdminProductsPage() {
         }
       })
       .catch((err) => console.warn("Failed to fetch dynamic categories in admin products:", err));
+
+    fetch("/api/admin/suppliers")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.suppliers)) {
+          setSuppliersList(data.suppliers);
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch suppliers in admin products:", err));
   }, []);
 
   const openAddModal = () => {
@@ -426,6 +438,9 @@ export default function AdminProductsPage() {
     setFormStock("50");
     setFormInStock(true);
     setFormBundleTiers(JSON.parse(JSON.stringify(DEFAULT_BUNDLE_TIERS)));
+    const defaultSup = suppliersList[0];
+    setFormSupplierId(defaultSup?.id || "");
+    setFormSupplierName(defaultSup?.name || "");
 
     setFormHasColors(true);
     setFormColors([
@@ -525,6 +540,8 @@ export default function AdminProductsPage() {
     setFormCost(String(cost));
     setFormStock(String(prod.stock_count || 0));
     setFormInStock(prod.in_stock === 1);
+    setFormSupplierId(prod.supplier_id || "");
+    setFormSupplierName(prod.supplier_name || "");
     if (prod.bundle_tiers && Array.isArray(prod.bundle_tiers.tiers) && prod.bundle_tiers.tiers.length > 0) {
       setFormBundleTiers({
         enabled: prod.bundle_tiers.enabled !== false,
@@ -1393,6 +1410,8 @@ export default function AdminProductsPage() {
       mrp: mrpNum,
       offer_price: priceNum,
       cost_price: costNum,
+      supplier_id: formSupplierId || undefined,
+      supplier_name: formSupplierName || undefined,
       stock_count: stockNum,
       in_stock: formInStock ? 1 : 0,
       poster_image: posterImg,
@@ -1851,9 +1870,18 @@ export default function AdminProductsPage() {
                             )}
                           </td>
 
-                          {/* Supplier Cost */}
+                          {/* Supplier Cost & Vendor */}
                           <td className="py-3.5 px-4 font-medium text-amber-700">
-                            ₹{cost.toLocaleString("en-IN")}
+                            <div>₹{cost.toLocaleString("en-IN")}</div>
+                            {prod.supplier_name && (
+                              <div
+                                className="text-[10px] text-slate-500 font-medium truncate max-w-[130px] flex items-center gap-1 mt-0.5"
+                                title={`Supplier: ${prod.supplier_name}`}
+                              >
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                                {prod.supplier_name}
+                              </div>
+                            )}
                           </td>
 
                           {/* Margin */}
@@ -2536,6 +2564,43 @@ export default function AdminProductsPage() {
                         )}
                       </div>
                     )}
+
+                    {/* Supplier Assignment */}
+                    <div className="pt-3 border-t border-slate-200/80">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-[11px] font-bold text-slate-800">
+                          Assigned Supplier / Vendor
+                        </label>
+                        <a
+                          href="/admin/suppliers"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] text-[#FF7A00] hover:underline font-semibold flex items-center gap-1"
+                        >
+                          Manage Suppliers &rarr;
+                        </a>
+                      </div>
+                      <select
+                        value={formSupplierId}
+                        onChange={(e) => {
+                          const sid = e.target.value;
+                          setFormSupplierId(sid);
+                          const matched = suppliersList.find((s) => s.id === sid);
+                          setFormSupplierName(matched ? matched.name : "");
+                        }}
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                      >
+                        <option value="">-- Select Supplier Partner --</option>
+                        {suppliersList.map((sup) => (
+                          <option key={sup.id} value={sup.id}>
+                            {sup.name} ({sup.code}) {sup.available_rto_balance ? `• ₹${Math.round(sup.available_rto_balance).toLocaleString("en-IN")} RTO balance` : ""}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        Orders for this product will link to this supplier. Any RTO credit will automatically be reimbursed into this supplier&apos;s ledger.
+                      </p>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">

@@ -109,7 +109,22 @@ export interface ERPOrder {
 }
 
 // In-Memory Baseline Fallbacks (starts clean for store owner handover)
-let inMemorySuppliers: Supplier[] = [];
+let inMemorySuppliers: Supplier[] = [
+  {
+    id: "sup-1793916337248",
+    name: "JV Ecom",
+    code: "JVECOM",
+    contact_person: "Operations Desk",
+    email: "orders@jvecom.in",
+    phone: "+91 97781 37954",
+    address: "Kerala, India",
+    available_rto_balance: 15139,
+    total_credits_added: 15139,
+    total_credits_used: 0,
+    pending_credits: 0,
+    created_at: new Date().toISOString(),
+  },
+];
 let inMemoryLedger: RTOLedgerEntry[] = [];
 let inMemoryExpenses: ExpenseRecord[] = [];
 let inMemoryRemittances: RemittanceRecord[] = [];
@@ -872,6 +887,39 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
     }
   }
 
+  // Auto-resolve supplier from product if not provided or defaulted
+  let finalSupplierId = orderData.supplier_id;
+  if (!finalSupplierId || finalSupplierId === "sup-a") {
+    if (orderData.items && orderData.items.length > 0) {
+      const pid = (orderData.items[0] as any).product_id;
+      if (pid) {
+        try {
+          const pRow = await executeD1Query<{ supplier_id: string }>(
+            "SELECT supplier_id FROM products WHERE id = ? OR slug = ? LIMIT 1",
+            [pid, pid]
+          );
+          if (pRow && pRow[0]?.supplier_id) {
+            finalSupplierId = pRow[0].supplier_id;
+          }
+        } catch {}
+      }
+    }
+  }
+
+  if (!finalSupplierId || finalSupplierId === "sup-a") {
+    try {
+      const sRow = await executeD1Query<{ id: string }>(
+        "SELECT id FROM suppliers ORDER BY created_at ASC LIMIT 1"
+      );
+      if (sRow && sRow[0]?.id) {
+        finalSupplierId = sRow[0].id;
+      }
+    } catch {}
+    if (!finalSupplierId || finalSupplierId === "sup-a") {
+      finalSupplierId = inMemorySuppliers[0]?.id || "sup-a";
+    }
+  }
+
   const newOrder: ERPOrder = {
     id: orderData.id || `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
     shopify_order_id: shopifyOrderId,
@@ -894,7 +942,7 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
     ndr_status: orderData.ndr_status || "None",
     rto_status: orderData.rto_status || "None",
     remittance_status: (orderData.remittance_status as any) || (paymentMethod === "COD" ? "Pending" : "Settled"),
-    supplier_id: orderData.supplier_id || "sup-a",
+    supplier_id: finalSupplierId || "sup-a",
     whatsapp_confirm_status: orderData.whatsapp_confirm_status || "pending_whatsapp",
     whatsapp_confirm_token: orderData.whatsapp_confirm_token || "",
     whatsapp_token_used: orderData.whatsapp_token_used || false,

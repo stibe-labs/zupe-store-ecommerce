@@ -149,6 +149,8 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
       mrp: mrpNum,
       offer_price: Number(p.offer_price ?? priceNum),
       cost_price: costNum,
+      supplier_id: p.supplier_id || defaultFound?.supplier_id || undefined,
+      supplier_name: p.supplier_name || defaultFound?.supplier_name || undefined,
       stock_count: finalStock,
       volume: p.volume ?? defaultFound?.volume ?? "",
       poster_image: posterImg,
@@ -322,6 +324,8 @@ export async function POST(req: NextRequest) {
       mrp,
       offer_price,
       cost_price,
+      supplier_id,
+      supplier_name,
       stock_count,
       volume,
       poster_image,
@@ -464,6 +468,8 @@ export async function POST(req: NextRequest) {
       mrp: mrpNum,
       offer_price: priceNum,
       cost_price: costNum,
+      supplier_id: supplier_id !== undefined ? (supplier_id || null) : (existingProd?.supplier_id || null),
+      supplier_name: supplier_name !== undefined ? (supplier_name || null) : (existingProd?.supplier_name || null),
       stock_count: stockNum,
       volume: volume !== undefined ? volume : existingProd?.volume || "",
       poster_image: rawPoster,
@@ -588,7 +594,7 @@ export async function POST(req: NextRequest) {
           await executeD1Query(
             `UPDATE products 
              SET slug = ?, name = ?, subtitle = ?, category = ?, subcategory = ?, tagline = ?, description = ?,
-                 price = ?, mrp = ?, offer_price = ?, cost_price = ?, stock_count = ?, volume = ?,
+                 price = ?, mrp = ?, offer_price = ?, cost_price = ?, supplier_id = ?, supplier_name = ?, stock_count = ?, volume = ?,
                  poster_image = ?, images = ?, color = ?, colors = ?, has_colors = ?, overview_blocks = ?, material = ?, badge = ?,
                  in_stock = ?, rating = ?, review_count = ?, sold_count = ?, features = ?,
                  specifications = ?, whats_in_box = ?, bundle_tiers = ?, how_to_use = ?, comparison_table = ?, video_ids = ?
@@ -605,6 +611,8 @@ export async function POST(req: NextRequest) {
               newProd.mrp,
               newProd.offer_price,
               newProd.cost_price,
+              newProd.supplier_id ?? null,
+              newProd.supplier_name ?? null,
               newProd.stock_count,
               newProd.volume ?? null,
               newProd.poster_image,
@@ -633,12 +641,12 @@ export async function POST(req: NextRequest) {
           await executeD1Query(
             `INSERT INTO products (
                id, slug, name, subtitle, category, subcategory, tagline, description,
-               price, mrp, offer_price, cost_price, stock_count, volume,
+               price, mrp, offer_price, cost_price, supplier_id, supplier_name, stock_count, volume,
                poster_image, images, color, colors, has_colors, overview_blocks, material, badge,
                in_stock, rating, review_count, sold_count, features,
                specifications, whats_in_box, bundle_tiers, how_to_use, comparison_table, video_ids
              )
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
             [
               newProd.id,
               newProd.slug,
@@ -652,6 +660,8 @@ export async function POST(req: NextRequest) {
               newProd.mrp,
               newProd.offer_price,
               newProd.cost_price,
+              newProd.supplier_id ?? null,
+              newProd.supplier_name ?? null,
               newProd.stock_count,
               newProd.volume ?? null,
               newProd.poster_image,
@@ -713,6 +723,22 @@ export async function POST(req: NextRequest) {
             migrated = true;
           } catch (migErr) {
             console.warn("Could not add subcategory column:", migErr);
+          }
+        }
+        if (errMsg.includes("supplier_id")) {
+          try {
+            await executeD1Query("ALTER TABLE products ADD COLUMN supplier_id TEXT;");
+            migrated = true;
+          } catch (migErr) {
+            console.warn("Could not add supplier_id column:", migErr);
+          }
+        }
+        if (errMsg.includes("supplier_name")) {
+          try {
+            await executeD1Query("ALTER TABLE products ADD COLUMN supplier_name TEXT;");
+            migrated = true;
+          } catch (migErr) {
+            console.warn("Could not add supplier_name column:", migErr);
           }
         }
 
