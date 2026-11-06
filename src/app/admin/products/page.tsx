@@ -189,6 +189,7 @@ export default function AdminProductsPage() {
 
   // Tab state in Edit/Add Modal
   const [activeTab, setActiveTab] = useState<FormTabKey>("basic");
+  const [dynamicCategories, setDynamicCategories] = useState<{ id: string; name: string }[]>([]);
 
   // Form states:
   // Tab 1: Basic
@@ -461,8 +462,6 @@ export default function AdminProductsPage() {
       fetchProducts();
     }
   };
-
-  const [dynamicCategories, setDynamicCategories] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     fetchProducts();
