@@ -14,7 +14,7 @@ export function Navbar() {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
   const { totalItems, openCart } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, openAuthModal } = useAuth();
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -44,7 +44,14 @@ export function Navbar() {
     if (isAuthenticated) {
       router.push("/account");
     } else {
-      router.push("/signin?redirect=/account");
+      openAuthModal(
+        "login",
+        "Sign in with WhatsApp to access your account & orders 🛍️",
+        "/account",
+        () => {
+          router.push("/account");
+        }
+      );
     }
   };
 
@@ -161,10 +168,13 @@ export function Navbar() {
           {/* User Account / Profile */}
           <button
             onClick={handleAccountClick}
-            className="hidden sm:flex p-2 rounded-full bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-sm transition-all hover:scale-105 active:scale-95 cursor-pointer items-center justify-center"
+            className="relative p-1.5 sm:p-2 rounded-full bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-sm transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center shrink-0"
             aria-label="User Account"
           >
             <User className="w-4 h-4 stroke-[2.2]" />
+            {isAuthenticated && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-[#5b1420]" />
+            )}
           </button>
         </div>
       </div>
