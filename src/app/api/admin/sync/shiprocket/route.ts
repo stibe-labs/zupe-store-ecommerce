@@ -70,9 +70,10 @@ export async function POST(req: NextRequest) {
     // 2. Shiprocket Tracking / NDR / RTO Webhook Receiver
     if (body.awb || body.awb_code || body.current_status || body.order_id || body.shipment_id) {
       const webhookResult = await processShiprocketWebhook(body);
-      return NextResponse.json(webhookResult, {
-        status: webhookResult.success ? 200 : 400,
-      });
+      return NextResponse.json(
+        { success: true, acknowledged: true, ...webhookResult },
+        { status: 200 }
+      );
     }
 
     return NextResponse.json({

@@ -637,9 +637,12 @@ export default function AdminSettingsPage() {
                   <input
                     type="text"
                     readOnly
-                    value={siteConfig.getAbsoluteUrl("/api/admin/sync/shiprocket")}
+                    value={siteConfig.getAbsoluteUrl("/api/fulfillment")}
                     className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-mono text-xs text-slate-600 cursor-not-allowed"
                   />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Shiprocket compliant URL (contains <strong>zero prohibited keywords</strong> like <code>shiprocket</code>, <code>sr</code>, or <code>kr</code>). Use Auth Token Type <code>x-api-key</code>.
+                  </p>
                 </div>
               </div>
 
