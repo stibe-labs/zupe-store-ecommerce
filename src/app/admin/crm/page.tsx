@@ -109,6 +109,8 @@ export default function AdminCRMPage() {
   const [metaSaving, setMetaSaving] = useState(false);
   const [metaTesting, setMetaTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [syncingMeta, setSyncingMeta] = useState(false);
+  const [metaSyncMsg, setMetaSyncMsg] = useState<{ success: boolean; message: string } | null>(null);
 
   // Pixel Events Log State
   const [pixelEvents, setPixelEvents] = useState<any[]>([]);
@@ -454,6 +456,30 @@ export default function AdminCRMPage() {
       });
     } finally {
       setMetaTesting(false);
+    }
+  };
+
+  // Sync Live Campaigns from Meta Ads API
+  const handleSyncMetaCampaigns = async () => {
+    setSyncingMeta(true);
+    setMetaSyncMsg(null);
+    try {
+      const res = await fetch("/api/admin/crm/meta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "sync_meta_campaigns" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMetaSyncMsg({ success: true, message: data.message });
+        fetchMetaData();
+      } else {
+        setMetaSyncMsg({ success: false, message: data.error || "Failed to sync campaigns from Meta." });
+      }
+    } catch (err: any) {
+      setMetaSyncMsg({ success: false, message: `Error syncing from Meta: ${err.message}` });
+    } finally {
+      setSyncingMeta(false);
     }
   };
 
@@ -1363,6 +1389,16 @@ export default function AdminCRMPage() {
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     type="button"
+                    onClick={handleSyncMetaCampaigns}
+                    disabled={syncingMeta}
+                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 text-indigo-400 ${syncingMeta ? "animate-spin" : ""}`} />
+                    {syncingMeta ? "Syncing..." : "Sync Live from Meta"}
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => setActiveTab("settings")}
                     className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5"
                   >
@@ -1380,6 +1416,19 @@ export default function AdminCRMPage() {
                   </button>
                 </div>
               </div>
+
+              {metaSyncMsg && (
+                <div
+                  className={`p-4 rounded-2xl text-xs flex items-center gap-2 border ${
+                    metaSyncMsg.success
+                      ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                      : "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                  }`}
+                >
+                  {metaSyncMsg.success ? <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" /> : <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />}
+                  <span>{metaSyncMsg.message}</span>
+                </div>
+              )}
 
               {/* Campaigns & Daily Spend Table */}
               <div className="bg-slate-900/80 border border-slate-800 rounded-3xl overflow-hidden shadow-sm">

@@ -445,6 +445,90 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // 5. SYNC LIVE CAMPAIGNS FROM META MARKETING API
+    if (action === "sync_meta_campaigns") {
+      let accountId = "";
+      let token = "";
+
+      const rows = await executeD1Query<any>(
+        "SELECT config_data FROM integrations_config WHERE provider = 'meta'"
+      );
+      if (rows && rows.length > 0 && rows[0].config_data) {
+        const parsed = JSON.parse(rows[0].config_data);
+        accountId = (parsed.accountId || "").replace(/^act_/, "").trim();
+        token = parsed.token || "";
+      }
+
+      if (!accountId || !token) {
+        return NextResponse.json({
+          success: false,
+          error: "Meta Ad Account ID and Access Token must be configured in CRM Settings.",
+        });
+      }
+
+      try {
+        const url = `https://graph.facebook.com/v21.0/act_${accountId}/insights?level=campaign&fields=campaign_name,spend,impressions,clicks,cpc,ctr,actions,action_values,date_start,date_stop&date_preset=maximum&access_token=${encodeURIComponent(token)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.error) {
+          const isPerm = data.error.code === 200 || data.error.message?.includes("ads_read");
+          return NextResponse.json({
+            success: false,
+            error: isPerm
+              ? "Meta requires 'ads_read' permission on your token to auto-pull ad spend. In Meta Business Settings > System Users > Assign Asset (Turkey jam India) with 'ads_read'. You can also use '+ Log Ad Spend' to enter your real daily budget directly."
+              : `Meta API Error: ${data.error.message || "Failed to fetch campaigns"}`,
+            requiresPermission: isPerm,
+          });
+        }
+
+        const insights = data.data || [];
+        if (insights.length === 0) {
+          return NextResponse.json({
+            success: true,
+            message: "Connected to Meta Ad Account. No campaign ad spend found for this period yet.",
+            syncedCount: 0,
+          });
+        }
+
+        for (const item of insights) {
+          const campName = item.campaign_name || "Meta Ad Campaign";
+          const date = item.date_stop || item.date_start || new Date().toISOString().split("T")[0];
+          const spend = Number(item.spend || 0);
+          const impr = Number(item.impressions || 0);
+          const clicks = Number(item.clicks || 0);
+          const cpc = Number(item.cpc || (clicks > 0 ? (spend / clicks).toFixed(2) : 0));
+          const ctr = Number(item.ctr || (impr > 0 ? ((clicks / impr) * 100).toFixed(2) : 0));
+
+          const purchaseAction = item.actions?.find((a: any) => a.action_type === "purchase" || a.action_type === "omni_purchase");
+          const purchases = Number(purchaseAction?.value || 0);
+
+          const purchaseValAction = item.action_values?.find((a: any) => a.action_type === "purchase" || a.action_type === "omni_purchase");
+          const purchaseVal = Number(purchaseValAction?.value || 0);
+          const roas = spend > 0 && purchaseVal > 0 ? Number((purchaseVal / spend).toFixed(2)) : 0;
+
+          const spendId = `meta_sync_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+          await executeD1Query(
+            `INSERT INTO meta_ad_spend (id, date, campaign_name, spend, impressions, clicks, cpc, ctr, purchases, purchase_value, roas, synced_from, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'meta_api', CURRENT_TIMESTAMP)`,
+            [spendId, date, campName, spend, impr, clicks, cpc, ctr, purchases, purchaseVal, roas]
+          );
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: `Successfully synced ${insights.length} campaign(s) directly from Meta Ads!`,
+          syncedCount: insights.length,
+        });
+      } catch (err: any) {
+        return NextResponse.json({
+          success: false,
+          error: `Error syncing from Meta: ${err.message}`,
+        });
+      }
+    }
+
     // 3. LOG DAILY AD SPEND (Manual / Direct entry)
     if (action === "log_spend") {
       const { date, campaignName, spend, impressions, clicks, purchases, purchaseValue } = body;
