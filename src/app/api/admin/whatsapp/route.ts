@@ -12,6 +12,7 @@ import {
   sendMetaCloudApiMessage,
   generateSmartCustomerReply,
   updateMessageStatus,
+  clearAllWhatsAppChats,
   WHATSAPP_TEMPLATES,
 } from "@/lib/whatsappStore";
 import { updateERPOrder } from "@/lib/erpStore";
@@ -86,6 +87,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    if (action === "toggle_pin") {
+      const { conversationId } = body;
+      if (conversationId) {
+        const isPinned = await togglePinConversation(conversationId);
+        return NextResponse.json({ success: true, isPinned });
+      }
+      return NextResponse.json({ success: false, error: "Missing conversationId" }, { status: 400 });
+    }
+
     if (action === "simulate_reply") {
       const { conversationId, customPrompt } = body;
       const conv = await getWhatsAppConversationById(conversationId);
@@ -151,6 +161,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(result);
     }
 
+    if (action === "clear_all_chats") {
+      await clearAllWhatsAppChats();
+      return NextResponse.json({ success: true, message: "All WhatsApp chats and history cleared successfully" });
+    }
+
     return NextResponse.json({ success: false, error: "Unsupported action" }, { status: 400 });
   } catch (error: any) {
     console.error("WhatsApp API POST error:", error);
@@ -169,6 +184,15 @@ export async function PUT(req: NextRequest) {
         await markWhatsAppConversationRead(conversationId);
       }
       return NextResponse.json({ success: true });
+    }
+
+    if (action === "toggle_pin") {
+      const { conversationId } = body;
+      if (conversationId) {
+        const isPinned = await togglePinConversation(conversationId);
+        return NextResponse.json({ success: true, isPinned });
+      }
+      return NextResponse.json({ success: false, error: "Missing conversationId" }, { status: 400 });
     }
 
     if (action === "update_order") {

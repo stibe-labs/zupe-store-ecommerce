@@ -43,12 +43,36 @@ export default function WhatsAppLayout() {
       const res = await fetch(`/api/admin/whatsapp?action=conversations&filter=${filter}&search=${encodeURIComponent(search)}`);
       const data = await res.json();
       if (data.success && Array.isArray(data.conversations)) {
-        setConversations(data.conversations);
+        const nextConvs: WhatsAppConversation[] = data.conversations.map((c: WhatsAppConversation) => {
+          // If conversation is currently active, ensure its unreadCount stays 0 locally to prevent badge flashing
+          if (c.id === activeConversationId) {
+            return { ...c, unreadCount: 0 };
+          }
+          return c;
+        });
+
+        setConversations((prev) => {
+          if (prev.length !== nextConvs.length) return nextConvs;
+          const isSame = prev.every((pc, idx) => {
+            const nc = nextConvs[idx];
+            return (
+              nc &&
+              pc.id === nc.id &&
+              pc.unreadCount === nc.unreadCount &&
+              pc.isPinned === nc.isPinned &&
+              pc.orderStatus === nc.orderStatus &&
+              pc.lastMessage?.text === nc.lastMessage?.text &&
+              pc.lastMessage?.timestamp === nc.lastMessage?.timestamp &&
+              pc.lastMessage?.status === nc.lastMessage?.status
+            );
+          });
+          return isSame ? prev : nextConvs;
+        });
 
         // Auto select first or matched conversation
-        if (!activeConversationId && data.conversations.length > 0) {
+        if (!activeConversationId && nextConvs.length > 0) {
           if (initialChatId) {
-            const matched = data.conversations.find(
+            const matched = nextConvs.find(
               (c: WhatsAppConversation) =>
                 c.id === initialChatId ||
                 c.customerPhone.includes(initialChatId) ||
@@ -57,10 +81,10 @@ export default function WhatsAppLayout() {
             if (matched) {
               setActiveConversationId(matched.id);
             } else {
-              setActiveConversationId(data.conversations[0].id);
+              setActiveConversationId(nextConvs[0].id);
             }
           } else {
-            setActiveConversationId(data.conversations[0].id);
+            setActiveConversationId(nextConvs[0].id);
           }
         }
       }
@@ -77,7 +101,20 @@ export default function WhatsAppLayout() {
       const res = await fetch(`/api/admin/whatsapp?action=messages&conversationId=${encodeURIComponent(convId)}`);
       const data = await res.json();
       if (data.success && Array.isArray(data.messages)) {
-        setMessages(data.messages);
+        setMessages((prev) => {
+          if (prev.length !== data.messages.length) return data.messages;
+          const isSame = prev.every((pm, idx) => {
+            const nm = data.messages[idx];
+            return (
+              nm &&
+              pm.id === nm.id &&
+              pm.status === nm.status &&
+              pm.content === nm.content
+            );
+          });
+          return isSame ? prev : data.messages;
+        });
+
         // Mark as read in store
         fetch(`/api/admin/whatsapp`, {
           method: "PUT",
@@ -334,6 +371,25 @@ export default function WhatsAppLayout() {
     }
   };
 
+  // Clear all chats & messages
+  const handleClearAllChats = async () => {
+    try {
+      const res = await fetch("/api/admin/whatsapp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "clear_all_chats" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setConversations([]);
+        setActiveConversationId(null);
+        setMessages([]);
+      }
+    } catch (e) {
+      console.warn("Failed to clear all chats:", e);
+    }
+  };
+
   return (
     <div className="relative flex h-full flex-1 w-full overflow-hidden bg-white dark:bg-[#111b21] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10">
       {/* 1. Left Sidebar: Chats Feed */}
@@ -343,6 +399,7 @@ export default function WhatsAppLayout() {
         onSelectConversation={(id) => setActiveConversationId(id)}
         onOpenNewChat={() => setShowNewChatModal(true)}
         onSimulateInbound={handleSimulateInbound}
+        onClearAllChats={handleClearAllChats}
         filter={filter}
         onFilterChange={setFilter}
         search={search}
@@ -386,6 +443,7 @@ export default function WhatsAppLayout() {
           conversation={activeConversation}
           onClose={() => setIsDrawerOpen(false)}
           onUpdateOrderStatus={handleUpdateOrderStatus}
+          onRefreshConversations={fetchConversations}
           onSendQuickTemplate={(type) => {
             const cleanName = activeConversation.customerName.includes("(")
               ? "there"

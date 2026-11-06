@@ -21,6 +21,7 @@ import {
   RotateCcw,
   Users,
   User,
+  Trash2,
 } from "lucide-react";
 import { WhatsAppConversation } from "@/lib/whatsappStore";
 import { waAudio } from "@/lib/whatsappAudio";
@@ -31,6 +32,7 @@ interface ChatSidebarProps {
   onSelectConversation: (id: string) => void;
   onOpenNewChat: () => void;
   onSimulateInbound: () => void;
+  onClearAllChats?: () => void;
   filter: string;
   onFilterChange: (f: string) => void;
   search: string;
@@ -53,6 +55,7 @@ export default function ChatSidebar({
   onSelectConversation,
   onOpenNewChat,
   onSimulateInbound,
+  onClearAllChats,
   filter,
   onFilterChange,
   search,
@@ -145,6 +148,20 @@ export default function ChatSidebar({
                   {isMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
                   {isMuted ? "Unmute Audio" : "Mute Audio Alerts"}
                 </button>
+                {onClearAllChats && (
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      if (window.confirm("Are you sure you want to clear all WhatsApp chats? This will permanently delete test conversations and messages.")) {
+                        onClearAllChats();
+                      }
+                    }}
+                    className="w-full text-left px-3 py-2 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 flex items-center gap-2 border-t border-slate-100 dark:border-white/5 cursor-pointer font-medium"
+                  >
+                    <Trash2 className="w-4 h-4 text-rose-500" />
+                    Clear All Chats
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -223,7 +240,7 @@ export default function ChatSidebar({
               <div
                 key={conv.id}
                 onClick={() => onSelectConversation(conv.id)}
-                className={`relative flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
+                className={`group relative flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
                   isSelected
                     ? "bg-[#f0f2f5] dark:bg-[#2a3942]"
                     : "hover:bg-slate-50 dark:hover:bg-[#202c33]/60"
@@ -295,10 +312,22 @@ export default function ChatSidebar({
 
                     {/* Unread Badge / Pin Icon */}
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      {conv.isPinned && (
-                        <Pin className="w-3 h-3 text-slate-400 fill-current rotate-45" />
-                      )}
-                      {conv.unreadCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onTogglePin(conv.id);
+                        }}
+                        title={conv.isPinned ? "Unpin chat" : "Pin chat to top"}
+                        className={`p-1 rounded-full cursor-pointer transition-all ${
+                          conv.isPinned
+                            ? "text-emerald-500 hover:text-emerald-600 dark:text-emerald-400"
+                            : "opacity-0 group-hover:opacity-100 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-400"
+                        }`}
+                      >
+                        <Pin className={`w-3.5 h-3.5 rotate-45 ${conv.isPinned ? "fill-current" : ""}`} />
+                      </button>
+                      {conv.unreadCount > 0 && !isSelected && (
                         <span className="w-5 h-5 rounded-full bg-[#25d366] text-white text-[10px] font-bold flex items-center justify-center shadow-xs">
                           {conv.unreadCount}
                         </span>

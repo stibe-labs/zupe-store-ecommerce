@@ -72,6 +72,7 @@ export interface WhatsAppConversation {
     timestamp: string;
     status: "sending" | "sent" | "delivered" | "read";
   };
+  lastMessageTimestamp?: number;
   typing?: boolean;
   lastSeen?: string;
 }
@@ -182,6 +183,7 @@ export async function syncConversationsFromERP(): Promise<void> {
                   : "Today",
                 status: "delivered",
               },
+              lastMessageTimestamp: row.last_message_time ? new Date(row.last_message_time).getTime() : Date.now(),
               lastSeen: "online",
             });
           } else {
@@ -192,6 +194,8 @@ export async function syncConversationsFromERP(): Promise<void> {
               existing.lastMessage.text = row.last_message_text;
               existing.lastMessage.sender = row.last_message_sender || existing.lastMessage.sender;
               if (row.unread_count !== undefined) existing.unreadCount = row.unread_count;
+              if (row.is_pinned !== undefined) existing.isPinned = Boolean(row.is_pinned);
+              if (row.last_message_time) existing.lastMessageTimestamp = new Date(row.last_message_time).getTime();
             }
           }
         }
@@ -255,6 +259,7 @@ export async function syncConversationsFromERP(): Promise<void> {
               timestamp: "Today",
               status: isCancelled ? "read" : "delivered",
             },
+            lastMessageTimestamp: ord.created_at ? new Date(ord.created_at).getTime() : Date.now(),
             lastSeen: "online",
           };
 
@@ -329,11 +334,17 @@ export async function getWhatsAppConversations(filter?: string, search?: string)
     );
   }
 
-  // Sort pinned first, then by most recent
+  // Sort pinned first, then by most recent timestamp, then deterministic by ID
   return list.sort((a, b) => {
-    if (a.isPinned && !b.isPinned) return -1;
-    if (!a.isPinned && b.isPinned) return 1;
-    return 0;
+    if (a.isPinned !== b.isPinned) {
+      return a.isPinned ? -1 : 1;
+    }
+    const timeA = a.lastMessageTimestamp || 0;
+    const timeB = b.lastMessageTimestamp || 0;
+    if (timeB !== timeA) {
+      return timeB - timeA;
+    }
+    return a.id.localeCompare(b.id);
   });
 }
 
@@ -424,6 +435,7 @@ export async function addWhatsAppMessage(
       timestamp: timeFormatted,
       status: newMessage.status,
     };
+    inMemoryConversations[convIndex].lastMessageTimestamp = Date.now();
     if (newMessage.sender === "customer") {
       inMemoryConversations[convIndex].unreadCount += 1;
     }
@@ -476,15 +488,42 @@ export async function markWhatsAppConversationRead(conversationId: string): Prom
   if (conv) {
     conv.unreadCount = 0;
   }
+  try {
+    await executeD1Query(
+      "UPDATE whatsapp_conversations SET unread_count = 0 WHERE id = ?",
+      [conversationId]
+    );
+  } catch (e) {
+    console.warn("D1 markWhatsAppConversationRead warning:", e);
+  }
 }
 
 export async function togglePinConversation(conversationId: string): Promise<boolean> {
   const conv = inMemoryConversations.find((c) => c.id === conversationId);
   if (conv) {
     conv.isPinned = !conv.isPinned;
+    try {
+      await executeD1Query(
+        "UPDATE whatsapp_conversations SET is_pinned = ? WHERE id = ?",
+        [conv.isPinned ? 1 : 0, conversationId]
+      );
+    } catch (e) {
+      console.warn("D1 togglePinConversation warning:", e);
+    }
     return conv.isPinned;
   }
   return false;
+}
+
+export async function clearAllWhatsAppChats(): Promise<void> {
+  inMemoryConversations = [];
+  inMemoryMessages = {};
+  try {
+    await executeD1Query("DELETE FROM whatsapp_messages");
+    await executeD1Query("DELETE FROM whatsapp_conversations");
+  } catch (e) {
+    console.warn("D1 clearAllWhatsAppChats warning:", e);
+  }
 }
 
 export async function addMessageReaction(
