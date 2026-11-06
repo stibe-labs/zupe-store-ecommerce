@@ -63,15 +63,15 @@ export default function RTORefundBalancePage() {
 
   // Summary Metrics
   const [metrics, setMetrics] = useState({
-    totalCreditsAdded: 25400,
-    totalCreditsUsed: 17900,
-    availableBalance: 7500,
-    pendingCredits: 2800,
+    totalCreditsAdded: 0,
+    totalCreditsUsed: 0,
+    availableBalance: 0,
+    pendingCredits: 0,
     statusBreakdown: {
-      credited: { count: 42, amount: 22600 },
-      pending: { count: 6, amount: 2800 },
-      partiallyUsed: { count: 5, amount: 3200 },
-      fullyUsed: { count: 31, amount: 14700 },
+      credited: { count: 0, amount: 0 },
+      pending: { count: 0, amount: 0 },
+      partiallyUsed: { count: 0, amount: 0 },
+      fullyUsed: { count: 0, amount: 0 },
     },
   });
 
@@ -323,7 +323,9 @@ export default function RTORefundBalancePage() {
                 <p className="text-base sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight truncate">
                   ₹{metrics.totalCreditsAdded.toLocaleString("en-IN")}
                 </p>
-                <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 truncate">From 48 orders</p>
+                <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 truncate">
+                  {metrics.statusBreakdown?.credited?.count || 0} order{metrics.statusBreakdown?.credited?.count === 1 ? "" : "s"}
+                </p>
               </div>
             </div>
 
@@ -339,7 +341,9 @@ export default function RTORefundBalancePage() {
                 <p className="text-base sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight truncate">
                   ₹{metrics.totalCreditsUsed.toLocaleString("en-IN")}
                 </p>
-                <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 truncate">Used for 36 orders</p>
+                <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 truncate">
+                  {metrics.statusBreakdown?.fullyUsed?.count || 0} order{metrics.statusBreakdown?.fullyUsed?.count === 1 ? "" : "s"}
+                </p>
               </div>
             </div>
 
@@ -374,7 +378,9 @@ export default function RTORefundBalancePage() {
                 <p className="text-base sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight truncate">
                   ₹{metrics.pendingCredits.toLocaleString("en-IN")}
                 </p>
-                <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 truncate">From 6 orders</p>
+                <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 truncate">
+                  {metrics.statusBreakdown?.pending?.count || 0} order{metrics.statusBreakdown?.pending?.count === 1 ? "" : "s"}
+                </p>
               </div>
             </div>
           </div>
@@ -403,56 +409,53 @@ export default function RTORefundBalancePage() {
 
                 {/* SVG Visual Chart */}
                 <div className="mt-6 relative h-48 w-full flex flex-col justify-between">
-                  {/* Grid Lines */}
-                  <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] text-slate-400">
-                    <div className="border-b border-slate-100 pb-0.5 flex justify-between">
-                      <span>₹20,000</span>
-                    </div>
-                    <div className="border-b border-slate-100 pb-0.5 flex justify-between">
-                      <span>₹15,000</span>
-                    </div>
-                    <div className="border-b border-slate-100 pb-0.5 flex justify-between">
-                      <span>₹10,000</span>
-                    </div>
-                    <div className="border-b border-slate-100 pb-0.5 flex justify-between">
-                      <span>₹5,000</span>
-                    </div>
-                    <div className="border-b border-slate-200 pb-0.5 flex justify-between">
-                      <span>₹0</span>
-                    </div>
-                  </div>
-
-                  {/* Bars & Trendline */}
-                  <div className="relative z-10 pl-10 pr-2 h-full flex items-end justify-between">
-                    {[
-                      { m: "Jan", add: 20, use: 15, bal: 30 },
-                      { m: "Feb", add: 35, use: 20, bal: 42 },
-                      { m: "Mar", add: 45, use: 35, bal: 50 },
-                      { m: "Apr", add: 30, use: 28, bal: 48 },
-                      { m: "May", add: 55, use: 40, bal: 60 },
-                      { m: "Jun", add: 60, use: 48, bal: 65 },
-                      { m: "Jul", add: 50, use: 42, bal: 62 },
-                      { m: "Aug", add: 70, use: 55, bal: 72 },
-                      { m: "Sep", add: 65, use: 50, bal: 70 },
-                      { m: "Oct", add: 58, use: 45, bal: 68 },
-                    ].map((col, idx) => (
-                      <div key={idx} className="flex flex-col items-center gap-1 group">
-                        <div className="flex items-end gap-0.5 h-36">
-                          <div
-                            style={{ height: `${col.add}%` }}
-                            className="w-1.5 sm:w-2 bg-emerald-500 rounded-t transition-all group-hover:bg-emerald-600"
-                            title={`Credits Added: ${col.add * 250}`}
-                          />
-                          <div
-                            style={{ height: `${col.use}%` }}
-                            className="w-1.5 sm:w-2 bg-rose-400 rounded-t transition-all group-hover:bg-rose-500"
-                            title={`Credits Used: ${col.use * 250}`}
-                          />
-                        </div>
-                        <span className="text-[10px] text-slate-500 font-medium">{col.m}</span>
+                  {ledger.length === 0 ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-center p-4">
+                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                        <RotateCcw className="w-5 h-5" />
                       </div>
-                    ))}
-                  </div>
+                      <p className="text-xs font-semibold text-slate-700">No RTO transactions yet</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5 max-w-[240px]">
+                        When an order is returned via courier, monthly credits and trends will appear here automatically.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Grid Lines */}
+                      <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] text-slate-400">
+                        <div className="border-b border-slate-100 pb-0.5 flex justify-between">
+                          <span>₹20,000</span>
+                        </div>
+                        <div className="border-b border-slate-100 pb-0.5 flex justify-between">
+                          <span>₹15,000</span>
+                        </div>
+                        <div className="border-b border-slate-100 pb-0.5 flex justify-between">
+                          <span>₹10,000</span>
+                        </div>
+                        <div className="border-b border-slate-100 pb-0.5 flex justify-between">
+                          <span>₹5,000</span>
+                        </div>
+                        <div className="border-b border-slate-200 pb-0.5 flex justify-between">
+                          <span>₹0</span>
+                        </div>
+                      </div>
+
+                      {/* Bars & Trendline */}
+                      <div className="relative z-10 pl-10 pr-2 h-full flex items-end justify-between">
+                        {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"].map((m, idx) => (
+                          <div key={idx} className="flex flex-col items-center gap-1 group">
+                            <div className="flex items-end gap-0.5 h-36">
+                              <div
+                                style={{ height: "0%" }}
+                                className="w-1.5 sm:w-2 bg-emerald-500 rounded-t transition-all group-hover:bg-emerald-600"
+                              />
+                            </div>
+                            <span className="text-[10px] text-slate-500 font-medium">{m}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -465,7 +468,7 @@ export default function RTORefundBalancePage() {
 
               <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-6">
                 {/* Donut representation */}
-                <div className="relative w-36 h-36 flex items-center justify-center">
+                <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                     {/* Background Circle */}
                     <path
@@ -475,49 +478,22 @@ export default function RTORefundBalancePage() {
                       fill="none"
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     />
-                    {/* Supplier A: 42% (Orange) */}
-                    <path
-                      className="text-[#FF7A00]"
-                      strokeDasharray="42, 100"
-                      strokeWidth="4"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    {/* Supplier B: 28% (Orange) */}
-                    <path
-                      className="text-amber-500"
-                      strokeDasharray="28, 100"
-                      strokeDashoffset="-42"
-                      strokeWidth="4"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    {/* Supplier C: 15% (Emerald) */}
-                    <path
-                      className="text-emerald-500"
-                      strokeDasharray="15, 100"
-                      strokeDashoffset="-70"
-                      strokeWidth="4"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    {/* Supplier D: 15% (Purple) */}
-                    <path
-                      className="text-purple-600"
-                      strokeDasharray="15, 100"
-                      strokeDashoffset="-85"
-                      strokeWidth="4"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
+                    {metrics.availableBalance > 0 && (
+                      <path
+                        className="text-[#FF7A00]"
+                        strokeDasharray="100, 100"
+                        strokeWidth="4"
+                        stroke="currentColor"
+                        fill="none"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      />
+                    )}
                   </svg>
 
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <span className="text-sm font-bold text-slate-900">₹7,500</span>
+                    <span className="text-sm font-bold text-slate-900">
+                      ₹{metrics.availableBalance.toLocaleString("en-IN")}
+                    </span>
                     <span className="text-[10px] text-slate-500 font-medium">
                       Total Balance
                     </span>
@@ -525,31 +501,27 @@ export default function RTORefundBalancePage() {
                 </div>
 
                 {/* Legend */}
-                <div className="space-y-2.5 text-xs flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-slate-600">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#FF7A00]" /> Supplier A
-                    </span>
-                    <span className="font-bold text-slate-900">₹3,200</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-slate-600">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Supplier B
-                    </span>
-                    <span className="font-bold text-slate-900">₹2,150</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-slate-600">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Supplier C
-                    </span>
-                    <span className="font-bold text-slate-900">₹1,000</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-slate-600">
-                      <span className="w-2.5 h-2.5 rounded-full bg-purple-600" /> Supplier D
-                    </span>
-                    <span className="font-bold text-slate-900">₹1,150</span>
-                  </div>
+                <div className="space-y-2.5 text-xs flex-1 min-w-0">
+                  {suppliers.length === 0 ? (
+                    <div className="text-slate-400 text-xs italic py-2">
+                      No suppliers registered yet.
+                    </div>
+                  ) : (
+                    suppliers.slice(0, 4).map((sup, idx) => {
+                      const colors = ["bg-[#FF7A00]", "bg-amber-500", "bg-emerald-500", "bg-purple-600"];
+                      return (
+                        <div key={sup.id} className="flex items-center justify-between gap-2">
+                          <span className="flex items-center gap-2 text-slate-600 truncate">
+                            <span className={`w-2.5 h-2.5 rounded-full ${colors[idx % colors.length]} shrink-0`} />
+                            <span className="truncate">{sup.name}</span>
+                          </span>
+                          <span className="font-bold text-slate-900 shrink-0">
+                            ₹{(Number(sup.available_rto_balance) || 0).toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </div>
@@ -568,8 +540,10 @@ export default function RTORefundBalancePage() {
                     <span className="font-semibold text-slate-800">Credited</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-slate-500">42</span>
-                    <span className="font-bold text-slate-900">₹22,600</span>
+                    <span className="text-slate-500">{metrics.statusBreakdown?.credited?.count || 0}</span>
+                    <span className="font-bold text-slate-900">
+                      ₹{(metrics.statusBreakdown?.credited?.amount || 0).toLocaleString("en-IN")}
+                    </span>
                   </div>
                 </div>
 
@@ -582,8 +556,10 @@ export default function RTORefundBalancePage() {
                     <span className="font-semibold text-slate-800">Pending</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-slate-500">6</span>
-                    <span className="font-bold text-slate-900">₹2,800</span>
+                    <span className="text-slate-500">{metrics.statusBreakdown?.pending?.count || 0}</span>
+                    <span className="font-bold text-slate-900">
+                      ₹{(metrics.statusBreakdown?.pending?.amount || 0).toLocaleString("en-IN")}
+                    </span>
                   </div>
                 </div>
 
@@ -596,8 +572,10 @@ export default function RTORefundBalancePage() {
                     <span className="font-semibold text-slate-800">Partially Used</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-slate-500">5</span>
-                    <span className="font-bold text-slate-900">₹3,200</span>
+                    <span className="text-slate-500">{metrics.statusBreakdown?.partiallyUsed?.count || 0}</span>
+                    <span className="font-bold text-slate-900">
+                      ₹{(metrics.statusBreakdown?.partiallyUsed?.amount || 0).toLocaleString("en-IN")}
+                    </span>
                   </div>
                 </div>
 
@@ -610,8 +588,10 @@ export default function RTORefundBalancePage() {
                     <span className="font-semibold text-slate-800">Fully Used</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-slate-500">31</span>
-                    <span className="font-bold text-slate-900">₹14,700</span>
+                    <span className="text-slate-500">{metrics.statusBreakdown?.fullyUsed?.count || 0}</span>
+                    <span className="font-bold text-slate-900">
+                      ₹{(metrics.statusBreakdown?.fullyUsed?.amount || 0).toLocaleString("en-IN")}
+                    </span>
                   </div>
                 </div>
               </div>

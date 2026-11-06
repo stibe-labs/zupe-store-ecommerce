@@ -109,22 +109,7 @@ export interface ERPOrder {
 }
 
 // In-Memory Baseline Fallbacks (starts clean for store owner handover)
-let inMemorySuppliers: Supplier[] = [
-  {
-    id: "sup-1793916337248",
-    name: "JV Ecom",
-    code: "JVECOM",
-    contact_person: "Operations Desk",
-    email: "orders@jvecom.in",
-    phone: "+91 97781 37954",
-    address: "Kerala, India",
-    available_rto_balance: 15139,
-    total_credits_added: 15139,
-    total_credits_used: 0,
-    pending_credits: 0,
-    created_at: new Date().toISOString(),
-  },
-];
+let inMemorySuppliers: Supplier[] = [];
 let inMemoryLedger: RTOLedgerEntry[] = [];
 let inMemoryExpenses: ExpenseRecord[] = [];
 let inMemoryRemittances: RemittanceRecord[] = [];
