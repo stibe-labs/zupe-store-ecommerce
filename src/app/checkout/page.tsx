@@ -34,6 +34,9 @@ import {
   Smartphone,
   User,
   Mail,
+  Copy,
+  MessageSquare,
+  Package,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -258,6 +261,8 @@ function CheckoutContent() {
   const [confirmedTotal, setConfirmedTotal] = useState<number>(0);
   const [confirmedAdvancePaid, setConfirmedAdvancePaid] = useState<number>(0);
   const [confirmedBalanceDue, setConfirmedBalanceDue] = useState<number>(0);
+  const [confirmedItems, setConfirmedItems] = useState<any[]>([]);
+  const [copiedConfirmedId, setCopiedConfirmedId] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [recoveredBanner, setRecoveredBanner] = useState<string | null>(null);
 
@@ -310,6 +315,7 @@ function CheckoutContent() {
           setConfirmedPaymentId(parsed.paymentId || "Online Payment");
           setConfirmedAdvancePaid(parsed.advancePaid || 0);
           setConfirmedBalanceDue(parsed.balanceDue || 0);
+          if (Array.isArray(parsed.items)) setConfirmedItems(parsed.items);
           setOrderComplete(true);
         }
       }
@@ -342,12 +348,16 @@ function CheckoutContent() {
         const paymentLabel = data.isCodPartial ? "Cash on Delivery" : (data.paymentId || "Online Payment (Cashfree / Settler)");
         const advance = data.advancePaid || (data.isCodPartial ? configuredCodFee : 0);
         const due = data.balanceDue || (data.isCodPartial ? Math.max(0, total - configuredCodFee) : 0);
+        const itemsToSave = (data.order?.items && Array.isArray(data.order.items) && data.order.items.length > 0)
+          ? data.order.items
+          : (cart && cart.length > 0 ? cart : []);
 
         setConfirmedTotal(total);
         setConfirmedOrderId(finalOrderId);
         setConfirmedPaymentId(paymentLabel);
         setConfirmedAdvancePaid(advance);
         setConfirmedBalanceDue(due);
+        setConfirmedItems(itemsToSave);
         setOrderComplete(true);
         clearCart();
 
@@ -362,6 +372,7 @@ function CheckoutContent() {
             paymentId: paymentLabel,
             advancePaid: advance,
             balanceDue: due,
+            items: itemsToSave,
             confirmedAt: Date.now(),
           }));
         } catch {}
@@ -1465,85 +1476,107 @@ function CheckoutContent() {
   if (isCodSwitchMode) {
     if (switchSuccess) {
       return (
-        <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
-          <header className="py-4 border-b border-gray-100 bg-white">
-            <div className="max-w-4xl mx-auto px-4 flex items-center justify-center">
+        <div className="min-h-screen tj-diamonds-cream text-stone-900 antialiased selection:bg-[#fed000] selection:text-stone-900 flex flex-col justify-between">
+          <header className="sticky top-0 z-40 bg-[#fbf7ee]/95 backdrop-blur-md border-b border-[#ebdcc7]/80 shadow-2xs">
+            <div className="max-w-4xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between gap-4">
               <Link href="/" className="inline-block">
                 <Image
                   src="/turkiye-jam-logo.svg"
                   alt="Turkiye Jam"
                   width={140}
                   height={45}
-                  className="h-10 w-auto object-contain"
+                  className="h-9 sm:h-11 w-auto object-contain"
                   priority
                 />
               </Link>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#731a26] text-white text-[11px] font-extrabold uppercase tracking-wider shadow-xs">
+                <Lock className="w-3 h-3 text-[#fed000]" />
+                <span>100% Discreet &amp; Verified</span>
+              </div>
             </div>
           </header>
 
-          <main className="max-w-lg mx-auto py-12 px-4 text-center">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", damping: 15 }}
-              className="w-20 h-20 mx-auto mb-6 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-lg shadow-emerald-500/15"
-            >
-              <CheckCircle2 className="w-10 h-10" />
-            </motion.div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 mb-2 border border-emerald-200">
-              ✓ Switched to Prepaid &amp; Saved ₹{configuredCodFee}
-            </span>
-            <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
+          <main className="max-w-xl mx-auto py-10 sm:py-14 px-4 text-center">
+            {/* Animated Hero Verification Emblem */}
+            <div className="relative mx-auto mb-6 w-20 h-20 sm:w-24 sm:h-24">
+              <div className="absolute inset-0 rounded-full bg-[#fed000]/25 animate-ping" />
+              <motion.div
+                initial={{ scale: 0, rotate: -15 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", damping: 15 }}
+                className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-[#731a26] to-[#48121f] text-[#fed000] flex items-center justify-center shadow-xl shadow-[#731a26]/25 border-2 border-[#fed000]"
+              >
+                <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
+              </motion.div>
+            </div>
+
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-3 shadow-xs border bg-[#fed000] text-black border-[#e5be00]">
+              <Sparkles className="w-3.5 h-3.5 text-black" />
+              <span>✓ Switched to Prepaid &amp; Saved ₹{configuredCodFee}</span>
+            </div>
+
+            <h1 className="font-tj-serif text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] tracking-tight mb-2">
               Payment Successful!
             </h1>
-            <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-              Your order is now <strong>Prepaid &amp; Confirmed</strong>. You saved ₹{configuredCodFee} and your package has been moved to <strong>Priority Express Dispatch</strong>.
+
+            <p className="text-sm text-stone-600 mb-6 leading-relaxed max-w-md mx-auto font-sans">
+              Your order is now <strong>Prepaid &amp; Confirmed</strong>. You saved ₹{configuredCodFee} and your parcel has been prioritized for <strong>Express Discreet Dispatch</strong> with zero balance due at delivery.
             </p>
 
-            <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-xs mb-8 text-left space-y-3 text-xs text-gray-600">
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                <span className="text-gray-500">Order ID:</span>
-                <span className="font-mono font-bold text-gray-900 text-sm">{switchSuccessOrderId}</span>
-              </div>
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                <span className="text-gray-500">Payment Mode:</span>
-                <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                  Prepaid (Paid Online)
+            <div className="p-6 sm:p-7 rounded-3xl bg-white/95 border border-stone-200/90 shadow-xl shadow-stone-900/5 mb-8 text-left space-y-3.5 text-xs text-stone-700">
+              <div className="flex justify-between items-center pb-3 border-b border-stone-100">
+                <span className="text-stone-500 font-medium">Order Number:</span>
+                <span className="font-mono font-extrabold text-stone-900 bg-stone-100 px-3 py-1 rounded-lg text-xs tracking-wider border border-stone-200">
+                  #{switchSuccessOrderId}
                 </span>
               </div>
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                <span className="text-gray-500">Prepaid Discount:</span>
-                <span className="font-bold text-emerald-600">-₹{configuredCodFee} Applied</span>
+              <div className="flex justify-between items-center py-2 border-b border-stone-100">
+                <span className="text-stone-500 font-medium">Payment Mode:</span>
+                <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/80">
+                  Prepaid (Paid Online • Verified)
+                </span>
               </div>
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                <span className="text-gray-500">Shipping:</span>
-                <span className="font-bold text-[#cb0805]">FREE {standardShippingFee > 0 ? `(Saved ₹${standardShippingFee})` : ""}</span>
+              <div className="flex justify-between items-center py-2 border-b border-stone-100">
+                <span className="text-stone-500 font-medium">Prepaid Savings:</span>
+                <span className="font-extrabold text-emerald-700">-₹{configuredCodFee} (COD Fee Waived)</span>
               </div>
-              <div className="flex justify-between items-center pt-2 text-sm">
-                <span className="font-bold text-gray-900">Total Paid:</span>
-                <span className="font-extrabold text-[#cb0805] text-lg">₹{switchSuccessAmount.toLocaleString()}</span>
+              <div className="flex justify-between items-center py-2 border-b border-stone-100">
+                <span className="text-stone-500 font-medium">Shipping:</span>
+                <span className="font-extrabold text-[#731a26]">FREE Priority Express</span>
+              </div>
+              <div className="flex justify-between items-center pt-2">
+                <span className="font-bold text-stone-900 text-sm">Total Paid:</span>
+                <div className="text-right">
+                  <span className="font-tj-serif font-black text-emerald-700 text-xl sm:text-2xl block">
+                    ₹{switchSuccessAmount.toLocaleString()}
+                  </span>
+                  <span className="text-[10px] font-bold block text-stone-500 mt-0.5">
+                    Zero balance payable at doorstep
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
               <Link
                 href={`/order-tracking?query=${encodeURIComponent(switchSuccessOrderId)}`}
-                className="flex-1 py-3.5 px-6 rounded-xl bg-[#cb0805] text-white font-semibold text-sm hover:bg-[#a80604] transition-colors flex items-center justify-center gap-2 shadow-xs"
+                className="flex-1 py-4 px-6 rounded-2xl bg-[#731a26] hover:bg-[#5b1420] text-white font-extrabold text-sm shadow-lg shadow-[#731a26]/20 flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
               >
-                <Truck className="w-4 h-4" />
-                <span>Track Order</span>
+                <Truck className="w-4 h-4 text-[#fed000]" />
+                <span>Track Order Live</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/orders"
-                className="flex-1 py-3.5 px-6 rounded-xl bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center"
+                className="flex-1 py-4 px-6 rounded-2xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-800 font-bold text-sm shadow-xs flex items-center justify-center transition-all active:scale-[0.98]"
               >
                 View My Orders
               </Link>
             </div>
           </main>
 
-          <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-            © 2026 Turkiye Jam
+          <footer className="py-6 text-center text-xs text-stone-500 border-t border-[#ebdcc7]/60 bg-white/60">
+            © 2026 Turkiye Jam — Authentic Ottoman Epimedium Herbal Macun
           </footer>
         </div>
       );
@@ -1823,143 +1856,237 @@ function CheckoutContent() {
 
   // Order Confirmed View
   if (orderComplete) {
+    const isCod = confirmedPaymentId === "Cash on Delivery" || confirmedPaymentId?.includes("Cash on Delivery");
+    const displayTotal = confirmedTotal || grandTotal;
+    const advancePaid = confirmedAdvancePaid || (isCod ? configuredCodFee : displayTotal);
+    const balanceDue = isCod ? (confirmedBalanceDue || Math.max(0, displayTotal - advancePaid)) : 0;
+
     return (
-      <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
-        {/* Simple Brand Header */}
-        <header className="py-4 border-b border-gray-100 bg-white">
-          <div className="max-w-4xl mx-auto px-4 flex items-center justify-center">
+      <div className="min-h-screen tj-diamonds-cream text-stone-900 antialiased selection:bg-[#fed000] selection:text-stone-900 flex flex-col justify-between">
+        {/* Brand Header */}
+        <header className="sticky top-0 z-40 bg-[#fbf7ee]/95 backdrop-blur-md border-b border-[#ebdcc7]/80 shadow-2xs">
+          <div className="max-w-4xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between gap-4">
             <Link href="/" className="inline-block">
               <Image
                 src="/turkiye-jam-logo.svg"
                 alt="Turkiye Jam"
                 width={140}
                 height={45}
-                className="h-10 w-auto object-contain"
+                className="h-9 sm:h-11 w-auto object-contain"
                 priority
               />
             </Link>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#731a26] text-white text-[11px] font-extrabold uppercase tracking-wider shadow-xs">
+              <Lock className="w-3 h-3 text-[#fed000]" />
+              <span>100% Discreet &amp; Verified</span>
+            </div>
           </div>
         </header>
 
-        <main className="max-w-lg mx-auto py-12 px-4 text-center">
-          {/* Visual Status Icon */}
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", damping: 15 }}
-            className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center shadow-lg bg-emerald-50 text-emerald-600 shadow-emerald-500/15"
-          >
-            <CheckCircle2 className="w-10 h-10" />
-          </motion.div>
+        <main className="max-w-xl mx-auto py-10 sm:py-14 px-4 text-center">
+          {/* Animated Hero Verification Emblem */}
+          <div className="relative mx-auto mb-6 w-20 h-20 sm:w-24 sm:h-24">
+            <div className="absolute inset-0 rounded-full bg-[#fed000]/25 animate-ping" />
+            <motion.div
+              initial={{ scale: 0, rotate: -15 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", damping: 15 }}
+              className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-[#731a26] to-[#48121f] text-[#fed000] flex items-center justify-center shadow-xl shadow-[#731a26]/25 border-2 border-[#fed000]"
+            >
+              <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
+            </motion.div>
+          </div>
 
-          {/* Status Badge */}
-          <span
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold mb-2 border ${
-              confirmedPaymentId === "Cash on Delivery"
-                ? "bg-amber-50 text-amber-800 border-amber-200"
-                : "bg-emerald-50 text-emerald-800 border-emerald-200"
-            }`}
-          >
-            {confirmedPaymentId === "Cash on Delivery"
-              ? `Cash on Delivery Confirmed • ₹${confirmedAdvancePaid || configuredCodFee} Courier Advance Paid Online`
-              : "✓ Payment Confirmed • Free Express Delivery"}
-          </span>
+          {/* Saffron Gold Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-3 shadow-xs border bg-[#fed000] text-black border-[#e5be00]">
+            <Sparkles className="w-3.5 h-3.5 text-black" />
+            <span>
+              {isCod
+                ? `Cash on Delivery Confirmed • ₹${advancePaid} Courier Advance Received`
+                : "✓ Payment Verified • Priority Express Dispatch"}
+            </span>
+          </div>
 
-          <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
-            {confirmedPaymentId === "Cash on Delivery"
-              ? `Order Confirmed, ${name || "Shopper"}!`
-              : `Payment Successful, ${name || "Shopper"}!`}
+          {/* Editorial Serif Heading */}
+          <h1 className="font-tj-serif text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] tracking-tight mb-2">
+            {isCod
+              ? `Order Confirmed, ${name ? name.split(" ")[0] : "Shopper"}!`
+              : `Payment Successful, ${name ? name.split(" ")[0] : "Shopper"}!`}
           </h1>
 
-          <p className="text-sm text-gray-500 mb-6 leading-relaxed max-w-md mx-auto">
-            {confirmedPaymentId === "Cash on Delivery" ? (
+          <p className="text-sm text-stone-600 mb-6 leading-relaxed max-w-md mx-auto font-sans">
+            {isCod ? (
               <>
-                Your Cash on Delivery order is confirmed! Your courier advance of ₹{(confirmedAdvancePaid || configuredCodFee).toLocaleString()} has been received online. Our logistics team is packaging your order in discreet tamper-proof boxes. Please keep ₹{(confirmedBalanceDue || Math.max(0, (confirmedTotal || grandTotal) - configuredCodFee)).toLocaleString()} in cash or UPI ready for the delivery agent.
+                Your Cash on Delivery order is booked and verified! Your courier advance of ₹{advancePaid.toLocaleString()} has been received online. Our logistics team is now packing your order in our signature discrete box. Please keep ₹{balanceDue.toLocaleString()} ready in cash or UPI at delivery.
               </>
             ) : (
               <>
-                Your online payment was successfully processed! Your order is now prepaid and confirmed with Free Express Delivery.
+                Your online payment was successfully processed. Your order is prepaid and moved to Priority Express Dispatch with 100% Free Shipping.
               </>
-            )}
-            {email.trim() && (
-              <span className="block mt-2 font-medium text-emerald-700 bg-emerald-50 py-1.5 px-3 rounded-lg border border-emerald-200/70 text-xs">
-                📧 Order receipt &amp; live tracking link sent to <strong>{email.trim()}</strong>
-              </span>
             )}
           </p>
 
-          {/* Order Summary Details Card */}
-          <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-xs mb-8 text-left space-y-3 text-xs text-gray-600">
-            <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-              <span className="text-gray-500">Order ID:</span>
-              <span className="font-mono font-bold text-gray-900 text-sm">{confirmedOrderId}</span>
+          {email.trim() && (
+            <div className="mb-6 inline-flex items-center gap-2 text-xs text-stone-700 bg-white/90 border border-[#ebdcc7] py-2 px-4 rounded-xl shadow-2xs">
+              <Mail className="w-3.5 h-3.5 text-[#731a26]" />
+              <span>
+                Order confirmation &amp; live invoice sent to <strong className="font-semibold text-stone-900">{email.trim()}</strong>
+              </span>
             </div>
-            {email.trim() && (
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                <span className="text-gray-500">Order Updates Email:</span>
-                <span className="font-semibold text-emerald-700">{email.trim()}</span>
+          )}
+
+          {/* 100% Discreet Packaging Guarantee Card */}
+          <div className="p-4 sm:p-4.5 rounded-2xl bg-white/90 border border-[#ebdcc7] shadow-xs mb-6 text-left flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#fbf7ee] border border-[#ebdcc7] flex items-center justify-center text-[#731a26] shrink-0 mt-0.5 shadow-2xs">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-bold text-xs text-stone-900 uppercase tracking-wide">100% Discreet Packaging</span>
+                <span className="text-[10px] bg-[#b9e5e9] text-stone-900 font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Unbranded Box</span>
+              </div>
+              <p className="text-[11px] text-stone-600 leading-relaxed">
+                Shipped in a plain, heavy-duty tamper-evident cardboard carton with bubble cushion. No product name, wellness reference, or brand hint appears on the outer shipping label.
+              </p>
+            </div>
+          </div>
+
+          {/* Order Summary & Financial Card */}
+          <div className="p-6 sm:p-7 rounded-3xl bg-white/95 border border-stone-200/90 shadow-xl shadow-stone-900/5 mb-8 text-left space-y-3.5 text-xs text-stone-700">
+            {/* Order ID with Copy Button */}
+            <div className="flex justify-between items-center pb-3 border-b border-stone-100">
+              <span className="text-stone-500 font-medium">Order Number:</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-extrabold text-stone-900 bg-stone-100 px-3 py-1 rounded-lg text-xs tracking-wider border border-stone-200">
+                  #{confirmedOrderId}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof navigator !== "undefined" && navigator.clipboard) {
+                      navigator.clipboard.writeText(confirmedOrderId);
+                      setCopiedConfirmedId(true);
+                      setTimeout(() => setCopiedConfirmedId(false), 2000);
+                    }
+                  }}
+                  className="p-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600 transition cursor-pointer"
+                  title="Copy Order ID"
+                >
+                  {copiedConfirmedId ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Payment Mode */}
+            <div className="flex justify-between items-center py-2 border-b border-stone-100">
+              <span className="text-stone-500 font-medium">Payment Method:</span>
+              <span className="font-bold text-stone-900">
+                {isCod
+                  ? `Cash on Delivery (₹${advancePaid} Advance Paid Online)`
+                  : "Online Prepaid (Cashfree Verified)"}
+              </span>
+            </div>
+
+            {/* Estimated Delivery */}
+            <div className="flex justify-between items-center py-2 border-b border-stone-100">
+              <span className="text-stone-500 font-medium">Estimated Delivery:</span>
+              <span className="font-bold text-emerald-700 flex items-center gap-1.5">
+                <Truck className="w-3.5 h-3.5" />
+                <span>{isCod ? "3 - 5 Business Days" : "2 - 4 Business Days (Priority Express)"}</span>
+              </span>
+            </div>
+
+            {/* Delivery Address */}
+            <div className="flex justify-between items-start py-2 border-b border-stone-100">
+              <span className="text-stone-500 font-medium shrink-0">Delivery Address:</span>
+              <span className="font-semibold text-stone-900 text-right max-w-[260px] leading-relaxed">
+                {address ? `${address}, ` : ""}{city} {postalCode ? `- ${postalCode}` : ""}
+              </span>
+            </div>
+
+            {/* Purchased Items List (if available) */}
+            {confirmedItems && confirmedItems.length > 0 && (
+              <div className="py-2.5 border-b border-stone-100 space-y-2">
+                <span className="text-stone-500 font-medium block mb-1.5">Package Contents:</span>
+                {confirmedItems.map((item: any, idx: number) => (
+                  <div key={idx} className="flex items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {item.image || item.poster_image ? (
+                        <div className="w-8 h-8 rounded-lg bg-stone-100 border border-stone-200 overflow-hidden shrink-0 relative">
+                          <Image
+                            src={item.image || item.poster_image}
+                            alt={item.name}
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-400 shrink-0">
+                          <Package className="w-4 h-4" />
+                        </div>
+                      )}
+                      <div className="truncate">
+                        <div className="font-semibold text-stone-900 truncate">{item.name}</div>
+                        <div className="text-[10px] text-stone-500">Qty: {item.quantity}</div>
+                      </div>
+                    </div>
+                    <div className="font-mono font-bold text-stone-900 shrink-0">
+                      ₹{((Number(item.price || item.unit_price) || 0) * (item.quantity || 1)).toLocaleString()}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
-            <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-              <span className="text-gray-500">Payment Mode:</span>
-              <span className="font-semibold text-gray-900">
-                {confirmedPaymentId === "Cash on Delivery"
-                  ? `Cash on Delivery (₹${confirmedAdvancePaid || configuredCodFee} Advance Paid Online)`
-                  : "Online Payment (Cashfree Prepaid)"}
-              </span>
-            </div>
-            <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-              <span className="text-gray-500">Estimated Delivery:</span>
-              <span className="font-semibold text-gray-900">
-                {confirmedPaymentId === "Cash on Delivery" ? "3 - 5 Business Days" : "2 - 4 Business Days (Priority)"}
-              </span>
-            </div>
-            <div className="flex justify-between items-start py-1.5 border-b border-gray-100">
-              <span className="text-gray-500">Delivery Address:</span>
-              <span className="font-semibold text-gray-900 text-right max-w-[240px]">
-                {address}, {city} - {postalCode}
-              </span>
-            </div>
-            {confirmedPaymentId === "Cash on Delivery" ? (
+
+            {/* Financial Breakdown */}
+            {isCod ? (
               <>
-                <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                  <span className="text-gray-500">Courier Advance Paid:</span>
-                  <span className="font-semibold text-emerald-700">₹{(confirmedAdvancePaid || configuredCodFee).toLocaleString()} (Paid Online)</span>
+                <div className="flex justify-between items-center py-1.5 border-b border-stone-100">
+                  <span className="text-stone-500 font-medium">Courier Advance Paid:</span>
+                  <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/80">
+                    ₹{advancePaid.toLocaleString()} (Paid Online)
+                  </span>
                 </div>
-                <div className="flex justify-between items-center pt-2 text-sm">
-                  <span className="font-bold text-gray-900">Payable to Courier:</span>
+                <div className="flex justify-between items-center pt-2">
+                  <span className="font-bold text-stone-900 text-sm">Payable to Courier at Delivery:</span>
                   <div className="text-right">
-                    <span className="font-extrabold text-[#780016] text-lg block">
-                      ₹{(confirmedBalanceDue || Math.max(0, (confirmedTotal || grandTotal) - configuredCodFee)).toLocaleString()}
+                    <span className="font-tj-serif font-black text-[#731a26] text-xl sm:text-2xl block">
+                      ₹{balanceDue.toLocaleString()}
                     </span>
-                    <span className="text-[10px] font-bold block text-stone-500">
-                      Pay cash or UPI to delivery agent at doorstep
+                    <span className="text-[10px] font-bold block text-stone-500 mt-0.5">
+                      Pay cash or UPI to courier agent at doorstep
                     </span>
                   </div>
                 </div>
               </>
             ) : (
-              <div className="flex justify-between items-center pt-2 text-sm">
-                <span className="font-bold text-gray-900">Total Paid:</span>
+              <div className="flex justify-between items-center pt-2">
+                <span className="font-bold text-stone-900 text-sm">Total Paid:</span>
                 <div className="text-right">
-                  <span className="font-extrabold text-emerald-700 text-lg block">
-                    ₹{(confirmedTotal || grandTotal).toLocaleString()}
+                  <span className="font-tj-serif font-black text-emerald-700 text-xl sm:text-2xl block">
+                    ₹{displayTotal.toLocaleString()}
                   </span>
-                  <span className="text-[10px] font-bold block text-stone-500">
-                    Paid securely online • Zero balance at doorstep
+                  <span className="text-[10px] font-bold block text-stone-500 mt-0.5">
+                    100% Paid online • Zero balance at doorstep
                   </span>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          {/* Action CTAs */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <Link
               href={`/order-tracking?query=${encodeURIComponent(confirmedOrderId)}`}
-              className="flex-1 py-3.5 px-6 rounded-xl bg-[#cb0805] text-white font-semibold text-sm hover:bg-[#a80604] transition-colors flex items-center justify-center gap-2 shadow-xs"
+              className="flex-1 py-4 px-6 rounded-2xl bg-[#731a26] hover:bg-[#5b1420] text-white font-extrabold text-sm shadow-lg shadow-[#731a26]/20 flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
             >
-              <Truck className="w-4 h-4" />
-              <span>Track Order</span>
+              <Truck className="w-4 h-4 text-[#fed000]" />
+              <span>Track Order Live</span>
+              <ArrowRight className="w-4 h-4" />
             </Link>
             <button
               onClick={() => {
@@ -1971,15 +2098,28 @@ function CheckoutContent() {
                 setOrderComplete(false);
                 router.push("/");
               }}
-              className="flex-1 py-3.5 px-6 rounded-xl bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center cursor-pointer"
+              className="flex-1 py-4 px-6 rounded-2xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-800 font-bold text-sm shadow-xs flex items-center justify-center transition-all active:scale-[0.98] cursor-pointer"
             >
               Continue Shopping
             </button>
           </div>
+
+          {/* WhatsApp Support Pill */}
+          <div className="pt-2">
+            <a
+              href={`https://wa.me/916238165935?text=${encodeURIComponent(`Hi Turkiye Jam Support, I have a question about my confirmed order #${confirmedOrderId}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 text-xs font-semibold text-emerald-800 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 py-2.5 px-5 rounded-full transition shadow-2xs"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Need help? Chat with Turkiye Jam on WhatsApp</span>
+            </a>
+          </div>
         </main>
 
-        <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-          © 2026 Turkiye Jam
+        <footer className="py-6 text-center text-xs text-stone-500 border-t border-[#ebdcc7]/60 bg-white/60">
+          © 2026 Turkiye Jam — Authentic Ottoman Epimedium Herbal Macun
         </footer>
       </div>
     );
