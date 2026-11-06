@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -123,6 +123,86 @@ function CheckoutContent() {
   const [checkoutStep, setCheckoutStep] = useState<"details" | "payment">("details");
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
 
+  // Shiprocket Customer Address Auto-Lookup State
+  const [isLookingUpCustomer, setIsLookingUpCustomer] = useState(false);
+  const [customerLookupBadge, setCustomerLookupBadge] = useState<string | null>(null);
+  const lastLookedUpPhoneRef = useRef<string>("");
+
+  const lookupCustomerDetails = async (rawPhoneInput: string) => {
+    const clean = cleanPhoneDigits(rawPhoneInput);
+    if (clean.length !== 10) return;
+    if (lastLookedUpPhoneRef.current === clean) return;
+    lastLookedUpPhoneRef.current = clean;
+
+    setIsLookingUpCustomer(true);
+    try {
+      const res = await fetch(`/api/checkout/customer-lookup?phone=${encodeURIComponent(clean)}`);
+      const data = await res.json();
+      if (data.success && data.found && data.customer) {
+        const c = data.customer;
+        // Auto-fill Name if empty or generic
+        if (!name || name.startsWith("Customer ")) {
+          if (c.name) setName(c.name);
+        }
+        // Auto-fill Email if empty
+        if (!email && c.email) {
+          setEmail(c.email);
+        }
+        // Auto-fill Address if empty
+        if (!address && c.address) {
+          setAddress(c.address);
+        }
+        if (!city && c.city) {
+          setCity(c.city);
+        }
+        if (!state && c.state) {
+          setState(c.state);
+        }
+        if (!postalCode && c.pincode) {
+          setPostalCode(c.pincode);
+          setPincodeDetected(true);
+        }
+
+        // Add to saved addresses card list so user can see their Shiprocket address card
+        if (c.address) {
+          const autoAddr = {
+            id: `sr-${clean}`,
+            recipient_name: c.name || name || "Customer",
+            phone: clean,
+            street: c.address,
+            city: c.city || city || "",
+            state: c.state || state || "",
+            postal_code: c.pincode || postalCode || "",
+            is_default: true,
+            source: data.source === "shiprocket_fastrr" ? "Shiprocket Fastrr" : "Shiprocket",
+          };
+          setSavedAddresses((prev) => {
+            const exists = prev.some((a) => a.street === autoAddr.street || a.id === autoAddr.id);
+            return exists ? prev : [autoAddr, ...prev];
+          });
+          setSelectedAddressId(autoAddr.id);
+        }
+
+        const sourceLabel = data.source === "shiprocket_fastrr" ? "Shiprocket Fastrr" : "Shiprocket";
+        setCustomerLookupBadge(`Auto-filled address for ${c.name || "you"} via ${sourceLabel}`);
+      }
+    } catch (e) {
+      console.warn("[Checkout] customer lookup error:", e);
+    } finally {
+      setIsLookingUpCustomer(false);
+    }
+  };
+
+  // Auto-trigger Shiprocket customer lookup when phone reaches 10 digits
+  useEffect(() => {
+    const clean = cleanPhoneDigits(phone);
+    if (clean.length === 10) {
+      const timer = setTimeout(() => {
+        lookupCustomerDetails(clean);
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [phone]);
 
   // Saved Addresses
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
@@ -2083,10 +2163,39 @@ function CheckoutContent() {
                     maxLength={10}
                     value={phone}
                     onChange={(e) => setPhone(cleanPhoneDigits(e.target.value))}
+                    onBlur={(e) => {
+                      const val = cleanPhoneDigits(e.target.value);
+                      if (val.length === 10) lookupCustomerDetails(val);
+                    }}
                     placeholder="97412 28540"
                     className="w-full px-4 py-3 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none tracking-wide"
                   />
                 </div>
+
+                {/* Looking up customer indicator */}
+                {isLookingUpCustomer && (
+                  <div className="flex items-center gap-1.5 text-xs text-[#cb0805] font-semibold pt-0.5 animate-in fade-in duration-150">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#cb0805]" />
+                    <span>Checking Shiprocket for saved address...</span>
+                  </div>
+                )}
+
+                {/* Found customer address banner */}
+                {customerLookupBadge && !isLookingUpCustomer && (
+                  <div className="flex items-center justify-between gap-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold animate-in fade-in duration-200 shadow-2xs">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>{customerLookupBadge}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCustomerLookupBadge(null)}
+                      className="text-xs text-emerald-700 hover:text-emerald-900 font-bold p-0.5 cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
 
                 {/* WhatsApp Notification Card (Matches Reference Photo 3) */}
                 <div className="p-3 rounded-xl bg-[#FFF8F0] border border-[#FFE7D1] flex items-start gap-2.5 shadow-2xs">
