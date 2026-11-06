@@ -1190,6 +1190,7 @@ function CheckoutContent() {
 
     // Require authentication before progressing to purchase
     if (!user) {
+      const cleanContact = cleanPhoneDigits(phone);
       openAuthModal(
         "login",
         "Sign in required: Please log in or verify with WhatsApp to complete your purchase 🛍️",
@@ -1198,6 +1199,10 @@ function CheckoutContent() {
           if (loggedInUser?.phone && !phone) setPhone(cleanPhoneDigits(loggedInUser.phone));
           if (loggedInUser?.name && !name) setName(loggedInUser.name);
           setCheckoutStep("payment");
+        },
+        {
+          initialPhone: cleanContact || undefined,
+          autoSendOtp: cleanContact.length === 10,
         }
       );
       return;
@@ -1285,6 +1290,7 @@ function CheckoutContent() {
 
     // Require authentication before completing purchase
     if (!user) {
+      const cleanContact = cleanPhoneDigits(phone);
       openAuthModal(
         "login",
         "Sign in required: Please log in or verify with WhatsApp to complete your purchase 🛍️",
@@ -1292,6 +1298,10 @@ function CheckoutContent() {
         (loggedInUser) => {
           if (loggedInUser?.phone && !phone) setPhone(cleanPhoneDigits(loggedInUser.phone));
           if (loggedInUser?.name && !name) setName(loggedInUser.name);
+        },
+        {
+          initialPhone: cleanContact || undefined,
+          autoSendOtp: cleanContact.length === 10,
         }
       );
       return;
@@ -2078,7 +2088,22 @@ function CheckoutContent() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => openAuthModal("login", "Sign in to access your saved addresses & order history 🛍️")}
+                  onClick={() => {
+                    const cleanContact = cleanPhoneDigits(phone);
+                    openAuthModal(
+                      "login",
+                      "Sign in to access your saved addresses & order history 🛍️",
+                      undefined,
+                      (loggedInUser) => {
+                        if (loggedInUser?.phone && !phone) setPhone(cleanPhoneDigits(loggedInUser.phone));
+                        if (loggedInUser?.name && !name) setName(loggedInUser.name);
+                      },
+                      {
+                        initialPhone: cleanContact || undefined,
+                        autoSendOtp: cleanContact.length === 10,
+                      }
+                    );
+                  }}
                   className="px-3.5 py-1.5 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-bold shrink-0 transition"
                 >
                   Log in →

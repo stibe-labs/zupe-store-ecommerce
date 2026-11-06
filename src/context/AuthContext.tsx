@@ -20,7 +20,18 @@ interface AuthContextType {
   authModalNotice: string | null;
   authModalRedirectUrl: string | null;
   authModalOnSuccess: ((user?: any) => void) | null;
-  openAuthModal: (mode?: "login" | "signup", notice?: string, redirectUrl?: string, onSuccess?: (user?: any) => void) => void;
+  authModalInitialPhone: string | null;
+  authModalAutoSendOtp: boolean;
+  openAuthModal: (
+    mode?: "login" | "signup",
+    notice?: string,
+    redirectUrl?: string,
+    onSuccess?: (user?: any) => void,
+    options?: {
+      initialPhone?: string;
+      autoSendOtp?: boolean;
+    }
+  ) => void;
   closeAuthModal: () => void;
   sendWhatsAppOtp: (phone: string) => Promise<{ success: boolean; message?: string; codeSent?: boolean; otp?: string; isExistingUser?: boolean; name?: string; error?: string }>;
   loginWithWhatsApp: (phone: string, otp: string, name?: string) => Promise<{ success: boolean; user?: UserSession; isNew?: boolean; error?: string }>;
@@ -42,6 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authModalNotice, setAuthModalNotice] = useState<string | null>(null);
   const [authModalRedirectUrl, setAuthModalRedirectUrl] = useState<string | null>(null);
   const [authModalOnSuccess, setAuthModalOnSuccess] = useState<((user?: any) => void) | null>(null);
+  const [authModalInitialPhone, setAuthModalInitialPhone] = useState<string | null>(null);
+  const [authModalAutoSendOtp, setAuthModalAutoSendOtp] = useState<boolean>(false);
 
   const syncUserSession = () => {
     try {
@@ -91,12 +104,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     mode: "login" | "signup" = "login",
     notice?: string,
     redirectUrl?: string,
-    onSuccess?: (user?: any) => void
+    onSuccess?: (user?: any) => void,
+    options?: {
+      initialPhone?: string;
+      autoSendOtp?: boolean;
+    }
   ) => {
     setAuthModalMode(mode);
     setAuthModalNotice(notice || null);
     setAuthModalRedirectUrl(redirectUrl || null);
     setAuthModalOnSuccess(() => onSuccess || null);
+    setAuthModalInitialPhone(options?.initialPhone || null);
+    setAuthModalAutoSendOtp(Boolean(options?.autoSendOtp));
     setIsAuthModalOpen(true);
   };
 
@@ -105,6 +124,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuthModalNotice(null);
     setAuthModalRedirectUrl(null);
     setAuthModalOnSuccess(null);
+    setAuthModalInitialPhone(null);
+    setAuthModalAutoSendOtp(false);
     if (typeof window !== "undefined" && window.location.search.includes("auth=admin")) {
       const url = new URL(window.location.href);
       url.searchParams.delete("auth");
@@ -305,6 +326,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         authModalNotice,
         authModalRedirectUrl,
         authModalOnSuccess,
+        authModalInitialPhone,
+        authModalAutoSendOtp,
         openAuthModal,
         closeAuthModal,
         sendWhatsAppOtp,

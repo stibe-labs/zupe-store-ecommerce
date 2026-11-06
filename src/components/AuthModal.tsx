@@ -13,6 +13,8 @@ export function AuthModal() {
     authModalNotice,
     authModalRedirectUrl,
     authModalOnSuccess,
+    authModalInitialPhone,
+    authModalAutoSendOtp,
   } = useAuth();
 
   // Lock background scrolling when Auth modal is open
@@ -56,6 +58,8 @@ export function AuthModal() {
               isModal={true}
               onClose={closeAuthModal}
               initialMode={authModalMode || "login"}
+              initialPhone={authModalInitialPhone || undefined}
+              autoSendOtp={authModalAutoSendOtp}
               notice={authModalNotice}
               redirectUrl={authModalRedirectUrl || undefined}
               onSuccess={authModalOnSuccess || undefined}

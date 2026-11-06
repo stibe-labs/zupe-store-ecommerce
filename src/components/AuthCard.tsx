@@ -24,6 +24,8 @@ export interface AuthCardProps {
   isModal?: boolean;
   onClose?: () => void;
   initialMode?: "login" | "signup";
+  initialPhone?: string;
+  autoSendOtp?: boolean;
   notice?: string | null;
   redirectUrl?: string;
   onSuccess?: (user: any) => void;
@@ -33,6 +35,8 @@ export interface AuthCardProps {
 export function AuthCard({
   isModal = false,
   onClose,
+  initialPhone,
+  autoSendOtp = false,
   notice,
   redirectUrl = "/",
   onSuccess,
@@ -42,7 +46,9 @@ export function AuthCard({
 
   // Step 1: "phone", Step 2: "otp"
   const [step, setStep] = useState<"phone" | "otp">("phone");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(() => {
+    return initialPhone ? initialPhone.replace(/\D/g, "").slice(-10) : "";
+  });
   const [name, setName] = useState("");
   const [otp, setOtp] = useState("");
   const [isExistingUser, setIsExistingUser] = useState(false);
@@ -51,6 +57,49 @@ export function AuthCard({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Sync initialPhone if prop changes
+  useEffect(() => {
+    if (initialPhone) {
+      const clean = initialPhone.replace(/\D/g, "").slice(-10);
+      if (clean) setPhone(clean);
+    }
+  }, [initialPhone]);
+
+  // Auto-send WhatsApp OTP if requested and contact number is already provided
+  const autoSentRef = React.useRef(false);
+  useEffect(() => {
+    if (autoSendOtp && initialPhone && !autoSentRef.current) {
+      const clean = initialPhone.replace(/\D/g, "").slice(-10);
+      if (clean.length === 10 && /^[6-9]\d{9}$/.test(clean)) {
+        autoSentRef.current = true;
+        setLoading(true);
+        setError(null);
+        setSuccess(null);
+        (async () => {
+          try {
+            const res = await sendWhatsAppOtp(clean);
+            if (res.success) {
+              setStep("otp");
+              setExpiryCountdown(180);
+              if (res.otp) setOtp(res.otp);
+              if (res.isExistingUser) {
+                setIsExistingUser(true);
+                if (res.name) setName(res.name);
+              }
+              setSuccess(`Verification code sent directly to +91 ${clean} via WhatsApp!`);
+            } else {
+              setError(res.error || "Failed to send verification code. Please verify your mobile number.");
+            }
+          } catch (err: any) {
+            setError(err.message || "Failed to send code.");
+          } finally {
+            setLoading(false);
+          }
+        })();
+      }
+    }
+  }, [autoSendOtp, initialPhone]);
 
   // Timer: 3-minute code expiry countdown
   useEffect(() => {
