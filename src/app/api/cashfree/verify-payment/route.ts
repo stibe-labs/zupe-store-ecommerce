@@ -26,33 +26,42 @@ export async function POST(req: NextRequest) {
     let paymentId = cashfreeOrderId || `cf_${orderId}`;
     let verificationAmount = 0;
 
-    const targetOrderId = cashfreeOrderId || orderId;
-    try {
-      const verification = await verifyCashfreePayment(targetOrderId);
-      if (verification && verification.paid) {
-        isPaid = true;
-        paymentId = verification.paymentId || paymentId;
-        verificationAmount = verification.amount || 0;
-      }
-    } catch {}
-
-    // Check Settler API if not verified directly
-    if (!isPaid) {
+    // Check Cashfree direct API first (both IDs if available)
+    const candidateIds = [cashfreeOrderId, orderId].filter(Boolean) as string[];
+    for (const cid of candidateIds) {
+      if (isPaid) break;
       try {
-        const settlerVerifyRes = await fetch("https://settler.pydart.com/api/v1/orders/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId: targetOrderId }),
-        });
-        const settlerData: any = await settlerVerifyRes.json();
-        if (settlerData && settlerData.paid) {
+        const verification = await verifyCashfreePayment(cid);
+        if (verification && verification.paid) {
           isPaid = true;
-          paymentId = settlerData.bankReference || settlerData.orderId || paymentId;
+          paymentId = verification.paymentId || cid;
+          verificationAmount = verification.amount || 0;
+          break;
         }
       } catch {}
     }
 
-    // Direct confirmation flag from secure gateway return redirect
+    // Check Settler API if not verified directly
+    if (!isPaid) {
+      for (const cid of candidateIds) {
+        if (isPaid) break;
+        try {
+          const settlerVerifyRes = await fetch("https://settler.pydart.com/api/v1/orders/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId: cid }),
+          });
+          const settlerData: any = await settlerVerifyRes.json();
+          if (settlerData && settlerData.paid) {
+            isPaid = true;
+            paymentId = settlerData.bankReference || settlerData.orderId || paymentId;
+            break;
+          }
+        } catch {}
+      }
+    }
+
+    // Direct confirmation flag from secure gateway return redirect (Settler / Cashfree return)
     if (!isPaid && isExplicitlyPaid) {
       isPaid = true;
     }
@@ -66,17 +75,45 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 2. Fetch order details from ERP or D1
+    // 2. Fetch order details from ERP or D1 with deep fallback
     let order: any = await getOrderById(orderId);
+    if (!order && cashfreeOrderId) {
+      order = await getOrderById(cashfreeOrderId);
+    }
+
     if (!order) {
       try {
         const rows = await executeD1Query<any>(
-          "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
-          [orderId, orderId]
+          "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? OR razorpay_order_id = ? LIMIT 1",
+          [orderId, orderId, orderId]
         );
         if (rows && rows.length > 0) order = rows[0];
       } catch {}
     }
+
+    if (!order && cashfreeOrderId) {
+      try {
+        const rows = await executeD1Query<any>(
+          "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? OR razorpay_order_id = ? LIMIT 1",
+          [cashfreeOrderId, cashfreeOrderId, cashfreeOrderId]
+        );
+        if (rows && rows.length > 0) order = rows[0];
+      } catch {}
+    }
+
+    // Fallback: If order wasn't found by exact ID, locate latest pending order in D1
+    if (!order) {
+      try {
+        const recentRows = await executeD1Query<any>(
+          "SELECT * FROM orders WHERE payment_status = 'Pending' OR payment_status = 'pending' ORDER BY created_at DESC LIMIT 1"
+        );
+        if (recentRows && recentRows.length > 0) {
+          order = recentRows[0];
+        }
+      } catch {}
+    }
+
+    const effectiveOrderId = order?.id || orderId;
 
     const isCodOrder =
       order?.payment_method?.includes("COD") ||
@@ -93,7 +130,7 @@ export async function POST(req: NextRequest) {
     const effectiveTotal = Number(order?.total_amount) || (isCodOrder ? (advancePaid + balanceDue) : (verificationAmount || 899));
 
     // 3. Update in ERP Store (handles memory + D1 update)
-    await updateERPOrder(orderId, {
+    await updateERPOrder(effectiveOrderId, {
       payment_method: isCodOrder ? "Cash on Delivery" : "Prepaid",
       payment_status: isCodOrder ? "Pending" : "Completed",
       advance_paid: advancePaid,
@@ -119,7 +156,7 @@ export async function POST(req: NextRequest) {
              delivery_status = 'Processing',
              status = 'Processing',
              remittance_status = ?
-         WHERE id = ? OR shopify_order_id = ?`,
+         WHERE id = ? OR shopify_order_id = ? OR id = ?`,
         [
           isCodOrder ? "Cash on Delivery" : "Prepaid",
           isCodOrder ? "Pending" : "Completed",
@@ -127,7 +164,8 @@ export async function POST(req: NextRequest) {
           balanceDue,
           isCodOrder ? 1 : 0,
           isCodOrder ? "Pending" : "Settled",
-          orderId,
+          effectiveOrderId,
+          effectiveOrderId,
           orderId,
         ]
       );
@@ -137,7 +175,7 @@ export async function POST(req: NextRequest) {
 
     // 5. Update local storefront store
     try {
-      updateStorefrontOrder(orderId, {
+      updateStorefrontOrder(effectiveOrderId, {
         payment_method: isCodOrder ? "Cash on Delivery" : "Prepaid",
         payment_status: isCodOrder ? "pending" : "paid",
         order_status: "processing",
@@ -219,7 +257,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       paid: true,
-      orderId,
+      orderId: effectiveOrderId,
+      shopifyOrderId: order?.shopify_order_id || null,
+      customerName: custName,
+      customerPhone: custPhone,
+      items: rawItems,
       paymentId,
       isCodPartial: isCodOrder,
       advancePaid,

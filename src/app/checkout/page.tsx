@@ -278,8 +278,27 @@ function CheckoutContent() {
     }
   }, []);
 
-  // Cashfree / Settler Order Verification Helper
-  const verifyCashfreeOrder = async (orderIdToVerify: string) => {
+  // Restore confirmed order from sessionStorage if recently placed
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const storedConfirm = sessionStorage.getItem("zupe_confirmed_order");
+      if (storedConfirm) {
+        const parsed = JSON.parse(storedConfirm);
+        if (parsed && parsed.orderId && (Date.now() - (parsed.confirmedAt || 0) < 4 * 3600 * 1000)) {
+          setConfirmedOrderId(parsed.orderId);
+          setConfirmedTotal(parsed.total || 0);
+          setConfirmedPaymentId(parsed.paymentId || "Online Payment");
+          setConfirmedAdvancePaid(parsed.advancePaid || 0);
+          setConfirmedBalanceDue(parsed.balanceDue || 0);
+          setOrderComplete(true);
+        }
+      }
+    } catch {}
+  }, []);
+
+  // Cashfree / Settler Order Verification Helper with Exponential Polling Retry
+  const verifyCashfreeOrder = async (orderIdToVerify: string, attempt: number = 1) => {
     setVerifyingPayment(true);
     setLoading(true);
     setErrorMessage("");
@@ -299,34 +318,97 @@ function CheckoutContent() {
       const data = await res.json();
       if (data.paid || data.success) {
         syncAddressAfterOrder();
-        setConfirmedTotal(data.totalAmount || data.amount || grandTotal);
-        setConfirmedOrderId(orderIdToVerify);
-        setConfirmedPaymentId(data.isCodPartial ? "Cash on Delivery" : (data.paymentId || "Online Payment (Settler / Cashfree)"));
-        setConfirmedAdvancePaid(data.advancePaid || (data.isCodPartial ? 49 : 0));
-        setConfirmedBalanceDue(data.balanceDue || (data.isCodPartial ? Math.max(0, (data.totalAmount || grandTotal) - 49) : 0));
+        const finalOrderId = data.orderId || orderIdToVerify;
+        const total = data.totalAmount || data.amount || grandTotal;
+        const paymentLabel = data.isCodPartial ? "Cash on Delivery" : (data.paymentId || "Online Payment (Cashfree / Settler)");
+        const advance = data.advancePaid || (data.isCodPartial ? 49 : 0);
+        const due = data.balanceDue || (data.isCodPartial ? Math.max(0, total - 49) : 0);
+
+        setConfirmedTotal(total);
+        setConfirmedOrderId(finalOrderId);
+        setConfirmedPaymentId(paymentLabel);
+        setConfirmedAdvancePaid(advance);
+        setConfirmedBalanceDue(due);
         setOrderComplete(true);
         clearCart();
+
+        // Ensure both guest and logged-in user carts are purged
         try {
-          localStorage.setItem("zupe_last_order_id", orderIdToVerify);
-          localStorage.setItem("zupe_last_phone", phone.trim());
+          localStorage.removeItem("zp_guest_cart");
+          localStorage.setItem("zupe_last_order_id", finalOrderId);
+          if (phone.trim()) localStorage.setItem("zupe_last_phone", phone.trim());
+          sessionStorage.setItem("zupe_confirmed_order", JSON.stringify({
+            orderId: finalOrderId,
+            total,
+            paymentId: paymentLabel,
+            advancePaid: advance,
+            balanceDue: due,
+            confirmedAt: Date.now(),
+          }));
         } catch {}
-      } else {
-        setErrorMessage(data.message || "Payment is pending or was not completed. Please try again or select Cash on Delivery.");
+
+        if (user?.id) {
+          fetch("/api/cart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: user.id, items: [] }),
+          }).catch(() => {});
+        }
+
+        // Clean query parameters from URL so refreshes don't re-trigger verification
+        try {
+          if (typeof window !== "undefined") {
+            const cleanUrl = new URL(window.location.href);
+            cleanUrl.searchParams.delete("cf_order_id");
+            cleanUrl.searchParams.delete("order_id");
+            cleanUrl.searchParams.delete("paid");
+            window.history.replaceState({}, "", cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : ""));
+          }
+        } catch {}
+
+        setVerifyingPayment(false);
+        setLoading(false);
+        return;
       }
+
+      // If pending and we have remaining retries (e.g. gateway status still syncing), retry with 1.5s delay
+      if (attempt < 3) {
+        setTimeout(() => {
+          verifyCashfreeOrder(orderIdToVerify, attempt + 1);
+        }, 1500);
+        return;
+      }
+
+      setErrorMessage(data.message || "Payment is pending or was not completed. Please try again or select Cash on Delivery.");
     } catch (e: any) {
       console.error("Payment verification error:", e);
+      if (attempt < 3) {
+        setTimeout(() => {
+          verifyCashfreeOrder(orderIdToVerify, attempt + 1);
+        }, 1500);
+        return;
+      }
       setErrorMessage("Could not verify payment status. If money was deducted, your order will be confirmed automatically.");
     } finally {
-      setVerifyingPayment(false);
-      setLoading(false);
+      if (attempt >= 3) {
+        setVerifyingPayment(false);
+        setLoading(false);
+      }
     }
   };
 
-  // Check if returning from Cashfree / Settler redirect with ?cf_order_id= or ?order_id=
+  // Check if returning from Cashfree / Settler redirect with ?cf_order_id= or ?order_id= or ?paid=true
   useEffect(() => {
-    const cfOrderId = searchParams.get("cf_order_id") || searchParams.get("order_id");
-    if (cfOrderId && !orderComplete && !verifyingPayment) {
-      verifyCashfreeOrder(cfOrderId);
+    let targetOrder = searchParams.get("cf_order_id") || searchParams.get("order_id");
+    const isPaid = searchParams.get("paid") === "true";
+
+    // If redirected with ?paid=true but order id in query was omitted, fallback to localStorage last order
+    if (!targetOrder && isPaid && typeof window !== "undefined") {
+      targetOrder = localStorage.getItem("zupe_last_order_id");
+    }
+
+    if (targetOrder && !orderComplete && !verifyingPayment) {
+      verifyCashfreeOrder(targetOrder);
     }
   }, [searchParams]);
 
