@@ -89,7 +89,7 @@ export const siteConfig: SiteConfig = {
   faviconUrl: process.env.NEXT_PUBLIC_FAVICON_URL || "/favicon.png",
 
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || `support@${domainHost}`,
-  supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE || "+91 73567 65036",
+  supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE || "+91 6238 165 935",
   whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916238165935",
   whatsappWebhookVerifyToken:
     process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || `${siteSlug}_wa_secret_2026`,

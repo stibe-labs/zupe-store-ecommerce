@@ -29,6 +29,7 @@
     "NEXT_PUBLIC_SITE_URL": "https://turkiyejam.com",
     "NEXT_PUBLIC_BASE_URL": "https://turkiyejam.com",
     "STORE_BASE_URL": "https://turkiyejam.com",
+    "NEXT_PUBLIC_SUPPORT_PHONE": "+91 6238 165 935",
     "SMTP_HOST": "mail.stibe.in",
     "SMTP_PORT": "465",
     "SMTP_USER": "support@turkiyejam.com",
