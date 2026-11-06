@@ -1,0 +1,277 @@
+import { NextRequest, NextResponse } from "next/server";
+import { executeD1Query } from "@/lib/d1";
+import { getERPOrders, getExpenses, addExpense } from "@/lib/erpStore";
+
+export const dynamic = "force-dynamic";
+
+interface MetaConfig {
+  accountId: string;
+  token: string;
+  pixelId: string;
+  testEventCode?: string;
+  isActive: boolean;
+  lastSyncedAt?: string;
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    // 1. Fetch Meta Integration Config from D1
+    let config: MetaConfig = {
+      accountId: "act_109283746552",
+      token: "",
+      pixelId: "982736451029384",
+      testEventCode: "TEST84920",
+      isActive: true,
+      lastSyncedAt: "",
+    };
+
+    try {
+      const rows = await executeD1Query<any>(
+        "SELECT config_data, is_active, last_synced_at FROM integrations_config WHERE provider = 'meta'"
+      );
+      if (rows && rows.length > 0 && rows[0].config_data) {
+        const parsed = JSON.parse(rows[0].config_data);
+        config = {
+          accountId: parsed.accountId || config.accountId,
+          token: parsed.token || "",
+          pixelId: parsed.pixelId || config.pixelId,
+          testEventCode: parsed.testEventCode || config.testEventCode,
+          isActive: Boolean(rows[0].is_active),
+          lastSyncedAt: rows[0].last_synced_at || parsed.lastSyncedAt || "",
+        };
+      }
+    } catch (d1Err) {
+      console.warn("Failed to fetch meta config from D1:", d1Err);
+    }
+
+    // 2. Fetch Ad Spend rows from meta_ad_spend
+    let campaigns: any[] = [];
+    try {
+      const campRows = await executeD1Query<any>(
+        "SELECT * FROM meta_ad_spend ORDER BY date DESC, spend DESC"
+      );
+      if (campRows && campRows.length > 0) {
+        campaigns = campRows;
+      }
+    } catch (cErr) {
+      console.warn("Failed to fetch meta_ad_spend:", cErr);
+    }
+
+    // 3. Compute Real Blended Ad Performance & ROAS
+    const orders = await getERPOrders();
+    const expenses = await getExpenses();
+
+    const deliveredOrders = orders.filter((o) => o.delivery_status === "Delivered");
+    const deliveredRevenue = deliveredOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+    const totalDispatched = orders.filter((o) => o.status !== "Cancelled");
+    const totalOrdersCount = orders.length;
+
+    // Ad spend from meta_ad_spend + expenses category 'Meta Ads'
+    const totalMetaSpend = campaigns.length > 0
+      ? campaigns.reduce((sum, c) => sum + (Number(c.spend) || 0), 0)
+      : expenses.filter((e) => e.category === "Meta Ads").reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+    const totalProductCost = deliveredOrders.reduce((sum, o) => sum + (Number(o.product_cost) || 0), 0);
+    const totalShipping = totalDispatched.reduce((sum, o) => sum + (Number(o.shipping_cost) || 0), 0);
+    const totalRto = orders.reduce((sum, o) => sum + (Number(o.rto_shipping_charge) || 0), 0);
+    const otherExpenses = expenses.filter((e) => e.category !== "Meta Ads").reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+    const realizedNetProfit = deliveredRevenue - totalProductCost - totalShipping - totalRto - totalMetaSpend - otherExpenses;
+
+    // Distinct customer count
+    const uniquePhones = new Set(orders.map((o) => (o.customer_phone || "").replace(/\D/g, "")).filter(Boolean));
+    const customerCount = Math.max(1, uniquePhones.size);
+
+    const blendedRoas = totalMetaSpend > 0 ? Number((deliveredRevenue / totalMetaSpend).toFixed(2)) : 0;
+    const cac = totalMetaSpend > 0 ? Math.round(totalMetaSpend / customerCount) : 0;
+    const cpa = totalOrdersCount > 0 ? Math.round(totalMetaSpend / totalOrdersCount) : 0;
+    const poas = totalMetaSpend > 0 ? Number((realizedNetProfit / totalMetaSpend).toFixed(2)) : 0;
+
+    const totalImpressions = campaigns.reduce((sum, c) => sum + (Number(c.impressions) || 0), 0);
+    const totalClicks = campaigns.reduce((sum, c) => sum + (Number(c.clicks) || 0), 0);
+    const avgCpc = totalClicks > 0 ? Number((totalMetaSpend / totalClicks).toFixed(2)) : 0;
+    const avgCtr = totalImpressions > 0 ? Number(((totalClicks / totalImpressions) * 100).toFixed(2)) : 0;
+
+    return NextResponse.json({
+      success: true,
+      config: {
+        accountId: config.accountId,
+        pixelId: config.pixelId,
+        testEventCode: config.testEventCode,
+        isActive: config.isActive,
+        lastSyncedAt: config.lastSyncedAt,
+        hasToken: Boolean(config.token && config.token.length > 5),
+      },
+      metrics: {
+        totalMetaSpend,
+        deliveredRevenue,
+        realizedNetProfit,
+        blendedRoas,
+        cac,
+        cpa,
+        poas,
+        totalImpressions,
+        totalClicks,
+        avgCpc,
+        avgCtr,
+        totalOrdersCount,
+      },
+      campaigns,
+    });
+  } catch (err: any) {
+    console.error("Meta CRM API GET error:", err);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { action } = body;
+
+    // 1. SAVE CONFIGURATION
+    if (action === "save_config") {
+      const { accountId, token, pixelId, testEventCode, isActive } = body;
+
+      const cleanAccountId = (accountId || "").trim();
+      const cleanToken = (token || "").trim();
+      const cleanPixelId = (pixelId || "").trim();
+      const cleanTestEventCode = (testEventCode || "").trim();
+
+      // Retrieve existing token if placeholder/empty was passed
+      let effectiveToken = cleanToken;
+      if (!effectiveToken || effectiveToken.includes("...")) {
+        const existing = await executeD1Query<any>(
+          "SELECT config_data FROM integrations_config WHERE provider = 'meta'"
+        );
+        if (existing && existing.length > 0 && existing[0].config_data) {
+          const parsed = JSON.parse(existing[0].config_data);
+          effectiveToken = parsed.token || "";
+        }
+      }
+
+      const configData = JSON.stringify({
+        accountId: cleanAccountId,
+        token: effectiveToken,
+        pixelId: cleanPixelId,
+        testEventCode: cleanTestEventCode,
+        isActive: isActive !== false,
+        lastSyncedAt: new Date().toISOString(),
+      });
+
+      await executeD1Query(
+        `INSERT INTO integrations_config (provider, config_data, is_active, updated_at)
+         VALUES ('meta', ?, ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(provider) DO UPDATE SET
+           config_data = excluded.config_data,
+           is_active = excluded.is_active,
+           updated_at = CURRENT_TIMESTAMP`,
+        [configData, isActive !== false ? 1 : 0]
+      );
+
+      return NextResponse.json({
+        success: true,
+        message: "Meta integration configuration saved successfully.",
+      });
+    }
+
+    // 2. TEST CONNECTION HANDSHAKE
+    if (action === "test_connection") {
+      const { accountId, token } = body;
+      const cleanAccount = (accountId || "").replace(/^act_/, "").trim();
+
+      if (!cleanAccount) {
+        return NextResponse.json({
+          success: false,
+          message: "Please provide a valid Meta Ad Account ID (e.g. act_109283746552).",
+        });
+      }
+
+      if (!token || token.length < 10) {
+        return NextResponse.json({
+          success: false,
+          message: "Valid Meta System User or Marketing API token is required.",
+        });
+      }
+
+      try {
+        // Handshake test against Meta Graph API v21.0
+        const metaRes = await fetch(
+          `https://graph.facebook.com/v21.0/act_${cleanAccount}?fields=name,account_status,currency,amount_spent&access_token=${encodeURIComponent(token)}`
+        );
+        const metaData = await metaRes.json();
+
+        if (metaData.error) {
+          return NextResponse.json({
+            success: false,
+            message: `Meta API Error: ${metaData.error.message || "Invalid credentials or token expired."}`,
+          });
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: `Connected successfully to Meta Account: "${metaData.name || cleanAccount}" (${metaData.currency || "INR"}). Ad spend active.`,
+          accountDetails: metaData,
+        });
+      } catch (handshakeErr: any) {
+        return NextResponse.json({
+          success: false,
+          message: `Network error connecting to Meta Graph API: ${handshakeErr.message}`,
+        });
+      }
+    }
+
+    // 3. LOG DAILY AD SPEND (Manual / Direct entry)
+    if (action === "log_spend") {
+      const { date, campaignName, spend, impressions, clicks, purchases, purchaseValue } = body;
+
+      if (!date || !campaignName || !spend || Number(spend) <= 0) {
+        return NextResponse.json({
+          success: false,
+          error: "Date, Campaign Name, and a valid Ad Spend amount are required.",
+        }, { status: 400 });
+      }
+
+      const numSpend = Number(spend);
+      const numImpr = Number(impressions || 0);
+      const numClicks = Number(clicks || 0);
+      const numPurch = Number(purchases || 0);
+      const numPurchVal = Number(purchaseValue || 0);
+
+      const cpc = numClicks > 0 ? Number((numSpend / numClicks).toFixed(2)) : 0;
+      const ctr = numImpr > 0 ? Number(((numClicks / numImpr) * 100).toFixed(2)) : 0;
+      const roas = numSpend > 0 && numPurchVal > 0 ? Number((numPurchVal / numSpend).toFixed(2)) : 0;
+
+      const spendId = `meta_spend_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+      // Insert into meta_ad_spend
+      await executeD1Query(
+        `INSERT INTO meta_ad_spend (
+          id, date, campaign_name, spend, impressions, clicks, cpc, ctr, purchases, purchase_value, roas, synced_from, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'manual', CURRENT_TIMESTAMP)`,
+        [spendId, date, campaignName.trim(), numSpend, numImpr, numClicks, cpc, ctr, numPurch, numPurchVal, roas]
+      );
+
+      // Sync into expenses table under category 'Meta Ads' so ERP P&L recalculates accurately
+      await addExpense({
+        category: "Meta Ads",
+        amount: numSpend,
+        date,
+        vendor: "Meta Platforms (Facebook & Instagram Ads)",
+        reference_no: `META-${date}-${campaignName.slice(0, 10).replace(/[^a-zA-Z0-9]/g, "")}`,
+        notes: `Ad spend logged via CRM for campaign: ${campaignName}`,
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `₹${numSpend.toLocaleString()} ad spend logged and synchronized with ERP expense ledger!`,
+      });
+    }
+
+    return NextResponse.json({ success: false, error: "Invalid action specified." }, { status: 400 });
+  } catch (err: any) {
+    console.error("Meta CRM API POST error:", err);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+

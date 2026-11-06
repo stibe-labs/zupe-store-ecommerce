@@ -26,6 +26,7 @@ import {
   Tag,
   Calculator,
   MessageSquare,
+  Target,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -87,6 +88,14 @@ export default function AdminSidebar({
       href: "/admin/orders",
       icon: ShoppingBag,
       badge: ordersCount > 0 ? String(ordersCount) : undefined,
+    },
+    {
+      name: "CRM & Meta Ads",
+      href: "/admin/crm",
+      icon: Target,
+      badge: "Growth",
+      badgeColor: "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30",
+      highlight: true,
     },
     {
       name: "WhatsApp",

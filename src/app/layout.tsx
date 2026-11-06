@@ -10,7 +10,9 @@ import { SearchModal } from "@/components/SearchModal";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { WhatsAppFloatingButton } from "@/components/WhatsAppFloatingButton";
 import { AbandonedCartAutoChecker } from "@/components/AbandonedCartAutoChecker";
+import { MetaPixelTracker } from "@/components/MetaPixelTracker";
 import { siteConfig } from "@/config/siteConfig";
+import React, { Suspense } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -145,6 +147,9 @@ export default function RootLayout({
                   <SearchModal />
                   <WhatsAppFloatingButton />
                   <AbandonedCartAutoChecker />
+                  <Suspense fallback={null}>
+                    <MetaPixelTracker />
+                  </Suspense>
                 </SmoothScrollProvider>
               </SearchProvider>
             </CartProvider>
