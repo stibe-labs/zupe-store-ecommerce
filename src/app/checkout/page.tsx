@@ -888,63 +888,6 @@ function CheckoutContent() {
     return () => clearTimeout(timer);
   }, [phone, name, email, address, city, state, postalCode, cart, grandTotal, orderComplete, isCodSwitchMode]);
 
-  // Checkout Page Back-Out Capture (Detects tab-switch, back-button, navigation, or page close)
-  useEffect(() => {
-    if (orderComplete || isCodSwitchMode) return;
-
-    const captureBackOut = () => {
-      const clean = cleanPhoneDigits(phone);
-      if (clean.length !== 10 || cart.length === 0 || orderComplete) return;
-
-      const payload = JSON.stringify({
-        customer_name: name.trim() || undefined,
-        customer_phone: clean,
-        customer_email: email.trim() || undefined,
-        shipping_address: address.trim() || undefined,
-        city: state ? `${city.trim()}, ${state.trim()}` : city.trim() || undefined,
-        postal_code: postalCode.trim() || undefined,
-        total_amount: grandTotal,
-        items: cart.map((c) => ({
-          id: c.id,
-          name: c.name,
-          price: c.price,
-          quantity: c.quantity,
-          poster_image: c.poster_image,
-        })),
-        is_backout: true,
-        source: "checkout",
-      });
-
-      if (typeof navigator !== "undefined" && navigator.sendBeacon) {
-        const blob = new Blob([payload], { type: "application/json" });
-        navigator.sendBeacon("/api/checkout/abandoned", blob);
-      } else {
-        fetch("/api/checkout/abandoned", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: payload,
-          keepalive: true,
-        }).catch(() => {});
-      }
-    };
-
-    const handleVisibility = () => {
-      if (document.visibilityState === "hidden") {
-        captureBackOut();
-      }
-    };
-
-    window.addEventListener("beforeunload", captureBackOut);
-    document.addEventListener("visibilitychange", handleVisibility);
-
-    return () => {
-      window.removeEventListener("beforeunload", captureBackOut);
-      document.removeEventListener("visibilitychange", handleVisibility);
-      if (!orderComplete) {
-        captureBackOut();
-      }
-    };
-  }, [phone, name, email, address, city, state, postalCode, cart, grandTotal, orderComplete, isCodSwitchMode]);
 
   const syncAddressAfterOrder = async () => {
     try {
