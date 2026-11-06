@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     } catch {}
 
     // Fallback to environment variables if present
-    pixelId = pixelId || process.env.META_PIXEL_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID || "982736451029384";
+    pixelId = pixelId || process.env.META_PIXEL_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID || "";
     metaToken = metaToken || process.env.META_ACCESS_TOKEN || "";
 
     // 2. Format & Hash User Data for Privacy Compliance

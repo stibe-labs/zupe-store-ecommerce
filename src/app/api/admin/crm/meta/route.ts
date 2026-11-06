@@ -17,11 +17,11 @@ export async function GET(req: NextRequest) {
   try {
     // 1. Fetch Meta Integration Config from D1
     let config: MetaConfig = {
-      accountId: "act_109283746552",
+      accountId: "",
       token: "",
-      pixelId: "982736451029384",
-      testEventCode: "TEST84920",
-      isActive: true,
+      pixelId: "",
+      testEventCode: "",
+      isActive: false,
       lastSyncedAt: "",
     };
 

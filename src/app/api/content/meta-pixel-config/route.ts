@@ -5,8 +5,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
-    let pixelId = process.env.META_PIXEL_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID || "982736451029384";
-    let isActive = true;
+    let pixelId = process.env.META_PIXEL_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID || "";
+    let isActive = false;
 
     try {
       const rows = await executeD1Query<any>(

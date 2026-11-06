@@ -205,6 +205,38 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // 3. Live Real-Time Ingestion into CRM Leads
+    try {
+      const clean10 = digits.slice(-10);
+      const leadId = `lead_${clean10}`;
+      const leadTemp = amount >= 1500 ? "hot" : amount >= 899 ? "warm" : "cold";
+      const itemNames = Array.isArray(items) ? items.map((i: any) => i.name || "Turkiye Jam").join(", ") : "Turkiye Jam";
+      const leadNotes = `Real checkout session. Cart: ₹${amount} (${itemNames}). Recovery: ${recoveryToken}`;
+      await executeD1Query(
+        `INSERT INTO crm_leads (
+           id, name, phone, email, source, status, temperature, potential_value, tags, notes, created_at, updated_at
+         ) VALUES (?, ?, ?, ?, 'abandoned_checkout', 'new', ?, ?, '["abandoned_cart", "live_visitor"]', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+         ON CONFLICT(id) DO UPDATE SET
+           name = COALESCE(excluded.name, crm_leads.name),
+           email = COALESCE(excluded.email, crm_leads.email),
+           potential_value = excluded.potential_value,
+           temperature = excluded.temperature,
+           notes = excluded.notes,
+           updated_at = CURRENT_TIMESTAMP`,
+        [
+          leadId,
+          customer_name || "Storefront Visitor",
+          `+91 ${clean10}`,
+          customer_email || null,
+          leadTemp,
+          amount,
+          leadNotes,
+        ]
+      );
+    } catch (crmLeadErr) {
+      console.warn("Live CRM lead sync warning:", crmLeadErr);
+    }
+
     return NextResponse.json({
       success: true,
       action: "created",

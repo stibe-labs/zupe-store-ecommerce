@@ -64,11 +64,11 @@ export default function AdminCRMPage() {
 
   // Meta & Ad Spend State
   const [metaConfig, setMetaConfig] = useState({
-    accountId: "act_109283746552",
+    accountId: "",
     token: "",
-    pixelId: "982736451029384",
-    testEventCode: "TEST84920",
-    isActive: true,
+    pixelId: "",
+    testEventCode: "",
+    isActive: false,
     lastSyncedAt: "",
     hasToken: false,
   });
@@ -420,7 +420,7 @@ export default function AdminCRMPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           eventName: "Purchase",
-          testEventCode: metaConfig.testEventCode || "TEST84920",
+          testEventCode: metaConfig.testEventCode || undefined,
           eventSourceUrl: "https://turkiyejam.com/checkout",
           userData: {
             email: "test.customer@turkiyejam.com",
@@ -1205,7 +1205,7 @@ export default function AdminCRMPage() {
                       type="text"
                       value={metaConfig.accountId}
                       onChange={(e) => setMetaConfig({ ...metaConfig, accountId: e.target.value })}
-                      placeholder="act_109283746552"
+                      placeholder="e.g. act_1234567890"
                       className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
                     />
                   </div>
@@ -1232,7 +1232,7 @@ export default function AdminCRMPage() {
                         type="text"
                         value={metaConfig.pixelId}
                         onChange={(e) => setMetaConfig({ ...metaConfig, pixelId: e.target.value })}
-                        placeholder="982736451029384"
+                        placeholder="e.g. 123456789012345"
                         className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
                       />
                       <button

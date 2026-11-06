@@ -56,9 +56,9 @@ export function MetaPixelTracker() {
       try {
         const res = await fetch("/api/content/meta-pixel-config");
         const data = await res.json();
-        const pixelId = data?.pixelId || "982736451029384";
+        const pixelId = data?.pixelId || "";
 
-        if (!data?.isActive && data?.isActive !== undefined) return;
+        if (!pixelId || (!data?.isActive && data?.isActive !== undefined)) return;
 
         if (typeof window !== "undefined" && !window.fbq) {
           /* eslint-disable */
