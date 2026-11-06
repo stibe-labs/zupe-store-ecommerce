@@ -23,7 +23,21 @@ export async function processOverdueAbandonedCarts(): Promise<number> {
     );
 
     if (overdue && overdue.length > 0) {
+      const processedPhones = new Set<string>();
       for (const row of overdue) {
+        const cleanPhone = (row.customer_phone || "").replace(/\D/g, "").slice(-10);
+        if (!cleanPhone) continue;
+
+        if (processedPhones.has(cleanPhone)) {
+          // Prevent multiple recovery messages to the same customer: mark duplicate as expired
+          await executeD1Query(
+            `UPDATE abandoned_checkouts SET status = 'expired', whatsapp_sent_count = 1 WHERE id = ?`,
+            [row.id]
+          ).catch(() => {});
+          continue;
+        }
+        processedPhones.add(cleanPhone);
+
         let items = row.items;
         if (typeof items === "string") {
           try {
@@ -51,12 +65,13 @@ export async function processOverdueAbandonedCarts(): Promise<number> {
 
         if (sent) {
           dispatchedCount++;
+          // Mark all carts for this phone number so duplicate reminders are never dispatched
           await executeD1Query(
             `UPDATE abandoned_checkouts 
              SET whatsapp_sent_count = whatsapp_sent_count + 1, 
                  last_whatsapp_sent_at = CURRENT_TIMESTAMP 
-             WHERE id = ?`,
-            [row.id]
+             WHERE customer_phone = ? OR customer_phone LIKE ?`,
+            [row.customer_phone, `%${cleanPhone}`]
           );
         }
       }

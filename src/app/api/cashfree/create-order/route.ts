@@ -20,11 +20,18 @@ export async function POST(req: NextRequest) {
       promo_code,
       discount_amount,
       gst_amount,
+      is_cod_advance,
+      total_amount,
+      balance_due,
+      payment_method,
     } = body;
 
-    if (!amount || typeof amount !== "number" || amount <= 0) {
+    const isCod = Boolean(is_cod_advance);
+    const chargeAmount = isCod ? 49 : Math.round(Number(amount));
+
+    if (!chargeAmount || typeof chargeAmount !== "number" || chargeAmount <= 0) {
       return NextResponse.json(
-        { success: false, error: "Invalid order amount specified" },
+        { success: false, error: "Invalid payment charge amount specified" },
         { status: 400 }
       );
     }
@@ -59,6 +66,15 @@ export async function POST(req: NextRequest) {
     const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const confirmToken = `tok_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`;
 
+    const orderTotalAmount = isCod
+      ? Math.round(Number(total_amount || (amount + (balance_due || 0))))
+      : Math.round(Number(total_amount || amount));
+    const orderBalanceDue = isCod
+      ? Math.round(Number(balance_due !== undefined ? balance_due : (orderTotalAmount - 49)))
+      : 0;
+    const orderAdvancePaid = isCod ? 49 : chargeAmount;
+    const orderPaymentMethod = isCod ? "Cash on Delivery" : "Online Payment";
+
     // 2. Pre-create order in ERP and D1 with Pending payment status
     const newOrder: OrderRecord = {
       id: orderId,
@@ -69,11 +85,14 @@ export async function POST(req: NextRequest) {
       shipping_address,
       city: city || "",
       postal_code: postal_code || "",
-      total_amount: Math.round(Number(amount)),
+      total_amount: orderTotalAmount,
       discount_amount: Number(discount_amount || 0),
-      payment_method: "Online Payment",
+      payment_method: orderPaymentMethod,
       payment_status: "pending",
       order_status: "processing",
+      advance_paid: orderAdvancePaid,
+      balance_due: orderBalanceDue,
+      is_cod_partial: isCod ? 1 : 0,
       whatsapp_confirm_status: "pending_whatsapp",
       whatsapp_confirm_token: confirmToken,
       whatsapp_token_used: false,
@@ -87,7 +106,7 @@ export async function POST(req: NextRequest) {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://turkiyejam.com";
     const cfOrder = await createCashfreeOrder({
       orderId,
-      amount: Math.round(Number(amount)),
+      amount: chargeAmount,
       customerName: customer_name,
       customerEmail: customer_email || "support@turkiyejam.com",
       customerPhone: cleanPhone || "9876543210",
@@ -99,6 +118,10 @@ export async function POST(req: NextRequest) {
       orderId,
       paymentSessionId: cfOrder.payment_session_id,
       amount: cfOrder.order_amount,
+      isCod,
+      advancePaid: orderAdvancePaid,
+      balanceDue: orderBalanceDue,
+      totalAmount: orderTotalAmount,
     });
   } catch (err: any) {
     console.error("Cashfree create-order error:", err);

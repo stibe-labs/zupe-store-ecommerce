@@ -47,29 +47,58 @@ export async function POST(req: NextRequest) {
       } catch {}
     }
 
+    const isCodOrder =
+      order?.payment_method?.includes("COD") ||
+      order?.payment_method?.toLowerCase().includes("cash on delivery") ||
+      Boolean(order?.is_cod_partial) ||
+      (Number(order?.advance_paid) > 0 && Number(order?.advance_paid) < Number(order?.total_amount));
+
+    const advancePaid = isCodOrder
+      ? (Number(order?.advance_paid) || 49)
+      : (Number(order?.total_amount) || verification.amount);
+    const balanceDue = isCodOrder
+      ? (order?.balance_due !== undefined ? Number(order.balance_due) : Math.max(0, Number(order?.total_amount || 0) - advancePaid))
+      : 0;
+    const effectiveTotal = Number(order?.total_amount) || (isCodOrder ? (advancePaid + balanceDue) : verification.amount);
+
     // 3. Update in ERP Store (handles memory + D1 update)
     await updateERPOrder(orderId, {
-      payment_method: "Prepaid",
-      payment_status: "Completed",
+      payment_method: isCodOrder ? "Cash on Delivery" : "Prepaid",
+      payment_status: isCodOrder ? "Pending" : "Completed",
+      advance_paid: advancePaid,
+      balance_due: balanceDue,
+      is_cod_partial: isCodOrder ? 1 : 0,
       whatsapp_confirm_status: "confirmed",
       delivery_status: "Processing",
       status: "Processing",
-      remittance_status: "Settled",
+      remittance_status: isCodOrder ? "Pending" : "Settled",
     });
 
     // 4. Update in D1 orders table
     try {
       await executeD1Query(
         `UPDATE orders
-         SET payment_method = 'Prepaid',
-             payment_status = 'Completed',
+         SET payment_method = ?,
+             payment_status = ?,
+             advance_paid = ?,
+             balance_due = ?,
+             is_cod_partial = ?,
              whatsapp_confirm_status = 'confirmed',
              whatsapp_token_used = 1,
              delivery_status = 'Processing',
              status = 'Processing',
-             remittance_status = 'Settled'
+             remittance_status = ?
          WHERE id = ? OR shopify_order_id = ?`,
-        [orderId, orderId]
+        [
+          isCodOrder ? "Cash on Delivery" : "Prepaid",
+          isCodOrder ? "Pending" : "Completed",
+          advancePaid,
+          balanceDue,
+          isCodOrder ? 1 : 0,
+          isCodOrder ? "Pending" : "Settled",
+          orderId,
+          orderId,
+        ]
       );
     } catch (d1Err) {
       console.warn("D1 update order after Cashfree payment warning:", d1Err);
@@ -78,10 +107,13 @@ export async function POST(req: NextRequest) {
     // 5. Update local storefront store
     try {
       updateStorefrontOrder(orderId, {
-        payment_method: "Prepaid",
-        payment_status: "paid",
+        payment_method: isCodOrder ? "Cash on Delivery" : "Prepaid",
+        payment_status: isCodOrder ? "pending" : "paid",
         order_status: "processing",
         whatsapp_confirm_status: "confirmed",
+        advance_paid: advancePaid,
+        balance_due: balanceDue,
+        is_cod_partial: isCodOrder ? 1 : 0,
       });
     } catch {}
 
@@ -96,15 +128,17 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 6. Dispatch Official WhatsApp Confirmation (Prepaid Template)
+    // 6. Dispatch Official WhatsApp Confirmation
     if (custPhone) {
       try {
         await sendOrderConfirmationWhatsApp({
           customerName: custName,
           customerPhone: custPhone,
           orderId: order?.shopify_order_id || orderId,
-          totalAmount: Number(order?.total_amount || verification.amount || 0),
-          paymentMethod: "prepaid",
+          totalAmount: effectiveTotal,
+          paymentMethod: isCodOrder ? "cod" : "prepaid",
+          advancePaid: isCodOrder ? advancePaid : undefined,
+          balanceDue: isCodOrder ? balanceDue : undefined,
           items: rawItems.map((it: any) => ({
             name: it.product_name || it.name || "Turkiye Jam",
             quantity: Number(it.quantity || 1),
@@ -114,6 +148,17 @@ export async function POST(req: NextRequest) {
       } catch (waErr) {
         console.warn("Cashfree WhatsApp confirmation dispatch error:", waErr);
       }
+
+      // Mark abandoned checkout as recovered
+      try {
+        const cleanDigits = custPhone.replace(/\D/g, "").slice(-10);
+        if (cleanDigits) {
+          await executeD1Query(
+            "UPDATE abandoned_checkouts SET status = 'recovered', recovered_order_id = ? WHERE customer_phone LIKE ? AND status = 'abandoned'",
+            [orderId, `%${cleanDigits}`]
+          );
+        }
+      } catch {}
     }
 
     // 7. Dispatch Email Confirmation if customer email provided
@@ -128,10 +173,10 @@ export async function POST(req: NextRequest) {
           shippingAddress: order?.shipping_address || "",
           city: order?.city || "",
           postalCode: order?.postal_code || "",
-          totalAmount: Number(order?.total_amount || verification.amount || 0),
+          totalAmount: effectiveTotal,
           discountAmount: Number(order?.discount_amount || 0),
-          paymentMethod: "Online Payment (Cashfree)",
-          paymentStatus: "paid",
+          paymentMethod: isCodOrder ? "Cash on Delivery (₹49 Advance Paid)" : "Online Payment (Cashfree)",
+          paymentStatus: isCodOrder ? "pending" : "paid",
           items: rawItems,
           createdAt: order?.created_at || new Date().toISOString(),
         });
@@ -145,8 +190,14 @@ export async function POST(req: NextRequest) {
       paid: true,
       orderId,
       paymentId,
+      isCodPartial: isCodOrder,
+      advancePaid,
+      balanceDue,
+      totalAmount: effectiveTotal,
       amount: verification.amount,
-      message: "Cashfree payment verified and order confirmed successfully",
+      message: isCodOrder
+        ? "Cash on Delivery courier advance verified and order confirmed successfully"
+        : "Cashfree payment verified and order confirmed successfully",
     });
   } catch (err: any) {
     console.error("Cashfree verify-payment error:", err);

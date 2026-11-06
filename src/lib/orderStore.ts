@@ -37,6 +37,9 @@ export interface OrderRecord {
   confirmation_email_sent?: boolean;
   razorpay_payment_id?: string;
   razorpay_order_id?: string;
+  advance_paid?: number;
+  balance_due?: number;
+  is_cod_partial?: boolean | number;
   items: OrderItem[];
   created_at: string;
 }
@@ -53,6 +56,9 @@ async function ensureOrderSchema(): Promise<void> {
     await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_confirm_token TEXT`).catch(() => {});
     await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_token_used INTEGER DEFAULT 0`).catch(() => {});
     await executeD1Query(`ALTER TABLE orders ADD COLUMN confirmation_email_sent INTEGER DEFAULT 0`).catch(() => {});
+    await executeD1Query(`ALTER TABLE orders ADD COLUMN advance_paid REAL DEFAULT 0`).catch(() => {});
+    await executeD1Query(`ALTER TABLE orders ADD COLUMN balance_due REAL DEFAULT 0`).catch(() => {});
+    await executeD1Query(`ALTER TABLE orders ADD COLUMN is_cod_partial INTEGER DEFAULT 0`).catch(() => {});
   } catch (err) {
     // Non-fatal if columns already exist or D1 offline
   }
@@ -96,7 +102,10 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
         offer_label: it.offer_label,
       })),
       created_at: order.created_at,
-    });
+      advance_paid: order.advance_paid || 0,
+      balance_due: order.balance_due || 0,
+      is_cod_partial: order.is_cod_partial ? 1 : 0,
+    } as any);
     if (erpOrder && erpOrder.shopify_order_id) {
       (order as any).shopify_order_id = erpOrder.shopify_order_id;
     }
@@ -113,6 +122,9 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
            whatsapp_confirm_token = ?, 
            whatsapp_token_used = ?,
            confirmation_email_sent = ?,
+           advance_paid = COALESCE(?, advance_paid),
+           balance_due = COALESCE(?, balance_due),
+           is_cod_partial = COALESCE(?, is_cod_partial),
            razorpay_payment_id = COALESCE(?, razorpay_payment_id),
            razorpay_order_id = COALESCE(?, razorpay_order_id)
        WHERE id = ?`,
@@ -122,6 +134,9 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
         order.whatsapp_confirm_token || null,
         order.whatsapp_token_used ? 1 : 0,
         order.confirmation_email_sent ? 1 : 0,
+        order.advance_paid !== undefined ? order.advance_paid : null,
+        order.balance_due !== undefined ? order.balance_due : null,
+        order.is_cod_partial !== undefined ? (order.is_cod_partial ? 1 : 0) : null,
         (order as any).razorpay_payment_id || null,
         (order as any).razorpay_order_id || null,
         order.id,

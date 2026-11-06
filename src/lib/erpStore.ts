@@ -93,6 +93,9 @@ export interface ERPOrder {
   confirmation_email_sent?: boolean;
   razorpay_payment_id?: string;
   razorpay_order_id?: string;
+  advance_paid?: number;
+  balance_due?: number;
+  is_cod_partial?: boolean | number;
   created_at: string;
   items?: {
     product_name: string;
@@ -923,6 +926,9 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
     whatsapp_token_used: orderData.whatsapp_token_used || false,
     razorpay_payment_id: orderData.razorpay_payment_id || undefined,
     razorpay_order_id: orderData.razorpay_order_id || undefined,
+    advance_paid: Number(orderData.advance_paid || 0),
+    balance_due: Number(orderData.balance_due || 0),
+    is_cod_partial: Boolean(orderData.is_cod_partial) ? 1 : 0,
     created_at: orderData.created_at || new Date().toISOString().replace("T", " ").substring(0, 19),
     items: orderData.items || [],
   };
@@ -938,8 +944,8 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
         courier_partner, delivery_status, ndr_status, rto_status, remittance_status,
         supplier_id, product_cost, rto_shipping_charge, ad_spend_attributed, net_profit, created_at, items,
         whatsapp_confirm_status, whatsapp_confirm_token, whatsapp_token_used,
-        razorpay_payment_id, razorpay_order_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        razorpay_payment_id, razorpay_order_id, advance_paid, balance_due, is_cod_partial
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         newOrder.id,
         newOrder.shopify_order_id,
@@ -972,6 +978,9 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
         newOrder.whatsapp_token_used ? 1 : 0,
         newOrder.razorpay_payment_id || null,
         newOrder.razorpay_order_id || null,
+        newOrder.advance_paid || 0,
+        newOrder.balance_due || 0,
+        newOrder.is_cod_partial ? 1 : 0,
       ]
     );
   } catch (err) {
@@ -1202,6 +1211,18 @@ export async function updateERPOrder(
     if (updates.whatsapp_token_used !== undefined) {
       fieldsToUpdate.push("whatsapp_token_used = ?");
       values.push(updates.whatsapp_token_used ? 1 : 0);
+    }
+    if (updates.advance_paid !== undefined) {
+      fieldsToUpdate.push("advance_paid = ?");
+      values.push(updates.advance_paid);
+    }
+    if (updates.balance_due !== undefined) {
+      fieldsToUpdate.push("balance_due = ?");
+      values.push(updates.balance_due);
+    }
+    if (updates.is_cod_partial !== undefined) {
+      fieldsToUpdate.push("is_cod_partial = ?");
+      values.push(updates.is_cod_partial ? 1 : 0);
     }
 
     if (fieldsToUpdate.length > 0) {

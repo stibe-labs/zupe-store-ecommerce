@@ -30,6 +30,8 @@ export interface OrderConfirmationParams {
   totalAmount: number;
   paymentMethod: "cod" | "prepaid";
   items: Array<{ name: string; quantity: number; price: number }>;
+  advancePaid?: number;
+  balanceDue?: number;
 }
 
 export interface OrderPreConfirmationParams {
@@ -289,6 +291,9 @@ export async function sendOrderConfirmationWhatsApp(
 
   let message: string;
   if (paymentMethod === "cod") {
+    const isPartialCod = Boolean(params.advancePaid && params.advancePaid > 0);
+    const doorstepAmount = params.balanceDue !== undefined ? params.balanceDue : (isPartialCod ? Math.max(0, totalAmount - (params.advancePaid || 49)) : totalAmount);
+
     message =
       "✅ *Order Confirmed — Turkiye Jam!* 🛍️\n\n" +
       "Hi " + firstName + "! Your Cash on Delivery order is confirmed.\n\n" +
@@ -296,7 +301,8 @@ export async function sendOrderConfirmationWhatsApp(
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
       "💰 *Price Breakdown:*\n" +
       "  • Total Amount: Rs " + totalAmount.toLocaleString("en-IN") + "\n" +
-      "  • *Payable on Delivery: Rs " + totalAmount.toLocaleString("en-IN") + " (Cash / UPI)*\n\n" +
+      (isPartialCod ? "  • Online Advance Paid: Rs " + (params.advancePaid || 49).toLocaleString("en-IN") + " (via Cashfree)\n" : "") +
+      "  • *Payable on Delivery: Rs " + doorstepAmount.toLocaleString("en-IN") + " (Cash / UPI)*\n\n" +
       "🚚 *Estimated Delivery:* 3-5 Business Days\n\n" +
       "📦 *Track Your Order:*\n" +
       trackUrl + "\n\n" +
