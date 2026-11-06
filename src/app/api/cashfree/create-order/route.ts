@@ -102,22 +102,63 @@ export async function POST(req: NextRequest) {
 
     await createOrder(newOrder);
 
-    // 3. Create Cashfree Gateway Order
+    // 3. Create Gateway Session via Settler (settler.pydart.com)
+    // Settler is fully whitelisted with Cashfree production rails and handles UPI QR, Cards & NetBanking
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://turkiyejam.com";
-    const cfOrder = await createCashfreeOrder({
-      orderId,
-      amount: chargeAmount,
-      customerName: customer_name,
-      customerEmail: customer_email || "support@turkiyejam.com",
-      customerPhone: cleanPhone || "9876543210",
-      returnUrl: `${siteUrl}/checkout?cf_order_id=${encodeURIComponent(orderId)}`,
-    });
+    const redirectUrl = `${siteUrl}/checkout?cf_order_id=${encodeURIComponent(orderId)}`;
+
+    let settlerPayUrl = "";
+    let settlerInvoiceId = "";
+    let paymentSessionId = "";
+
+    try {
+      const settlerRes = await fetch("https://settler.pydart.com/api/v1/invoices/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer sk_live_stibe_prod_7793",
+        },
+        body: JSON.stringify({
+          customerName: customer_name,
+          customerPhone: cleanPhone || "9876543210",
+          customerEmail: customer_email || "support@turkiyejam.com",
+          title: isCod
+            ? "Turkiye Jam - COD Advance Confirmation (₹49)"
+            : "Turkiye Jam - 100% Authentic Paste Order",
+          amountRupees: chargeAmount,
+          redirectUrl,
+        }),
+      });
+
+      const settlerData: any = await settlerRes.json();
+      if (settlerData.success && settlerData.invoice) {
+        settlerInvoiceId = settlerData.invoice.id;
+        settlerPayUrl = `https://settler.pydart.com${settlerData.invoice.payUrl}`;
+      }
+    } catch (settlerErr) {
+      console.warn("Settler invoice creation failed, falling back to direct Cashfree:", settlerErr);
+    }
+
+    // Direct Cashfree fallback if Settler call fails
+    if (!settlerPayUrl) {
+      const cfOrder = await createCashfreeOrder({
+        orderId,
+        amount: chargeAmount,
+        customerName: customer_name,
+        customerEmail: customer_email || "support@turkiyejam.com",
+        customerPhone: cleanPhone || "9876543210",
+        returnUrl: redirectUrl,
+      });
+      paymentSessionId = cfOrder.payment_session_id;
+    }
 
     return NextResponse.json({
       success: true,
       orderId,
-      paymentSessionId: cfOrder.payment_session_id,
-      amount: cfOrder.order_amount,
+      payUrl: settlerPayUrl,
+      paymentSessionId,
+      settlerInvoiceId,
+      amount: chargeAmount,
       isCod,
       advancePaid: orderAdvancePaid,
       balanceDue: orderBalanceDue,

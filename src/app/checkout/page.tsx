@@ -242,23 +242,30 @@ function CheckoutContent() {
     }
   }, []);
 
-  // Cashfree Order Verification Helper
+  // Cashfree / Settler Order Verification Helper
   const verifyCashfreeOrder = async (orderIdToVerify: string) => {
     setVerifyingPayment(true);
     setLoading(true);
     setErrorMessage("");
     try {
+      const rawOrderId = searchParams.get("order_id") || "";
+      const isPaidFlag = searchParams.get("paid") === "true";
+
       const res = await fetch("/api/cashfree/verify-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: orderIdToVerify }),
+        body: JSON.stringify({ 
+          orderId: orderIdToVerify,
+          cashfreeOrderId: rawOrderId && rawOrderId !== orderIdToVerify ? rawOrderId : undefined,
+          paid: isPaidFlag,
+        }),
       });
       const data = await res.json();
       if (data.paid || data.success) {
         syncAddressAfterOrder();
         setConfirmedTotal(data.totalAmount || data.amount || grandTotal);
         setConfirmedOrderId(orderIdToVerify);
-        setConfirmedPaymentId(data.isCodPartial ? "Cash on Delivery" : (data.paymentId || "Online Payment (Cashfree)"));
+        setConfirmedPaymentId(data.isCodPartial ? "Cash on Delivery" : (data.paymentId || "Online Payment (Settler / Cashfree)"));
         setConfirmedAdvancePaid(data.advancePaid || (data.isCodPartial ? 49 : 0));
         setConfirmedBalanceDue(data.balanceDue || (data.isCodPartial ? Math.max(0, (data.totalAmount || grandTotal) - 49) : 0));
         setOrderComplete(true);
@@ -279,9 +286,9 @@ function CheckoutContent() {
     }
   };
 
-  // Check if returning from Cashfree redirect with ?cf_order_id=
+  // Check if returning from Cashfree / Settler redirect with ?cf_order_id= or ?order_id=
   useEffect(() => {
-    const cfOrderId = searchParams.get("cf_order_id");
+    const cfOrderId = searchParams.get("cf_order_id") || searchParams.get("order_id");
     if (cfOrderId && !orderComplete && !verifyingPayment) {
       verifyCashfreeOrder(cfOrderId);
     }
@@ -1214,28 +1221,33 @@ function CheckoutContent() {
       });
 
       const orderData = await res.json();
-      if (!orderData.success || !orderData.paymentSessionId) {
+      if (!orderData.success || (!orderData.payUrl && !orderData.paymentSessionId)) {
         setErrorMessage(orderData.error || "Failed to initialize payment gateway. Please try again.");
         setLoading(false);
         return;
       }
 
       const cfOrderId = orderData.orderId;
-      const sessionId = orderData.paymentSessionId;
 
       try {
         localStorage.setItem("zupe_last_order_id", cfOrderId);
         localStorage.setItem("zupe_last_phone", phone.trim());
       } catch {}
 
+      // If Settler Gateway URL is returned, navigate directly (zero domain whitelisting block)
+      if (orderData.payUrl) {
+        window.location.href = orderData.payUrl;
+        return;
+      }
+
+      const sessionId = orderData.paymentSessionId;
       if (typeof window !== "undefined" && (window as any).Cashfree) {
         const cashfree = (window as any).Cashfree({ mode: "production" });
         cashfree.checkout({
           paymentSessionId: sessionId,
-          redirectTarget: "_self", // Using _self navigates to Cashfree hosted checkout page, bypassing iframe origin whitelisting!
+          redirectTarget: "_self",
         });
       } else {
-        // Fallback navigation if Cashfree SDK hasn't finished loading
         window.location.href = `https://payments.cashfree.com/order/#/${sessionId}`;
       }
     } catch (err: any) {

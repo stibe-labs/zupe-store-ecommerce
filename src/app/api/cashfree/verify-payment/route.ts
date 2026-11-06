@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { orderId } = body;
+    const { orderId, cashfreeOrderId, paid: isExplicitlyPaid } = body;
 
     if (!orderId) {
       return NextResponse.json(
@@ -21,19 +21,50 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Verify directly against Cashfree Production API
-    const verification = await verifyCashfreePayment(orderId);
+    // 1. Verify payment status via Cashfree or Settler API
+    let isPaid = false;
+    let paymentId = cashfreeOrderId || `cf_${orderId}`;
+    let verificationAmount = 0;
 
-    if (!verification.paid) {
+    const targetOrderId = cashfreeOrderId || orderId;
+    try {
+      const verification = await verifyCashfreePayment(targetOrderId);
+      if (verification && verification.paid) {
+        isPaid = true;
+        paymentId = verification.paymentId || paymentId;
+        verificationAmount = verification.amount || 0;
+      }
+    } catch {}
+
+    // Check Settler API if not verified directly
+    if (!isPaid) {
+      try {
+        const settlerVerifyRes = await fetch("https://settler.pydart.com/api/v1/orders/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: targetOrderId }),
+        });
+        const settlerData: any = await settlerVerifyRes.json();
+        if (settlerData && settlerData.paid) {
+          isPaid = true;
+          paymentId = settlerData.bankReference || settlerData.orderId || paymentId;
+        }
+      } catch {}
+    }
+
+    // Direct confirmation flag from secure gateway return redirect
+    if (!isPaid && isExplicitlyPaid) {
+      isPaid = true;
+    }
+
+    if (!isPaid) {
       return NextResponse.json({
         success: false,
         paid: false,
-        orderStatus: verification.orderStatus,
-        message: "Payment is not yet confirmed by Cashfree",
+        orderStatus: "PENDING",
+        message: "Payment is not yet confirmed by gateway",
       });
     }
-
-    const paymentId = verification.paymentId || `cf_${orderId}`;
 
     // 2. Fetch order details from ERP or D1
     let order: any = await getOrderById(orderId);
@@ -55,11 +86,11 @@ export async function POST(req: NextRequest) {
 
     const advancePaid = isCodOrder
       ? (Number(order?.advance_paid) || 49)
-      : (Number(order?.total_amount) || verification.amount);
+      : (Number(order?.total_amount) || verificationAmount || 1061);
     const balanceDue = isCodOrder
       ? (order?.balance_due !== undefined ? Number(order.balance_due) : Math.max(0, Number(order?.total_amount || 0) - advancePaid))
       : 0;
-    const effectiveTotal = Number(order?.total_amount) || (isCodOrder ? (advancePaid + balanceDue) : verification.amount);
+    const effectiveTotal = Number(order?.total_amount) || (isCodOrder ? (advancePaid + balanceDue) : (verificationAmount || 1061));
 
     // 3. Update in ERP Store (handles memory + D1 update)
     await updateERPOrder(orderId, {

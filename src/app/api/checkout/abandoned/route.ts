@@ -49,11 +49,11 @@ export async function POST(req: NextRequest) {
     // If customer emptied their cart or removed all products, delete the abandoned session
     if (isValid && (action === "clear_empty" || (Array.isArray(items) && items.length === 0))) {
       await executeD1Query(
-        "DELETE FROM abandoned_checkouts WHERE customer_phone = ? AND status = 'abandoned'",
-        [digits]
+        "DELETE FROM abandoned_checkouts WHERE (customer_phone = ? OR customer_phone LIKE ? OR customer_phone = ?) AND status = 'abandoned'",
+        [digits, `%${digits}`, `91${digits}`]
       );
       inMemoryAbandoned = inMemoryAbandoned.filter(
-        (a) => !(a.customer_phone === digits && a.status === "abandoned")
+        (a) => !((a.customer_phone === digits || a.customer_phone.endsWith(digits)) && a.status === "abandoned")
       );
       return NextResponse.json({
         success: true,
@@ -82,8 +82,8 @@ export async function POST(req: NextRequest) {
 
     try {
       const existing = await executeD1Query<any>(
-        "SELECT id, recovery_token, whatsapp_sent_count, last_whatsapp_sent_at FROM abandoned_checkouts WHERE customer_phone = ? AND status = 'abandoned' ORDER BY created_at DESC LIMIT 1",
-        [digits]
+        "SELECT id, recovery_token, whatsapp_sent_count, last_whatsapp_sent_at FROM abandoned_checkouts WHERE (customer_phone = ? OR customer_phone LIKE ? OR customer_phone = ?) AND status = 'abandoned' ORDER BY created_at DESC LIMIT 1",
+        [digits, `%${digits}`, `91${digits}`]
       );
       if (existing && existing.length > 0 && existing[0]?.id) {
         existingId = existing[0].id;
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
       }
     } catch (e) {
       const mem = inMemoryAbandoned.find(
-        (a) => a.customer_phone === digits && a.status === "abandoned"
+        (a) => (a.customer_phone === digits || a.customer_phone.endsWith(digits)) && a.status === "abandoned"
       );
       if (mem) {
         existingId = mem.id;
@@ -158,6 +158,12 @@ export async function POST(req: NextRequest) {
     // Insert new abandoned checkout
     const newId = `abn_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     try {
+      // Expire any existing abandoned records for this customer so duplicate reminders are never queued
+      await executeD1Query(
+        "UPDATE abandoned_checkouts SET status = 'expired' WHERE (customer_phone = ? OR customer_phone LIKE ? OR customer_phone = ?) AND status = 'abandoned'",
+        [digits, `%${digits}`, `91${digits}`]
+      ).catch(() => {});
+
       await executeD1Query(
         `INSERT INTO abandoned_checkouts (
            id, customer_name, customer_phone, customer_email,
