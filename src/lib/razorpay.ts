@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
-const DEFAULT_KEY_ID = "rzp_test_TtfV4hJwr48ruO";
-const DEFAULT_KEY_SECRET = "LxiqYWXJS4LUSoyqS89n90zz";
+const DEFAULT_KEY_ID = "rzp_live_TwkiRuEHcMKKgt";
+const DEFAULT_KEY_SECRET = "zL2HTPUaR1f6snpabjlu4XXZ";
 
 export function getRazorpayCredentials(): { keyId: string; keySecret: string } {
   let keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID;
