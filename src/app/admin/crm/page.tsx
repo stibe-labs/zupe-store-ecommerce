@@ -38,13 +38,14 @@ import {
   HelpCircle,
   ShoppingBag,
   RotateCcw,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
 import { CRMLead } from "@/app/api/admin/crm/leads/route";
 
 export default function AdminCRMPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "leads" | "customers" | "meta" | "pixel">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "leads" | "customers" | "meta" | "pixel" | "settings">("overview");
 
   // Leads State
   const [leads, setLeads] = useState<CRMLead[]>([]);
@@ -72,6 +73,23 @@ export default function AdminCRMPage() {
     lastSyncedAt: "",
     hasToken: false,
   });
+
+  // WhatsApp CRM Integration State
+  const [whatsappConfig, setWhatsappConfig] = useState({
+    phoneNumber: "916238165935",
+    phoneNumberId: "1477900698733187",
+    token: "",
+    templateName: "turkiyejam_otp",
+    webhookVerifyToken: "turkiyejam_wa_secret_2026",
+    isActive: true,
+    hasToken: false,
+    lastSyncedAt: "",
+  });
+  const [waTesting, setWaTesting] = useState(false);
+  const [waTestResult, setWaTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [savingAllSettings, setSavingAllSettings] = useState(false);
+  const [settingsSuccessMsg, setSettingsSuccessMsg] = useState("");
+
   const [metaMetrics, setMetaMetrics] = useState({
     totalMetaSpend: 0,
     deliveredRevenue: 0,
@@ -169,6 +187,7 @@ export default function AdminCRMPage() {
       const data = await res.json();
       if (data.success) {
         if (data.config) setMetaConfig(data.config);
+        if (data.whatsappConfig) setWhatsappConfig(data.whatsappConfig);
         if (data.metrics) setMetaMetrics(data.metrics);
         if (data.campaigns) setCampaigns(data.campaigns);
       }
@@ -438,6 +457,69 @@ export default function AdminCRMPage() {
     }
   };
 
+  // Test WhatsApp API Handshake
+  const handleTestWhatsAppConnection = async () => {
+    setWaTesting(true);
+    setWaTestResult(null);
+    try {
+      const res = await fetch("/api/admin/crm/meta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "test_whatsapp_connection",
+          phoneNumberId: whatsappConfig.phoneNumberId,
+          whatsappToken: whatsappConfig.token,
+        }),
+      });
+      const data = await res.json();
+      setWaTestResult({
+        success: data.success,
+        message: data.message || (data.success ? "WhatsApp handshake successful!" : "Connection failed."),
+      });
+    } finally {
+      setWaTesting(false);
+    }
+  };
+
+  // Save All Unified CRM Integrations (Meta, Pixel, WhatsApp)
+  const handleSaveAllSettings = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setSavingAllSettings(true);
+    setSettingsSuccessMsg("");
+    try {
+      const res = await fetch("/api/admin/crm/meta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "save_all_settings",
+          // Meta & Pixel
+          accountId: metaConfig.accountId,
+          token: metaConfig.token,
+          pixelId: metaConfig.pixelId,
+          testEventCode: metaConfig.testEventCode,
+          isActive: metaConfig.isActive,
+          // WhatsApp
+          phoneNumber: whatsappConfig.phoneNumber,
+          phoneNumberId: whatsappConfig.phoneNumberId,
+          whatsappToken: whatsappConfig.token,
+          templateName: whatsappConfig.templateName,
+          webhookVerifyToken: whatsappConfig.webhookVerifyToken,
+          whatsappIsActive: whatsappConfig.isActive,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSettingsSuccessMsg(data.message || "All CRM integrations saved successfully!");
+        fetchMetaData();
+        setTimeout(() => setSettingsSuccessMsg(""), 6000);
+      } else {
+        alert(data.error || data.message || "Failed to save settings.");
+      }
+    } finally {
+      setSavingAllSettings(false);
+    }
+  };
+
   // Send Test Purchase Event to Meta Events Manager
   const handleSendTestEvent = async () => {
     setTestEventSending(true);
@@ -569,6 +651,18 @@ export default function AdminCRMPage() {
               </button>
 
               <button
+                onClick={() => setActiveTab("settings")}
+                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition ${
+                  activeTab === "settings"
+                    ? "bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-600/30"
+                    : "bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700"
+                }`}
+              >
+                <Settings className="h-3.5 w-3.5 text-indigo-400" />
+                CRM Settings
+              </button>
+
+              <button
                 onClick={() => setShowAddLeadModal(true)}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition"
               >
@@ -586,6 +680,7 @@ export default function AdminCRMPage() {
               { id: "customers", label: "Customer 360", icon: Users, badge: String(customers.length || 0) },
               { id: "meta", label: "Meta Ad Spends", icon: DollarSign, badge: `${metaMetrics.blendedRoas}x ROAS` },
               { id: "pixel", label: "Pixel & CAPI Diagnostics", icon: Activity, badge: "Health" },
+              { id: "settings", label: "CRM Settings", icon: Settings, badge: "Meta & WA" },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -1243,102 +1338,47 @@ export default function AdminCRMPage() {
           {/* ========================================================= */}
           {activeTab === "meta" && (
             <div className="space-y-6 animate-in fade-in duration-200">
-              {/* Meta Credentials & Integration Card */}
-              <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5 mb-5">
-                  <div>
-                    <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                      <Target className="h-5 w-5 text-indigo-400" />
-                      Meta Marketing API &amp; Ad Account Integration
-                    </h2>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Connect your Facebook / Instagram Ad Account to track daily campaign spend and calculate blended ROAS.
-                    </p>
+              {/* Meta Integration Status & Actions Bar */}
+              <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                    <Target className="h-5 w-5" />
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handleTestMetaConnection}
-                      disabled={metaTesting}
-                      className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition"
-                    >
-                      {metaTesting ? "Testing Handshake..." : "Test Connection Handshake"}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setShowLogSpendModal(true)}
-                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition flex items-center gap-1.5"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Log Ad Spend
-                    </button>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm sm:text-base font-bold text-white">
+                        Meta Marketing &amp; Ad Account Ledger
+                      </h2>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        {metaConfig.accountId ? `Account: ${metaConfig.accountId}` : "Meta Connected"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Syncing daily campaign ad spends and calculating blended store ROAS against Cloudflare D1 orders.
+                    </p>
                   </div>
                 </div>
 
-                {testResult && (
-                  <div
-                    className={`mb-5 p-3.5 rounded-2xl text-xs flex items-center gap-2 border ${
-                      testResult.success
-                        ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
-                        : "bg-rose-500/10 text-rose-300 border-rose-500/30"
-                    }`}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("settings")}
+                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5"
                   >
-                    {testResult.success ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertTriangle className="h-4 w-4 shrink-0" />}
-                    <span>{testResult.message}</span>
-                  </div>
-                )}
+                    <Settings className="h-3.5 w-3.5 text-indigo-400" />
+                    Configure in CRM Settings
+                  </button>
 
-                <form onSubmit={handleSaveMetaConfig} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                      Meta Ad Account ID
-                    </label>
-                    <input
-                      type="text"
-                      value={metaConfig.accountId}
-                      onChange={(e) => setMetaConfig({ ...metaConfig, accountId: e.target.value })}
-                      placeholder="e.g. act_1234567890"
-                      className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                      Meta Marketing Access Token
-                    </label>
-                    <input
-                      type="password"
-                      value={metaConfig.token}
-                      onChange={(e) => setMetaConfig({ ...metaConfig, token: e.target.value })}
-                      placeholder={metaConfig.hasToken ? "•••••••••••• (Token saved)" : "EAAK..."}
-                      className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                      Meta Pixel ID
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={metaConfig.pixelId}
-                        onChange={(e) => setMetaConfig({ ...metaConfig, pixelId: e.target.value })}
-                        placeholder="e.g. 123456789012345"
-                        className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
-                      />
-                      <button
-                        type="submit"
-                        disabled={metaSaving}
-                        className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shrink-0"
-                      >
-                        {metaSaving ? "Saving..." : "Save"}
-                      </button>
-                    </div>
-                  </div>
-                </form>
+                  <button
+                    type="button"
+                    onClick={() => setShowLogSpendModal(true)}
+                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition flex items-center gap-1.5"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Log Ad Spend
+                  </button>
+                </div>
               </div>
 
               {/* Campaigns & Daily Spend Table */}
@@ -1523,6 +1563,348 @@ export default function AdminCRMPage() {
                       )}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* TAB 6: UNIFIED CRM & MARKETING SETTINGS HUB */}
+          {/* ========================================================= */}
+          {activeTab === "settings" && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              {/* Header Box */}
+              <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5 mb-6">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                      <Settings className="h-6 w-6" />
+                    </span>
+                    <div>
+                      <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        CRM &amp; Marketing Integrations Hub
+                      </h2>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Centrally connect your Meta Marketing API, Meta Pixel &amp; CAPI, and WhatsApp Business Cloud API in one unified place.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSaveAllSettings()}
+                    disabled={savingAllSettings}
+                    className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition flex items-center gap-2 shrink-0"
+                  >
+                    <Save className="h-4 w-4" />
+                    {savingAllSettings ? "Saving Settings..." : "Save All CRM Settings"}
+                  </button>
+                </div>
+
+                {settingsSuccessMsg && (
+                  <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 animate-in fade-in">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+                    <span className="font-semibold">{settingsSuccessMsg}</span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 gap-6">
+                  {/* =================================================== */}
+                  {/* SECTION 1: META MARKETING API & AD ACCOUNT */}
+                  {/* =================================================== */}
+                  <div className="bg-slate-800/40 border border-slate-700/80 rounded-2xl p-5 sm:p-6 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/60 pb-4">
+                      <div className="flex items-center gap-2.5">
+                        <Target className="h-5 w-5 text-indigo-400" />
+                        <div>
+                          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                            Meta Marketing API &amp; Ad Account
+                          </h3>
+                          <p className="text-[11px] text-slate-400">
+                            Pulls ad campaign metrics, daily spend totals, and calculates live store ROAS.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleTestMetaConnection}
+                          disabled={metaTesting}
+                          className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition"
+                        >
+                          {metaTesting ? "Testing Handshake..." : "Test Meta Connection"}
+                        </button>
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                          metaConfig.hasToken || metaConfig.accountId
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            : "bg-slate-700 text-slate-400 border-slate-600"
+                        }`}>
+                          {metaConfig.hasToken ? "Token Stored" : "Not Configured"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {testResult && (
+                      <div
+                        className={`p-3 rounded-xl text-xs flex items-center gap-2 border ${
+                          testResult.success
+                            ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                            : "bg-rose-500/10 text-rose-300 border-rose-500/30"
+                        }`}
+                      >
+                        {testResult.success ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertTriangle className="h-4 w-4 shrink-0" />}
+                        <span>{testResult.message}</span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                          Meta Ad Account ID
+                        </label>
+                        <input
+                          type="text"
+                          value={metaConfig.accountId}
+                          onChange={(e) => setMetaConfig({ ...metaConfig, accountId: e.target.value })}
+                          placeholder="e.g. act_1234567890"
+                          className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-1 block">Found in Meta Ads Manager URL or Account Settings</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                          Meta Marketing Access Token
+                        </label>
+                        <input
+                          type="password"
+                          value={metaConfig.token}
+                          onChange={(e) => setMetaConfig({ ...metaConfig, token: e.target.value })}
+                          placeholder={metaConfig.hasToken ? "•••••••••••• (Token Active in Cloudflare D1)" : "EAAK..."}
+                          className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-1 block">Meta System User access token with ads_read &amp; ads_management permissions</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* =================================================== */}
+                  {/* SECTION 2: META PIXEL & CONVERSIONS API (CAPI) */}
+                  {/* =================================================== */}
+                  <div className="bg-slate-800/40 border border-slate-700/80 rounded-2xl p-5 sm:p-6 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/60 pb-4">
+                      <div className="flex items-center gap-2.5">
+                        <Activity className="h-5 w-5 text-emerald-400" />
+                        <div>
+                          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                            Meta Pixel &amp; Server Conversions API (CAPI)
+                          </h3>
+                          <p className="text-[11px] text-slate-400">
+                            Client-side pixel tracking &amp; server-side deduplicated conversion dispatch.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleSendTestEvent}
+                          disabled={testEventSending}
+                          className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5"
+                        >
+                          <Send className="h-3 w-3" />
+                          {testEventSending ? "Dispatching..." : "Send Test CAPI Event"}
+                        </button>
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                          metaConfig.pixelId
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            : "bg-slate-700 text-slate-400 border-slate-600"
+                        }`}>
+                          {metaConfig.pixelId ? `Pixel: ${metaConfig.pixelId}` : "No Pixel ID"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {testEventMsg && (
+                      <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs">
+                        {testEventMsg}
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                          Meta Pixel ID / Dataset ID
+                        </label>
+                        <input
+                          type="text"
+                          value={metaConfig.pixelId}
+                          onChange={(e) => setMetaConfig({ ...metaConfig, pixelId: e.target.value })}
+                          placeholder="e.g. 123456789012345"
+                          className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-1 block">Embedded automatically across storefront and checkout</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                          CAPI Test Event Code (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={metaConfig.testEventCode}
+                          onChange={(e) => setMetaConfig({ ...metaConfig, testEventCode: e.target.value })}
+                          placeholder="e.g. TEST12345"
+                          className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-1 block">From Meta Events Manager &gt; Test Events tab (leave blank in production)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* =================================================== */}
+                  {/* SECTION 3: WHATSAPP CLOUD API & CRM CONNECT */}
+                  {/* =================================================== */}
+                  <div className="bg-slate-800/40 border border-slate-700/80 rounded-2xl p-5 sm:p-6 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/60 pb-4">
+                      <div className="flex items-center gap-2.5">
+                        <MessageSquare className="h-5 w-5 text-emerald-400" />
+                        <div>
+                          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                            WhatsApp Business Cloud API
+                          </h3>
+                          <p className="text-[11px] text-slate-400">
+                            Powers 1-Click WhatsApp Lead messaging, abandoned cart recovery, OTPs &amp; order notifications.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleTestWhatsAppConnection}
+                          disabled={waTesting}
+                          className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition"
+                        >
+                          {waTesting ? "Testing WhatsApp..." : "Test WhatsApp Handshake"}
+                        </button>
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                          whatsappConfig.hasToken
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                        }`}>
+                          {whatsappConfig.hasToken ? "Connected (+91 6238 165 935)" : "Needs Token"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {waTestResult && (
+                      <div
+                        className={`p-3 rounded-xl text-xs flex items-center gap-2 border ${
+                          waTestResult.success
+                            ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                            : "bg-rose-500/10 text-rose-300 border-rose-500/30"
+                        }`}
+                      >
+                        {waTestResult.success ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertTriangle className="h-4 w-4 shrink-0" />}
+                        <span>{waTestResult.message}</span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                          WhatsApp Business Phone Number
+                        </label>
+                        <input
+                          type="text"
+                          value={whatsappConfig.phoneNumber}
+                          onChange={(e) => setWhatsappConfig({ ...whatsappConfig, phoneNumber: e.target.value })}
+                          placeholder="e.g. 916238165935"
+                          className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-1 block">Live Store Number: +91 6238 165 935</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                          WhatsApp Phone Number ID
+                        </label>
+                        <input
+                          type="text"
+                          value={whatsappConfig.phoneNumberId}
+                          onChange={(e) => setWhatsappConfig({ ...whatsappConfig, phoneNumberId: e.target.value })}
+                          placeholder="e.g. 1477900698733187"
+                          className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-1 block">Meta App &gt; WhatsApp &gt; API Setup &gt; Phone Number ID</span>
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                          WhatsApp Cloud API Permanent Access Token
+                        </label>
+                        <input
+                          type="password"
+                          value={whatsappConfig.token}
+                          onChange={(e) => setWhatsappConfig({ ...whatsappConfig, token: e.target.value })}
+                          placeholder={whatsappConfig.hasToken ? "•••••••••••• (Active in Cloudflare D1 / Environment)" : "EAAG..."}
+                          className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-1 block">Permanent System User Token from Meta Business Manager with whatsapp_business_messaging</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                          Default WhatsApp Template
+                        </label>
+                        <input
+                          type="text"
+                          value={whatsappConfig.templateName}
+                          onChange={(e) => setWhatsappConfig({ ...whatsappConfig, templateName: e.target.value })}
+                          placeholder="e.g. turkiyejam_otp"
+                          className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-1 block">Meta-approved template name for transactional alerts</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                          Webhook Verify Token
+                        </label>
+                        <input
+                          type="text"
+                          value={whatsappConfig.webhookVerifyToken}
+                          onChange={(e) => setWhatsappConfig({ ...whatsappConfig, webhookVerifyToken: e.target.value })}
+                          placeholder="turkiyejam_wa_secret_2026"
+                          className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-1 block">Meta Webhooks verification secret token</span>
+                      </div>
+
+                      <div className="md:col-span-2 bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <span className="text-[11px] font-bold text-slate-300">Live Webhook Callback URL:</span>
+                          <span className="ml-2 font-mono text-[11px] text-indigo-400">https://turkiyejam.com/api/webhooks/whatsapp</span>
+                        </div>
+                        <span className="text-[10px] text-slate-500">Subscribe to &apos;messages&apos; in Meta Developer Portal</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Save All Button */}
+                <div className="pt-6 border-t border-slate-800 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => handleSaveAllSettings()}
+                    disabled={savingAllSettings}
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 transition flex items-center gap-2"
+                  >
+                    <Save className="h-4 w-4" />
+                    {savingAllSettings ? "Saving All CRM Integrations..." : "Save All CRM Integrations"}
+                  </button>
                 </div>
               </div>
             </div>

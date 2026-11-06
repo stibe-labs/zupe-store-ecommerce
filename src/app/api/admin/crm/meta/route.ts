@@ -13,6 +13,17 @@ interface MetaConfig {
   lastSyncedAt?: string;
 }
 
+interface WhatsAppCRMConfig {
+  phoneNumber: string;
+  phoneNumberId: string;
+  token: string;
+  templateName: string;
+  webhookVerifyToken: string;
+  isActive: boolean;
+  hasToken: boolean;
+  lastSyncedAt?: string;
+}
+
 export async function GET(req: NextRequest) {
   try {
     // 1. Fetch Meta Integration Config from D1
@@ -42,6 +53,46 @@ export async function GET(req: NextRequest) {
       }
     } catch (d1Err) {
       console.warn("Failed to fetch meta config from D1:", d1Err);
+    }
+
+    // 2. Fetch WhatsApp Integration Config from D1 (fallback to env)
+    const envWaPhone = process.env.WHATSAPP_PHONE_NUMBER || "916238165935";
+    const envWaPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || "1477900698733187";
+    const envWaToken = process.env.WHATSAPP_TOKEN || "";
+    const envWaTemplate = process.env.WHATSAPP_TEMPLATE_NAME || "turkiyejam_otp";
+    const envWaVerify = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || "turkiyejam_wa_secret_2026";
+
+    let waConfig: WhatsAppCRMConfig = {
+      phoneNumber: envWaPhone,
+      phoneNumberId: envWaPhoneId,
+      token: "",
+      templateName: envWaTemplate,
+      webhookVerifyToken: envWaVerify,
+      isActive: true,
+      hasToken: Boolean(envWaToken && envWaToken.length > 10),
+      lastSyncedAt: "",
+    };
+
+    try {
+      const waRows = await executeD1Query<any>(
+        "SELECT config_data, is_active, last_synced_at FROM integrations_config WHERE provider = 'whatsapp'"
+      );
+      if (waRows && waRows.length > 0 && waRows[0].config_data) {
+        const parsed = JSON.parse(waRows[0].config_data);
+        const storedToken = parsed.token || envWaToken;
+        waConfig = {
+          phoneNumber: parsed.phoneNumber || envWaPhone,
+          phoneNumberId: parsed.phoneNumberId || envWaPhoneId,
+          token: storedToken ? `${storedToken.slice(0, 8)}...${storedToken.slice(-6)}` : "",
+          templateName: parsed.templateName || envWaTemplate,
+          webhookVerifyToken: parsed.webhookVerifyToken || envWaVerify,
+          isActive: Boolean(waRows[0].is_active),
+          hasToken: Boolean(storedToken && storedToken.length > 10),
+          lastSyncedAt: waRows[0].last_synced_at || parsed.lastSyncedAt || "",
+        };
+      }
+    } catch (d1Err) {
+      console.warn("Failed to fetch whatsapp config from D1:", d1Err);
     }
 
     // 2. Fetch Ad Spend rows from meta_ad_spend
@@ -101,6 +152,16 @@ export async function GET(req: NextRequest) {
         isActive: config.isActive,
         lastSyncedAt: config.lastSyncedAt,
         hasToken: Boolean(config.token && config.token.length > 5),
+      },
+      whatsappConfig: {
+        phoneNumber: waConfig.phoneNumber,
+        phoneNumberId: waConfig.phoneNumberId,
+        token: waConfig.token,
+        templateName: waConfig.templateName,
+        webhookVerifyToken: waConfig.webhookVerifyToken,
+        isActive: waConfig.isActive,
+        hasToken: waConfig.hasToken,
+        lastSyncedAt: waConfig.lastSyncedAt,
       },
       metrics: {
         totalMetaSpend,
@@ -175,7 +236,156 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 2. TEST CONNECTION HANDSHAKE
+    // 2. SAVE WHATSAPP CONFIGURATION
+    if (action === "save_whatsapp_config" || action === "save_all_settings") {
+      const {
+        phoneNumber,
+        phoneNumberId,
+        whatsappToken,
+        templateName,
+        webhookVerifyToken,
+        whatsappIsActive,
+      } = body;
+
+      const cleanPhone = (phoneNumber || "").replace(/\D/g, "").trim();
+      const cleanPhoneId = (phoneNumberId || "").trim();
+      const cleanToken = (whatsappToken || "").trim();
+      const cleanTemplate = (templateName || "turkiyejam_otp").trim();
+      const cleanVerify = (webhookVerifyToken || "turkiyejam_wa_secret_2026").trim();
+
+      // Retrieve existing token if placeholder/masked or empty was passed
+      let effectiveToken = cleanToken;
+      if (!effectiveToken || effectiveToken.includes("...")) {
+        const existing = await executeD1Query<any>(
+          "SELECT config_data FROM integrations_config WHERE provider = 'whatsapp'"
+        );
+        if (existing && existing.length > 0 && existing[0].config_data) {
+          const parsed = JSON.parse(existing[0].config_data);
+          effectiveToken = parsed.token || process.env.WHATSAPP_TOKEN || "";
+        } else {
+          effectiveToken = process.env.WHATSAPP_TOKEN || "";
+        }
+      }
+
+      const waConfigData = JSON.stringify({
+        phoneNumber: cleanPhone || process.env.WHATSAPP_PHONE_NUMBER || "916238165935",
+        phoneNumberId: cleanPhoneId || process.env.WHATSAPP_PHONE_NUMBER_ID || "1477900698733187",
+        token: effectiveToken,
+        templateName: cleanTemplate,
+        webhookVerifyToken: cleanVerify,
+        isActive: whatsappIsActive !== false,
+        lastSyncedAt: new Date().toISOString(),
+      });
+
+      await executeD1Query(
+        `INSERT INTO integrations_config (provider, config_data, is_active, updated_at)
+         VALUES ('whatsapp', ?, ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(provider) DO UPDATE SET
+           config_data = excluded.config_data,
+           is_active = excluded.is_active,
+           updated_at = CURRENT_TIMESTAMP`,
+        [waConfigData, whatsappIsActive !== false ? 1 : 0]
+      );
+
+      // If saving Meta as well in save_all_settings
+      if (action === "save_all_settings" && body.accountId !== undefined) {
+        const { accountId, token, pixelId, testEventCode, isActive } = body;
+        const cleanAccountId = (accountId || "").trim();
+        const cleanMetaToken = (token || "").trim();
+        const cleanPixelId = (pixelId || "").trim();
+        const cleanTestEventCode = (testEventCode || "").trim();
+
+        let effectiveMetaToken = cleanMetaToken;
+        if (!effectiveMetaToken || effectiveMetaToken.includes("...")) {
+          const existingMeta = await executeD1Query<any>(
+            "SELECT config_data FROM integrations_config WHERE provider = 'meta'"
+          );
+          if (existingMeta && existingMeta.length > 0 && existingMeta[0].config_data) {
+            const parsed = JSON.parse(existingMeta[0].config_data);
+            effectiveMetaToken = parsed.token || "";
+          }
+        }
+
+        const metaConfigData = JSON.stringify({
+          accountId: cleanAccountId,
+          token: effectiveMetaToken,
+          pixelId: cleanPixelId,
+          testEventCode: cleanTestEventCode,
+          isActive: isActive !== false,
+          lastSyncedAt: new Date().toISOString(),
+        });
+
+        await executeD1Query(
+          `INSERT INTO integrations_config (provider, config_data, is_active, updated_at)
+           VALUES ('meta', ?, ?, CURRENT_TIMESTAMP)
+           ON CONFLICT(provider) DO UPDATE SET
+             config_data = excluded.config_data,
+             is_active = excluded.is_active,
+             updated_at = CURRENT_TIMESTAMP`,
+          [metaConfigData, isActive !== false ? 1 : 0]
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: action === "save_all_settings" 
+          ? "All CRM integrations (Meta, Pixel & WhatsApp) saved successfully!"
+          : "WhatsApp CRM configuration saved successfully.",
+      });
+    }
+
+    // 3. TEST WHATSAPP CONNECTION HANDSHAKE
+    if (action === "test_whatsapp_connection") {
+      const { phoneNumberId, whatsappToken } = body;
+      const cleanPhoneId = (phoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID || "1477900698733187").trim();
+      let effectiveToken = (whatsappToken || "").trim();
+
+      if (!effectiveToken || effectiveToken.includes("...")) {
+        const existing = await executeD1Query<any>(
+          "SELECT config_data FROM integrations_config WHERE provider = 'whatsapp'"
+        );
+        if (existing && existing.length > 0 && existing[0].config_data) {
+          const parsed = JSON.parse(existing[0].config_data);
+          effectiveToken = parsed.token || process.env.WHATSAPP_TOKEN || "";
+        } else {
+          effectiveToken = process.env.WHATSAPP_TOKEN || "";
+        }
+      }
+
+      if (!effectiveToken || effectiveToken.length < 10) {
+        return NextResponse.json({
+          success: false,
+          message: "A valid WhatsApp Cloud API Permanent Access Token is required.",
+        });
+      }
+
+      try {
+        const waRes = await fetch(
+          `https://graph.facebook.com/v21.0/${cleanPhoneId}?fields=id,verified_name,display_phone_number,quality_rating,code_verification_status&access_token=${encodeURIComponent(effectiveToken)}`
+        );
+        const waData = await waRes.json();
+
+        if (waData.error) {
+          return NextResponse.json({
+            success: false,
+            message: `WhatsApp API Error: ${waData.error.message || "Invalid credentials or token expired."}`,
+          });
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: `Connected successfully to WhatsApp Business: "${waData.verified_name || "Turkiye Jam"}" (${waData.display_phone_number || cleanPhoneId}). Quality: ${waData.quality_rating || "GREEN"}.`,
+          phoneDetails: waData,
+        });
+      } catch (handshakeErr: any) {
+        return NextResponse.json({
+          success: false,
+          message: `Network error connecting to WhatsApp Graph API: ${handshakeErr.message}`,
+        });
+      }
+    }
+
+    // 4. TEST META CONNECTION HANDSHAKE
     if (action === "test_connection") {
       const { accountId, token } = body;
       const cleanAccount = (accountId || "").replace(/^act_/, "").trim();
