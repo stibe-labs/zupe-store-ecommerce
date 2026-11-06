@@ -186,7 +186,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const effectivePayUrl = settlerPayUrl || (paymentSessionId ? `https://payments.cashfree.com/forms/${paymentSessionId}` : "");
+    const effectivePayUrl = settlerPayUrl;
 
     return NextResponse.json({
       success: true,
