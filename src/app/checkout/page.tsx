@@ -126,6 +126,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const {
     cart,
+    isInitialized,
     addToCart,
     subtotal,
     savings,
@@ -1086,7 +1087,8 @@ function CheckoutContent() {
 
   const grandTotal = isCod ? codGrandTotal : onlineGrandTotal;
   const payableNow = isCod ? configuredCodFee : onlineGrandTotal;
-  const doorstepBalance = isCod ? (effectiveSubtotal + baseShippingFee) : 0;
+  const codDoorstepBalance = Math.max(0, effectiveSubtotal + baseShippingFee);
+  const doorstepBalance = isCod ? codDoorstepBalance : 0;
 
   // Total MRP for comparison pill
   const totalMrp = cart.reduce((sum, it) => {
@@ -2125,6 +2127,18 @@ function CheckoutContent() {
     );
   }
 
+  // Hydration Loading State
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen tj-diamonds-cream flex flex-col items-center justify-center p-4">
+        <div className="w-12 h-12 rounded-2xl bg-white/90 border border-[#ebdcc7] flex items-center justify-center shadow-sm mb-4">
+          <Loader2 className="w-6 h-6 text-[#731a26] animate-spin" />
+        </div>
+        <p className="text-xs font-bold text-stone-700">Loading your cart &amp; delivery details...</p>
+      </div>
+    );
+  }
+
   // Cart Empty State
   if (cart.length === 0) {
     return (
@@ -2441,9 +2455,14 @@ function CheckoutContent() {
                       ₹{totalMrp.toLocaleString()}
                     </span>
                   )}
-                  <span className="text-sm font-extrabold text-gray-950">
-                    ₹{grandTotal.toLocaleString()}
-                  </span>
+                  <div className="flex items-center justify-end gap-1.5">
+                    <span className="inline-block text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded">
+                      {isFreeDelivery ? "FREE Delivery" : `+₹${baseShippingFee} Delivery`}
+                    </span>
+                    <span className="text-sm font-extrabold text-gray-950">
+                      ₹{grandTotal.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               </button>
 
@@ -2556,6 +2575,100 @@ function CheckoutContent() {
                         </p>
                       )}
                     </div>
+
+                    {/* Full Financial Breakdown in Mobile Order Summary */}
+                    <div className="pt-3 border-t border-gray-100 space-y-2 text-xs">
+                      <div className="flex justify-between text-gray-600">
+                        <span>Item Subtotal ({totalItemCount} {totalItemCount === 1 ? "item" : "items"})</span>
+                        <span className="font-semibold text-gray-900">
+                          ₹{(bundleSavings > 0 ? regularSubtotal : subtotal).toLocaleString()}
+                        </span>
+                      </div>
+
+                      {bundleSavings > 0 && (
+                        <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
+                          <span className="flex items-center gap-1 font-bold">
+                            <span>✨</span>
+                            <span>Buy More Save More Savings</span>
+                          </span>
+                          <span className="font-extrabold">-₹{bundleSavings.toLocaleString()}</span>
+                        </div>
+                      )}
+
+                      {promoDiscount > 0 && (
+                        <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
+                          <span className="flex items-center gap-1 font-bold">
+                            <Tag className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Promo Discount ({appliedPromo})</span>
+                          </span>
+                          <span className="font-extrabold">-₹{promoDiscount.toLocaleString()}</span>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between text-gray-600">
+                        <span>GST (18% Included)</span>
+                        <span className="font-semibold text-gray-900">₹{gstAmount.toLocaleString()} (Included)</span>
+                      </div>
+
+                      <div className="flex justify-between text-gray-600">
+                        <span className="flex items-center gap-1.5">
+                          Delivery Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
+                        </span>
+                        {isFreeDelivery ? (
+                          <span className="font-bold text-emerald-700">
+                            FREE {standardShippingFee > 0 ? `(Saved ₹${standardShippingFee})` : ""}
+                          </span>
+                        ) : (
+                          <span className="font-semibold text-gray-900">
+                            ₹{baseShippingFee.toLocaleString("en-IN")}
+                          </span>
+                        )}
+                      </div>
+
+                      {isCod && (
+                        <div className="flex justify-between text-gray-600">
+                          <span>Courier &amp; COD Handling Fee</span>
+                          <span className="font-semibold text-gray-900">+₹{configuredCodFee}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Total Payable Box */}
+                    {paymentMethod === "online" ? (
+                      <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-100/90 flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-gray-900">Total Payable (Online)</p>
+                          <p className="text-[10px] text-stone-600 font-medium">
+                            {isFreeDelivery
+                              ? "Free Express Delivery included"
+                              : `Includes ₹${baseShippingFee} Standard Shipping`}
+                          </p>
+                        </div>
+                        <span className="text-base sm:text-lg font-black text-gray-950">
+                          ₹{onlineGrandTotal.toLocaleString()}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/90 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-bold text-gray-900">Total COD Order Value</p>
+                            <p className="text-[10px] text-stone-600 font-medium">Includes ₹{configuredCodFee} Delivery Fee</p>
+                          </div>
+                          <span className="text-base font-black text-gray-950">
+                            ₹{codGrandTotal.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="pt-1.5 border-t border-amber-200/60 flex items-center justify-between text-[11px]">
+                          <span className="text-stone-700 font-medium">Advance to Pay Online Now:</span>
+                          <span className="font-extrabold text-[#780016]">₹{configuredCodFee}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-stone-700 font-medium">Balance Payable on Delivery:</span>
+                          <span className="font-extrabold text-stone-900">₹{codDoorstepBalance.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -3113,7 +3226,7 @@ function CheckoutContent() {
                     >
                       {/* RECOMMENDED BADGE */}
                       <span className="absolute -top-3 left-4 px-3 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs flex items-center gap-1">
-                        ★ RECOMMENDED • FREE DELIVERY {configuredCodFee > 0 ? `(SAVE ₹${configuredCodFee})` : ""}
+                        ★ RECOMMENDED {isFreeDelivery ? "• FREE EXPRESS DELIVERY" : "• SECURE PREPAID"} {configuredCodFee >= 10 ? `(SAVE ₹${configuredCodFee} COD FEE)` : ""}
                       </span>
 
                       {/* Top Row: Radio + Icon + Title */}
@@ -3151,7 +3264,9 @@ function CheckoutContent() {
                           <span className="tracking-wide uppercase text-[10px]">PRIORITY DISPATCH</span>
                         </div>
                         <span className="text-[11px] font-bold text-emerald-800">
-                          FREE Express Delivery {configuredCodFee > 0 ? `(Saved ₹${configuredCodFee})` : ""} • 2–4 Days
+                          {isFreeDelivery
+                            ? "FREE Express Delivery • 2–4 Days"
+                            : `Standard Express Delivery: ₹${baseShippingFee} • 2–4 Days`}
                         </span>
                       </div>
 
@@ -3207,7 +3322,7 @@ function CheckoutContent() {
                               Cash on Delivery (Pay ₹{configuredCodFee} Advance Online)
                             </h4>
                             <p className="text-xs text-gray-500 mt-0.5">
-                              Pay ₹{configuredCodFee} courier fee now • Pay remaining ₹{doorstepBalance.toLocaleString()} at doorstep
+                              Pay ₹{configuredCodFee} courier fee now • Pay remaining ₹{codDoorstepBalance.toLocaleString()} at doorstep
                             </p>
                           </div>
                         </div>
@@ -3233,7 +3348,7 @@ function CheckoutContent() {
                         </div>
                         <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/70">
                           <p className="text-[10px] text-amber-900 font-semibold uppercase tracking-wider">Pay at Doorstep</p>
-                          <p className="text-base sm:text-lg font-black text-gray-950">₹{doorstepBalance.toLocaleString()}</p>
+                          <p className="text-base sm:text-lg font-black text-gray-950">₹{codDoorstepBalance.toLocaleString()}</p>
                           <p className="text-[10px] text-stone-500">Cash or UPI upon delivery</p>
                         </div>
                       </div>
@@ -3242,7 +3357,7 @@ function CheckoutContent() {
                       <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200 flex items-start gap-2 mt-3">
                         <ShieldCheck className="w-3.5 h-3.5 text-stone-600 shrink-0 mt-0.5" />
                         <p className="text-[11px] text-stone-700 leading-snug">
-                          To confirm your order and prevent fake bookings, please pay the <strong>₹{configuredCodFee} courier delivery advance online</strong> via UPI or Card. The remaining balance of <strong>₹{doorstepBalance.toLocaleString()}</strong> will be collected in cash or UPI by the delivery agent at your door.
+                          To confirm your order and prevent fake bookings, please pay the <strong>₹{configuredCodFee} courier delivery advance online</strong> via UPI or Card. The remaining balance of <strong>₹{codDoorstepBalance.toLocaleString()}</strong> will be collected in cash or UPI by the delivery agent at your door.
                         </p>
                       </div>
                     </div>
@@ -3384,7 +3499,7 @@ function CheckoutContent() {
                         </div>
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-stone-700 font-medium">Balance Payable on Delivery:</span>
-                          <span className="font-extrabold text-stone-900">₹{doorstepBalance.toLocaleString()}</span>
+                          <span className="font-extrabold text-stone-900">₹{codDoorstepBalance.toLocaleString()}</span>
                         </div>
                       </div>
                     )}
@@ -3444,8 +3559,8 @@ function CheckoutContent() {
                     </button>
                     <p className="text-center text-[11px] text-gray-500 mt-2">
                       {paymentMethod === "online"
-                        ? `100% Secure • FREE Express Delivery ${configuredCodFee > 0 ? `(Saved ₹${configuredCodFee})` : ""} • 256-bit Bank Grade Escrow by Cashfree`
-                        : `Pay ₹${configuredCodFee} courier advance now via UPI/Cards • Remaining ₹${doorstepBalance.toLocaleString()} payable at delivery`}
+                        ? `100% Secure • ${isFreeDelivery ? `FREE Express Delivery ${configuredCodFee >= 10 ? `(Saved ₹${configuredCodFee})` : ""}` : `Standard Shipping (₹${baseShippingFee})`} • 256-bit Bank Grade Escrow by Cashfree`
+                        : `Pay ₹${configuredCodFee} courier advance now via UPI/Cards • Remaining ₹${codDoorstepBalance.toLocaleString()} payable at delivery`}
                     </p>
                   </div>
 
@@ -3750,7 +3865,7 @@ function CheckoutContent() {
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-stone-700 font-medium">Balance Payable on Delivery:</span>
-                    <span className="font-extrabold text-stone-900">₹{doorstepBalance.toLocaleString()}</span>
+                    <span className="font-extrabold text-stone-900">₹{codDoorstepBalance.toLocaleString()}</span>
                   </div>
                 </div>
               )}

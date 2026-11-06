@@ -25,6 +25,8 @@ export interface CartItem {
 interface CartContextType {
   cart: CartItem[];
   isOpen: boolean;
+  isInitialized: boolean;
+  isLoading: boolean;
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
@@ -72,15 +74,27 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const { user, isLoading: authLoading } = useAuth();
+  const GUEST_CART_KEY = "zp_guest_cart";
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("zp_guest_cart");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return [];
+  });
   const [isOpen, setIsOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const hasLoadedRemoteRef = React.useRef(false);
   const [outOfStockItemIds, setOutOfStockItemIds] = useState<string[]>([]);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState<number>(499);
   const [standardShippingFee, setStandardShippingFee] = useState<number>(49);
   const [codFee, setCodFee] = useState<number>(49);
-  const GUEST_CART_KEY = "zp_guest_cart";
 
   // Dynamically load Free Shipping Min Order, Standard Shipping Fee, and COD Fee from Admin Settings
   useEffect(() => {
@@ -151,6 +165,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let isMounted = true;
+    if (authLoading) return;
+
     async function initCart() {
       if (!user) {
         if (isMounted) {
@@ -158,15 +174,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             const savedGuestCart = localStorage.getItem(GUEST_CART_KEY);
             if (savedGuestCart) {
               const parsed = JSON.parse(savedGuestCart);
-              if (Array.isArray(parsed)) {
+              if (Array.isArray(parsed) && parsed.length > 0) {
                 setCart(parsed);
               }
-            } else {
-              setCart([]);
             }
-          } catch (e) {
-            setCart([]);
-          }
+          } catch (e) {}
+          hasLoadedRemoteRef.current = true;
           setIsInitialized(true);
         }
         return;
@@ -182,7 +195,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         let merged = [...remoteItems];
 
-        // Process guest cart items and merge them into remote items
+        // Process guest cart items and merge them into remote items if remote has fewer
         try {
           const savedGuestCart = localStorage.getItem(GUEST_CART_KEY);
           if (savedGuestCart) {
@@ -191,7 +204,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               for (const gItem of guestItems) {
                 const idx = merged.findIndex((m) => m.id === gItem.id);
                 if (idx > -1) {
-                  merged[idx].quantity += gItem.quantity;
+                  merged[idx].quantity = Math.max(merged[idx].quantity, gItem.quantity);
                 } else {
                   merged.push(gItem);
                 }
@@ -240,32 +253,39 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           console.warn("Could not process pending cart action:", e);
         }
 
-        // Clean up legacy guest cart
+        // Cache latest merged items locally for seamless refresh
         try {
-          localStorage.removeItem(GUEST_CART_KEY);
+          localStorage.setItem(GUEST_CART_KEY, JSON.stringify(merged));
         } catch (e) {}
 
-        if (isMounted) setCart(merged);
+        if (isMounted) {
+          hasLoadedRemoteRef.current = true;
+          setCart(merged);
+        }
       } catch (err) {
         console.warn("Could not sync user cart:", err);
       } finally {
-        if (isMounted) setIsInitialized(true);
+        if (isMounted) {
+          hasLoadedRemoteRef.current = true;
+          setIsInitialized(true);
+        }
       }
     }
 
     initCart();
     return () => { isMounted = false; };
-  }, [user]);
+  }, [user, authLoading]);
 
   useEffect(() => {
     if (!isInitialized) return;
+    if (user && !hasLoadedRemoteRef.current) return;
 
-    if (!user) {
-      try {
-        localStorage.setItem(GUEST_CART_KEY, JSON.stringify(cart));
-      } catch (e) {}
-      return;
-    }
+    // Immediately cache in localStorage
+    try {
+      localStorage.setItem(GUEST_CART_KEY, JSON.stringify(cart));
+    } catch (e) {}
+
+    if (!user) return;
 
     const timer = setTimeout(async () => {
       try {
@@ -496,7 +516,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeFromCart = (productId: string) => {
-    setCart((prev) => prev.filter((item) => item.id !== productId));
+    setCart((prev) => {
+      const nextCart = prev.filter((item) => item.id !== productId);
+      try {
+        localStorage.setItem(GUEST_CART_KEY, JSON.stringify(nextCart));
+      } catch (e) {}
+      return nextCart;
+    });
   };
 
   const clearCart = () => {
@@ -504,6 +530,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.removeItem(GUEST_CART_KEY);
     } catch (e) {}
+    if (user) {
+      fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, items: [] }),
+      }).catch(() => {});
+    }
   };
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -525,6 +558,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       value={{
         cart,
         isOpen,
+        isInitialized,
+        isLoading: !isInitialized,
         openCart,
         closeCart,
         toggleCart,
