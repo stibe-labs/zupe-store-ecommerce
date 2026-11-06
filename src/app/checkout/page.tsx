@@ -613,11 +613,6 @@ function CheckoutContent() {
     }
   }, [searchParams, cart.length, addToCart]);
 
-  // 100% Cash on Delivery
-  useEffect(() => {
-    setPaymentMethod("cod");
-  }, []);
-
   // Populate user data if logged in (phone and real name only - no default email)
   useEffect(() => {
     if (user) {
@@ -911,6 +906,8 @@ function CheckoutContent() {
   const taxableBase = Math.max(0, subtotal - promoDiscount);
   const gstAmount = Math.round(taxableBase * 0.18);
   const totalDiscount = savings + bundleSavings + promoDiscount;
+  const onlineGrandTotal = Math.max(0, taxableBase + gstAmount); // ₹0 shipping
+  const codGrandTotal = Math.max(0, taxableBase + gstAmount + 49); // ₹49 shipping fee
   const grandTotal = Math.max(0, taxableBase + gstAmount + shippingFee);
   const payableNow = paymentMethod === "online" ? grandTotal : 0;
   const doorstepBalance = paymentMethod === "cod" ? grandTotal : 0;
@@ -2722,7 +2719,7 @@ function CheckoutContent() {
                         <div>
                           <p className="text-[11px] text-gray-500 font-medium">Amount Payable Now</p>
                           <p className="text-lg sm:text-xl font-black text-gray-950">
-                            ₹{grandTotal.toLocaleString()}
+                            ₹{onlineGrandTotal.toLocaleString()}
                           </p>
                         </div>
                         <div className="px-3 py-1.5 rounded-xl bg-emerald-100/80 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-1">
@@ -2791,7 +2788,7 @@ function CheckoutContent() {
                         <div>
                           <p className="text-[11px] text-gray-500 font-medium">Payable at Doorstep</p>
                           <p className="text-lg sm:text-xl font-black text-gray-950">
-                            ₹{grandTotal.toLocaleString()}
+                            ₹{codGrandTotal.toLocaleString()}
                           </p>
                         </div>
                         <div className="px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold flex items-center gap-1">
