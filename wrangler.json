@@ -51,6 +51,9 @@
     "SHIPROCKET_EMAIL": "support@turkiyejam.com",
     "SHIPROCKET_PASSWORD": "vWwIV@pJqVO!!6@JQSFZChuaPP8s*SfX",
     "SHIPROCKET_CHECKOUT_API_KEY": "SJDGjm63QEW11sat",
-    "SHIPROCKET_CHECKOUT_API_SECRET": "8rXNirBwWVrkDOwrNHFs9nLccBKIrC98"
+    "SHIPROCKET_CHECKOUT_API_SECRET": "8rXNirBwWVrkDOwrNHFs9nLccBKIrC98",
+    "CASHFREE_ENVIRONMENT": "production",
+    "CASHFREE_APP_ID": "15139601e0fb18fedab78b451aa0693151",
+    "CASHFREE_API_URL": "https://api.cashfree.com/pg"
   }
 }
