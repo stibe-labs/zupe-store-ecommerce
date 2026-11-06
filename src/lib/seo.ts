@@ -48,8 +48,8 @@ export function getOrganizationSchema() {
       addressCountry: "IN",
     },
     sameAs: [
-      "https://www.instagram.com/zupestore.in",
-      "https://www.facebook.com/zupestore",
+      "https://www.instagram.com/zupe.store?xtok=MWx5eDZvaHVvdHBwcA%3D%3D&utm_source=qr",
+      "https://www.facebook.com/share/18f1rncQ7r/?mibextid=wwXIfr",
       "https://wa.me/919744122853",
     ],
     contactPoint: [

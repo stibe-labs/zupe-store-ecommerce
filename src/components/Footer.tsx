@@ -92,7 +92,7 @@ export function Footer() {
             <div className="flex items-center justify-center lg:justify-start gap-3.5 pt-1">
               {/* Instagram */}
               <a
-                href="https://instagram.com/zupestore.in"
+                href="https://www.instagram.com/zupe.store?xtok=MWx5eDZvaHVvdHBwcA%3D%3D&utm_source=qr"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
@@ -116,7 +116,7 @@ export function Footer() {
 
               {/* Facebook */}
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/share/18f1rncQ7r/?mibextid=wwXIfr"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
