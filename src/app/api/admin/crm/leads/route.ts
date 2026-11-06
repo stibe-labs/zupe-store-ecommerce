@@ -198,9 +198,15 @@ export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
+    const all = searchParams.get("all");
+
+    if (all === "true") {
+      await executeD1Query("DELETE FROM crm_leads");
+      return NextResponse.json({ success: true, message: "All leads deleted successfully." });
+    }
 
     if (!id) {
-      return NextResponse.json({ success: false, error: "Lead ID is required." }, { status: 400 });
+      return NextResponse.json({ success: false, error: "Lead ID or all=true parameter is required." }, { status: 400 });
     }
 
     await executeD1Query("DELETE FROM crm_leads WHERE id = ?", [id]);

@@ -286,6 +286,34 @@ export default function AdminCRMPage() {
     }
   };
 
+  // Delete individual lead
+  const handleDeleteLead = async (leadId: string, leadName: string) => {
+    if (!confirm(`Are you sure you want to delete lead "${leadName}"?`)) return;
+    try {
+      setLeads((prev) => prev.filter((l) => l.id !== leadId));
+      await fetch(`/api/admin/crm/leads?id=${encodeURIComponent(leadId)}`, {
+        method: "DELETE",
+      });
+      fetchLeads();
+    } catch (err) {
+      console.warn("Failed to delete lead:", err);
+    }
+  };
+
+  // Clear all leads
+  const handleClearAllLeads = async () => {
+    if (!confirm("Are you sure you want to DELETE ALL leads? This action cannot be undone.")) return;
+    try {
+      setLeads([]);
+      await fetch("/api/admin/crm/leads?all=true", {
+        method: "DELETE",
+      });
+      fetchLeads();
+    } catch (err) {
+      console.warn("Failed to clear all leads:", err);
+    }
+  };
+
   // Create Lead Form Submission
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -854,6 +882,16 @@ export default function AdminCRMPage() {
                   <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
                     {leadStats.totalLeads} Total Meta Leads
                   </span>
+                  {leads.length > 0 && (
+                    <button
+                      onClick={handleClearAllLeads}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 border border-rose-500/30 text-xs font-semibold transition cursor-pointer"
+                      title="Delete all leads"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Clear All Leads
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -1039,6 +1077,14 @@ export default function AdminCRMPage() {
                                   >
                                     <Phone className="h-4 w-4" />
                                   </a>
+
+                                  <button
+                                    onClick={() => handleDeleteLead(lead.id, lead.name)}
+                                    title="Delete Lead"
+                                    className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition border border-rose-500/20"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
                                 </div>
                               </td>
                             </tr>
