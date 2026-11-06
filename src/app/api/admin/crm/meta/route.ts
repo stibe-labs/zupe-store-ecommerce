@@ -187,14 +187,21 @@ export async function GET(req: NextRequest) {
       console.warn("Failed to fetch whatsapp config from D1:", d1Err);
     }
 
-    // 2. Fetch Ad Spend rows from meta_ad_spend
+    // 2. Fetch Ad Spend rows from meta_ad_spend (deduplicated by campaign_name & date)
     let campaigns: any[] = [];
     try {
       const campRows = await executeD1Query<any>(
-        "SELECT * FROM meta_ad_spend ORDER BY date DESC, spend DESC"
+        "SELECT * FROM meta_ad_spend ORDER BY date DESC, created_at DESC"
       );
       if (campRows && campRows.length > 0) {
-        campaigns = campRows;
+        const seen = new Set<string>();
+        for (const row of campRows) {
+          const key = `${(row.campaign_name || "").trim().toLowerCase()}_${row.date}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            campaigns.push(row);
+          }
+        }
       }
     } catch (cErr) {
       console.warn("Failed to fetch meta_ad_spend:", cErr);
@@ -612,6 +619,12 @@ export async function POST(req: NextRequest) {
 
           const cleanCampKey = campName.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
           const spendId = `meta_sync_${cleanCampKey}_${date}`;
+
+          // Clean up any legacy or duplicate rows for this campaign and date before upserting
+          await executeD1Query(
+            "DELETE FROM meta_ad_spend WHERE campaign_name = ? AND date = ? AND synced_from = 'meta_api' AND id != ?",
+            [campName, date, spendId]
+          );
 
           await executeD1Query(
             `INSERT INTO meta_ad_spend (id, date, campaign_name, adset_name, spend, impressions, clicks, cpc, ctr, purchases, purchase_value, roas, synced_from, created_at)
