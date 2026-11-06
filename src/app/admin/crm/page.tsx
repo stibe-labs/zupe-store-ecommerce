@@ -1469,10 +1469,10 @@ export default function AdminCRMPage() {
                             <td className="px-5 py-3.5 font-mono text-slate-400">{camp.date}</td>
                             <td className="px-4 py-3.5 font-semibold text-white">{camp.campaign_name}</td>
                             <td className="px-4 py-3.5 text-slate-400 text-[11px]">{camp.adset_name || "Advantage+ Pan-India"}</td>
-                            <td className="px-4 py-3.5 font-bold text-rose-400">₹{Number(camp.spend).toLocaleString()}</td>
+                            <td className="px-4 py-3.5 font-bold text-rose-400">₹{Number(camp.spend || 0).toFixed(2)}</td>
                             <td className="px-4 py-3.5 text-slate-300">{Number(camp.impressions).toLocaleString()}</td>
                             <td className="px-4 py-3.5 text-slate-300">
-                              {camp.clicks} clicks <span className="text-slate-500 text-[10px]">(₹{camp.cpc})</span>
+                              {camp.clicks} clicks <span className="text-slate-500 text-[10px]">(₹{Number(camp.cpc || 0).toFixed(2)})</span>
                             </td>
                             <td className="px-4 py-3.5 font-semibold text-emerald-400">
                               {camp.purchases} (₹{Number(camp.purchase_value || 0).toLocaleString()})

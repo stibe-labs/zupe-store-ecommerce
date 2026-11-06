@@ -507,12 +507,23 @@ export async function POST(req: NextRequest) {
           const purchaseVal = Number(purchaseValAction?.value || 0);
           const roas = spend > 0 && purchaseVal > 0 ? Number((purchaseVal / spend).toFixed(2)) : 0;
 
-          const spendId = `meta_sync_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+          const cleanCampKey = campName.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
+          const spendId = `meta_sync_${cleanCampKey}_${date}`;
 
           await executeD1Query(
-            `INSERT INTO meta_ad_spend (id, date, campaign_name, spend, impressions, clicks, cpc, ctr, purchases, purchase_value, roas, synced_from, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'meta_api', CURRENT_TIMESTAMP)`,
-            [spendId, date, campName, spend, impr, clicks, cpc, ctr, purchases, purchaseVal, roas]
+            `INSERT INTO meta_ad_spend (id, date, campaign_name, adset_name, spend, impressions, clicks, cpc, ctr, purchases, purchase_value, roas, synced_from, created_at)
+             VALUES (?, ?, ?, 'Advantage+ Pan-India', ?, ?, ?, ?, ?, ?, ?, ?, 'meta_api', CURRENT_TIMESTAMP)
+             ON CONFLICT(id) DO UPDATE SET
+               spend = excluded.spend,
+               impressions = excluded.impressions,
+               clicks = excluded.clicks,
+               cpc = excluded.cpc,
+               ctr = excluded.ctr,
+               purchases = excluded.purchases,
+               purchase_value = excluded.purchase_value,
+               roas = excluded.roas,
+               created_at = CURRENT_TIMESTAMP`,
+            [spendId, date, campName, spend, impr, clicks, Number(cpc.toFixed(2)), Number(ctr.toFixed(2)), purchases, purchaseVal, roas]
           );
         }
 
