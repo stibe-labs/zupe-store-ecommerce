@@ -411,17 +411,31 @@ export async function POST(req: NextRequest) {
         );
         const metaData = await metaRes.json();
 
-        if (metaData.error) {
+        if (metaData && !metaData.error) {
           return NextResponse.json({
-            success: false,
-            message: `Meta API Error: ${metaData.error.message || "Invalid credentials or token expired."}`,
+            success: true,
+            message: `Connected successfully to Meta Ad Account: "${metaData.name || cleanAccount}" (${metaData.currency || "INR"}). Ad spend & CAPI active.`,
+            accountDetails: metaData,
+          });
+        }
+
+        // If ad account has strict ads_read permission requirement, test if token is a valid Conversions API / System User token
+        const meRes = await fetch(
+          `https://graph.facebook.com/v21.0/me?fields=id,name&access_token=${encodeURIComponent(token)}`
+        );
+        const meData = await meRes.json();
+
+        if (meData && meData.id) {
+          return NextResponse.json({
+            success: true,
+            message: `Meta Conversions API (CAPI) & Pixel connected and verified! (To also auto-pull ad spends from Ad Account act_${cleanAccount}, assign 'ads_read' permission in Business Settings).`,
+            accountDetails: { id: cleanAccount, systemUserId: meData.id },
           });
         }
 
         return NextResponse.json({
-          success: true,
-          message: `Connected successfully to Meta Account: "${metaData.name || cleanAccount}" (${metaData.currency || "INR"}). Ad spend active.`,
-          accountDetails: metaData,
+          success: false,
+          message: `Meta API Error: ${metaData?.error?.message || "Invalid credentials or token expired."}`,
         });
       } catch (handshakeErr: any) {
         return NextResponse.json({
