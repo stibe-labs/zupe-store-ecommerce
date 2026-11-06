@@ -27,7 +27,8 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status") || "all";
     const temperature = searchParams.get("temperature") || "all";
 
-    let query = "SELECT * FROM crm_leads WHERE 1=1";
+    // Exclusively filter for Meta Leads (Facebook, Instagram ads, instant forms)
+    let query = "SELECT * FROM crm_leads WHERE (source = 'meta_ads' OR source = 'ad_campaign' OR source = 'meta_instant_form' OR tags LIKE '%meta%')";
     const params: any[] = [];
 
     if (status !== "all") {
@@ -73,8 +74,10 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    // Compute Lead Pipeline KPI stats
-    const allRows = await executeD1Query<any>("SELECT status, temperature, potential_value FROM crm_leads");
+    // Compute Lead Pipeline KPI stats strictly for Meta Leads
+    const allRows = await executeD1Query<any>(
+      "SELECT status, temperature, potential_value FROM crm_leads WHERE (source = 'meta_ads' OR source = 'ad_campaign' OR source = 'meta_instant_form' OR tags LIKE '%meta%')"
+    );
     const all = allRows || [];
     const totalLeads = all.length;
     const newLeads = all.filter((l) => l.status === "new").length;
@@ -114,7 +117,9 @@ export async function POST(req: NextRequest) {
 
     const cleanPhone = phone.trim();
     const id = `lead_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const parsedTags = Array.isArray(tags) ? JSON.stringify(tags) : JSON.stringify([]);
+    const parsedTags = Array.isArray(tags) && tags.length > 0 
+      ? JSON.stringify(tags) 
+      : JSON.stringify(["meta_ads"]);
 
     await executeD1Query(
       `INSERT INTO crm_leads (
@@ -122,14 +127,14 @@ export async function POST(req: NextRequest) {
       ) VALUES (?, ?, ?, ?, ?, 'new', ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
       [
         id,
-        name ? name.trim() : "Prospective Customer",
+        name ? name.trim() : "Meta Ad Lead",
         cleanPhone,
         email ? email.trim() : "",
-        source || "manual",
+        source || "meta_ads",
         temperature || "warm",
         Number(potential_value || 0),
         parsedTags,
-        notes || "",
+        notes || "Manual lead created under Meta Ads CRM",
       ]
     );
 

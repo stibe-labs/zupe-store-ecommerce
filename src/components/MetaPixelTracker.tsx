@@ -10,6 +10,16 @@ declare global {
   }
 }
 
+export function getStoredMetaAttribution() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("tj_meta_attribution");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 // Global helper to trigger unified Browser Pixel + Server CAPI event
 export async function trackMetaPixelEvent(
   eventName: "PageView" | "ViewContent" | "AddToCart" | "InitiateCheckout" | "Purchase",
@@ -98,6 +108,39 @@ export function MetaPixelTracker() {
   useEffect(() => {
     if (initialized.current && window.fbq) {
       window.fbq("track", "PageView");
+    }
+
+    // Capture Meta Ad Attribution from URL
+    if (searchParams) {
+      const fbclid = searchParams.get("fbclid");
+      const utmSource = searchParams.get("utm_source")?.toLowerCase();
+      const utmCampaign = searchParams.get("utm_campaign");
+      const utmMedium = searchParams.get("utm_medium");
+      const utmContent = searchParams.get("utm_content");
+
+      const isMetaTraffic =
+        Boolean(fbclid) ||
+        utmSource === "facebook" ||
+        utmSource === "instagram" ||
+        utmSource === "meta" ||
+        utmSource === "ig" ||
+        utmSource === "fb";
+
+      if (isMetaTraffic) {
+        try {
+          localStorage.setItem(
+            "tj_meta_attribution",
+            JSON.stringify({
+              fbclid: fbclid || undefined,
+              utm_source: utmSource || (fbclid ? "meta_ads" : "facebook"),
+              utm_campaign: utmCampaign || undefined,
+              utm_medium: utmMedium || undefined,
+              utm_content: utmContent || undefined,
+              timestamp: new Date().toISOString(),
+            })
+          );
+        } catch {}
+      }
     }
   }, [pathname, searchParams]);
 

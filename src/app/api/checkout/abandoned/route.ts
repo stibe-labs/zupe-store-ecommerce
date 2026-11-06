@@ -205,22 +205,28 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 3. Live Real-Time Ingestion into CRM Leads
+    // 3. Live Real-Time Ingestion into CRM Leads (Meta Leads)
     try {
       const clean10 = digits.slice(-10);
       const leadId = `lead_${clean10}`;
       const leadTemp = amount >= 1500 ? "hot" : amount >= 899 ? "warm" : "cold";
       const itemNames = Array.isArray(items) ? items.map((i: any) => i.name || "Turkiye Jam").join(", ") : "Turkiye Jam";
-      const leadNotes = `Real checkout session. Cart: ₹${amount} (${itemNames}). Recovery: ${recoveryToken}`;
+      const metaAttr = body.meta_attribution;
+      const campaignTag = metaAttr?.utm_campaign || "meta_ads";
+      const leadNotes = `Meta ad checkout session. Cart: ₹${amount} (${itemNames}). Recovery: ${recoveryToken}`;
+      const tagsJson = JSON.stringify(["meta_ads", campaignTag, "live_visitor"]);
+
       await executeD1Query(
         `INSERT INTO crm_leads (
            id, name, phone, email, source, status, temperature, potential_value, tags, notes, created_at, updated_at
-         ) VALUES (?, ?, ?, ?, 'abandoned_checkout', 'new', ?, ?, '["abandoned_cart", "live_visitor"]', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+         ) VALUES (?, ?, ?, ?, 'meta_ads', 'new', ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
          ON CONFLICT(id) DO UPDATE SET
            name = COALESCE(excluded.name, crm_leads.name),
            email = COALESCE(excluded.email, crm_leads.email),
            potential_value = excluded.potential_value,
            temperature = excluded.temperature,
+           source = 'meta_ads',
+           tags = excluded.tags,
            notes = excluded.notes,
            updated_at = CURRENT_TIMESTAMP`,
         [
@@ -230,6 +236,7 @@ export async function POST(req: NextRequest) {
           customer_email || null,
           leadTemp,
           amount,
+          tagsJson,
           leadNotes,
         ]
       );

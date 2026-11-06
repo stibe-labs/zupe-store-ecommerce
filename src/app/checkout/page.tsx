@@ -1014,6 +1014,12 @@ function CheckoutContent() {
     }
 
     const timer = setTimeout(() => {
+      let metaAttr: any = null;
+      try {
+        const rawAttr = localStorage.getItem("tj_meta_attribution");
+        if (rawAttr) metaAttr = JSON.parse(rawAttr);
+      } catch {}
+
       fetch("/api/checkout/abandoned", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1025,7 +1031,8 @@ function CheckoutContent() {
           city: state ? `${city.trim()}, ${state.trim()}` : city.trim() || undefined,
           postal_code: postalCode.trim() || undefined,
           total_amount: grandTotal,
-          source: "checkout",
+          source: metaAttr ? "meta_ads" : "checkout",
+          meta_attribution: metaAttr,
           items: cart.map((c) => ({
             id: c.id,
             name: c.name,

@@ -114,7 +114,7 @@ export default function AdminCRMPage() {
     name: "",
     phone: "",
     email: "",
-    source: "manual",
+    source: "meta_ads",
     temperature: "warm",
     potential_value: "899",
     notes: "",
@@ -312,7 +312,7 @@ export default function AdminCRMPage() {
           name: "",
           phone: "",
           email: "",
-          source: "manual",
+          source: "meta_ads",
           temperature: "warm",
           potential_value: "899",
           notes: "",
@@ -454,7 +454,7 @@ export default function AdminCRMPage() {
     setWhatsAppModalLead(lead);
     const firstName = lead.name.split(" ")[0] || "there";
     setCustomWaMsg(
-      `Hi ${firstName}! We noticed your interest in Turkiye Jam (Authentic Turkish Herbal Macun). Would you like to claim your Free Express Delivery + ₹100 Off coupon code? Reply 'YES' to confirm your pack! 🍯✨`
+      `Hi ${firstName}! 🍯 Thank you for your inquiry on our Instagram / Facebook ad for Turkiye Jam! Here is your exclusive ₹100 Off coupon code: 'META100' valid on your order today: https://turkiyejam.com/checkout`
     );
   };
 
@@ -554,7 +554,7 @@ export default function AdminCRMPage() {
           <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-800 pb-2 scrollbar-none">
             {[
               { id: "overview", label: "Executive Cockpit", icon: BarChart2 },
-              { id: "leads", label: "Leads List", icon: Flame, badge: String(leadStats.totalLeads || 0) },
+              { id: "leads", label: "Meta Ad Leads", icon: Flame, badge: String(leadStats.totalLeads || 0) },
               { id: "customers", label: "Customer 360", icon: Users, badge: String(customers.length || 0) },
               { id: "meta", label: "Meta Ad Spends", icon: DollarSign, badge: `${metaMetrics.blendedRoas}x ROAS` },
               { id: "pixel", label: "Pixel & CAPI Diagnostics", icon: Activity, badge: "Health" },
@@ -684,11 +684,11 @@ export default function AdminCRMPage() {
                   </div>
 
                   <div className="bg-slate-800/50 border border-slate-700/70 rounded-2xl p-4">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Stage 2: Intent / Leads</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Stage 2: Meta Ad Leads</span>
                     <div className="text-xl font-bold text-white mt-1">
                       {leadStats.totalLeads} Leads
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5">Cart Dropoffs &amp; Chats</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Ad Clicks &amp; Instant Forms</p>
                     <div className="text-[11px] text-amber-400 mt-2">
                       {leadStats.newLeads} Untouched / New
                     </div>
@@ -724,13 +724,13 @@ export default function AdminCRMPage() {
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                       <Flame className="h-4 w-4 text-orange-400" />
-                      Priority Hot Leads (High-Value Abandonments)
+                      Priority Meta Ad Leads (High-Value Inquiries)
                     </h3>
                     <button
                       onClick={() => setActiveTab("leads")}
                       className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
                     >
-                      View All Leads &rarr;
+                      View Meta Leads &rarr;
                     </button>
                   </div>
 
@@ -828,10 +828,35 @@ export default function AdminCRMPage() {
           )}
 
           {/* ========================================================= */}
-          {/* TAB 2: LEADS LIST ("leadslist") */}
+          {/* TAB 2: META AD LEADS */}
           {/* ========================================================= */}
           {activeTab === "leads" && (
             <div className="space-y-5 animate-in fade-in duration-200">
+              {/* Meta Leads Banner */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900 border border-indigo-900/40 rounded-2xl p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+                    <Flame className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-bold text-white">Meta Ad Leads Desk</h2>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        Instagram &amp; Facebook Ads
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Exclusively tracking visitor inquiries captured via Meta Ad clicks (fbclid / UTMs) and Meta Instant Lead Forms.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
+                    {leadStats.totalLeads} Total Meta Leads
+                  </span>
+                </div>
+              </div>
+
               {/* Filter Bar */}
               <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="relative w-full md:w-80">
@@ -841,7 +866,7 @@ export default function AdminCRMPage() {
                     value={leadSearch}
                     onChange={(e) => setLeadSearch(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && fetchLeads()}
-                    placeholder="Search by name, phone, notes..."
+                    placeholder="Search Meta leads by name, phone, notes..."
                     className="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                   />
                 </div>
@@ -890,7 +915,7 @@ export default function AdminCRMPage() {
                     <thead className="bg-slate-800/60 border-b border-slate-700/80 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
                       <tr>
                         <th className="px-5 py-3.5">Lead / Contact</th>
-                        <th className="px-4 py-3.5">Source</th>
+                        <th className="px-4 py-3.5">Meta Attribution</th>
                         <th className="px-4 py-3.5">Potential Deal</th>
                         <th className="px-4 py-3.5">Score</th>
                         <th className="px-4 py-3.5">Status</th>
@@ -903,13 +928,17 @@ export default function AdminCRMPage() {
                         <tr>
                           <td colSpan={7} className="px-5 py-8 text-center text-slate-400">
                             <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                            Loading CRM leads database...
+                            Loading Meta CRM leads database...
                           </td>
                         </tr>
                       ) : leads.length === 0 ? (
                         <tr>
                           <td colSpan={7} className="px-5 py-8 text-center text-slate-400">
-                            No leads matching current filters.
+                            <Flame className="h-8 w-8 text-slate-600 mx-auto mb-2 opacity-50" />
+                            <p className="font-semibold text-slate-300">No Meta Ad Leads found</p>
+                            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                              Incoming leads from Instagram / Facebook ad clicks (fbclid) and Meta Instant Lead Forms will populate here in real-time.
+                            </p>
                           </td>
                         </tr>
                       ) : (
@@ -933,9 +962,28 @@ export default function AdminCRMPage() {
                               </td>
 
                               <td className="px-4 py-3.5">
-                                <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700 capitalize">
-                                  {lead.source.replace("_", " ")}
-                                </span>
+                                <div className="flex flex-col gap-1">
+                                  <span className="inline-flex items-center gap-1 w-fit px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/25">
+                                    <Sparkles className="h-2.5 w-2.5 text-indigo-400" />
+                                    {lead.source === "meta_ads"
+                                      ? "Meta Ads (IG/FB)"
+                                      : lead.source === "meta_instant_form"
+                                      ? "Instant Lead Form"
+                                      : lead.source.replace("_", " ")}
+                                  </span>
+                                  {Array.isArray(lead.tags) && lead.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-1">
+                                      {lead.tags.slice(0, 3).map((tag: string, idx: number) => (
+                                        <span
+                                          key={idx}
+                                          className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/60 font-mono"
+                                        >
+                                          #{tag}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
                               </td>
 
                               <td className="px-4 py-3.5 font-bold text-emerald-400 text-sm">
@@ -1479,6 +1527,19 @@ export default function AdminCRMPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Meta Source</label>
+                  <select
+                    value={newLeadForm.source}
+                    onChange={(e) => setNewLeadForm({ ...newLeadForm, source: e.target.value })}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="meta_ads">Meta Ads (IG / FB)</option>
+                    <option value="meta_instant_form">Meta Instant Lead Form</option>
+                    <option value="ad_campaign">Meta Ad Campaign</option>
+                  </select>
+                </div>
+
+                <div>
                   <label className="block font-semibold text-slate-300 mb-1">Score / Temp</label>
                   <select
                     value={newLeadForm.temperature}
@@ -1490,16 +1551,16 @@ export default function AdminCRMPage() {
                     <option value="cold">Cold ❄️</option>
                   </select>
                 </div>
+              </div>
 
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1">Potential Value (₹)</label>
-                  <input
-                    type="number"
-                    value={newLeadForm.potential_value}
-                    onChange={(e) => setNewLeadForm({ ...newLeadForm, potential_value: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Potential Value (₹)</label>
+                <input
+                  type="number"
+                  value={newLeadForm.potential_value}
+                  onChange={(e) => setNewLeadForm({ ...newLeadForm, potential_value: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                />
               </div>
 
               <div>
@@ -1681,12 +1742,12 @@ export default function AdminCRMPage() {
                   onClick={() => {
                     const firstName = whatsAppModalLead.name.split(" ")[0] || "there";
                     setCustomWaMsg(
-                      `Hi ${firstName}! 🍯 Thank you for your interest in Turkiye Jam! Here is an exclusive ₹100 Off coupon code: 'VIP100' valid for the next 2 hours on your order. Click to activate: https://turkiyejam.com/checkout`
+                      `Hi ${firstName}! 🍯 Thank you for your inquiry on our Instagram / Facebook ad for Turkiye Jam! Here is your exclusive ₹100 Off coupon code: 'META100' valid on your order today: https://turkiyejam.com/checkout`
                     );
                   }}
                   className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-left text-slate-300 font-medium border border-slate-700 transition"
                 >
-                  🎁 ₹100 Off Recovery Offer
+                  🎁 Meta Ad ₹100 Off Recovery
                 </button>
 
                 <button
@@ -1694,12 +1755,12 @@ export default function AdminCRMPage() {
                   onClick={() => {
                     const firstName = whatsAppModalLead.name.split(" ")[0] || "there";
                     setCustomWaMsg(
-                      `Hello ${firstName}! 🚚 Your Turkiye Jam cart is reserved! Would you prefer Cash on Delivery (₹49 online advance) or 100% Free Express Delivery via UPI? Reply to confirm your delivery address!`
+                      `Hello ${firstName}! 🚚 We saw your interest in Turkiye Jam from our Meta ad. Would you like to confirm Free Express Delivery via UPI or Cash on Delivery (₹49 advance)? Reply to confirm your delivery address!`
                     );
                   }}
                   className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-left text-slate-300 font-medium border border-slate-700 transition"
                 >
-                  ⚡ Fast Delivery Assistance
+                  ⚡ Meta Lead Fast Delivery
                 </button>
               </div>
             </div>
