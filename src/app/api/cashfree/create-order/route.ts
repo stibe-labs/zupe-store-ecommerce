@@ -186,14 +186,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const directCashfreeUrl = paymentSessionId
-      ? `https://payments.cashfree.com/forms/${paymentSessionId}`
-      : settlerPayUrl;
+    const effectivePayUrl = settlerPayUrl || (paymentSessionId ? `https://payments.cashfree.com/forms/${paymentSessionId}` : "");
 
     return NextResponse.json({
       success: true,
       orderId,
-      payUrl: directCashfreeUrl,
+      payUrl: effectivePayUrl,
+      settlerPayUrl,
       paymentSessionId,
       settlerInvoiceId,
       amount: chargeAmount,
