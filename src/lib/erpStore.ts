@@ -1568,6 +1568,7 @@ export interface ERPIntegrationsSettings {
     currency: string;
     freeShippingThreshold: number;
     standardShippingFee: number;
+    codFee?: number;
   };
   shopify: {
     domain: string;
@@ -1605,6 +1606,7 @@ let inMemorySettings: ERPIntegrationsSettings = {
     currency: "INR (₹)",
     freeShippingThreshold: 499,
     standardShippingFee: 49,
+    codFee: 49,
   },
   shopify: {
     domain: "turkiyejam.myshopify.com",

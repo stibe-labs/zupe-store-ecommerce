@@ -27,7 +27,18 @@ export async function POST(req: NextRequest) {
     } = body;
 
     const isCod = Boolean(is_cod_advance);
-    const chargeAmount = isCod ? 49 : Math.round(Number(amount));
+    let configuredCodAdvance = 49;
+    try {
+      const { getSettings } = await import("@/lib/erpStore");
+      const st = await getSettings();
+      if (st?.storeProfile?.codFee !== undefined) {
+        configuredCodAdvance = Number(st.storeProfile.codFee) || 49;
+      }
+    } catch {}
+
+    const chargeAmount = isCod
+      ? (typeof amount === "number" && amount > 0 ? Math.round(amount) : configuredCodAdvance)
+      : Math.round(Number(amount));
 
     if (!chargeAmount || typeof chargeAmount !== "number" || chargeAmount <= 0) {
       return NextResponse.json(
@@ -70,9 +81,9 @@ export async function POST(req: NextRequest) {
       ? Math.round(Number(total_amount || (amount + (balance_due || 0))))
       : Math.round(Number(total_amount || amount));
     const orderBalanceDue = isCod
-      ? Math.round(Number(balance_due !== undefined ? balance_due : (orderTotalAmount - 49)))
+      ? Math.round(Number(balance_due !== undefined ? balance_due : (orderTotalAmount - chargeAmount)))
       : 0;
-    const orderAdvancePaid = isCod ? 49 : chargeAmount;
+    const orderAdvancePaid = isCod ? chargeAmount : chargeAmount;
     const orderPaymentMethod = isCod ? "Cash on Delivery" : "Online Payment";
 
     // 2. Pre-create order in ERP and D1 with Pending payment status

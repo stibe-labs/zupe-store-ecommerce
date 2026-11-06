@@ -16,6 +16,7 @@ export async function GET() {
         currency: profile.currency || "INR (₹)",
         freeShippingThreshold: Number(profile.freeShippingThreshold ?? 499),
         standardShippingFee: Number(profile.standardShippingFee ?? 49),
+        codFee: Number(profile.codFee ?? 49),
       },
     }, {
       headers: {
@@ -32,7 +33,9 @@ export async function GET() {
         currency: "INR (₹)",
         freeShippingThreshold: 499,
         standardShippingFee: 49,
+        codFee: 49,
       },
     });
   }
 }
+

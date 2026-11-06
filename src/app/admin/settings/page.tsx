@@ -40,6 +40,7 @@ export default function AdminSettingsPage() {
   const [currency, setCurrency] = useState("INR (₹)");
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("499");
   const [standardShippingFee, setStandardShippingFee] = useState("49");
+  const [codFee, setCodFee] = useState("49");
 
   // Shopify
   const [shopifyDomain, setShopifyDomain] = useState("turkiyejam.myshopify.com");
@@ -77,6 +78,7 @@ export default function AdminSettingsPage() {
           setCurrency(s.storeProfile.currency || "INR (₹)");
           setFreeShippingThreshold(String(s.storeProfile.freeShippingThreshold ?? 499));
           setStandardShippingFee(String(s.storeProfile.standardShippingFee ?? 49));
+          setCodFee(String(s.storeProfile.codFee ?? 49));
         }
         if (s.shopify) {
           setShopifyDomain(s.shopify.domain || "");
@@ -125,7 +127,8 @@ export default function AdminSettingsPage() {
         supportPhone: supportPhone.trim(),
         currency,
         freeShippingThreshold: Number(freeShippingThreshold) || 499,
-        standardShippingFee: Number(standardShippingFee) || 49,
+        standardShippingFee: Number(standardShippingFee) !== undefined && !isNaN(Number(standardShippingFee)) ? Number(standardShippingFee) : 49,
+        codFee: Number(codFee) !== undefined && !isNaN(Number(codFee)) ? Number(codFee) : 49,
       },
       shopify: {
         domain: shopifyDomain.trim(),
@@ -375,7 +378,7 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">
                       Store Currency
@@ -408,6 +411,18 @@ export default function AdminSettingsPage() {
                       type="number"
                       value={standardShippingFee}
                       onChange={(e) => setStandardShippingFee(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      COD Fee / Advance (₹)
+                    </label>
+                    <input
+                      type="number"
+                      value={codFee}
+                      onChange={(e) => setCodFee(e.target.value)}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
                     />
                   </div>

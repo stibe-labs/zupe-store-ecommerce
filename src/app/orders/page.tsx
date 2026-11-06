@@ -1076,11 +1076,11 @@ function OrdersPageContent() {
                       <span>•</span>
                       {isCod ? (
                         <span className="text-amber-700 font-semibold">
-                          COD Delivery Fee: <strong>+₹49</strong>
+                          COD Delivery Fee: <strong>{ord.shipping_cost ? `+₹${ord.shipping_cost}` : "+₹49"}</strong>
                         </span>
                       ) : (
                         <span className="text-emerald-700 font-semibold">
-                          Delivery: <strong>FREE (Saved ₹49)</strong>
+                          Delivery: <strong>{ord.shipping_cost && ord.shipping_cost > 0 ? `₹${ord.shipping_cost}` : "FREE"}</strong>
                         </span>
                       )}
                       {ord.discount_amount && ord.discount_amount > 0 ? (

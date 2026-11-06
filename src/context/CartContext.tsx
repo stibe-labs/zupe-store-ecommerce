@@ -62,6 +62,7 @@ interface CartContextType {
   savings: number;
   freeShippingThreshold: number;
   standardShippingFee: number;
+  codFee: number;
   freeShippingRemaining: number;
   outOfStockItemIds: string[];
   hasOutOfStockItems: boolean;
@@ -78,9 +79,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [outOfStockItemIds, setOutOfStockItemIds] = useState<string[]>([]);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState<number>(499);
   const [standardShippingFee, setStandardShippingFee] = useState<number>(49);
+  const [codFee, setCodFee] = useState<number>(49);
   const GUEST_CART_KEY = "zp_guest_cart";
 
-  // Dynamically load Free Shipping Min Order and Standard Shipping Fee from Admin Settings
+  // Dynamically load Free Shipping Min Order, Standard Shipping Fee, and COD Fee from Admin Settings
   useEffect(() => {
     fetch("/api/settings")
       .then((res) => res.json())
@@ -91,6 +93,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           }
           if (typeof data.storeProfile.standardShippingFee === "number") {
             setStandardShippingFee(data.storeProfile.standardShippingFee);
+          }
+          if (typeof data.storeProfile.codFee === "number") {
+            setCodFee(data.storeProfile.codFee);
           }
         }
       })
@@ -527,6 +532,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         savings,
         freeShippingThreshold,
         standardShippingFee,
+        codFee,
         freeShippingRemaining,
         outOfStockItemIds,
         hasOutOfStockItems: outOfStockItemIds.length > 0,
