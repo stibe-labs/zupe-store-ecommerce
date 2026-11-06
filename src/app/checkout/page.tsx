@@ -42,25 +42,61 @@ import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 import { deduplicateAddresses, normalizeAddressKey } from "@/lib/addressUtils";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
-// Recommended Bump / Upsell Products
+// Recommended Bump / Upsell Products (Official Catalog Variants & Authentic Pricing)
 const BUMP_PRODUCTS = [
   {
-    id: "pack-2-strips",
-    slug: "turkiye-jam-2-strips",
-    name: "2 Sachet Strips (Pocket Trial Pack)",
-    price: 799,
-    mrp: 1199,
-    poster_image: "/tj/turkiye-jam-2-strips.png",
-    category: "Herbal Paste",
+    id: "turkiye-jam-pack-4",
+    slug: "turkiye-jam-4-sachet-pack",
+    name: "4 Sachet Strips (Value Pack)",
+    price: 1399,
+    mrp: 2399,
+    poster_image: "/tj/turkiye-jam-4-strips.png",
+    category: "Vitality & Wellness",
   },
   {
-    id: "pack-6-strips",
-    slug: "turkiye-jam-6-strips",
+    id: "turkiye-jam-pack-6",
+    slug: "turkiye-jam-6-sachet-pack",
     name: "6 Sachet Strips (Multi-Session Pack)",
     price: 1899,
-    mrp: 2999,
+    mrp: 3200,
     poster_image: "/tj/turkiye-jam-6-strips.png",
-    category: "Herbal Paste",
+    category: "Vitality & Wellness",
+  },
+  {
+    id: "turkiye-jam-bottle-240g",
+    slug: "turkiye-jam-epimedium-macun",
+    name: "240g Glass Jar + 2 Sachets Free",
+    price: 2899,
+    mrp: 4500,
+    poster_image: "/tj/turkiye-jam-jar-2-strips.png",
+    category: "Vitality & Wellness",
+  },
+  {
+    id: "turkiye-jam-combo-box-14",
+    slug: "turkiye-jam-sachet-box-14",
+    name: "Sachet Box (12 + 2 Sachets)",
+    price: 2899,
+    mrp: 4800,
+    poster_image: "/tj/turkiye-jam-box-14-strips.png",
+    category: "Vitality & Wellness",
+  },
+  {
+    id: "turkiye-jam-pack-3",
+    slug: "turkiye-jam-3-sachet-pack",
+    name: "3 Sachet Strips (Standard Pack)",
+    price: 1099,
+    mrp: 1899,
+    poster_image: "/tj/turkiye-jam-3-strips.png",
+    category: "Vitality & Wellness",
+  },
+  {
+    id: "turkiye-jam-pack-2",
+    slug: "turkiye-jam-2-sachet-pack",
+    name: "2 Sachet Strips (Discovery Pack)",
+    price: 899,
+    mrp: 1499,
+    poster_image: "/tj/turkiye-jam-2-strips.png",
+    category: "Vitality & Wellness",
   },
 ];
 
@@ -913,15 +949,21 @@ function CheckoutContent() {
     return sum;
   }, 0);
 
-  // Pricing calculations: Taxable base, 18% GST, and Grand Total
-  const taxableBase = Math.max(0, subtotal - promoDiscount);
-  const gstAmount = Math.round(taxableBase * 0.18);
+  // Pricing calculations: In Indian retail / Legal Metrology, product prices are ALL-INCLUSIVE
+  const effectiveSubtotal = Math.max(0, subtotal - promoDiscount);
+  // 18% GST is included inside product price: Tax Component = Price - (Price / 1.18)
+  const gstAmount = Math.round(effectiveSubtotal - (effectiveSubtotal / 1.18));
   const totalDiscount = savings + bundleSavings + promoDiscount;
-  const onlineGrandTotal = Math.max(0, taxableBase + gstAmount); // ₹0 shipping
-  const codGrandTotal = Math.max(0, taxableBase + gstAmount + 49); // ₹49 shipping fee
-  const grandTotal = Math.max(0, taxableBase + gstAmount + shippingFee);
-  const payableNow = paymentMethod === "online" ? grandTotal : 0;
-  const doorstepBalance = paymentMethod === "cod" ? grandTotal : 0;
+
+  // Online Payment: Exact advertised price with 100% Free Express Delivery
+  const onlineGrandTotal = effectiveSubtotal;
+
+  // Cash on Delivery: Advertised price + ₹49 courier fee
+  const codGrandTotal = effectiveSubtotal + 49;
+
+  const grandTotal = isCod ? codGrandTotal : onlineGrandTotal;
+  const payableNow = isCod ? 49 : onlineGrandTotal;
+  const doorstepBalance = isCod ? effectiveSubtotal : 0;
 
   // Total MRP for comparison pill
   const totalMrp = cart.reduce((sum, it) => {
@@ -932,8 +974,19 @@ function CheckoutContent() {
 
   // Upsell bump offer candidates (excluding what is already in cart)
   const availableUpsells = useMemo(() => {
-    const cartIds = new Set(cart.map((c) => c.id));
-    return BUMP_PRODUCTS.filter((b) => !cartIds.has(b.id));
+    const cartIds = new Set(
+      cart.flatMap((c) => [
+        c.id,
+        c.slug,
+        (c as any).product_id,
+        c.id?.replace(/^turkiye-jam-/, ""),
+        c.slug?.replace(/^turkiye-jam-/, ""),
+      ]).filter(Boolean)
+    );
+    return BUMP_PRODUCTS.filter((b) => {
+      const bShortId = b.id.replace(/^turkiye-jam-/, "");
+      return !cartIds.has(b.id) && !cartIds.has(b.slug) && !cartIds.has(bShortId);
+    });
   }, [cart]);
 
   // Auto-track Abandoned Checkout when Phone is 10 digits
@@ -2847,8 +2900,8 @@ function CheckoutContent() {
                         </div>
                       )}
                       <div className="flex justify-between text-gray-600">
-                        <span>GST (18%)</span>
-                        <span className="font-semibold text-gray-900">+₹{gstAmount.toLocaleString()}</span>
+                        <span>GST (18% Included)</span>
+                        <span className="font-semibold text-gray-900">₹{gstAmount.toLocaleString()} (Included)</span>
                       </div>
                       <div className="flex justify-between text-gray-600">
                         <span className="flex items-center gap-1.5">
@@ -3199,8 +3252,8 @@ function CheckoutContent() {
                   </div>
                 )}
                 <div className="flex justify-between text-gray-600">
-                  <span>GST (18%)</span>
-                  <span className="font-semibold text-gray-900">+₹{gstAmount.toLocaleString()}</span>
+                  <span>GST (18% Included)</span>
+                  <span className="font-semibold text-gray-900">₹{gstAmount.toLocaleString()} (Included)</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span className="flex items-center gap-1.5">

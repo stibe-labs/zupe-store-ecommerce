@@ -86,11 +86,11 @@ export async function POST(req: NextRequest) {
 
     const advancePaid = isCodOrder
       ? (Number(order?.advance_paid) || 49)
-      : (Number(order?.total_amount) || verificationAmount || 1061);
+      : (Number(order?.total_amount) || verificationAmount || 899);
     const balanceDue = isCodOrder
       ? (order?.balance_due !== undefined ? Number(order.balance_due) : Math.max(0, Number(order?.total_amount || 0) - advancePaid))
       : 0;
-    const effectiveTotal = Number(order?.total_amount) || (isCodOrder ? (advancePaid + balanceDue) : (verificationAmount || 1061));
+    const effectiveTotal = Number(order?.total_amount) || (isCodOrder ? (advancePaid + balanceDue) : (verificationAmount || 899));
 
     // 3. Update in ERP Store (handles memory + D1 update)
     await updateERPOrder(orderId, {
@@ -225,7 +225,7 @@ export async function POST(req: NextRequest) {
       advancePaid,
       balanceDue,
       totalAmount: effectiveTotal,
-      amount: verification.amount,
+      amount: verificationAmount || (isCodOrder ? advancePaid : effectiveTotal),
       message: isCodOrder
         ? "Cash on Delivery courier advance verified and order confirmed successfully"
         : "Cashfree payment verified and order confirmed successfully",
