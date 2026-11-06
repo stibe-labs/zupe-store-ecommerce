@@ -328,10 +328,7 @@ export function TurkiyeJamStorefront({ initialProducts }: TurkiyeJamStorefrontPr
       color: pkg.name,
     };
     addItem(item, 1);
-    const launched = await launchFastrrCheckout([{ ...item, quantity: 1 }]);
-    if (!launched) {
-      router.push("/checkout");
-    }
+    router.push("/checkout");
   };
 
   const toggleFaq = (id: number) => {

@@ -263,17 +263,10 @@ export function CartDrawer() {
                 <div className="flex flex-col gap-2">
                   <button
                     disabled={hasOutOfStockItems}
-                    onClick={async () => {
+                    onClick={() => {
                       if (hasOutOfStockItems) return;
                       closeCart();
-                      const launched = await launchFastrrCheckout(cart);
-                      if (!launched) {
-                        if (!user) {
-                          openAuthModal("login", "Sign in required: Please log in or create an account to proceed to checkout 🔒", "/checkout");
-                          return;
-                        }
-                        router.push("/checkout");
-                      }
+                      router.push("/checkout");
                     }}
                     className={`w-full flex items-center justify-center gap-2 py-3.5 text-white font-semibold rounded-xl transition-colors text-sm ${
                       hasOutOfStockItems
