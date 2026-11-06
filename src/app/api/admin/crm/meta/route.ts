@@ -24,6 +24,98 @@ interface WhatsAppCRMConfig {
   lastSyncedAt?: string;
 }
 
+export async function fetchMetaHierarchy(rawAccountId: string, token: string) {
+  const accountId = (rawAccountId || "").replace(/^act_/, "").trim();
+  if (!accountId || !token) {
+    return { adsets: [], ads: [], breakdowns: null, error: "Missing account ID or token" };
+  }
+
+  try {
+    const [adsetsRes, adsetInsightsRes, adsRes, adInsightsRes, ageGenderRes, platformRes, regionRes] = await Promise.all([
+      fetch(
+        `https://graph.facebook.com/v21.0/act_${accountId}/adsets?fields=id,name,status,effective_status,daily_budget,targeting,optimization_goal,bid_amount,created_time,updated_time&access_token=${encodeURIComponent(token)}`
+      ).then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch(
+        `https://graph.facebook.com/v21.0/act_${accountId}/insights?level=adset&fields=adset_id,adset_name,spend,impressions,clicks,cpc,ctr&date_preset=maximum&access_token=${encodeURIComponent(token)}`
+      ).then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch(
+        `https://graph.facebook.com/v21.0/act_${accountId}/ads?fields=id,name,status,effective_status,adset_id,campaign_id,creative{id,name,title,body,image_url,thumbnail_url,call_to_action_type},preview_shareable_link&access_token=${encodeURIComponent(token)}`
+      ).then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch(
+        `https://graph.facebook.com/v21.0/act_${accountId}/insights?level=ad&fields=ad_id,ad_name,spend,impressions,clicks,cpc,ctr&date_preset=maximum&access_token=${encodeURIComponent(token)}`
+      ).then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch(
+        `https://graph.facebook.com/v21.0/act_${accountId}/insights?breakdowns=age,gender&fields=spend,impressions,clicks,cpc,ctr&date_preset=maximum&access_token=${encodeURIComponent(token)}`
+      ).then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch(
+        `https://graph.facebook.com/v21.0/act_${accountId}/insights?breakdowns=publisher_platform,platform_position&fields=spend,impressions,clicks,cpc,ctr&date_preset=maximum&access_token=${encodeURIComponent(token)}`
+      ).then((r) => r.json()).catch(() => ({ data: [] })),
+      fetch(
+        `https://graph.facebook.com/v21.0/act_${accountId}/insights?breakdowns=region&fields=spend,impressions,clicks,cpc,ctr&date_preset=maximum&access_token=${encodeURIComponent(token)}`
+      ).then((r) => r.json()).catch(() => ({ data: [] })),
+    ]);
+
+    // Map adset insights
+    const adsetInsightsMap = new Map<string, any>();
+    if (Array.isArray(adsetInsightsRes?.data)) {
+      for (const ins of adsetInsightsRes.data) {
+        adsetInsightsMap.set(ins.adset_id, ins);
+      }
+    }
+
+    const adsets = (adsetsRes?.data || []).map((set: any) => {
+      const ins = adsetInsightsMap.get(set.id) || {};
+      const spend = Number(ins.spend || 0);
+      const impr = Number(ins.impressions || 0);
+      const clicks = Number(ins.clicks || 0);
+      return {
+        ...set,
+        spend,
+        impressions: impr,
+        clicks,
+        cpc: Number(ins.cpc || (clicks > 0 ? (spend / clicks).toFixed(2) : 0)),
+        ctr: Number(ins.ctr || (impr > 0 ? ((clicks / impr) * 100).toFixed(2) : 0)),
+      };
+    });
+
+    // Map ad insights
+    const adInsightsMap = new Map<string, any>();
+    if (Array.isArray(adInsightsRes?.data)) {
+      for (const ins of adInsightsRes.data) {
+        adInsightsMap.set(ins.ad_id, ins);
+      }
+    }
+
+    const ads = (adsRes?.data || []).map((ad: any) => {
+      const ins = adInsightsMap.get(ad.id) || {};
+      const spend = Number(ins.spend || 0);
+      const impr = Number(ins.impressions || 0);
+      const clicks = Number(ins.clicks || 0);
+      return {
+        ...ad,
+        spend,
+        impressions: impr,
+        clicks,
+        cpc: Number(ins.cpc || (clicks > 0 ? (spend / clicks).toFixed(2) : 0)),
+        ctr: Number(ins.ctr || (impr > 0 ? ((clicks / impr) * 100).toFixed(2) : 0)),
+      };
+    });
+
+    return {
+      adsets,
+      ads,
+      breakdowns: {
+        ageGender: ageGenderRes?.data || [],
+        platforms: platformRes?.data || [],
+        regions: regionRes?.data || [],
+      },
+    };
+  } catch (err: any) {
+    console.error("fetchMetaHierarchy error:", err);
+    return { adsets: [], ads: [], breakdowns: null, error: err.message };
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     // 1. Fetch Meta Integration Config from D1
@@ -143,6 +235,16 @@ export async function GET(req: NextRequest) {
     const avgCpc = totalClicks > 0 ? Number((totalMetaSpend / totalClicks).toFixed(2)) : 0;
     const avgCtr = totalImpressions > 0 ? Number(((totalClicks / totalImpressions) * 100).toFixed(2)) : 0;
 
+    // 4. Fetch Live Hierarchy (Ad Sets, Ads, Creatives & Breakdown Demographics)
+    let metaHierarchy: any = { adsets: [], ads: [], breakdowns: null };
+    if (config.accountId && config.token) {
+      try {
+        metaHierarchy = await fetchMetaHierarchy(config.accountId, config.token);
+      } catch (hErr) {
+        console.warn("fetchMetaHierarchy in GET warning:", hErr);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       config: {
@@ -178,6 +280,7 @@ export async function GET(req: NextRequest) {
         totalOrdersCount,
       },
       campaigns,
+      metaHierarchy,
     });
   } catch (err: any) {
     console.error("Meta CRM API GET error:", err);
@@ -584,6 +687,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         message: `₹${numSpend.toLocaleString()} ad spend logged and synchronized with ERP expense ledger!`,
+      });
+    }
+
+    // 4. FETCH FULL AD HIERARCHY (Ad Sets, Ads, Creatives & Breakdown Demographics)
+    if (action === "fetch_hierarchy") {
+      let accountId = "";
+      let token = "";
+
+      const rows = await executeD1Query<any>(
+        "SELECT config_data FROM integrations_config WHERE provider = 'meta'"
+      );
+      if (rows && rows.length > 0 && rows[0].config_data) {
+        const parsed = JSON.parse(rows[0].config_data);
+        accountId = (parsed.accountId || "").replace(/^act_/, "").trim();
+        token = parsed.token || "";
+      }
+
+      if (!accountId || !token) {
+        return NextResponse.json({
+          success: false,
+          error: "Meta Ad Account ID and Access Token must be configured in CRM Settings.",
+        });
+      }
+
+      const hierarchy = await fetchMetaHierarchy(accountId, token);
+      return NextResponse.json({
+        success: true,
+        hierarchy,
       });
     }
 
