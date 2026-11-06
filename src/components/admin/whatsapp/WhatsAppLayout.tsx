@@ -102,9 +102,18 @@ export default function WhatsAppLayout() {
       const data = await res.json();
       if (data.success && Array.isArray(data.messages)) {
         setMessages((prev) => {
-          if (prev.length !== data.messages.length) return data.messages;
+          const merged = data.messages.map((nm: WhatsAppMessage) => {
+            const pm = prev.find((m) => m.id === nm.id);
+            // If local state is already 'delivered' or 'read', don't downgrade to 'sending'
+            if (pm && (pm.status === "delivered" || pm.status === "read") && nm.status === "sending") {
+              return { ...nm, status: pm.status };
+            }
+            return nm;
+          });
+
+          if (prev.length !== merged.length) return merged;
           const isSame = prev.every((pm, idx) => {
-            const nm = data.messages[idx];
+            const nm = merged[idx];
             return (
               nm &&
               pm.id === nm.id &&
@@ -112,7 +121,7 @@ export default function WhatsAppLayout() {
               pm.content === nm.content
             );
           });
-          return isSame ? prev : data.messages;
+          return isSame ? prev : merged;
         });
 
         // Mark as read in store
@@ -210,13 +219,14 @@ export default function WhatsAppLayout() {
               action: "send_live_meta",
               recipientPhone: activeConversation.customerPhone,
               messageText: payload.content,
+              messageId: sentMsg.id,
             }),
           })
             .then((res) => res.json())
             .then((metaRes) => {
               if (metaRes.success) {
                 setMessages((prev) =>
-                  prev.map((m) => (m.id === sentMsg.id ? { ...m, status: "sent" } : m))
+                  prev.map((m) => (m.id === sentMsg.id ? { ...m, status: "delivered" } : m))
                 );
               }
             })
@@ -228,13 +238,23 @@ export default function WhatsAppLayout() {
           setMessages((prev) =>
             prev.map((m) => (m.id === sentMsg.id && m.status === "sending" ? { ...m, status: "sent" } : m))
           );
-        }, 600);
+        }, 500);
 
         setTimeout(() => {
           setMessages((prev) =>
             prev.map((m) => (m.id === sentMsg.id ? { ...m, status: "delivered" } : m))
           );
-        }, 1500);
+          // Persist delivered status to database
+          fetch("/api/admin/whatsapp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "update_status",
+              messageId: sentMsg.id,
+              status: "delivered",
+            }),
+          }).catch(() => {});
+        }, 1200);
       }
     } catch (e) {
       console.warn("Failed to send message:", e);

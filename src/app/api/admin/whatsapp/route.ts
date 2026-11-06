@@ -156,8 +156,11 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "send_live_meta") {
-      const { recipientPhone, messageText } = body;
+      const { recipientPhone, messageText, messageId } = body;
       const result = await sendMetaCloudApiMessage(recipientPhone, messageText);
+      if (result.success && messageId) {
+        await updateMessageStatus(messageId, "delivered");
+      }
       return NextResponse.json(result);
     }
 

@@ -481,6 +481,58 @@ export async function updateMessageStatus(
       break;
     }
   }
+
+  try {
+    await executeD1Query(
+      "UPDATE whatsapp_messages SET status = ? WHERE id = ?",
+      [status, messageId]
+    );
+  } catch (e) {
+    console.warn("D1 updateMessageStatus warning:", e);
+  }
+}
+
+export async function updateMessageStatusByRecipient(
+  recipientPhone: string,
+  status: "sent" | "delivered" | "read"
+): Promise<void> {
+  const normDigits = recipientPhone.replace(/\D/g, "");
+  const norm10 = normDigits.slice(-10);
+
+  // Update in-memory
+  for (const conv of inMemoryConversations) {
+    const convDigits = conv.customerPhone.replace(/\D/g, "");
+    if (convDigits.endsWith(norm10)) {
+      if (conv.lastMessage && conv.lastMessage.sender === "agent") {
+        conv.lastMessage.status = status;
+      }
+      const msgs = inMemoryMessages[conv.id];
+      if (msgs && msgs.length > 0) {
+        for (let i = msgs.length - 1; i >= 0; i--) {
+          if (msgs[i].sender === "agent") {
+            msgs[i].status = status;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // Update in D1
+  try {
+    await executeD1Query(
+      `UPDATE whatsapp_messages 
+       SET status = ? 
+       WHERE sender = 'agent' 
+         AND conversation_id IN (
+           SELECT id FROM whatsapp_conversations 
+           WHERE customer_phone LIKE ?
+         )`,
+      [status, `%${norm10}%`]
+    );
+  } catch (e) {
+    console.warn("D1 updateMessageStatusByRecipient warning:", e);
+  }
 }
 
 export async function markWhatsAppConversationRead(conversationId: string): Promise<void> {

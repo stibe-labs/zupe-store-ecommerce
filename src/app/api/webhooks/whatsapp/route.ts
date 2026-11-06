@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { siteConfig } from "@/config/siteConfig";
-import { recordInboundCustomerMessage } from "@/lib/whatsappStore";
+import { recordInboundCustomerMessage, updateMessageStatusByRecipient } from "@/lib/whatsappStore";
 
 export const dynamic = "force-dynamic";
 
@@ -45,13 +45,30 @@ export async function POST(req: NextRequest) {
           const value = change.value;
           if (!value) continue;
 
-          // 1. Delivery status updates
+          // 1. Delivery status updates (sent, delivered, read, failed)
           if (value.statuses && Array.isArray(value.statuses)) {
             for (const status of value.statuses) {
               console.log(
                 `📱 [WhatsApp Status] Message ${status.id} to ${status.recipient_id}: status=${status.status}`,
                 status.errors ? JSON.stringify(status.errors) : ""
               );
+              try {
+                if (status.recipient_id && status.status) {
+                  const mappedStatus =
+                    status.status === "read"
+                      ? "read"
+                      : status.status === "delivered"
+                      ? "delivered"
+                      : status.status === "sent"
+                      ? "sent"
+                      : null;
+                  if (mappedStatus) {
+                    await updateMessageStatusByRecipient(status.recipient_id, mappedStatus);
+                  }
+                }
+              } catch (stErr) {
+                console.warn("Failed to update message delivery status from webhook:", stErr);
+              }
             }
           }
 
