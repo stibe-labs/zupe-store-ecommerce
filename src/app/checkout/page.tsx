@@ -132,7 +132,7 @@ function CheckoutContent() {
     hasOutOfStockItems,
     checkCartStock,
   } = useCart();
-  const { user, isLoading: authLoading, updateUserProfile } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, openAuthModal, updateUserProfile } = useAuth();
 
   // Contact & Delivery state
   const [phone, setPhone] = useState(() => cleanPhoneDigits(user?.phone || ""));
@@ -1105,6 +1105,22 @@ function CheckoutContent() {
 
   const handleContinueToPayment = (e?: React.FormEvent | React.MouseEvent) => {
     if (e) e.preventDefault();
+
+    // Require authentication before progressing to purchase
+    if (!user) {
+      openAuthModal(
+        "login",
+        "Sign in required: Please log in or verify with WhatsApp to complete your purchase 🛍️",
+        undefined,
+        (loggedInUser) => {
+          if (loggedInUser?.phone && !phone) setPhone(cleanPhoneDigits(loggedInUser.phone));
+          if (loggedInUser?.name && !name) setName(loggedInUser.name);
+          setCheckoutStep("payment");
+        }
+      );
+      return;
+    }
+
     const cleanDigits = phone.replace(/\D/g, "");
     if (!cleanDigits || cleanDigits.length < 10) {
       setErrorMessage("Please enter a valid 10-digit mobile number.");
@@ -1184,6 +1200,20 @@ function CheckoutContent() {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Require authentication before completing purchase
+    if (!user) {
+      openAuthModal(
+        "login",
+        "Sign in required: Please log in or verify with WhatsApp to complete your purchase 🛍️",
+        undefined,
+        (loggedInUser) => {
+          if (loggedInUser?.phone && !phone) setPhone(cleanPhoneDigits(loggedInUser.phone));
+          if (loggedInUser?.name && !name) setName(loggedInUser.name);
+        }
+      );
+      return;
+    }
 
     if (checkoutStep !== "payment") {
       handleContinueToPayment(e);
@@ -1948,6 +1978,32 @@ function CheckoutContent() {
         <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* LEFT COLUMN: URGENCY BANNER + STEP 1 + STEP 2 */}
           <div className="lg:col-span-7 space-y-6 sm:space-y-7">
+            {/* Guest Sign-in Prompt Banner */}
+            {!user && !authLoading && (
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/90 flex items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-gray-900 truncate">
+                      Already have an account?
+                    </p>
+                    <p className="text-[11px] text-gray-600 truncate">
+                      Sign in with WhatsApp for 1-click checkout &amp; saved addresses
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openAuthModal("login", "Sign in to access your saved addresses & order history 🛍️")}
+                  className="px-3.5 py-1.5 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-bold shrink-0 transition"
+                >
+                  Log in →
+                </button>
+              </div>
+            )}
+
             {/* Urgency Countdown Banner (Matches Reference Photo 3) */}
             <div className="p-3 sm:p-4 rounded-2xl bg-[#FFF9F3] border border-[#FFE7D1] flex items-center justify-between gap-2 sm:gap-3 shadow-2xs">
               <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
