@@ -321,6 +321,24 @@ export default function CartPage() {
               <button
                 disabled={isNavigating}
                 onClick={() => {
+                  if (!user) {
+                    const savedPhone = typeof window !== "undefined"
+                      ? (localStorage.getItem("zupe_checkout_phone") || localStorage.getItem("zupe_last_phone") || "")
+                      : "";
+                    openAuthModal(
+                      "login",
+                      "Please sign in with WhatsApp to proceed to checkout 🛍️",
+                      "/checkout",
+                      () => {
+                        router.push("/checkout");
+                      },
+                      {
+                        initialPhone: savedPhone || undefined,
+                        autoSendOtp: Boolean(savedPhone && savedPhone.length === 10),
+                      }
+                    );
+                    return;
+                  }
                   setIsNavigating(true);
                   router.push("/checkout");
                 }}

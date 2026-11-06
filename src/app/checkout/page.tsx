@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { AuthCard } from "@/components/AuthCard";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
 import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 import { deduplicateAddresses, normalizeAddressKey } from "@/lib/addressUtils";
@@ -745,20 +746,22 @@ function CheckoutContent() {
   // Populate user data if logged in (phone and real name only - no default email)
   useEffect(() => {
     if (user) {
-      if (!name && user.name && !user.name.startsWith("Customer ")) {
+      if (user.name && (!name || name.startsWith("Customer "))) {
         setName(user.name);
       }
-      if (!phone && user.phone) {
+      if (user.phone) {
         setPhone(cleanPhoneDigits(user.phone));
       }
     }
-  }, [user, name, phone]);
+  }, [user]);
 
-  // Hydrate saved addresses
+  // Hydrate saved addresses for logged in user (by email, phone, or userId)
   useEffect(() => {
-    if (!user?.email) return;
+    if (!user) return;
+    const identifier = (user.email || user.phone || user.id || "").toLowerCase().trim();
+    if (!identifier) return;
 
-    const cacheKey = `zp_user_addresses_${user.email.toLowerCase().trim()}`;
+    const cacheKey = `zp_user_addresses_${identifier}`;
     try {
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
@@ -782,7 +785,12 @@ function CheckoutContent() {
       }
     } catch (e) {}
 
-    fetch(`/api/user/addresses?email=${encodeURIComponent(user.email)}&userId=${encodeURIComponent(user.id || "")}`)
+    const queryParams = new URLSearchParams();
+    if (user.email) queryParams.set("email", user.email);
+    if (user.id) queryParams.set("userId", user.id);
+    if (user.phone) queryParams.set("phone", cleanPhoneDigits(user.phone));
+
+    fetch(`/api/user/addresses?${queryParams.toString()}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.addresses)) {
@@ -1997,6 +2005,110 @@ function CheckoutContent() {
     );
   }
 
+  // Auth Loading State (Wait for session sync so there is no layout flash)
+  if (authLoading) {
+    return (
+      <div className="min-h-screen tj-diamonds-cream flex flex-col items-center justify-center p-4">
+        <Loader2 className="w-9 h-9 animate-spin text-[#cb0805] mb-3" />
+        <p className="text-sm text-stone-700 font-semibold tracking-wide">
+          Securing your checkout session...
+        </p>
+      </div>
+    );
+  }
+
+  // Mandatory Authentication Gate: Show checkout page ONLY after login
+  if (!user) {
+    const savedPhone = typeof window !== "undefined"
+      ? (localStorage.getItem("zupe_checkout_phone") || localStorage.getItem("zupe_last_phone") || "")
+      : "";
+
+    return (
+      <div className="min-h-screen tj-diamonds-cream text-stone-900 antialiased selection:bg-[#fed000] selection:text-stone-900 flex flex-col justify-between">
+        {/* Top Minimal Header */}
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200/80 shadow-2xs">
+          <div className="max-w-5xl mx-auto px-4 h-16 sm:h-18 flex items-center justify-between gap-4">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors group py-2"
+            >
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5 text-gray-600" />
+              <span className="hidden sm:inline">Continue Shopping</span>
+              <span className="sm:hidden text-[11px]">Store</span>
+            </Link>
+
+            <Link href="/" className="inline-block transition-transform hover:opacity-95">
+              <Image
+                src="/turkiye-jam-logo.svg"
+                alt="Turkiye Jam"
+                width={140}
+                height={40}
+                className="h-8 sm:h-9 w-auto object-contain"
+                priority
+              />
+            </Link>
+
+            <div className="flex items-center gap-2 text-right">
+              <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
+                <ShieldCheck className="w-4 h-4 stroke-[2.2]" />
+              </div>
+              <div className="hidden sm:block text-left">
+                <p className="text-[11px] font-bold text-gray-900 leading-tight">100% Secure Checkout</p>
+                <p className="text-[10px] text-gray-400 leading-tight">256-Bit SSL Encrypted</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Centered Auth Card with Order Preview Badge */}
+        <main className="max-w-md mx-auto w-full py-8 sm:py-12 px-4 flex flex-col items-center">
+          {cart.length > 0 && (
+            <div className="w-full mb-5 p-3 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-rose-50 text-[#cb0805] flex items-center justify-center">
+                  <ShoppingBag className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-900">
+                    {totalItemCount} {totalItemCount === 1 ? "Item" : "Items"} Reserved in Bag
+                  </p>
+                  <p className="text-[11px] text-emerald-700 font-semibold">
+                    Payable: ₹{onlineGrandTotal.toLocaleString("en-IN")} • Free Express Delivery
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                Reserved
+              </span>
+            </div>
+          )}
+
+          <div className="w-full">
+            <AuthCard
+              isModal={false}
+              initialMode="login"
+              initialPhone={savedPhone || undefined}
+              autoSendOtp={Boolean(savedPhone && savedPhone.length === 10)}
+              notice="Please sign in with WhatsApp to access checkout & saved addresses 🛍️"
+              onSuccess={(loggedInUser) => {
+                if (loggedInUser?.phone) {
+                  setPhone(cleanPhoneDigits(loggedInUser.phone));
+                }
+                if (loggedInUser?.name && (!name || name.startsWith("Customer "))) {
+                  setName(loggedInUser.name);
+                }
+              }}
+            />
+          </div>
+        </main>
+
+        <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
+          © 2026 Turkiye Jam • 100% Secure &amp; Verified
+        </footer>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen tj-diamonds-cream text-stone-900 antialiased selection:bg-[#fed000] selection:text-stone-900">
       {/* 1. TOP CLEAN MINIMAL HEADER */}
@@ -2070,43 +2182,28 @@ function CheckoutContent() {
         <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* LEFT COLUMN: URGENCY BANNER + STEP 1 + STEP 2 */}
           <div className="lg:col-span-7 space-y-6 sm:space-y-7">
-            {/* Guest Sign-in Prompt Banner */}
-            {!user && !authLoading && (
-              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/90 flex items-center justify-between gap-3 shadow-2xs">
+            {/* Verified WhatsApp Customer Status Banner */}
+            {user && (
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between gap-3 shadow-2xs">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
-                    <User className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-gray-900 truncate">
-                      Already have an account?
+                    <p className="text-xs font-bold text-emerald-950 truncate">
+                      Signed in as {user.name || user.phone}
                     </p>
-                    <p className="text-[11px] text-gray-600 truncate">
-                      Sign in with WhatsApp for 1-click checkout &amp; saved addresses
+                    <p className="text-[11px] text-emerald-700 truncate">
+                      WhatsApp Verified • 1-Click Checkout Active
                     </p>
                   </div>
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    const cleanContact = cleanPhoneDigits(phone);
-                    openAuthModal(
-                      "login",
-                      "Sign in to access your saved addresses & order history 🛍️",
-                      undefined,
-                      (loggedInUser) => {
-                        if (loggedInUser?.phone && !phone) setPhone(cleanPhoneDigits(loggedInUser.phone));
-                        if (loggedInUser?.name && !name) setName(loggedInUser.name);
-                      },
-                      {
-                        initialPhone: cleanContact || undefined,
-                        autoSendOtp: cleanContact.length === 10,
-                      }
-                    );
-                  }}
-                  className="px-3.5 py-1.5 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-bold shrink-0 transition"
+                  onClick={() => openAuthModal("login", "Switch or re-verify WhatsApp account")}
+                  className="text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 underline shrink-0 cursor-pointer"
                 >
-                  Log in →
+                  Switch
                 </button>
               </div>
             )}
