@@ -1326,21 +1326,6 @@ export function TurkiyeJamStorefront({ initialProducts }: TurkiyeJamStorefrontPr
           </motion.div>
         </motion.div>
       </section>
-
-      {/* Fullscreen smooth loading backdrop during checkout navigation */}
-      {isNavigatingCheckout && (
-        <div className="fixed inset-0 z-[99999] bg-stone-900/50 backdrop-blur-xs flex flex-col items-center justify-center px-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-2xl p-6 shadow-2xl flex flex-col items-center gap-3 text-center max-w-xs w-full border border-gray-100">
-            <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#780016]">
-              <Loader2 className="w-6 h-6 animate-spin text-[#780016]" />
-            </div>
-            <div>
-              <p className="font-bold text-sm text-gray-900">Opening Secure Checkout...</p>
-              <p className="text-xs text-gray-500 mt-0.5">Preparing your order details</p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

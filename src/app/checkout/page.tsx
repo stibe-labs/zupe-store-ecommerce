@@ -139,6 +139,16 @@ function CheckoutContent() {
   const [errorMessage, setErrorMessage] = useState("");
   const [recoveredBanner, setRecoveredBanner] = useState<string | null>(null);
 
+  // Ensure scroll is unlocked and modals/drawers are dismissed on checkout mount
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      document.body.classList.remove("modal-open");
+      document.documentElement.classList.remove("modal-open");
+    }
+  }, []);
+
   // Load Cashfree JS SDK dynamically
   useEffect(() => {
     if (typeof window !== "undefined" && !document.getElementById("cashfree-js")) {

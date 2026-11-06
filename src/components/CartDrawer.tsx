@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, Truck, AlertCircle, Loader2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -12,6 +12,7 @@ import { launchFastrrCheckout } from "@/lib/fastrrClient";
 
 export function CartDrawer() {
   const router = useRouter();
+  const pathname = usePathname();
   const [isNavigating, setIsNavigating] = useState(false);
   const { user, openAuthModal } = useAuth();
   const {
@@ -36,12 +37,20 @@ export function CartDrawer() {
     router.prefetch("/checkout");
   }, [router]);
 
-  // Reset navigating state when cart is closed
+  // Reset navigating state when cart is closed or path changes
   useEffect(() => {
-    if (!isOpen) {
+    if (!isOpen || pathname?.startsWith("/checkout")) {
       setIsNavigating(false);
     }
-  }, [isOpen]);
+  }, [isOpen, pathname]);
+
+  // Always close cart when on checkout page
+  useEffect(() => {
+    if (pathname?.startsWith("/checkout")) {
+      closeCart();
+      setIsNavigating(false);
+    }
+  }, [pathname, closeCart]);
 
   // Freeze background scroll when Cart Drawer is open
   React.useEffect(() => {
@@ -60,6 +69,11 @@ export function CartDrawer() {
       };
     }
   }, [isOpen]);
+
+  // Never render CartDrawer on the checkout page
+  if (pathname?.startsWith("/checkout")) {
+    return null;
+  }
 
   return (
     <AnimatePresence>
@@ -279,6 +293,7 @@ export function CartDrawer() {
                     onClick={() => {
                       if (hasOutOfStockItems || isNavigating) return;
                       setIsNavigating(true);
+                      closeCart();
                       router.push("/checkout");
                     }}
                     className={`w-full flex items-center justify-center gap-2 py-3.5 text-white font-semibold rounded-xl transition-all text-sm ${
@@ -312,21 +327,6 @@ export function CartDrawer() {
               </div>
             )}
           </motion.div>
-
-          {/* Fullscreen smooth loading backdrop during checkout navigation */}
-          {isNavigating && (
-            <div className="fixed inset-0 z-[99999] bg-stone-900/50 backdrop-blur-xs flex flex-col items-center justify-center px-4 animate-in fade-in duration-150">
-              <div className="bg-white rounded-2xl p-6 shadow-2xl flex flex-col items-center gap-3 text-center max-w-xs w-full border border-gray-100">
-                <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#780016]">
-                  <Loader2 className="w-6 h-6 animate-spin text-[#780016]" />
-                </div>
-                <div>
-                  <p className="font-bold text-sm text-gray-900">Opening Secure Checkout...</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Preparing your order details</p>
-                </div>
-              </div>
-            </div>
-          )}
         </>
       )}
     </AnimatePresence>
