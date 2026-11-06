@@ -376,6 +376,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const finalImage = product.poster_image || product.image || "";
     const finalBundleTotal = product.bundle_total || (isBundleTier ? (finalPrice * quantity) : undefined);
 
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.removeItem("zupe_confirmed_order");
+      } catch {}
+    }
+
     setCart((prevCart) => {
       const existingIdx = prevCart.findIndex((item) => item.id === product.id);
       if (existingIdx > -1) {

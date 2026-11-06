@@ -293,6 +293,11 @@ export function CartDrawer() {
                     onClick={() => {
                       if (hasOutOfStockItems || isNavigating) return;
                       closeCart();
+                      if (typeof window !== "undefined") {
+                        try {
+                          sessionStorage.removeItem("zupe_confirmed_order");
+                        } catch {}
+                      }
                       if (!user) {
                         const savedPhone = typeof window !== "undefined"
                           ? (localStorage.getItem("zupe_checkout_phone") || localStorage.getItem("zupe_last_phone") || "")

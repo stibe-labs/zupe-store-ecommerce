@@ -322,6 +322,11 @@ export default function CartPage() {
               <button
                 disabled={isNavigating}
                 onClick={() => {
+                  if (typeof window !== "undefined") {
+                    try {
+                      sessionStorage.removeItem("zupe_confirmed_order");
+                    } catch {}
+                  }
                   if (!user) {
                     const savedPhone = typeof window !== "undefined"
                       ? (localStorage.getItem("zupe_checkout_phone") || localStorage.getItem("zupe_last_phone") || "")

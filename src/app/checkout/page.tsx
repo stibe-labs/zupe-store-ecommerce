@@ -282,14 +282,29 @@ function CheckoutContent() {
     }
   }, []);
 
-  // Restore confirmed order from sessionStorage if recently placed
+  // Restore confirmed order from sessionStorage ONLY if user is not checking out a new cart
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
+      const hasPaymentCallback = searchParams.get("paid") === "true" || !!searchParams.get("order_id") || !!searchParams.get("cf_order_id");
+
+      // If user has active items in cart and did NOT arrive via payment callback, they are placing a new order!
+      if (cart.length > 0 && !hasPaymentCallback) {
+        sessionStorage.removeItem("zupe_confirmed_order");
+        setOrderComplete(false);
+        return;
+      }
+
       const storedConfirm = sessionStorage.getItem("zupe_confirmed_order");
       if (storedConfirm) {
         const parsed = JSON.parse(storedConfirm);
         if (parsed && parsed.orderId && (Date.now() - (parsed.confirmedAt || 0) < 4 * 3600 * 1000)) {
+          // Double check: if user has items in cart and no payment callback, don't show old order
+          if (cart.length > 0 && !hasPaymentCallback) {
+            sessionStorage.removeItem("zupe_confirmed_order");
+            setOrderComplete(false);
+            return;
+          }
           setConfirmedOrderId(parsed.orderId);
           setConfirmedTotal(parsed.total || 0);
           setConfirmedPaymentId(parsed.paymentId || "Online Payment");
@@ -299,7 +314,7 @@ function CheckoutContent() {
         }
       }
     } catch {}
-  }, []);
+  }, [cart.length, searchParams]);
 
   // Cashfree / Settler Order Verification Helper with Exponential Polling Retry
   const verifyCashfreeOrder = async (orderIdToVerify: string, attempt: number = 1) => {
@@ -1956,12 +1971,20 @@ function CheckoutContent() {
               <Truck className="w-4 h-4" />
               <span>Track Order</span>
             </Link>
-            <Link
-              href="/"
-              className="flex-1 py-3.5 px-6 rounded-xl bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center"
+            <button
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  try {
+                    sessionStorage.removeItem("zupe_confirmed_order");
+                  } catch {}
+                }
+                setOrderComplete(false);
+                router.push("/");
+              }}
+              className="flex-1 py-3.5 px-6 rounded-xl bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center cursor-pointer"
             >
               Continue Shopping
-            </Link>
+            </button>
           </div>
         </main>
 
