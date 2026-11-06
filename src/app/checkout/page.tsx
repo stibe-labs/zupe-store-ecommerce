@@ -1446,21 +1446,31 @@ function CheckoutContent() {
         localStorage.setItem("zupe_last_phone", phone.trim());
       } catch {}
 
-      // If Settler Gateway URL is returned, navigate directly (zero domain whitelisting block)
-      if (orderData.payUrl) {
-        window.location.href = orderData.payUrl;
+      const sessionId = orderData.paymentSessionId;
+
+      // 1. Enter directly into Cashfree payment gateway if session is available
+      if (sessionId) {
+        if (typeof window !== "undefined" && (window as any).Cashfree) {
+          try {
+            const cashfree = (window as any).Cashfree({ mode: "production" });
+            cashfree.checkout({
+              paymentSessionId: sessionId,
+              redirectTarget: "_self",
+            });
+            return;
+          } catch (sdkErr) {
+            console.warn("Cashfree JS checkout failed, redirecting to hosted form:", sdkErr);
+          }
+        }
+        // Direct redirect to Cashfree official production payment gateway
+        window.location.href = `https://payments.cashfree.com/forms/${sessionId}`;
         return;
       }
 
-      const sessionId = orderData.paymentSessionId;
-      if (typeof window !== "undefined" && (window as any).Cashfree) {
-        const cashfree = (window as any).Cashfree({ mode: "production" });
-        cashfree.checkout({
-          paymentSessionId: sessionId,
-          redirectTarget: "_self",
-        });
-      } else {
-        window.location.href = `https://payments.cashfree.com/order/#/${sessionId}`;
+      // 2. Fallback to direct payUrl if session was not returned
+      if (orderData.payUrl) {
+        window.location.href = orderData.payUrl;
+        return;
       }
     } catch (err: any) {
       console.error("Payment initiation error:", err);

@@ -145,28 +145,55 @@ export async function POST(req: NextRequest) {
       if (settlerData.success && settlerData.invoice) {
         settlerInvoiceId = settlerData.invoice.id;
         settlerPayUrl = `https://settler.pydart.com${settlerData.invoice.payUrl}`;
+
+        // Immediately initiate order on Settler server-to-server to fetch the Cashfree paymentSessionId
+        // This allows the customer to bypass the Settler interstitial screen and enter Cashfree directly
+        try {
+          const initRes = await fetch("https://settler.pydart.com/api/v1/orders/initiate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              invoiceId: settlerInvoiceId,
+              redirectUrl,
+            }),
+          });
+          const initData: any = await initRes.json();
+          if (initData.success && initData.paymentSessionId) {
+            paymentSessionId = initData.paymentSessionId;
+          }
+        } catch (initErr) {
+          console.warn("Settler orders/initiate call failed:", initErr);
+        }
       }
     } catch (settlerErr) {
       console.warn("Settler invoice creation failed, falling back to direct Cashfree:", settlerErr);
     }
 
-    // Direct Cashfree fallback if Settler call fails
-    if (!settlerPayUrl) {
-      const cfOrder = await createCashfreeOrder({
-        orderId,
-        amount: chargeAmount,
-        customerName: customer_name,
-        customerEmail: customer_email || "support@turkiyejam.com",
-        customerPhone: cleanPhone || "9876543210",
-        returnUrl: redirectUrl,
-      });
-      paymentSessionId = cfOrder.payment_session_id;
+    // Direct Cashfree fallback if Settler calls failed to return a session
+    if (!paymentSessionId && !settlerPayUrl) {
+      try {
+        const cfOrder = await createCashfreeOrder({
+          orderId,
+          amount: chargeAmount,
+          customerName: customer_name,
+          customerEmail: customer_email || "support@turkiyejam.com",
+          customerPhone: cleanPhone || "9876543210",
+          returnUrl: redirectUrl,
+        });
+        paymentSessionId = cfOrder.payment_session_id;
+      } catch (cfErr) {
+        console.warn("Direct Cashfree fallback failed:", cfErr);
+      }
     }
+
+    const directCashfreeUrl = paymentSessionId
+      ? `https://payments.cashfree.com/forms/${paymentSessionId}`
+      : settlerPayUrl;
 
     return NextResponse.json({
       success: true,
       orderId,
-      payUrl: settlerPayUrl,
+      payUrl: directCashfreeUrl,
       paymentSessionId,
       settlerInvoiceId,
       amount: chargeAmount,
