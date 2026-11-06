@@ -2606,11 +2606,6 @@ function CheckoutContent() {
                       )}
 
                       <div className="flex justify-between text-gray-600">
-                        <span>GST (18% Included)</span>
-                        <span className="font-semibold text-gray-900">₹{gstAmount.toLocaleString()} (Included)</span>
-                      </div>
-
-                      <div className="flex justify-between text-gray-600">
                         <span className="flex items-center gap-1.5">
                           Delivery Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
                         </span>
@@ -3442,10 +3437,6 @@ function CheckoutContent() {
                         </div>
                       )}
                       <div className="flex justify-between text-gray-600">
-                        <span>GST (18% Included)</span>
-                        <span className="font-semibold text-gray-900">₹{gstAmount.toLocaleString()} (Included)</span>
-                      </div>
-                      <div className="flex justify-between text-gray-600">
                         <span className="flex items-center gap-1.5">
                           Delivery Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
                         </span>
@@ -3807,10 +3798,6 @@ function CheckoutContent() {
                     <span>-₹{promoDiscount.toLocaleString()}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-gray-600">
-                  <span>GST (18% Included)</span>
-                  <span className="font-semibold text-gray-900">₹{gstAmount.toLocaleString()} (Included)</span>
-                </div>
                 <div className="flex justify-between text-gray-600">
                   <span className="flex items-center gap-1.5">
                     Delivery Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
