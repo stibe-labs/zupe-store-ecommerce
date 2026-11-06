@@ -90,7 +90,7 @@ export default function AdminSidebar({
       badge: ordersCount > 0 ? String(ordersCount) : undefined,
     },
     {
-      name: "CRM & Meta Ads",
+      name: "CRM",
       href: "/admin/crm",
       icon: Target,
       badge: "Growth",
