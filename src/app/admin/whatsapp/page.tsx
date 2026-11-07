@@ -831,7 +831,9 @@ export default function WhatsAppAdminPage() {
                                     ) : msg.status === "delivered" ? (
                                       <CheckCheck className="w-3.5 h-3.5 text-[#8696A0]" />
                                     ) : msg.status === "failed" ? (
-                                      <AlertCircle className="w-3.5 h-3.5 text-rose-500" title="Delivery failed" />
+                                      <span title="Delivery failed">
+                                        <AlertCircle className="w-3.5 h-3.5 text-rose-500" />
+                                      </span>
                                     ) : (
                                       <Check className="w-3.5 h-3.5 text-[#8696A0]" />
                                     )}

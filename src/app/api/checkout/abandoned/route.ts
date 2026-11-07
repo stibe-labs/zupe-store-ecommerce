@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeD1Query } from "@/lib/d1";
 import { normalizePhoneNumber } from "@/lib/whatsappOtp";
+import { cleanCityName } from "@/lib/pincodeService";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,8 @@ export async function POST(req: NextRequest) {
       is_backout,
       action,
     } = body;
+
+    const sanitizedCity = city ? cleanCityName(city) : null;
 
     const { digits, isValid } = normalizePhoneNumber(customer_phone || "");
 
@@ -124,7 +127,7 @@ export async function POST(req: NextRequest) {
             itemsJson,
             amount,
             shipping_address || null,
-            city || null,
+            sanitizedCity || null,
             postal_code || null,
             sourceVal,
             now,
@@ -171,7 +174,7 @@ export async function POST(req: NextRequest) {
           itemsJson,
           amount,
           shipping_address || null,
-          city || null,
+          sanitizedCity || null,
           postal_code || null,
           recoveryToken,
           sourceVal,

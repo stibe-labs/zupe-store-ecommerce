@@ -40,6 +40,7 @@ import { useAuth } from "@/context/AuthContext";
 import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 import { deduplicateAddresses, normalizeAddressKey } from "@/lib/addressUtils";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { cleanCityName } from "@/lib/pincodeService";
 
 // Recommended Bump / Upsell Products
 const BUMP_PRODUCTS = [
@@ -337,7 +338,7 @@ function CheckoutContent() {
             setEmail(chk.customer_email);
           }
           if (chk.shipping_address) setAddress(chk.shipping_address);
-          if (chk.city) setCity(chk.city);
+          if (chk.city) setCity(cleanCityName(chk.city, chk.state || state));
           if (chk.postal_code) setPostalCode(chk.postal_code);
 
           // Restore items into cart
@@ -603,23 +604,21 @@ function CheckoutContent() {
       .catch((err) => console.warn("Failed to load saved addresses in checkout:", err));
   }, [user?.email, user?.id]);
 
-  // Auto-detect city & state when pincode is 6 digits
+  // Auto-detect city & state when pincode is 6 digits via internal instant API
   useEffect(() => {
     const cleanPin = postalCode.replace(/\D/g, "");
     if (cleanPin.length === 6) {
       setPincodeLoading(true);
-      fetch(`https://api.postalpincode.in/pincode/${cleanPin}`)
+      fetch(`/api/location/pincode?pincode=${cleanPin}`)
         .then((res) => res.json())
         .then((data) => {
           setPincodeLoading(false);
-          if (Array.isArray(data) && data[0]?.Status === "Success" && data[0]?.PostOffice?.length > 0) {
-            const po = data[0].PostOffice[0];
-            if (po.District) setCity(po.District);
-            if (po.State) setState(po.State);
+          if (data.success && data.valid) {
+            setCity(cleanCityName(data.city || data.district, data.state));
+            if (data.state) setState(data.state);
             setPincodeDetected(true);
-            const offices = Array.from(new Set(data[0].PostOffice.map((p: any) => p.Name).filter(Boolean))) as string[];
-            if (offices.length > 0) {
-              setDetectedPostOffices(offices);
+            if (Array.isArray(data.post_offices) && data.post_offices.length > 0) {
+              setDetectedPostOffices(data.post_offices);
             }
           } else {
             setPincodeDetected(false);
@@ -631,6 +630,7 @@ function CheckoutContent() {
         });
     } else {
       setPincodeDetected(false);
+      setPincodeLoading(false);
     }
   }, [postalCode]);
 
@@ -702,7 +702,8 @@ function CheckoutContent() {
           const cleanStreet = (data.street || data.area || "").trim();
           setAddress(cleanStreet || data.area || data.city || "");
 
-          if (data.city) setCity(data.city);
+          const cleanCity = cleanCityName(data.city || data.district, data.state);
+          if (cleanCity) setCity(cleanCity);
           if (data.state) setState(data.state);
 
           if (data.pincode && data.pincode.length === 6) {
@@ -716,15 +717,15 @@ function CheckoutContent() {
 
           // Accuracy Feedback
           if (accuracy > 0 && accuracy <= 150) {
-            setLocationSuccessMsg(`🎯 High-Precision GPS (~${Math.round(accuracy)}m): ${data.area || data.city || "Location detected"}`);
+            setLocationSuccessMsg(`🎯 High-Precision GPS (~${Math.round(accuracy)}m): ${data.area || cleanCity || "Location detected"}`);
           } else if (accuracy > 0 && accuracy <= 500) {
-            setLocationSuccessMsg(`📍 Area Location (~${Math.round(accuracy)}m): ${data.area || data.city || "Location detected"}`);
+            setLocationSuccessMsg(`📍 Area Location (~${Math.round(accuracy)}m): ${data.area || cleanCity || "Location detected"}`);
           } else if (accuracy > 500) {
             setLocationAccuracyNotice(
               `📶 Approximate Network Location (~${(accuracy / 1000).toFixed(1)} km) detected via Wi-Fi/ISP routing. Please verify your House No and Pincode.`
             );
           } else {
-            setLocationSuccessMsg(`Location detected: ${data.area || data.city || "Address filled"}`);
+            setLocationSuccessMsg(`Location detected: ${data.area || cleanCity || "Address filled"}`);
           }
 
           setTimeout(() => setLocationSuccessMsg(null), 8000);
@@ -738,47 +739,27 @@ function CheckoutContent() {
       }
     };
 
-    // Multi-pass Geolocation Execution:
-    // Try high accuracy with 14s timeout first. If indoor satellite lock times out, seamlessly fallback to network location.
-    const geoOptionsHigh = {
+    const geoOptions = {
       enableHighAccuracy: true,
-      timeout: 14000,
-      maximumAge: 0,
-    };
-
-    const geoOptionsFast = {
-      enableHighAccuracy: false,
-      timeout: 7000,
-      maximumAge: 0,
+      timeout: 8000,
+      maximumAge: 60000,
     };
 
     navigator.geolocation.getCurrentPosition(
       processCoordinates,
       (err) => {
-        // If high accuracy times out (e.g. indoors on mobile or laptop), fallback to standard network location
-        if (err.code === err.TIMEOUT && isMobileDevice) {
-          navigator.geolocation.getCurrentPosition(
-            processCoordinates,
-            () => {
-              setLocationLoading(false);
-              setLocationError("GPS signal weak indoors. Please enter your 6-digit Pincode to auto-fill your area.");
-            },
-            geoOptionsFast
-          );
+        setLocationLoading(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setLocationError("Location permission denied. Please allow location access in your browser or type your 6-digit Pincode below.");
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          setLocationError("Location signal unavailable. Please enter your 6-digit Pincode below.");
+        } else if (err.code === err.TIMEOUT) {
+          setLocationError("Location request timed out. Please enter your 6-digit Pincode below.");
         } else {
-          setLocationLoading(false);
-          if (err.code === err.PERMISSION_DENIED) {
-            setLocationError("Location permission denied. Please allow location access in your browser or type your 6-digit Pincode below.");
-          } else if (err.code === err.POSITION_UNAVAILABLE) {
-            setLocationError("Location signal unavailable. Please enter your 6-digit Pincode to auto-fill your area.");
-          } else if (err.code === err.TIMEOUT) {
-            setLocationError("Location request timed out. Please enter your 6-digit Pincode to auto-fill your area.");
-          } else {
-            setLocationError("Unable to fetch current location.");
-          }
+          setLocationError("Unable to fetch current location. Please enter your 6-digit Pincode below.");
         }
       },
-      geoOptionsHigh
+      geoOptions
     );
   };
 
@@ -889,7 +870,7 @@ function CheckoutContent() {
           customer_phone: clean,
           customer_email: email.trim() || undefined,
           shipping_address: address.trim() || undefined,
-          city: state ? `${city.trim()}, ${state.trim()}` : city.trim() || undefined,
+          city: cleanCityName(city, state) || undefined,
           postal_code: postalCode.trim() || undefined,
           total_amount: grandTotal,
           source: "checkout",
@@ -920,7 +901,7 @@ function CheckoutContent() {
         customer_phone: clean,
         customer_email: email.trim() || undefined,
         shipping_address: address.trim() || undefined,
-        city: state ? `${city.trim()}, ${state.trim()}` : city.trim() || undefined,
+        city: cleanCityName(city, state) || undefined,
         postal_code: postalCode.trim() || undefined,
         total_amount: grandTotal,
         items: cart.map((c) => ({
@@ -2627,10 +2608,11 @@ function CheckoutContent() {
                     )}
                   </div>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <MapPin className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       id="pincode-input"
                       type="text"
+                      inputMode="numeric"
                       required
                       maxLength={6}
                       value={postalCode}
@@ -2649,13 +2631,14 @@ function CheckoutContent() {
                     City *
                   </label>
                   <div className="relative">
-                    <Building2 className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Building2 className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       id="city-input"
                       type="text"
                       required
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
+                      onBlur={(e) => setCity(cleanCityName(e.target.value, state))}
                       placeholder="Kochi"
                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white shadow-2xs"
                     />
@@ -2669,7 +2652,7 @@ function CheckoutContent() {
                   State *
                 </label>
                 <div className="relative">
-                  <Building2 className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Building2 className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     id="state-input"
                     type="text"

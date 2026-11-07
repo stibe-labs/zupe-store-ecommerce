@@ -1,4 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  findNearestPincode,
+  lookupPincode,
+  isValidPincode,
+  cleanCityName,
+  formatPlaceName,
+} from "@/lib/pincodeService";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -28,19 +35,22 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Step 1: Instant high-precision reverse lookup against official Government India Post dataset
+    const nearestGeo = findNearestPincode(lat, lng, 35);
+
+    let pincode = nearestGeo?.pincode || "";
+    let district = nearestGeo?.district || "";
+    let state = nearestGeo?.state || "";
+    let city = nearestGeo?.city || district || "";
+    let postOffices: string[] = nearestGeo?.post_offices || [];
     let street = "";
     let area = "";
-    let city = "";
-    let district = "";
-    let state = "";
-    let pincode = "";
     let formatted_address = "";
-    let postOffices: string[] = [];
 
-    // 1. Primary Provider: OpenStreetMap Nominatim with zoom=18 for building/rooftop level precision
+    // Step 2: OpenStreetMap Nominatim for local street, building, and road details (fast 3.5s timeout)
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
 
       const nomRes = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
@@ -59,7 +69,6 @@ export async function GET(req: NextRequest) {
         const addr = nomData.address || {};
         formatted_address = nomData.display_name || "";
 
-        // Specific area / colony / neighborhood
         area =
           addr.suburb ||
           addr.neighbourhood ||
@@ -73,111 +82,51 @@ export async function GET(req: NextRequest) {
         const road = addr.road || "";
         const house = addr.house_number || addr.building || addr.house_name || "";
 
-        // Build clean street address without obscure administrative codes
         const cleanParts: string[] = [];
         if (house) cleanParts.push(house);
-        if (road && !road.match(/^(NH|SH|MDR)\s*\d+/i)) {
-          cleanParts.push(road);
-        } else if (road) {
-          cleanParts.push(road);
-        }
+        if (road) cleanParts.push(road);
         if (area && !cleanParts.includes(area)) {
           cleanParts.push(area);
         }
 
-        street = cleanParts.join(", ") || (formatted_address ? formatted_address.split(",").slice(0, 3).join(", ").trim() : "");
+        street = cleanParts.join(", ");
 
-        district = addr.state_district || addr.district || addr.county || "";
-        city = addr.city || addr.town || addr.municipality || district || "";
-        state = addr.state || "";
-
+        // If Nominatim provided a postcode, verify it against the official India Post directory
         if (addr.postcode) {
-          pincode = String(addr.postcode).replace(/\D/g, "").slice(0, 6);
+          const rawPin = String(addr.postcode).replace(/\D/g, "").slice(0, 6);
+          if (rawPin.length === 6 && isValidPincode(rawPin)) {
+            // Only accept if it is a genuinely existing Indian pincode
+            const verified = lookupPincode(rawPin);
+            if (verified) {
+              pincode = verified.pincode;
+              district = verified.district;
+              state = verified.state;
+              if (verified.post_offices.length > 0) {
+                postOffices = verified.post_offices;
+              }
+            }
+          }
+        }
+
+        const nomCity = addr.city || addr.town || addr.municipality || "";
+        if (nomCity) {
+          city = cleanCityName(nomCity, state);
         }
       }
     } catch (nomErr) {
       console.warn("Nominatim reverse geocode fallback:", nomErr);
     }
 
-    // 2. Secondary Provider Fallback: BigDataCloud Reverse Geocoding
-    if (!city || !state || !pincode) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
+    // Step 3: Ensure city and state are clean and never duplicate
+    state = formatPlaceName(state || "Kerala");
+    city = cleanCityName(city || district || "Kochi", state);
 
-        const bdcRes = await fetch(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`,
-          { signal: controller.signal }
-        );
-        clearTimeout(timeoutId);
-
-        if (bdcRes.ok) {
-          const bdcData = await bdcRes.json();
-          if (!city) city = bdcData.city || bdcData.locality || "";
-          if (!state) state = bdcData.principalSubdivision || "";
-          if (!pincode && bdcData.postcode) {
-            pincode = String(bdcData.postcode).replace(/\D/g, "").slice(0, 6);
-          }
-          if (!area && bdcData.locality) {
-            area = bdcData.locality;
-          }
-          if (!street && bdcData.locality) {
-            street = bdcData.locality;
-          }
-        }
-      } catch (bdcErr) {
-        console.warn("BigDataCloud fallback warning:", bdcErr);
-      }
-    }
-
-    // 3. Indian Postal Pincode Auto-Reconciliation (India Post Official Directory)
-    if (pincode && pincode.length === 6) {
-      try {
-        const pinController = new AbortController();
-        const pinTimeout = setTimeout(() => pinController.abort(), 4000);
-
-        const pinRes = await fetch(`https://api.postalpincode.in/pincode/${pincode}`, {
-          signal: pinController.signal,
-        });
-        clearTimeout(pinTimeout);
-
-        if (pinRes.ok) {
-          const pinData = await pinRes.json();
-          if (Array.isArray(pinData) && pinData[0]?.Status === "Success" && Array.isArray(pinData[0]?.PostOffice)) {
-            const offices = pinData[0].PostOffice;
-            if (offices.length > 0) {
-              const primaryPo = offices[0];
-              // Use official Indian Postal District as the standardized city/district for couriers
-              if (primaryPo.District) {
-                district = primaryPo.District;
-                // If current city is a smaller municipality, taluk or village, standardize with District
-                city = primaryPo.District;
-              }
-              if (primaryPo.State) {
-                state = primaryPo.State;
-              }
-
-              // Extract all local post offices in this pincode
-              postOffices = Array.from(
-                new Set(offices.map((po: any) => po.Name).filter(Boolean))
-              ) as string[];
-
-              // If area is empty or generic, use the main delivery post office
-              if (!area && offices[0].Name) {
-                area = offices[0].Name;
-              }
-            }
-          }
-        }
-      } catch (pinErr) {
-        console.warn("India Post API lookup warning:", pinErr);
-      }
-    }
-
-    // Format final clean street address
-    let finalStreet = street.trim();
-    if (!finalStreet && area) {
-      finalStreet = area;
+    if (!street && area) {
+      street = area;
+    } else if (!street && postOffices.length > 0) {
+      street = postOffices[0];
+    } else if (!street) {
+      street = `${city}, ${district}`;
     }
 
     const isHighAccuracy = accuracy !== null && accuracy <= 200;
@@ -192,14 +141,14 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      street: finalStreet,
-      area: area.trim(),
+      street: street.trim(),
+      area: (area || postOffices[0] || city).trim(),
       city: city.trim(),
       district: district.trim(),
       state: state.trim(),
       pincode: pincode.trim(),
       post_offices: postOffices,
-      formatted_address: formatted_address || [finalStreet, city, state, pincode].filter(Boolean).join(", "),
+      formatted_address: formatted_address || [street, city, state, pincode].filter(Boolean).join(", "),
       coordinates: { lat, lng },
       accuracy_meters: accuracy,
       is_high_accuracy: isHighAccuracy,
@@ -212,4 +161,3 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-

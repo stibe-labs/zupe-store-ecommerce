@@ -10,6 +10,8 @@
     "deploy": "next build && opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion && opennextjs-cloudflare deploy"
   },
   "dependencies": {
+    "@devzoy/indian-pincode": "^2.1.0",
+    "@devzoy/indian-pincode-geo": "^2.1.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.4.7",
     "lenis": "^1.1.20",
