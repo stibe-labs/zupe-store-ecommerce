@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import {
   Check,
@@ -21,6 +21,9 @@ import {
   CheckCircle2,
   XCircle,
   Eye,
+  MicOff,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { WhatsAppMessage, WhatsAppReaction } from "@/lib/whatsappStore";
 import { waAudio } from "@/lib/whatsappAudio";
@@ -104,12 +107,27 @@ export default function MessageBubble({
   const isAgent = message.sender === "agent";
   const isSystem = message.sender === "system";
 
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [showHoverToolbar, setShowHoverToolbar] = useState(false);
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
-  const [voiceProgress, setVoiceProgress] = useState(0.35);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [voiceDuration, setVoiceDuration] = useState<number>(message.mediaDuration || 0);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
+  const [audioError, setAudioError] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [copied, setCopied] = useState(false);
   const [orderActionDone, setOrderActionDone] = useState<string | null>(null);
+
+  const hasAudioUrl = Boolean(message.mediaUrl);
+
+  // Stop audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, []);
 
   // System notification pill
   if (isSystem) {
@@ -128,30 +146,55 @@ export default function MessageBubble({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleToggleVoice = () => {
-    if (!isPlayingVoice) {
-      waAudio.playVoiceNoteBeep("start");
-      setIsPlayingVoice(true);
-      // simulate progress advancement
-      const interval = setInterval(() => {
-        setVoiceProgress((prev) => {
-          if (prev >= 1) {
-            clearInterval(interval);
-            setIsPlayingVoice(false);
-            waAudio.playVoiceNoteBeep("stop");
-            return 0;
-          }
-          return prev + 0.05 * playbackSpeed;
-        });
-      }, 300);
-    } else {
+  const handleToggleVoice = async () => {
+    if (!hasAudioUrl) return;
+
+    if (!audioRef.current) return;
+
+    try {
+      if (isPlayingVoice) {
+        audioRef.current.pause();
+        waAudio.playVoiceNoteBeep("stop");
+      } else {
+        setAudioError(false);
+        setIsLoadingAudio(true);
+        waAudio.playVoiceNoteBeep("start");
+        await audioRef.current.play();
+        setIsLoadingAudio(false);
+      }
+    } catch (err) {
+      console.warn("Audio playback error:", err);
+      setIsLoadingAudio(false);
       setIsPlayingVoice(false);
-      waAudio.playVoiceNoteBeep("stop");
+      setAudioError(true);
     }
   };
 
   const cycleSpeed = () => {
-    setPlaybackSpeed((prev) => (prev === 1 ? 1.5 : prev === 1.5 ? 2 : 1));
+    const nextSpeed = playbackSpeed === 1 ? 1.5 : playbackSpeed === 1.5 ? 2 : 1;
+    setPlaybackSpeed(nextSpeed);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = nextSpeed;
+    }
+  };
+
+  const handleSeek = (index: number, total: number) => {
+    const totalDuration = voiceDuration || audioRef.current?.duration || 30;
+    if (audioRef.current && totalDuration > 0) {
+      const targetTime = (index / total) * totalDuration;
+      audioRef.current.currentTime = targetTime;
+      setCurrentTime(targetTime);
+    }
+  };
+
+  const formatVoiceTime = (secs: number) => {
+    if (!secs || isNaN(secs) || secs < 0) return "0s";
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    if (m > 0) {
+      return `${m}:${s < 10 ? "0" : ""}${s}`;
+    }
+    return `${s}s`;
   };
 
   const renderStatusTicks = () => {
@@ -242,55 +285,134 @@ export default function MessageBubble({
 
         {/* 1. Voice Note Bubble */}
         {message.type === "voice" && (
-          <div className="flex items-center gap-3 py-1 min-w-[240px] sm:min-w-[280px]">
-            <button
-              onClick={handleToggleVoice}
-              className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
-                isPlayingVoice
-                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-500/30 scale-105"
-                  : "bg-emerald-500 hover:bg-emerald-600 text-white"
-              }`}
-            >
-              {isPlayingVoice ? (
-                <Pause className="w-5 h-5 fill-current" />
-              ) : (
-                <Play className="w-5 h-5 fill-current ml-0.5" />
-              )}
-            </button>
+          <div className="py-1 min-w-[240px] sm:min-w-[280px]">
+            {hasAudioUrl ? (
+              <>
+                {/* HTML5 Native Audio element */}
+                <audio
+                  ref={audioRef}
+                  src={message.mediaUrl}
+                  preload="metadata"
+                  onPlay={() => {
+                    setIsPlayingVoice(true);
+                    setIsLoadingAudio(false);
+                  }}
+                  onPause={() => setIsPlayingVoice(false)}
+                  onTimeUpdate={() => {
+                    if (audioRef.current) {
+                      setCurrentTime(audioRef.current.currentTime);
+                    }
+                  }}
+                  onLoadedMetadata={() => {
+                    if (audioRef.current && audioRef.current.duration && !isNaN(audioRef.current.duration)) {
+                      setVoiceDuration(audioRef.current.duration);
+                    }
+                    setIsLoadingAudio(false);
+                  }}
+                  onEnded={() => {
+                    setIsPlayingVoice(false);
+                    setCurrentTime(0);
+                    waAudio.playVoiceNoteBeep("stop");
+                  }}
+                  onError={() => {
+                    setIsLoadingAudio(false);
+                    setIsPlayingVoice(false);
+                    setAudioError(true);
+                  }}
+                />
 
-            {/* Waveform Visualization Bars */}
-            <div className="flex-1">
-              <div className="flex items-center gap-[3px] h-7">
-                {[12, 24, 18, 30, 22, 14, 28, 20, 10, 26, 32, 18, 14, 22, 28, 16, 20, 12].map(
-                  (height, i) => {
-                    const isPlayed = i / 18 <= voiceProgress;
-                    return (
-                      <div
-                        key={i}
-                        className={`w-1 rounded-full transition-all duration-150 ${
-                          isPlayed
-                            ? "bg-emerald-600 dark:bg-emerald-400"
-                            : "bg-slate-300 dark:bg-white/20"
-                        }`}
-                        style={{ height: `${height}px` }}
-                      />
-                    );
-                  }
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleToggleVoice}
+                    disabled={isLoadingAudio}
+                    title={isPlayingVoice ? "Pause voice note" : "Play voice note"}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${
+                      isPlayingVoice
+                        ? "bg-emerald-600 text-white shadow-md shadow-emerald-500/30 scale-105"
+                        : "bg-emerald-500 hover:bg-emerald-600 text-white"
+                    }`}
+                  >
+                    {isLoadingAudio ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : isPlayingVoice ? (
+                      <Pause className="w-5 h-5 fill-current" />
+                    ) : (
+                      <Play className="w-5 h-5 fill-current ml-0.5" />
+                    )}
+                  </button>
+
+                  {/* Waveform Visualization Bars with Interactive Seeking */}
+                  <div className="flex-1">
+                    <div
+                      className="flex items-center gap-[3px] h-7 cursor-pointer group/wave"
+                      title="Click to seek"
+                    >
+                      {[12, 24, 18, 30, 22, 14, 28, 20, 10, 26, 32, 18, 14, 22, 28, 16, 20, 12].map(
+                        (height, i) => {
+                          const totalDuration = voiceDuration || 30;
+                          const currentFraction = totalDuration > 0 ? currentTime / totalDuration : 0;
+                          const isPlayed = i / 18 <= currentFraction;
+                          return (
+                            <div
+                              key={i}
+                              onClick={() => handleSeek(i, 18)}
+                              className={`w-1 rounded-full transition-all duration-100 group-hover/wave:scale-y-110 ${
+                                isPlayed
+                                  ? "bg-emerald-600 dark:bg-emerald-400"
+                                  : "bg-slate-300 dark:bg-white/20"
+                              } ${isPlayingVoice && isPlayed ? "animate-pulse" : ""}`}
+                              style={{ height: `${height}px` }}
+                            />
+                          );
+                        }
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-300 mt-1">
+                      <span>
+                        {formatVoiceTime(currentTime)} / {formatVoiceTime(voiceDuration || 30)}
+                      </span>
+                      <button
+                        onClick={cycleSpeed}
+                        className="px-1.5 py-0.5 rounded-sm bg-black/5 dark:bg-white/10 text-[10px] font-semibold hover:bg-black/10 cursor-pointer"
+                      >
+                        {playbackSpeed}x
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {audioError && (
+                  <div className="flex items-center gap-1.5 text-[10px] text-rose-500 mt-2 bg-rose-50 dark:bg-rose-950/30 p-1.5 rounded-lg border border-rose-200 dark:border-rose-900/50">
+                    <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span className="flex-1">Audio playback issue in browser.</span>
+                    <a
+                      href={message.mediaUrl}
+                      download="whatsapp-voice-note.ogg"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline font-semibold hover:text-rose-600 flex items-center gap-0.5"
+                    >
+                      <Download className="w-3 h-3" /> Download
+                    </a>
+                  </div>
                 )}
+              </>
+            ) : (
+              /* Fallback UI for Historical Messages Without Media URL */
+              <div className="flex items-center gap-3 py-1">
+                <div className="w-10 h-10 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                  <MicOff className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
+                    Voice Note
+                  </div>
+                  <div className="text-[11px] text-amber-700 dark:text-amber-300/90 leading-tight mt-0.5">
+                    Audio uncaptured (received prior to media update)
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-300 mt-1">
-                <span>
-                  {Math.floor((message.mediaDuration || 30) * voiceProgress)}s /{" "}
-                  {message.mediaDuration || 30}s
-                </span>
-                <button
-                  onClick={cycleSpeed}
-                  className="px-1.5 py-0.5 rounded-sm bg-black/5 dark:bg-white/10 text-[10px] font-semibold hover:bg-black/10"
-                >
-                  {playbackSpeed}x
-                </button>
-              </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -492,9 +614,26 @@ export default function MessageBubble({
 
         {/* Standard Text Content (for text and template types) */}
         {message.type !== "image" && message.type !== "voice" && (
-          <div className="leading-relaxed text-sm break-words select-text">
-            {formatWhatsAppText(message.content)}
-          </div>
+          message.content?.trim().toLowerCase() === "[unsupported]" ||
+          message.content?.includes("not supported on WhatsApp Cloud API") ? (
+            <div className="flex items-center gap-3 py-1.5 px-0.5 min-w-[220px]">
+              <div className="w-9 h-9 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
+                  Unsupported Attachment
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug mt-0.5">
+                  Format (sticker, contact card, or live location) not supported on Cloud API
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="leading-relaxed text-sm break-words select-text">
+              {formatWhatsAppText(message.content)}
+            </div>
+          )
         )}
 
         {/* Timestamp and Delivery Ticks */}

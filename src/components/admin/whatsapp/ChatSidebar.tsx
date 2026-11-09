@@ -307,7 +307,12 @@ export default function ChatSidebar({
                       {conv.lastMessage.sender === "agent" && (
                         <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb] flex-shrink-0" />
                       )}
-                      <span className="truncate">{conv.lastMessage.text}</span>
+                      <span className="truncate">
+                        {conv.lastMessage.text?.trim().toLowerCase() === "[unsupported]" ||
+                        conv.lastMessage.text?.includes("not supported on WhatsApp Cloud API")
+                          ? "📎 Unsupported attachment"
+                          : conv.lastMessage.text}
+                      </span>
                     </div>
 
                     {/* Unread Badge / Pin Icon */}

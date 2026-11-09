@@ -59,6 +59,9 @@ export default function ChatInputDock({
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recordingTimerRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
 
   // Auto resize textarea
   useEffect(() => {
@@ -82,6 +85,41 @@ export default function ChatInputDock({
       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
     };
   }, [isRecordingVoice]);
+
+  const handleStartRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+      audioChunksRef.current = [];
+
+      let mimeType = "audio/webm";
+      if (typeof MediaRecorder !== "undefined") {
+        if (MediaRecorder.isTypeSupported("audio/webm; codecs=opus")) {
+          mimeType = "audio/webm; codecs=opus";
+        } else if (MediaRecorder.isTypeSupported("audio/ogg; codecs=opus")) {
+          mimeType = "audio/ogg; codecs=opus";
+        } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+          mimeType = "audio/mp4";
+        }
+      }
+
+      const recorder = new MediaRecorder(stream, { mimeType });
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.start(200);
+      setIsRecordingVoice(true);
+      waAudio.playVoiceNoteBeep("start");
+    } catch (err) {
+      console.warn("Microphone access denied or unavailable, fallback to manual timer:", err);
+      setIsRecordingVoice(true);
+    }
+  };
 
   const handleSendText = () => {
     if (!text.trim() || isSending) return;
@@ -112,21 +150,57 @@ export default function ChatInputDock({
     }
   };
 
-  const handleSendVoiceNote = () => {
-    setIsRecordingVoice(false);
+  const handleSendVoiceNote = async () => {
     waAudio.playOutgoingPop();
-    const duration = recordingDuration || 8;
+    const duration = recordingDuration || 5;
+
+    let mediaUrl: string | undefined = undefined;
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      const recorder = mediaRecorderRef.current;
+      await new Promise<void>((resolve) => {
+        recorder.onstop = () => {
+          const mimeType = recorder.mimeType || "audio/webm";
+          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            mediaUrl = reader.result as string;
+            resolve();
+          };
+          reader.readAsDataURL(audioBlob);
+        };
+        recorder.stop();
+      });
+
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+      }
+    }
+
+    setIsRecordingVoice(false);
+    setRecordingDuration(0);
+
     onSendMessage({
       content: `Voice message (${duration}s)`,
       type: "voice",
+      mediaUrl,
       mediaDuration: duration,
       sendLiveMeta,
     });
   };
 
   const handleCancelVoiceNote = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+    }
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
     setIsRecordingVoice(false);
     setRecordingDuration(0);
+    waAudio.playVoiceNoteBeep("stop");
   };
 
   const handleSendCatalogProduct = () => {
@@ -370,9 +444,9 @@ export default function ChatInputDock({
             </button>
           ) : (
             <button
-              onClick={() => setIsRecordingVoice(true)}
+              onClick={handleStartRecording}
               title="Record voice note"
-              className="p-2 text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-full flex-shrink-0 transition-colors"
+              className="p-2 text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-full flex-shrink-0 transition-colors cursor-pointer"
             >
               <Mic className="w-6 h-6" />
             </button>

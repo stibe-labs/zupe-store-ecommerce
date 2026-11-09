@@ -71,15 +71,37 @@ export async function POST(req: NextRequest) {
               } else if (msg.type === "image") {
                 msgType = "image";
                 bodyText = msg.image?.caption || "📷 Image";
-                mediaUrl = msg.image?.id ? `https://graph.facebook.com/v21.0/${msg.image.id}` : undefined;
+                mediaUrl = msg.image?.id ? `/api/admin/whatsapp/media?mediaId=${msg.image.id}` : undefined;
               } else if (msg.type === "audio" || msg.type === "voice") {
                 msgType = "voice";
                 bodyText = "🎤 Voice note";
+                const audioObj = msg.audio || msg.voice;
+                mediaUrl = audioObj?.id ? `/api/admin/whatsapp/media?mediaId=${audioObj.id}` : undefined;
               } else if (msg.type === "document") {
                 msgType = "document";
                 bodyText = msg.document?.filename || "📄 Document";
+                mediaUrl = msg.document?.id ? `/api/admin/whatsapp/media?mediaId=${msg.document.id}` : undefined;
+              } else if (msg.type === "sticker") {
+                msgType = "image";
+                bodyText = "🎨 Sticker";
+                mediaUrl = msg.sticker?.id ? `/api/admin/whatsapp/media?mediaId=${msg.sticker.id}` : undefined;
+              } else if (msg.type === "video") {
+                msgType = "video" as any;
+                bodyText = msg.video?.caption || "🎥 Video";
+                mediaUrl = msg.video?.id ? `/api/admin/whatsapp/media?mediaId=${msg.video.id}` : undefined;
+              } else if (msg.type === "location" && msg.location) {
+                const loc = msg.location;
+                const title = loc.name || loc.address || "Pinned Location";
+                bodyText = `📍 Location: ${title}\nhttps://maps.google.com/?q=${loc.latitude},${loc.longitude}`;
+              } else if (msg.type === "contacts" && Array.isArray(msg.contacts) && msg.contacts.length > 0) {
+                const c = msg.contacts[0];
+                const name = c.name?.formatted_name || c.name?.first_name || "Contact";
+                const phone = c.phones?.[0]?.phone || "";
+                bodyText = `👤 Contact: ${name}${phone ? ` (${phone})` : ""}`;
+              } else if (msg.type === "unsupported") {
+                bodyText = "📎 Attachment type not supported on WhatsApp Cloud API (e.g. sticker, contact, or disappearing media)";
               } else {
-                bodyText = msg.text?.body || `[${msg.type || "Inbound message"}]`;
+                bodyText = msg.text?.body || (msg.type ? `[${msg.type}]` : "Inbound message");
               }
 
               console.log(

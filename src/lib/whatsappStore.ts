@@ -791,7 +791,8 @@ export async function recordInboundCustomerMessage(
   phone: string,
   text: string,
   type: WhatsAppMessage["type"] = "text",
-  mediaUrl?: string
+  mediaUrl?: string,
+  mediaDuration?: number
 ): Promise<WhatsAppMessage | null> {
   try {
     if (!phone) return null;
@@ -843,6 +844,7 @@ export async function recordInboundCustomerMessage(
       type,
       content: text,
       mediaUrl,
+      mediaDuration,
       status: "read",
     });
 
