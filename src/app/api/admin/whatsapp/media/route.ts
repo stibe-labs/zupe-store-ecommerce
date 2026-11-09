@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
           "Content-Type": cached.mimeType,
           "Content-Length": String(cached.buffer.byteLength),
           "Accept-Ranges": "bytes",
+          "Access-Control-Allow-Origin": "*",
           "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
         },
       });
@@ -103,6 +104,7 @@ export async function GET(req: NextRequest) {
         "Content-Type": mimeType,
         "Content-Length": String(arrayBuffer.byteLength),
         "Accept-Ranges": "bytes",
+        "Access-Control-Allow-Origin": "*",
         "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
       },
     });
