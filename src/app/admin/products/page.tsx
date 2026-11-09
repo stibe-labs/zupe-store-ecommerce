@@ -705,8 +705,18 @@ export default function AdminProductsPage() {
     }
 
     let initialFeatures: string[] = [];
-    if (prod.features && Array.isArray(prod.features) && prod.features.length > 0) {
-      initialFeatures = [...prod.features];
+    let rawFeatures: any = prod.features;
+    if (typeof rawFeatures === "string") {
+      try {
+        rawFeatures = JSON.parse(rawFeatures);
+      } catch {}
+    }
+    if (Array.isArray(rawFeatures) && rawFeatures.length > 0) {
+      initialFeatures = rawFeatures
+        .map((f: any) => (typeof f === "string" ? f : f?.feature || f?.text || String(f || "")))
+        .map((s: string) => s.trim())
+        .filter(Boolean)
+        .slice(0, 4);
     } else {
       const idL = (prod.id || "").toLowerCase();
       const slugL = (prod.slug || "").toLowerCase();
@@ -1507,9 +1517,21 @@ export default function AdminProductsPage() {
       volume: formVolume.trim(),
       material: formMaterial.trim(),
       comparison_table: compTableConfig,
-      features: cleanedCompRows.length > 0
-        ? cleanedCompRows.map((r) => r.feature.trim())
-        : formFeatures.filter(Boolean),
+      features: (() => {
+        const slotPoints = [
+          formFeatures[0]?.trim() || "",
+          formFeatures[1]?.trim() || "",
+          formFeatures[2]?.trim() || "",
+          formFeatures[3]?.trim() || "",
+        ].filter(Boolean);
+        if (slotPoints.length > 0) {
+          return slotPoints;
+        }
+        const remaining = formFeatures
+          .map((f) => (typeof f === "string" ? f.trim() : ""))
+          .filter(Boolean);
+        return remaining.length > 0 ? remaining.slice(0, 4) : [];
+      })(),
       specifications: Object.keys(specsObj).length > 0 ? specsObj : undefined,
       whats_in_box: formWhatsInBox.filter(Boolean),
       bundle_tiers: formBundleTiers,
@@ -2639,7 +2661,7 @@ export default function AdminProductsPage() {
                               "Verified Authentic Zupe Original",
                             ])
                           }
-                          className="px-2 py-0.5 text-[10px] bg-orange-100/70 hover:bg-orange-100 text-[#FF7A00] font-bold rounded-lg transition-colors cursor-pointer"
+                          className="px-2 py-0.5 text-[10px] bg-slate-50 hover:bg-orange-50 text-slate-600 hover:text-[#FF7A00] border border-slate-200 font-semibold rounded-lg transition-colors cursor-pointer"
                           title="Load Default 4 Points"
                         >
                           Defaults

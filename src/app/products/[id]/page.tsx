@@ -417,22 +417,19 @@ export default function ProductDetailPage() {
     if (!product) return [];
 
     // 1. If admin configured features for this product, use them
-    if (product.features && Array.isArray(product.features) && product.features.length > 0) {
-      const clean = product.features
-        .map((f: any) => (typeof f === "string" ? f : f?.text || String(f)))
+    let rawFeatures: any = product.features;
+    if (typeof rawFeatures === "string") {
+      try {
+        rawFeatures = JSON.parse(rawFeatures);
+      } catch {}
+    }
+    if (rawFeatures && Array.isArray(rawFeatures) && rawFeatures.length > 0) {
+      const clean = rawFeatures
+        .map((f: any) => (typeof f === "string" ? f : f?.text || f?.feature || String(f)))
         .map((s: string) => s.replace(/^[✨🔥💆‍♀️🌸🔋⚡👔✈️🛡️💧🖨️📱📝🌀🧺📦⏱️💨🤫👶🎒✓•-]\s*/u, "").trim())
         .filter(Boolean);
-      if (clean.length >= 4) {
-        return clean.slice(0, 4);
-      }
       if (clean.length > 0) {
-        const fallbacks = [
-          "Premium Quality Build",
-          "Fast Doorstep Delivery",
-          "Cash on Delivery Available",
-          "Damage Protection Guarantee",
-        ];
-        return [...clean, ...fallbacks.filter((fb) => !clean.includes(fb))].slice(0, 4);
+        return clean.slice(0, 4);
       }
     }
 
