@@ -12,7 +12,7 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set(
     "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=(self)"
+    "camera=(), microphone=(self), geolocation=(self)"
   );
   return response;
 }
