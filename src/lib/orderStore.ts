@@ -30,8 +30,8 @@ export interface OrderRecord {
   promo_code?: string;
   payment_method: string;
   payment_status: "pending" | "paid" | "failed" | "refunded";
-  order_status: "processing" | "shipped" | "delivered" | "cancelled";
-  whatsapp_confirm_status?: "pending_whatsapp" | "confirmed" | "cancelled";
+  order_status: "processing" | "shipped" | "delivered" | "cancelled" | "payment_pending";
+  whatsapp_confirm_status?: "pending_whatsapp" | "confirmed" | "cancelled" | "pending_payment";
   whatsapp_confirm_token?: string;
   whatsapp_token_used?: boolean;
   confirmation_email_sent?: boolean;
@@ -81,8 +81,8 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
       shipping_address: `${order.shipping_address}, ${order.city} ${order.postal_code}`,
       payment_method: order.payment_method === "Credit Card" ? "Prepaid" : order.payment_method,
       payment_status: order.payment_status === "paid" ? "Completed" : "Pending",
-      status: order.order_status === "shipped" ? "In Transit" : "Processing",
-      delivery_status: order.order_status === "shipped" ? "In Transit" : "Processing",
+      status: order.order_status === "shipped" ? "In Transit" : (order.order_status === "payment_pending" ? "Payment Pending" : (order.order_status === "cancelled" ? "Cancelled" : "Processing")),
+      delivery_status: order.order_status === "shipped" ? "In Transit" : (order.order_status === "cancelled" ? "Cancelled" : "Processing"),
       whatsapp_confirm_status: order.whatsapp_confirm_status || "pending_whatsapp",
       whatsapp_confirm_token: order.whatsapp_confirm_token || "",
       whatsapp_token_used: order.whatsapp_token_used || false,

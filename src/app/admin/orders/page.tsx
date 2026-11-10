@@ -769,7 +769,9 @@ function AdminOrdersContent() {
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           <span
                             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold ${
-                              ord.payment_method === "COD" || (ord.payment_method && ord.payment_method.toLowerCase().includes("cash on delivery"))
+                              ord.status === "Cancelled" || ord.delivery_status === "Cancelled"
+                                ? "bg-rose-50 text-rose-700 border border-rose-200"
+                                : ord.payment_method === "COD" || (ord.payment_method && ord.payment_method.toLowerCase().includes("cash on delivery"))
                                 ? "bg-amber-50 text-amber-700 border border-amber-200"
                                 : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                             }`}
@@ -777,12 +779,24 @@ function AdminOrdersContent() {
                             {ord.payment_method}
                           </span>
                           <span className="block text-[10px] font-semibold mt-0.5">
-                            {ord.payment_status?.toLowerCase() === "refunded" ? (
+                            {ord.status === "Cancelled" || ord.delivery_status === "Cancelled" ? (
+                              <span className="inline-flex items-center gap-1 text-rose-700 font-extrabold bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                                🚫 Cancelled / Unpaid
+                              </span>
+                            ) : ord.payment_status?.toLowerCase() === "refunded" ? (
                               <span className="inline-flex items-center gap-1 text-purple-700 font-extrabold bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
                                 <RotateCcw className="w-3 h-3" /> Refunded
                               </span>
                             ) : ord.payment_status === "Completed" || ord.payment_status === "paid" ? (
                               <span className="text-emerald-600 font-bold">✓ Paid</span>
+                            ) : (Boolean(ord.is_cod_partial) && (Number(ord.advance_paid) || 0) === 0) ? (
+                              <span className="inline-flex items-center gap-1 text-amber-800 font-bold bg-amber-100/90 px-1.5 py-0.5 rounded border border-amber-300">
+                                ⚠️ Advance Unpaid (₹49 Pending)
+                              </span>
+                            ) : (Boolean(ord.is_cod_partial) && (Number(ord.advance_paid) || 0) > 0) ? (
+                              <span className="text-emerald-700 font-bold">
+                                ✓ ₹{ord.advance_paid} Adv Paid • Bal: ₹{ord.balance_due || (Number(ord.total_amount) - Number(ord.advance_paid))}
+                              </span>
                             ) : (
                               <span className="text-amber-600 font-medium">Pending</span>
                             )}
@@ -1593,6 +1607,22 @@ function AdminOrdersContent() {
                   <span className="text-slate-500">Selling Price (Revenue):</span>
                   <span className="font-bold text-slate-900">₹{selectedOrder.total_amount}</span>
                 </div>
+                {Boolean(selectedOrder.is_cod_partial) && (
+                  <>
+                    <div className="flex justify-between py-1 border-b border-slate-100 bg-amber-50/60 px-2 rounded">
+                      <span className="text-amber-900 font-semibold">Gateway Advance:</span>
+                      <span className={`font-bold ${Number(selectedOrder.advance_paid) > 0 ? "text-emerald-700" : "text-amber-800"}`}>
+                        ₹{Number(selectedOrder.advance_paid) || 0} {Number(selectedOrder.advance_paid) > 0 ? "(Paid)" : "(⚠️ Unpaid • Gateway Pending)"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-slate-100 px-2">
+                      <span className="text-slate-600 font-medium">Doorstep Balance Due:</span>
+                      <span className="font-bold text-slate-900">
+                        ₹{selectedOrder.balance_due !== undefined ? selectedOrder.balance_due : Math.max(0, Number(selectedOrder.total_amount) - (Number(selectedOrder.advance_paid) || 0))}
+                      </span>
+                    </div>
+                  </>
+                )}
                 <div className="flex justify-between py-1 border-b border-slate-100">
                   <span className="text-slate-500">Product Supplier Cost (COGS):</span>
                   <span className="font-semibold text-slate-700">₹{selectedOrder.product_cost}</span>

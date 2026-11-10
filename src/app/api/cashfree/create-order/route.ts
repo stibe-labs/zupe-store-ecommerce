@@ -87,6 +87,7 @@ export async function POST(req: NextRequest) {
     const orderPaymentMethod = isCod ? "Cash on Delivery" : "Online Payment";
 
     // 2. Pre-create order in ERP and D1 with Pending payment status
+    // Note: advance_paid is strictly 0 until gateway payment is confirmed!
     const newOrder: OrderRecord = {
       id: orderId,
       user_id: effectiveUserId,
@@ -100,11 +101,11 @@ export async function POST(req: NextRequest) {
       discount_amount: Number(discount_amount || 0),
       payment_method: orderPaymentMethod,
       payment_status: "pending",
-      order_status: "processing",
-      advance_paid: orderAdvancePaid,
-      balance_due: orderBalanceDue,
+      order_status: "payment_pending",
+      advance_paid: 0,
+      balance_due: orderTotalAmount,
       is_cod_partial: isCod ? 1 : 0,
-      whatsapp_confirm_status: "pending_whatsapp",
+      whatsapp_confirm_status: "pending_payment",
       whatsapp_confirm_token: confirmToken,
       whatsapp_token_used: false,
       items,
@@ -197,8 +198,9 @@ export async function POST(req: NextRequest) {
       settlerInvoiceId,
       amount: chargeAmount,
       isCod,
-      advancePaid: orderAdvancePaid,
-      balanceDue: orderBalanceDue,
+      advancePaid: 0,
+      expectedAdvance: orderAdvancePaid,
+      balanceDue: orderTotalAmount,
       totalAmount: orderTotalAmount,
     });
   } catch (err: any) {

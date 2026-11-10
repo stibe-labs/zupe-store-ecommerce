@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
       (Number(order?.advance_paid) > 0 && Number(order?.advance_paid) < Number(order?.total_amount));
 
     const advancePaid = isCodOrder
-      ? (Number(order?.advance_paid) || 49)
+      ? (verificationAmount || (Number(order?.advance_paid) > 0 ? Number(order?.advance_paid) : 49))
       : (Number(order?.total_amount) || verificationAmount || 899);
     const balanceDue = isCodOrder
       ? (order?.balance_due !== undefined ? Number(order.balance_due) : Math.max(0, Number(order?.total_amount || 0) - advancePaid))

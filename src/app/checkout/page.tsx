@@ -419,6 +419,15 @@ function CheckoutContent() {
       setShowPaymentCancelledModal(true);
       setErrorMessage(data.message || "Payment is pending or was not completed. Please try again or select Cash on Delivery.");
 
+      // Notify server that payment was abandoned/incomplete so order is marked cancelled and stock restored
+      if (orderIdToVerify) {
+        fetch("/api/cashfree/cancel-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: orderIdToVerify, reason: "Payment incomplete or abandoned at gateway" }),
+        }).catch(() => {});
+      }
+
       // Clean query parameters from URL so refreshes don't re-trigger verification
       try {
         if (typeof window !== "undefined") {
@@ -483,8 +492,17 @@ function CheckoutContent() {
 
     // If explicitly cancelled by gateway redirect
     if (isExplicitlyCancelled) {
-      setCancelledPaymentOrderId(targetOrder || "");
+      const cancelledId = targetOrder || "";
+      setCancelledPaymentOrderId(cancelledId);
       setShowPaymentCancelledModal(true);
+
+      if (cancelledId) {
+        fetch("/api/cashfree/cancel-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: cancelledId, reason: "Gateway returned cancelled status" }),
+        }).catch(() => {});
+      }
       try {
         if (typeof window !== "undefined") {
           const cleanUrl = new URL(window.location.href);
