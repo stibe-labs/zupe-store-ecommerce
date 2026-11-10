@@ -87,6 +87,13 @@ export interface WhatsAppTemplate {
 
 export const WHATSAPP_TEMPLATES: WhatsAppTemplate[] = [
   {
+    id: "custom_payment_link",
+    title: "💳 Custom Payment Link & Invoice (മലയാളം)",
+    category: "Orders",
+    body: "പ്രിയപ്പെട്ട {{name}},\n\nനിങ്ങൾ തിരഞ്ഞെടുത്ത തുർക്കിയെ ജാം ഓർഡർ വിവരങ്ങൾ താഴെ നൽകുന്നു:\n\n📦 പ്രോഡക്റ്റ്: Turkiye Jam - ₹{{amount}}\n🚚 ഡെലിവറി ചാർജ്ജ്: സൗജന്യം / ₹49\n📍 ഡെലിവറി വിലാസം: {{address}}\n💰 ആകെ അടയ്ക്കേണ്ട തുക: ₹{{amount}}\n\nഓർഡർ കൺഫേം ചെയ്യാനും സുരക്ഷിതമായി UPI / GPay / PhonePe / Card വഴി പണമടയ്ക്കാനും താഴെയുള്ള ലിങ്കിൽ ക്ലിക്ക് ചെയ്യുക:\n👉 https://settler.pydart.com\n\nപെയ്മെന്റ് പൂർത്തിയായാലുടൻ ഓർഡർ പാക്ക് ചെയ്ത് അയക്കുന്നതായിരിക്കും. നന്ദി! 🍯✨",
+    variables: ["name", "amount", "address"],
+  },
+  {
     id: "malayalam_pricing_inquiry",
     title: "Malayalam Pricing & Order Guide (മലയാളം)",
     category: "Sales",

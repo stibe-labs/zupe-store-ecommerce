@@ -30,6 +30,9 @@ interface ActiveChatAreaProps {
   onToggleDrawer: () => void;
   isDrawerOpen: boolean;
   onOpenTemplates: () => void;
+  onOpenPaymentLinkModal?: () => void;
+  draftText?: string;
+  onClearDraftText?: () => void;
   isTyping?: boolean;
 }
 
@@ -45,6 +48,9 @@ export default function ActiveChatArea({
   onToggleDrawer,
   isDrawerOpen,
   onOpenTemplates,
+  onOpenPaymentLinkModal,
+  draftText,
+  onClearDraftText,
   isTyping = false,
 }: ActiveChatAreaProps) {
   const [replyTarget, setReplyTarget] = useState<WhatsAppMessage | null>(null);
@@ -260,6 +266,9 @@ export default function ActiveChatArea({
         replyToMessage={replyTarget}
         onClearReply={() => setReplyTarget(null)}
         onOpenTemplates={onOpenTemplates}
+        onOpenPaymentLinkModal={onOpenPaymentLinkModal}
+        draftText={draftText}
+        onClearDraftText={onClearDraftText}
       />
 
       {/* Lightbox Modal for Photo Zoom */}

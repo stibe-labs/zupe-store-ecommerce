@@ -32,6 +32,9 @@ interface ChatInputDockProps {
   replyToMessage?: WhatsAppMessage | null;
   onClearReply?: () => void;
   onOpenTemplates?: () => void;
+  onOpenPaymentLinkModal?: () => void;
+  draftText?: string;
+  onClearDraftText?: () => void;
   isSending?: boolean;
 }
 
@@ -48,6 +51,9 @@ export default function ChatInputDock({
   replyToMessage,
   onClearReply,
   onOpenTemplates,
+  onOpenPaymentLinkModal,
+  draftText,
+  onClearDraftText,
   isSending = false,
 }: ChatInputDockProps) {
   const [text, setText] = useState("");
@@ -62,6 +68,19 @@ export default function ChatInputDock({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const mediaStreamRef = useRef<MediaStream | null>(null);
+
+  // Sync draftText if pasted from modal
+  useEffect(() => {
+    if (draftText) {
+      setText(draftText);
+      onClearDraftText?.();
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      }, 50);
+    }
+  }, [draftText, onClearDraftText]);
 
   // Auto resize textarea
   useEffect(() => {
@@ -323,6 +342,18 @@ export default function ChatInputDock({
       {showAttachmentMenu && (
         <div className="absolute bottom-16 left-12 z-40 w-64 bg-white dark:bg-[#1f2c34] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 p-2 space-y-1 animate-in fade-in zoom-in-95">
           <button
+            onClick={() => {
+              setShowAttachmentMenu(false);
+              onOpenPaymentLinkModal?.();
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl text-teal-800 dark:text-teal-300 bg-teal-50/90 dark:bg-teal-950/40 hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors cursor-pointer"
+          >
+            <div className="w-7 h-7 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs shadow-xs">
+              💳
+            </div>
+            <span>Custom Payment Link (Settler)</span>
+          </button>
+          <button
             onClick={handleSendMalayalamPricing}
             className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl text-emerald-800 dark:text-emerald-300 bg-emerald-50/80 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors cursor-pointer"
           >
@@ -372,6 +403,15 @@ export default function ChatInputDock({
 
       {/* Quick Action Chips Bar (Above Composer) */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 mb-1 scrollbar-none text-[11px]">
+        <button
+          type="button"
+          onClick={onOpenPaymentLinkModal}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-500/15 hover:bg-teal-500/25 text-teal-800 dark:text-teal-300 font-bold border border-teal-500/30 transition-all cursor-pointer shrink-0 shadow-2xs"
+          title="Create & send custom Settler payment link (editable amounts)"
+        >
+          <span>💳</span>
+          <span>പെയ്മെന്റ് ലിങ്ക്</span>
+        </button>
         <button
           type="button"
           onClick={handleSendMalayalamPricing}

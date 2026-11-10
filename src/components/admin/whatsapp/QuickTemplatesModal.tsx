@@ -1,19 +1,21 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Sparkles, Send, Check } from "lucide-react";
+import { X, Sparkles, Send, Check, CreditCard, ArrowRight } from "lucide-react";
 import { WHATSAPP_TEMPLATES, WhatsAppTemplate, WhatsAppConversation } from "@/lib/whatsappStore";
 
 interface QuickTemplatesModalProps {
   conversation: WhatsAppConversation;
   onClose: () => void;
   onSendTemplate: (renderedContent: string) => void;
+  onOpenPaymentLinkModal?: () => void;
 }
 
 export default function QuickTemplatesModal({
   conversation,
   onClose,
   onSendTemplate,
+  onOpenPaymentLinkModal,
 }: QuickTemplatesModalProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<WhatsAppTemplate>(WHATSAPP_TEMPLATES[0]);
 
@@ -94,6 +96,20 @@ export default function QuickTemplatesModal({
               <div className="p-3.5 rounded-2xl bg-[#d9fdd3] dark:bg-[#005c4b] text-slate-900 dark:text-white text-xs whitespace-pre-wrap leading-relaxed shadow-xs rounded-tr-xs border border-emerald-500/20">
                 {previewText}
               </div>
+
+              {selectedTemplate.id === "custom_payment_link" && onOpenPaymentLinkModal && (
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={onOpenPaymentLinkModal}
+                    className="w-full py-2 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span>Open Payment Link Generator (Edit Amount)</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-end gap-2 mt-4">

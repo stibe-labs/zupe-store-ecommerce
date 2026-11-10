@@ -29,6 +29,7 @@ import {
   Check,
   ChevronDown,
   Send,
+  ArrowRight,
 } from "lucide-react";
 import { WhatsAppConversation } from "@/lib/whatsappStore";
 
@@ -38,6 +39,7 @@ interface CustomerOrderDrawerProps {
   onUpdateOrderStatus: (orderId: string, status: string) => void;
   onRefreshConversations?: () => void;
   onSendQuickTemplate: (type: string) => void;
+  onOpenPaymentLinkModal?: () => void;
 }
 
 export default function CustomerOrderDrawer({
@@ -46,6 +48,7 @@ export default function CustomerOrderDrawer({
   onUpdateOrderStatus,
   onRefreshConversations,
   onSendQuickTemplate,
+  onOpenPaymentLinkModal,
 }: CustomerOrderDrawerProps) {
   const [copied, setCopied] = useState(false);
   const [copiedAWB, setCopiedAWB] = useState(false);
@@ -592,6 +595,22 @@ export default function CustomerOrderDrawer({
           <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
             Quick WhatsApp Triggers
           </div>
+
+          {/* Create Custom Payment Link Trigger */}
+          <button
+            type="button"
+            onClick={onOpenPaymentLinkModal}
+            className="w-full flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold transition-all cursor-pointer shadow-xs group"
+          >
+            <div className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4 text-white" />
+              <div className="text-left leading-tight">
+                <span className="block font-bold">Create Payment Link</span>
+                <span className="block text-[10px] text-teal-100 font-normal">Edit amount, delivery &amp; send via UPI</span>
+              </div>
+            </div>
+            <ArrowRight className="w-3.5 h-3.5 text-white/90 group-hover:translate-x-0.5 transition-transform" />
+          </button>
 
           {/* Primary Malayalam Pricing & Inquiry Trigger */}
           <button

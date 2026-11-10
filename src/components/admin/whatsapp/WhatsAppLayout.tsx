@@ -9,6 +9,7 @@ import CustomerOrderDrawer from "./CustomerOrderDrawer";
 import VoiceCallModal from "./VoiceCallModal";
 import VideoCallModal from "./VideoCallModal";
 import QuickTemplatesModal from "./QuickTemplatesModal";
+import PaymentLinkModal from "./PaymentLinkModal";
 import NewChatModal from "./NewChatModal";
 import {
   WhatsAppConversation,
@@ -34,6 +35,8 @@ export default function WhatsAppLayout() {
   const [showVoiceCall, setShowVoiceCall] = useState(false);
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+  const [showPaymentLinkModal, setShowPaymentLinkModal] = useState(false);
+  const [draftMessageText, setDraftMessageText] = useState("");
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [isCustomerTyping, setIsCustomerTyping] = useState(false);
 
@@ -499,6 +502,9 @@ export default function WhatsAppLayout() {
           onToggleDrawer={() => setIsDrawerOpen(!isDrawerOpen)}
           isDrawerOpen={isDrawerOpen}
           onOpenTemplates={() => setShowTemplatesModal(true)}
+          onOpenPaymentLinkModal={() => setShowPaymentLinkModal(true)}
+          draftText={draftMessageText}
+          onClearDraftText={() => setDraftMessageText("")}
           isTyping={isCustomerTyping}
         />
       ) : (
@@ -522,6 +528,7 @@ export default function WhatsAppLayout() {
           onClose={() => setIsDrawerOpen(false)}
           onUpdateOrderStatus={handleUpdateOrderStatus}
           onRefreshConversations={fetchConversations}
+          onOpenPaymentLinkModal={() => setShowPaymentLinkModal(true)}
           onSendQuickTemplate={(type) => {
             const cleanName = activeConversation.customerName.includes("(")
               ? "there"
@@ -573,6 +580,24 @@ export default function WhatsAppLayout() {
           conversation={activeConversation}
           onClose={() => setShowTemplatesModal(false)}
           onSendTemplate={(content) => handleSendMessage({ content, type: "template" })}
+          onOpenPaymentLinkModal={() => {
+            setShowTemplatesModal(false);
+            setShowPaymentLinkModal(true);
+          }}
+        />
+      )}
+
+      {/* Custom Payment Link Modal (Settler & Cashfree UPI Link Generator) */}
+      {showPaymentLinkModal && activeConversation && (
+        <PaymentLinkModal
+          conversation={activeConversation}
+          onClose={() => setShowPaymentLinkModal(false)}
+          onPasteToChat={(renderedText) => {
+            setDraftMessageText(renderedText);
+          }}
+          onSendDirectly={(renderedText) => {
+            handleSendMessage({ content: renderedText, type: "template" });
+          }}
         />
       )}
 
