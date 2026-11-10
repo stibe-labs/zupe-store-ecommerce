@@ -1,240 +1,179 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  motion,
-  AnimatePresence,
-  useMotionValue,
-  useSpring,
-} from "framer-motion";
-import { Home, Store, Search, Heart, User } from "lucide-react";
+  Home,
+  LayoutGrid,
+  Heart,
+  User,
+  MoreHorizontal,
+} from "lucide-react";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
-import { useSearch } from "@/context/SearchContext";
+import { useCart } from "@/context/CartContext";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { totalWishlistItems } = useWishlist();
   const { isAuthenticated } = useAuth();
-  const { isSearchOpen, openSearch } = useSearch();
+  const { openCart, totalItems } = useCart();
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [navWidth, setNavWidth] = useState(380);
-
-  // ── Bar geometry constants ──────────────────────────────────────────────────
-  const BAR_H = 62;      // px - clean, balanced bottom bar height
-  const CIRCLE_D = 46;   // px - active circular bubble (sits completely inside bar)
-  const CIRCLE_R = CIRCLE_D / 2; // 23px
-
-  // ── Responsive width measurement ───────────────────────────────────────────
-  useEffect(() => {
-    const update = () => {
-      if (containerRef.current) {
-        const w = containerRef.current.clientWidth;
-        if (w > 0) setNavWidth(w);
-      }
-    };
-    update();
-    const ro =
-      typeof ResizeObserver !== "undefined"
-        ? new ResizeObserver(update)
-        : null;
-    if (ro && containerRef.current) ro.observe(containerRef.current);
-    window.addEventListener("resize", update);
-    return () => {
-      ro?.disconnect();
-      window.removeEventListener("resize", update);
-    };
-  }, []);
-
-  // ── Navigation items (order: Shop, Search, Home[center], Wishlist, Account) ─
-  const navItems = useMemo(
-    () => [
-      {
-        label: "Shop",
-        icon: <Store className="w-[20px] h-[20px]" strokeWidth={1.9} />,
-        action: () => router.push("/products"),
-      },
-      {
-        label: "Search",
-        icon: <Search className="w-[20px] h-[20px]" strokeWidth={1.9} />,
-        action: () => openSearch(),
-      },
-      {
-        label: "Home",
-        icon: <Home className="w-[20px] h-[20px]" strokeWidth={2.2} />,
-        action: () => {
-          if (pathname === "/" && !isSearchOpen) {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          } else {
-            router.push("/");
-          }
-        },
-      },
-      {
-        label: "Wishlist",
-        icon: <Heart className="w-[20px] h-[20px]" strokeWidth={1.9} />,
-        action: () => router.push("/wishlist"),
-      },
-      {
-        label: "Account",
-        icon: <User className="w-[20px] h-[20px]" strokeWidth={1.9} />,
-        action: () => {
-          if (isAuthenticated) {
-            router.push("/account");
-          } else {
-            router.push(
-              "/signin?redirect=/account&notice=Please sign in to view your profile and orders"
-            );
-          }
-        },
-      },
-    ],
-    [router, openSearch, isAuthenticated, pathname, isSearchOpen]
-  );
-
-  // ── Equal 5-slot item centers ───────────────────────────────────────────────
-  const slotW = navWidth / 5;
-  const centers = useMemo(
-    () => navItems.map((_, i) => (i + 0.5) * slotW),
-    [navWidth, slotW, navItems]
-  );
-
-  // ── Active index determination ──────────────────────────────────────────────
-  const getActiveIndex = () => {
-    if (isSearchOpen) return 1; // Search
-    if (pathname === "/wishlist") return 3; // Wishlist
-    if (pathname === "/") return 2; // Home (center)
-    if (pathname?.startsWith("/products")) return 0; // Shop
-    if (
-      pathname === "/account" ||
-      pathname === "/signin" ||
-      pathname === "/login"
-    ) {
-      return 4; // Account
-    }
-    return 2; // Default: Home (center)
-  };
-
-  const [activeIndex, setActiveIndex] = useState(2); // Home = default
-
-  // ── Spring-driven horizontal position ──────────────────────────────────────
-  const motionX = useMotionValue(centers[2]); // Start at Home
-  const springX = useSpring(motionX, {
-    stiffness: 380,
-    damping: 30,
-    mass: 0.8,
-  });
-
-  // ── Sync active index with route/modal state ────────────────────────────────
-  useEffect(() => {
-    const idx = getActiveIndex();
-    setActiveIndex(idx);
-    motionX.set(centers[idx]);
-  }, [pathname, isSearchOpen, centers]);
-
-  // ── Route guard ────────────────────────────────────────────────────────────
+  // Route guard: hide on admin dashboard and checkout flows
   if (pathname?.startsWith("/admin") || pathname?.startsWith("/checkout")) {
     return null;
   }
 
+  const isHome = pathname === "/";
+  const isCategories =
+    pathname?.startsWith("/products") || pathname?.startsWith("/categories");
+  const isWishlist = pathname === "/wishlist";
+  const isAccount =
+    pathname === "/account" ||
+    pathname === "/signin" ||
+    pathname === "/login";
+
   return (
     <nav
-      ref={containerRef}
       aria-label="Mobile Bottom Navigation"
-      style={{
-        bottom: "max(12px, env(safe-area-inset-bottom, 12px))",
-        height: `${BAR_H}px`,
-      }}
-      className="fixed inset-x-3 sm:hidden z-40 max-w-[420px] mx-auto select-none"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0B0B0C]/95 backdrop-blur-lg border-t border-white/10 px-2 sm:px-4 pt-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(0,0,0,0.6)] select-none"
     >
-      {/* ── 1. Floating Pill Bar Background ── */}
-      <div className="relative w-full h-full bg-white/95 backdrop-blur-md rounded-full border border-slate-200/90 shadow-[0_8px_30px_rgba(0,29,64,0.13)]">
-        {/* ── 2. Sliding Active Bubble Indicator (Completely Inside Bar) ── */}
-        <motion.div
-          className="absolute top-1/2 -translate-y-1/2 z-20 pointer-events-none"
-          style={{
-            x: springX,
-            left: -CIRCLE_R,
-            width: CIRCLE_D,
-            height: CIRCLE_D,
+      <div className="grid grid-cols-5 items-center justify-items-center max-w-md mx-auto">
+        {/* 1. Home */}
+        <button
+          type="button"
+          onClick={() => {
+            if (isHome) {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            } else {
+              router.push("/");
+            }
           }}
+          className={`flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none ${
+            isHome ? "text-[#D4AF37]" : "text-neutral-400 hover:text-white"
+          }`}
+          aria-label="Home"
         >
-          <div
-            className="relative w-full h-full rounded-full bg-[#001D40] flex items-center justify-center shadow-[0_4px_14px_rgba(0,29,64,0.28)]"
+          <Home
+            className={`w-5 h-5 transition-transform duration-200 ${
+              isHome ? "stroke-[2.4] scale-105" : "stroke-[1.8]"
+            }`}
+          />
+          <span
+            className={`text-[10px] tracking-tight ${
+              isHome ? "font-bold text-[#D4AF37]" : "font-medium"
+            }`}
           >
-            {/* Active Icon with Crossfade / Pop Animation */}
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={activeIndex}
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.6, opacity: 0 }}
-                transition={{ duration: 0.14, ease: "easeOut" }}
-                className="flex items-center justify-center text-white"
-              >
-                {navItems[activeIndex].icon}
-              </motion.span>
-            </AnimatePresence>
+            Home
+          </span>
+        </button>
 
-            {/* Wishlist badge when active */}
-            {activeIndex === 3 && totalWishlistItems > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#E02B2B] text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-sm leading-none">
+        {/* 2. Categories */}
+        <button
+          type="button"
+          onClick={() => router.push("/products")}
+          className={`flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none ${
+            isCategories ? "text-[#D4AF37]" : "text-neutral-400 hover:text-white"
+          }`}
+          aria-label="Categories"
+        >
+          <LayoutGrid
+            className={`w-5 h-5 transition-transform duration-200 ${
+              isCategories ? "stroke-[2.4] scale-105" : "stroke-[1.8]"
+            }`}
+          />
+          <span
+            className={`text-[10px] tracking-tight ${
+              isCategories ? "font-bold text-[#D4AF37]" : "font-medium"
+            }`}
+          >
+            Categories
+          </span>
+        </button>
+
+        {/* 3. Wishlist */}
+        <button
+          type="button"
+          onClick={() => router.push("/wishlist")}
+          className={`relative flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none ${
+            isWishlist ? "text-[#D4AF37]" : "text-neutral-400 hover:text-white"
+          }`}
+          aria-label="Wishlist"
+        >
+          <div className="relative">
+            <Heart
+              className={`w-5 h-5 transition-transform duration-200 ${
+                isWishlist
+                  ? "stroke-[2.4] fill-[#D4AF37]/20 scale-105"
+                  : "stroke-[1.8]"
+              }`}
+            />
+            {totalWishlistItems > 0 && (
+              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-[#D4AF37] text-black text-[9px] font-black flex items-center justify-center shadow-xs">
                 {totalWishlistItems > 9 ? "9+" : totalWishlistItems}
               </span>
             )}
           </div>
-        </motion.div>
+          <span
+            className={`text-[10px] tracking-tight ${
+              isWishlist ? "font-bold text-[#D4AF37]" : "font-medium"
+            }`}
+          >
+            Wishlist
+          </span>
+        </button>
 
-        {/* ── 3. Clickable Navigation Buttons (All 5 items inside bar) ── */}
-        <div className="absolute inset-0 z-10 flex">
-          {navItems.map((item, index) => {
-            const isActive = activeIndex === index;
+        {/* 4. Account */}
+        <button
+          type="button"
+          onClick={() => {
+            if (isAuthenticated) {
+              router.push("/account");
+            } else {
+              router.push(
+                "/signin?redirect=/account&notice=Please sign in to view your profile and orders"
+              );
+            }
+          }}
+          className={`flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none ${
+            isAccount ? "text-[#D4AF37]" : "text-neutral-400 hover:text-white"
+          }`}
+          aria-label="Account"
+        >
+          <User
+            className={`w-5 h-5 transition-transform duration-200 ${
+              isAccount ? "stroke-[2.4] scale-105" : "stroke-[1.8]"
+            }`}
+          />
+          <span
+            className={`text-[10px] tracking-tight ${
+              isAccount ? "font-bold text-[#D4AF37]" : "font-medium"
+            }`}
+          >
+            Account
+          </span>
+        </button>
 
-            return (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => {
-                  if (isActive) {
-                    if (index === 2 && pathname === "/") {
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-                    return;
-                  }
-                  setActiveIndex(index);
-                  motionX.set(centers[index]);
-                  item.action();
-                }}
-                className="flex-1 h-full flex items-center justify-center cursor-pointer touch-manipulation focus:outline-none group"
-                aria-label={item.label}
-              >
-                {/* Inactive Icon — fades out smoothly when active indicator is positioned over it */}
-                <span
-                  className="relative flex items-center justify-center transition-all duration-200"
-                  style={{
-                    color: "#001D40",
-                    opacity: isActive ? 0 : 0.68,
-                    transform: isActive ? "scale(0.55)" : "scale(1)",
-                    pointerEvents: isActive ? "none" : "auto",
-                    transition: "opacity 180ms ease, transform 180ms ease",
-                  }}
-                >
-                  {item.icon}
-
-                  {/* Wishlist badge when inactive */}
-                  {index === 3 && totalWishlistItems > 0 && !isActive && (
-                    <span className="absolute -top-2 -right-2 min-w-[16px] h-[16px] px-1 rounded-full bg-[#E02B2B] text-white text-[9px] font-extrabold flex items-center justify-center border-2 border-white shadow-xs leading-none">
-                      {totalWishlistItems > 9 ? "9+" : totalWishlistItems}
-                    </span>
-                  )}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        {/* 5. More (opens Cart Drawer & Quick Bag) */}
+        <button
+          type="button"
+          onClick={openCart}
+          className="relative flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none text-neutral-400 hover:text-white"
+          aria-label="Cart & More"
+        >
+          <div className="relative">
+            <MoreHorizontal className="w-5 h-5 stroke-[2]" />
+            {totalItems > 0 && (
+              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-[#D4AF37] text-black text-[9px] font-black flex items-center justify-center shadow-xs">
+                {totalItems > 9 ? "9+" : totalItems}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] tracking-tight font-medium">
+            More
+          </span>
+        </button>
       </div>
     </nav>
   );

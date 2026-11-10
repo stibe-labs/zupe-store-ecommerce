@@ -470,66 +470,6 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
           </div>
         </div>
       </section>
-
-      {/* ===================================================================== */}
-      {/* 6. FIXED MOBILE BOTTOM NAVIGATION BAR (Matches Mockup)                */}
-      {/* ===================================================================== */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0B0B0C]/95 backdrop-blur-lg border-t border-white/10 px-4 py-2 flex items-center justify-around">
-        <Link
-          href="/"
-          className="flex flex-col items-center gap-1 text-[#D4AF37]"
-        >
-          <svg className="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
-          <span className="text-[10px] font-semibold">Home</span>
-        </Link>
-
-        <Link
-          href="/products"
-          className="flex flex-col items-center gap-1 text-neutral-400 hover:text-white"
-        >
-          <svg className="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect width="7" height="7" x="3" y="3" rx="1" />
-            <rect width="7" height="7" x="14" y="3" rx="1" />
-            <rect width="7" height="7" x="14" y="14" rx="1" />
-            <rect width="7" height="7" x="3" y="14" rx="1" />
-          </svg>
-          <span className="text-[10px] font-medium">Categories</span>
-        </Link>
-
-        <Link
-          href="/wishlist"
-          className="flex flex-col items-center gap-1 text-neutral-400 hover:text-white"
-        >
-          <Heart className="w-5 h-5 stroke-current" />
-          <span className="text-[10px] font-medium">Wishlist</span>
-        </Link>
-
-        <Link
-          href="/account"
-          className="flex flex-col items-center gap-1 text-neutral-400 hover:text-white"
-        >
-          <svg className="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <span className="text-[10px] font-medium">Account</span>
-        </Link>
-
-        <button
-          onClick={openCart}
-          className="flex flex-col items-center gap-1 text-neutral-400 hover:text-white"
-        >
-          <svg className="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="1" />
-            <circle cx="19" cy="12" r="1" />
-            <circle cx="5" cy="12" r="1" />
-          </svg>
-          <span className="text-[10px] font-medium">More</span>
-        </button>
-      </nav>
     </div>
   );
 }
