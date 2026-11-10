@@ -335,7 +335,7 @@ export function TurkiyeJamStorefront({ initialProducts }: TurkiyeJamStorefrontPr
       poster_image: pkg.image,
       color: pkg.name,
     };
-    addItem(item, 1);
+    addItem(item, 1, { overrideQuantity: true, replaceCart: true });
     router.push("/checkout");
   };
 

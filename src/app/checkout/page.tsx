@@ -852,9 +852,20 @@ function CheckoutContent() {
         (p) => p.id === paramId || p.slug === paramSlug || p.id === paramSlug
       );
       if (match) {
-        addToCart(match, 1);
+        addToCart(match, 1, { overrideQuantity: true, replaceCart: true });
       }
     }
+    // Clean params from URL so browser back navigation and refreshes never duplicate
+    try {
+      if (typeof window !== "undefined" && (paramId || paramSlug)) {
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete("productId");
+        cleanUrl.searchParams.delete("id");
+        cleanUrl.searchParams.delete("funnel");
+        cleanUrl.searchParams.delete("slug");
+        window.history.replaceState({}, "", cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : ""));
+      }
+    } catch {}
   }, [searchParams, cart.length, addToCart]);
 
   // Populate user data if logged in (phone and real name only - no default email)

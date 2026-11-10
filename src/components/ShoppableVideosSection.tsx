@@ -715,7 +715,7 @@ export function ShoppableVideosSection({
 
     const addFn = addToCart || addItem;
     if (typeof addFn === "function") {
-      addFn(attachedItem, 1);
+      addFn(attachedItem, 1, { overrideQuantity: true });
     }
 
     if (!user) {
@@ -779,7 +779,7 @@ export function ShoppableVideosSection({
 
     const addFn = addToCart || addItem;
     if (typeof addFn === "function") {
-      addFn(attachedItem, 1);
+      addFn(attachedItem, 1, { overrideQuantity: true });
     }
     if (onToast) {
       onToast(`Added ${attachedItem.name} to cart! 🛒`);

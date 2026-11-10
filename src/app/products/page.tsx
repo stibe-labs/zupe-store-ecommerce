@@ -380,7 +380,7 @@ function ProductsContent() {
     if (product.in_stock === 0 || (product.stock_count !== undefined && product.stock_count <= 0)) {
       return;
     }
-    addToCart(product, 1);
+    addToCart(product, 1, { overrideQuantity: true });
     if (!user) {
       openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡", "/checkout");
       return;

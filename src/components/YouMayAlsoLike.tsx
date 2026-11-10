@@ -106,7 +106,7 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
 
     const addFn = addToCart || addItem;
     if (typeof addFn === "function") {
-      const added = addFn(prod, 1);
+      const added = addFn(prod, 1, { overrideQuantity: true });
       if (!added) return;
     }
     if (onToast) {
@@ -126,7 +126,7 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
 
     const addFn = addToCart || addItem;
     if (typeof addFn === "function") {
-      const added = addFn(prod, 1);
+      const added = addFn(prod, 1, { overrideQuantity: true });
       if (!added) return;
     }
 

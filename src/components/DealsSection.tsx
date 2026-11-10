@@ -61,7 +61,7 @@ export function DealsSection({ initialProductIds }: DealsSectionProps = {}) {
     }
     const addFn = addToCart || addItem;
     if (typeof addFn === "function") {
-      addFn(product, 1);
+      addFn(product, 1, { overrideQuantity: true });
     }
     router.push("/cart");
   };
@@ -74,7 +74,7 @@ export function DealsSection({ initialProductIds }: DealsSectionProps = {}) {
 
     const addFn = addToCart || addItem;
     if (typeof addFn === "function") {
-      addFn(product, 1);
+      addFn(product, 1, { overrideQuantity: true });
     }
 
     if (!user) {

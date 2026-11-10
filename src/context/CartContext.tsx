@@ -53,6 +53,7 @@ interface CartContextType {
     quantity?: number,
     options?: {
       overrideQuantity?: boolean;
+      replaceCart?: boolean;
     }
   ) => boolean;
   addItem: (product: any, quantity?: number, options?: any) => boolean;
@@ -381,6 +382,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     quantity: number = 1,
     options?: {
       overrideQuantity?: boolean;
+      replaceCart?: boolean;
     }
   ): boolean => {
     if ((product as any).in_stock === 0 || ((product as any).stock_count !== undefined && (product as any).stock_count <= 0)) {
@@ -403,6 +405,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     setCart((prevCart) => {
+      const newItem: CartItem = {
+        id: product.id,
+        name: product.name,
+        subtitle: product.subtitle,
+        category: product.category || "Product",
+        price: finalPrice,
+        original_price: finalOriginalPrice || finalPrice,
+        mrp: finalMrp,
+        quantity: quantity,
+        poster_image: finalImage,
+        volume: product.volume,
+        color: product.color,
+        bundle_tier: product.bundle_tier,
+        bundle_savings: product.bundle_savings,
+        bundle_total: finalBundleTotal,
+        offer_label: product.offer_label,
+        bundle_tiers: product.bundle_tiers,
+      };
+
+      if (options?.replaceCart) {
+        return [newItem];
+      }
+
       const existingIdx = prevCart.findIndex((item) => item.id === product.id);
       if (existingIdx > -1) {
         const updated = [...prevCart];
@@ -428,24 +453,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       } else {
         return [
           ...prevCart,
-          {
-            id: product.id,
-            name: product.name,
-            subtitle: product.subtitle,
-            category: product.category || "Product",
-            price: finalPrice,
-            original_price: finalOriginalPrice || finalPrice,
-            mrp: finalMrp,
-            quantity: quantity,
-            poster_image: finalImage,
-            volume: product.volume,
-            color: product.color,
-            bundle_tier: product.bundle_tier,
-            bundle_savings: product.bundle_savings,
-            bundle_total: finalBundleTotal,
-            offer_label: product.offer_label,
-            bundle_tiers: product.bundle_tiers,
-          },
+          newItem,
         ];
       }
     });
