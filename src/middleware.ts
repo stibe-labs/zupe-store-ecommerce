@@ -22,13 +22,6 @@ export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const { pathname } = url;
 
-  // -- 0. Canonical Domain Enforcement: Redirect all *.workers.dev requests immediately to vittallifestyle.com --
-  if (host.includes("workers.dev")) {
-    const canonicalBase = process.env.NEXT_PUBLIC_SITE_URL || "https://vittallifestyle.com";
-    const targetUrl = new URL(pathname + url.search, canonicalBase);
-    return NextResponse.redirect(targetUrl, 301);
-  }
-
   // -- 1. Protect Admin Portal Pages (/admin, /admin/*) --
   if (pathname.startsWith("/admin")) {
     // Dedicated Admin Login Page
