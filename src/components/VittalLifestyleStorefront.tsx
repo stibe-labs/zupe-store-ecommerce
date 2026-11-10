@@ -188,71 +188,71 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
   return (
     <div className="bg-[#0B0B0C] text-white font-mograph min-h-screen selection:bg-[#D4AF37] selection:text-black">
       {/* ===================================================================== */}
-      {/* 1. HERO SECTION (Matches Mockup with Golden Accents & Fitness Hero)   */}
+      {/* 1. HERO SECTION (Edge-to-Edge Sleek Banner - No Outer Card Box)      */}
       {/* ===================================================================== */}
-      <section className="relative w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-6 pb-4 sm:pb-8">
-        <div className="relative w-full rounded-3xl overflow-hidden bg-neutral-950 border border-white/10 min-h-[460px] sm:min-h-[520px] lg:min-h-[580px] flex items-center shadow-2xl">
-          {/* Hero Background Image */}
+      <section className="relative w-full overflow-hidden bg-black border-b border-white/5">
+        <div className="relative w-full h-[250px] sm:h-[320px] md:h-[380px] lg:h-[420px] flex items-center">
+          {/* Athlete Hero Background Image */}
           <div className="absolute inset-0 z-0">
             <Image
               src="/vittal/hero-fitness-gold.png"
               alt="Live Better. Feel Stronger - Vittal Lifestyle"
               fill
               priority
-              className="object-cover object-right sm:object-center"
+              className="object-cover object-[75%_center] sm:object-right md:object-center"
             />
-            {/* Dark cinematic gradient overlays to guarantee pristine typography readability */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 sm:via-black/60 to-transparent z-1" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/30 z-1" />
+            {/* Cinematic Gradient Overlays: Darker on the left for crisp text contrast */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 sm:via-black/60 to-transparent z-1" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 z-1" />
           </div>
 
           {/* Hero Content Overlay */}
-          <div className="relative z-10 max-w-xl p-6 sm:p-10 lg:p-16 flex flex-col items-start justify-center">
-            {/* Small Subtitle */}
-            <span className="font-movault text-xs sm:text-sm font-bold tracking-[0.25em] uppercase text-[#D4AF37] mb-2 sm:mb-3">
-              VITTAL LIFESTYLE
-            </span>
+          <div className="relative z-10 max-w-[1680px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-start justify-center">
+            <div className="max-w-xs sm:max-w-md lg:max-w-lg">
+              {/* Small Subtitle */}
+              <span className="font-movault text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase text-[#D4AF37] block mb-1">
+                VITTAL LIFESTYLE
+              </span>
 
-            {/* Main Headline */}
-            <h1 className="font-movault text-4xl sm:text-6xl lg:text-7xl font-bold uppercase tracking-wider text-white leading-[0.92] mb-3 sm:mb-4">
-              Live Better.
-              <br />
-              <span className="text-[#D4AF37]">Feel Stronger.</span>
-            </h1>
+              {/* Main Headline */}
+              <h1 className="font-movault text-2xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-wider text-white leading-[0.95] mb-1.5 sm:mb-2.5">
+                Live Better.
+                <br />
+                <span className="text-[#D4AF37]">Feel Stronger.</span>
+              </h1>
 
-            {/* Tagline */}
-            <p className="font-mograph text-xs sm:text-base text-neutral-300 font-medium leading-relaxed max-w-sm sm:max-w-md mb-6 sm:mb-8">
-              Your One-Stop Lifestyle Store
-              <br />
-              for Fitness, Fashion & More.
-            </p>
+              {/* Tagline */}
+              <p className="font-mograph text-[11px] sm:text-sm text-neutral-300 font-medium leading-relaxed mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-none">
+                Your One-Stop Lifestyle Store for Fitness, Fashion &amp; More.
+              </p>
 
-            {/* CTA Button */}
-            <Link
-              href="/products"
-              className="font-movault tracking-wider uppercase inline-flex items-center gap-2.5 bg-[#D4A373] hover:bg-[#C89565] text-neutral-950 font-bold text-sm sm:text-base px-8 py-3.5 rounded-full transition-all transform hover:scale-105 shadow-lg shadow-[#D4A373]/20"
-            >
-              <span>Shop Now</span>
-              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-            </Link>
+              {/* CTA Button */}
+              <Link
+                href="/products"
+                className="font-movault tracking-wider uppercase inline-flex items-center gap-2 bg-[#D4A373] hover:bg-[#C89565] text-neutral-950 font-bold text-xs sm:text-sm px-5 py-2 sm:px-6 sm:py-2.5 rounded-full transition-all transform hover:scale-105 shadow-md shadow-[#D4A373]/20"
+              >
+                <span>Shop Now</span>
+                <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+              </Link>
 
-            {/* Carousel Navigation Indicator Dots */}
-            <div className="flex items-center gap-2 mt-8 sm:mt-12">
-              <span
-                className={`transition-all duration-300 rounded-full h-1.5 ${
-                  activeHeroSlide === 0 ? "w-7 bg-[#D4AF37]" : "w-1.5 bg-neutral-600"
-                }`}
-              />
-              <span
-                className={`transition-all duration-300 rounded-full h-1.5 ${
-                  activeHeroSlide === 1 ? "w-7 bg-[#D4AF37]" : "w-1.5 bg-neutral-600"
-                }`}
-              />
-              <span
-                className={`transition-all duration-300 rounded-full h-1.5 ${
-                  activeHeroSlide === 2 ? "w-7 bg-[#D4AF37]" : "w-1.5 bg-neutral-600"
-                }`}
-              />
+              {/* Carousel Navigation Indicator Dots */}
+              <div className="flex items-center gap-1.5 mt-3 sm:mt-4">
+                <span
+                  className={`transition-all duration-300 rounded-full h-1 ${
+                    activeHeroSlide === 0 ? "w-6 bg-[#D4AF37]" : "w-1.5 bg-neutral-600"
+                  }`}
+                />
+                <span
+                  className={`transition-all duration-300 rounded-full h-1 ${
+                    activeHeroSlide === 1 ? "w-6 bg-[#D4AF37]" : "w-1.5 bg-neutral-600"
+                  }`}
+                />
+                <span
+                  className={`transition-all duration-300 rounded-full h-1 ${
+                    activeHeroSlide === 2 ? "w-6 bg-[#D4AF37]" : "w-1.5 bg-neutral-600"
+                  }`}
+                />
+              </div>
             </div>
           </div>
         </div>
