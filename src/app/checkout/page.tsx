@@ -25,6 +25,8 @@ import {
   LocateFixed,
   Phone,
   Plus,
+  Minus,
+  X,
   Trash2,
   Star,
   Tag,
@@ -132,6 +134,7 @@ function CheckoutContent() {
     savings,
     clearCart,
     removeFromCart,
+    updateQuantity,
     freeShippingThreshold,
     standardShippingFee,
     codFee: configCodFee,
@@ -266,6 +269,8 @@ function CheckoutContent() {
   const [copiedConfirmedId, setCopiedConfirmedId] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [recoveredBanner, setRecoveredBanner] = useState<string | null>(null);
+  const [showPaymentCancelledModal, setShowPaymentCancelledModal] = useState(false);
+  const [cancelledPaymentOrderId, setCancelledPaymentOrderId] = useState<string>("");
 
   // Ensure scroll is unlocked and modals/drawers are dismissed on checkout mount
   useEffect(() => {
@@ -410,7 +415,22 @@ function CheckoutContent() {
         return;
       }
 
+      setCancelledPaymentOrderId(orderIdToVerify);
+      setShowPaymentCancelledModal(true);
       setErrorMessage(data.message || "Payment is pending or was not completed. Please try again or select Cash on Delivery.");
+
+      // Clean query parameters from URL so refreshes don't re-trigger verification
+      try {
+        if (typeof window !== "undefined") {
+          const cleanUrl = new URL(window.location.href);
+          cleanUrl.searchParams.delete("cf_order_id");
+          cleanUrl.searchParams.delete("order_id");
+          cleanUrl.searchParams.delete("paid");
+          cleanUrl.searchParams.delete("status");
+          cleanUrl.searchParams.delete("cancelled");
+          window.history.replaceState({}, "", cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : ""));
+        }
+      } catch {}
     } catch (e: any) {
       console.error("Payment verification error:", e);
       if (attempt < 3) {
@@ -419,6 +439,8 @@ function CheckoutContent() {
         }, 1500);
         return;
       }
+      setCancelledPaymentOrderId(orderIdToVerify);
+      setShowPaymentCancelledModal(true);
       setErrorMessage("Could not verify payment status. If money was deducted, your order will be confirmed automatically.");
     } finally {
       if (attempt >= 3) {
@@ -428,10 +450,54 @@ function CheckoutContent() {
     }
   };
 
+  // Switch to COD from Payment Incomplete dialog
+  const handleSwitchToCodFromCancelledModal = () => {
+    setPaymentMethod("cod");
+    setShowPaymentCancelledModal(false);
+    setTimeout(() => {
+      const codCard = document.getElementById("payment-cod-card");
+      if (codCard) {
+        codCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 150);
+  };
+
+  // Retry online payment
+  const handleRetryOnlinePayment = () => {
+    setShowPaymentCancelledModal(false);
+    setPaymentMethod("online");
+    setTimeout(() => {
+      const submitBtn = document.getElementById("checkout-submit-btn");
+      if (submitBtn) {
+        submitBtn.click();
+      }
+    }, 150);
+  };
+
   // Check if returning from Cashfree / Settler redirect with ?cf_order_id= or ?order_id= or ?paid=true
   useEffect(() => {
     let targetOrder = searchParams.get("cf_order_id") || searchParams.get("order_id");
     const isPaid = searchParams.get("paid") === "true";
+    const statusParam = searchParams.get("status")?.toLowerCase();
+    const isExplicitlyCancelled = statusParam === "cancelled" || statusParam === "failed" || searchParams.get("cancelled") === "true";
+
+    // If explicitly cancelled by gateway redirect
+    if (isExplicitlyCancelled) {
+      setCancelledPaymentOrderId(targetOrder || "");
+      setShowPaymentCancelledModal(true);
+      try {
+        if (typeof window !== "undefined") {
+          const cleanUrl = new URL(window.location.href);
+          cleanUrl.searchParams.delete("cf_order_id");
+          cleanUrl.searchParams.delete("order_id");
+          cleanUrl.searchParams.delete("paid");
+          cleanUrl.searchParams.delete("status");
+          cleanUrl.searchParams.delete("cancelled");
+          window.history.replaceState({}, "", cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : ""));
+        }
+      } catch {}
+      return;
+    }
 
     // If redirected with ?paid=true but order id in query was omitted, fallback to localStorage last order
     if (!targetOrder && isPaid && typeof window !== "undefined") {
@@ -2512,15 +2578,58 @@ function CheckoutContent() {
                               ) : null}
                             </div>
                           </div>
-                          <div className="text-right shrink-0">
-                            {isBundle && itemRegularTotal > itemTotal && (
-                              <span className="text-[10px] text-gray-400 line-through block">
-                                ₹{itemRegularTotal.toLocaleString()}
+                          <div className="flex items-center gap-2 shrink-0">
+                            {/* Quantity Stepper Control */}
+                            <div className="flex items-center gap-0.5 bg-gray-50 border border-gray-200 rounded-lg p-0.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (item.quantity > 1) {
+                                    updateQuantity(item.id, item.quantity - 1);
+                                  } else {
+                                    removeFromCart(item.id);
+                                  }
+                                }}
+                                className="w-5 h-5 flex items-center justify-center rounded hover:bg-white text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
+                                title={item.quantity > 1 ? "Remove 1 item" : "Remove item"}
+                                aria-label={`Reduce quantity of ${item.name}`}
+                              >
+                                <Minus className="w-3 h-3" />
+                              </button>
+                              <span className="px-1 text-xs font-bold text-gray-900 min-w-[14px] text-center">
+                                {item.quantity}
                               </span>
-                            )}
-                            <span className="text-xs font-extrabold text-gray-900 block">
-                              ₹{itemTotal.toLocaleString()}
-                            </span>
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                className="w-5 h-5 flex items-center justify-center rounded hover:bg-white text-gray-600 hover:text-emerald-600 transition-colors cursor-pointer"
+                                title="Add 1 more"
+                                aria-label={`Increase quantity of ${item.name}`}
+                              >
+                                <Plus className="w-3 h-3" />
+                              </button>
+                            </div>
+
+                            <div className="text-right">
+                              {isBundle && itemRegularTotal > itemTotal && (
+                                <span className="text-[10px] text-gray-400 line-through block">
+                                  ₹{itemRegularTotal.toLocaleString()}
+                                </span>
+                              )}
+                              <span className="text-xs font-extrabold text-gray-900 block">
+                                ₹{itemTotal.toLocaleString()}
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => removeFromCart(item.id)}
+                              title="Remove item"
+                              className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                              aria-label={`Remove ${item.name} from cart`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         </div>
                       );
@@ -3395,15 +3504,58 @@ function CheckoutContent() {
                                 </span>
                               )}
                             </div>
-                            <div className="text-right shrink-0">
-                              {isBundle && itemRegularTotal > itemTotal && (
-                                <span className="text-[10px] text-gray-400 line-through block">
-                                  ₹{itemRegularTotal.toLocaleString()}
+                            <div className="flex items-center gap-2 shrink-0">
+                              {/* Quantity Stepper Control */}
+                              <div className="flex items-center gap-0.5 bg-gray-50 border border-gray-200 rounded-lg p-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (item.quantity > 1) {
+                                      updateQuantity(item.id, item.quantity - 1);
+                                    } else {
+                                      removeFromCart(item.id);
+                                    }
+                                  }}
+                                  className="w-5 h-5 flex items-center justify-center rounded hover:bg-white text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
+                                  title={item.quantity > 1 ? "Remove 1 item" : "Remove item"}
+                                  aria-label={`Reduce quantity of ${item.name}`}
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </button>
+                                <span className="px-1 text-xs font-bold text-gray-900 min-w-[14px] text-center">
+                                  {item.quantity}
                                 </span>
-                              )}
-                              <span className="text-sm font-bold text-gray-900 block">
-                                ₹{itemTotal.toLocaleString()}
-                              </span>
+                                <button
+                                  type="button"
+                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                  className="w-5 h-5 flex items-center justify-center rounded hover:bg-white text-gray-600 hover:text-emerald-600 transition-colors cursor-pointer"
+                                  title="Add 1 more"
+                                  aria-label={`Increase quantity of ${item.name}`}
+                                >
+                                  <Plus className="w-3 h-3" />
+                                </button>
+                              </div>
+
+                              <div className="text-right">
+                                {isBundle && itemRegularTotal > itemTotal && (
+                                  <span className="text-[10px] text-gray-400 line-through block">
+                                    ₹{itemRegularTotal.toLocaleString()}
+                                  </span>
+                                )}
+                                <span className="text-sm font-bold text-gray-900 block">
+                                  ₹{itemTotal.toLocaleString()}
+                                </span>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => removeFromCart(item.id)}
+                                title="Remove item"
+                                className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                                aria-label={`Remove ${item.name} from cart`}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
                             </div>
                           </div>
                         );
@@ -3517,6 +3669,7 @@ function CheckoutContent() {
                   {/* ACTION BUTTON */}
                   <div className="pt-2">
                     <button
+                      id="checkout-submit-btn"
                       type="submit"
                       disabled={loading || hasOutOfStockItems}
                       className={`w-full py-4 px-6 rounded-2xl text-white font-bold text-base shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
@@ -3695,6 +3848,37 @@ function CheckoutContent() {
                       </div>
 
                       <div className="flex items-center gap-2.5 shrink-0">
+                        {/* Quantity Stepper Control: Allows removing 1 item when 2 or more selected */}
+                        <div className="flex items-center gap-0.5 bg-gray-50 border border-gray-200 rounded-lg p-0.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (item.quantity > 1) {
+                                updateQuantity(item.id, item.quantity - 1);
+                              } else {
+                                removeFromCart(item.id);
+                              }
+                            }}
+                            className="w-5 h-5 flex items-center justify-center rounded hover:bg-white text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
+                            title={item.quantity > 1 ? "Remove 1 item" : "Remove item"}
+                            aria-label={`Reduce quantity of ${item.name}`}
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="px-1 text-xs font-bold text-gray-900 min-w-[14px] text-center">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="w-5 h-5 flex items-center justify-center rounded hover:bg-white text-gray-600 hover:text-emerald-600 transition-colors cursor-pointer"
+                            title="Add 1 more"
+                            aria-label={`Increase quantity of ${item.name}`}
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+
                         <div className="text-right">
                           {isBundle && itemRegularTotal > itemTotal && (
                             <span className="text-[11px] text-gray-400 line-through block">
@@ -3928,6 +4112,98 @@ function CheckoutContent() {
           </div>
         </form>
       </main>
+
+      {/* Payment Cancelled / Incomplete Modal Dialog */}
+      <AnimatePresence>
+        {showPaymentCancelledModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden text-slate-900"
+            >
+              <button
+                type="button"
+                onClick={() => setShowPaymentCancelledModal(false)}
+                className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="p-6 pb-3 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-600 mx-auto mb-3.5 shadow-xs">
+                  <AlertCircle className="w-8 h-8" />
+                </div>
+                <h3 className="font-tj-serif text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+                  Payment Incomplete
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-600 mt-2 leading-relaxed">
+                  Your online payment was cancelled or could not be verified by banking rails. <strong className="text-gray-900 font-bold">No money was deducted</strong> from your bank account.
+                </p>
+
+                <div className="mt-4 p-3.5 rounded-2xl bg-stone-50 border border-stone-200/80 text-left flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] text-gray-500 font-medium block">Order Amount:</span>
+                    <span className="text-base sm:text-lg font-black text-gray-900 block">
+                      ₹{grandTotal.toLocaleString()}
+                    </span>
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100/70 border border-emerald-200 px-2.5 py-1 rounded-full">
+                    <Truck className="w-3.5 h-3.5 text-emerald-700" />
+                    Free Delivery
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-6 pt-2 space-y-2.5">
+                <button
+                  type="button"
+                  onClick={handleSwitchToCodFromCancelledModal}
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#780016] to-[#a30b24] hover:from-[#5e0011] hover:to-[#8c081e] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-[#780016]/20 flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer"
+                >
+                  <Truck className="w-4 h-4 text-[#fed000]" />
+                  <span>Switch to Cash on Delivery (COD)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleRetryOnlinePayment}
+                  className="w-full py-3 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                >
+                  <CreditCard className="w-4 h-4 text-gray-700" />
+                  <span>Try Online Payment Again</span>
+                </button>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <a
+                    href={`https://wa.me/916238165935?text=${encodeURIComponent(
+                      `Hi Turkiye Jam Care, my online payment was incomplete for order ${cancelledPaymentOrderId || ""}. Please assist me to complete the order!`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 py-2.5 px-3 rounded-xl border border-emerald-500/30 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>WhatsApp Help</span>
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPaymentCancelledModal(false)}
+                    className="flex-1 py-2.5 px-3 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium text-xs transition-colors cursor-pointer"
+                  >
+                    Review / Edit Cart
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Clean Bottom Footer */}
       <footer className="py-8 text-center text-xs text-gray-400 border-t border-gray-100 bg-white mt-12">
