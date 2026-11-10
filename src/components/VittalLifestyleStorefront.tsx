@@ -343,8 +343,8 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
           </Link>
         </div>
 
-        {/* Product Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 md:gap-6">
+        {/* Product Cards Grid: Strictly 2 cards per row matching reference */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5 max-w-4xl mx-auto">
           {trendingProducts.map((product) => {
             const isWish = isInWishlist(product.id);
             const discountPercent =
@@ -352,13 +352,28 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                 ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
                 : null;
 
+            // Clean short category label for secondary metadata line
+            const shortCategory =
+              product.category === "Gym Supplementaries"
+                ? "Isolate"
+                : product.category === "Dates & Nuts"
+                ? "Dates"
+                : product.category === "Candy & Chocolates"
+                ? "Chocolates"
+                : product.category === "Outfits"
+                ? "Outfits"
+                : product.category === "Apparels"
+                ? "Apparel"
+                : product.category;
+
             return (
               <div
                 key={product.id}
-                className="group relative rounded-2xl bg-[#141416] hover:bg-[#1A1A1E] border border-white/5 hover:border-white/20 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 shadow-md hover:shadow-xl"
+                className="group relative rounded-2xl bg-[#141416] hover:bg-[#18181C] border border-white/5 hover:border-white/15 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 shadow-sm hover:shadow-md"
               >
-                {/* Wishlist Heart Button */}
+                {/* Wishlist Heart Icon (Clean minimal outline matching reference) */}
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -369,42 +384,47 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                       image: product.poster_image,
                     });
                   }}
-                  className="absolute top-3.5 right-3.5 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-md flex items-center justify-center text-neutral-400 hover:text-rose-500 transition-colors"
+                  className="absolute top-3 right-3 z-10 text-neutral-400 hover:text-white transition-colors p-1"
                   aria-label="Wishlist"
                 >
                   <Heart
-                    className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+                    className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
                       isWish ? "fill-rose-500 text-rose-500" : "stroke-current"
                     }`}
                   />
                 </button>
 
-                {/* Product Image Link */}
+                {/* Product Poster Image (Transparent cutout floating seamlessly on card background) */}
                 <Link
                   href={`/products/${product.id || product.slug}`}
-                  className="relative w-full aspect-square rounded-xl overflow-hidden bg-neutral-900/60 mb-3 flex items-center justify-center p-2"
+                  className="relative w-full aspect-square flex items-center justify-center my-1"
                 >
                   <Image
                     src={product.poster_image || "/vittal/product-whey-protein-jar.png"}
                     alt={product.name}
                     fill
+                    sizes="(max-width: 768px) 50vw, 400px"
                     className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                   />
                 </Link>
 
                 {/* Product Metadata */}
-                <div>
+                <div className="mt-1">
                   <Link
                     href={`/products/${product.id || product.slug}`}
                     className="block"
                   >
-                    <h3 className="font-mograph text-xs sm:text-sm font-semibold text-white group-hover:text-[#D4AF37] transition-colors truncate mb-1">
+                    <h3 className="font-mograph text-xs sm:text-sm font-semibold text-white group-hover:text-[#D4AF37] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-0.5">
                       {product.name}
                     </h3>
                   </Link>
 
+                  <p className="font-mograph text-[10px] sm:text-xs text-neutral-400 font-medium mb-1.5 truncate">
+                    {shortCategory}
+                  </p>
+
                   {/* Price Row */}
-                  <div className="flex items-baseline gap-2 mb-2">
+                  <div className="flex items-baseline gap-1.5 mb-1.5">
                     <span className="font-mograph text-sm sm:text-base font-extrabold text-white">
                       ₹{product.price.toLocaleString("en-IN")}
                     </span>
@@ -415,25 +435,14 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                     )}
                   </div>
 
-                  {/* Discount Badge & Quick Actions */}
-                  <div className="flex items-center justify-between gap-2 mt-2">
-                    {discountPercent ? (
-                      <span className="font-movault bg-[#2B2317] text-[#E5C07B] text-[11px] font-bold tracking-wider uppercase px-2 py-0.5 rounded">
+                  {/* Discount Badge */}
+                  {discountPercent && (
+                    <div>
+                      <span className="font-movault bg-[#2B2317] text-[#E5C07B] text-[10px] sm:text-[11px] font-bold tracking-wider uppercase px-2 py-0.5 rounded inline-block">
                         {discountPercent}% OFF
                       </span>
-                    ) : (
-                      <span className="font-mograph text-[10px] text-neutral-500 font-medium">In Stock</span>
-                    )}
-
-                    <button
-                      onClick={(e) => handleAddToCart(e, product)}
-                      className="bg-white/10 hover:bg-[#D4AF37] hover:text-black text-white p-1.5 rounded-lg transition-colors"
-                      title="Add to Bag"
-                      aria-label="Add to Bag"
-                    >
-                      <ShoppingCart className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
             );
