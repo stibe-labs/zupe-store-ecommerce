@@ -281,38 +281,47 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       </section>
 
       {/* ===================================================================== */}
-      {/* 3. PROMO BANNER (Dates + Protein Jar with "Up to 50% OFF")             */}
+      {/* 3. PROMO BANNER (Compact Height, Full-Card Background Image Fill)     */}
       {/* ===================================================================== */}
-      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-6">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#141416] via-[#18181C] to-[#121214] border border-white/10 p-5 sm:p-8 lg:p-10 shadow-xl flex flex-col md:flex-row items-center justify-between min-h-[220px] sm:min-h-[260px]">
-          {/* Left Text */}
-          <div className="z-10 max-w-md mb-4 md:mb-0">
-            <span className="font-movault text-xs sm:text-sm font-bold tracking-[0.2em] text-[#D4AF37] uppercase block mb-1">
-              PREMIUM QUALITY
-            </span>
-            <h2 className="font-movault text-3xl sm:text-5xl lg:text-6xl font-bold uppercase tracking-wide text-white leading-none mb-1 sm:mb-2">
-              Up to <span className="text-[#D4AF37]">50% OFF</span>
-            </h2>
-            <p className="font-mograph text-xs sm:text-sm text-neutral-400 mb-4 sm:mb-6 font-medium">
-              On Your Favorite Picks
-            </p>
-            <Link
-              href="/products?category=Gym+Supplementaries"
-              className="font-movault tracking-wider uppercase inline-flex items-center gap-2 border border-[#D4AF37]/70 hover:bg-[#D4AF37] hover:text-black text-white text-xs sm:text-sm font-bold px-6 py-2.5 rounded-full transition-colors"
-            >
-              <span>Shop Deals</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          {/* Right Banner Showcase Image */}
-          <div className="relative w-full md:w-3/5 h-44 sm:h-56 md:h-64 z-0">
+      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5">
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 shadow-xl h-[155px] sm:h-[185px] md:h-[210px] lg:h-[230px] flex items-center bg-black">
+          {/* Background Image: Fills entire card with products on right */}
+          <div className="absolute inset-0 z-0">
             <Image
               src="/vittal/banner-showcase-protein.png"
-              alt="Premium Whey Protein & Gourmet Dates Showcase"
+              alt="Premium Quality Deals - Up to 50% OFF"
               fill
-              className="object-contain object-center md:object-right"
+              className="object-cover object-[80%_center] sm:object-right"
+              priority
             />
+            {/* Cinematic Gradient: Dark overlay on left for sharp text legibility, transparent on right */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 sm:via-black/55 to-transparent z-1" />
+          </div>
+
+          {/* Left Text Overlay */}
+          <div className="relative z-10 px-4 sm:px-8 lg:px-10 max-w-[62%] sm:max-w-md">
+            <div className="flex items-center gap-2 mb-1 sm:mb-1.5">
+              <span className="font-movault text-[9px] sm:text-xs font-bold tracking-[0.2em] text-[#D4AF37] uppercase">
+                PREMIUM QUALITY
+              </span>
+              <span className="w-5 sm:w-10 h-[1px] bg-neutral-600/80" />
+            </div>
+
+            <h2 className="font-movault text-xl sm:text-3xl md:text-4xl font-bold uppercase tracking-wide text-white leading-none mb-1 sm:mb-1.5">
+              Up to <span className="text-[#D4AF37]">50% OFF</span>
+            </h2>
+
+            <p className="font-mograph text-[10px] sm:text-xs md:text-sm text-neutral-300 mb-2.5 sm:mb-3.5 font-medium line-clamp-1">
+              On Your Favorite Picks
+            </p>
+
+            <Link
+              href="/products?category=Gym+Supplementaries"
+              className="font-movault tracking-wider uppercase inline-flex items-center gap-1.5 sm:gap-2 border border-[#D4AF37]/80 hover:bg-[#D4AF37] hover:text-black text-white text-[10px] sm:text-xs font-bold px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-full transition-all hover:scale-105"
+            >
+              <span>Shop Deals</span>
+              <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            </Link>
           </div>
         </div>
       </section>
