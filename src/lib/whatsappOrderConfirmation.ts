@@ -70,10 +70,10 @@ export async function sendOrderPreConfirmationWhatsApp(
   const firstName = customerName.split(" ")[0] || customerName;
   const safeItems = Array.isArray(items) && items.length > 0
     ? items
-    : [{ name: "Turkiye Jam (3 Sachet Pack)", quantity: 1, price: totalAmount || 1099 }];
+    : [{ name: `${siteConfig.name} Electronics`, quantity: 1, price: totalAmount || 2499 }];
   const itemLines = safeItems
     .slice(0, 3)
-    .map((it) => `  • ${it.name || "Turkiye Jam"} (x${it.quantity || 1})`)
+    .map((it) => `  • ${it.name || siteConfig.name} (x${it.quantity || 1})`)
     .join("\n");
   const more = safeItems.length > 3 ? `\n  • ...and ${safeItems.length - 3} more` : "";
 
@@ -84,6 +84,25 @@ export async function sendOrderPreConfirmationWhatsApp(
   const codDoorstepDue = totalAmount;
   const displayAmount = totalAmount;
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
+
+  // Log to internal WhatsApp desk
+  try {
+    const { recordOutboundSystemMessage } = await import("@/lib/whatsappStore");
+    await recordOutboundSystemMessage(
+      customerPhone,
+      `*Order Verification — ${siteConfig.name}* 🛍️\n\nHi ${firstName}! Thank you for placing your order (${displayOrderId}). Total: ₹${totalAmount} (${paymentMethodLabel}).\n\nPlease confirm your order:\n${confirmUrl}`,
+      "order_card",
+      {
+        orderData: {
+          orderId,
+          totalAmount,
+          itemsSummary: safeItems.map((it) => `${it.name || siteConfig.name} (x${it.quantity || 1})`).join(", "),
+          status: "Awaiting WA",
+          paymentMethod: paymentMethodLabel,
+        },
+      }
+    );
+  } catch (logErr) {}
 
   // 1. Try official Meta Template with interactive buttons first (zupe_order_verify)
   let templateSent = false;
@@ -241,10 +260,30 @@ export async function sendOrderConfirmationWhatsApp(
 
   const safeItems = Array.isArray(items) && items.length > 0
     ? items
-    : [{ name: "Turkiye Jam (3 Sachet Pack)", quantity: 1, price: totalAmount || 1099 }];
+    : [{ name: `${siteConfig.name} Electronics`, quantity: 1, price: totalAmount || 2499 }];
+
+  // Log confirmation to internal WhatsApp desk
+  try {
+    const { recordOutboundSystemMessage } = await import("@/lib/whatsappStore");
+    await recordOutboundSystemMessage(
+      customerPhone,
+      `🎉 *Order Confirmed — ${siteConfig.name}* ⚡\n\nYour order (${displayOrderId}) of ₹${totalAmount} has been confirmed and submitted for packing & express dispatch!`,
+      "order_card",
+      {
+        orderData: {
+          orderId,
+          totalAmount,
+          itemsSummary: safeItems.map((it) => `${it.name || siteConfig.name} (x${it.quantity || 1})`).join(", "),
+          status: "Confirmed",
+          paymentMethod: paymentMethod === "cod" ? "COD" : "Prepaid",
+        },
+      }
+    );
+  } catch (logErr) {}
+
   const itemLines = safeItems
     .slice(0, 3)
-    .map(function(it) { return "  • " + (it.name || "Turkiye Jam") + " (x" + (it.quantity || 1) + ")"; })
+    .map(function(it) { return "  • " + (it.name || siteConfig.name) + " (x" + (it.quantity || 1) + ")"; })
     .join("\n");
   const moreItems = safeItems.length > 3 ? "\n  • ...and " + (safeItems.length - 3) + " more" : "";
   const trackUrl = STORE_BASE_URL + "/order-tracking?query=" + encodeURIComponent(cleanUrlOrderId);
@@ -252,28 +291,28 @@ export async function sendOrderConfirmationWhatsApp(
   let message: string;
   if (paymentMethod === "cod") {
     message =
-      "✅ *Order Confirmed — Turkiye Jam!* 🛍️\n\n" +
+      "✅ *Order Confirmed — " + siteConfig.name + "!* 🛍️\n\n" +
       "Hi " + firstName + "! Your Cash on Delivery order is confirmed.\n\n" +
       "📦 *Order ID:* " + displayOrderId + "\n" +
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
       "💰 *Price Breakdown:*\n" +
       "  • Total Amount: Rs " + totalAmount.toLocaleString("en-IN") + "\n" +
       "  • *Payable on Delivery: Rs " + totalAmount.toLocaleString("en-IN") + " (Cash / UPI)*\n\n" +
-      "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
+      "🚚 *Estimated Delivery:* 3-5 Business Days\n\n" +
       "📦 *Track Your Order:*\n" +
       trackUrl + "\n\n" +
-      "Thank you for shopping with Turkiye Jam!";
+      "Thank you for shopping with " + siteConfig.name + "!";
   } else {
     message =
-      "✅ *Payment Successful — Turkiye Jam!* 🛍️\n\n" +
+      "✅ *Payment Successful — " + siteConfig.name + "!* 🛍️\n\n" +
       "Hi " + firstName + "! Your prepaid order is confirmed.\n\n" +
       "📦 *Order ID:* " + displayOrderId + "\n" +
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
       "💰 *Amount Paid:* Rs " + totalAmount.toLocaleString("en-IN") + " (Online Prepaid)\n" +
-      "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
+      "🚚 *Estimated Delivery:* 3-5 Business Days\n\n" +
       "📦 *Track Your Order:*\n" +
       trackUrl + "\n\n" +
-      "Thank you for shopping with Turkiye Jam!";
+      "Thank you for shopping with " + siteConfig.name + "!";
   }
 
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";

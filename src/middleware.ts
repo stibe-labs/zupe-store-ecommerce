@@ -12,7 +12,7 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set(
     "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=(self)"
+    "camera=(), microphone=(self), geolocation=(self)"
   );
   return response;
 }
@@ -67,9 +67,10 @@ export async function middleware(req: NextRequest) {
 
   // -- 2. Protect Admin Internal APIs (/api/admin/*) --
   if (pathname.startsWith("/api/admin")) {
-    // Only exempt admin login/auth routes and incoming external POST webhooks (Shiprocket/Shopify)
+    // Only exempt admin login/auth routes, whatsapp media streaming proxy, and incoming external POST webhooks (Shiprocket/Shopify)
     const isExempt =
       pathname.startsWith("/api/admin/auth") ||
+      pathname.startsWith("/api/admin/whatsapp/media") ||
       (req.method === "POST" && pathname.startsWith("/api/admin/sync"));
 
     if (!isExempt) {

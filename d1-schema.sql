@@ -191,3 +191,43 @@ CREATE INDEX IF NOT EXISTS idx_abandoned_phone ON abandoned_checkouts(customer_p
 CREATE INDEX IF NOT EXISTS idx_abandoned_token ON abandoned_checkouts(recovery_token);
 CREATE INDEX IF NOT EXISTS idx_abandoned_status ON abandoned_checkouts(status);
 
+-- 10. Vittal Digital Internal WhatsApp Desk
+CREATE TABLE IF NOT EXISTS whatsapp_conversations (
+    id TEXT PRIMARY KEY,
+    customer_phone TEXT NOT NULL,
+    customer_name TEXT NOT NULL,
+    customer_email TEXT,
+    order_id TEXT,
+    order_status TEXT,
+    order_total REAL,
+    payment_method TEXT DEFAULT 'cod',
+    shipping_address TEXT,
+    avatar_url TEXT,
+    unread_count INTEGER DEFAULT 0,
+    is_pinned INTEGER DEFAULT 0,
+    category TEXT DEFAULT 'orders',
+    last_message_text TEXT,
+    last_message_sender TEXT DEFAULT 'agent',
+    last_message_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_wa_conv_phone ON whatsapp_conversations(customer_phone);
+CREATE INDEX IF NOT EXISTS idx_wa_conv_order ON whatsapp_conversations(order_id);
+
+CREATE TABLE IF NOT EXISTS whatsapp_messages (
+    id TEXT PRIMARY KEY,
+    conversation_id TEXT NOT NULL,
+    sender TEXT NOT NULL,
+    type TEXT DEFAULT 'text',
+    content TEXT NOT NULL,
+    media_url TEXT,
+    media_caption TEXT,
+    media_duration INTEGER,
+    status TEXT DEFAULT 'sent',
+    reactions TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(conversation_id) REFERENCES whatsapp_conversations(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_wa_msg_conv ON whatsapp_messages(conversation_id);
+
+

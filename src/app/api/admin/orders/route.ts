@@ -212,11 +212,11 @@ export async function POST(req: NextRequest) {
 
       if (rawItems.length === 0) {
         rawItems = [{
-          name: "Vittal Digital (3 Sachet Pack)",
-          product_name: "Vittal Digital (3 Sachet Pack)",
+          name: "Vittal Digital Electronics Package",
+          product_name: "Vittal Digital Electronics Package",
           quantity: 1,
-          unit_price: Number(ord.total_amount) || 1099,
-          price: Number(ord.total_amount) || 1099,
+          unit_price: Number(ord.total_amount) || 2499,
+          price: Number(ord.total_amount) || 2499,
         }];
       }
 
@@ -367,11 +367,11 @@ export async function POST(req: NextRequest) {
 
           if (rawItems.length === 0) {
             rawItems = [{
-              name: "Vittal Digital (3 Sachet Pack)",
-              product_name: "Vittal Digital (3 Sachet Pack)",
+              name: "Vittal Digital Electronics Package",
+              product_name: "Vittal Digital Electronics Package",
               quantity: 1,
-              unit_price: Number(ord.total_amount) || 1099,
-              price: Number(ord.total_amount) || 1099,
+              unit_price: Number(ord.total_amount) || 2499,
+              price: Number(ord.total_amount) || 2499,
             }];
           }
 
