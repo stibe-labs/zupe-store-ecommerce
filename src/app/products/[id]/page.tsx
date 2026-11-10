@@ -1035,9 +1035,12 @@ export default function ProductDetailPage() {
         {/* ================================================================= */}
         {/* 1. PRODUCT OVERVIEW                                               */}
         {/* ================================================================= */}
-        <section id="overview" className="mt-8 scroll-mt-28 sm:scroll-mt-32 space-y-6">
-          {/* Feature Spotlight Card (Dynamic based on product category) */}
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-8 shadow-sm overflow-hidden">
+        {/* ================================================================= */}
+        {/* 1. PRODUCT OVERVIEW                                               */}
+        {/* ================================================================= */}
+        <section id="overview" className="mt-8 scroll-mt-28 sm:scroll-mt-32 space-y-8">
+          {/* Feature Spotlight (Dynamic based on product category) */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 py-2">
             <div className="flex-1 max-w-xl">
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
                 {spotlightBanner.title} <span className="text-[#0052CC]">{spotlightBanner.highlight}</span>
@@ -1106,7 +1109,7 @@ export default function ProductDetailPage() {
 
           {/* Product Feature Highlights List */}
           {activeProduct.features && activeProduct.features.length > 0 && (
-            <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm">
+            <div className="pt-2">
               <h3 className="text-lg font-black text-slate-900 mb-4">Key Features &amp; Benefits</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 {activeProduct.features.map((feat, idx) => (
@@ -1123,76 +1126,72 @@ export default function ProductDetailPage() {
         {/* ================================================================= */}
         {/* 2. PRODUCT SPECIFICATIONS (UNDER OVERVIEW)                        */}
         {/* ================================================================= */}
-        <section id="specifications" className="mt-8 sm:mt-10 scroll-mt-28 sm:scroll-mt-32">
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm">
-            <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
-              <span>Technical Specifications</span>
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(activeProduct.specifications || {}).map(([key, value]) => (
-                <div key={key} className="flex justify-between items-center p-3.5 bg-slate-50 rounded-xl border border-slate-200/60 text-xs sm:text-sm">
-                  <span className="font-semibold text-slate-600">{key}</span>
-                  <span className="font-bold text-slate-900 text-right max-w-xs">{String(value)}</span>
-                </div>
-              ))}
-            </div>
+        <section id="specifications" className="mt-10 sm:mt-12 scroll-mt-28 sm:scroll-mt-32">
+          <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-5 flex items-center gap-2">
+            <span>Technical Specifications</span>
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            {Object.entries(activeProduct.specifications || {}).map(([key, value]) => (
+              <div key={key} className="flex justify-between items-center p-3.5 bg-slate-50 rounded-xl border border-slate-200/60 text-xs sm:text-sm">
+                <span className="font-semibold text-slate-600">{key}</span>
+                <span className="font-bold text-slate-900 text-right max-w-xs">{String(value)}</span>
+              </div>
+            ))}
           </div>
         </section>
 
         {/* ================================================================= */}
         {/* 3. FAQ (QUESTIONS & ANSWERS)                                      */}
         {/* ================================================================= */}
-        <section id="faq" className="mt-8 sm:mt-10 scroll-mt-28 sm:scroll-mt-32">
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg sm:text-xl font-black text-slate-900">
-                Frequently Asked Questions
-              </h3>
-              <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                36 Questions &amp; Answers
-              </span>
-            </div>
-            <div className="space-y-3">
-              <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer" open>
-                <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
-                  <span>Is this 100% genuine sealed retail stock?</span>
-                  <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
-                </summary>
-                <p className="mt-2 text-slate-600 leading-relaxed font-normal">
-                  Yes, absolutely. All our items come directly from authorized brand distribution channels and arrive 100% brand new, sealed in original manufacturer packaging with valid serial numbers.
-                </p>
-              </details>
+        <section id="faq" className="mt-10 sm:mt-12 scroll-mt-28 sm:scroll-mt-32 space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg sm:text-xl font-black text-slate-900">
+              Frequently Asked Questions
+            </h3>
+            <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+              36 Questions &amp; Answers
+            </span>
+          </div>
+          <div className="space-y-3">
+            <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer" open>
+              <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
+                <span>Is this 100% genuine sealed retail stock?</span>
+                <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
+              </summary>
+              <p className="mt-2 text-slate-600 leading-relaxed font-normal">
+                Yes, absolutely. All our items come directly from authorized brand distribution channels and arrive 100% brand new, sealed in original manufacturer packaging with valid serial numbers.
+              </p>
+            </details>
 
-              <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer">
-                <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
-                  <span>How does warranty service work across India?</span>
-                  <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
-                </summary>
-                <p className="mt-2 text-slate-600 leading-relaxed font-normal">
-                  You receive 1-year comprehensive international coverage honored across India. Additionally, Vittal Digital provides direct customer concierge support via WhatsApp for any technical or service assistance.
-                </p>
-              </details>
+            <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer">
+              <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
+                <span>How does warranty service work across India?</span>
+                <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
+              </summary>
+              <p className="mt-2 text-slate-600 leading-relaxed font-normal">
+                You receive 1-year comprehensive international coverage honored across India. Additionally, Vittal Digital provides direct customer concierge support via WhatsApp for any technical or service assistance.
+              </p>
+            </details>
 
-              <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer">
-                <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
-                  <span>What is the delivery timeline to my address?</span>
-                  <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
-                </summary>
-                <p className="mt-2 text-slate-600 leading-relaxed font-normal">
-                  Orders are dispatched within 24 hours via express insured air courier. Most major cities across India receive doorstep delivery within 5 to 7 business days with real-time tracking updates.
-                </p>
-              </details>
+            <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer">
+              <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
+                <span>What is the delivery timeline to my address?</span>
+                <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
+              </summary>
+              <p className="mt-2 text-slate-600 leading-relaxed font-normal">
+                Orders are dispatched within 24 hours via express insured air courier. Most major cities across India receive doorstep delivery within 5 to 7 business days with real-time tracking updates.
+              </p>
+            </details>
 
-              <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer">
-                <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
-                  <span>What payment methods are supported?</span>
-                  <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
-                </summary>
-                <p className="mt-2 text-slate-600 leading-relaxed font-normal">
-                  We support all major payment options: UPI (Instant 5% discount via Google Pay, PhonePe, Paytm), Credit &amp; Debit cards, Net Banking, and Fastrr 1-click secure checkout.
-                </p>
-              </details>
-            </div>
+            <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer">
+              <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
+                <span>What payment methods are supported?</span>
+                <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
+              </summary>
+              <p className="mt-2 text-slate-600 leading-relaxed font-normal">
+                We support all major payment options: UPI (Instant 5% discount via Google Pay, PhonePe, Paytm), Credit &amp; Debit cards, Net Banking, and Fastrr 1-click secure checkout.
+              </p>
+            </details>
           </div>
         </section>
 
