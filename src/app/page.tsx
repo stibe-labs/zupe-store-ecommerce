@@ -1,6 +1,6 @@
 import React from "react";
 import { Navbar } from "@/components/Navbar";
-import { VittalDigitalStorefront } from "@/components/TurkiyeJamStorefront";
+import { VittalLifestyleStorefront } from "@/components/VittalLifestyleStorefront";
 import { Footer } from "@/components/Footer";
 import { executeD1Query } from "@/lib/d1";
 import { Product } from "@/types/product";
@@ -27,14 +27,12 @@ export default async function Home() {
   const initialProducts = await getInitialProducts();
 
   return (
-    <main className="min-h-screen bg-[#FAFBFD] text-slate-900 selection:bg-[#003055] selection:text-white">
-      {/* 1. Vittal Digital Navigation Bar */}
+    <main className="min-h-screen bg-[#0B0B0C] text-white selection:bg-[#D4AF37] selection:text-black pb-16 md:pb-0">
+      {/* 1. Brand Navigation Bar */}
       <Navbar />
 
-      {/* 2. Dedicated High-Conversion Vittal Digital Storefront Experience (No hero banner) */}
-      <VittalDigitalStorefront
-        initialProducts={initialProducts}
-      />
+      {/* 2. Luxury Vittal Lifestyle Storefront Experience matching design concept */}
+      <VittalLifestyleStorefront initialProducts={initialProducts} />
 
       {/* 3. Brand Footer */}
       <Footer />

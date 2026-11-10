@@ -152,28 +152,28 @@ export function SearchModal() {
             transition={{ type: "spring", damping: 26, stiffness: 320 }}
             className="relative z-10 w-full max-w-4xl mx-auto px-3 sm:px-4 pt-3 sm:pt-6"
           >
-            <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col min-h-0 max-h-[85vh]">
+            <div className="bg-[#141416] rounded-3xl shadow-2xl border border-white/10 text-white overflow-hidden flex flex-col min-h-0 max-h-[85vh]">
               {/* Search Bar Header */}
-              <div className="p-3.5 sm:p-5 border-b border-gray-100/90 shrink-0 bg-white">
+              <div className="p-3.5 sm:p-5 border-b border-white/10 shrink-0 bg-[#18181B]">
                 <form
                   onSubmit={handleSearchSubmit}
                   className="flex items-center gap-2 sm:gap-3"
                 >
                   <div className="relative flex-1 flex items-center">
-                    <Search className="absolute left-4 w-4 h-4 sm:w-5 sm:h-5 text-[#FF7A00] pointer-events-none stroke-[2.2]" />
+                    <Search className="absolute left-4 w-4 h-4 sm:w-5 sm:h-5 text-[#D4AF37] pointer-events-none stroke-[2.2]" />
                     <input
                       ref={inputRef}
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search products, lamps, gadgets, essentials..."
-                      className="w-full pl-11 sm:pl-12 pr-10 py-3 sm:py-3.5 rounded-2xl bg-gray-50 border border-gray-200/80 text-sm sm:text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:bg-white focus:ring-2 focus:ring-[#FF7A00]/20 transition-all font-medium"
+                      placeholder="Search Gym Supplements, Outfits, Dates, Chocolates..."
+                      className="w-full pl-11 sm:pl-12 pr-10 py-3 sm:py-3.5 rounded-2xl bg-[#202024] border border-white/10 text-sm sm:text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all font-medium"
                     />
                     {searchQuery && (
                       <button
                         type="button"
                         onClick={() => setSearchQuery("")}
-                        className="absolute right-3.5 p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                        className="absolute right-3.5 p-1 rounded-full text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"
                         aria-label="Clear search query"
                       >
                         <X className="w-4 h-4" />
@@ -185,7 +185,7 @@ export function SearchModal() {
                   <button
                     type="button"
                     onClick={closeSearch}
-                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer"
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer"
                     aria-label="Close search"
                   >
                     <X className="w-5 h-5 stroke-[2.2]" />
@@ -199,13 +199,13 @@ export function SearchModal() {
                 {searchQuery.trim().length > 0 ? (
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
                         Search Results ({liveResults.length})
                       </span>
                       {liveResults.length > 0 && (
                         <button
                           onClick={handleSearchSubmit}
-                          className="text-xs font-bold text-[#FF7A00] hover:underline flex items-center gap-1 cursor-pointer"
+                          className="text-xs font-bold text-[#D4AF37] hover:underline flex items-center gap-1 cursor-pointer"
                         >
                           <span>View all</span>
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -215,19 +215,19 @@ export function SearchModal() {
 
                     {liveResults.length === 0 ? (
                       <div className="py-10 text-center">
-                        <div className="w-12 h-12 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-3">
+                        <div className="w-12 h-12 rounded-full bg-white/5 text-[#D4AF37] flex items-center justify-center mx-auto mb-3">
                           <Search className="w-6 h-6" />
                         </div>
-                        <p className="text-sm font-bold text-gray-900 mb-1">
+                        <p className="text-sm font-bold text-white mb-1">
                           No matching products found
                         </p>
-                        <p className="text-xs text-gray-500 mb-4">
-                          Try searching for lamps, powerbanks, iron, or car perfume
+                        <p className="text-xs text-neutral-400 mb-4">
+                          Try searching for whey protein, creatine, gym sets, dates, or dark chocolate
                         </p>
                         <Link
                           href="/products"
                           onClick={closeSearch}
-                          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FF7A00] text-white text-xs font-semibold shadow-sm hover:bg-[#E66E00] transition-all"
+                          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#D4AF37] text-black text-xs font-bold shadow-sm hover:bg-[#C8A261] transition-all"
                         >
                           Browse All Products
                         </Link>
@@ -239,9 +239,9 @@ export function SearchModal() {
                             key={product.id}
                             href={`/products/${product.slug || product.id}`}
                             onClick={closeSearch}
-                            className="flex items-center gap-3 p-2.5 rounded-2xl bg-gray-50/70 hover:bg-orange-50/50 border border-gray-100 hover:border-[#FF7A00]/30 transition-all group"
+                            className="flex items-center gap-3 p-2.5 rounded-2xl bg-[#1C1C20] hover:bg-[#25252A] border border-white/5 hover:border-[#D4AF37]/40 transition-all group"
                           >
-                            <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-white flex-shrink-0 border border-gray-100">
+                            <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-neutral-900 flex-shrink-0 border border-white/10">
                               <Image
                                 src={product.poster_image}
                                 alt={product.name}
@@ -251,25 +251,25 @@ export function SearchModal() {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#FF7A00] block">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#D4AF37] block">
                                 {product.category}
                               </span>
-                              <h4 className="text-xs sm:text-sm font-bold text-gray-900 group-hover:text-[#FF7A00] transition-colors truncate">
+                              <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-[#D4AF37] transition-colors truncate">
                                 {product.name}
                               </h4>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-xs font-extrabold text-[#111111]">
+                                <span className="text-xs font-extrabold text-white">
                                   ₹{product.price.toLocaleString("en-IN")}
                                 </span>
                                 {product.rating && (
-                                  <span className="text-[10px] font-semibold text-gray-500 flex items-center gap-0.5">
-                                    <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                                  <span className="text-[10px] font-semibold text-neutral-400 flex items-center gap-0.5">
+                                    <Star className="w-2.5 h-2.5 fill-[#D4AF37] text-[#D4AF37]" />
                                     {product.rating.toFixed(1)}
                                   </span>
                                 )}
                               </div>
                             </div>
-                            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#FF7A00] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                            <ChevronRight className="w-4 h-4 text-neutral-500 group-hover:text-[#D4AF37] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                           </Link>
                         ))}
                       </div>
@@ -277,17 +277,17 @@ export function SearchModal() {
                   </div>
                 ) : (
                   <>
-                    {/* 2. COLLECTIONS (Visual Cards exactly like Reference Website!) */}
+                    {/* 2. COLLECTIONS */}
                     <div>
                       <div className="flex items-center justify-between mb-2.5">
-                        <span className="text-[11px] font-extrabold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />
+                        <span className="text-[11px] font-extrabold uppercase tracking-widest text-neutral-400 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
                           COLLECTIONS
                         </span>
                         <Link
                           href="/products"
                           onClick={closeSearch}
-                          className="text-xs font-bold text-[#FF7A00] hover:underline flex items-center gap-0.5"
+                          className="text-xs font-bold text-[#D4AF37] hover:underline flex items-center gap-0.5"
                         >
                           <span>Explore All</span>
                           <ChevronRight className="w-3.5 h-3.5" />
@@ -295,35 +295,34 @@ export function SearchModal() {
                       </div>
 
                       {/* Collections Cards Container */}
-                      <div className="bg-gray-50/80 rounded-2xl p-2 sm:p-3.5 border border-gray-100 overflow-hidden">
-                        {/* Mobile: 1-Row Horizontal Sliding / Swiping Cards. Desktop (sm): 7-Column Grid */}
-                        <div className="flex sm:grid sm:grid-cols-7 gap-2 sm:gap-2.5 overflow-x-auto sm:overflow-x-visible pb-1 sm:pb-0 scrollbar-none snap-x snap-mandatory -mx-1 px-1">
+                      <div className="bg-[#18181B] rounded-2xl p-2 sm:p-3.5 border border-white/5 overflow-hidden">
+                        <div className="flex sm:grid sm:grid-cols-5 gap-2 sm:gap-2.5 overflow-x-auto sm:overflow-x-visible pb-1 sm:pb-0 scrollbar-none snap-x snap-mandatory -mx-1 px-1">
                           {COLLECTIONS.map((col, idx) => (
                             <motion.div
                               key={col.title}
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: idx * 0.04, duration: 0.2 }}
-                              className="w-[102px] min-w-[102px] sm:w-auto sm:min-w-0 flex-shrink-0 snap-start"
+                              className="w-[120px] min-w-[120px] sm:w-auto sm:min-w-0 flex-shrink-0 snap-start"
                             >
                               <Link
                                 href={col.href}
                                 onClick={closeSearch}
-                                className="group flex flex-col items-center p-2 rounded-xl bg-white border border-gray-100 hover:border-[#FF7A00] hover:shadow-md hover:ring-2 hover:ring-[#FF7A00]/15 transition-all text-center h-full active:scale-95"
+                                className="group flex flex-col items-center p-2.5 rounded-xl bg-[#202024] border border-white/5 hover:border-[#D4AF37] hover:shadow-md transition-all text-center h-full active:scale-95"
                               >
-                                <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gray-100 mb-1.5 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]">
+                                <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-neutral-900 mb-1.5 p-1 flex items-center justify-center">
                                   <Image
                                     src={col.image}
                                     alt={col.title}
                                     fill
-                                    sizes="(max-width: 768px) 102px, 15vw"
-                                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                    sizes="(max-width: 768px) 120px, 15vw"
+                                    className="object-contain p-1 group-hover:scale-110 transition-transform duration-500"
                                   />
                                 </div>
-                                <span className="text-[10px] sm:text-[10.5px] font-bold text-gray-900 tracking-tight group-hover:text-[#FF7A00] transition-colors text-center uppercase leading-tight line-clamp-2 min-h-[26px] flex items-center justify-center">
+                                <span className="text-[10px] sm:text-[10.5px] font-bold text-white tracking-tight group-hover:text-[#D4AF37] transition-colors text-center uppercase leading-tight line-clamp-2 min-h-[26px] flex items-center justify-center">
                                   {col.title}
                                 </span>
-                                <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 tracking-wider uppercase mt-0.5 group-hover:text-[#FF7A00] transition-colors">
+                                <span className="text-[8.5px] sm:text-[9px] font-bold text-neutral-400 tracking-wider uppercase mt-0.5 group-hover:text-[#D4AF37] transition-colors">
                                   {col.subtitle}
                                 </span>
                               </Link>
@@ -335,8 +334,8 @@ export function SearchModal() {
 
                     {/* 3. Popular Searches */}
                     <div>
-                      <span className="text-[11px] font-extrabold uppercase tracking-widest text-gray-400 flex items-center gap-1.5 mb-2.5">
-                        <TrendingUp className="w-3.5 h-3.5 text-[#FF7A00]" />
+                      <span className="text-[11px] font-extrabold uppercase tracking-widest text-neutral-400 flex items-center gap-1.5 mb-2.5">
+                        <TrendingUp className="w-3.5 h-3.5 text-[#D4AF37]" />
                         POPULAR SEARCHES
                       </span>
                       <div className="flex flex-wrap gap-2">
@@ -345,7 +344,7 @@ export function SearchModal() {
                             key={tag}
                             type="button"
                             onClick={() => handleTagClick(tag)}
-                            className="px-3.5 py-1.5 rounded-full bg-gray-100 hover:bg-orange-50 hover:text-[#FF7A00] hover:border-[#FF7A00]/30 border border-transparent text-xs font-semibold text-gray-700 transition-all cursor-pointer"
+                            className="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-[#D4AF37]/20 hover:text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/40 text-xs font-semibold text-neutral-300 transition-all cursor-pointer"
                           >
                             {tag}
                           </button>

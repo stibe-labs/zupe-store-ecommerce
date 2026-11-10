@@ -59,30 +59,30 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-[#00223D] text-slate-300 border-t border-blue-950/60 pt-5 sm:pt-8 pb-24 md:pb-16 font-sans">
+    <footer className="bg-[#070708] text-neutral-400 border-t border-white/10 pt-5 sm:pt-8 pb-24 md:pb-16 font-sans">
       <div className="max-w-[1680px] mx-auto px-4 sm:px-8">
         {/* ================================================================= */}
-        {/* UPPER INSIDE FOOTER: SLIM WHITE CURVED CARD (4 BADGES IN 1 ROW)   */}
+        {/* UPPER INSIDE FOOTER: SLIM DARK CURVED CARD (4 BADGES IN 1 ROW)    */}
         {/* ================================================================= */}
-        <div className="bg-white text-slate-900 rounded-xl sm:rounded-2xl md:rounded-3xl border border-slate-200/90 shadow-md py-2.5 px-1.5 sm:py-3.5 sm:px-6 mb-6 sm:mb-8">
-          <div className="grid grid-cols-4 divide-x divide-slate-100 items-center text-center">
+        <div className="bg-[#141416] text-white rounded-xl sm:rounded-2xl md:rounded-3xl border border-white/10 shadow-lg py-2.5 px-1.5 sm:py-3.5 sm:px-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-4 divide-x divide-white/5 items-center text-center">
             {[
               {
                 icon: BadgeCheck,
-                label: "100% Authentic",
-                desc: "Factory sealed",
+                label: "100% Certified",
+                desc: "Lab tested purity",
               },
               {
                 icon: ShieldCheck,
-                label: "1-Yr Warranty",
-                fullLabel: "1-Year Warranty",
-                desc: "All-India service",
+                label: "Authentic Sourcing",
+                fullLabel: "Authentic Direct Sourcing",
+                desc: "Original brands",
               },
               {
                 icon: Truck,
-                label: "Fast Delivery",
-                fullLabel: "Express Delivery",
-                desc: "5-7 days air",
+                label: "Express Shipping",
+                fullLabel: "Pan-India Express",
+                desc: "Insured transit",
               },
               {
                 icon: Check,
@@ -96,14 +96,14 @@ export function Footer() {
                   key={item.label}
                   className="flex flex-col items-center justify-center px-1 sm:px-2 md:px-3 text-center"
                 >
-                  <div className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shadow-2xs mb-0.5 sm:mb-1 shrink-0">
-                    <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-[#002D62]" />
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-[#272015] border border-[#D4AF37]/20 flex items-center justify-center shadow-2xs mb-0.5 sm:mb-1 shrink-0">
+                    <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-[#D4AF37]" />
                   </div>
-                  <p className="text-[10px] sm:text-xs md:text-sm font-bold text-slate-900 leading-tight">
+                  <p className="text-[10px] sm:text-xs md:text-sm font-bold text-white leading-tight">
                     <span className="sm:hidden">{item.label}</span>
                     <span className="hidden sm:inline">{item.fullLabel || item.label}</span>
                   </p>
-                  <p className="text-[8px] sm:text-[10px] md:text-xs text-slate-500 font-medium leading-tight mt-0.5 truncate max-w-full">
+                  <p className="text-[8px] sm:text-[10px] md:text-xs text-neutral-400 font-medium leading-tight mt-0.5 truncate max-w-full">
                     {item.desc}
                   </p>
                 </div>
@@ -113,11 +113,11 @@ export function Footer() {
         </div>
 
         {/* Main Footer Columns (Desktop 4 Columns, Mobile Stacked/Accordion) */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 pb-12 border-b border-blue-900/50">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 pb-12 border-b border-white/10">
           {/* Brand Info Column */}
           <div className="md:col-span-4 space-y-4">
             <Link href="/" className="inline-flex items-center group" aria-label={siteConfig.name}>
-              <div className="relative h-12 w-44 shrink-0">
+              <div className="relative h-12 w-48 shrink-0">
                 <Image
                   src="/vl-logo-nobg.png"
                   alt={siteConfig.name}
@@ -127,7 +127,7 @@ export function Footer() {
               </div>
             </Link>
 
-            <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+            <p className="text-neutral-400 text-sm leading-relaxed max-w-sm">
               Your premier destination for gym supplements, athletic outfits, trendy apparels, premium dates & nuts, and handcrafted chocolates.
             </p>
 
@@ -135,9 +135,9 @@ export function Footer() {
             <div className="pt-2 space-y-1.5 text-xs">
               <a
                 href={`mailto:${siteConfig.supportEmail}`}
-                className="flex items-center gap-2 text-slate-300 hover:text-[#FFBE00] transition-colors"
+                className="flex items-center gap-2 text-neutral-300 hover:text-[#D4AF37] transition-colors"
               >
-                <Mail className="w-3.5 h-3.5 text-[#FFBE00] shrink-0" />
+                <Mail className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
                 <span className="font-semibold text-slate-200">{siteConfig.supportEmail}</span>
               </a>
               <Link
@@ -149,14 +149,14 @@ export function Footer() {
               </Link>
             </div>
 
-            <div className="pt-2 flex items-center gap-3 text-xs text-blue-200/80">
-              <span className="flex items-center gap-1.5 bg-blue-950/80 border border-blue-800/60 px-3 py-1 rounded-full">
-                <Truck className="w-3.5 h-3.5 text-amber-400" />
+            <div className="pt-2 flex items-center gap-3 text-xs text-neutral-400">
+              <span className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
+                <Truck className="w-3.5 h-3.5 text-[#D4AF37]" />
                 Pan-India Express
               </span>
-              <span className="flex items-center gap-1.5 bg-blue-950/80 border border-blue-800/60 px-3 py-1 rounded-full">
+              <span className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                1-Year Warranty
+                100% Certified
               </span>
             </div>
           </div>
@@ -269,21 +269,21 @@ export function Footer() {
             </div>
 
             {/* Mobile About Accordion */}
-            <div className="border border-blue-900/60 rounded-xl overflow-hidden bg-blue-950/40">
+            <div className="border border-white/10 rounded-xl overflow-hidden bg-white/5">
               <button
                 onClick={() => toggleSection("about")}
                 className="w-full p-4 flex items-center justify-between text-left text-white font-bold text-sm"
               >
                 <span>About</span>
-                {openSections.about ? <Minus className="w-4 h-4 text-blue-300" /> : <Plus className="w-4 h-4 text-blue-300" />}
+                {openSections.about ? <Minus className="w-4 h-4 text-[#D4AF37]" /> : <Plus className="w-4 h-4 text-[#D4AF37]" />}
               </button>
               {openSections.about && (
-                <div className="px-4 pb-4 pt-1 space-y-2 text-sm border-t border-blue-900/40">
+                <div className="px-4 pb-4 pt-1 space-y-2 text-sm border-t border-white/10">
                   {aboutLinks.map((link) => (
                     <Link
                       key={link.label}
                       href={link.href}
-                      className="block py-1 text-slate-400 hover:text-white"
+                      className="block py-1 text-neutral-400 hover:text-white"
                     >
                       {link.label}
                     </Link>
@@ -295,18 +295,18 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar: Copyright & Payment Badges */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-          <p>© {new Date().getFullYear()} VITTAL DIGITAL. All rights reserved.</p>
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
+          <p>© {new Date().getFullYear()} VITTAL LIFESTYLE. All rights reserved.</p>
 
           {/* Payment Badges (UPI, Visa, Mastercard) */}
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 bg-white/10 rounded font-bold text-slate-200 border border-white/15 text-[11px]">
+            <span className="px-2.5 py-1 bg-white/5 rounded font-bold text-neutral-300 border border-white/10 text-[11px]">
               UPI
             </span>
-            <span className="px-2.5 py-1 bg-white/10 rounded font-bold text-slate-200 border border-white/15 text-[11px]">
+            <span className="px-2.5 py-1 bg-white/5 rounded font-bold text-neutral-300 border border-white/10 text-[11px]">
               Visa
             </span>
-            <span className="px-2.5 py-1 bg-white/10 rounded font-bold text-slate-200 border border-white/15 text-[11px]">
+            <span className="px-2.5 py-1 bg-white/5 rounded font-bold text-neutral-300 border border-white/10 text-[11px]">
               Mastercard
             </span>
           </div>
