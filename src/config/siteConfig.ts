@@ -77,15 +77,15 @@ export const siteConfig: SiteConfig = {
   shortName: process.env.NEXT_PUBLIC_SITE_SHORT_NAME || "Vittal Lifestyle",
   tagline:
     process.env.NEXT_PUBLIC_SITE_TAGLINE ||
-    "Curated Premium Lifestyle & Essentials.",
+    "Curated Gym Supplements, Outfits, Dates & Nuts, and Chocolates.",
   description:
     process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
-    "Explore curated premium lifestyle collections delivered across India.",
+    "Explore premium fitness nutrition, stylish outfits & apparels, hand-picked dates & nuts, and artisanal chocolates.",
   legalName: process.env.NEXT_PUBLIC_LEGAL_NAME || "Vittal Lifestyle India",
   orderPrefix: process.env.NEXT_PUBLIC_ORDER_PREFIX || "VL",
 
-  logoUrl: process.env.NEXT_PUBLIC_LOGO_URL || "/vittal-digital-logo.png",
-  logoPng: process.env.NEXT_PUBLIC_LOGO_PNG || "/vittal-digital-logo.png",
+  logoUrl: process.env.NEXT_PUBLIC_LOGO_URL || "/vl-logo-nobg.png",
+  logoPng: process.env.NEXT_PUBLIC_LOGO_PNG || "/vl-logo-nobg.png",
   faviconUrl: process.env.NEXT_PUBLIC_FAVICON_URL || "/favicon.png",
 
   supportEmail:

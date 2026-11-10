@@ -28,6 +28,10 @@ import {
   Plug,
   Camera,
   Layers,
+  Dumbbell,
+  Shirt,
+  Apple,
+  Cookie,
   Check,
   RotateCcw,
   ShieldCheck,
@@ -46,14 +50,12 @@ import { useWishlist } from "@/context/WishlistContext";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
 
 const EXPLORE_CATEGORIES = [
-  { id: "All", name: "All Products", icon: Layers, query: "All" },
-  { id: "Smartphones", name: "Smartphones", icon: Smartphone, query: "Smartphones" },
-  { id: "Laptops", name: "Laptops & PCs", icon: Laptop, query: "Laptops" },
-  { id: "Headphones & Earbuds", name: "Audio & Sound", icon: Headphones, query: "Headphones & Earbuds" },
-  { id: "Smartwatches", name: "Smartwatches", icon: Watch, query: "Smartwatches" },
-  { id: "Gaming & Accessories", name: "Gaming Gear", icon: Gamepad2, query: "Gaming & Accessories" },
-  { id: "Tablets", name: "Tablets", icon: Tablet, query: "Tablets" },
-  { id: "Smart Gadgets", name: "Accessories", icon: Plug, query: "Smart Gadgets" },
+  { id: "All", name: "All Collections", icon: Layers, query: "All" },
+  { id: "Gym Supplementaries", name: "Gym Supplements", icon: Dumbbell, query: "Gym Supplementaries" },
+  { id: "Outfits", name: "Outfits", icon: Sparkles, query: "Outfits" },
+  { id: "Apparels", name: "Apparels", icon: Shirt, query: "Apparels" },
+  { id: "Dates & Nuts", name: "Dates & Nuts", icon: Apple, query: "Dates & Nuts" },
+  { id: "Candy & Chocolates", name: "Candy & Chocolates", icon: Cookie, query: "Candy & Chocolates" },
 ];
 
 const SORT_OPTIONS: {

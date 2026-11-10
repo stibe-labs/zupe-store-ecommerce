@@ -19,39 +19,45 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 const COLLECTIONS = [
   {
-    title: "LAPTOPS & WORKSTATIONS",
-    subtitle: "PRO PERFORMANCE",
-    image: "/vittal/ultraslim-laptop-14.png",
-    href: "/products?category=Laptops",
+    title: "GYM SUPPLEMENTARIES",
+    subtitle: "WHEY, CREATINE & PRE-WORKOUT",
+    image: "/vl-logo-nobg.png",
+    href: "/products?category=Gym+Supplementaries",
   },
   {
-    title: "SMARTWATCHES",
-    subtitle: "TITANIUM & AMOLED",
-    image: "/vittal/smart-watch-pro.png",
-    href: "/products?category=Smartwatches",
+    title: "OUTFITS & ATHLEISURE",
+    subtitle: "PERFORMANCE FIT",
+    image: "/vl-logo-nobg.png",
+    href: "/products?category=Outfits",
   },
   {
-    title: "AUDIO & EARBUDS",
-    subtitle: "HYBRID ANC",
-    image: "/vittal/wireless-earbuds.png",
-    href: "/products?category=Headphones+%26+Earbuds",
+    title: "APPARELS",
+    subtitle: "STREETWEAR & ACTIVEWEAR",
+    image: "/vl-logo-nobg.png",
+    href: "/products?category=Apparels",
   },
   {
-    title: "TABLETS & ACCESSORIES",
-    subtitle: "2K RETINA",
-    image: "/vittal/everyday-tablet-11.png",
-    href: "/products?category=Tablets",
+    title: "DATES & NUTS",
+    subtitle: "EXOTIC & SUPERFOODS",
+    image: "/vl-logo-nobg.png",
+    href: "/products?category=Dates+%26+Nuts",
+  },
+  {
+    title: "CANDY & CHOCOLATES",
+    subtitle: "HANDCRAFTED & GOURMET",
+    image: "/vl-logo-nobg.png",
+    href: "/products?category=Candy+%26+Chocolates",
   },
 ];
 
 const POPULAR_SEARCHES = [
-  "UltraSlim Laptop 14",
-  "Smart Watch Pro",
-  "Everyday Tablet 11",
-  "Wireless Earbuds",
-  "Portable Bluetooth Speaker",
-  "Power Bank 10000mAh",
-  "Flagship Electronics",
+  "Whey Protein Isolate",
+  "Creatine Monohydrate",
+  "Athletic Gym Outfits",
+  "Compression T-Shirt",
+  "Ajwa Dates",
+  "Roasted Almonds & Cashews",
+  "Dark Chocolate Bars",
 ];
 
 export function SearchModal() {

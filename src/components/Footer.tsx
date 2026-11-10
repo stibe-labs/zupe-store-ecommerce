@@ -33,20 +33,17 @@ export function Footer() {
   };
 
   const shopLinks = [
-    { label: "Laptops", href: "/products?category=Laptops" },
-    { label: "Tablets", href: "/products?category=Tablets" },
-    { label: "Smartwatches", href: "/products?category=Smartwatches" },
-    { label: "Speakers", href: "/products?category=Speakers" },
-    { label: "Headphones & Earbuds", href: "/products?category=Headphones+%26+Earbuds" },
-    { label: "Smartphones", href: "/products?category=Smartphones" },
-    { label: "Gaming & Accessories", href: "/products?category=Gaming+%26+Accessories" },
-    { label: "Smart Gadgets", href: "/products?category=Smart+Gadgets" },
+    { label: "Gym Supplementaries", href: "/products?category=Gym+Supplementaries" },
+    { label: "Outfits", href: "/products?category=Outfits" },
+    { label: "Apparels", href: "/products?category=Apparels" },
+    { label: "Dates & Nuts", href: "/products?category=Dates+%26+Nuts" },
+    { label: "Candy & Chocolates", href: "/products?category=Candy+%26+Chocolates" },
   ];
 
   const supportLinks = [
     { label: "Track Order", href: "/order-tracking" },
     { label: "Contact Us & Help Desk", href: "/contact" },
-    { label: "Email: support@vittaldigital.com", href: "mailto:support@vittaldigital.com" },
+    { label: `Email: ${siteConfig.supportEmail}`, href: `mailto:${siteConfig.supportEmail}` },
     { label: "Shipping & Delivery", href: "/shipping-and-delivery" },
     { label: "Returns & Refunds", href: "/return" },
     { label: "Warranty & Coverage", href: "/#reviews" },
@@ -58,7 +55,7 @@ export function Footer() {
     { label: "Contact Us", href: "/contact" },
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms & Conditions", href: "/terms-and-conditions" },
-    { label: "Email Support Desk", href: "mailto:support@vittaldigital.com" },
+    { label: "Email Support Desk", href: `mailto:${siteConfig.supportEmail}` },
   ];
 
   return (
@@ -122,7 +119,7 @@ export function Footer() {
             <Link href="/" className="inline-flex items-center group" aria-label={siteConfig.name}>
               <div className="relative h-12 w-44 shrink-0">
                 <Image
-                  src="/vittal-digital-logo-white.png"
+                  src="/vl-logo-nobg.png"
                   alt={siteConfig.name}
                   fill
                   className="object-contain object-left"
@@ -131,17 +128,17 @@ export function Footer() {
             </Link>
 
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
-              Explore authentic flagship electronics delivered across India with full 1-year warranty and express logistics.
+              Your premier destination for gym supplements, athletic outfits, trendy apparels, premium dates & nuts, and handcrafted chocolates.
             </p>
 
             {/* Direct Support Contact Strip */}
             <div className="pt-2 space-y-1.5 text-xs">
               <a
-                href="mailto:support@vittaldigital.com"
+                href={`mailto:${siteConfig.supportEmail}`}
                 className="flex items-center gap-2 text-slate-300 hover:text-[#FFBE00] transition-colors"
               >
                 <Mail className="w-3.5 h-3.5 text-[#FFBE00] shrink-0" />
-                <span className="font-semibold text-slate-200">support@vittaldigital.com</span>
+                <span className="font-semibold text-slate-200">{siteConfig.supportEmail}</span>
               </a>
               <Link
                 href="/contact"

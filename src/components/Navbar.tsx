@@ -14,6 +14,12 @@ import {
   MapPin,
   ChevronDown,
   Truck,
+  Dumbbell,
+  Shirt,
+  Apple,
+  Cookie,
+  Sparkles,
+  Layers,
   Headphones,
   Laptop,
   Smartphone,
@@ -97,25 +103,20 @@ export function Navbar() {
   };
 
   const departments = [
-    { name: "Computers & Laptops", href: "/products?category=Laptops", icon: Laptop },
-    { name: "Cameras & Video", href: "/products?category=Cameras", icon: Camera },
-    { name: "Tablets", href: "/products?category=Tablets", icon: Tablet },
-    { name: "Smartphones", href: "/products?category=Smartphones", icon: Smartphone },
-    { name: "Smartwatches", href: "/products?category=Smartwatches", icon: Watch },
-    { name: "Gaming", href: "/products?category=Gaming+%26+Accessories", icon: Gamepad2 },
-    { name: "Audio & Headphones", href: "/products?category=Headphones+%26+Earbuds", icon: Headphones },
-    { name: "Accessories", href: "/products?category=Smart+Gadgets", icon: Plug },
+    { name: "Gym Supplementaries", href: "/products?category=Gym+Supplementaries", icon: Dumbbell },
+    { name: "Outfits", href: "/products?category=Outfits", icon: Sparkles },
+    { name: "Apparels", href: "/products?category=Apparels", icon: Shirt },
+    { name: "Dates & Nuts", href: "/products?category=Dates+%26+Nuts", icon: Apple },
+    { name: "Candy & Chocolates", href: "/products?category=Candy+%26+Chocolates", icon: Cookie },
   ];
 
   const categoriesList = [
     "All Categories",
-    "Smartphones",
-    "Laptops",
-    "Headphones & Earbuds",
-    "Smartwatches",
-    "Tablets",
-    "Gaming & Accessories",
-    "Speakers",
+    "Gym Supplementaries",
+    "Outfits",
+    "Apparels",
+    "Dates & Nuts",
+    "Candy & Chocolates",
   ];
 
   return (
@@ -186,8 +187,8 @@ export function Navbar() {
             <Link href="/" className="flex items-center gap-2 group">
               <div className="relative h-8 sm:h-9 w-36 sm:w-44">
                 <Image
-                  src="/vittal-digital-logo.png"
-                  alt="Vittal Digital"
+                  src="/vl-logo-nobg.png"
+                  alt="Vittal Lifestyle"
                   fill
                   className="object-contain object-left"
                   priority
@@ -460,11 +461,11 @@ export function Navbar() {
                           <div className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-slate-50 transition-colors">
                             <div className="w-12 h-12 rounded-lg bg-slate-50 border border-slate-200/80 p-1 shrink-0 flex items-center justify-center overflow-hidden">
                               <img
-                                src={item.poster_image || "/vittal-digital-logo.png"}
+                                src={item.poster_image || "/vl-logo-nobg.png"}
                                 alt={item.name}
                                 className="w-full h-full object-contain group-hover:scale-105 transition-transform"
                                 onError={(e) => {
-                                  (e.currentTarget as HTMLImageElement).src = "/vittal-digital-logo.png";
+                                  (e.currentTarget as HTMLImageElement).src = "/vl-logo-nobg.png";
                                 }}
                               />
                             </div>
@@ -587,8 +588,8 @@ export function Navbar() {
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
               <div className="relative h-9 w-36">
                 <Image
-                  src="/vittal-digital-logo.png"
-                  alt="Vittal Digital"
+                  src="/vl-logo-nobg.png"
+                  alt="Vittal Lifestyle"
                   fill
                   className="object-contain object-left"
                 />
