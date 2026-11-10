@@ -26,6 +26,7 @@ import {
   BadgeCheck,
   ArrowRight,
   Clock,
+  Mail,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -220,14 +221,14 @@ export function Navbar() {
             >
               About
             </Link>
-            <a
-              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20have%20an%20inquiry`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-[#002D62] transition-colors"
+            <Link
+              href="/contact"
+              className={`transition-colors ${
+                pathname === "/contact" ? "text-[#002D62] font-bold" : "hover:text-[#002D62]"
+              }`}
             >
               Contact
-            </a>
+            </Link>
           </nav>
 
           {/* User & Support Actions */}
@@ -630,6 +631,17 @@ export function Navbar() {
                   About Vittal Digital
                 </Link>
                 <Link
+                  href="/contact"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    pathname === "/contact"
+                      ? "text-[#002D62] bg-blue-50 font-bold"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  Contact Us &amp; Support
+                </Link>
+                <Link
                   href="/order-tracking"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50"
@@ -678,18 +690,35 @@ export function Navbar() {
               </div>
 
               {/* Customer Support */}
-              <div className="border-t border-slate-200 pt-3">
+              <div className="border-t border-slate-200 pt-3 space-y-2">
                 <a
-                  href="tel:+919600048000"
-                  className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                  href="mailto:support@vittaldigital.com"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-blue-50/70 hover:bg-blue-100/70 transition-colors"
                 >
-                  <Headphones className="w-5 h-5 text-[#002D62]" />
-                  <div>
-                    <span className="block text-[10px] text-slate-400 font-bold uppercase">
-                      Customer Support
+                  <Mail className="w-5 h-5 text-[#002D62] shrink-0" />
+                  <div className="truncate">
+                    <span className="block text-[10px] text-blue-900 font-bold uppercase tracking-wider">
+                      Email Support
                     </span>
-                    <span className="block text-sm font-bold text-slate-900">
-                      +91 96000 48000
+                    <span className="block text-xs font-bold text-slate-900 truncate">
+                      support@vittaldigital.com
+                    </span>
+                  </div>
+                </a>
+
+                <a
+                  href={`https://wa.me/${siteConfig.whatsappNumber}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50/70 hover:bg-emerald-100/70 transition-colors"
+                >
+                  <Headphones className="w-5 h-5 text-emerald-700 shrink-0" />
+                  <div>
+                    <span className="block text-[10px] text-emerald-900 font-bold uppercase tracking-wider">
+                      WhatsApp Support
+                    </span>
+                    <span className="block text-xs font-bold text-slate-900">
+                      +91 91623 81659
                     </span>
                   </div>
                 </a>

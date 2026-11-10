@@ -88,7 +88,8 @@ export const siteConfig: SiteConfig = {
   logoPng: process.env.NEXT_PUBLIC_LOGO_PNG || "/vittal-digital-logo.png",
   faviconUrl: process.env.NEXT_PUBLIC_FAVICON_URL || "/favicon.png",
 
-  supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || `support@${domainHost}`,
+  supportEmail:
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@vittaldigital.com",
   supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE || "+91 73567 65036",
   whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916238165935",
   whatsappWebhookVerifyToken:

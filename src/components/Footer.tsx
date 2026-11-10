@@ -45,17 +45,20 @@ export function Footer() {
 
   const supportLinks = [
     { label: "Track Order", href: "/order-tracking" },
+    { label: "Contact Us & Help Desk", href: "/contact" },
+    { label: "Email: support@vittaldigital.com", href: "mailto:support@vittaldigital.com" },
     { label: "Shipping & Delivery", href: "/shipping-and-delivery" },
     { label: "Returns & Refunds", href: "/return" },
-    { label: "Warranty & Compatibility", href: "/#reviews" },
-    { label: "Contact Us (WhatsApp)", href: `https://wa.me/${siteConfig.whatsappNumber}` },
+    { label: "Warranty & Coverage", href: "/#reviews" },
+    { label: "WhatsApp Concierge", href: `https://wa.me/${siteConfig.whatsappNumber}` },
   ];
 
   const aboutLinks = [
     { label: "Our Story", href: "/about" },
+    { label: "Contact Us", href: "/contact" },
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms & Conditions", href: "/terms-and-conditions" },
-    { label: "Email Support", href: `mailto:${siteConfig.supportEmail}` },
+    { label: "Email Support Desk", href: "mailto:support@vittaldigital.com" },
   ];
 
   return (
@@ -130,6 +133,24 @@ export function Footer() {
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
               Explore authentic flagship electronics delivered across India with full 1-year warranty and express logistics.
             </p>
+
+            {/* Direct Support Contact Strip */}
+            <div className="pt-2 space-y-1.5 text-xs">
+              <a
+                href="mailto:support@vittaldigital.com"
+                className="flex items-center gap-2 text-slate-300 hover:text-[#FFBE00] transition-colors"
+              >
+                <Mail className="w-3.5 h-3.5 text-[#FFBE00] shrink-0" />
+                <span className="font-semibold text-slate-200">support@vittaldigital.com</span>
+              </a>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-1.5 text-blue-300 hover:text-white transition-colors font-medium text-[11px]"
+              >
+                <span>Visit Contact &amp; Support Page</span>
+                <ArrowUpRight className="w-3 h-3" />
+              </Link>
+            </div>
 
             <div className="pt-2 flex items-center gap-3 text-xs text-blue-200/80">
               <span className="flex items-center gap-1.5 bg-blue-950/80 border border-blue-800/60 px-3 py-1 rounded-full">

@@ -23,7 +23,7 @@ export function TrustBar() {
     {
       icon: <Headphones className="w-6 h-6 text-gray-900" />,
       title: "Customer Support",
-      desc: "+91 97441 22853",
+      desc: "support@vittaldigital.com",
     },
   ];
 

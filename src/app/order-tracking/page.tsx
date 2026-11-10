@@ -18,6 +18,7 @@ import {
   ExternalLink,
   MapPin,
   Phone,
+  Mail,
   MessageSquare,
   ShieldCheck,
   ChevronDown,
@@ -457,7 +458,7 @@ function OrderTrackingContent() {
     },
     {
       q: "How do I claim the 1-year warranty on my electronics?",
-      a: `Every device purchased from ${siteConfig.name} includes a comprehensive 1-year warranty card with GST invoice. In case of any technical queries or support, simply connect with our dedicated concierge via WhatsApp at +91 73567 65036.`,
+      a: `Every device purchased from ${siteConfig.name} includes a comprehensive 1-year warranty card with GST invoice. In case of any technical queries or support, simply email us at ${siteConfig.supportEmail} or connect with our dedicated concierge via WhatsApp at +91 73567 65036.`,
     },
   ];
 
@@ -1225,6 +1226,13 @@ function OrderTrackingContent() {
                         <span>Chat on WhatsApp</span>
                       </a>
                       <a
+                        href={`mailto:${siteConfig.supportEmail}?subject=${encodeURIComponent(`Support Request - Order ${selectedOrder.shopify_order_id || selectedOrder.id}`)}`}
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors border border-white/10 cursor-pointer"
+                      >
+                        <Mail className="w-4 h-4 text-[#FFBE00]" />
+                        <span>Email {siteConfig.supportEmail}</span>
+                      </a>
+                      <a
                         href={`tel:${siteConfig.supportPhone}`}
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors border border-white/10 cursor-pointer"
                       >
@@ -1431,6 +1439,13 @@ function OrderTrackingContent() {
                     >
                       <MessageSquare className="w-4 h-4" />
                       <span>WhatsApp Support</span>
+                    </a>
+                    <a
+                      href={`mailto:${siteConfig.supportEmail}`}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
+                    >
+                      <Mail className="w-4 h-4 text-[#FFBE00]" />
+                      <span>Email: {siteConfig.supportEmail}</span>
                     </a>
                     <a
                       href={`tel:${siteConfig.supportPhone}`}
