@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "vittallifestyle",
-  "account_id": "",
+  "account_id": "4eed09d0032a07881825f4e926cb997f",
   "compatibility_date": "2026-08-31",
   "compatibility_flags": [
     "nodejs_compat"
@@ -16,7 +16,7 @@
     {
       "binding": "DB",
       "database_name": "vittallifestyle-db",
-      "database_id": ""
+      "database_id": "b5922f08-8c85-4e8c-ae9e-a9650e3ba52b"
     }
   ],
   "r2_buckets": [
@@ -33,8 +33,8 @@
     "SMTP_PORT": "465",
     "SMTP_USER": "",
     "SMTP_PASS": "",
-    "CLOUDFLARE_ACCOUNT_ID": "",
-    "CLOUDFLARE_D1_DATABASE_ID": "",
+    "CLOUDFLARE_ACCOUNT_ID": "4eed09d0032a07881825f4e926cb997f",
+    "CLOUDFLARE_D1_DATABASE_ID": "b5922f08-8c85-4e8c-ae9e-a9650e3ba52b",
     "ADMIN_EMAIL": "admin@vittallifestyle.com",
     "ADMIN_PASSWORD": "",
     "NEXT_PUBLIC_RAZORPAY_KEY_ID": "",
