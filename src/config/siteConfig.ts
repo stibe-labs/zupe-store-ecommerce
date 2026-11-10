@@ -11,10 +11,10 @@ let rawUrl =
   process.env.NEXT_PUBLIC_SITE_URL ||
   process.env.NEXT_PUBLIC_BASE_URL ||
   process.env.STORE_BASE_URL ||
-  "https://vittaldigital.com";
+  "https://vittallifestyle.com";
 
 if (rawUrl.includes("workers.dev") || !rawUrl.startsWith("http")) {
-  rawUrl = "https://vittaldigital.com";
+  rawUrl = "https://vittallifestyle.com";
 }
 
 const cleanUrl = rawUrl.replace(/\/+$/, "");
@@ -25,13 +25,13 @@ export interface SiteConfig {
   domain: string;
 
   // Brand & Identity
-  slug: string; // e.g. "vittaldigital" (used for csv filenames, cache keys, identifiers)
+  slug: string; // e.g. "vittallifestyle" (used for csv filenames, cache keys, identifiers)
   name: string;
   shortName: string;
   tagline: string;
   description: string;
   legalName: string;
-  orderPrefix: string; // e.g. "VD" for #VD-1001
+  orderPrefix: string; // e.g. "VL" for #VL-1001
 
   // Visual Assets
   logoUrl: string;
@@ -41,7 +41,7 @@ export interface SiteConfig {
   // Contact & Support
   supportEmail: string;
   supportPhone: string;
-  whatsappNumber: string; // Country code + digits, e.g. "916238165935"
+  whatsappNumber: string;
   whatsappWebhookVerifyToken: string;
 
   // Customer synthetic email domain (for phone-only customers)
@@ -65,7 +65,7 @@ export interface SiteConfig {
 }
 
 const domainHost = cleanUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-const siteSlug = process.env.NEXT_PUBLIC_SITE_SLUG || "vittaldigital";
+const siteSlug = process.env.NEXT_PUBLIC_SITE_SLUG || "vittallifestyle";
 const customerDomain = process.env.CUSTOMER_EMAIL_DOMAIN || `customer.${domainHost}`;
 
 export const siteConfig: SiteConfig = {
@@ -73,25 +73,25 @@ export const siteConfig: SiteConfig = {
   domain: domainHost,
   slug: siteSlug,
 
-  name: process.env.NEXT_PUBLIC_SITE_NAME || "Vittal Digital",
-  shortName: process.env.NEXT_PUBLIC_SITE_SHORT_NAME || "Vittal Digital",
+  name: process.env.NEXT_PUBLIC_SITE_NAME || "Vittal Lifestyle",
+  shortName: process.env.NEXT_PUBLIC_SITE_SHORT_NAME || "Vittal Lifestyle",
   tagline:
     process.env.NEXT_PUBLIC_SITE_TAGLINE ||
-    "Premium Brand Electronics. Delivered across India.",
+    "Curated Premium Lifestyle & Essentials.",
   description:
     process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
-    "Explore genuine electronics, smartphones, laptops, audio, and gadgets delivered across India with comprehensive 1-year warranty and express delivery.",
-  legalName: process.env.NEXT_PUBLIC_LEGAL_NAME || "Vittal Digital India",
-  orderPrefix: process.env.NEXT_PUBLIC_ORDER_PREFIX || "VD",
+    "Explore curated premium lifestyle collections delivered across India.",
+  legalName: process.env.NEXT_PUBLIC_LEGAL_NAME || "Vittal Lifestyle India",
+  orderPrefix: process.env.NEXT_PUBLIC_ORDER_PREFIX || "VL",
 
   logoUrl: process.env.NEXT_PUBLIC_LOGO_URL || "/vittal-digital-logo.png",
   logoPng: process.env.NEXT_PUBLIC_LOGO_PNG || "/vittal-digital-logo.png",
   faviconUrl: process.env.NEXT_PUBLIC_FAVICON_URL || "/favicon.png",
 
   supportEmail:
-    process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@vittaldigital.com",
-  supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE || "+91 73567 65036",
-  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916238165935",
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@vittallifestyle.com",
+  supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE || "",
+  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "",
   whatsappWebhookVerifyToken:
     process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || `${siteSlug}_wa_secret_2026`,
 
@@ -99,10 +99,10 @@ export const siteConfig: SiteConfig = {
 
   fulfillmentCenter:
     process.env.NEXT_PUBLIC_FULFILLMENT_CENTER ||
-    `${process.env.NEXT_PUBLIC_SITE_NAME || "Vittal Digital"} Fulfillment Center, Ernakulam`,
+    `${process.env.NEXT_PUBLIC_SITE_NAME || "Vittal Lifestyle"} Fulfillment Center`,
   dispatchBay:
     process.env.NEXT_PUBLIC_DISPATCH_BAY ||
-    "Ernakulam Logistics Dispatch Bay",
+    "Logistics Dispatch Bay",
   shiprocketPickupLocation:
     process.env.SHIPROCKET_PICKUP_LOCATION || "work",
 

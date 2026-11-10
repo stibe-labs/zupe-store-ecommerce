@@ -718,10 +718,8 @@ export async function sendMetaCloudApiMessage(
   recipientPhone: string,
   messageText: string
 ): Promise<{ success: boolean; data?: any; error?: string }> {
-  const token =
-    process.env.WHATSAPP_TOKEN ||
-    "EAATwm2s3GMYBS7KhJQ2MDiAyAGFS6OwFHiXZAFvfPlyMUg4Jf3wV5e8TPj0PKC8rkE6x9vkzuZANllpjCUHvJaXYAZB6Ursyzc26l0SDJrBEEPJYB4ZB8rjEQ2qTSBI6tEYgZBOTJ47DAmVNAhuyaQAoryvhYiO6vRpAFdE0H61gFXCkwttX5sZCCSyR20kCwOOQZDZD";
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || "1477900698733187";
+  const token = process.env.WHATSAPP_TOKEN || "";
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || "";
 
   const digits = recipientPhone.replace(/\D/g, "");
   const normalizedPhone = digits.length === 10 ? `91${digits}` : digits;

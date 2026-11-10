@@ -22,9 +22,10 @@ export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const { pathname } = url;
 
-  // -- 0. Canonical Domain Enforcement: Redirect all *.workers.dev requests immediately to vittaldigital.com --
+  // -- 0. Canonical Domain Enforcement: Redirect all *.workers.dev requests immediately to vittallifestyle.com --
   if (host.includes("workers.dev")) {
-    const targetUrl = new URL(pathname + url.search, "https://vittaldigital.com");
+    const canonicalBase = process.env.NEXT_PUBLIC_SITE_URL || "https://vittallifestyle.com";
+    const targetUrl = new URL(pathname + url.search, canonicalBase);
     return NextResponse.redirect(targetUrl, 301);
   }
 

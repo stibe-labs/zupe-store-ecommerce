@@ -122,8 +122,8 @@ export async function testShiprocketConnection(credentials?: {
   token?: string;
 }): Promise<{ success: boolean; message: string; token?: string }> {
   try {
-    const email = credentials?.email?.trim() || process.env.SHIPROCKET_EMAIL || "support@turkiyejam.com";
-    const password = credentials?.password?.trim() || process.env.SHIPROCKET_PASSWORD || "vWwIV@pJqVO!!6@JQSFZChuaPP8s*SfX";
+    const email = credentials?.email?.trim() || process.env.SHIPROCKET_EMAIL || "";
+    const password = credentials?.password?.trim() || process.env.SHIPROCKET_PASSWORD || "";
     const token = credentials?.token?.trim();
 
     if (email && password) {

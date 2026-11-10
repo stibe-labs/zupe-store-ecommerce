@@ -1,8 +1,8 @@
 import crypto from "crypto";
 
 export const FASTRR_CONFIG = {
-  apiKey: process.env.SHIPROCKET_CHECKOUT_API_KEY || "SJDGjm63QEW11sat",
-  apiSecret: process.env.SHIPROCKET_CHECKOUT_API_SECRET || "8rXNirBwWVrkDOwrNHFs9nLccBKIrC98",
+  apiKey: process.env.SHIPROCKET_CHECKOUT_API_KEY || "",
+  apiSecret: process.env.SHIPROCKET_CHECKOUT_API_SECRET || "",
   baseUrl: "https://checkout-api.shiprocket.com",
 };
 

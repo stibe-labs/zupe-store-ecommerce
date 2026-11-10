@@ -1,12 +1,12 @@
-// Admin Security & Authentication Utilities for Vittal Digital ERP
+// Admin Security & Authentication Utilities for Vittal Lifestyle ERP
 // Fully compatible with Cloudflare Workers Edge runtime & Node.js
 
-const ADMIN_SECRET = "vittaldigital_admin_secret_key_2026_super_secure_edge_token";
-export const ADMIN_COOKIE_NAME = "vittaldigital_admin_token";
+const ADMIN_SECRET = process.env.ADMIN_SECRET || "vittallifestyle_admin_secret_key_2026_super_secure_edge_token";
+export const ADMIN_COOKIE_NAME = "vittallifestyle_admin_token";
 
 // Configured credentials
-const DEFAULT_ADMIN_EMAIL = "admin@vittaldigital.com";
-const DEFAULT_ADMIN_PASSWORD = "VittalDigital@2026";
+const DEFAULT_ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@vittallifestyle.com";
+const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 
 export async function verifyAdminCredentials(
   email?: string,
@@ -26,7 +26,7 @@ export async function verifyAdminCredentials(
     return {
       valid: true,
       email: normEmail,
-      name: "Vittal Digital Admin",
+      name: "Admin",
     };
   }
 

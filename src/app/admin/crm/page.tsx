@@ -85,12 +85,12 @@ export default function AdminCRMPage() {
 
   // WhatsApp CRM Integration State
   const [whatsappConfig, setWhatsappConfig] = useState({
-    phoneNumber: "916238165935",
-    phoneNumberId: "1477900698733187",
+    phoneNumber: "",
+    phoneNumberId: "",
     token: "",
-    templateName: "vittaldigital_otp",
-    webhookVerifyToken: "vittaldigital_wa_secret_2026",
-    isActive: true,
+    templateName: "vittallifestyle_otp",
+    webhookVerifyToken: "",
+    isActive: false,
     hasToken: false,
     lastSyncedAt: "",
   });
@@ -2449,10 +2449,10 @@ export default function AdminCRMPage() {
                           type="text"
                           value={whatsappConfig.phoneNumber}
                           onChange={(e) => setWhatsappConfig({ ...whatsappConfig, phoneNumber: e.target.value })}
-                          placeholder="e.g. 916238165935"
+                          placeholder="e.g. 919876543210"
                           className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
                         />
-                        <span className="text-[10px] text-slate-500 mt-1 block">Live Store Number: +91 6238 165 935</span>
+                        <span className="text-[10px] text-slate-500 mt-1 block">Full country code + digits without &apos;+&apos;</span>
                       </div>
 
                       <div>
@@ -2463,7 +2463,7 @@ export default function AdminCRMPage() {
                           type="text"
                           value={whatsappConfig.phoneNumberId}
                           onChange={(e) => setWhatsappConfig({ ...whatsappConfig, phoneNumberId: e.target.value })}
-                          placeholder="e.g. 1477900698733187"
+                          placeholder="e.g. 100000000000000"
                           className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
                         />
                         <span className="text-[10px] text-slate-500 mt-1 block">Meta App &gt; WhatsApp &gt; API Setup &gt; Phone Number ID</span>
@@ -2491,7 +2491,7 @@ export default function AdminCRMPage() {
                           type="text"
                           value={whatsappConfig.templateName}
                           onChange={(e) => setWhatsappConfig({ ...whatsappConfig, templateName: e.target.value })}
-                          placeholder="e.g. vittaldigital_otp"
+                          placeholder="e.g. vittallifestyle_otp"
                           className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
                         />
                         <span className="text-[10px] text-slate-500 mt-1 block">Meta-approved template name for transactional alerts</span>
@@ -2505,7 +2505,7 @@ export default function AdminCRMPage() {
                           type="text"
                           value={whatsappConfig.webhookVerifyToken}
                           onChange={(e) => setWhatsappConfig({ ...whatsappConfig, webhookVerifyToken: e.target.value })}
-                          placeholder="vittaldigital_wa_secret_2026"
+                          placeholder="e.g. custom_wa_secret_2026"
                           className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
                         />
                         <span className="text-[10px] text-slate-500 mt-1 block">Meta Webhooks verification secret token</span>
@@ -2514,7 +2514,7 @@ export default function AdminCRMPage() {
                       <div className="md:col-span-2 bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <span className="text-[11px] font-bold text-slate-300">Live Webhook Callback URL:</span>
-                          <span className="ml-2 font-mono text-[11px] text-indigo-400">https://vittaldigital.com/api/webhooks/whatsapp</span>
+                          <span className="ml-2 font-mono text-[11px] text-indigo-400">https://vittallifestyle.com/api/webhooks/whatsapp</span>
                         </div>
                         <span className="text-[10px] text-slate-500">Subscribe to &apos;messages&apos; in Meta Developer Portal</span>
                       </div>

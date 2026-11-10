@@ -148,11 +148,11 @@ export async function GET(req: NextRequest) {
     }
 
     // 2. Fetch WhatsApp Integration Config from D1 (fallback to env)
-    const envWaPhone = process.env.WHATSAPP_PHONE_NUMBER || "916238165935";
-    const envWaPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || "1477900698733187";
+    const envWaPhone = process.env.WHATSAPP_PHONE_NUMBER || "";
+    const envWaPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || "";
     const envWaToken = process.env.WHATSAPP_TOKEN || "";
-    const envWaTemplate = process.env.WHATSAPP_TEMPLATE_NAME || "vittaldigital_otp";
-    const envWaVerify = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || "vittaldigital_wa_secret_2026";
+    const envWaTemplate = process.env.WHATSAPP_TEMPLATE_NAME || "vittallifestyle_otp";
+    const envWaVerify = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || "";
 
     let waConfig: WhatsAppCRMConfig = {
       phoneNumber: envWaPhone,
@@ -160,7 +160,7 @@ export async function GET(req: NextRequest) {
       token: "",
       templateName: envWaTemplate,
       webhookVerifyToken: envWaVerify,
-      isActive: true,
+      isActive: false,
       hasToken: Boolean(envWaToken && envWaToken.length > 10),
       lastSyncedAt: "",
     };
@@ -360,8 +360,8 @@ export async function POST(req: NextRequest) {
       const cleanPhone = (phoneNumber || "").replace(/\D/g, "").trim();
       const cleanPhoneId = (phoneNumberId || "").trim();
       const cleanToken = (whatsappToken || "").trim();
-      const cleanTemplate = (templateName || "vittaldigital_otp").trim();
-      const cleanVerify = (webhookVerifyToken || "vittaldigital_wa_secret_2026").trim();
+      const cleanTemplate = (templateName || "vittallifestyle_otp").trim();
+      const cleanVerify = (webhookVerifyToken || "").trim();
 
       // Retrieve existing token if placeholder/masked or empty was passed
       let effectiveToken = cleanToken;
@@ -378,8 +378,8 @@ export async function POST(req: NextRequest) {
       }
 
       const waConfigData = JSON.stringify({
-        phoneNumber: cleanPhone || process.env.WHATSAPP_PHONE_NUMBER || "916238165935",
-        phoneNumberId: cleanPhoneId || process.env.WHATSAPP_PHONE_NUMBER_ID || "1477900698733187",
+        phoneNumber: cleanPhone || process.env.WHATSAPP_PHONE_NUMBER || "",
+        phoneNumberId: cleanPhoneId || process.env.WHATSAPP_PHONE_NUMBER_ID || "",
         token: effectiveToken,
         templateName: cleanTemplate,
         webhookVerifyToken: cleanVerify,
@@ -447,7 +447,7 @@ export async function POST(req: NextRequest) {
     // 3. TEST WHATSAPP CONNECTION HANDSHAKE
     if (action === "test_whatsapp_connection") {
       const { phoneNumberId, whatsappToken } = body;
-      const cleanPhoneId = (phoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID || "1477900698733187").trim();
+      const cleanPhoneId = (phoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID || "").trim();
       let effectiveToken = (whatsappToken || "").trim();
 
       if (!effectiveToken || effectiveToken.includes("...")) {

@@ -41,9 +41,8 @@ async function ensureVerificationTable(): Promise<void> {
   }
 }
 
-const DEFAULT_WA_TOKEN =
-  "EAATwm2s3GMYBS7KhJQ2MDiAyAGFS6OwFHiXZAFvfPlyMUg4Jf3wV5e8TPj0PKC8rkE6x9vkzuZANllpjCUHvJaXYAZB6Ursyzc26l0SDJrBEEPJYB4ZB8rjEQ2qTSBI6tEYgZBOTJ47DAmVNAhuyaQAoryvhYiO6vRpAFdE0H61gFXCkwttX5sZCCSyR20kCwOOQZDZD";
-const DEFAULT_WA_PHONE_ID = "1477900698733187";
+const DEFAULT_WA_TOKEN = process.env.WHATSAPP_TOKEN || "";
+const DEFAULT_WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || "";
 
 /**
  * Normalizes phone numbers into clean digits suitable for WhatsApp API (E.164 without '+').
@@ -201,7 +200,7 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
 
   try {
     const url = `https://graph.facebook.com/v21.0/${phoneId}/messages`;
-    const templateName = process.env.WHATSAPP_TEMPLATE_NAME || "vittaldigital_otp";
+    const templateName = process.env.WHATSAPP_TEMPLATE_NAME || "vittallifestyle_otp";
     const configuredLang = process.env.WHATSAPP_TEMPLATE_LANG || "en";
     const languageCandidates = [configuredLang, configuredLang === "en" ? "en_US" : "en"];
 

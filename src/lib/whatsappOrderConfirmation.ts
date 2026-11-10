@@ -5,22 +5,20 @@
 import { normalizePhoneNumber } from "@/lib/whatsappOtp";
 import { siteConfig } from "@/config/siteConfig";
 
-const DEFAULT_WA_TOKEN =
-  process.env.WHATSAPP_TOKEN ||
-  "EAATwm2s3GMYBS7KhJQ2MDiAyAGFS6OwFHiXZAFvfPlyMUg4Jf3wV5e8TPj0PKC8rkE6x9vkzuZANllpjCUHvJaXYAZB6Ursyzc26l0SDJrBEEPJYB4ZB8rjEQ2qTSBI6tEYgZBOTJ47DAmVNAhuyaQAoryvhYiO6vRpAFdE0H61gFXCkwttX5sZCCSyR20kCwOOQZDZD";
-const DEFAULT_WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || "1477900698733187";
-let STORE_BASE_URL = siteConfig.url || "https://vittaldigital.com";
+const DEFAULT_WA_TOKEN = process.env.WHATSAPP_TOKEN || "";
+const DEFAULT_WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || "";
+let STORE_BASE_URL = siteConfig.url || "https://vittallifestyle.com";
 if (STORE_BASE_URL.includes("workers.dev") || !STORE_BASE_URL.startsWith("http")) {
-  STORE_BASE_URL = "https://vittaldigital.com";
+  STORE_BASE_URL = "https://vittallifestyle.com";
 }
 
 // Template names - must match exactly what you created in Meta Business Manager
-const TEMPLATE_PREPAID = "vittaldigital_order_update";
-const TEMPLATE_COD = "vittaldigital_order_update";
-const TEMPLATE_VERIFY = "vittaldigital_order_verify";
-const TEMPLATE_UPDATE = "vittaldigital_order_update";
-const TEMPLATE_CANCEL_PREPAID = "vittaldigital_order_update";
-const TEMPLATE_CANCEL_COD = "vittaldigital_order_update";
+const TEMPLATE_PREPAID = "vittallifestyle_order_update";
+const TEMPLATE_COD = "vittallifestyle_order_update";
+const TEMPLATE_VERIFY = "vittallifestyle_order_verify";
+const TEMPLATE_UPDATE = "vittallifestyle_order_update";
+const TEMPLATE_CANCEL_PREPAID = "vittallifestyle_order_update";
+const TEMPLATE_CANCEL_COD = "vittallifestyle_order_update";
 const TEMPLATE_LANG = "en";
 
 export interface OrderConfirmationParams {
@@ -477,7 +475,7 @@ async function sendViaConfirmedUtilityTemplate(
     to,
     type: "template",
     template: {
-      name: "vittaldigital_order_update",
+      name: TEMPLATE_UPDATE,
       language: { code: TEMPLATE_LANG },
       components: [
         {
@@ -503,7 +501,7 @@ async function sendViaConfirmedUtilityTemplate(
     });
     const data = (await res.json()) as any;
     if (res.ok && data.messages?.length > 0) {
-      console.log(`✅ [WA Order Confirm] Utility template 'vittaldigital_order_update' sent to ${to}`);
+      console.log(`✅ [WA Order Confirm] Utility template '${TEMPLATE_UPDATE}' sent to ${to}`);
       return true;
     }
   } catch (err) {
