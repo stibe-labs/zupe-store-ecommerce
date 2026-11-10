@@ -20,7 +20,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
-  title: "Return & Refund Policy | Vittal Digital — Dubai Sourced Flagship Electronics",
+  title: "Return & Refund Policy | Vittal Digital — Genuine Flagship Electronics",
   description:
     "Learn about Vittal Digital's 7-day replacement guarantee, order cancellation, rapid refund timelines, 1-year warranty coverage, and mandatory unboxing video guidelines.",
 };
@@ -55,7 +55,7 @@ export default function ReturnPolicyPage() {
           </p>
 
           <div className="mt-5 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs text-xs sm:text-sm text-slate-600 leading-relaxed">
-            At <strong className="font-semibold text-slate-900">Vittal Digital</strong>, every device is sourced directly from authorized Dubai retail distributors and arrives brand-new in factory-sealed manufacturer packaging. To protect your purchase against transit damage or rare factory anomalies, we provide a structured <strong className="font-semibold text-slate-900">7-Day Replacement Guarantee</strong> paired with a <strong className="font-semibold text-slate-900">1-Year Comprehensive Warranty</strong>.
+            At <strong className="font-semibold text-slate-900">Vittal Digital</strong>, every device is sourced directly from authorized brand distributors and arrives brand-new in factory-sealed manufacturer packaging. To protect your purchase against transit damage or rare factory anomalies, we provide a structured <strong className="font-semibold text-slate-900">7-Day Replacement Guarantee</strong> paired with a <strong className="font-semibold text-slate-900">1-Year Comprehensive Warranty</strong>.
           </div>
         </div>
 
@@ -111,7 +111,7 @@ export default function ReturnPolicyPage() {
               <h2>1. Our Quality &amp; Authenticity Promise</h2>
             </div>
             <p>
-              Each electronics unit dispatched from Vittal Digital is 100% genuine Dubai retail inventory in factory-sealed condition with original manufacturer barcodes and serial numbers. Product issues are exceptionally rare, but in the uncommon event of courier transit damage or an out-of-the-box defect, our customer care team is dedicated to rectifying it swiftly.
+              Each electronics unit dispatched from Vittal Digital is 100% genuine retail inventory in factory-sealed condition with original manufacturer barcodes and serial numbers. Product issues are exceptionally rare, but in the uncommon event of courier transit damage or an out-of-the-box defect, our customer care team is dedicated to rectifying it swiftly.
             </p>
           </section>
 

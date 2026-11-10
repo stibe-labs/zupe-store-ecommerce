@@ -265,13 +265,13 @@ function ProductsContent() {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-200 text-xs font-bold uppercase tracking-wider mb-2">
                 <Sparkles className="w-3.5 h-3.5 text-[#FFBE00]" />
-                <span>Dubai Sourced • 1-Year Pan-India Warranty</span>
+                <span>100% Genuine • 1-Year Pan-India Warranty</span>
               </div>
               <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
                 Explore All Products
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl font-medium leading-relaxed">
-                Discover genuine Apple, Samsung, Lenovo, HP, boAt, Sony & JBL electronics directly imported from Dubai with express delivery across India.
+                Discover genuine Apple, Samsung, Lenovo, HP, boAt, Sony & JBL electronics with express delivery across India.
               </p>
             </div>
 

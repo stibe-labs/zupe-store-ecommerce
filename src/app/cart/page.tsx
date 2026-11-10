@@ -81,7 +81,7 @@ export default function CartPage() {
               Your Cart is Empty
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mb-8 leading-relaxed">
-              Looks like you haven&apos;t added any electronics to your bag yet. Explore our Dubai-sourced gadgets, smartphones, and laptops.
+              Looks like you haven&apos;t added any electronics to your bag yet. Explore our authentic gadgets, smartphones, and laptops.
             </p>
             <Link
               href="/#shop"

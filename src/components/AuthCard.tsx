@@ -231,7 +231,7 @@ export function AuthCard({
           {/* Header */}
           <div className="text-center mb-6">
             <span className="inline-block px-3 py-1 rounded-full bg-blue-50 border border-blue-200/70 text-[#0047AB] font-bold text-[11px] uppercase tracking-wider mb-2">
-              {step === "phone" ? "Dubai Sourced Electronics" : "Quick Verification"}
+              {step === "phone" ? "Authentic Electronics" : "Quick Verification"}
             </span>
             <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               {step === "phone" ? (

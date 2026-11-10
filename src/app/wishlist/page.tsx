@@ -98,7 +98,7 @@ export default function WishlistPage() {
                 Your Wishlist is Empty
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 mb-6 leading-relaxed">
-                Explore our authentic Dubai-sourced electronics, audio, and gadgets, and tap the heart icon on any device to save it for later.
+                Explore our authentic electronics, audio, and gadgets, and tap the heart icon on any device to save it for later.
               </p>
               <Link
                 href="/products"

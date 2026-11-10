@@ -70,7 +70,7 @@ export function Footer() {
               {
                 icon: BadgeCheck,
                 label: "100% Authentic",
-                desc: "Dubai sourced",
+                desc: "Factory sealed",
               },
               {
                 icon: ShieldCheck,
@@ -128,13 +128,13 @@ export function Footer() {
             </Link>
 
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
-              Explore electronics imported from Dubai, delivered across India with full warranty and express air cargo logistics.
+              Explore authentic flagship electronics delivered across India with full 1-year warranty and express logistics.
             </p>
 
             <div className="pt-2 flex items-center gap-3 text-xs text-blue-200/80">
               <span className="flex items-center gap-1.5 bg-blue-950/80 border border-blue-800/60 px-3 py-1 rounded-full">
-                <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                Dubai ➔ India Express
+                <Truck className="w-3.5 h-3.5 text-amber-400" />
+                Pan-India Express
               </span>
               <span className="flex items-center gap-1.5 bg-blue-950/80 border border-blue-800/60 px-3 py-1 rounded-full">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />

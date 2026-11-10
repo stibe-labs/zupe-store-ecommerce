@@ -21,9 +21,9 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
-  title: "Terms and Conditions | Vittal Digital — Dubai Sourced Flagship Electronics",
+  title: "Terms and Conditions | Vittal Digital — Genuine Flagship Electronics",
   description:
-    "Review the terms and conditions governing purchases, payments, 1-year warranty coverage, express shipping, and authentic Dubai retail consumer electronics from Vittal Digital.",
+    "Review the terms and conditions governing purchases, payments, 1-year warranty coverage, express shipping, and authentic brand consumer electronics from Vittal Digital.",
 };
 
 export default function TermsAndConditionsPage() {
@@ -51,12 +51,12 @@ export default function TermsAndConditionsPage() {
     {
       id: "authenticity-sourcing",
       number: "02",
-      title: "Direct Dubai Retail Sourcing & Hardware Authenticity",
+      title: "Direct Retail Sourcing & Hardware Authenticity",
       icon: ShieldCheck,
       content: (
         <div className="space-y-3">
           <p>
-            Every product showcased and sold on <strong className="font-semibold text-slate-900">Vittal Digital</strong> is <strong className="font-semibold text-slate-900">100% brand-new, factory-sealed, and sourced directly from authorized retail and duty-free distributors in Dubai (United Arab Emirates)</strong>.
+            Every product showcased and sold on <strong className="font-semibold text-slate-900">Vittal Digital</strong> is <strong className="font-semibold text-slate-900">100% brand-new, factory-sealed, and sourced directly from authorized brand distributors</strong>.
           </p>
           <ul className="space-y-2 list-none text-slate-600">
             <li className="flex items-start gap-2.5">
@@ -295,7 +295,7 @@ export default function TermsAndConditionsPage() {
           </p>
 
           <div className="mt-5 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs text-xs sm:text-sm text-slate-600 leading-relaxed">
-            At <strong className="font-semibold text-slate-900">Vittal Digital</strong>, we provide a direct, certified bridge between authorized Dubai retail distributors and discerning technology buyers across India. Every order includes guaranteed brand-new, factory-sealed hardware, 1-year pan-India warranty support, and fully insured express air cargo logistics.
+            At <strong className="font-semibold text-slate-900">Vittal Digital</strong>, we deliver authentic flagship consumer electronics directly to discerning technology buyers across India. Every order includes guaranteed brand-new, factory-sealed hardware, 1-year pan-India warranty support, and fully insured express logistics.
           </div>
         </div>
 

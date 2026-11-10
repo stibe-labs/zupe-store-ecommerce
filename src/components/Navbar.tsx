@@ -127,13 +127,13 @@ export function Navbar() {
           {/* Left Trust Badges */}
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="flex items-center gap-1.5 font-medium text-slate-700">
-              <MapPin className="w-3 h-3 text-[#002D62]" />
-              <span>Dubai Sourced Electronics</span>
+              <BadgeCheck className="w-3 h-3 text-[#002D62]" />
+              <span>100% Genuine Products</span>
             </span>
             <span className="text-slate-300">|</span>
             <span className="flex items-center gap-1.5 font-medium text-slate-700">
-              <BadgeCheck className="w-3 h-3 text-emerald-600" />
-              <span>Genuine Products</span>
+              <Truck className="w-3 h-3 text-emerald-600" />
+              <span>Express Delivery</span>
             </span>
             <span className="hidden md:inline text-slate-300">|</span>
             <span className="hidden md:flex items-center gap-1.5 font-medium text-slate-700">

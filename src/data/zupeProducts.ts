@@ -20,7 +20,7 @@ export const VITTAL_DIGITAL_DEALS: VittalDigitalProduct[] = [
   {
     id: "wireless-earbuds",
     name: "Wireless Earbuds ANC",
-    packageDescription: "Hybrid ANC + 36h Playback + Dubai Import Warranty",
+    packageDescription: "Hybrid ANC + 36h Playback + 1-Year Pan-India Warranty",
     price: 2999,
     mrp: 3999,
     savings: 1000,
@@ -70,25 +70,25 @@ export const VITTAL_DIGITAL_DEALS: VittalDigitalProduct[] = [
 export const TURKIYE_JAM_VARIANTS = VITTAL_DIGITAL_DEALS;
 
 const COMMON_FEATURES = [
-  "Direct Import from Dubai (UAE Retail Stock with Authenticity Guarantee)",
+  "100% Brand-New & Factory-Sealed Device with Authenticity Guarantee",
   "100% Compatible with Indian Telecommunications, 5G & 230V Standards",
   "1-Year Comprehensive International Warranty with Doorstep Service in India",
-  "Insured Express Air Logistics: 5–7 Business Days Doorstep Delivery",
+  "Insured Express Logistics: 5–7 Business Days Doorstep Delivery",
   "Tamper-Evident Safety Packaging with Holographic Verification Seal",
   "Hassle-Free 7-Day Replacement Guarantee for Hardware Defects",
 ];
 
 const COMMON_SPECS = {
-  "Sourcing Hub": "Dubai, United Arab Emirates (UAE Direct Retail)",
+  "Product Authenticity": "100% Brand-New & Factory-Sealed Retail Unit",
   "India Compatibility": "100% Fully Compatible with Indian Cellular Networks & 230V Mains",
   "Warranty": "1-Year International Warranty with Doorstep Service Support in India",
   "Packaging": "Insured Heavy-Duty Shockproof Transit Box with Serial Trackability",
-  "Express Shipping": "Fast Dispatch within 24h from Regional Customs Air Gateway",
+  "Express Shipping": "Fast Dispatch within 24h from Central Warehouse Hub",
   "Payment Modes": "Prepaid UPI, Credit/Debit Cards, NetBanking, EMI & Fastrr Checkout",
 };
 
 const COMMON_WHATS_IN_BOX = [
-  "1 × Authentic Dubai Retail Device (Sealed in Original Manufacturer Packaging)",
+  "1 × Authentic Retail Device (Sealed in Original Manufacturer Packaging)",
   "Universal Indian Standard Fast Charging Cable & Adapter",
   "Vittal Digital Warranty Certificate & Quick Start Documentation",
 ];
@@ -171,7 +171,7 @@ const COMMON_REVIEWS = {
       date: "2 days ago",
       rating: 5,
       verified: true,
-      comment: "A simple shopping experience from start to finish. Sourced directly from Dubai, delivery was fast, and the device was 100% brand new and sealed.",
+      comment: "A simple shopping experience from start to finish. Delivery was fast, and the device was 100% brand new and sealed.",
       images: ["/vittal/ultraslim-laptop-14.png"],
     },
     {
@@ -196,7 +196,7 @@ const COMMON_REVIEWS = {
   ],
 };
 
-const BASE_DESC = "Imported directly from Dubai retail hubs, Vittal Digital brings world-class consumer electronics to doorsteps across India. Enjoy premier hardware, international manufacturer quality, 1-year warranty coverage, and insured express delivery.";
+const BASE_DESC = "Vittal Digital brings world-class consumer electronics to doorsteps across India. Enjoy premier hardware, international manufacturer quality, 1-year warranty coverage, and insured express delivery.";
 
 export const DEFAULT_PRODUCTS: Product[] = [
   {
@@ -497,7 +497,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Smartphones",
     subcategory: "iOS Phones",
     tagline: "New Camera. New Design. Dynamic Island for Everything.",
-    description: "Apple iPhone 15 imported from Dubai retail hubs with Dynamic Island, 48MP high-resolution camera, color-infused glass and aluminum design, A16 Bionic powerhouse chip, and USB-C connectivity. 100% unlocked for Indian telecom networks.",
+    description: "Apple iPhone 15 with Dynamic Island, 48MP high-resolution camera, color-infused glass and aluminum design, A16 Bionic powerhouse chip, and USB-C connectivity. 100% unlocked for Indian telecom networks.",
     price: 62990,
     mrp: 92990,
     offer_price: 62990,
@@ -1008,7 +1008,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
           date: "1 week ago",
           rating: 5,
           verified: true,
-          comment: "Best purchase this year. The 5% UPI discount worked instantly, and customer care responded on WhatsApp within 2 minutes. 100% genuine Dubai imported stock.",
+          comment: "Best purchase this year. The 5% UPI discount worked instantly, and customer care responded on WhatsApp within 2 minutes. 100% genuine factory sealed stock.",
         }
       ],
     },
@@ -1021,7 +1021,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Laptops",
     subcategory: "Ultraportables",
     tagline: "Power Your Work. Built for your next big idea.",
-    description: "Sleek, powerful ultra-portable laptop imported from Dubai with vibrant 2.8K OLED display, 16GB LPDDR5 RAM, 512GB NVMe SSD, and up to 16 hours of battery life.",
+    description: "Sleek, powerful ultra-portable laptop with vibrant 2.8K OLED display, 16GB LPDDR5 RAM, 512GB NVMe SSD, and up to 16 hours of battery life.",
     price: 54990,
     mrp: 69990,
     offer_price: 54990,
@@ -1281,7 +1281,7 @@ export const CATEGORY_SUBCATEGORIES_CONFIG: SubcategoryGroup[] = [
   },
   {
     mainCategory: "Smartphones",
-    subcategories: ["Flagships", "Dubai Exclusive Editions", "Foldables", "Budget Kings"],
+    subcategories: ["Flagships", "Special Editions", "Foldables", "Budget Kings"],
   },
   {
     mainCategory: "Smartwatches",
@@ -1305,7 +1305,7 @@ export const CATEGORY_SUBCATEGORIES_MAP: Record<string, string[]> = {
   "Laptops": ["Ultraportables", "Gaming Laptops", "MacBooks", "2-in-1 Convertibles"],
   "Tablets": ["Pro Tablets", "iPads", "Android Tablets", "Stylus Accessories"],
   "Headphones & Earbuds": ["True Wireless", "Over-Ear ANC", "Sports Earphones", "Gaming Headsets"],
-  "Smartphones": ["Flagships", "Dubai Exclusive Editions", "Foldables", "Budget Kings"],
+  "Smartphones": ["Flagships", "Special Editions", "Foldables", "Budget Kings"],
   "Smartwatches": ["Fitness & Lifestyle", "Luxury Smartwatches", "GPS Running Watches", "Kids Watches"],
   "Gaming & Accessories": ["Consoles", "Controllers", "Mechanical Keyboards", "Gaming Mice"],
   "Speakers": ["Bluetooth Audio", "Soundbars", "Smart Home Speakers", "Party Speakers"],
@@ -1316,7 +1316,7 @@ export function getSubcategoriesForCategory(categoryName: string, dynamicCategor
   if (CATEGORY_SUBCATEGORIES_MAP[categoryName]) {
     return CATEGORY_SUBCATEGORIES_MAP[categoryName];
   }
-  return ["All Tech", "Dubai Imports", "Best Sellers", "Seasonal Deals"];
+  return ["All Tech", "Best Sellers", "Top Deals", "Seasonal Offers"];
 }
 
 export function doesCategoryMatch(productCategory: string, selectedCategory: string, dynamicCategories?: any[]): boolean {

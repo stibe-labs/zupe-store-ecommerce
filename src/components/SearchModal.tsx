@@ -20,7 +20,7 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 const COLLECTIONS = [
   {
     title: "LAPTOPS & WORKSTATIONS",
-    subtitle: "DUBAI IMPORT",
+    subtitle: "PRO PERFORMANCE",
     image: "/vittal/ultraslim-laptop-14.png",
     href: "/products?category=Laptops",
   },
@@ -51,7 +51,7 @@ const POPULAR_SEARCHES = [
   "Wireless Earbuds",
   "Portable Bluetooth Speaker",
   "Power Bank 10000mAh",
-  "Dubai Electronics",
+  "Flagship Electronics",
 ];
 
 export function SearchModal() {

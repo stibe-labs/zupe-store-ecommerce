@@ -582,7 +582,7 @@ function OrderTrackingContent() {
                 {
                   icon: BadgeCheck,
                   label: "100% Authentic",
-                  desc: "Dubai Sourced Electronics",
+                  desc: "Brand New & Sealed",
                 },
                 {
                   icon: ShieldCheck,
@@ -1252,7 +1252,7 @@ function OrderTrackingContent() {
                   Our Express Delivery Process
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                  From our Dubai-import warehouse right to your door with end-to-end security.
+                  From our fulfillment warehouse right to your door with end-to-end security.
                 </p>
               </div>
 

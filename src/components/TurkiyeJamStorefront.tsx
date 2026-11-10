@@ -491,7 +491,7 @@ export function VittalDigitalStorefront({
         price: 3999,
         mrp: 4999,
         image: "/vittal/portable-bluetooth-speaker.png",
-        badge: "Dubai Import",
+        badge: "Top Seller",
       },
       {
         id: "compact-power-bank",
@@ -706,7 +706,7 @@ export function VittalDigitalStorefront({
         poster_image: product.image,
         in_stock: 1,
         category: "Electronics",
-        tagline: "Dubai Sourced Genuine Product",
+        tagline: "100% Genuine Product",
         description: "",
       },
       1
@@ -733,7 +733,7 @@ export function VittalDigitalStorefront({
         poster_image: image,
         in_stock: 1,
         category: "category" in product ? product.category : "Electronics",
-        tagline: "Dubai Sourced Genuine Product",
+        tagline: "100% Genuine Product",
         description: "",
       },
       1
@@ -935,7 +935,7 @@ export function VittalDigitalStorefront({
                 )}
               </h2>
               <p className="text-[11px] sm:text-xs text-slate-300/90 font-medium hidden sm:block mt-0.5">
-                Handpicked favorites based on your browsing and trending Dubai electronics
+                Handpicked favorites based on your browsing and trending electronics
               </p>
             </div>
 
@@ -1530,7 +1530,7 @@ export function VittalDigitalStorefront({
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-2 h-2 rounded-full bg-[#FFBE00]" />
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Direct From Dubai • 1-Year Warranty
+                  100% Genuine • 1-Year Warranty
                 </span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">

@@ -26,7 +26,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
-  title: "Shipping & Delivery Policy | Vittal Digital — Dubai Sourced Flagship Electronics",
+  title: "Shipping & Delivery Policy | Vittal Digital — Genuine Flagship Electronics",
   description:
     "Learn about Vittal Digital's express insured air logistics, 5-7 business days delivery timeline across India, shockproof packaging, and real-time WhatsApp tracking.",
 };
@@ -57,7 +57,7 @@ export default function ShippingAndDeliveryPage() {
             Shipping and Delivery Policy
           </h1>
           <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed font-normal">
-            Fast, insured express air cargo delivering factory-sealed flagship electronics directly from Dubai retail hubs to your doorstep.
+            Fast, insured express delivery delivering factory-sealed flagship electronics directly to your doorstep.
           </p>
 
           <div className="mt-5 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs text-xs sm:text-sm text-slate-600 leading-relaxed">
@@ -129,7 +129,7 @@ export default function ShippingAndDeliveryPage() {
               <h2>1. Order Processing &amp; Serialization</h2>
             </div>
             <p>
-              Once your order is confirmed, our fulfillment hub allocates a genuine, factory-sealed Dubai retail unit. We verify the manufacturer serial number, scan the warranty barcode, and pack the device in specialized transit enclosures within <strong className="font-semibold text-slate-900">24 business hours</strong>.
+              Once your order is confirmed, our fulfillment hub allocates a genuine, factory-sealed retail unit. We verify the manufacturer serial number, scan the warranty barcode, and pack the device in specialized transit enclosures within <strong className="font-semibold text-slate-900">24 business hours</strong>.
             </p>
             <p>
               You receive an immediate order confirmation via Email and WhatsApp containing your dedicated Order ID (e.g., #VD-1001) and order summary.

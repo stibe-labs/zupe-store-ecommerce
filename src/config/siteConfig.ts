@@ -77,10 +77,10 @@ export const siteConfig: SiteConfig = {
   shortName: process.env.NEXT_PUBLIC_SITE_SHORT_NAME || "Vittal Digital",
   tagline:
     process.env.NEXT_PUBLIC_SITE_TAGLINE ||
-    "Electronics from Dubai. Delivered across India.",
+    "Premium Brand Electronics. Delivered across India.",
   description:
     process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
-    "Explore electronics imported directly from Dubai, delivered across India with comprehensive 1-year warranty and express air cargo logistics.",
+    "Explore genuine electronics, smartphones, laptops, audio, and gadgets delivered across India with comprehensive 1-year warranty and express delivery.",
   legalName: process.env.NEXT_PUBLIC_LEGAL_NAME || "Vittal Digital India",
   orderPrefix: process.env.NEXT_PUBLIC_ORDER_PREFIX || "VD",
 

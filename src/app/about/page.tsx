@@ -92,7 +92,7 @@ function CountUpNumber({
 
 // Authentic Vittal Digital core trust promises
 const TRUST_ITEMS = [
-  { icon: Package, title: "Dubai Sourced", sub: "Original Products" },
+  { icon: Package, title: "Factory Sealed", sub: "Original Products" },
   { icon: BadgeCheck, title: "100% Genuine", sub: "Authentic & Verified" },
   { icon: Award, title: "Warranty Across India", sub: "Hassle-free Support" },
   { icon: CreditCard, title: "Secure Payments", sub: "UPI, Cards, Net Banking" },
@@ -104,7 +104,7 @@ const VOICES_OF_TRUST = [
   {
     id: 1,
     quote:
-      "A seamless shopping experience from order to unboxing. Sourced directly from Dubai, delivery took only 3 days to Mumbai, and the device arrived 100% brand new with intact manufacturer seal.",
+      "A seamless shopping experience from order to unboxing. Delivery took only 3 days to Mumbai, and the device arrived 100% brand new with intact manufacturer seal.",
     author: "Rahul M.",
     location: "Mumbai, Maharashtra",
     product: "UltraSlim Laptop 14 OLED",
@@ -122,7 +122,7 @@ const VOICES_OF_TRUST = [
   {
     id: 3,
     quote:
-      "Received the ANC Wireless Earbuds in factory-sealed Dubai retail packaging. Sound quality and battery life are extraordinary. Incredible value compared to Indian retail prices.",
+      "Received the ANC Wireless Earbuds in factory-sealed original retail packaging. Sound quality and battery life are extraordinary. Incredible value compared to Indian retail prices.",
     author: "Ananya P.",
     location: "New Delhi, Delhi NCR",
     product: "Wireless Earbuds ANC",
@@ -131,7 +131,7 @@ const VOICES_OF_TRUST = [
   {
     id: 4,
     quote:
-      "Customer support on WhatsApp is lightning-fast and courteous. They confirmed Dubai retail stock and warranty registration steps. The tablet arrived with insured air courier in pristine condition.",
+      "Customer support on WhatsApp is lightning-fast and courteous. They confirmed official stock verification and warranty registration steps. The tablet arrived with insured courier in pristine condition.",
     author: "Karthik R.",
     location: "Hyderabad, Telangana",
     product: "Everyday Tablet 11",
@@ -140,7 +140,7 @@ const VOICES_OF_TRUST = [
   {
     id: 5,
     quote:
-      "Genuine Dubai import with full Indian 5G band support and original power adapter. The display and quad Dolby speakers are incredible for productivity and streaming.",
+      "Genuine flagship device with full Indian 5G band support and original power adapter. The display and quad Dolby speakers are incredible for productivity and streaming.",
     author: "Siddharth N.",
     location: "Kochi, Kerala",
     product: "UltraBook Pro 15",
@@ -294,7 +294,7 @@ export default function AboutPage() {
               {/* Tagline Badge */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-xs font-semibold text-[#002D62] mb-4 shadow-2xs">
                 <Sparkles className="w-3.5 h-3.5 text-[#002D62]" />
-                <span>Dubai Retail Direct Sourcing • 100% Factory Sealed</span>
+                <span>Direct Brand Sourcing • 100% Factory Sealed</span>
               </div>
 
               {/* Title */}
@@ -304,14 +304,14 @@ export default function AboutPage() {
 
               {/* Subtitle */}
               <p className="mt-4 text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed font-normal max-w-2xl mx-auto">
-                We bring world-class flagship consumer electronics directly from authorized Dubai retail and duty-free hubs to doorstep locations across India. Enjoy authentic, factory-sealed hardware with 1-year comprehensive warranty support and rapid insured air logistics.
+                We bring world-class flagship consumer electronics directly to doorstep locations across India. Enjoy authentic, factory-sealed hardware with 1-year comprehensive warranty support and rapid insured logistics.
               </p>
             </div>
           </div>
         </section>
 
         {/* ========================================================
-            TRUST STRIP (Dubai Sourced, Genuine, Warranty, etc.)
+            TRUST STRIP (Genuine, Warranty, Express, etc.)
            ======================================================== */}
         <section className="py-5 sm:py-6 border-b border-slate-200/80 bg-white shadow-2xs">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -348,7 +348,7 @@ export default function AboutPage() {
               <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 sm:p-6 text-center transition-all hover:bg-white hover:shadow-md">
                 <CountUpNumber target={100} suffix="%" duration={1600} />
                 <span className="block mt-2 text-xs sm:text-sm font-semibold text-slate-900">
-                  Dubai Retail Stock
+                  Factory Sealed Stock
                 </span>
                 <span className="block mt-0.5 text-[11px] sm:text-xs text-slate-500 font-medium">
                   100% Factory Sealed & Genuine
@@ -403,7 +403,7 @@ export default function AboutPage() {
               Why Discerning Buyers Choose Us
             </h2>
             <p className="mt-2.5 text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-              We eliminate middlemen and grey-market uncertainty by providing a certified bridge between official Dubai retail distributors and Indian technology enthusiasts.
+              We eliminate middlemen and grey-market uncertainty by providing genuine, brand-sealed products directly to Indian technology enthusiasts.
             </p>
           </div>
 
@@ -415,10 +415,10 @@ export default function AboutPage() {
                   <BadgeCheck className="w-6 h-6" />
                 </div>
                 <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">
-                  100% Genuine Dubai Stock
+                  100% Genuine Sealed Stock
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  Direct procurement from authorized Dubai duty-free and retail hubs. Each item arrives brand new in sealed manufacturer retail packaging with serial number authenticity.
+                  Direct procurement from authorized brand retail channels. Each item arrives brand new in sealed manufacturer retail packaging with serial number authenticity.
                 </p>
               </div>
               <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-medium text-[#002D62]">
@@ -487,7 +487,7 @@ export default function AboutPage() {
         </section>
 
         {/* ========================================================
-            4. HOW THE DUBAI-TO-INDIA BRIDGE WORKS
+            4. HOW OUR DIRECT-TO-DOORSTEP PROCESS WORKS
            ======================================================== */}
         <section className="py-8 sm:py-10 bg-white border-y border-slate-200/80">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -496,7 +496,7 @@ export default function AboutPage() {
                 Seamless Logistics Process
               </span>
               <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
-                From Dubai Hubs Directly to Your Hands
+                From Warehouse Directly to Your Hands
               </h2>
               <p className="mt-2 text-xs sm:text-sm text-slate-600 font-normal">
                 Every order follows our strict 4-step quality, clearance, and courier workflow.
@@ -508,7 +508,7 @@ export default function AboutPage() {
                 {
                   step: "01",
                   title: "Authorized Procurement",
-                  desc: "We procure authentic units directly from certified Dubai electronics retail distributors and authorized channels.",
+                  desc: "We procure authentic units directly from certified electronics retail distributors and authorized channels.",
                 },
                 {
                   step: "02",
@@ -699,7 +699,7 @@ export default function AboutPage() {
               </div>
 
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-white tracking-tight leading-tight">
-                Experience Genuine Dubai Tech Delivered Across India
+                Experience Genuine Flagship Tech Delivered Across India
               </h2>
 
               <p className="mt-3.5 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed font-normal max-w-xl mx-auto">

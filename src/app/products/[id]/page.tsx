@@ -1078,7 +1078,7 @@ export default function ProductDetailPage() {
                     <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
                   </summary>
                   <p className="mt-2 text-slate-600 leading-relaxed font-normal">
-                    Yes, absolutely. All our items are imported directly from authorized distribution hubs in Dubai and come brand new, sealed in original manufacturer packaging with valid serial numbers.
+                    Yes, absolutely. All our items come directly from authorized brand distribution channels and arrive 100% brand new, sealed in original manufacturer packaging with valid serial numbers.
                   </p>
                 </details>
 
@@ -1221,7 +1221,7 @@ export default function ProductDetailPage() {
                 {activeProduct.category || "Audio & Electronics"}
               </h3>
               <p className="text-xs sm:text-sm text-blue-100/90 mt-2">
-                Discover world-class consumer electronics, genuine Dubai import warranty, insured express delivery, and transparent pricing.
+                Discover world-class consumer electronics, 1-year comprehensive warranty, insured express delivery, and transparent pricing.
               </p>
               <Link
                 href={`/products?category=${encodeURIComponent(activeProduct.category || "All")}`}

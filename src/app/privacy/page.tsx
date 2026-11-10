@@ -20,7 +20,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
-  title: "Privacy Policy | Vittal Digital — Dubai Sourced Flagship Electronics",
+  title: "Privacy Policy | Vittal Digital — Genuine Flagship Electronics",
   description:
     "Review Vittal Digital's Privacy Policy to understand how we protect, handle, and secure your personal information, payment credentials, and shopping data in India.",
 };

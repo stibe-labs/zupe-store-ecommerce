@@ -130,7 +130,7 @@ export function CartDrawer() {
                   </div>
                   <p className="text-base font-bold text-slate-900 mb-1">Your cart is empty</p>
                   <p className="text-xs text-slate-500 max-w-xs mb-5">
-                    Browse our top gadgets, headphones, and electronics imported from Dubai.
+                    Browse our top gadgets, headphones, and flagship electronics.
                   </p>
                   <Link
                     href="/#shop"
