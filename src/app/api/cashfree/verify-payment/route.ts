@@ -220,7 +220,7 @@ export async function POST(req: NextRequest) {
 
       // Dispatch Real-Time Admin WhatsApp Alert (+91 7356765036)
       try {
-        const { notifyAdminNewOrder } = await import("@/lib/adminNotification");
+        const { notifyAdminNewOrder, notifyAdminPaymentReceived } = await import("@/lib/adminNotification");
         await notifyAdminNewOrder({
           orderId: order?.shopify_order_id || orderId,
           customerName: custName,
@@ -238,6 +238,19 @@ export async function POST(req: NextRequest) {
             quantity: Number(it.quantity || 1),
             price: Number(it.unit_price || it.price || 0),
           })),
+        });
+
+        // Dedicated Payment Received Alert
+        await notifyAdminPaymentReceived({
+          amount: isCodOrder ? advancePaid : effectiveTotal,
+          orderId: order?.shopify_order_id || orderId,
+          customerName: custName,
+          customerPhone: custPhone,
+          paymentMethod: isCodOrder ? "UPI (COD Advance)" : "Cashfree UPI / Online",
+          bankReference: paymentId || undefined,
+          paymentType: isCodOrder ? "COD Advance (₹49)" : "Full Online Prepaid",
+          totalOrderAmount: effectiveTotal,
+          balanceDue: isCodOrder ? balanceDue : 0,
         });
       } catch (adminNotifErr) {
         console.warn("Failed to dispatch admin new order WhatsApp alert:", adminNotifErr);

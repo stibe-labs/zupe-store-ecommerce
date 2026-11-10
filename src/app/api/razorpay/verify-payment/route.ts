@@ -119,6 +119,23 @@ export async function POST(req: NextRequest) {
         console.warn("WA switch confirm dispatch error:", waErr);
       }
 
+      // Real-time WhatsApp Notification to Admin (+91 7356765036)
+      try {
+        const { notifyAdminPaymentReceived } = await import("@/lib/adminNotification");
+        await notifyAdminPaymentReceived({
+          amount: discountedAmount,
+          orderId: existingOrder?.shopify_order_id || existingOrderId,
+          customerName: custName,
+          customerPhone: custPhone,
+          paymentMethod: "Razorpay UPI / Online",
+          bankReference: razorpay_payment_id,
+          paymentType: "Prepaid Switch",
+          totalOrderAmount: discountedAmount,
+        });
+      } catch (adminNotifErr) {
+        console.warn("Failed to dispatch switched prepaid payment alert to admin:", adminNotifErr);
+      }
+
       // 4. Dispatch Email Confirmation update if customer email is on record
       const switchEmail = (existingOrder?.guest_email || (existingOrder as any)?.customer_email || order_payload?.customer_email || "").trim();
       if (switchEmail && !siteConfig.isSyntheticEmail(switchEmail)) {
@@ -398,6 +415,38 @@ export async function POST(req: NextRequest) {
       } catch (emailErr) {
         console.warn("[Verify Payment] Failed to send order confirmation email:", emailErr);
       }
+    }
+
+    // Dispatch Real-Time Admin WhatsApp Alert (+91 7356765036)
+    try {
+      const { notifyAdminNewOrder, notifyAdminPaymentReceived } = await import("@/lib/adminNotification");
+      await notifyAdminNewOrder({
+        orderId: displayOrderId,
+        customerName: customer_name || "Customer",
+        customerPhone: customer_phone || "",
+        totalAmount: Number(total_amount),
+        paymentMethod: isCodPartial ? "Cash on Delivery (Advance Paid)" : "Online Prepaid",
+        shippingAddress: `${shipping_address || ""}, ${city || ""} ${postal_code || ""}`.trim(),
+        items: (items || []).map((it: any) => ({
+          name: it.name,
+          quantity: Number(it.quantity || 1),
+          price: Number(it.price || 0),
+        })),
+      });
+
+      await notifyAdminPaymentReceived({
+        amount: isCodPartial ? Number((newOrder as any).advance_paid || 10) : Number(total_amount),
+        orderId: displayOrderId,
+        customerName: customer_name || "Customer",
+        customerPhone: customer_phone || "",
+        paymentMethod: isCodPartial ? "Razorpay (COD Advance)" : "Razorpay Online Prepaid",
+        bankReference: razorpay_payment_id,
+        paymentType: isCodPartial ? "COD Advance (₹49)" : "Full Online Prepaid",
+        totalOrderAmount: Number(total_amount),
+        balanceDue: isCodPartial ? Number(total_amount) - Number((newOrder as any).advance_paid || 10) : 0,
+      });
+    } catch (adminNotifErr) {
+      console.warn("Failed to dispatch admin order/payment WhatsApp alert:", adminNotifErr);
     }
 
     return NextResponse.json({

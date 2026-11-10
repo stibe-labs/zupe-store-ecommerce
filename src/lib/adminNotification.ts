@@ -33,6 +33,19 @@ export interface AdminMetaLeadAlertData {
   notes?: string;
 }
 
+export interface AdminPaymentAlertData {
+  amount: number;
+  orderId?: string;
+  invoiceNumber?: string;
+  customerName: string;
+  customerPhone: string;
+  paymentMethod: string;
+  bankReference?: string;
+  paymentType?: "COD Advance (₹49)" | "Full Online Prepaid" | "Custom Payment Link" | "Prepaid Switch";
+  totalOrderAmount?: number;
+  balanceDue?: number;
+}
+
 /**
  * Format Indian currency with commas
  */
@@ -188,3 +201,52 @@ https://turkiyejam.com/admin/crm`;
     return { success: false, error: err.message };
   }
 }
+
+/**
+ * 4. Send Alert to Admin on Successful Payment Received (Cashfree / Settler / Razorpay / UPI)
+ */
+export async function notifyAdminPaymentReceived(
+  data: AdminPaymentAlertData
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const cleanPhone = (data.customerPhone || "").replace(/\D/g, "").slice(-10);
+    const displayPhone = cleanPhone ? `+91 ${cleanPhone}` : data.customerPhone || "Not provided";
+    const customerName = data.customerName?.trim() || "Customer";
+    const reference = data.orderId ? `#${data.orderId}` : (data.invoiceNumber ? `#${data.invoiceNumber}` : "Direct Payment");
+    const pType = data.paymentType || (data.amount === 49 ? "COD Advance (₹49)" : "Full Online Prepaid");
+
+    let breakdownNote = "";
+    if (data.totalOrderAmount && data.totalOrderAmount > data.amount) {
+      breakdownNote = `\n📦 *Total Order Value:* ₹${formatRupees(data.totalOrderAmount)}${data.balanceDue ? ` | Doorstep Due: ₹${formatRupees(data.balanceDue)}` : ""}`;
+    }
+
+    const messageText = `💰 *PAYMENT RECEIVED!* 💵✨
+
+✅ *Status:* SUCCESSFUL
+💵 *Amount Received:* ₹${formatRupees(data.amount)}
+🏷️ *Payment Type:* ${pType}
+📦 *Order / Invoice:* ${reference}
+👤 *Paid By:* ${customerName}
+📞 *Phone:* ${displayPhone}
+💳 *Payment Mode:* ${data.paymentMethod || "UPI / Cards"}
+🏦 *Transaction / Bank Ref:* ${data.bankReference || "Verified by Banking Rails"}
+🕒 *Time:* ${getIstTimeString()} IST${breakdownNote}
+
+👉 *View in Admin Payments:*
+https://turkiyejam.com/admin/payments
+
+👉 *Open Customer WhatsApp Chat:*
+https://turkiyejam.com/admin/whatsapp?phone=${cleanPhone}`;
+
+    const res = await sendMetaCloudApiMessage(ADMIN_WHATSAPP_RECIPIENT, messageText);
+    if (!res.success) {
+      console.warn("⚠️ Failed to deliver payment admin alert:", res.error);
+    }
+    return res;
+  } catch (err: any) {
+    console.error("notifyAdminPaymentReceived error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+
