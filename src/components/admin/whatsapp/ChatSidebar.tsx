@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { formatChatListTimeIST } from "@/lib/istTime";
 import {
   Search,
   Plus,
@@ -278,7 +279,7 @@ export default function ChatSidebar({
                           : "text-slate-400"
                       }`}
                     >
-                      {conv.lastMessage.timestamp}
+                      {formatChatListTimeIST(conv.lastMessageTimestamp || conv.lastMessage.timestamp, conv.lastMessage.timestamp)}
                     </span>
                   </div>
 

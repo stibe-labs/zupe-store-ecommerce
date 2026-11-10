@@ -1,6 +1,9 @@
 // Turkiye Jam Internal WhatsApp Store & Messaging Logic
 import { getERPOrders, ERPOrder } from "@/lib/erpStore";
 import { executeD1Query } from "@/lib/d1";
+import { formatToIST, formatChatListTimeIST, parseDbTimestamp } from "@/lib/istTime";
+
+export { formatToIST, formatChatListTimeIST, parseDbTimestamp };
 
 export interface WhatsAppReaction {
   emoji: string;
@@ -50,6 +53,7 @@ export interface WhatsAppMessage {
   };
   status: "sending" | "sent" | "delivered" | "read";
   timestamp: string;
+  createdAt?: string;
 }
 
 export interface WhatsAppConversation {
@@ -193,11 +197,11 @@ export async function syncConversationsFromERP(): Promise<void> {
                 text: row.last_message_text || "No messages yet",
                 sender: (row.last_message_sender as any) || "agent",
                 timestamp: row.last_message_time
-                  ? new Date(row.last_message_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                  ? formatChatListTimeIST(row.last_message_time)
                   : "Today",
                 status: "delivered",
               },
-              lastMessageTimestamp: row.last_message_time ? new Date(row.last_message_time).getTime() : Date.now(),
+              lastMessageTimestamp: row.last_message_time ? parseDbTimestamp(row.last_message_time) : Date.now(),
               lastSeen: "online",
             });
           } else {
@@ -209,7 +213,10 @@ export async function syncConversationsFromERP(): Promise<void> {
               existing.lastMessage.sender = row.last_message_sender || existing.lastMessage.sender;
               if (row.unread_count !== undefined) existing.unreadCount = row.unread_count;
               if (row.is_pinned !== undefined) existing.isPinned = Boolean(row.is_pinned);
-              if (row.last_message_time) existing.lastMessageTimestamp = new Date(row.last_message_time).getTime();
+              if (row.last_message_time) {
+                existing.lastMessageTimestamp = parseDbTimestamp(row.last_message_time);
+                existing.lastMessage.timestamp = formatChatListTimeIST(row.last_message_time);
+              }
             }
           }
         }
@@ -270,10 +277,10 @@ export async function syncConversationsFromERP(): Promise<void> {
             lastMessage: {
               text: `Order #${ord.id.substring(0, 8)} • ₹${ord.total_amount} (${ord.delivery_status || "Processing"})`,
               sender: "system",
-              timestamp: "Today",
+              timestamp: ord.created_at ? formatChatListTimeIST(ord.created_at) : "Today",
               status: isCancelled ? "read" : "delivered",
             },
-            lastMessageTimestamp: ord.created_at ? new Date(ord.created_at).getTime() : Date.now(),
+            lastMessageTimestamp: ord.created_at ? parseDbTimestamp(ord.created_at) : Date.now(),
             lastSeen: "online",
           };
 
@@ -386,7 +393,8 @@ export async function getWhatsAppMessages(conversationId: string): Promise<Whats
         mediaDuration: r.media_duration,
         reactions: r.reactions ? JSON.parse(r.reactions) : [],
         status: r.status || "delivered",
-        timestamp: new Date(r.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        timestamp: formatToIST(r.created_at || Date.now()),
+        createdAt: r.created_at,
       }));
       // Deduplicate by message ID
       const seenIds = new Set<string>();
@@ -416,7 +424,8 @@ export async function addWhatsAppMessage(
 ): Promise<WhatsAppMessage> {
   const msgId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
   const now = new Date();
-  const timeFormatted = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const timeFormatted = formatToIST(now);
+  const chatListFormatted = formatChatListTimeIST(now);
 
   const newMessage: WhatsAppMessage = {
     id: msgId,
@@ -433,6 +442,7 @@ export async function addWhatsAppMessage(
     reactions: [],
     status: payload.sender === "customer" ? "read" : "sending",
     timestamp: timeFormatted,
+    createdAt: now.toISOString(),
   };
 
   if (!inMemoryMessages[conversationId]) {
@@ -446,10 +456,10 @@ export async function addWhatsAppMessage(
     inMemoryConversations[convIndex].lastMessage = {
       text: newMessage.content || (newMessage.type === "voice" ? "🎤 Voice message" : "Media"),
       sender: newMessage.sender,
-      timestamp: timeFormatted,
+      timestamp: chatListFormatted,
       status: newMessage.status,
     };
-    inMemoryConversations[convIndex].lastMessageTimestamp = Date.now();
+    inMemoryConversations[convIndex].lastMessageTimestamp = now.getTime();
     if (newMessage.sender === "customer") {
       inMemoryConversations[convIndex].unreadCount += 1;
     }

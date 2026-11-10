@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import { formatToIST } from "@/lib/istTime";
 import {
   Check,
   CheckCheck,
@@ -638,7 +639,7 @@ export default function MessageBubble({
 
         {/* Timestamp and Delivery Ticks */}
         <div className="flex items-center justify-end gap-1 mt-1 text-[11px] text-slate-500 dark:text-white/60 float-right ml-3 select-none">
-          <span>{message.timestamp}</span>
+          <span>{formatToIST(message.createdAt || message.timestamp)}</span>
           {renderStatusTicks()}
         </div>
 
