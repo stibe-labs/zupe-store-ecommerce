@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { trackMetaPixelEvent } from "@/components/MetaPixelTracker";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
 import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 import { deduplicateAddresses, normalizeAddressKey } from "@/lib/addressUtils";
@@ -1017,6 +1018,26 @@ function CheckoutContent() {
     setErrorMessage("");
     setCheckoutStep("payment");
 
+    // Track Meta Pixel & CAPI InitiateCheckout
+    try {
+      trackMetaPixelEvent(
+        "InitiateCheckout",
+        {
+          value: grandTotal,
+          currency: "INR",
+          numItems: cart.reduce((sum, it) => sum + it.quantity, 0),
+          contentIds: cart.map((it) => it.id),
+        },
+        {
+          phone: phone.trim(),
+          firstName: name.trim().split(" ")[0] || "",
+          lastName: name.trim().split(" ").slice(1).join(" ") || "",
+          city: city.trim(),
+          postalCode: postalCode.trim(),
+        }
+      );
+    } catch {}
+
     setTimeout(() => {
       const el = document.getElementById("payment-method-section");
       if (el) {
@@ -1121,6 +1142,29 @@ function CheckoutContent() {
         setConfirmedOrderId(createdId);
         setConfirmedPaymentId("Cash on Delivery");
         setOrderComplete(true);
+
+        // Track Meta Pixel & CAPI Purchase
+        try {
+          trackMetaPixelEvent(
+            "Purchase",
+            {
+              orderId: createdId,
+              value: grandTotal,
+              currency: "INR",
+              numItems: cart.reduce((sum, it) => sum + it.quantity, 0),
+              contentIds: cart.map((it) => it.id),
+            },
+            {
+              phone: phone.trim(),
+              email: email.trim() || undefined,
+              firstName: name.trim().split(" ")[0] || "",
+              lastName: name.trim().split(" ").slice(1).join(" ") || "",
+              city: city.trim(),
+              postalCode: postalCode.trim(),
+            }
+          );
+        } catch {}
+
         clearCart();
         try {
           localStorage.setItem("zupe_last_cod_order_id", createdId);

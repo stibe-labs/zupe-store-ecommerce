@@ -26,6 +26,7 @@ import {
   Tag,
   Calculator,
   MessageSquare,
+  Target,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -95,6 +96,13 @@ export default function AdminSidebar({
       badge: "Live",
       badgeColor: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
       highlight: true,
+    },
+    {
+      name: "Meta CRM",
+      href: "/admin/crm",
+      icon: Target,
+      badge: "Pixel CAPI",
+      badgeColor: "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30",
     },
     {
       name: "Abandoned Carts",

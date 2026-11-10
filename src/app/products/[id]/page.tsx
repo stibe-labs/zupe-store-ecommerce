@@ -54,6 +54,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { addRecentlyViewed } from "@/lib/recentlyViewed";
+import { trackMetaPixelEvent } from "@/components/MetaPixelTracker";
 
 // ---------------------------------------------------------------------------
 // Helper: Resolve product synchronously for instant SSR & 0ms client hydration
@@ -178,10 +179,19 @@ export default function ProductDetailPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Record to Recently Viewed
+  // Record to Recently Viewed & Track Meta Pixel ViewContent
   useEffect(() => {
     if (product && (product.id || product.slug)) {
       addRecentlyViewed(product);
+      try {
+        trackMetaPixelEvent("ViewContent", {
+          contentName: product.name,
+          contentIds: [product.id],
+          contentType: "product",
+          value: product.offer_price || product.price,
+          currency: "INR",
+        });
+      } catch {}
     }
   }, [product]);
 
@@ -290,6 +300,18 @@ export default function ProductDetailPage() {
     );
     setShowToast("Added to Cart successfully!");
     openCart();
+
+    // Track Meta Pixel & CAPI AddToCart
+    try {
+      trackMetaPixelEvent("AddToCart", {
+        contentName: activeProduct.name,
+        contentIds: [activeProduct.id],
+        contentType: "product",
+        value: (activeProduct.offer_price || activeProduct.price) * quantity,
+        currency: "INR",
+        numItems: quantity,
+      });
+    } catch {}
   };
 
   const handleBuyNow = () => {
@@ -307,6 +329,19 @@ export default function ProductDetailPage() {
       },
       quantity
     );
+
+    // Track Meta Pixel & CAPI InitiateCheckout
+    try {
+      trackMetaPixelEvent("InitiateCheckout", {
+        contentName: activeProduct.name,
+        contentIds: [activeProduct.id],
+        contentType: "product",
+        value: (activeProduct.offer_price || activeProduct.price) * quantity,
+        currency: "INR",
+        numItems: quantity,
+      });
+    } catch {}
+
     router.push("/checkout");
   };
 

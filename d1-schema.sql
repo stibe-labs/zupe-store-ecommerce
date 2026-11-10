@@ -230,4 +230,67 @@ CREATE TABLE IF NOT EXISTS whatsapp_messages (
 );
 CREATE INDEX IF NOT EXISTS idx_wa_msg_conv ON whatsapp_messages(conversation_id);
 
+-- 11. Vittal Digital Unified CRM & Meta Marketing Suite
+CREATE TABLE IF NOT EXISTS crm_leads (
+    id TEXT PRIMARY KEY,
+    name TEXT,
+    phone TEXT NOT NULL,
+    email TEXT,
+    source TEXT DEFAULT 'abandoned_checkout', -- 'abandoned_checkout' | 'whatsapp' | 'storefront' | 'manual' | 'meta_ads'
+    status TEXT DEFAULT 'new', -- 'new' | 'contacted' | 'interested' | 'converted' | 'lost'
+    temperature TEXT DEFAULT 'warm', -- 'hot' | 'warm' | 'cold'
+    potential_value REAL DEFAULT 0,
+    tags TEXT DEFAULT '[]', -- JSON string array
+    notes TEXT,
+    converted_order_id TEXT,
+    last_contacted_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_crm_leads_phone ON crm_leads(phone);
+CREATE INDEX IF NOT EXISTS idx_crm_leads_status ON crm_leads(status);
+CREATE INDEX IF NOT EXISTS idx_crm_leads_source ON crm_leads(source);
+
+CREATE TABLE IF NOT EXISTS meta_ad_spend (
+    id TEXT PRIMARY KEY,
+    date TEXT NOT NULL, -- YYYY-MM-DD
+    campaign_id TEXT,
+    campaign_name TEXT NOT NULL,
+    adset_name TEXT,
+    spend REAL NOT NULL DEFAULT 0,
+    impressions INTEGER DEFAULT 0,
+    clicks INTEGER DEFAULT 0,
+    cpc REAL DEFAULT 0,
+    ctr REAL DEFAULT 0,
+    purchases INTEGER DEFAULT 0,
+    purchase_value REAL DEFAULT 0,
+    roas REAL DEFAULT 0,
+    synced_from TEXT DEFAULT 'meta_api', -- 'meta_api' | 'manual'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_meta_spend_date ON meta_ad_spend(date);
+CREATE INDEX IF NOT EXISTS idx_meta_spend_camp ON meta_ad_spend(campaign_name);
+
+CREATE TABLE IF NOT EXISTS crm_customer_notes (
+    id TEXT PRIMARY KEY,
+    customer_identifier TEXT NOT NULL, -- phone or email
+    author TEXT DEFAULT 'Admin',
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_crm_notes_cust ON crm_customer_notes(customer_identifier);
+
+CREATE TABLE IF NOT EXISTS meta_events_log (
+    id TEXT PRIMARY KEY,
+    event_name TEXT NOT NULL,
+    event_id TEXT NOT NULL,
+    event_source TEXT NOT NULL, -- 'browser_pixel' | 'server_capi'
+    payload TEXT,
+    status TEXT DEFAULT 'success',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_meta_events_name ON meta_events_log(event_name);
+CREATE INDEX IF NOT EXISTS idx_meta_events_time ON meta_events_log(created_at);
+
+
 
