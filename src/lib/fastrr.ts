@@ -6,102 +6,105 @@ export const FASTRR_CONFIG = {
   baseUrl: "https://checkout-api.shiprocket.com",
 };
 
-export const TJ_CATALOG_PRODUCTS = [
+export const VD_CATALOG_PRODUCTS = [
+  {
+    id: 1001,
+    variant_id: 2001,
+    sku: "VD-EARBUDS-ANC",
+    slug: "wireless-earbuds",
+    title: "Wireless Earbuds ANC",
+    subtitle: "Hybrid ANC + 36h Playback + 1-Year Warranty",
+    price: 2999.0,
+    mrp: 3999.0,
+    image: "https://vittaldigital.com/vittal/wireless-earbuds.png",
+    quantity: 1,
+    weight: 0.15,
+  },
   {
     id: 1002,
     variant_id: 2002,
-    sku: "TJ-PACK-2",
-    slug: "turkiye-jam-2-sachet",
-    title: "Turkiye Jam (2 Sachet Pack)",
-    subtitle: "The easy first order",
-    price: 899.0,
-    mrp: 1499.0,
-    image: "https://vittaldigital.com/tj/turkiye-jam-2-strips.png",
-    quantity: 2,
-    weight: 0.05,
+    sku: "VD-SPEAKER-BT",
+    slug: "portable-bluetooth-speaker",
+    title: "Portable Bluetooth Speaker",
+    subtitle: "24W 360° Stereo Bass + IP67 Waterproof",
+    price: 3999.0,
+    mrp: 4999.0,
+    image: "https://vittaldigital.com/vittal/portable-bluetooth-speaker.png",
+    quantity: 1,
+    weight: 0.55,
   },
   {
     id: 1003,
     variant_id: 2003,
-    sku: "VD-PACK-3",
-    slug: "turkiye-jam-3-sachet",
-    title: "Vittal Digital (3 Sachet Pack)",
-    subtitle: "Single-serve sachets",
-    price: 1099.0,
-    mrp: 1899.0,
-    image: "https://vittaldigital.com/tj/turkiye-jam-3-strips.png",
-    quantity: 3,
-    weight: 0.075,
+    sku: "VD-WATCH-PRO",
+    slug: "smart-watch-pro",
+    title: "Smart Watch Pro",
+    subtitle: "1.43\" AMOLED Display + BT Calling + Titanium Bezel",
+    price: 5999.0,
+    mrp: 7999.0,
+    image: "https://vittaldigital.com/vittal/smart-watch-pro.png",
+    quantity: 1,
+    weight: 0.12,
   },
   {
     id: 1004,
     variant_id: 2004,
-    sku: "VD-PACK-4",
-    slug: "turkiye-jam-4-sachet",
-    title: "Vittal Digital (4 Sachet Pack)",
-    subtitle: "Single-serve sachets",
-    price: 1399.0,
-    mrp: 2399.0,
-    image: "https://vittaldigital.com/tj/turkiye-jam-4-strips.png",
-    quantity: 4,
-    weight: 0.1,
+    sku: "VD-AIRPODS-PRO2",
+    slug: "airpods-pro-2",
+    title: "AirPods Pro (2nd Gen)",
+    subtitle: "Active Noise Cancellation + MagSafe Case",
+    price: 4999.0,
+    mrp: 24900.0,
+    image: "https://vittaldigital.com/products/airpods-pro-2.png",
+    quantity: 1,
+    weight: 0.18,
+  },
+  {
+    id: 1005,
+    variant_id: 2005,
+    sku: "VD-WATCH-ULTRA2",
+    slug: "apple-watch-ultra-2",
+    title: "Apple Watch Ultra 2",
+    subtitle: "49mm Titanium Case with Ocean Band",
+    price: 7999.0,
+    mrp: 89900.0,
+    image: "https://vittaldigital.com/products/apple-watch-ultra-2.png",
+    quantity: 1,
+    weight: 0.22,
   },
   {
     id: 1006,
     variant_id: 2006,
-    sku: "VD-PACK-6",
-    slug: "turkiye-jam-6-sachet",
-    title: "Vittal Digital (6 Sachet Pack)",
-    subtitle: "Single-serve sachets",
-    price: 1899.0,
-    mrp: 3200.0,
-    image: "https://vittaldigital.com/tj/turkiye-jam-6-strips.png",
-    quantity: 6,
-    weight: 0.15,
-  },
-  {
-    id: 1012,
-    variant_id: 2012,
-    sku: "VD-PACK-12",
-    slug: "turkiye-jam-12-sachet",
-    title: "Vittal Digital (12 Sachet Pack)",
-    subtitle: "Single-serve sachets",
-    price: 3399.0,
-    mrp: 5999.0,
-    image: "https://vittaldigital.com/tj/turkiye-jam-12-strips.png",
-    quantity: 12,
-    weight: 0.3,
-  },
-  {
-    id: 1024,
-    variant_id: 2024,
-    sku: "VD-PACK-24",
-    slug: "turkiye-jam-24-sachet",
-    title: "Vittal Digital (24 Sachet Pack)",
-    subtitle: "Single-serve sachets",
-    price: 5999.0,
-    mrp: 10999.0,
-    image: "https://vittaldigital.com/tj/turkiye-jam-24-strips.png",
-    quantity: 24,
-    weight: 0.6,
+    sku: "VD-SONY-XM5",
+    slug: "sony-wh-1000xm5",
+    title: "Sony WH-1000XM5 Wireless Headphones",
+    subtitle: "Industry Leading Noise Canceling + 30h Battery",
+    price: 8999.0,
+    mrp: 29990.0,
+    image: "https://vittaldigital.com/products/sony-wh-1000xm5.png",
+    quantity: 1,
+    weight: 0.45,
   },
 ];
+
+// Backward-compatible alias for existing imports
+export const TJ_CATALOG_PRODUCTS = VD_CATALOG_PRODUCTS;
 
 export function computeHmacSha256(payload: string, secret: string = FASTRR_CONFIG.apiSecret): string {
   return crypto.createHmac("sha256", secret).update(payload).digest("base64");
 }
 
-export function formatProductForShiprocket(p: (typeof TJ_CATALOG_PRODUCTS)[0]) {
+export function formatProductForShiprocket(p: (typeof VD_CATALOG_PRODUCTS)[0]) {
   return {
     id: p.id,
     title: p.title,
-    body_html: `<p>${p.title} - ${p.subtitle}. Authentic Herbal Formulations.</p>`,
+    body_html: `<p>${p.title} - ${p.subtitle}. 1-Year Pan-India Warranty.</p>`,
     vendor: "Vittal Digital",
-    product_type: "Vitality & Wellness",
+    product_type: "Consumer Electronics & Smart Gadgets",
     created_at: "2026-01-01T00:00:00Z",
     handle: p.slug,
     updated_at: "2026-01-01T00:00:00Z",
-    tags: "wellness, herbal, jam, sachets",
+    tags: "electronics, gadgets, headphones, smartwatch, speaker, accessories",
     status: "active",
     variants: [
       {
@@ -115,7 +118,7 @@ export function formatProductForShiprocket(p: (typeof TJ_CATALOG_PRODUCTS)[0]) {
         updated_at: "2026-01-01T00:00:00Z",
         taxable: true,
         option_values: {
-          "Pack Size": `${p.quantity} Sachets`,
+          "Model": p.title,
         },
         grams: Math.round(p.weight * 1000),
         image: {
@@ -130,8 +133,8 @@ export function formatProductForShiprocket(p: (typeof TJ_CATALOG_PRODUCTS)[0]) {
     },
     options: [
       {
-        name: "Pack Size",
-        values: [`${p.quantity} Sachets`],
+        name: "Model",
+        values: [p.title],
       },
     ],
   };
@@ -192,11 +195,11 @@ export function fastrrOrderToERPOrder(res: any): any {
 
   const rawItems = o.cart_data?.items || [];
   const items = rawItems.map((it: any) => ({
-    id: it.variant_id || "2003",
-    name: it.item_catalog_data?.name || it.name || "Turkiye Jam",
+    id: it.variant_id || "2001",
+    name: it.item_catalog_data?.name || it.name || "Vittal Digital Electronics Package",
     quantity: it.quantity || 1,
     price: it.price || it.item_catalog_data?.price || 0,
-    image: it.item_catalog_data?.image_url || "/tj/turkiye-jam-3-strips.png",
+    image: it.item_catalog_data?.image_url || "/vittal/wireless-earbuds.png",
   }));
 
   const paymentMethod =
@@ -210,8 +213,8 @@ export function fastrrOrderToERPOrder(res: any): any {
   return {
     id: o.order_id || o.platform_order_id,
     shopify_order_id: o.fastrr_order_id
-      ? `#TJ-${o.fastrr_order_id.slice(-4)}`
-      : `#TJ-${(o.order_id || "").slice(-4)}`,
+      ? `#VD-${o.fastrr_order_id.slice(-4)}`
+      : `#VD-${(o.order_id || "").slice(-4)}`,
     customer_name: customerName,
     customer_phone: o.phone || sAddr.phone || "",
     guest_email: o.email || sAddr.email || "",

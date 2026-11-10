@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { FASTRR_CONFIG, TJ_CATALOG_PRODUCTS, computeHmacSha256 } from "@/lib/fastrr";
+import { FASTRR_CONFIG, VD_CATALOG_PRODUCTS, TJ_CATALOG_PRODUCTS, computeHmacSha256 } from "@/lib/fastrr";
 
 export const dynamic = "force-dynamic";
 
@@ -15,12 +15,11 @@ export async function POST(req: NextRequest) {
 
       // Find matching catalog product
       const catalogMatch =
-        TJ_CATALOG_PRODUCTS.find((p) => {
+        VD_CATALOG_PRODUCTS.find((p) => {
           if (p.slug === idStr || p.sku.toLowerCase() === idStr) return true;
-          if (idStr.includes(`pack-${p.quantity}`) || idStr.includes(`${p.quantity}-sachet`)) return true;
-          if (nameStr.includes(`${p.quantity} sachet`)) return true;
+          if (nameStr.includes(p.slug) || nameStr.includes(p.title.toLowerCase())) return true;
           return false;
-        }) || TJ_CATALOG_PRODUCTS[1]; // fallback to 3 sachet
+        }) || VD_CATALOG_PRODUCTS[0];
 
       return {
         variant_id: String(catalogMatch.variant_id),
@@ -37,12 +36,12 @@ export async function POST(req: NextRequest) {
 
     if (formattedItems.length === 0) {
       formattedItems.push({
-        variant_id: String(TJ_CATALOG_PRODUCTS[1].variant_id),
+        variant_id: String(VD_CATALOG_PRODUCTS[0].variant_id),
         quantity: 1,
         catalog_data: {
-          price: TJ_CATALOG_PRODUCTS[1].price,
-          name: TJ_CATALOG_PRODUCTS[1].title,
-          image_url: TJ_CATALOG_PRODUCTS[1].image,
+          price: VD_CATALOG_PRODUCTS[0].price,
+          name: VD_CATALOG_PRODUCTS[0].title,
+          image_url: VD_CATALOG_PRODUCTS[0].image,
         },
       });
     }

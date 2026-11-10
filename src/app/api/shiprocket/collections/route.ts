@@ -10,11 +10,11 @@ export async function GET(req: NextRequest) {
         collections: [
           {
             id: 5001,
-            title: "Vittal Digital Sachets",
-            handle: "all-packs",
-            body_html: "<p>Authentic Herbal Jam sachets</p>",
+            title: "Vittal Digital Electronics",
+            handle: "all-products",
+            body_html: "<p>Premium consumer electronics, gadgets, and audio accessories.</p>",
             image: {
-              src: "https://vittaldigital.com/tj/turkiye-jam-3-strips.png",
+              src: "https://vittaldigital.com/vittal/wireless-earbuds.png",
             },
             created_at: "2026-01-01T00:00:00Z",
             updated_at: "2026-01-01T00:00:00Z",

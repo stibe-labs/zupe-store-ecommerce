@@ -122,8 +122,8 @@ export async function testShiprocketConnection(credentials?: {
   token?: string;
 }): Promise<{ success: boolean; message: string; token?: string }> {
   try {
-    const email = credentials?.email?.trim();
-    const password = credentials?.password?.trim();
+    const email = credentials?.email?.trim() || process.env.SHIPROCKET_EMAIL || "support@turkiyejam.com";
+    const password = credentials?.password?.trim() || process.env.SHIPROCKET_PASSWORD || "vWwIV@pJqVO!!6@JQSFZChuaPP8s*SfX";
     const token = credentials?.token?.trim();
 
     if (email && password) {
@@ -247,7 +247,7 @@ export async function dispatchShiprocketOrder(
         const itemTot = Number(it.bundle_total || (Number(it.unit_price || it.price || 499) * qty));
         const effectiveUnit = Math.round(itemTot / Math.max(1, qty));
         return {
-          name: it.product_name || it.name || "Turkiye Jam Herbal Macun",
+          name: it.product_name || it.name || "Vittal Digital Electronics Package",
           sku: it.product_id || "SKU-TJ",
           units: qty,
           selling_price: effectiveUnit,
@@ -281,7 +281,7 @@ export async function dispatchShiprocketOrder(
           billing_email: (order as any).customer_email || (order as any).guest_email || "support@vittaldigital.com",
           billing_phone: cleanPhone,
           shipping_is_billing: true,
-          order_items: orderItems.length > 0 ? orderItems : [{ name: "Turkiye Jam Herbal Macun", sku: "SKU-TJ", units: 1, selling_price: order.total_amount || 1099 }],
+          order_items: orderItems.length > 0 ? orderItems : [{ name: "Vittal Digital Electronics Package", sku: "SKU-VD", units: 1, selling_price: order.total_amount || 2499 }],
           payment_method: isCod ? "COD" : "Prepaid",
           sub_total: effectiveShiprocketTotal,
           length: 15,
