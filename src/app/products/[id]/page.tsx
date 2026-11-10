@@ -145,7 +145,7 @@ export default function ProductDetailPage() {
     return p.colors && p.colors.length > 0 ? p.colors[0].name : p.color || "Standard";
   });
   const [quantity, setQuantity] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState<"overview" | "specs" | "reviews" | "qa">("overview");
+  const [activeSection, setActiveSection] = useState<string>("overview");
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
   const [pincode, setPincode] = useState<string>("680001");
   const [deliveryLocation, setDeliveryLocation] = useState<string>("Thrissur, Kerala - 680001");
@@ -153,6 +153,30 @@ export default function ProductDetailPage() {
   const [tempPincode, setTempPincode] = useState<string>("680001");
   const [showToast, setShowToast] = useState<string | null>(null);
   const [showStickyBar, setShowStickyBar] = useState<boolean>(false);
+
+  const scrollToSection = (sectionId: string) => {
+    setActiveSection(sectionId);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  useEffect(() => {
+    const sectionIds = ["overview", "specifications", "faq", "related-products", "reviews"];
+    const handleScroll = () => {
+      const scrollPos = window.scrollY + 240;
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sectionIds[i]);
+        if (el && el.offsetTop <= scrollPos) {
+          setActiveSection(sectionIds[i]);
+          break;
+        }
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Record to Recently Viewed
   useEffect(() => {
@@ -659,13 +683,18 @@ export default function ProductDetailPage() {
 
             {/* Ratings & Sold Count */}
             <div className="flex items-center gap-3 text-xs sm:text-sm mt-3 pb-3 border-b border-slate-200/70">
-              <div className="flex items-center gap-1.5 font-bold text-slate-900">
+              <button
+                type="button"
+                onClick={() => scrollToSection("reviews")}
+                className="flex items-center gap-1.5 font-bold text-slate-900 hover:text-blue-700 cursor-pointer transition-colors text-left"
+                aria-label="Scroll to reviews"
+              >
                 <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                 <span>{activeProduct.rating || "4.6"}</span>
                 <span className="text-slate-500 font-normal">
                   ({activeProduct.review_count?.toLocaleString() || "2,417"} Reviews)
                 </span>
-              </div>
+              </button>
               <span className="text-slate-300">|</span>
               <div className="flex items-center gap-1 font-semibold text-slate-900">
                 <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
@@ -906,210 +935,236 @@ export default function ProductDetailPage() {
         </div>
 
         {/* ================================================================= */}
-        {/* TABS NAVIGATION (OVERVIEW, SPECS, REVIEWS, Q&A)                    */}
+        {/* SECTION QUICK-JUMP NAVIGATION (OVERVIEW, SPECS, FAQ, REVIEWS)     */}
         {/* ================================================================= */}
-        <section className="mt-10 sm:mt-12">
-          <div className="flex items-center gap-2 sm:gap-3 border-b border-slate-200/80 pb-3 overflow-x-auto scrollbar-hide">
+        <div className="sticky top-[72px] sm:top-[76px] z-20 bg-[#F8FAFC]/95 backdrop-blur-md py-3 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-slate-200/80 mt-10 sm:mt-12 transition-all">
+          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide">
             <button
-              onClick={() => setActiveTab("overview")}
+              type="button"
+              onClick={() => scrollToSection("overview")}
               className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
-                activeTab === "overview"
+                activeSection === "overview"
                   ? "bg-[#002D62] text-white shadow-sm"
-                  : "bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/80"
+                  : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80"
               }`}
             >
               Overview
             </button>
             <button
-              onClick={() => setActiveTab("specs")}
+              type="button"
+              onClick={() => scrollToSection("specifications")}
               className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
-                activeTab === "specs"
+                activeSection === "specifications"
                   ? "bg-[#002D62] text-white shadow-sm"
-                  : "bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/80"
+                  : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80"
               }`}
             >
               Specifications
             </button>
             <button
-              onClick={() => setActiveTab("reviews")}
+              type="button"
+              onClick={() => scrollToSection("faq")}
               className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
-                activeTab === "reviews"
+                activeSection === "faq"
                   ? "bg-[#002D62] text-white shadow-sm"
-                  : "bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/80"
+                  : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80"
+              }`}
+            >
+              Questions &amp; Answers (36)
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection("related-products")}
+              className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
+                activeSection === "related-products"
+                  ? "bg-[#002D62] text-white shadow-sm"
+                  : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80"
+              }`}
+            >
+              You May Also Like
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection("reviews")}
+              className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
+                activeSection === "reviews"
+                  ? "bg-[#002D62] text-white shadow-sm"
+                  : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80"
               }`}
             >
               Reviews ({activeProduct.review_count?.toLocaleString() || "2,417"})
             </button>
-            <button
-              onClick={() => setActiveTab("qa")}
-              className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
-                activeTab === "qa"
-                  ? "bg-[#002D62] text-white shadow-sm"
-                  : "bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/80"
-              }`}
-            >
-              Questions & Answers (36)
-            </button>
+          </div>
+        </div>
+
+        {/* ================================================================= */}
+        {/* 1. PRODUCT OVERVIEW                                               */}
+        {/* ================================================================= */}
+        <section id="overview" className="mt-8 scroll-mt-28 sm:scroll-mt-32 space-y-6">
+          {/* Feature Spotlight Card (Dynamic based on product category) */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-8 shadow-sm overflow-hidden">
+            <div className="flex-1 max-w-xl">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                {spotlightBanner.title} <span className="text-[#0052CC]">{spotlightBanner.highlight}</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed mt-2.5">
+                {spotlightBanner.desc}
+              </p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+                {spotlightBanner.pills.map((pill, i) => {
+                  const Icon = pill.icon;
+                  return (
+                    <div key={i} className="bg-slate-50 border border-slate-200/70 rounded-2xl p-3 text-center flex flex-col items-center">
+                      <Icon className="w-5 h-5 text-[#002D62] mb-1.5" />
+                      <span className="text-[11px] font-bold text-slate-900 leading-tight">
+                        {pill.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right Visual: Beautiful Glowing Stage with Product Cutout */}
+            <div className="w-full md:w-auto shrink-0 flex items-center justify-center">
+              <div className="relative w-full md:w-[380px] h-[190px] sm:h-[210px] rounded-2xl bg-gradient-to-r from-[#001433] via-[#002D62] to-[#0A4DB0] p-6 overflow-hidden flex items-center justify-center shadow-md">
+                {/* Glowing Audio/Electric Waveform SVG */}
+                <svg
+                  className="absolute inset-0 w-full h-full opacity-60"
+                  viewBox="0 0 400 200"
+                  fill="none"
+                  preserveAspectRatio="none"
+                >
+                  <path
+                    d="M0 100 Q 50 60, 100 100 T 200 100 T 300 100 T 400 100"
+                    stroke="#38BDF8"
+                    strokeWidth="2.5"
+                    strokeDasharray="4 4"
+                  />
+                  <path
+                    d="M0 100 Q 70 30, 140 100 T 280 100 T 400 100"
+                    stroke="#00D2FF"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    className="animate-pulse"
+                  />
+                  <path
+                    d="M0 100 Q 90 140, 180 100 T 360 100 T 400 100"
+                    stroke="#818CF8"
+                    strokeWidth="2"
+                    opacity="0.5"
+                  />
+                </svg>
+
+                {/* Floating Product Image Cutout */}
+                <div className="relative z-10 w-48 h-36 flex items-center justify-center">
+                  <img
+                    src={currentDisplayImage}
+                    alt={activeProduct.name}
+                    className="max-w-full max-h-full object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* TAB 1: OVERVIEW */}
-          {activeTab === "overview" && (
-            <div className="mt-6 sm:mt-8 space-y-6">
-              {/* Feature Spotlight Card (Dynamic based on product category) */}
-              <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-8 shadow-sm overflow-hidden">
-                <div className="flex-1 max-w-xl">
-                  <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
-                    {spotlightBanner.title} <span className="text-[#0052CC]">{spotlightBanner.highlight}</span>
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed mt-2.5">
-                    {spotlightBanner.desc}
-                  </p>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-                    {spotlightBanner.pills.map((pill, i) => {
-                      const Icon = pill.icon;
-                      return (
-                        <div key={i} className="bg-slate-50 border border-slate-200/70 rounded-2xl p-3 text-center flex flex-col items-center">
-                          <Icon className="w-5 h-5 text-[#002D62] mb-1.5" />
-                          <span className="text-[11px] font-bold text-slate-900 leading-tight">
-                            {pill.label}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Right Visual: Beautiful Glowing Stage with Product Cutout */}
-                <div className="w-full md:w-auto shrink-0 flex items-center justify-center">
-                  <div className="relative w-full md:w-[380px] h-[190px] sm:h-[210px] rounded-2xl bg-gradient-to-r from-[#001433] via-[#002D62] to-[#0A4DB0] p-6 overflow-hidden flex items-center justify-center shadow-md">
-                    {/* Glowing Audio/Electric Waveform SVG */}
-                    <svg
-                      className="absolute inset-0 w-full h-full opacity-60"
-                      viewBox="0 0 400 200"
-                      fill="none"
-                      preserveAspectRatio="none"
-                    >
-                      <path
-                        d="M0 100 Q 50 60, 100 100 T 200 100 T 300 100 T 400 100"
-                        stroke="#38BDF8"
-                        strokeWidth="2.5"
-                        strokeDasharray="4 4"
-                      />
-                      <path
-                        d="M0 100 Q 70 30, 140 100 T 280 100 T 400 100"
-                        stroke="#00D2FF"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        className="animate-pulse"
-                      />
-                      <path
-                        d="M0 100 Q 90 140, 180 100 T 360 100 T 400 100"
-                        stroke="#818CF8"
-                        strokeWidth="2"
-                        opacity="0.5"
-                      />
-                    </svg>
-
-                    {/* Floating Product Image Cutout */}
-                    <div className="relative z-10 w-48 h-36 flex items-center justify-center">
-                      <img
-                        src={currentDisplayImage}
-                        alt={activeProduct.name}
-                        className="max-w-full max-h-full object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Product Feature Highlights List */}
-              {activeProduct.features && activeProduct.features.length > 0 && (
-                <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm">
-                  <h3 className="text-lg font-black text-slate-900 mb-4">Key Features & Benefits</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    {activeProduct.features.map((feat, idx) => (
-                      <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                        <span className="font-medium leading-relaxed">{feat}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* TAB 2: SPECIFICATIONS */}
-          {activeTab === "specs" && (
-            <div className="mt-6 sm:mt-8 bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm">
-              <h3 className="text-lg font-black text-slate-900 mb-6">Technical Specifications</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(activeProduct.specifications || {}).map(([key, value]) => (
-                  <div key={key} className="flex justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200/60 text-xs sm:text-sm">
-                    <span className="font-semibold text-slate-600">{key}</span>
-                    <span className="font-bold text-slate-900 text-right max-w-xs">{String(value)}</span>
+          {/* Product Feature Highlights List */}
+          {activeProduct.features && activeProduct.features.length > 0 && (
+            <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm">
+              <h3 className="text-lg font-black text-slate-900 mb-4">Key Features &amp; Benefits</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {activeProduct.features.map((feat, idx) => (
+                  <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                    <span className="font-medium leading-relaxed">{feat}</span>
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: REVIEWS */}
-          {activeTab === "reviews" && (
-            <div className="mt-6 sm:mt-8 bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm">
-              <ProductReviewsSection
-                productId={activeProduct.id}
-                productName={activeProduct.name}
-                fallbackRating={activeProduct.rating || 4.6}
-                fallbackReviewCount={activeProduct.review_count || 2417}
-              />
-            </div>
-          )}
-
-          {/* TAB 4: QUESTIONS & ANSWERS */}
-          {activeTab === "qa" && (
-            <div className="mt-6 sm:mt-8 bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm space-y-4">
-              <h3 className="text-lg font-black text-slate-900 mb-4">Frequently Asked Questions</h3>
-              <div className="space-y-3">
-                <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer" open>
-                  <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
-                    <span>Is this 100% genuine sealed retail stock?</span>
-                    <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
-                  </summary>
-                  <p className="mt-2 text-slate-600 leading-relaxed font-normal">
-                    Yes, absolutely. All our items come directly from authorized brand distribution channels and arrive 100% brand new, sealed in original manufacturer packaging with valid serial numbers.
-                  </p>
-                </details>
-
-                <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer">
-                  <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
-                    <span>How does warranty service work across India?</span>
-                    <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
-                  </summary>
-                  <p className="mt-2 text-slate-600 leading-relaxed font-normal">
-                    You receive 1-year comprehensive international coverage honored across India. Additionally, Vittal Digital provides direct customer concierge support via WhatsApp for any technical or service assistance.
-                  </p>
-                </details>
-
-                <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer">
-                  <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
-                    <span>What is the delivery timeline to my address?</span>
-                    <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
-                  </summary>
-                  <p className="mt-2 text-slate-600 leading-relaxed font-normal">
-                    Orders are dispatched within 24 hours via express insured air courier. Most major cities across India receive doorstep delivery within 5 to 7 business days with real-time tracking updates.
-                  </p>
-                </details>
               </div>
             </div>
           )}
         </section>
 
         {/* ================================================================= */}
-        {/* YOU MAY ALSO LIKE (DYNAMIC RELATED PRODUCTS GRID)                 */}
+        {/* 2. PRODUCT SPECIFICATIONS (UNDER OVERVIEW)                        */}
         {/* ================================================================= */}
-        <section className="mt-12 sm:mt-16">
+        <section id="specifications" className="mt-8 sm:mt-10 scroll-mt-28 sm:scroll-mt-32">
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm">
+            <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
+              <span>Technical Specifications</span>
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.entries(activeProduct.specifications || {}).map(([key, value]) => (
+                <div key={key} className="flex justify-between items-center p-3.5 bg-slate-50 rounded-xl border border-slate-200/60 text-xs sm:text-sm">
+                  <span className="font-semibold text-slate-600">{key}</span>
+                  <span className="font-bold text-slate-900 text-right max-w-xs">{String(value)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ================================================================= */}
+        {/* 3. FAQ (QUESTIONS & ANSWERS)                                      */}
+        {/* ================================================================= */}
+        <section id="faq" className="mt-8 sm:mt-10 scroll-mt-28 sm:scroll-mt-32">
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg sm:text-xl font-black text-slate-900">
+                Frequently Asked Questions
+              </h3>
+              <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                36 Questions &amp; Answers
+              </span>
+            </div>
+            <div className="space-y-3">
+              <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer" open>
+                <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
+                  <span>Is this 100% genuine sealed retail stock?</span>
+                  <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
+                </summary>
+                <p className="mt-2 text-slate-600 leading-relaxed font-normal">
+                  Yes, absolutely. All our items come directly from authorized brand distribution channels and arrive 100% brand new, sealed in original manufacturer packaging with valid serial numbers.
+                </p>
+              </details>
+
+              <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer">
+                <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
+                  <span>How does warranty service work across India?</span>
+                  <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
+                </summary>
+                <p className="mt-2 text-slate-600 leading-relaxed font-normal">
+                  You receive 1-year comprehensive international coverage honored across India. Additionally, Vittal Digital provides direct customer concierge support via WhatsApp for any technical or service assistance.
+                </p>
+              </details>
+
+              <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer">
+                <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
+                  <span>What is the delivery timeline to my address?</span>
+                  <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
+                </summary>
+                <p className="mt-2 text-slate-600 leading-relaxed font-normal">
+                  Orders are dispatched within 24 hours via express insured air courier. Most major cities across India receive doorstep delivery within 5 to 7 business days with real-time tracking updates.
+                </p>
+              </details>
+
+              <details className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm group cursor-pointer">
+                <summary className="font-bold text-slate-900 list-none flex items-center justify-between">
+                  <span>What payment methods are supported?</span>
+                  <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform" />
+                </summary>
+                <p className="mt-2 text-slate-600 leading-relaxed font-normal">
+                  We support all major payment options: UPI (Instant 5% discount via Google Pay, PhonePe, Paytm), Credit &amp; Debit cards, Net Banking, and Fastrr 1-click secure checkout.
+                </p>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        {/* ================================================================= */}
+        {/* 4. YOU MAY ALSO LIKE (DYNAMIC RELATED PRODUCTS GRID)              */}
+        {/* ================================================================= */}
+        <section id="related-products" className="mt-12 sm:mt-16 scroll-mt-28 sm:scroll-mt-32">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               You May Also Like
@@ -1241,6 +1296,20 @@ export default function ProductDetailPage() {
                 loading="lazy"
               />
             </div>
+          </div>
+        </section>
+
+        {/* ================================================================= */}
+        {/* 6. REVIEWS AND RATINGS                                            */}
+        {/* ================================================================= */}
+        <section id="reviews" className="mt-12 sm:mt-16 mb-12 scroll-mt-28 sm:scroll-mt-32">
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm">
+            <ProductReviewsSection
+              productId={activeProduct.id}
+              productName={activeProduct.name}
+              fallbackRating={activeProduct.rating || 4.6}
+              fallbackReviewCount={activeProduct.review_count || 2417}
+            />
           </div>
         </section>
       </main>
