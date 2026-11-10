@@ -218,6 +218,31 @@ export async function POST(req: NextRequest) {
         console.warn("Cashfree WhatsApp confirmation dispatch error:", waErr);
       }
 
+      // Dispatch Real-Time Admin WhatsApp Alert (+91 7356765036)
+      try {
+        const { notifyAdminNewOrder } = await import("@/lib/adminNotification");
+        await notifyAdminNewOrder({
+          orderId: order?.shopify_order_id || orderId,
+          customerName: custName,
+          customerPhone: custPhone,
+          totalAmount: effectiveTotal,
+          paymentMethod: isCodOrder ? "Cash on Delivery" : "Online Prepaid",
+          paymentStatus: "Paid",
+          advancePaid: isCodOrder ? advancePaid : undefined,
+          balanceDue: isCodOrder ? balanceDue : undefined,
+          shippingAddress: order?.shipping_address || "",
+          city: order?.city || "",
+          postalCode: order?.postal_code || "",
+          items: rawItems.map((it: any) => ({
+            name: it.product_name || it.name || "Turkiye Jam",
+            quantity: Number(it.quantity || 1),
+            price: Number(it.unit_price || it.price || 0),
+          })),
+        });
+      } catch (adminNotifErr) {
+        console.warn("Failed to dispatch admin new order WhatsApp alert:", adminNotifErr);
+      }
+
       // Mark abandoned checkout as recovered
       try {
         const cleanDigits = custPhone.replace(/\D/g, "").slice(-10);

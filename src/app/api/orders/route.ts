@@ -361,6 +361,29 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Dispatch Real-Time Admin WhatsApp Alert (+91 7356765036)
+    try {
+      const { notifyAdminNewOrder } = await import("@/lib/adminNotification");
+      await notifyAdminNewOrder({
+        orderId: (newOrder as any).shopify_order_id || newOrder.id,
+        customerName: customer_name,
+        customerPhone: customer_phone || "",
+        totalAmount: Number(total_amount),
+        paymentMethod: payment_method || (isCod ? "Cash on Delivery" : "Prepaid"),
+        paymentStatus: isCod ? "Pending" : "Paid",
+        shippingAddress: shipping_address || "",
+        city: city || "",
+        postalCode: postal_code || "",
+        items: (items || []).map((it: any) => ({
+          name: it.name || "Turkiye Jam",
+          quantity: Number(it.quantity || 1),
+          price: Number(it.price || 0),
+        })),
+      });
+    } catch (adminAlertErr) {
+      console.warn("[Orders Route] Failed to dispatch admin WhatsApp alert:", adminAlertErr);
+    }
+
     return NextResponse.json({ success: true, order: newOrder });
 
   } catch (err: any) {

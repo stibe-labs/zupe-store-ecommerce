@@ -915,6 +915,20 @@ export async function recordInboundCustomerMessage(
     } catch (leadErr) {
       // Non-fatal
     }
+
+    // Real-time WhatsApp Notification to Admin (+91 7356765036)
+    try {
+      const { notifyAdminIncomingWhatsAppMessage } = await import("@/lib/adminNotification");
+      await notifyAdminIncomingWhatsAppMessage({
+        customerName: conv.customerName,
+        customerPhone: conv.customerPhone,
+        content: text,
+        messageType: type,
+      });
+    } catch (notifErr) {
+      console.warn("Failed to dispatch admin WhatsApp alert:", notifErr);
+    }
+
     return msg;
   } catch (err) {
     console.warn("recordInboundCustomerMessage error:", err);

@@ -96,6 +96,20 @@ export async function POST(req: NextRequest) {
                 updated_at = CURRENT_TIMESTAMP`,
               [leadId, customerName, cleanPhone.startsWith("+") ? cleanPhone : `+${cleanPhone}`, customerEmail, tags, notes]
             );
+
+            // Real-time WhatsApp Notification to Admin (+91 7356765036)
+            try {
+              const { notifyAdminMetaLead } = await import("@/lib/adminNotification");
+              await notifyAdminMetaLead({
+                customerName,
+                customerPhone: cleanPhone,
+                customerEmail,
+                source: "Meta Instant Form",
+                notes,
+              });
+            } catch (notifErr) {
+              console.warn("Failed to dispatch Meta lead admin WhatsApp alert:", notifErr);
+            }
           }
         }
       }
