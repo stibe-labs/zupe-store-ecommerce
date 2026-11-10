@@ -24,7 +24,7 @@ interface WhatsAppCRMConfig {
   lastSyncedAt?: string;
 }
 
-export async function fetchMetaHierarchy(rawAccountId: string, token: string) {
+async function fetchMetaHierarchy(rawAccountId: string, token: string) {
   const accountId = (rawAccountId || "").replace(/^act_/, "").trim();
   if (!accountId || !token) {
     return { adsets: [], ads: [], breakdowns: null, error: "Missing account ID or token" };

@@ -970,44 +970,124 @@ function OrderTrackingContent() {
                       (selectedOrder.payment_status || "").toLowerCase() === "paid" ||
                       (selectedOrder.payment_status || "").toLowerCase() === "completed";
 
+                    const totalAmount = Number(selectedOrder.total_amount) || 0;
+                    const itemsSubtotal = (Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0)
+                      ? selectedOrder.items.reduce((acc: number, it: any) => {
+                          const qty = Number(it.quantity || it.units || 1);
+                          const price = Number(it.unit_price ?? it.price ?? it.selling_price) || (totalAmount > 0 ? Math.round(totalAmount / qty) : 899);
+                          return acc + (price * qty);
+                        }, 0)
+                      : totalAmount;
+
+                    const isPartialCod = Boolean(selectedOrder.is_cod_partial || Number(selectedOrder.advance_paid) > 0);
+                    const advancePaid = Number(selectedOrder.advance_paid) || (isPartialCod ? 49 : 0);
+                    const balanceDue = selectedOrder.balance_due !== undefined && selectedOrder.balance_due !== null
+                      ? Number(selectedOrder.balance_due)
+                      : (isCod ? Math.max(0, totalAmount - advancePaid) : 0);
+
+                    const extraCharges = Math.max(0, totalAmount - itemsSubtotal);
+
                     return (
-                      <div className="mt-6 pt-4 border-t border-gray-100 space-y-2">
+                      <div className="mt-6 pt-4 border-t border-gray-100 space-y-2.5">
                         <div className="flex justify-between text-xs text-gray-500">
                           <span>Payment Method</span>
                           <span className="font-semibold text-gray-900">
-                            {isCod ? "Cash on Delivery (COD)" : (selectedOrder.payment_method || "Prepaid Online")}
+                            {isCod
+                              ? (advancePaid > 0 ? "Cash on Delivery (Advance Paid)" : "Cash on Delivery (COD)")
+                              : (selectedOrder.payment_method || "Prepaid Online")}
                           </span>
                         </div>
+
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>Payment Status</span>
+                          {isPaid ? (
+                            <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                              Paid Online
+                            </span>
+                          ) : isCod ? (
+                            <span className="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">
+                              {advancePaid > 0 ? "Advance Paid • Balance Due on Delivery" : "Payable on Delivery"}
+                            </span>
+                          ) : (
+                            <span className="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">
+                              {selectedOrder.payment_status || "Pending"}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Itemized Price Breakdown */}
+                        <div className="pt-2 border-t border-dashed border-gray-200 space-y-1.5 text-xs">
+                          <div className="flex justify-between text-gray-600">
+                            <span>Items Subtotal</span>
+                            <span className="font-medium text-gray-900">₹{itemsSubtotal.toLocaleString("en-IN")}</span>
+                          </div>
+
+                          {extraCharges === 98 ? (
+                            <>
+                              <div className="flex justify-between text-gray-600">
+                                <span>Standard Delivery</span>
+                                <span className="font-medium text-gray-900">₹49</span>
+                              </div>
+                              <div className="flex justify-between text-gray-600">
+                                <span>COD Courier Booking Fee</span>
+                                <span className="font-medium text-gray-900">₹49</span>
+                              </div>
+                            </>
+                          ) : extraCharges === 49 ? (
+                            <div className="flex justify-between text-gray-600">
+                              <span>{isCod ? "COD Courier Fee" : "Standard Delivery"}</span>
+                              <span className="font-medium text-gray-900">₹49</span>
+                            </div>
+                          ) : extraCharges > 0 ? (
+                            <div className="flex justify-between text-gray-600">
+                              <span>Shipping & Handling</span>
+                              <span className="font-medium text-gray-900">₹{extraCharges.toLocaleString("en-IN")}</span>
+                            </div>
+                          ) : (
+                            <div className="flex justify-between text-gray-600">
+                              <span>Express Delivery</span>
+                              <span className="font-semibold text-emerald-600">FREE</span>
+                            </div>
+                          )}
+
+                          <div className="flex justify-between text-gray-800 font-semibold pt-1 border-t border-gray-100">
+                            <span>Total Order Value</span>
+                            <span>₹{totalAmount.toLocaleString("en-IN")}</span>
+                          </div>
+
+                          {isCod && advancePaid > 0 && (
+                            <div className="flex justify-between text-emerald-700 bg-emerald-50/80 px-2.5 py-1.5 rounded-lg font-semibold text-xs border border-emerald-100">
+                              <span className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                Online Advance Paid (via Cashfree)
+                              </span>
+                              <span>-₹{advancePaid.toLocaleString("en-IN")}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Doorstep / Total Final Amount */}
                         {isCod && !isPaid ? (
-                          <>
-                            <div className="flex justify-between text-xs text-gray-500">
-                              <span>Payment Status</span>
-                              <span className="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">
-                                Payable on Delivery
+                          <div className="pt-2.5 border-t border-gray-100 space-y-1">
+                            <div className="flex justify-between items-baseline">
+                              <div>
+                                <span className="text-base font-bold text-gray-900 block">Payable at Doorstep</span>
+                                <span className="text-[11px] text-gray-500 font-normal">
+                                  Cash or UPI directly to courier delivery executive
+                                </span>
+                              </div>
+                              <span className="text-xl font-black text-[#FF7A00]">
+                                ₹{balanceDue.toLocaleString("en-IN")}
                               </span>
                             </div>
-                            <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100">
-                              <span>Payable at Doorstep</span>
-                              <span className="text-[#FF7A00]">
-                                ₹{selectedOrder.total_amount?.toLocaleString("en-IN")}
-                              </span>
-                            </div>
-                          </>
+                          </div>
                         ) : (
-                          <>
-                            <div className="flex justify-between text-xs text-gray-500">
-                              <span>Payment Status</span>
-                              <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                                Paid Online
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100">
-                              <span>Total Paid</span>
-                              <span className="text-emerald-600">
-                                ₹{selectedOrder.total_amount?.toLocaleString("en-IN")}
-                              </span>
-                            </div>
-                          </>
+                          <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100">
+                            <span>Total Paid</span>
+                            <span className="text-emerald-600">
+                              ₹{totalAmount.toLocaleString("en-IN")}
+                            </span>
+                          </div>
                         )}
                       </div>
                     );

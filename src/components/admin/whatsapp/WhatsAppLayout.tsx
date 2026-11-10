@@ -378,13 +378,71 @@ export default function WhatsAppLayout() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "create_conversation",
-          ...payload,
+          customerPhone: payload.customerPhone,
+          customerName: payload.customerName,
+          customerEmail: payload.customerEmail,
+          orderId: payload.orderId,
+          category: payload.category,
         }),
       });
       const data = await res.json();
       if (data.success && data.conversation) {
         setConversations((prev) => [data.conversation, ...prev]);
         setActiveConversationId(data.conversation.id);
+
+        // If an initial template message was selected, immediately dispatch it
+        if (payload.initialMessage) {
+          try {
+            const sendRes = await fetch("/api/admin/whatsapp", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "send_message",
+                conversationId: data.conversation.id,
+                content: payload.initialMessage,
+                type: "template",
+              }),
+            });
+            const sendData = await sendRes.json();
+            if (sendData.success && sendData.message) {
+              setMessages([sendData.message]);
+              waAudio.playOutgoingPop();
+
+              // Update conversation preview in sidebar
+              setConversations((prev) =>
+                prev.map((c) =>
+                  c.id === data.conversation.id
+                    ? {
+                        ...c,
+                        lastMessage: {
+                          text: payload.initialMessage,
+                          sender: "agent",
+                          timestamp: "Just now",
+                          status: "sent",
+                        },
+                      }
+                    : c
+                )
+              );
+
+              // Broadcast live via Meta Cloud API
+              if (data.conversation.customerPhone) {
+                fetch("/api/admin/whatsapp", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    action: "send_live_meta",
+                    recipientPhone: data.conversation.customerPhone,
+                    messageText: payload.initialMessage,
+                    messageId: sendData.message.id,
+                  }),
+                }).catch(() => {});
+              }
+            }
+          } catch (sendErr) {
+            console.warn("Failed to dispatch initial message:", sendErr);
+          }
+        }
       }
     } catch (e) {
       console.warn("Failed to create chat:", e);
@@ -470,7 +528,9 @@ export default function WhatsAppLayout() {
               : activeConversation.customerName.split(" ")[0];
 
             let tpl = "";
-            if (type === "order_confirmation_cod") {
+            if (type === "malayalam_pricing_inquiry") {
+              tpl = `നമസ്കാരം 😊\n*Turkiye Jam* അന്വേഷിച്ചതിന് നന്ദി!\n\nലഭ്യമായ പാക്കുകളും വിലയും 👇\n\n🔸 *2 സാഷെ — ₹899*\n🔸 *3 സാഷെ — ₹1,099*\n🔸 *4 സാഷെ — ₹1,399*\n🔸 *6 സാഷെ — ₹1,899*\n🎁 *12 + 2 സാഷെ ബോക്സ് — ₹2,899*\n(ആകെ 14 സാഷെ ലഭിക്കും!)\n\n🫙 *240g ജാർ + 2 സാഷെ ഫ്രീ — ₹2,899*\n_(നിലവിൽ സ്റ്റോക്കില്ല)_\n\n📦 ഇന്ത്യയിലുടനീളം സൗജന്യ ഡെലിവറി (Free Delivery)\n💵 Cash on Delivery (COD) ലഭ്യമാണ്\n🛵 കൊച്ചിയിൽ Porter വഴി 1 മണിക്കൂർ എക്സ്പ്രസ് ഡെലിവറി — ലഭ്യത അനുസരിച്ച്.\n\n🌐 *വെബ്‌സൈറ്റ് വഴി നേരിട്ട് ഓർഡർ ചെയ്യാൻ:*\nhttps://turkiyejam.com\n\n💬 *WhatsApp വഴി നേരിട്ട് വാങ്ങാൻ:*\nഏത് പാക്കാണ് വേണ്ടതെന്ന് അറിയിച്ച് നിങ്ങളുടെ *പേര്, പൂർണ്ണ വിലാസം, പിൻകോഡ്* ഇവിടെ അയച്ചാൽ മതിയാകും. ഞങ്ങൾ ഓർഡർ ബുക്ക് ചെയ്ത് അയച്ചു തരാം! 😊\n\n*ഏത് പാക്കാണ് താങ്കൾക്ക് വേണ്ടത്?*`;
+            } else if (type === "order_confirmation_cod") {
               tpl = `Salam ${cleanName}! 🌿 Your Turkiye Jam Cash on Delivery order #${activeConversation.orderId ? activeConversation.orderId.substring(0, 8) : "TJ-6383"} of ₹${activeConversation.orderTotal || 899} is ready for dispatch. Please reply *YES* to confirm!`;
             } else if (type === "order_dispatched_awb") {
               tpl = `Great news ${cleanName}! 🚀 Your Turkiye Jam package has been dispatched via Shiprocket / Express Logistics.\n\nLive tracking: https://turkiyejam.com/track-order?awb=SR-434776383`;

@@ -28,6 +28,7 @@ import {
   AlertCircle,
   Check,
   ChevronDown,
+  Send,
 } from "lucide-react";
 import { WhatsAppConversation } from "@/lib/whatsappStore";
 
@@ -591,6 +592,18 @@ export default function CustomerOrderDrawer({
           <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
             Quick WhatsApp Triggers
           </div>
+
+          {/* Primary Malayalam Pricing & Inquiry Trigger */}
+          <button
+            onClick={() => onSendQuickTemplate("malayalam_pricing_inquiry")}
+            className="w-full flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-xs font-bold text-emerald-900 dark:text-emerald-300 transition-all cursor-pointer shadow-2xs group"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-sm">🌿</span>
+              <span>മലയാളം പാക്ക് വിവരങ്ങൾ & വില</span>
+            </div>
+            <Send className="w-3.5 h-3.5 text-emerald-600 group-hover:translate-x-0.5 transition-transform" />
+          </button>
 
           {activeOrderId ? (
             <>

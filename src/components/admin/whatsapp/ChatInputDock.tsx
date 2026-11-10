@@ -243,6 +243,18 @@ export default function ChatInputDock({
     });
   };
 
+  const MALAYALAM_PRICING_TEMPLATE = `നമസ്കാരം 😊\n*Turkiye Jam* അന്വേഷിച്ചതിന് നന്ദി!\n\nലഭ്യമായ പാക്കുകളും വിലയും 👇\n\n🔸 *2 സാഷെ — ₹899*\n🔸 *3 സാഷെ — ₹1,099*\n🔸 *4 സാഷെ — ₹1,399*\n🔸 *6 സാഷെ — ₹1,899*\n🎁 *12 + 2 സാഷെ ബോക്സ് — ₹2,899*\n(ആകെ 14 സാഷെ ലഭിക്കും!)\n\n🫙 *240g ജാർ + 2 സാഷെ ഫ്രീ — ₹2,899*\n_(നിലവിൽ സ്റ്റോക്കില്ല)_\n\n📦 ഇന്ത്യയിലുടനീളം സൗജന്യ ഡെലിവറി (Free Delivery)\n💵 Cash on Delivery (COD) ലഭ്യമാണ്\n🛵 കൊച്ചിയിൽ Porter വഴി 1 മണിക്കൂർ എക്സ്പ്രസ് ഡെലിവറി — ലഭ്യത അനുസരിച്ച്.\n\n🌐 *വെബ്‌സൈറ്റ് വഴി നേരിട്ട് ഓർഡർ ചെയ്യാൻ:*\nhttps://turkiyejam.com\n\n💬 *WhatsApp വഴി നേരിട്ട് വാങ്ങാൻ:*\nഏത് പാക്കാണ് വേണ്ടതെന്ന് അറിയിച്ച് നിങ്ങളുടെ *പേര്, പൂർണ്ണ വിലാസം, പിൻകോഡ്* ഇവിടെ അയച്ചാൽ മതിയാകും. ഞങ്ങൾ ഓർഡർ ബുക്ക് ചെയ്ത് അയച്ചു തരാം! 😊\n\n*ഏത് പാക്കാണ് താങ്കൾക്ക് വേണ്ടത്?*`;
+
+  const handleSendMalayalamPricing = () => {
+    setShowAttachmentMenu(false);
+    waAudio.playOutgoingPop();
+    onSendMessage({
+      content: MALAYALAM_PRICING_TEMPLATE,
+      type: "template",
+      sendLiveMeta,
+    });
+  };
+
   const insertEmoji = (emoji: string) => {
     setText((prev) => prev + emoji);
     if (textareaRef.current) textareaRef.current.focus();
@@ -309,7 +321,16 @@ export default function ChatInputDock({
 
       {/* Attachment Popover Menu */}
       {showAttachmentMenu && (
-        <div className="absolute bottom-16 left-12 z-40 w-56 bg-white dark:bg-[#1f2c34] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 p-2 space-y-1 animate-in fade-in zoom-in-95">
+        <div className="absolute bottom-16 left-12 z-40 w-64 bg-white dark:bg-[#1f2c34] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 p-2 space-y-1 animate-in fade-in zoom-in-95">
+          <button
+            onClick={handleSendMalayalamPricing}
+            className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl text-emerald-800 dark:text-emerald-300 bg-emerald-50/80 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors cursor-pointer"
+          >
+            <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs shadow-xs">
+              🌿
+            </div>
+            <span>മലയാളം പാക്ക് & വില വിവരങ്ങൾ</span>
+          </button>
           <button
             onClick={onOpenTemplates}
             className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-xl text-slate-700 dark:text-slate-200 hover:bg-emerald-500/10 hover:text-emerald-600 transition-colors"
@@ -348,6 +369,27 @@ export default function ChatInputDock({
           </button>
         </div>
       )}
+
+      {/* Quick Action Chips Bar (Above Composer) */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 mb-1 scrollbar-none text-[11px]">
+        <button
+          type="button"
+          onClick={handleSendMalayalamPricing}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-500/30 transition-all cursor-pointer shrink-0 shadow-2xs"
+          title="Send Malayalam Pricing, Packs & Website / WhatsApp purchase details"
+        >
+          <span>🌿</span>
+          <span>മലയാളം പ്രൈസിംഗ്</span>
+        </button>
+        <button
+          type="button"
+          onClick={onOpenTemplates}
+          className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-[#111b21] hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 font-medium border border-slate-200 dark:border-white/10 transition-colors cursor-pointer shrink-0"
+        >
+          <Sparkles className="w-3 h-3 text-emerald-500" />
+          <span>All Templates</span>
+        </button>
+      </div>
 
       {/* Voice Recording Mode Bar */}
       {isRecordingVoice ? (

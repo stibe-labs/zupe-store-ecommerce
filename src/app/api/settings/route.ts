@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const settings = await getSettings();
-    const profile = settings?.storeProfile || {};
+    const profile: any = settings?.storeProfile || {};
     return NextResponse.json({
       success: true,
       storeProfile: {

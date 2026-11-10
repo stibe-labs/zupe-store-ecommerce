@@ -708,6 +708,12 @@ function OrdersPageContent() {
                 displayedTotal = productSubtotal;
               }
 
+              const isPartialCod = Boolean((ord as any).is_cod_partial || Number((ord as any).advance_paid) > 0);
+              const advancePaid = Number((ord as any).advance_paid) || (isPartialCod ? 49 : 0);
+              const balanceDue = (ord as any).balance_due !== undefined && (ord as any).balance_due !== null
+                ? Number((ord as any).balance_due)
+                : (isCod ? Math.max(0, displayedTotal - advancePaid) : 0);
+
               return (
                 <div
                   key={ord.id}
@@ -740,7 +746,9 @@ function OrdersPageContent() {
                         </span>
                       ) : isCod ? (
                         <span className="text-[10px] text-stone-500 font-medium block">
-                          (₹{productSubtotal.toLocaleString()} + ₹49 COD)
+                          {advancePaid > 0
+                            ? `(₹${advancePaid} Advance Paid • ₹${balanceDue} at Doorstep)`
+                            : `(Payable on Delivery)`}
                         </span>
                       ) : isPaid ? (
                         <span className="text-[10px] text-emerald-600 font-semibold block">
@@ -1073,15 +1081,21 @@ function OrdersPageContent() {
                   <div className="mt-4 pt-3 border-t border-dashed border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-gray-600 gap-2 bg-gray-50/70 px-4 py-3 rounded-2xl">
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-gray-500">
                       <span>Items Subtotal: <strong className="text-gray-900">₹{productSubtotal.toLocaleString()}</strong></span>
-                      <span>•</span>
-                      {isCod ? (
-                        <span className="text-amber-700 font-semibold">
-                          COD Delivery Fee: <strong>{ord.shipping_cost ? `+₹${ord.shipping_cost}` : "+₹49"}</strong>
-                        </span>
-                      ) : (
-                        <span className="text-emerald-700 font-semibold">
-                          Delivery: <strong>{ord.shipping_cost && ord.shipping_cost > 0 ? `₹${ord.shipping_cost}` : "FREE"}</strong>
-                        </span>
+                      {displayedTotal > productSubtotal && (
+                        <>
+                          <span>•</span>
+                          <span className="text-amber-700 font-semibold">
+                            Delivery & Fees: <strong>+₹{displayedTotal - productSubtotal}</strong>
+                          </span>
+                        </>
+                      )}
+                      {advancePaid > 0 && isCod && (
+                        <>
+                          <span>•</span>
+                          <span className="text-emerald-700 font-semibold">
+                            Advance Paid: <strong>-₹{advancePaid}</strong>
+                          </span>
+                        </>
                       )}
                       {ord.discount_amount && ord.discount_amount > 0 ? (
                         <>
@@ -1095,7 +1109,7 @@ function OrdersPageContent() {
                     <div className="text-left sm:text-right font-bold text-gray-900">
                       {isCod ? "Payable on Delivery:" : "Total Paid:"}{" "}
                       <span className={`text-sm font-extrabold ${isPaid ? "text-emerald-700" : "text-[#FF7A00]"}`}>
-                        ₹{displayedTotal.toLocaleString()}
+                        ₹{(isCod && !isPaid ? balanceDue : displayedTotal).toLocaleString()}
                       </span>
                     </div>
                   </div>
