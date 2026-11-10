@@ -88,7 +88,7 @@ export default function ProductDetailPage() {
   const mouseStartXRef = useRef<number>(0);
   const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const { addToCart, openCart } = useCart();
+  const { addToCart, openCart, freeShippingThreshold } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   // Fetch real reviews stats immediately for flawless header synchronization
@@ -1380,7 +1380,13 @@ export default function ProductDetailPage() {
                 </span>
               )}
             </div>
-            <p className="text-[12px] text-gray-400 -mt-0.5">Inclusive of all taxes & free shipping</p>
+            {product.price >= (typeof freeShippingThreshold === "number" ? freeShippingThreshold : 499) ? (
+              <p className="text-[12px] text-gray-400 -mt-0.5">Inclusive of all taxes & free express delivery</p>
+            ) : (
+              <p className="text-[12px] text-gray-400 -mt-0.5">
+                Inclusive of all taxes • Free delivery on orders above ₹{(freeShippingThreshold || 499).toLocaleString("en-IN")}
+              </p>
+            )}
 
             {/* Delivery by Date Banner with Animated Moving Truck */}
             <div className="mt-3.5 p-3 sm:py-3.5 sm:px-4.5 rounded-[16px] bg-[#F3F4F6] flex items-center gap-2.5 sm:gap-3">

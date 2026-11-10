@@ -1102,10 +1102,10 @@ function CheckoutContent() {
     const cartIds = new Set(
       cart.flatMap((c) => [
         c.id,
-        c.slug,
+        (c as any).slug,
         (c as any).product_id,
         c.id?.replace(/^turkiye-jam-/, ""),
-        c.slug?.replace(/^turkiye-jam-/, ""),
+        (c as any).slug?.replace(/^turkiye-jam-/, ""),
       ]).filter(Boolean)
     );
     return BUMP_PRODUCTS.filter((b) => {

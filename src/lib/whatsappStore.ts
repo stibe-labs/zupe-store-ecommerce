@@ -80,12 +80,19 @@ export interface WhatsAppConversation {
 export interface WhatsAppTemplate {
   id: string;
   title: string;
-  category: "Orders" | "Logistics" | "Marketing" | "Support";
+  category: "Orders" | "Logistics" | "Marketing" | "Support" | "Sales";
   body: string;
   variables: string[];
 }
 
 export const WHATSAPP_TEMPLATES: WhatsAppTemplate[] = [
+  {
+    id: "malayalam_pricing_inquiry",
+    title: "Malayalam Pricing & Order Guide (മലയാളം)",
+    category: "Sales",
+    body: "നമസ്കാരം 😊\n*Turkiye Jam* അന്വേഷിച്ചതിന് നന്ദി!\n\nലഭ്യമായ പാക്കുകളും വിലയും 👇\n\n🔸 *2 സാഷെ — ₹899*\n🔸 *3 സാഷെ — ₹1,099*\n🔸 *4 സാഷെ — ₹1,399*\n🔸 *6 സാഷെ — ₹1,899*\n🎁 *12 + 2 സാഷെ ബോക്സ് — ₹2,899*\n(ആകെ 14 സാഷെ ലഭിക്കും!)\n\n🫙 *240g ജാർ + 2 സാഷെ ഫ്രീ — ₹2,899*\n_(നിലവിൽ സ്റ്റോക്കില്ല)_\n\n📦 ഇന്ത്യയിലുടനീളം സൗജന്യ ഡെലിവറി (Free Delivery)\n💵 Cash on Delivery (COD) ലഭ്യമാണ്\n🛵 കൊച്ചിയിൽ Porter വഴി 1 മണിക്കൂർ എക്സ്പ്രസ് ഡെലിവറി — ലഭ്യത അനുസരിച്ച്.\n\n🌐 *വെബ്‌സൈറ്റ് വഴി നേരിട്ട് ഓർഡർ ചെയ്യാൻ:*\nhttps://turkiyejam.com\n\n💬 *WhatsApp വഴി നേരിട്ട് വാങ്ങാൻ:*\nഏത് പാക്കാണ് വേണ്ടതെന്ന് അറിയിച്ച് നിങ്ങളുടെ *പേര്, പൂർണ്ണ വിലാസം, പിൻകോഡ്* ഇവിടെ അയച്ചാൽ മതിയാകും. ഞങ്ങൾ ഓർഡർ ബുക്ക് ചെയ്ത് അയച്ചു തരാം! 😊\n\n*ഏത് പാക്കാണ് താങ്കൾക്ക് വേണ്ടത്?*",
+    variables: [],
+  },
   {
     id: "order_confirmation_cod",
     title: "Order Confirmation Request (COD)",
