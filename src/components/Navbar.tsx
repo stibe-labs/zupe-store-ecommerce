@@ -491,16 +491,16 @@ export function Navbar() {
                     setMobileMenuOpen(false);
                     handleAccountClick(e);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-neutral-300 hover:bg-white/5 hover:text-white"
                 >
                   {isAuthenticated ? "My Account" : "Sign In / Register"}
                 </button>
               </div>
 
               {/* Departments */}
-              <div className="border-t border-slate-200 pt-3">
-                <p className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                  Shop By Department
+              <div className="border-t border-white/10 pt-3">
+                <p className="px-3 text-xs font-bold uppercase tracking-wider text-neutral-400 mb-2 font-movault">
+                  Shop By Category
                 </p>
                 <div className="space-y-1">
                   {departments.map((dep) => {
@@ -510,9 +510,9 @@ export function Navbar() {
                         key={dep.name}
                         href={dep.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-[#002D62]"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-neutral-300 hover:bg-white/5 hover:text-[#D4AF37]"
                       >
-                        <Icon className="w-4 h-4 text-[#002D62]" />
+                        <Icon className="w-4 h-4 text-[#D4AF37]" />
                         <span>{dep.name}</span>
                       </Link>
                     );
@@ -521,17 +521,17 @@ export function Navbar() {
               </div>
 
               {/* Customer Support */}
-              <div className="border-t border-slate-200 pt-3 space-y-2">
+              <div className="border-t border-white/10 pt-3 space-y-2">
                 <a
-                  href="mailto:support@vittaldigital.com"
-                  className="flex items-center gap-3 p-3 rounded-xl bg-blue-50/70 hover:bg-blue-100/70 transition-colors"
+                  href={`mailto:${siteConfig.supportEmail}`}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-[#141416] border border-white/10 hover:border-[#D4AF37]/40 transition-colors"
                 >
-                  <Mail className="w-5 h-5 text-[#002D62] shrink-0" />
+                  <Mail className="w-5 h-5 text-[#D4AF37] shrink-0" />
                   <div className="truncate">
-                    <span className="block text-[10px] text-neutral-400 font-bold uppercase tracking-wider">
+                    <span className="block text-[10px] text-neutral-400 font-bold uppercase tracking-wider font-movault">
                       Email Support
                     </span>
-                    <span className="block text-xs font-bold text-neutral-200 truncate">
+                    <span className="block text-xs font-bold text-neutral-200 truncate font-mograph">
                       {siteConfig.supportEmail}
                     </span>
                   </div>
@@ -541,14 +541,14 @@ export function Navbar() {
                   href={`https://wa.me/${siteConfig.whatsappNumber}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50/70 hover:bg-emerald-100/70 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-[#141416] border border-white/10 hover:border-[#25D366]/40 transition-colors"
                 >
-                  <Headphones className="w-5 h-5 text-emerald-700 shrink-0" />
+                  <Headphones className="w-5 h-5 text-[#25D366] shrink-0" />
                   <div>
-                    <span className="block text-[10px] text-emerald-900 font-bold uppercase tracking-wider">
+                    <span className="block text-[10px] text-emerald-400 font-bold uppercase tracking-wider font-movault">
                       WhatsApp Support
                     </span>
-                    <span className="block text-xs font-bold text-slate-900">
+                    <span className="block text-xs font-bold text-white font-mograph">
                       +91 91623 81659
                     </span>
                   </div>

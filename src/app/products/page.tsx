@@ -265,15 +265,15 @@ function ProductsContent() {
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-200 text-xs font-bold uppercase tracking-wider mb-2">
-                <Sparkles className="w-3.5 h-3.5 text-[#FFBE00]" />
-                <span>100% Genuine • 1-Year Pan-India Warranty</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#272015] border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold uppercase tracking-wider mb-2 font-movault">
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>100% Authentic • Direct Sourcing</span>
               </div>
-              <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+              <h1 className="font-movault text-3xl sm:text-5xl lg:text-6xl font-bold uppercase tracking-wider text-white">
                 Explore All Products
               </h1>
-              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl font-medium leading-relaxed">
-                Discover genuine Apple, Samsung, Lenovo, HP, boAt, Sony & JBL electronics with express delivery across India.
+              <p className="font-mograph text-xs sm:text-sm text-neutral-300 mt-1 max-w-xl font-medium leading-relaxed">
+                Discover authentic Gym Supplements, Outfits, Apparels, Gourmet Dates &amp; Handcrafted Chocolates.
               </p>
             </div>
 
@@ -603,7 +603,7 @@ function ProductsContent() {
                           </span>
 
                           <Link href={`/products/${product.slug || product.id}`}>
-                            <h3 className="text-xs sm:text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors line-clamp-2 leading-snug mb-2 min-h-[34px]">
+                            <h3 className="font-mograph text-xs sm:text-sm font-semibold text-slate-900 hover:text-[#D4AF37] transition-colors line-clamp-2 leading-snug mb-2 min-h-[34px]">
                               {product.name}
                             </h3>
                           </Link>
@@ -611,27 +611,27 @@ function ProductsContent() {
 
                         <div>
                           <div className="flex items-baseline gap-1.5 mb-3 pt-2 border-t border-slate-100">
-                            <span className="text-base font-black text-slate-900">
+                            <span className="font-mograph text-base font-extrabold text-slate-900">
                               ₹{product.price.toLocaleString("en-IN")}
                             </span>
                             {product.mrp && product.mrp > product.price && (
-                              <span className="text-xs text-slate-400 line-through">
+                              <span className="font-mograph text-xs text-slate-400 line-through">
                                 ₹{product.mrp.toLocaleString("en-IN")}
                               </span>
                             )}
                           </div>
 
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 font-movault tracking-wide uppercase">
                             <button
                               onClick={() => handleAddToCart(product)}
-                              className="flex-1 py-2 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 text-xs font-black flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+                              className="flex-1 py-2 rounded-xl bg-[#D4AF37] hover:bg-[#C8A261] text-black text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer"
                             >
                               <ShoppingCart className="w-3.5 h-3.5 stroke-[2.5]" />
                               <span>Add</span>
                             </button>
                             <button
                               onClick={() => handleBuyNow(product)}
-                              className="flex-1 py-2 rounded-xl bg-[#002D62] hover:bg-blue-900 active:bg-blue-950 text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
+                              className="flex-1 py-2 rounded-xl bg-neutral-900 hover:bg-black text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
                             >
                               Buy Now
                             </button>

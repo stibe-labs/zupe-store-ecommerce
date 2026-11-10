@@ -833,18 +833,18 @@ export default function ProductDetailPage() {
             </div>
 
             {/* CTA Buttons: Add to Cart & Buy Now */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-5 font-movault tracking-wider uppercase">
               <button
                 onClick={handleAddToCart}
-                className="bg-[#FFBE00] hover:bg-[#F0B200] active:scale-[0.98] text-slate-950 font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-xs transition-all text-sm sm:text-base cursor-pointer"
+                className="bg-[#D4AF37] hover:bg-[#C8A261] active:scale-[0.98] text-black font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-xs transition-all text-base sm:text-lg cursor-pointer"
               >
-                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
                 <span>Add to Cart</span>
               </button>
 
               <button
                 onClick={handleBuyNow}
-                className="bg-[#002D62] hover:bg-blue-900 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md transition-all text-sm sm:text-base cursor-pointer"
+                className="bg-neutral-900 hover:bg-black active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md transition-all text-base sm:text-lg cursor-pointer"
               >
                 <Zap className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
                 <span>Buy Now</span>

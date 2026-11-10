@@ -59,7 +59,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-[#070708] text-neutral-400 border-t border-white/10 pt-5 sm:pt-8 pb-24 md:pb-16 font-sans">
+    <footer className="bg-[#070708] text-neutral-400 border-t border-white/10 pt-5 sm:pt-8 pb-24 md:pb-16 font-mograph">
       <div className="max-w-[1680px] mx-auto px-4 sm:px-8">
         {/* ================================================================= */}
         {/* UPPER INSIDE FOOTER: SLIM DARK CURVED CARD (4 BADGES IN 1 ROW)    */}
@@ -163,10 +163,10 @@ export function Footer() {
 
           {/* Desktop Column 1: Shop */}
           <div className="hidden md:block md:col-span-3">
-            <h4 className="text-white text-sm font-bold uppercase tracking-wider mb-4">
+            <h4 className="font-movault text-white text-base font-bold uppercase tracking-wider mb-4">
               Shop
             </h4>
-            <ul className="space-y-2.5 text-sm">
+            <ul className="space-y-2.5 text-sm font-mograph">
               {shopLinks.map((link) => (
                 <li key={link.label}>
                   <Link
@@ -182,10 +182,10 @@ export function Footer() {
 
           {/* Desktop Column 2: Customer Support */}
           <div className="hidden md:block md:col-span-3">
-            <h4 className="text-white text-sm font-bold uppercase tracking-wider mb-4">
+            <h4 className="font-movault text-white text-base font-bold uppercase tracking-wider mb-4">
               Customer Support
             </h4>
-            <ul className="space-y-2.5 text-sm">
+            <ul className="space-y-2.5 text-sm font-mograph">
               {supportLinks.map((link) => (
                 <li key={link.label}>
                   <Link
@@ -201,10 +201,10 @@ export function Footer() {
 
           {/* Desktop Column 3: About */}
           <div className="hidden md:block md:col-span-2">
-            <h4 className="text-white text-sm font-bold uppercase tracking-wider mb-4">
+            <h4 className="font-movault text-white text-base font-bold uppercase tracking-wider mb-4">
               About
             </h4>
-            <ul className="space-y-2.5 text-sm">
+            <ul className="space-y-2.5 text-sm font-mograph">
               {aboutLinks.map((link) => (
                 <li key={link.label}>
                   <Link

@@ -186,7 +186,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
   };
 
   return (
-    <div className="bg-[#0B0B0C] text-white font-sans min-h-screen selection:bg-[#D4AF37] selection:text-black">
+    <div className="bg-[#0B0B0C] text-white font-mograph min-h-screen selection:bg-[#D4AF37] selection:text-black">
       {/* ===================================================================== */}
       {/* 1. HERO SECTION (Matches Mockup with Golden Accents & Fitness Hero)   */}
       {/* ===================================================================== */}
@@ -209,19 +209,19 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
           {/* Hero Content Overlay */}
           <div className="relative z-10 max-w-xl p-6 sm:p-10 lg:p-16 flex flex-col items-start justify-center">
             {/* Small Subtitle */}
-            <span className="text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase text-neutral-400 mb-2 sm:mb-3">
+            <span className="font-movault text-xs sm:text-sm font-bold tracking-[0.25em] uppercase text-[#D4AF37] mb-2 sm:mb-3">
               VITTAL LIFESTYLE
             </span>
 
             {/* Main Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.08] mb-3 sm:mb-4">
+            <h1 className="font-movault text-4xl sm:text-6xl lg:text-7xl font-bold uppercase tracking-wider text-white leading-[0.92] mb-3 sm:mb-4">
               Live Better.
               <br />
               <span className="text-[#D4AF37]">Feel Stronger.</span>
             </h1>
 
             {/* Tagline */}
-            <p className="text-xs sm:text-base text-neutral-300 font-medium leading-relaxed max-w-sm sm:max-w-md mb-6 sm:mb-8">
+            <p className="font-mograph text-xs sm:text-base text-neutral-300 font-medium leading-relaxed max-w-sm sm:max-w-md mb-6 sm:mb-8">
               Your One-Stop Lifestyle Store
               <br />
               for Fitness, Fashion & More.
@@ -230,7 +230,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
             {/* CTA Button */}
             <Link
               href="/products"
-              className="inline-flex items-center gap-2.5 bg-[#D4A373] hover:bg-[#C89565] text-neutral-950 font-bold text-xs sm:text-sm px-7 py-3 sm:py-3.5 rounded-full transition-all transform hover:scale-105 shadow-lg shadow-[#D4A373]/20"
+              className="font-movault tracking-wider uppercase inline-flex items-center gap-2.5 bg-[#D4A373] hover:bg-[#C89565] text-neutral-950 font-bold text-sm sm:text-base px-8 py-3.5 rounded-full transition-all transform hover:scale-105 shadow-lg shadow-[#D4A373]/20"
             >
               <span>Shop Now</span>
               <ArrowRight className="w-4 h-4 stroke-[2.5]" />
@@ -272,7 +272,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
               <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-white group-hover:text-[#D4AF37] transition-colors mb-1.5 sm:mb-2">
                 {cat.icon}
               </div>
-              <span className="text-[10px] sm:text-xs font-semibold text-neutral-300 group-hover:text-white leading-tight line-clamp-2">
+              <span className="font-mograph text-[10px] sm:text-xs font-semibold text-neutral-300 group-hover:text-white leading-tight line-clamp-2">
                 {cat.name}
               </span>
             </Link>
@@ -287,18 +287,18 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#141416] via-[#18181C] to-[#121214] border border-white/10 p-5 sm:p-8 lg:p-10 shadow-xl flex flex-col md:flex-row items-center justify-between min-h-[220px] sm:min-h-[260px]">
           {/* Left Text */}
           <div className="z-10 max-w-md mb-4 md:mb-0">
-            <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] text-neutral-400 uppercase block mb-1">
+            <span className="font-movault text-xs sm:text-sm font-bold tracking-[0.2em] text-[#D4AF37] uppercase block mb-1">
               PREMIUM QUALITY
             </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight mb-1 sm:mb-2">
+            <h2 className="font-movault text-3xl sm:text-5xl lg:text-6xl font-bold uppercase tracking-wide text-white leading-none mb-1 sm:mb-2">
               Up to <span className="text-[#D4AF37]">50% OFF</span>
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-400 mb-4 sm:mb-6 font-medium">
+            <p className="font-mograph text-xs sm:text-sm text-neutral-400 mb-4 sm:mb-6 font-medium">
               On Your Favorite Picks
             </p>
             <Link
               href="/products?category=Gym+Supplementaries"
-              className="inline-flex items-center gap-2 border border-[#D4AF37]/70 hover:bg-[#D4AF37] hover:text-black text-white text-xs sm:text-sm font-semibold px-5 py-2 sm:py-2.5 rounded-full transition-colors"
+              className="font-movault tracking-wider uppercase inline-flex items-center gap-2 border border-[#D4AF37]/70 hover:bg-[#D4AF37] hover:text-black text-white text-xs sm:text-sm font-bold px-6 py-2.5 rounded-full transition-colors"
             >
               <span>Shop Deals</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -322,12 +322,12 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       {/* ===================================================================== */}
       <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
+          <h2 className="font-movault text-2xl sm:text-4xl font-bold uppercase tracking-wider text-white">
             Trending Now
           </h2>
           <Link
             href="/products"
-            className="text-xs sm:text-sm font-semibold text-neutral-400 hover:text-[#D4AF37] flex items-center gap-1 transition-colors"
+            className="font-mograph text-xs sm:text-sm font-semibold text-neutral-400 hover:text-[#D4AF37] flex items-center gap-1 transition-colors"
           >
             <span>View All</span>
             <ChevronRight className="w-4 h-4" />
@@ -389,18 +389,18 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                     href={`/products/${product.id || product.slug}`}
                     className="block"
                   >
-                    <h3 className="text-xs sm:text-sm font-semibold text-white group-hover:text-[#D4AF37] transition-colors truncate mb-1">
+                    <h3 className="font-mograph text-xs sm:text-sm font-semibold text-white group-hover:text-[#D4AF37] transition-colors truncate mb-1">
                       {product.name}
                     </h3>
                   </Link>
 
                   {/* Price Row */}
                   <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-sm sm:text-base font-extrabold text-white">
+                    <span className="font-mograph text-sm sm:text-base font-extrabold text-white">
                       ₹{product.price.toLocaleString("en-IN")}
                     </span>
                     {product.mrp && product.mrp > product.price && (
-                      <span className="text-[11px] sm:text-xs text-neutral-500 line-through">
+                      <span className="font-mograph text-[11px] sm:text-xs text-neutral-500 line-through">
                         ₹{product.mrp.toLocaleString("en-IN")}
                       </span>
                     )}
@@ -409,11 +409,11 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                   {/* Discount Badge & Quick Actions */}
                   <div className="flex items-center justify-between gap-2 mt-2">
                     {discountPercent ? (
-                      <span className="bg-[#2B2317] text-[#E5C07B] text-[10px] font-bold px-2 py-0.5 rounded">
+                      <span className="font-movault bg-[#2B2317] text-[#E5C07B] text-[11px] font-bold tracking-wider uppercase px-2 py-0.5 rounded">
                         {discountPercent}% OFF
                       </span>
                     ) : (
-                      <span className="text-[10px] text-neutral-500 font-medium">In Stock</span>
+                      <span className="font-mograph text-[10px] text-neutral-500 font-medium">In Stock</span>
                     )}
 
                     <button
@@ -441,32 +441,32 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
             <div className="w-10 h-10 rounded-full bg-[#272015] text-[#D4AF37] flex items-center justify-center mb-2">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <h4 className="text-xs sm:text-sm font-bold text-white mb-0.5">100% Certified</h4>
-            <p className="text-[10px] sm:text-xs text-neutral-400">Lab-tested pure ingredients</p>
+            <h4 className="font-movault text-sm sm:text-base font-bold uppercase tracking-wide text-white mb-0.5">100% Certified</h4>
+            <p className="font-mograph text-[10px] sm:text-xs text-neutral-400">Lab-tested pure ingredients</p>
           </div>
 
           <div className="flex flex-col items-center">
             <div className="w-10 h-10 rounded-full bg-[#272015] text-[#D4AF37] flex items-center justify-center mb-2">
               <Truck className="w-5 h-5" />
             </div>
-            <h4 className="text-xs sm:text-sm font-bold text-white mb-0.5">Pan-India Express</h4>
-            <p className="text-[10px] sm:text-xs text-neutral-400">Insured express doorstep delivery</p>
+            <h4 className="font-movault text-sm sm:text-base font-bold uppercase tracking-wide text-white mb-0.5">Pan-India Express</h4>
+            <p className="font-mograph text-[10px] sm:text-xs text-neutral-400">Insured express doorstep delivery</p>
           </div>
 
           <div className="flex flex-col items-center">
             <div className="w-10 h-10 rounded-full bg-[#272015] text-[#D4AF37] flex items-center justify-center mb-2">
               <RotateCcw className="w-5 h-5" />
             </div>
-            <h4 className="text-xs sm:text-sm font-bold text-white mb-0.5">Hassle-Free Returns</h4>
-            <p className="text-[10px] sm:text-xs text-neutral-400">7-day easy exchange guarantee</p>
+            <h4 className="font-movault text-sm sm:text-base font-bold uppercase tracking-wide text-white mb-0.5">Hassle-Free Returns</h4>
+            <p className="font-mograph text-[10px] sm:text-xs text-neutral-400">7-day easy exchange guarantee</p>
           </div>
 
           <div className="flex flex-col items-center">
             <div className="w-10 h-10 rounded-full bg-[#272015] text-[#D4AF37] flex items-center justify-center mb-2">
               <Award className="w-5 h-5" />
             </div>
-            <h4 className="text-xs sm:text-sm font-bold text-white mb-0.5">Direct Farm & Factory</h4>
-            <p className="text-[10px] sm:text-xs text-neutral-400">Sourced at source for purity</p>
+            <h4 className="font-movault text-sm sm:text-base font-bold uppercase tracking-wide text-white mb-0.5">Direct Farm & Factory</h4>
+            <p className="font-mograph text-[10px] sm:text-xs text-neutral-400">Sourced at source for purity</p>
           </div>
         </div>
       </section>

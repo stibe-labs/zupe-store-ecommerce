@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@theme {
+  --font-movault: 'Bebas Neue', 'Antonio', 'Barlow Condensed', sans-serif;
+  --font-mograph: 'Urbanist', 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Bebas Neue', 'Antonio', 'Barlow Condensed', sans-serif;
+  --font-heading: 'Antonio', 'Bebas Neue', 'Barlow Condensed', sans-serif;
+  --font-sans: 'Urbanist', 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-body: 'Urbanist', 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
 :root {
   /* ─── Vittal Digital Electronics Palette ─── */
   --zp-orange: #003055;          /* Navy / Primary */
@@ -19,9 +28,13 @@
   --zp-sand: #E5E7EB;
   --zp-slate: #64748B;
   
-  /* ─── Typography ─── */
-  --font-display: 'Outfit', system-ui, sans-serif;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* ─── Typography (MOVAULT Bold Condensed Display + MOGRAPH Clean Geometric Sans) ─── */
+  --font-movault: 'Bebas Neue', 'Antonio', 'Barlow Condensed', sans-serif;
+  --font-mograph: 'Urbanist', 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Bebas Neue', 'Antonio', 'Barlow Condensed', sans-serif;
+  --font-heading: 'Antonio', 'Bebas Neue', 'Barlow Condensed', sans-serif;
+  --font-sans: 'Urbanist', 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-body: 'Urbanist', 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-mono: 'Space Grotesk', monospace;
   
   /* ─── Motion ─── */
@@ -31,9 +44,9 @@
 
 /* ─── Base Styles ─── */
 html {
-  background-color: var(--zp-cloud);
-  color: var(--zp-charcoal);
-  font-family: var(--font-sans);
+  background-color: #070708;
+  color: #FFFFFF;
+  font-family: var(--font-mograph), var(--font-sans);
   scroll-behavior: smooth;
 }
 
@@ -44,8 +57,9 @@ html.lenis body {
 }
 
 body {
-  background-color: var(--zp-cloud);
-  color: var(--zp-charcoal);
+  background-color: #070708;
+  color: #FFFFFF;
+  font-family: var(--font-mograph), var(--font-sans);
   overflow-x: clip;
 }
 
@@ -329,13 +343,30 @@ html.lenis body {
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
-/* ─── Font Utilities ─── */
-.font-display {
-  font-family: var(--font-display);
+/* ─── Font Utilities (MOVAULT & MOGRAPH) ─── */
+.font-movault {
+  font-family: var(--font-movault);
+  letter-spacing: 0.04em;
 }
 
-.font-sans {
-  font-family: var(--font-sans);
+.font-mograph {
+  font-family: var(--font-mograph);
+  letter-spacing: -0.01em;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+}
+
+.font-heading {
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
+}
+
+.font-sans,
+.font-body {
+  font-family: var(--font-mograph);
 }
 
 .font-mono {
@@ -1101,24 +1132,14 @@ body[style*="overflow: hidden"] {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   FURNEXA LUXURY SHOWROOM DESIGN TOKENS
+   VITTAL LIFESTYLE DESIGN SYSTEM
 ───────────────────────────────────────────────────────────── */
-.font-display {
-  font-family: 'Bricolage Grotesque', 'Outfit', sans-serif;
-  letter-spacing: -0.02em;
-}
-
-.font-body {
-  font-family: 'DM Sans', 'Inter', sans-serif;
-}
-
-/* Furnexa Giant Hero Typography */
 .furnexa-hero-title {
-  font-family: 'Bricolage Grotesque', 'Outfit', sans-serif;
+  font-family: var(--font-movault);
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: -0.03em;
-  line-height: 0.85;
+  letter-spacing: 0.03em;
+  line-height: 0.9;
 }
 
 /* Furnexa Hotspot Pulse Animations */

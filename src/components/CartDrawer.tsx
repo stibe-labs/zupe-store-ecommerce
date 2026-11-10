@@ -68,7 +68,7 @@ export function CartDrawer() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white z-50 shadow-2xl flex flex-col min-h-0 overflow-hidden font-sans"
+            className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white z-50 shadow-2xl flex flex-col min-h-0 overflow-hidden font-mograph"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-white">
@@ -290,10 +290,10 @@ export function CartDrawer() {
                         router.push("/checkout");
                       }
                     }}
-                    className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm tracking-wide transition-all ${
+                    className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold font-movault text-base tracking-wider uppercase transition-all ${
                       hasOutOfStockItems
                         ? "bg-slate-300 text-slate-500 cursor-not-allowed opacity-80"
-                        : "bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 shadow-md hover:shadow-lg active:scale-[0.99] cursor-pointer"
+                        : "bg-[#D4AF37] hover:bg-[#C8A261] text-black shadow-md hover:shadow-lg active:scale-[0.99] cursor-pointer"
                     }`}
                   >
                     {hasOutOfStockItems ? "⚠️ Remove Out of Stock Items" : "Proceed to Checkout"}

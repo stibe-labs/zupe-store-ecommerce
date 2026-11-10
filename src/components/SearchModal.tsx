@@ -152,7 +152,7 @@ export function SearchModal() {
             transition={{ type: "spring", damping: 26, stiffness: 320 }}
             className="relative z-10 w-full max-w-4xl mx-auto px-3 sm:px-4 pt-3 sm:pt-6"
           >
-            <div className="bg-[#141416] rounded-3xl shadow-2xl border border-white/10 text-white overflow-hidden flex flex-col min-h-0 max-h-[85vh]">
+            <div className="bg-[#141416] rounded-3xl shadow-2xl border border-white/10 text-white overflow-hidden flex flex-col min-h-0 max-h-[85vh] font-mograph">
               {/* Search Bar Header */}
               <div className="p-3.5 sm:p-5 border-b border-white/10 shrink-0 bg-[#18181B]">
                 <form
