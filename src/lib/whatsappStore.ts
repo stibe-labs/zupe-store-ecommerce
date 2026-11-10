@@ -716,6 +716,32 @@ export async function createNewConversation(payload: {
 
   await persistConversationToD1(newConv);
 
+  // Sync into CRM leads table with deduplication
+  if (norm10 && norm10.length === 10) {
+    try {
+      const leadId = `lead_${norm10}`;
+      await executeD1Query(
+        `INSERT INTO crm_leads (
+          id, name, phone, email, source, status, temperature, potential_value, tags, notes, converted_order_id, last_contacted_at, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, 'whatsapp', 'new', 'warm', 899, ?, 'WhatsApp conversation initiated', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        ON CONFLICT(id) DO UPDATE SET
+          name = COALESCE(excluded.name, crm_leads.name),
+          last_contacted_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP`,
+        [
+          leadId,
+          newConv.customerName,
+          `+91 ${norm10}`,
+          newConv.customerEmail || "",
+          JSON.stringify(["whatsapp", newConv.category || "inquiry"]),
+          newConv.orderId || null,
+        ]
+      );
+    } catch (e) {
+      // Non-fatal
+    }
+  }
+
   return newConv;
 }
 
@@ -856,6 +882,32 @@ export async function recordInboundCustomerMessage(
     });
 
     await persistConversationToD1(conv);
+
+    // Sync into CRM leads with deduplication
+    try {
+      const leadId = `lead_${norm10}`;
+      const leadNotes = `[WhatsApp Inquiry]: ${(text || "").slice(0, 120)}`;
+      await executeD1Query(
+        `INSERT INTO crm_leads (
+          id, name, phone, email, source, status, temperature, potential_value, tags, notes, converted_order_id, last_contacted_at, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, 'whatsapp', 'new', 'hot', 899, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        ON CONFLICT(id) DO UPDATE SET
+          notes = excluded.notes,
+          last_contacted_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP`,
+        [
+          leadId,
+          conv.customerName,
+          `+91 ${norm10}`,
+          conv.customerEmail || "",
+          JSON.stringify(["whatsapp", "inbound_inquiry"]),
+          leadNotes,
+          conv.orderId || null,
+        ]
+      );
+    } catch (leadErr) {
+      // Non-fatal
+    }
     return msg;
   } catch (err) {
     console.warn("recordInboundCustomerMessage error:", err);
@@ -953,6 +1005,31 @@ export async function recordOutboundSystemMessage(
     });
 
     await persistConversationToD1(conv);
+
+    // Sync into CRM leads with deduplication
+    try {
+      const leadId = `lead_${norm10}`;
+      const leadNotes = `[WhatsApp Outbound]: ${(content || "").slice(0, 100)}`;
+      await executeD1Query(
+        `INSERT INTO crm_leads (
+          id, name, phone, email, source, status, temperature, potential_value, tags, notes, converted_order_id, last_contacted_at, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, 'whatsapp', 'contacted', 'warm', 899, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        ON CONFLICT(id) DO UPDATE SET
+          last_contacted_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP`,
+        [
+          leadId,
+          conv.customerName,
+          `+91 ${norm10}`,
+          conv.customerEmail || "",
+          JSON.stringify(["whatsapp", "outbound_contact"]),
+          leadNotes,
+          conv.orderId || null,
+        ]
+      );
+    } catch (leadErr) {
+      // Non-fatal
+    }
     return msg;
   } catch (err) {
     console.warn("recordOutboundSystemMessage error:", err);

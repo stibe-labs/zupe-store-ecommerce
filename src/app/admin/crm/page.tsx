@@ -62,8 +62,11 @@ export default function AdminCRMPage() {
     totalLeads: 0,
     newLeads: 0,
     contactedLeads: 0,
+    interestedLeads: 0,
     hotLeads: 0,
     convertedLeads: 0,
+    whatsappLeads: 0,
+    metaLeads: 0,
     pipelineValue: 0,
     conversionRate: 0,
   });
@@ -71,6 +74,8 @@ export default function AdminCRMPage() {
   const [leadSearch, setLeadSearch] = useState("");
   const [leadStatusFilter, setLeadStatusFilter] = useState("all");
   const [leadTempFilter, setLeadTempFilter] = useState("all");
+  const [leadSourceFilter, setLeadSourceFilter] = useState<"all" | "whatsapp" | "meta_ads">("all");
+  const [statusToast, setStatusToast] = useState<string | null>(null);
 
   // Meta & Ad Spend State
   const [metaConfig, setMetaConfig] = useState({
@@ -188,6 +193,7 @@ export default function AdminCRMPage() {
       const url = new URL("/api/admin/crm/leads", window.location.origin);
       if (leadStatusFilter !== "all") url.searchParams.set("status", leadStatusFilter);
       if (leadTempFilter !== "all") url.searchParams.set("temperature", leadTempFilter);
+      if (leadSourceFilter !== "all") url.searchParams.set("source", leadSourceFilter);
       if (leadSearch) url.searchParams.set("search", leadSearch);
 
       const res = await fetch(url.toString());
@@ -280,7 +286,7 @@ export default function AdminCRMPage() {
 
   useEffect(() => {
     fetchLeads();
-  }, [leadStatusFilter, leadTempFilter]);
+  }, [leadStatusFilter, leadTempFilter, leadSourceFilter]);
 
   // Load customer notes when a customer is selected
   const handleSelectCustomer = async (cust: any) => {
@@ -331,12 +337,15 @@ export default function AdminCRMPage() {
     }
   };
 
-  // Lead Status Quick-Update
+  // Lead Status Quick-Update with Instant Confirmation
   const handleUpdateLeadStatus = async (leadId: string, newStatus: CRMLead["status"]) => {
     try {
       setLeads((prev) =>
         prev.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l))
       );
+      setStatusToast(`Lead status updated to "${newStatus.toUpperCase()}"`);
+      setTimeout(() => setStatusToast(null), 3000);
+
       await fetch("/api/admin/crm/leads", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -914,51 +923,60 @@ export default function AdminCRMPage() {
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                       <Flame className="h-4 w-4 text-orange-400" />
-                      Priority Meta Ad Leads (High-Value Inquiries)
+                      Priority Leads &amp; High-Value Inquiries
                     </h3>
                     <button
                       onClick={() => setActiveTab("leads")}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+                      className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer"
                     >
-                      View Meta Leads &rarr;
+                      View All Leads &rarr;
                     </button>
                   </div>
 
                   <div className="space-y-3">
                     {leads
-                      .filter((l) => l.temperature === "hot" || l.potential_value >= 900)
+                      .filter((l) => l.temperature === "hot" || l.potential_value >= 899)
                       .slice(0, 4)
-                      .map((lead) => (
-                        <div
-                          key={lead.id}
-                          className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/80"
-                        >
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-white text-xs sm:text-sm truncate">
-                                {lead.name}
-                              </span>
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30">
-                                Hot 🔥
-                              </span>
+                      .map((lead) => {
+                        const isWA = lead.source === "whatsapp" || (Array.isArray(lead.tags) && lead.tags.includes("whatsapp"));
+                        return (
+                          <div
+                            key={lead.id}
+                            className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/80"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-white text-xs sm:text-sm truncate">
+                                  {lead.name}
+                                </span>
+                                {isWA ? (
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    WhatsApp
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30">
+                                    Hot 🔥
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-slate-400 font-mono mt-0.5">{lead.phone}</p>
                             </div>
-                            <p className="text-xs text-slate-400 font-mono mt-0.5">{lead.phone}</p>
-                          </div>
 
-                          <div className="flex items-center gap-3">
-                            <span className="font-bold text-sm text-emerald-400">
-                              ₹{lead.potential_value.toLocaleString()}
-                            </span>
-                            <button
-                              onClick={() => openWhatsAppModal(lead)}
-                              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1.5"
-                            >
-                              <MessageSquare className="h-3 w-3" />
-                              WhatsApp
-                            </button>
+                            <div className="flex items-center gap-3">
+                              <span className="font-bold text-sm text-emerald-400">
+                                ₹{lead.potential_value.toLocaleString()}
+                              </span>
+                              <button
+                                onClick={() => openWhatsAppModal(lead)}
+                                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                              >
+                                <MessageSquare className="h-3 w-3" />
+                                WhatsApp
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                   </div>
                 </div>
 
@@ -1018,31 +1036,42 @@ export default function AdminCRMPage() {
           )}
 
           {/* ========================================================= */}
-          {/* TAB 2: META AD LEADS */}
+          {/* TAB 2: CRM LEADS & WHATSAPP INQUIRIES */}
           {/* ========================================================= */}
           {activeTab === "leads" && (
             <div className="space-y-5 animate-in fade-in duration-200">
-              {/* Meta Leads Banner */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900 border border-indigo-900/40 rounded-2xl p-4">
+              {/* Status Toast Notification */}
+              {statusToast && (
+                <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-emerald-600 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-xl shadow-emerald-600/30 border border-emerald-400/40 animate-in fade-in slide-in-from-bottom-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                  <span>{statusToast}</span>
+                </div>
+              )}
+
+              {/* Desk Banner */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-emerald-950/40 via-indigo-950/30 to-slate-900 border border-emerald-900/40 rounded-2xl p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
-                    <Flame className="h-5 w-5" />
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+                    <MessageSquare className="h-5 w-5" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-sm font-bold text-white">Meta Ad Leads Desk</h2>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                        Instagram &amp; Facebook Ads
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-sm font-bold text-white">CRM Leads &amp; WhatsApp Inquiries Desk</h2>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                        <MessageSquare className="w-2.5 h-2.5" /> {leadStats.whatsappLeads || 0} WhatsApp
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1">
+                        <Flame className="w-2.5 h-2.5" /> {leadStats.metaLeads || 0} Meta Ads
                       </span>
                     </div>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Exclusively tracking visitor inquiries captured via Meta Ad clicks (fbclid / UTMs) and Meta Instant Lead Forms.
+                      Live unified pipeline consolidating WhatsApp conversations, customer inquiries, and Meta Ad leads with zero duplicates.
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
-                    {leadStats.totalLeads} Total Meta Leads
+                    {leadStats.totalLeads} Total Leads
                   </span>
                   {leads.length > 0 && (
                     <button
@@ -1051,7 +1080,7 @@ export default function AdminCRMPage() {
                       title="Delete all leads"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                      Clear All Leads
+                      Clear All
                     </button>
                   )}
                 </div>
@@ -1059,26 +1088,47 @@ export default function AdminCRMPage() {
 
               {/* Filter Bar */}
               <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="relative w-full md:w-80">
+                <div className="relative w-full md:w-72">
                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                   <input
                     type="text"
                     value={leadSearch}
                     onChange={(e) => setLeadSearch(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && fetchLeads()}
-                    placeholder="Search Meta leads by name, phone, notes..."
-                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    placeholder="Search leads, phone, WhatsApp message..."
+                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                   />
                 </div>
 
-                <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto scrollbar-none">
+                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto overflow-x-auto scrollbar-none">
+                  {/* Channel Source Filter */}
+                  <div className="flex items-center bg-slate-800/80 p-1 rounded-xl border border-slate-700/80 text-xs">
+                    {[
+                      { id: "all", label: `All (${leadStats.totalLeads})` },
+                      { id: "whatsapp", label: `💬 WhatsApp (${leadStats.whatsappLeads || 0})` },
+                      { id: "meta_ads", label: `⚡ Meta (${leadStats.metaLeads || 0})` },
+                    ].map((src) => (
+                      <button
+                        key={src.id}
+                        onClick={() => setLeadSourceFilter(src.id as any)}
+                        className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
+                          leadSourceFilter === src.id
+                            ? "bg-emerald-600 text-white font-bold shadow-xs"
+                            : "text-slate-400 hover:text-slate-200"
+                        }`}
+                      >
+                        {src.label}
+                      </button>
+                    ))}
+                  </div>
+
                   {/* Status Pills */}
                   <div className="flex items-center bg-slate-800/80 p-1 rounded-xl border border-slate-700/80 text-xs">
-                    {["all", "new", "contacted", "converted", "lost"].map((st) => (
+                    {["all", "new", "contacted", "interested", "converted", "lost"].map((st) => (
                       <button
                         key={st}
                         onClick={() => setLeadStatusFilter(st)}
-                        className={`px-2.5 py-1 rounded-lg capitalize font-medium transition ${
+                        className={`px-2.5 py-1 rounded-lg capitalize font-medium transition cursor-pointer ${
                           leadStatusFilter === st
                             ? "bg-indigo-600 text-white font-bold"
                             : "text-slate-400 hover:text-slate-200"
@@ -1095,7 +1145,7 @@ export default function AdminCRMPage() {
                       <button
                         key={temp}
                         onClick={() => setLeadTempFilter(temp)}
-                        className={`px-2 py-1 rounded-lg capitalize font-medium transition ${
+                        className={`px-2 py-1 rounded-lg capitalize font-medium transition cursor-pointer ${
                           leadTempFilter === temp
                             ? "bg-slate-700 text-white font-bold"
                             : "text-slate-400 hover:text-slate-200"
@@ -1115,11 +1165,11 @@ export default function AdminCRMPage() {
                     <thead className="bg-slate-800/60 border-b border-slate-700/80 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
                       <tr>
                         <th className="px-5 py-3.5">Lead / Contact</th>
-                        <th className="px-4 py-3.5">Meta Attribution</th>
+                        <th className="px-4 py-3.5">Channel / Source</th>
                         <th className="px-4 py-3.5">Potential Deal</th>
                         <th className="px-4 py-3.5">Score</th>
-                        <th className="px-4 py-3.5">Status</th>
-                        <th className="px-4 py-3.5">Notes</th>
+                        <th className="px-4 py-3.5">Status (Update)</th>
+                        <th className="px-4 py-3.5">Inquiry &amp; Notes</th>
                         <th className="px-5 py-3.5 text-right">Direct Actions</th>
                       </tr>
                     </thead>
@@ -1127,17 +1177,17 @@ export default function AdminCRMPage() {
                       {leadsLoading ? (
                         <tr>
                           <td colSpan={7} className="px-5 py-8 text-center text-slate-400">
-                            <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                            Loading Meta CRM leads database...
+                            <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                            Loading CRM leads &amp; WhatsApp inquiries...
                           </td>
                         </tr>
                       ) : leads.length === 0 ? (
                         <tr>
                           <td colSpan={7} className="px-5 py-8 text-center text-slate-400">
-                            <Flame className="h-8 w-8 text-slate-600 mx-auto mb-2 opacity-50" />
-                            <p className="font-semibold text-slate-300">No Meta Ad Leads found</p>
+                            <MessageSquare className="h-8 w-8 text-slate-600 mx-auto mb-2 opacity-50" />
+                            <p className="font-semibold text-slate-300">No leads found</p>
                             <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                              Incoming leads from Instagram / Facebook ad clicks (fbclid) and Meta Instant Lead Forms will populate here in real-time.
+                              Incoming inquiries from WhatsApp messages and Meta ad clicks will populate here in real-time.
                             </p>
                           </td>
                         </tr>
@@ -1145,6 +1195,8 @@ export default function AdminCRMPage() {
                         leads.map((lead) => {
                           const isHot = lead.temperature === "hot";
                           const isWarm = lead.temperature === "warm";
+                          const isWhatsApp = lead.source === "whatsapp" || (Array.isArray(lead.tags) && lead.tags.includes("whatsapp"));
+                          const isMeta = lead.source === "meta_ads" || (Array.isArray(lead.tags) && lead.tags.some((t: string) => t.includes("meta")));
 
                           return (
                             <tr key={lead.id} className="hover:bg-slate-800/40 transition">
@@ -1163,24 +1215,39 @@ export default function AdminCRMPage() {
 
                               <td className="px-4 py-3.5">
                                 <div className="flex flex-col gap-1">
-                                  <span className="inline-flex items-center gap-1 w-fit px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/25">
-                                    <Sparkles className="h-2.5 w-2.5 text-indigo-400" />
-                                    {lead.source === "meta_ads"
-                                      ? "Meta Ads (IG/FB)"
-                                      : lead.source === "meta_instant_form"
-                                      ? "Instant Lead Form"
-                                      : lead.source.replace("_", " ")}
-                                  </span>
+                                  <div className="flex flex-wrap items-center gap-1.5">
+                                    {isWhatsApp && (
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                        <MessageSquare className="h-2.5 w-2.5 text-emerald-400" />
+                                        WhatsApp
+                                      </span>
+                                    )}
+                                    {isMeta && (
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                                        <Sparkles className="h-2.5 w-2.5 text-indigo-400" />
+                                        Meta Ads
+                                      </span>
+                                    )}
+                                    {!isWhatsApp && !isMeta && (
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                                        {lead.source}
+                                      </span>
+                                    )}
+                                  </div>
+
                                   {Array.isArray(lead.tags) && lead.tags.length > 0 && (
                                     <div className="flex flex-wrap gap-1">
-                                      {lead.tags.slice(0, 3).map((tag: string, idx: number) => (
-                                        <span
-                                          key={idx}
-                                          className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/60 font-mono"
-                                        >
-                                          #{tag}
-                                        </span>
-                                      ))}
+                                      {lead.tags
+                                        .filter((t: string) => t !== "whatsapp" && t !== "meta_ads")
+                                        .slice(0, 3)
+                                        .map((tag: string, idx: number) => (
+                                          <span
+                                            key={idx}
+                                            className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/60 font-mono"
+                                          >
+                                            #{tag}
+                                          </span>
+                                        ))}
                                     </div>
                                   )}
                                 </div>
@@ -1208,28 +1275,52 @@ export default function AdminCRMPage() {
                                 <select
                                   value={lead.status}
                                   onChange={(e) => handleUpdateLeadStatus(lead.id, e.target.value as any)}
-                                  className="bg-slate-800 border border-slate-700 text-xs text-white rounded-lg px-2.5 py-1 focus:outline-none focus:border-indigo-500 capitalize"
+                                  className={`text-xs font-bold rounded-lg px-2.5 py-1.5 focus:outline-none capitalize transition border cursor-pointer ${
+                                    lead.status === "new"
+                                      ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/40"
+                                      : lead.status === "contacted"
+                                      ? "bg-blue-500/15 text-blue-300 border-blue-500/40"
+                                      : lead.status === "interested"
+                                      ? "bg-amber-500/15 text-amber-300 border-amber-500/40"
+                                      : lead.status === "converted"
+                                      ? "bg-green-500/20 text-green-300 border-green-500/50"
+                                      : "bg-slate-800 text-slate-400 border-slate-700"
+                                  }`}
                                 >
-                                  <option value="new">New Lead</option>
-                                  <option value="contacted">Contacted</option>
-                                  <option value="interested">Interested</option>
-                                  <option value="converted">Converted</option>
-                                  <option value="lost">Lost</option>
+                                  <option value="new" className="bg-slate-900 text-emerald-400 font-semibold">New Lead</option>
+                                  <option value="contacted" className="bg-slate-900 text-blue-400 font-semibold">Contacted</option>
+                                  <option value="interested" className="bg-slate-900 text-amber-400 font-semibold">Interested</option>
+                                  <option value="converted" className="bg-slate-900 text-green-400 font-semibold">Converted 🎉</option>
+                                  <option value="lost" className="bg-slate-900 text-slate-400 font-semibold">Lost</option>
                                 </select>
                               </td>
 
-                              <td className="px-4 py-3.5 text-slate-400 max-w-xs truncate text-[11px]">
-                                {lead.notes || <span className="italic text-slate-600">No notes</span>}
+                              <td className="px-4 py-3.5 text-slate-300 max-w-xs text-[11px] leading-relaxed">
+                                {lead.notes ? (
+                                  <div className="line-clamp-2" title={lead.notes}>
+                                    {lead.notes}
+                                  </div>
+                                ) : (
+                                  <span className="italic text-slate-600">No notes</span>
+                                )}
                               </td>
 
                               <td className="px-5 py-3.5 text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  <button
-                                    onClick={() => openWhatsAppModal(lead)}
-                                    title="Send 1-Click WhatsApp Message"
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <Link
+                                    href="/admin/whatsapp"
+                                    title="Open in WhatsApp Admin Inbox"
                                     className="p-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-white transition border border-emerald-500/30"
                                   >
                                     <MessageSquare className="h-4 w-4" />
+                                  </Link>
+
+                                  <button
+                                    onClick={() => openWhatsAppModal(lead)}
+                                    title="Send Custom WhatsApp Message"
+                                    className="p-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white transition border border-emerald-600/30 cursor-pointer"
+                                  >
+                                    <Send className="h-4 w-4" />
                                   </button>
 
                                   <a
@@ -1243,7 +1334,7 @@ export default function AdminCRMPage() {
                                   <button
                                     onClick={() => handleDeleteLead(lead.id, lead.name)}
                                     title="Delete Lead"
-                                    className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition border border-rose-500/20"
+                                    className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition border border-rose-500/20 cursor-pointer"
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </button>
