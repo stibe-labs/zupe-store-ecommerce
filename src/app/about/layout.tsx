@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Us | Vittal Digital — Genuine Flagship Electronics",
+  title: "About Us | Vittal Lifestyle — Live Better. Feel Stronger.",
   description:
-    "Discover the Vittal Digital story: authentic flagship electronics sourced directly, 1-year comprehensive warranty support, and express delivery across India.",
+    "Discover the Vittal Lifestyle story: premium gym supplements, athletic performance apparel, royal dates & nuts, and artisan dark chocolates crafted for vitality and strength.",
 };
 
 export default function AboutLayout({

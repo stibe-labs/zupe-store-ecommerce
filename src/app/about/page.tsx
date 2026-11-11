@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Sparkles,
   ShieldCheck,
@@ -14,15 +15,18 @@ import {
   PackageCheck,
   Award,
   Truck,
-  Headphones,
   BadgeCheck,
   CreditCard,
   Package,
-  Plane,
-  Lock,
   MessageCircle,
   Check,
   ChevronRight as BreadcrumbChevron,
+  Dumbbell,
+  Shirt,
+  Layers,
+  Heart,
+  Zap,
+  RotateCcw,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -83,67 +87,111 @@ function CountUpNumber({
   }, [hasStarted, target, duration]);
 
   return (
-    <div ref={ref} className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#001D40] tracking-tight">
+    <div ref={ref} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#D4A373] tracking-tight font-movault">
       {count.toLocaleString()}
       {suffix}
     </div>
   );
 }
 
-// Authentic Vittal Digital core trust promises
+// Authentic Vittal Lifestyle core trust promises
 const TRUST_ITEMS = [
-  { icon: Package, title: "Factory Sealed", sub: "Original Products" },
-  { icon: BadgeCheck, title: "100% Genuine", sub: "Authentic & Verified" },
-  { icon: Award, title: "Warranty Across India", sub: "Hassle-free Support" },
-  { icon: CreditCard, title: "Secure Payments", sub: "UPI, Cards, Net Banking" },
-  { icon: Truck, title: "Express Delivery", sub: "5-7 Days Across India" },
+  { icon: Dumbbell, title: "100% Lab Tested", sub: "Purity & Macro Verified" },
+  { icon: Shirt, title: "Active Outfits", sub: "Breathable & Flexible" },
+  { icon: Sparkles, title: "Direct Farm Fresh", sub: "Royal Dates & Nuts" },
+  { icon: Truck, title: "Express Insured", sub: "Pan-India Air Logistics" },
+  { icon: RotateCcw, title: "7-Day Easy Returns", sub: "Hassle-Free Guarantee" },
 ];
 
-// Authentic Vittal Digital customer reviews
+// The 5 Lifestyle Pillars of Vittal Lifestyle
+const LIFESTYLE_PILLARS = [
+  {
+    category: "Gym Supplementaries",
+    title: "Pure Science. Uncompromised Power.",
+    desc: "From ultra-filtered 100% Whey Protein Isolate to ultra-fine Micronized Creatine, every batch is verified for maximum bioavailability, clean mixability, and zero banned substances.",
+    tag: "Peak Performance",
+    icon: Dumbbell,
+    link: "/products?category=Gym+Supplementaries",
+  },
+  {
+    category: "Outfits",
+    title: "Ergonomic Activewear for Every Rep.",
+    desc: "Engineered with high-tensile 4-way stretch fabrics, seamless moisture-wicking weaves, and athletic contours that move naturally with your body through heavy sets.",
+    tag: "Pro Mobility",
+    icon: Shirt,
+    link: "/products?category=Outfits",
+  },
+  {
+    category: "Apparels",
+    title: "Heavyweight Street & Gym Silhouettes.",
+    desc: "240+ GSM custom-knitted drop-shoulder oversized tees and signature casual wear designed for post-workout comfort, streetwear styling, and all-day confidence.",
+    tag: "Modern Fit",
+    icon: Layers,
+    link: "/products?category=Apparels",
+  },
+  {
+    category: "Dates & Nuts",
+    title: "Nature's Royal Pre-Workout Fuel.",
+    desc: "Handpicked Authentic Saudi Medina Ajwa dates, jumbo Egyptian Medjool, and slow-roasted almonds. Pure unrefined energy, high dietary fiber, and essential minerals.",
+    tag: "Whole Nutrition",
+    icon: Sparkles,
+    link: "/products?category=Dates+%26+Nuts",
+  },
+  {
+    category: "Candy & Chocolates",
+    title: "Guilt-Free Artisan Indulgence.",
+    desc: "Handcrafted 70% dark chocolates and high-protein cocoa bites made from pure cocoa butter with zero trans fat, providing clean antioxidant-rich energy without breaking your diet.",
+    tag: "Mindful Treats",
+    icon: Heart,
+    link: "/products?category=Candy+%26+Chocolates",
+  },
+];
+
+// Authentic Vittal Lifestyle customer reviews
 const VOICES_OF_TRUST = [
   {
     id: 1,
     quote:
-      "A seamless shopping experience from order to unboxing. Delivery took only 3 days to Mumbai, and the device arrived 100% brand new with intact manufacturer seal.",
-    author: "Rahul M.",
-    location: "Mumbai, Maharashtra",
-    product: "UltraSlim Laptop 14 OLED",
+      "Unbelievable mixability and zero bloating. I've switched from expensive imported brands, and Vittal Lifestyle matches or beats them in every lab test. 27g clean protein per scoop with a silky smooth rich taste.",
+    author: "Aryan K.",
+    location: "Bengaluru, Karnataka",
+    product: "Whey Protein Isolate",
     rating: 5,
   },
   {
     id: 2,
     quote:
-      "I was skeptical about buying imported electronics online, but Vittal Digital's WhatsApp team shared dispatch photos and verified serial numbers before shipping. The 1-year warranty coverage gave me complete peace of mind.",
-    author: "Vikram S.",
-    location: "Bengaluru, Karnataka",
-    product: "Smart Watch Pro",
+      "The oversized drop-shoulder fit is perfection. Heavyweight 240 GSM cotton that drapes exceptionally well and doesn't lose its shape or color after intense gym sessions and machine washes. Ordered 2 more colors!",
+    author: "Rohan M.",
+    location: "Mumbai, Maharashtra",
+    product: "Oversized Athletic T-Shirt",
     rating: 5,
   },
   {
     id: 3,
     quote:
-      "Received the ANC Wireless Earbuds in factory-sealed original retail packaging. Sound quality and battery life are extraordinary. Incredible value compared to Indian retail prices.",
-    author: "Ananya P.",
-    location: "New Delhi, Delhi NCR",
-    product: "Wireless Earbuds ANC",
+      "The softest, freshest Ajwa dates I have ever ordered online. Perfectly moist, aromatic, and naturally sweet. A permanent staple in my morning pre-workout meal now. Packing was airtight and premium.",
+    author: "Fatima Z.",
+    location: "Hyderabad, Telangana",
+    product: "Premium Royal Dates",
     rating: 5,
   },
   {
     id: 4,
     quote:
-      "Customer support on WhatsApp is lightning-fast and courteous. They confirmed official stock verification and warranty registration steps. The tablet arrived with insured courier in pristine condition.",
-    author: "Karthik R.",
-    location: "Hyderabad, Telangana",
-    product: "Everyday Tablet 11",
+      "Completely micronized and 100% tasteless. Dissolves within seconds in plain water with zero grit. Noticeable strength and pump gains within two weeks. Shipped safely with tamper seal intact.",
+    author: "Vikram S.",
+    location: "New Delhi, Delhi NCR",
+    product: "Micronized Creatine Powder",
     rating: 5,
   },
   {
     id: 5,
     quote:
-      "Genuine flagship device with full Indian 5G band support and original power adapter. The display and quad Dolby speakers are incredible for productivity and streaming.",
-    author: "Siddharth N.",
-    location: "Kochi, Kerala",
-    product: "UltraBook Pro 15",
+      "Rich 70% dark cocoa flavor without any bitter aftertaste. Crisp snap, clean cocoa butter aroma, and zero artificial junk. The best guilt-free evening indulgence to kill sweet tooth cravings while staying lean.",
+    author: "Ananya D.",
+    location: "Pune, Maharashtra",
+    product: "Artisan 70% Dark Chocolate",
     rating: 5,
   },
 ];
@@ -182,7 +230,7 @@ export default function AboutPage() {
     280,
     containerWidth > 640
       ? Math.min(560, Math.floor(containerWidth * 0.74))
-      : Math.floor(containerWidth * 0.84)
+      : Math.floor(containerWidth * 0.86)
   );
   const cardGap = containerWidth > 640 ? 20 : 14;
   const centerOffset = containerWidth > 0 ? (containerWidth - cardWidth) / 2 : 0;
@@ -202,7 +250,7 @@ export default function AboutPage() {
     if (isInteracting) return;
     const timer = setInterval(() => {
       nextSlide();
-    }, 4000);
+    }, 4500);
     return () => clearInterval(timer);
   }, [isInteracting, nextSlide, currentIndex]);
 
@@ -266,68 +314,90 @@ export default function AboutPage() {
     VOICES_OF_TRUST.length;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col justify-between selection:bg-[#002D62] selection:text-white font-sans">
+    <div className="min-h-screen bg-[#070708] text-white flex flex-col justify-between selection:bg-[#D4A373] selection:text-black font-mograph">
       <Navbar />
 
       <main className="flex-1">
         {/* ========================================================
             1. HERO SECTION: BRAND INTRODUCTION
            ======================================================== */}
-        <section className="relative pt-6 sm:pt-10 pb-12 sm:pb-16 bg-gradient-to-b from-white via-slate-50 to-[#F8FAFC] border-b border-slate-200/80 overflow-hidden">
-          {/* Subtle Ambient Background Gradients */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none overflow-hidden opacity-60">
-            <div className="absolute -top-32 left-1/4 w-96 h-96 rounded-full bg-blue-100/50 blur-3xl" />
-            <div className="absolute top-10 right-1/4 w-80 h-80 rounded-full bg-amber-50/60 blur-3xl" />
+        <section className="relative pt-6 sm:pt-12 pb-14 sm:pb-20 bg-gradient-to-b from-[#0e0e11] via-[#09090b] to-[#070708] border-b border-white/10 overflow-hidden">
+          {/* Subtle Luxury Ambient Background Gradients */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none overflow-hidden opacity-40">
+            <div className="absolute -top-32 left-1/4 w-96 h-96 rounded-full bg-[#D4AF37]/10 blur-[100px]" />
+            <div className="absolute top-10 right-1/4 w-80 h-80 rounded-full bg-[#D4A373]/10 blur-[100px]" />
           </div>
 
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6">
             {/* Clean Breadcrumb */}
-            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 mb-6">
-              <Link href="/" className="hover:text-[#002D62] transition-colors">
+            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-neutral-400 mb-6">
+              <Link href="/" className="hover:text-[#D4A373] transition-colors">
                 Home
               </Link>
-              <BreadcrumbChevron className="w-3.5 h-3.5 text-slate-400" />
-              <span className="font-medium text-slate-800">About Us</span>
+              <BreadcrumbChevron className="w-3.5 h-3.5 text-neutral-600" />
+              <span className="font-semibold text-white">About Us</span>
             </nav>
 
             <div className="text-center max-w-3xl mx-auto">
               {/* Tagline Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-xs font-semibold text-[#002D62] mb-4 shadow-2xs">
-                <Sparkles className="w-3.5 h-3.5 text-[#002D62]" />
-                <span>Direct Brand Sourcing • 100% Factory Sealed</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#272015] border border-[#D4AF37]/30 text-xs font-semibold text-[#D4AF37] mb-5 shadow-sm">
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span className="tracking-wide uppercase font-movault text-[13px]">
+                  Pure Nutrition • Performance Apparel • Mindful Living
+                </span>
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-slate-900 tracking-tight leading-tight">
-                The Vittal Digital Story
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight uppercase font-movault">
+                Live Better. <span className="text-[#D4A373]">Feel Stronger.</span>
               </h1>
 
               {/* Subtitle */}
-              <p className="mt-4 text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed font-normal max-w-2xl mx-auto">
-                We bring world-class flagship consumer electronics directly to doorstep locations across India. Enjoy authentic, factory-sealed hardware with 1-year comprehensive warranty support and rapid insured logistics.
+              <p className="mt-4 text-sm sm:text-base md:text-lg text-neutral-300 leading-relaxed font-normal max-w-2xl mx-auto">
+                Vittal Lifestyle was built on a simple conviction: you should never have to compromise between physical strength, peak wellness, and premium everyday aesthetics. We craft lab-certified supplements, ergonomic activewear, farm-sourced dates &amp; nuts, and artisan dark chocolates directly for discerning Indian athletes and mindful families.
               </p>
+
+              {/* Action Buttons */}
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href="/products"
+                  className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#D4A373] hover:bg-[#c29263] text-black font-bold text-sm shadow-lg hover:shadow-[#D4A373]/20 transition-all font-movault uppercase tracking-wider"
+                >
+                  <span>Explore Catalog</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <a
+                  href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Lifestyle%2C%20I%20would%20like%20to%20know%20more%20about%20your%20products`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 hover:bg-white/10 text-white border border-white/15 text-sm font-semibold transition-all"
+                >
+                  <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                  <span>Talk to Concierge</span>
+                </a>
+              </div>
             </div>
           </div>
         </section>
 
         {/* ========================================================
-            TRUST STRIP (Genuine, Warranty, Express, etc.)
+            TRUST STRIP (Lab Tested, Outfits, Farm Direct, etc.)
            ======================================================== */}
-        <section className="py-5 sm:py-6 border-b border-slate-200/80 bg-white shadow-2xs">
+        <section className="py-5 sm:py-6 border-b border-white/10 bg-[#0B0B0C] shadow-sm">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
               {TRUST_ITEMS.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div key={item.title} className="flex items-center gap-3">
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-                      <Icon className="w-5 h-5 text-[#002D62]" />
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#18181b] border border-white/10 flex items-center justify-center shrink-0">
+                      <Icon className="w-5 h-5 text-[#D4AF37]" />
                     </div>
                     <div>
-                      <h4 className="text-xs sm:text-sm font-semibold text-slate-900 leading-tight">
+                      <h4 className="text-xs sm:text-sm font-bold text-white leading-tight">
                         {item.title}
                       </h4>
-                      <p className="text-[11px] sm:text-xs text-slate-500 leading-tight mt-0.5">
+                      <p className="text-[11px] sm:text-xs text-neutral-400 leading-tight mt-0.5">
                         {item.sub}
                       </p>
                     </div>
@@ -341,50 +411,54 @@ export default function AboutPage() {
         {/* ========================================================
             2. COUNTED METRICS BANNER
            ======================================================== */}
-        <section className="py-8 sm:py-12 border-b border-slate-200/80 bg-white">
+        <section className="py-10 sm:py-14 border-b border-white/10 bg-[#0E0E10]">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Stat 1 */}
-              <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 sm:p-6 text-center transition-all hover:bg-white hover:shadow-md">
+              <div className="bg-[#141416] rounded-2xl border border-white/10 p-5 sm:p-6 text-center transition-all hover:border-[#D4AF37]/30 hover:shadow-lg">
                 <CountUpNumber target={100} suffix="%" duration={1600} />
-                <span className="block mt-2 text-xs sm:text-sm font-semibold text-slate-900">
-                  Factory Sealed Stock
+                <span className="block mt-2 text-xs sm:text-sm font-bold text-white uppercase tracking-wider font-movault">
+                  Certified Pure Stock
                 </span>
-                <span className="block mt-0.5 text-[11px] sm:text-xs text-slate-500 font-medium">
-                  100% Factory Sealed & Genuine
+                <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-400 font-medium">
+                  Lab tested macros &amp; zero fillers
                 </span>
               </div>
 
               {/* Stat 2 */}
-              <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 sm:p-6 text-center transition-all hover:bg-white hover:shadow-md">
-                <CountUpNumber target={1} suffix=" Yr" duration={1400} />
-                <span className="block mt-2 text-xs sm:text-sm font-semibold text-slate-900">
-                  Pan-India Warranty
+              <div className="bg-[#141416] rounded-2xl border border-white/10 p-5 sm:p-6 text-center transition-all hover:border-[#D4AF37]/30 hover:shadow-lg">
+                <CountUpNumber target={25000} suffix="+" duration={1800} />
+                <span className="block mt-2 text-xs sm:text-sm font-bold text-white uppercase tracking-wider font-movault">
+                  Active Fitness Enthusiasts
                 </span>
-                <span className="block mt-0.5 text-[11px] sm:text-xs text-slate-500 font-medium">
-                  Dedicated service & replacement
+                <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-400 font-medium">
+                  Delivered across 28 Indian states
                 </span>
               </div>
 
               {/* Stat 3 */}
-              <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 sm:p-6 text-center transition-all hover:bg-white hover:shadow-md">
-                <CountUpNumber target={15000} suffix="+" duration={1800} />
-                <span className="block mt-2 text-xs sm:text-sm font-semibold text-slate-900">
-                  Happy Tech Buyers
+              <div className="bg-[#141416] rounded-2xl border border-white/10 p-5 sm:p-6 text-center transition-all hover:border-[#D4AF37]/30 hover:shadow-lg">
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#D4A373] tracking-tight font-movault">
+                  4.9 <span className="text-xl sm:text-2xl text-neutral-400">/ 5.0</span>
+                </div>
+                <span className="block mt-2 text-xs sm:text-sm font-bold text-white uppercase tracking-wider font-movault">
+                  Verified Customer Rating
                 </span>
-                <span className="block mt-0.5 text-[11px] sm:text-xs text-slate-500 font-medium">
-                  Delivered across 28 states
+                <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-400 font-medium">
+                  Over 1,400+ 5-star verified reviews
                 </span>
               </div>
 
               {/* Stat 4 */}
-              <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 sm:p-6 text-center transition-all hover:bg-white hover:shadow-md">
-                <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#001D40] tracking-tight">5–7 Days</div>
-                <span className="block mt-2 text-xs sm:text-sm font-semibold text-slate-900">
-                  Avg. Insured Air Delivery
+              <div className="bg-[#141416] rounded-2xl border border-white/10 p-5 sm:p-6 text-center transition-all hover:border-[#D4AF37]/30 hover:shadow-lg">
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#D4A373] tracking-tight font-movault">
+                  48 Hrs
+                </div>
+                <span className="block mt-2 text-xs sm:text-sm font-bold text-white uppercase tracking-wider font-movault">
+                  Priority Dispatch
                 </span>
-                <span className="block mt-0.5 text-[11px] sm:text-xs text-slate-500 font-medium">
-                  Priority insured air courier
+                <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-400 font-medium">
+                  Insured express courier delivery
                 </span>
               </div>
             </div>
@@ -392,114 +466,81 @@ export default function AboutPage() {
         </section>
 
         {/* ========================================================
-            3. CORE VALUE PILLARS
+            3. THE 5 LIFESTYLE PILLARS
            ======================================================== */}
-        <section className="py-8 sm:py-10 lg:py-12 max-w-6xl mx-auto px-4 sm:px-6">
+        <section className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#002D62] bg-blue-50 px-3 py-1 rounded-full border border-blue-200/70 inline-block mb-3">
-              The Vittal Digital Guarantee
+            <span className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] bg-[#272015] px-3.5 py-1.5 rounded-full border border-[#D4AF37]/30 inline-block mb-3 font-movault">
+              Our 5 Core Departments
             </span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-slate-900 tracking-tight">
-              Why Discerning Buyers Choose Us
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight uppercase font-movault">
+              Curated for Strength, Style &amp; Sustenance
             </h2>
-            <p className="mt-2.5 text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-              We eliminate middlemen and grey-market uncertainty by providing genuine, brand-sealed products directly to Indian technology enthusiasts.
+            <p className="mt-2 text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">
+              Every product in our store is formulated or designed under strict guidelines for physical endurance, comfort, and vitality.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-            {/* Pillar 1 */}
-            <div className="p-6 rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-lg transition-all group flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#002D62] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform border border-blue-100">
-                  <BadgeCheck className="w-6 h-6" />
-                </div>
-                <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">
-                  100% Genuine Sealed Stock
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  Direct procurement from authorized brand retail channels. Each item arrives brand new in sealed manufacturer retail packaging with serial number authenticity.
-                </p>
-              </div>
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-medium text-[#002D62]">
-                <Check className="w-3.5 h-3.5" />
-                <span>Verified Seals</span>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            {LIFESTYLE_PILLARS.map((pillar, idx) => {
+              const Icon = pillar.icon;
+              return (
+                <div
+                  key={pillar.category}
+                  className={`p-6 rounded-2xl bg-[#141416] border border-white/10 hover:border-[#D4AF37]/40 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between ${
+                    idx === 4 ? "md:col-span-2 lg:col-span-1" : ""
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-[#272015] text-[#D4AF37] flex items-center justify-center border border-[#D4AF37]/20 group-hover:scale-105 transition-transform">
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <span className="text-[10px] sm:text-xs font-semibold px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300">
+                        {pillar.tag}
+                      </span>
+                    </div>
 
-            {/* Pillar 2 */}
-            <div className="p-6 rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-lg transition-all group flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform border border-amber-200/60">
-                  <ShieldCheck className="w-6 h-6 text-[#002D62]" />
-                </div>
-                <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">
-                  1-Year Pan-India Warranty
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  Enjoy complete peace of mind with 1-Year Comprehensive Warranty coverage, backed by our technical repair centers and dedicated doorstep assistance across India.
-                </p>
-              </div>
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-medium text-[#002D62]">
-                <Check className="w-3.5 h-3.5" />
-                <span>All-India Service</span>
-              </div>
-            </div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#D4A373] mb-1 font-movault">
+                      {pillar.category}
+                    </h3>
+                    <h4 className="text-base sm:text-lg font-bold text-white mb-2 leading-snug">
+                      {pillar.title}
+                    </h4>
+                    <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">
+                      {pillar.desc}
+                    </p>
+                  </div>
 
-            {/* Pillar 3 */}
-            <div className="p-6 rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-lg transition-all group flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform border border-emerald-100">
-                  <Plane className="w-6 h-6 text-emerald-600" />
+                  <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
+                    <Link
+                      href={pillar.link}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D4A373] hover:text-white transition-colors uppercase font-movault tracking-wider"
+                    >
+                      <span>Explore {pillar.category}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 </div>
-                <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">
-                  Express Insured Air Cargo
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  Priority air logistics with 100% transit insurance. Track your parcel in real-time with automated SMS and WhatsApp milestone notifications right to your doorstep.
-                </p>
-              </div>
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
-                <Check className="w-3.5 h-3.5" />
-                <span>5-7 Business Days</span>
-              </div>
-            </div>
-
-            {/* Pillar 4 */}
-            <div className="p-6 rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-lg transition-all group flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform border border-purple-100">
-                  <Headphones className="w-6 h-6 text-[#002D62]" />
-                </div>
-                <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">
-                  Live WhatsApp Care
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  Real human technical care available via WhatsApp (+91 916238165935). Need live unboxing advice, tracking updates, or setup help? We are just a message away.
-                </p>
-              </div>
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-medium text-[#002D62]">
-                <Check className="w-3.5 h-3.5" />
-                <span>Instant Responses</span>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </section>
 
         {/* ========================================================
-            4. HOW OUR DIRECT-TO-DOORSTEP PROCESS WORKS
+            4. QUALITY & SOURCING WORKFLOW
            ======================================================== */}
-        <section className="py-8 sm:py-10 bg-white border-y border-slate-200/80">
+        <section className="py-12 sm:py-16 bg-[#0B0B0D] border-y border-white/10">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#002D62] bg-blue-50 px-3 py-1 rounded-full border border-blue-200/70 inline-block mb-3">
-                Seamless Logistics Process
+              <span className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] bg-[#272015] px-3.5 py-1.5 rounded-full border border-[#D4AF37]/30 inline-block mb-3 font-movault">
+                The Vittal Standard
               </span>
-              <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
-                From Warehouse Directly to Your Hands
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight uppercase font-movault">
+                From Origin to Your Hands
               </h2>
-              <p className="mt-2 text-xs sm:text-sm text-slate-600 font-normal">
-                Every order follows our strict 4-step quality, clearance, and courier workflow.
+              <p className="mt-2 text-xs sm:text-sm text-neutral-400 font-normal">
+                Strict quality verification guarantees that what arrives at your doorstep meets Olympic-grade expectations.
               </p>
             </div>
 
@@ -507,36 +548,36 @@ export default function AboutPage() {
               {[
                 {
                   step: "01",
-                  title: "Authorized Procurement",
-                  desc: "We procure authentic units directly from certified electronics retail distributors and authorized channels.",
+                  title: "Certified Origin Sourcing",
+                  desc: "Direct procurement from accredited GMP-certified nutrition laboratories and authenticated royal date farms.",
                 },
                 {
                   step: "02",
-                  title: "Dual Seal Verification",
-                  desc: "Our quality team verifies manufacturer tamper-evident seals, serial registration, and original accessory sets.",
+                  title: "Batch Laboratory Testing",
+                  desc: "Third-party lab assays verifying protein percentage, micro-nutrient purity, zero heavy metals, and fabric tear strength.",
                 },
                 {
                   step: "03",
-                  title: "Insured Air Cargo",
-                  desc: "Parcels are dispatched through air logistics with 100% loss-and-damage transit insurance coverage.",
+                  title: "Airtight Seal Packaging",
+                  desc: "Hermetically sealed jars, foil moisture barriers, and tamper-evident holographic security bands.",
                 },
                 {
                   step: "04",
-                  title: "Doorstep Handover",
-                  desc: "Delivered to your door with live tracking and WhatsApp customer support for easy warranty activation.",
+                  title: "Insured Rapid Transit",
+                  desc: "Express insured air and surface logistics with automated WhatsApp milestone alerts right to your doorstep.",
                 },
               ].map((item) => (
                 <div
                   key={item.step}
-                  className="relative p-6 rounded-2xl bg-slate-50 border border-slate-200/80 hover:bg-blue-50/40 transition-colors"
+                  className="relative p-6 rounded-2xl bg-[#141416] border border-white/10 hover:border-[#D4AF37]/30 transition-all"
                 >
-                  <span className="text-3xl font-semibold text-[#002D62]/25 font-mono block mb-2">
+                  <span className="text-3xl font-extrabold text-[#D4AF37]/30 font-movault block mb-2">
                     {item.step}
                   </span>
-                  <h4 className="text-sm sm:text-base font-semibold text-slate-900 mb-2">
+                  <h4 className="text-sm sm:text-base font-bold text-white mb-2">
                     {item.title}
                   </h4>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                  <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">
                     {item.desc}
                   </p>
                 </div>
@@ -548,18 +589,18 @@ export default function AboutPage() {
         {/* ========================================================
             5. VOICES OF TRUST: CAROUSEL TESTIMONIALS
            ======================================================== */}
-        <section className="py-14 sm:py-20 bg-gradient-to-b from-[#F8FAFC] to-white overflow-hidden border-b border-slate-200/80">
+        <section className="py-14 sm:py-20 bg-gradient-to-b from-[#070708] via-[#0D0D0F] to-[#070708] overflow-hidden border-b border-white/10">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-10 max-w-xl mx-auto">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-[#002D62] text-xs font-semibold uppercase tracking-wider mb-3">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#002D62]" />
-                <span>Verified Buyer Reviews</span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#272015] border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold uppercase tracking-wider mb-3 font-movault">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Verified Athletes &amp; Customers</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
-                Voices of Trust Across India
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight uppercase font-movault">
+                Voices of Vittal Lifestyle
               </h2>
-              <p className="mt-1.5 text-xs sm:text-sm text-slate-600 max-w-md mx-auto font-normal">
-                Real customer feedback from tech enthusiasts and professionals who upgraded with Vittal Digital.
+              <p className="mt-1.5 text-xs sm:text-sm text-neutral-400 max-w-md mx-auto font-normal">
+                Real feedback from lifters, runners, and mindful food lovers nationwide.
               </p>
             </div>
 
@@ -597,8 +638,8 @@ export default function AboutPage() {
                       }}
                       className={`rounded-2xl sm:rounded-3xl p-6 sm:p-7 transition-all duration-520 select-none flex flex-col justify-between shrink-0 border ${
                         isCurrent
-                          ? "bg-white border-blue-200 shadow-xl scale-100 opacity-100 ring-1 ring-blue-100"
-                          : "bg-white/80 border-slate-200/80 shadow-xs scale-[0.93] sm:scale-95 opacity-55 hover:opacity-85 cursor-pointer"
+                          ? "bg-[#18181b] border-[#D4AF37]/40 shadow-2xl scale-100 opacity-100 ring-1 ring-[#D4AF37]/20"
+                          : "bg-[#121214] border-white/5 shadow-sm scale-[0.93] sm:scale-95 opacity-55 hover:opacity-85 cursor-pointer"
                       }`}
                       style={{
                         width: `${cardWidth}px`,
@@ -607,33 +648,33 @@ export default function AboutPage() {
                     >
                       <div>
                         <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-1 text-amber-400">
+                          <div className="flex items-center gap-1 text-[#D4AF37]">
                             {[...Array(item.rating)].map((_, s) => (
                               <Star key={s} className="w-4 h-4 fill-current" />
                             ))}
                           </div>
-                          <Quote className="w-6 h-6 text-slate-200 rotate-180" />
+                          <Quote className="w-6 h-6 text-white/10 rotate-180" />
                         </div>
 
-                        <p className="text-xs sm:text-sm md:text-base text-slate-700 leading-relaxed font-normal">
+                        <p className="text-xs sm:text-sm md:text-base text-neutral-200 leading-relaxed font-normal">
                           &ldquo;{item.quote}&rdquo;
                         </p>
                       </div>
 
-                      <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-slate-900 text-xs sm:text-sm">
+                            <span className="font-bold text-white text-xs sm:text-sm">
                               {item.author}
                             </span>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                               <CheckCircle2 className="w-2.5 h-2.5" /> Verified Buyer
                             </span>
                           </div>
-                          <span className="text-[11px] text-slate-500 font-normal">{item.location}</span>
+                          <span className="text-[11px] text-neutral-400 font-normal">{item.location}</span>
                         </div>
 
-                        <span className="text-[11px] font-medium text-[#002D62] bg-blue-50 border border-blue-100 px-3 py-1 rounded-full self-start sm:self-auto">
+                        <span className="text-[11px] font-bold text-[#D4AF37] bg-[#272015] border border-[#D4AF37]/30 px-3 py-1 rounded-full self-start sm:self-auto font-movault tracking-wide">
                           {item.product}
                         </span>
                       </div>
@@ -655,8 +696,8 @@ export default function AboutPage() {
                     }}
                     className={`h-2 rounded-full transition-all cursor-pointer ${
                       dotIdx === realActiveIndex
-                        ? "w-8 bg-[#001D40]"
-                        : "w-2 bg-slate-300 hover:bg-slate-400"
+                        ? "w-8 bg-[#D4A373]"
+                        : "w-2 bg-white/20 hover:bg-white/40"
                     }`}
                     aria-label={`Go to slide ${dotIdx + 1}`}
                   />
@@ -666,14 +707,14 @@ export default function AboutPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={prevSlide}
-                  className="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-xs flex items-center justify-center transition-all cursor-pointer hover:border-slate-300"
+                  className="w-9 h-9 rounded-full bg-[#141416] border border-white/10 text-white hover:bg-white/10 shadow-sm flex items-center justify-center transition-all cursor-pointer"
                   aria-label="Previous review"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={nextSlide}
-                  className="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-xs flex items-center justify-center transition-all cursor-pointer hover:border-slate-300"
+                  className="w-9 h-9 rounded-full bg-[#141416] border border-white/10 text-white hover:bg-white/10 shadow-sm flex items-center justify-center transition-all cursor-pointer"
                   aria-label="Next review"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -686,42 +727,42 @@ export default function AboutPage() {
         {/* ========================================================
             6. FINAL CALL TO ACTION (CTA)
            ======================================================== */}
-        <section className="py-8 sm:py-10 max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="rounded-3xl bg-[#001D40] text-white p-8 sm:p-12 md:p-14 text-center relative overflow-hidden shadow-2xl">
+        <section className="py-12 sm:py-16 max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="rounded-3xl bg-[#141416] border border-[#D4AF37]/30 text-white p-8 sm:p-12 md:p-14 text-center relative overflow-hidden shadow-2xl">
             {/* Ambient Lighting Gradients */}
-            <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-blue-600/20 blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-amber-500/15 blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-[#D4AF37]/10 blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-[#D4A373]/10 blur-[100px] pointer-events-none" />
 
             <div className="relative z-10 max-w-2xl mx-auto">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-medium text-white/90 mb-4 border border-white/15">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>Ready to Upgrade Your Electronics?</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#272015] text-xs font-bold text-[#D4AF37] mb-4 border border-[#D4AF37]/30 uppercase font-movault tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Join The Vittal Lifestyle</span>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-white tracking-tight leading-tight">
-                Experience Genuine Flagship Tech Delivered Across India
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight uppercase font-movault">
+                Elevate Your Health &amp; Performance Today
               </h2>
 
-              <p className="mt-3.5 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed font-normal max-w-xl mx-auto">
-                Explore our curated catalog of brand-new laptops, tablets, smartwatches, and premium audio with comprehensive 1-year warranty and priority insured air shipping.
+              <p className="mt-3.5 text-xs sm:text-sm md:text-base text-neutral-300 leading-relaxed font-normal max-w-xl mx-auto">
+                Explore our full line-up of gym supplements, athletic wear, organic dates, and artisan chocolates. Delivered express with 100% authenticity guarantee.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link
                   href="/products"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-white hover:bg-slate-100 text-[#001D40] text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#D4A373] hover:bg-[#c29263] text-black text-sm font-bold shadow-lg hover:shadow-[#D4A373]/25 transition-all font-movault uppercase tracking-wider"
                 >
-                  <span>Explore All Products</span>
+                  <span>Explore Shop</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
 
                 <a
-                  href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Digital%2C%20I%20have%20an%20inquiry%20about%20a%20product`}
+                  href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Lifestyle%2C%20I%20have%20an%20inquiry%20about%20a%20product`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-white text-sm font-semibold shadow-sm transition-all"
                 >
-                  <MessageCircle className="w-4 h-4" />
+                  <MessageCircle className="w-4 h-4 text-[#25D366]" />
                   <span>Chat on WhatsApp</span>
                 </a>
               </div>
