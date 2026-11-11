@@ -10,6 +10,7 @@ import {
   Share2,
   Star,
   Flame,
+  ShoppingCart,
   Zap,
   Truck,
   ShieldCheck,
@@ -958,13 +959,48 @@ export default function ProductDetailPage() {
                       )}
                     </div>
 
-                    {relDiscount && (
-                      <div>
+                    {/* Discount Badge & Add to Cart Button */}
+                    <div className="flex items-center justify-between gap-2 mt-1">
+                      {relDiscount ? (
                         <span className="font-movault bg-[#2B2317] text-[#E5C07B] text-[10px] sm:text-[11px] font-bold tracking-wider uppercase px-2 py-0.5 rounded inline-block">
                           {relDiscount}% OFF
                         </span>
-                      </div>
-                    )}
+                      ) : (
+                        <span className="font-mograph text-[10px] text-neutral-400">In Stock</span>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          addItem(
+                            {
+                              id: prod.id,
+                              slug: prod.slug || prod.id,
+                              name: prod.name,
+                              price: prod.price,
+                              mrp: prod.mrp,
+                              offer_price: prod.price,
+                              stock_count: prod.stock_count || 50,
+                              poster_image: prod.poster_image || "/vittal/product-whey-protein-jar.png",
+                              in_stock: prod.in_stock ?? 1,
+                              category: prod.category || "Fitness",
+                              tagline: prod.tagline || "",
+                              description: prod.description || "",
+                            },
+                            1
+                          );
+                          setShowToast(`Added ${prod.name} to Cart!`);
+                          openCart();
+                        }}
+                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#222226] hover:bg-[#D4A373] text-neutral-300 hover:text-black active:scale-95 flex items-center justify-center transition-all cursor-pointer shadow-sm hover:scale-105 shrink-0"
+                        title="Add to Cart"
+                        aria-label="Add to Cart"
+                      >
+                        <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

@@ -436,14 +436,26 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                     )}
                   </div>
 
-                  {/* Discount Badge */}
-                  {discountPercent && (
-                    <div>
+                  {/* Discount Badge & Add to Cart Button */}
+                  <div className="flex items-center justify-between gap-2 mt-1">
+                    {discountPercent ? (
                       <span className="font-movault bg-[#2B2317] text-[#E5C07B] text-[10px] sm:text-[11px] font-bold tracking-wider uppercase px-2 py-0.5 rounded inline-block">
                         {discountPercent}% OFF
                       </span>
-                    </div>
-                  )}
+                    ) : (
+                      <span className="font-mograph text-[10px] text-neutral-400">In Stock</span>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={(e) => handleAddToCart(e, product)}
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#222226] hover:bg-[#D4A373] text-neutral-300 hover:text-black active:scale-95 flex items-center justify-center transition-all cursor-pointer shadow-sm hover:scale-105 shrink-0"
+                      title="Add to Cart"
+                      aria-label="Add to Cart"
+                    >
+                      <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
