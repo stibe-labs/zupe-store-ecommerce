@@ -113,9 +113,9 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
 
   const products = initialProducts && initialProducts.length > 0 ? initialProducts : [];
 
-  // Filter trending products for the homepage
+  // Filter trending products for the homepage (10 items = 2 full rows of 5 on desktop, 5 rows of 2 on mobile)
   const trendingProducts = useMemo(() => {
-    return products.slice(0, 8);
+    return products.slice(0, 10);
   }, [products]);
 
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
@@ -343,8 +343,8 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
           </Link>
         </div>
 
-        {/* Product Cards Grid: Strictly 2 cards per row matching reference */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5 max-w-4xl mx-auto">
+        {/* Product Cards Grid: Mobile 2 per row, Desktop 5 per row */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-4 xl:gap-5 w-full">
           {trendingProducts.map((product) => {
             const isWish = isInWishlist(product.id);
             const discountPercent =
@@ -354,17 +354,18 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
 
             // Clean short category label for secondary metadata line
             const shortCategory =
-              product.category === "Gym Supplementaries"
-                ? "Isolate"
+              (product as any).subcategory ||
+              (product.category === "Gym Supplementaries"
+                ? (product.name.toLowerCase().includes("creatine") ? "Creatine" : product.name.toLowerCase().includes("gainer") ? "Mass Gainer" : "Isolate")
                 : product.category === "Dates & Nuts"
-                ? "Dates"
+                ? (product.name.toLowerCase().includes("almond") ? "Almonds" : "Dates")
                 : product.category === "Candy & Chocolates"
                 ? "Chocolates"
                 : product.category === "Outfits"
                 ? "Outfits"
                 : product.category === "Apparels"
                 ? "Apparel"
-                : product.category;
+                : product.category);
 
             return (
               <div
@@ -403,7 +404,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                     src={product.poster_image || "/vittal/product-whey-protein-jar.png"}
                     alt={product.name}
                     fill
-                    sizes="(max-width: 768px) 50vw, 400px"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                     className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                   />
                 </Link>
