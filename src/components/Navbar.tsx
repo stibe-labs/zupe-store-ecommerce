@@ -173,16 +173,19 @@ export function Navbar() {
       {/* TIER 2: MAIN BRAND HEADER (Matches Mockup on Mobile & Desktop)       */}
       {/* =================================================================== */}
       <div className="bg-[#0B0B0C] py-2 sm:py-2.5 px-4 sm:px-6 lg:px-8 border-b border-white/5">
-        <div className="max-w-[1680px] mx-auto flex items-center justify-between gap-4">
-          {/* Brand Logo */}
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="relative h-8 sm:h-9 w-36 sm:w-48">
+        <div className="relative max-w-[1680px] mx-auto flex items-center justify-between gap-4 min-h-[44px] sm:min-h-[52px]">
+          {/* Mobile Left Spacer to keep layout balanced */}
+          <div className="lg:hidden w-8 shrink-0" aria-hidden="true" />
+
+          {/* Brand Logo - Centered on Mobile, Left-aligned on Desktop, Size Increased */}
+          <div className="flex items-center lg:static absolute left-1/2 -translate-x-1/2 lg:translate-x-0 z-10">
+            <Link href="/" className="flex items-center justify-center group">
+              <div className="relative h-11 sm:h-12 md:h-14 lg:h-16 w-40 sm:w-48 md:w-56 lg:w-64 transition-all">
                 <Image
                   src="/vl-logo-nobg.png"
                   alt="Vittal Lifestyle"
                   fill
-                  className="object-contain object-left"
+                  className="object-contain object-center lg:object-left"
                   priority
                 />
               </div>
@@ -225,7 +228,7 @@ export function Navbar() {
           </nav>
 
           {/* Mobile Right Icons (Search, Bag with Gold Badge, Menu) - Matches Mockup */}
-          <div className="flex lg:hidden items-center gap-1.5 sm:gap-2">
+          <div className="flex lg:hidden items-center gap-1.5 sm:gap-2 ml-auto z-20">
             <button
               onClick={openSearch}
               className="p-1.5 text-neutral-200 hover:text-[#D4AF37] transition-colors"
@@ -416,7 +419,7 @@ export function Navbar() {
           <div className="fixed inset-y-0 left-0 w-[85%] max-w-sm bg-[#121214] border-r border-white/10 text-white shadow-2xl flex flex-col z-50 overflow-y-auto">
             {/* Header */}
             <div className="p-4 border-b border-white/10 flex items-center justify-between bg-[#18181B]">
-              <div className="relative h-9 w-36">
+              <div className="relative h-11 w-44">
                 <Image
                   src="/vl-logo-nobg.png"
                   alt="Vittal Lifestyle"
