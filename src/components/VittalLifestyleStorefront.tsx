@@ -33,33 +33,38 @@ interface VittalLifestyleStorefrontProps {
 }
 
 // ---------------------------------------------------------------------------
-// 5 Core Categories with custom PNG icons (dark squircle art style)
+// 5 Core Categories with Luxury Photographic Covers matching reference
 // ---------------------------------------------------------------------------
 const CATEGORY_ITEMS = [
   {
     name: "Gym Supplements",
     link: "/products?category=Gym+Supplementaries",
-    img: "/vittal/cat-gym-supplements.png",
+    image: "/vittal/cat-gym-supplements.png",
+    alt: "Gym Supplements & Whey Protein",
   },
   {
     name: "Outfits",
     link: "/products?category=Outfits",
-    img: "/vittal/cat-outfits.png",
+    image: "/vittal/cat-outfits.png",
+    alt: "Athletic Outfits & Gym Sets",
   },
   {
     name: "Apparels",
     link: "/products?category=Apparels",
-    img: "/vittal/cat-apparels.png",
+    image: "/vittal/cat-apparels.png",
+    alt: "Heavyweight Streetwear Apparels",
   },
   {
     name: "Dates & Nuts",
     link: "/products?category=Dates+%26+Nuts",
-    img: "/vittal/cat-dates-nuts.png",
+    image: "/vittal/cat-dates-nuts.png",
+    alt: "Royal Dates & Exotic Nuts",
   },
   {
     name: "Candy & Chocolates",
     link: "/products?category=Candy+%26+Chocolates",
-    img: "/vittal/cat-candy-chocolates.png",
+    image: "/vittal/cat-chocolates.png",
+    alt: "Artisanal Dark Chocolates",
   },
 ];
 
@@ -227,30 +232,37 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       </section>
 
       {/* ===================================================================== */}
-      {/* 2. CATEGORY NAVIGATION (5 PNG Icon Cards — dark squircle art style)  */}
+      {/* 2. CATEGORY NAVIGATION (5 Luxury Photographic Cards - 1 Single Row)   */}
       {/* ===================================================================== */}
-      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
-        <div className="grid grid-cols-5 gap-2 sm:gap-3 md:gap-5">
+      <section className="w-full max-w-[1680px] mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-4">
+        {/* Responsive 5-column single row on mobile and desktop */}
+        <div className="grid grid-cols-5 gap-1.5 sm:gap-3 md:gap-4 lg:gap-5 w-full">
           {CATEGORY_ITEMS.map((cat) => (
             <Link
               key={cat.name}
               href={cat.link}
-              className="group flex flex-col items-center text-center transition-all duration-200 hover:-translate-y-1"
+              className="group relative rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden bg-[#141416] hover:bg-[#1C1C20] border border-white/10 hover:border-[#D4AF37]/50 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-black/70 cursor-pointer"
             >
-              {/* Square icon card */}
-              <div className="relative w-full aspect-square rounded-2xl overflow-hidden border border-white/8 group-hover:border-[#D4AF37]/60 shadow-lg group-hover:shadow-[#D4AF37]/10 transition-all duration-300">
+              {/* Image Container (Top Photographic Area) */}
+              <div className="relative aspect-square sm:aspect-[4/5] w-full overflow-hidden bg-black">
                 <Image
-                  src={cat.img}
-                  alt={cat.name}
+                  src={cat.image}
+                  alt={cat.alt}
                   fill
-                  sizes="(max-width:640px) 20vw, (max-width:1024px) 16vw, 200px"
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                  sizes="(max-width: 640px) 20vw, (max-width: 1024px) 20vw, 300px"
+                  priority
                 />
+                {/* Subtle dark gradient overlay at base of image */}
+                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#141416] via-[#141416]/40 to-transparent pointer-events-none" />
               </div>
-              {/* Label */}
-              <span className="mt-1.5 sm:mt-2.5 font-mograph text-[9px] sm:text-[11px] font-semibold text-neutral-400 group-hover:text-[#D4AF37] leading-tight line-clamp-2 transition-colors duration-200 px-0.5">
-                {cat.name}
-              </span>
+
+              {/* Label Bar (Matching Reference bottom area) */}
+              <div className="py-1 sm:py-2 md:py-2.5 px-0.5 sm:px-2 text-center bg-[#141416] group-hover:bg-[#18181C] transition-colors border-t border-white/5">
+                <span className="font-mograph text-[9px] sm:text-[11px] md:text-xs lg:text-sm font-bold text-neutral-200 group-hover:text-white transition-colors leading-tight line-clamp-1 tracking-tight">
+                  {cat.name}
+                </span>
+              </div>
             </Link>
           ))}
         </div>

@@ -860,7 +860,7 @@ export default function ProductDetailPage() {
                   </span>
                 </button>
                 {openAccordions.reviews && (
-                  <div className="pt-3 pb-1 bg-white text-slate-900 rounded-2xl p-4 sm:p-6 my-2 shadow-sm">
+                  <div className="pt-3 pb-1 bg-[#141416] text-white rounded-2xl p-4 sm:p-6 my-2 border border-white/5">
                     <ProductReviewsSection
                       productId={activeProduct.id}
                       productName={activeProduct.name}
