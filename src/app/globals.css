@@ -761,19 +761,19 @@ body[style*="overflow: hidden"] {
   --admin-text-muted: #94A3B8;
 }
 
-/* ─── Dark Theme (Vittal Digital Navy & Gold Aesthetic) ─── */
+/* ─── Dark Theme (Vittal Lifestyle Luxury Obsidian & Gold Palette) ─── */
 [data-admin-theme="dark"] {
-  --admin-canvas: #001D34;
-  --admin-header: #00223D;
-  --admin-card: #002747;
-  --admin-card-inner: #001D34;
-  --admin-well: #00182C;
-  --admin-border: rgba(2, 132, 199, 0.18);
-  --admin-border-subtle: rgba(2, 132, 199, 0.10);
+  --admin-canvas: #070708;
+  --admin-header: #0B0B0C;
+  --admin-card: #141416;
+  --admin-card-inner: #18181C;
+  --admin-well: #111113;
+  --admin-border: rgba(255, 255, 255, 0.08);
+  --admin-border-subtle: rgba(255, 255, 255, 0.04);
   --admin-text-primary: #F8FAFC;
   --admin-text-body: #E2E8F0;
-  --admin-text-secondary: #94A3B8;
-  --admin-text-muted: #64748B;
+  --admin-text-secondary: #A1A1AA;
+  --admin-text-muted: #71717A;
 }
 
 /* Base Canvas & Background in Dark Mode (Excluding the Sidebar) */
@@ -783,14 +783,14 @@ body[style*="overflow: hidden"] {
 [data-admin-theme="dark"] .bg-\[\#F4F6FA\],
 [data-admin-theme="dark"] .bg-\[\#F8FAFC\],
 [data-admin-theme="dark"] main:not(aside *) {
-  background-color: #001D34 !important;
+  background-color: #070708 !important;
   color: #E2E8F0;
 }
 
 /* Admin Top Header in Dark Mode */
 [data-admin-theme="dark"] header:not(aside *) {
-  background-color: #00223D !important;
-  border-color: rgba(2, 132, 199, 0.18) !important;
+  background-color: #0B0B0C !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 /* All Admin Cards, Widgets, and Sections */
@@ -801,47 +801,47 @@ body[style*="overflow: hidden"] {
 [data-admin-theme="dark"] section[class*="bg-white"]:not(aside):not(aside *),
 [data-admin-theme="dark"] main .bg-white:not(aside):not(aside *),
 [data-admin-theme="dark"] main [class*="bg-white"]:not(aside):not(aside *):not(button):not(a) {
-  background-color: #002747 !important;
-  border-color: rgba(2, 132, 199, 0.18) !important;
+  background-color: #141416 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
   color: #E2E8F0;
 }
 
-/* Modals & Dialog Overlays (Ensure solid #141D2F body, #0F172A header & footer) */
+/* Modals & Dialog Overlays (Ensure solid #141416 body, #0B0B0C header & footer) */
 [data-admin-theme="dark"] [class*="fixed"][class*="inset-0"] {
-  background-color: rgba(0, 0, 0, 0.75) !important;
+  background-color: rgba(0, 0, 0, 0.8) !important;
 }
 
 [data-admin-theme="dark"] [class*="fixed"][class*="inset-0"] > div,
 [data-admin-theme="dark"] [class*="fixed"][class*="inset-0"] .bg-white {
-  background-color: #141D2F !important;
+  background-color: #141416 !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
   color: #E2E8F0 !important;
 }
 
 [data-admin-theme="dark"] [class*="fixed"][class*="inset-0"] [class*="bg-slate-50"],
 [data-admin-theme="dark"] [class*="fixed"][class*="inset-0"] [class*="bg-slate-100"] {
-  background-color: #0F172A !important;
+  background-color: #111113 !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Wells, Inset Containers, & Subtle Boxes (Covering all Tailwind opacity variations) */
+/* Wells, Inset Containers, & Subtle Boxes */
 [data-admin-theme="dark"] :not(aside):not(aside *) [class*="bg-slate-50"],
 [data-admin-theme="dark"] div[class*="bg-slate-50"]:not(aside):not(aside *) {
-  background-color: #0F172A !important;
+  background-color: #111113 !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   color: #E2E8F0 !important;
 }
 
 [data-admin-theme="dark"] :not(aside):not(aside *) [class*="bg-slate-100"],
 [data-admin-theme="dark"] div[class*="bg-slate-100"]:not(aside):not(aside *) {
-  background-color: #182234 !important;
+  background-color: #18181C !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   color: #CBD5E1 !important;
 }
 
 [data-admin-theme="dark"] :not(aside):not(aside *) [class*="bg-slate-200"],
 [data-admin-theme="dark"] div[class*="bg-slate-200"]:not(aside):not(aside *) {
-  background-color: #1E293B !important;
+  background-color: #222226 !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
   color: #F1F5F9 !important;
 }
@@ -849,14 +849,14 @@ body[style*="overflow: hidden"] {
 /* Secondary Neutral Action Buttons (Cancel, Close, Back, Reset, View) */
 [data-admin-theme="dark"] :not(aside):not(aside *) button[class*="bg-white"],
 [data-admin-theme="dark"] :not(aside):not(aside *) a[class*="bg-white"] {
-  background-color: #182234 !important;
+  background-color: #18181C !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   color: #E2E8F0 !important;
 }
 
 [data-admin-theme="dark"] :not(aside):not(aside *) button[class*="bg-white"]:hover,
 [data-admin-theme="dark"] :not(aside):not(aside *) a[class*="bg-white"]:hover {
-  background-color: #243049 !important;
+  background-color: #24242A !important;
   border-color: rgba(255, 255, 255, 0.22) !important;
   color: #FFFFFF !important;
 }
@@ -943,14 +943,14 @@ body[style*="overflow: hidden"] {
 [data-admin-theme="dark"] :not(aside):not(aside *) input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
 [data-admin-theme="dark"] :not(aside):not(aside *) select,
 [data-admin-theme="dark"] :not(aside):not(aside *) textarea {
-  background-color: #0F172A !important;
+  background-color: #111113 !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
   color: #F8FAFC !important;
 }
 
 [data-admin-theme="dark"] :not(aside):not(aside *) input::placeholder,
 [data-admin-theme="dark"] :not(aside):not(aside *) textarea::placeholder {
-  color: #64748B !important;
+  color: #71717A !important;
 }
 
 /* Borders across Dark Admin */
@@ -967,7 +967,7 @@ body[style*="overflow: hidden"] {
 /* Dropdown Menus & Popovers */
 [data-admin-theme="dark"] :not(aside):not(aside *) .shadow-xl,
 [data-admin-theme="dark"] :not(aside):not(aside *) .shadow-2xl {
-  background-color: #141D2F !important;
+  background-color: #141416 !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
@@ -1083,9 +1083,9 @@ body[style*="overflow: hidden"] {
 
 /* Neutralize white gradient overlays in cards (e.g. True Net Profit card) */
 [data-admin-theme="dark"] :not(aside):not(aside *) [class*="from-white"] {
-  --tw-gradient-from: #141D2F !important;
+  --tw-gradient-from: #141416 !important;
   background-image: none !important;
-  background-color: #141D2F !important;
+  background-color: #141416 !important;
 }
 
 /* ─────────────────────────────────────────────────────────────

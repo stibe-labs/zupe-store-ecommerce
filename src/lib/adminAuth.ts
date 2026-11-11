@@ -6,7 +6,7 @@ export const ADMIN_COOKIE_NAME = "vittallifestyle_admin_token";
 
 // Configured credentials
 const DEFAULT_ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@vittallifestyle.com";
-const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
+const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "VittalLifestyle@2026";
 
 export async function verifyAdminCredentials(
   email?: string,

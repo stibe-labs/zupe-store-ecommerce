@@ -11,13 +11,13 @@ interface AdminThemeContextType {
 }
 
 const AdminThemeContext = createContext<AdminThemeContextType>({
-  theme: "light",
+  theme: "dark",
   toggleTheme: () => {},
   setTheme: () => {},
 });
 
 export function AdminThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>("light");
+  const [theme, setThemeState] = useState<ThemeMode>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -27,10 +27,11 @@ export function AdminThemeProvider({ children }: { children: React.ReactNode }) 
         setThemeState(stored);
         document.documentElement.setAttribute("data-admin-theme", stored);
       } else {
-        document.documentElement.setAttribute("data-admin-theme", "light");
+        setThemeState("dark");
+        document.documentElement.setAttribute("data-admin-theme", "dark");
       }
     } catch {
-      document.documentElement.setAttribute("data-admin-theme", "light");
+      document.documentElement.setAttribute("data-admin-theme", "dark");
     }
     setMounted(true);
   }, []);

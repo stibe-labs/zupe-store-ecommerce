@@ -280,8 +280,8 @@ export default function AdminHeader({
             onClick={() => setShowAdminUserDropdown(!showAdminUserDropdown)}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <div className="w-8 h-8 rounded-full bg-[#003055] text-amber-300 font-extrabold flex items-center justify-center text-xs shadow-sm ring-2 ring-blue-500/30">
-              VD
+            <div className="w-8 h-8 rounded-full bg-[#D4A373] text-black font-extrabold flex items-center justify-center text-xs shadow-sm ring-2 ring-[#D4A373]/30">
+              VL
             </div>
             <span className="text-xs sm:text-sm font-semibold text-slate-800 hidden md:inline">
               Administrator
@@ -292,20 +292,20 @@ export default function AdminHeader({
           {showAdminUserDropdown && (
             <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
               <div className="px-4 py-2 border-b border-slate-100">
-                <p className="font-bold text-slate-900">Vittal Digital Admin</p>
-                <p className="text-[11px] text-slate-400">admin@vittaldigital.com</p>
+                <p className="font-bold text-slate-900">Vittal Lifestyle Admin</p>
+                <p className="text-[11px] text-slate-400">admin@vittallifestyle.com</p>
               </div>
               <Link
                 href="/admin/settings"
                 onClick={() => setShowAdminUserDropdown(false)}
-                className="block px-4 py-2 text-slate-700 hover:text-[#002D62] hover:bg-blue-50/60 font-medium"
+                className="block px-4 py-2 text-slate-700 hover:text-[#D4AF37] hover:bg-white/5 font-medium"
               >
                 Store Settings
               </Link>
               <Link
                 href="/admin/reports"
                 onClick={() => setShowAdminUserDropdown(false)}
-                className="block px-4 py-2 text-slate-700 hover:text-[#002D62] hover:bg-blue-50/60 font-medium"
+                className="block px-4 py-2 text-slate-700 hover:text-[#D4AF37] hover:bg-white/5 font-medium"
               >
                 P&L Reports
               </Link>
@@ -315,13 +315,13 @@ export default function AdminHeader({
                   toggleTheme();
                   setShowAdminUserDropdown(false);
                 }}
-                className="w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-slate-700 hover:text-[#002D62] hover:bg-blue-50/60 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-slate-700 hover:text-[#D4AF37] hover:bg-white/5 transition-colors"
               >
                 <span className="flex items-center gap-2">
                   {theme === "dark" ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-slate-500" />}
                   Theme
                 </span>
-                <span className="text-[11px] font-bold text-[#002D62] uppercase">
+                <span className="text-[11px] font-bold text-[#D4AF37] uppercase">
                   {theme}
                 </span>
               </button>
