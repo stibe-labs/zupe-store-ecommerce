@@ -86,7 +86,7 @@ export const siteConfig: SiteConfig = {
 
   logoUrl: process.env.NEXT_PUBLIC_LOGO_URL || "/vl-logo-nobg.png",
   logoPng: process.env.NEXT_PUBLIC_LOGO_PNG || "/vl-logo-nobg.png",
-  faviconUrl: process.env.NEXT_PUBLIC_FAVICON_URL || "/favicon.png",
+  faviconUrl: process.env.NEXT_PUBLIC_FAVICON_URL || "/favicon.ico",
 
   supportEmail:
     process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@vittallifestyle.com",
