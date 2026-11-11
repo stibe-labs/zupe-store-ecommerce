@@ -38,7 +38,7 @@ interface VittalLifestyleStorefrontProps {
 const HERO_SLIDES = [
   {
     image: "/vittal/hero-fitness-gold.png",
-    imagePosition: "object-[75%_center] sm:object-right md:object-[70%_center]",
+    imagePosition: "object-[75%_center] sm:object-right md:object-[70%_center] lg:object-top lg:object-[80%_top]",
     eyebrow: "VITTAL LIFESTYLE",
     headline1: "LIVE BETTER.",
     headline2: "FEEL STRONGER.",
@@ -48,7 +48,7 @@ const HERO_SLIDES = [
   },
   {
     image: "/vittal/banner-performance-strength.png",
-    imagePosition: "object-[72%_center] sm:object-right",
+    imagePosition: "object-[72%_center] sm:object-right lg:object-top lg:object-[75%_top]",
     eyebrow: "GYM SUPPLEMENTS",
     headline1: "FUEL YOUR",
     headline2: "GAINS.",
@@ -58,7 +58,7 @@ const HERO_SLIDES = [
   },
   {
     image: "/vittal/banner-dates-chocolate-indulgence.png",
-    imagePosition: "object-[72%_center] sm:object-right",
+    imagePosition: "object-[72%_center] sm:object-right lg:object-top lg:object-[75%_top]",
     eyebrow: "GOURMET INDULGENCE",
     headline1: "TASTE THE",
     headline2: "LUXURY.",
@@ -68,7 +68,7 @@ const HERO_SLIDES = [
   },
   {
     image: "/vittal/banner-dates-packaging.png",
-    imagePosition: "object-[60%_center] sm:object-center",
+    imagePosition: "object-[60%_center] sm:object-center lg:object-top lg:object-[55%_top]",
     eyebrow: "NATURE'S FINEST",
     headline1: "CRAFTED",
     headline2: "WITH CARE.",
@@ -210,7 +210,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       {/* 1. HERO SECTION — 4-Banner Rotating Carousel                        */}
       {/* ===================================================================== */}
       <section className="relative w-full overflow-hidden bg-black border-b border-white/5">
-        <div className="relative w-full h-[250px] sm:h-[320px] md:h-[380px] lg:h-[420px] flex items-center">
+        <div className="relative w-full h-[260px] sm:h-[320px] md:h-[380px] lg:h-[calc(100vh-68px)] lg:min-h-[700px] lg:max-h-[960px] flex flex-col justify-between">
           {/* Background images — all rendered, only active is fully visible */}
           {HERO_SLIDES.map((slide, idx) => (
             <div
@@ -226,12 +226,12 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
               />
               {/* Cinematic Gradient Overlays */}
               <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 sm:via-black/60 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/20" />
             </div>
           ))}
 
-          {/* Hero Content Overlay */}
-          <div className="relative z-10 max-w-[1680px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-start justify-center">
+          {/* Hero Content Overlay (Left Heading, Button, Dots) */}
+          <div className="relative z-10 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-12 pt-8 sm:pt-10 lg:pt-16 xl:pt-20 flex flex-col items-start my-auto lg:my-0">
             <div className="max-w-xs sm:max-w-md lg:max-w-lg">
               {/* Eyebrow label */}
               <span className="font-movault text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase text-[#D4AF37] block mb-1 transition-all duration-500">
@@ -269,20 +269,59 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
               </div>
             </div>
           </div>
+
+          {/* =============================================================== */}
+          {/* DESKTOP ONLY: Category Cards Row Inside Bottom of Hero Banner    */}
+          {/* =============================================================== */}
+          <div className="hidden lg:block relative z-10 w-full pb-6 xl:pb-8">
+            {/* Smooth dark gradient behind cards so they stand out crisply */}
+            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none -z-1" />
+
+            <div className="max-w-[1180px] xl:max-w-[1240px] w-full mx-auto px-6 xl:px-8">
+              <div className="grid grid-cols-5 gap-3.5 xl:gap-4.5 w-full">
+                {CATEGORY_ITEMS.map((cat) => (
+                  <Link
+                    key={cat.name}
+                    href={cat.link}
+                    className="group relative rounded-2xl overflow-hidden bg-[#141416]/90 hover:bg-[#1C1C20] border border-white/10 hover:border-[#D4AF37]/50 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 shadow-xl hover:shadow-2xl hover:shadow-black/90 backdrop-blur-md cursor-pointer"
+                  >
+                    {/* Image Container (Reduced height for compact luxury look) */}
+                    <div className="relative aspect-[4/3.8] w-full overflow-hidden bg-black">
+                      <Image
+                        src={cat.image}
+                        alt={cat.alt}
+                        fill
+                        className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        sizes="240px"
+                      />
+                      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#141416] via-[#141416]/40 to-transparent pointer-events-none" />
+                    </div>
+
+                    {/* Label Bar */}
+                    <div className="py-2 px-2 text-center bg-[#141416] group-hover:bg-[#18181C] transition-colors border-t border-white/5">
+                      <span className="font-mograph text-xs font-bold text-neutral-200 group-hover:text-white transition-colors leading-tight line-clamp-1 tracking-tight">
+                        {cat.name}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ===================================================================== */}
-      {/* 2. CATEGORY NAVIGATION (5 Luxury Photographic Cards - 1 Single Row)   */}
+      {/* 2. CATEGORY NAVIGATION (Mobile / Tablet Only — Below Hero)            */}
       {/* ===================================================================== */}
-      <section className="w-full max-w-[1680px] mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-4">
-        {/* Responsive 5-column single row on mobile and desktop */}
-        <div className="grid grid-cols-5 gap-1.5 sm:gap-3 md:gap-4 lg:gap-5 w-full">
+      <section className="lg:hidden w-full max-w-[1680px] mx-auto px-3 sm:px-6 py-2 sm:py-4">
+        {/* Responsive 5-column single row on mobile and tablet */}
+        <div className="grid grid-cols-5 gap-1.5 sm:gap-3 w-full">
           {CATEGORY_ITEMS.map((cat) => (
             <Link
               key={cat.name}
               href={cat.link}
-              className="group relative rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden bg-[#141416] hover:bg-[#1C1C20] border border-white/10 hover:border-[#D4AF37]/50 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-black/70 cursor-pointer"
+              className="group relative rounded-xl sm:rounded-2xl overflow-hidden bg-[#141416] hover:bg-[#1C1C20] border border-white/10 hover:border-[#D4AF37]/50 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-black/70 cursor-pointer"
             >
               {/* Image Container (Top Photographic Area) */}
               <div className="relative aspect-square sm:aspect-[4/5] w-full overflow-hidden bg-black">
@@ -291,7 +330,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                   alt={cat.alt}
                   fill
                   className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                  sizes="(max-width: 640px) 20vw, (max-width: 1024px) 20vw, 300px"
+                  sizes="(max-width: 640px) 20vw, 300px"
                   priority
                 />
                 {/* Subtle dark gradient overlay at base of image */}
@@ -299,8 +338,8 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
               </div>
 
               {/* Label Bar (Matching Reference bottom area) */}
-              <div className="py-1 sm:py-2 md:py-2.5 px-0.5 sm:px-2 text-center bg-[#141416] group-hover:bg-[#18181C] transition-colors border-t border-white/5">
-                <span className="font-mograph text-[9px] sm:text-[11px] md:text-xs lg:text-sm font-bold text-neutral-200 group-hover:text-white transition-colors leading-tight line-clamp-1 tracking-tight">
+              <div className="py-1 sm:py-2 px-0.5 sm:px-2 text-center bg-[#141416] group-hover:bg-[#18181C] transition-colors border-t border-white/5">
+                <span className="font-mograph text-[9px] sm:text-[11px] font-bold text-neutral-200 group-hover:text-white transition-colors leading-tight line-clamp-1 tracking-tight">
                   {cat.name}
                 </span>
               </div>
