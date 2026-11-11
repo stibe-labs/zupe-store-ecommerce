@@ -33,65 +33,33 @@ interface VittalLifestyleStorefrontProps {
 }
 
 // ---------------------------------------------------------------------------
-// 5 Core Categories with Custom SVG Line Icons matching the mockup
+// 5 Core Categories with custom PNG icons (dark squircle art style)
 // ---------------------------------------------------------------------------
 const CATEGORY_ITEMS = [
   {
     name: "Gym Supplements",
     link: "/products?category=Gym+Supplementaries",
-    icon: (
-      <svg className="w-6 h-6 stroke-current fill-none" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="m6.5 6.5 11 11" />
-        <path d="m21 21-1-1" />
-        <path d="m3 3 1 1" />
-        <path d="m18 22 4-4" />
-        <path d="m2 6 4-4" />
-        <path d="m3 10 7-7" />
-        <path d="m14 21 7-7" />
-      </svg>
-    ),
+    img: "/vittal/cat-gym-supplements.png",
   },
   {
     name: "Outfits",
     link: "/products?category=Outfits",
-    icon: (
-      <svg className="w-6 h-6 stroke-current fill-none" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M16 7a4 4 0 0 0-8 0c0 1.5.8 2.8 2 3.5V11L2 17a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2l-8-6v-.5c1.2-.7 2-2 2-3.5Z" />
-        <path d="M12 11v3" />
-      </svg>
-    ),
+    img: "/vittal/cat-outfits.png",
   },
   {
     name: "Apparels",
     link: "/products?category=Apparels",
-    icon: (
-      <svg className="w-6 h-6 stroke-current fill-none" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z" />
-      </svg>
-    ),
+    img: "/vittal/cat-apparels.png",
   },
   {
     name: "Dates & Nuts",
     link: "/products?category=Dates+%26+Nuts",
-    icon: (
-      <svg className="w-6 h-6 stroke-current fill-none" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <ellipse cx="12" cy="12" rx="8" ry="5" transform="rotate(-30 12 12)" />
-        <path d="M8 8c2 3 5 4 8 4" />
-        <path d="M6 14c2-1 4-1 6 0" />
-      </svg>
-    ),
+    img: "/vittal/cat-dates-nuts.png",
   },
   {
     name: "Candy & Chocolates",
     link: "/products?category=Candy+%26+Chocolates",
-    icon: (
-      <svg className="w-6 h-6 stroke-current fill-none" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="m9.5 7.5-2-2a2 2 0 0 0-2.8 0l-.2.2a2 2 0 0 0 0 2.8l2 2" />
-        <path d="m14.5 16.5 2 2a2 2 0 0 0 2.8 0l.2-.2a2 2 0 0 0 0-2.8l-2-2" />
-        <circle cx="12" cy="12" r="5" />
-        <path d="m9.5 14.5 5-5" />
-      </svg>
-    ),
+    img: "/vittal/cat-candy-chocolates.png",
   },
 ];
 
@@ -259,20 +227,28 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       </section>
 
       {/* ===================================================================== */}
-      {/* 2. CATEGORY NAVIGATION (5 Dark Rounded Cards matching mockup)         */}
+      {/* 2. CATEGORY NAVIGATION (5 PNG Icon Cards — dark squircle art style)  */}
       {/* ===================================================================== */}
       <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
-        <div className="grid grid-cols-5 gap-2 sm:gap-4 md:gap-6">
+        <div className="grid grid-cols-5 gap-2 sm:gap-3 md:gap-5">
           {CATEGORY_ITEMS.map((cat) => (
             <Link
               key={cat.name}
               href={cat.link}
-              className="group bg-[#141416] hover:bg-[#1C1C20] border border-white/10 hover:border-[#D4AF37]/50 rounded-2xl p-2.5 sm:p-5 flex flex-col items-center justify-center text-center transition-all duration-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+              className="group flex flex-col items-center text-center transition-all duration-200 hover:-translate-y-1"
             >
-              <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-white group-hover:text-[#D4AF37] transition-colors mb-1.5 sm:mb-2">
-                {cat.icon}
+              {/* Square icon card */}
+              <div className="relative w-full aspect-square rounded-2xl overflow-hidden border border-white/8 group-hover:border-[#D4AF37]/60 shadow-lg group-hover:shadow-[#D4AF37]/10 transition-all duration-300">
+                <Image
+                  src={cat.img}
+                  alt={cat.name}
+                  fill
+                  sizes="(max-width:640px) 20vw, (max-width:1024px) 16vw, 200px"
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-              <span className="font-mograph text-[10px] sm:text-xs font-semibold text-neutral-300 group-hover:text-white leading-tight line-clamp-2">
+              {/* Label */}
+              <span className="mt-1.5 sm:mt-2.5 font-mograph text-[9px] sm:text-[11px] font-semibold text-neutral-400 group-hover:text-[#D4AF37] leading-tight line-clamp-2 transition-colors duration-200 px-0.5">
                 {cat.name}
               </span>
             </Link>
