@@ -33,6 +33,52 @@ interface VittalLifestyleStorefrontProps {
 }
 
 // ---------------------------------------------------------------------------
+// Hero Carousel Slides — 4 banners, each with matched headline & copy
+// ---------------------------------------------------------------------------
+const HERO_SLIDES = [
+  {
+    image: "/vittal/hero-fitness-gold.png",
+    imagePosition: "object-[75%_center] sm:object-right md:object-[70%_center]",
+    eyebrow: "VITTAL LIFESTYLE",
+    headline1: "LIVE BETTER.",
+    headline2: "FEEL STRONGER.",
+    tagline: "Your One-Stop Lifestyle Store for Fitness, Fashion & More.",
+    ctaLabel: "Shop Now",
+    ctaLink: "/products",
+  },
+  {
+    image: "/vittal/banner-performance-strength.png",
+    imagePosition: "object-[72%_center] sm:object-right",
+    eyebrow: "GYM SUPPLEMENTS",
+    headline1: "FUEL YOUR",
+    headline2: "GAINS.",
+    tagline: "Whey Protein · Creatine · Omega-3 — Pure Performance, Zero Compromise.",
+    ctaLabel: "Shop Supplements",
+    ctaLink: "/products?category=Gym+Supplementaries",
+  },
+  {
+    image: "/vittal/banner-dates-chocolate-indulgence.png",
+    imagePosition: "object-[72%_center] sm:object-right",
+    eyebrow: "GOURMET INDULGENCE",
+    headline1: "TASTE THE",
+    headline2: "LUXURY.",
+    tagline: "Premium Royal Dates & Artisan Dark Chocolates — Handcrafted for the Finest Palate.",
+    ctaLabel: "Shop Gourmet",
+    ctaLink: "/products?category=Candy+%26+Chocolates",
+  },
+  {
+    image: "/vittal/banner-dates-packaging.png",
+    imagePosition: "object-[60%_center] sm:object-center",
+    eyebrow: "NATURE'S FINEST",
+    headline1: "CRAFTED",
+    headline2: "WITH CARE.",
+    tagline: "Every Box Hygienically Packed & Quality-Checked. Grade-A Royal Dates, Delivered Fresh.",
+    ctaLabel: "Shop Dates",
+    ctaLink: "/products?category=Dates+%26+Nuts",
+  },
+];
+
+// ---------------------------------------------------------------------------
 // 5 Core Categories with Luxury Photographic Covers matching reference
 // ---------------------------------------------------------------------------
 const CATEGORY_ITEMS = [
@@ -79,7 +125,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
   // Auto-rotate hero indicator
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveHeroSlide((prev) => (prev + 1) % 3);
+      setActiveHeroSlide((prev) => (prev + 1) % HERO_SLIDES.length);
     }, 4500);
     return () => clearInterval(timer);
   }, []);
@@ -161,70 +207,70 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
   return (
     <div className="bg-[#0B0B0C] text-white font-mograph min-h-screen selection:bg-[#D4AF37] selection:text-black">
       {/* ===================================================================== */}
-      {/* 1. HERO SECTION (Edge-to-Edge Sleek Banner - No Outer Card Box)      */}
+      {/* 1. HERO SECTION — 4-Banner Rotating Carousel                        */}
       {/* ===================================================================== */}
       <section className="relative w-full overflow-hidden bg-black border-b border-white/5">
         <div className="relative w-full h-[250px] sm:h-[320px] md:h-[380px] lg:h-[420px] flex items-center">
-          {/* Athlete Hero Background Image */}
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="/vittal/hero-fitness-gold.png"
-              alt="Live Better. Feel Stronger - Vittal Lifestyle"
-              fill
-              priority
-              className="object-cover object-[75%_center] sm:object-right md:object-center"
-            />
-            {/* Cinematic Gradient Overlays: Darker on the left for crisp text contrast */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 sm:via-black/60 to-transparent z-1" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 z-1" />
-          </div>
+          {/* Background images — all rendered, only active is fully visible */}
+          {HERO_SLIDES.map((slide, idx) => (
+            <div
+              key={slide.image}
+              className={`absolute inset-0 z-0 transition-opacity duration-700 ${idx === activeHeroSlide ? "opacity-100" : "opacity-0"}`}
+            >
+              <Image
+                src={slide.image}
+                alt={`${slide.headline1} ${slide.headline2} — Vittal Lifestyle`}
+                fill
+                priority={idx === 0}
+                className={`object-cover ${slide.imagePosition}`}
+              />
+              {/* Cinematic Gradient Overlays */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 sm:via-black/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+            </div>
+          ))}
 
           {/* Hero Content Overlay */}
           <div className="relative z-10 max-w-[1680px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-start justify-center">
             <div className="max-w-xs sm:max-w-md lg:max-w-lg">
-              {/* Small Subtitle */}
-              <span className="font-movault text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase text-[#D4AF37] block mb-1">
-                VITTAL LIFESTYLE
+              {/* Eyebrow label */}
+              <span className="font-movault text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase text-[#D4AF37] block mb-1 transition-all duration-500">
+                {HERO_SLIDES[activeHeroSlide].eyebrow}
               </span>
 
               {/* Main Headline */}
-              <h1 className="font-movault text-2xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-wider text-white leading-[0.95] mb-1.5 sm:mb-2.5">
-                Live Better.
+              <h1 className="font-movault text-2xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-wider text-white leading-[0.95] mb-1.5 sm:mb-2.5 transition-all duration-500">
+                {HERO_SLIDES[activeHeroSlide].headline1}
                 <br />
-                <span className="text-[#D4AF37]">Feel Stronger.</span>
+                <span className="text-[#D4AF37]">{HERO_SLIDES[activeHeroSlide].headline2}</span>
               </h1>
 
               {/* Tagline */}
-              <p className="font-mograph text-[11px] sm:text-sm text-neutral-300 font-medium leading-relaxed mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-none">
-                Your One-Stop Lifestyle Store for Fitness, Fashion &amp; More.
+              <p className="font-mograph text-[11px] sm:text-sm text-neutral-300 font-medium leading-relaxed mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-none transition-all duration-500">
+                {HERO_SLIDES[activeHeroSlide].tagline}
               </p>
 
               {/* CTA Button */}
               <Link
-                href="/products"
+                href={HERO_SLIDES[activeHeroSlide].ctaLink}
                 className="font-movault tracking-wider uppercase inline-flex items-center gap-2 bg-[#D4A373] hover:bg-[#C89565] text-neutral-950 font-bold text-xs sm:text-sm px-5 py-2 sm:px-6 sm:py-2.5 rounded-full transition-all transform hover:scale-105 shadow-md shadow-[#D4A373]/20"
               >
-                <span>Shop Now</span>
+                <span>{HERO_SLIDES[activeHeroSlide].ctaLabel}</span>
                 <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
               </Link>
 
-              {/* Carousel Navigation Indicator Dots */}
+              {/* Carousel Dot Indicators */}
               <div className="flex items-center gap-1.5 mt-3 sm:mt-4">
-                <span
-                  className={`transition-all duration-300 rounded-full h-1 ${
-                    activeHeroSlide === 0 ? "w-6 bg-[#D4AF37]" : "w-1.5 bg-neutral-600"
-                  }`}
-                />
-                <span
-                  className={`transition-all duration-300 rounded-full h-1 ${
-                    activeHeroSlide === 1 ? "w-6 bg-[#D4AF37]" : "w-1.5 bg-neutral-600"
-                  }`}
-                />
-                <span
-                  className={`transition-all duration-300 rounded-full h-1 ${
-                    activeHeroSlide === 2 ? "w-6 bg-[#D4AF37]" : "w-1.5 bg-neutral-600"
-                  }`}
-                />
+                {HERO_SLIDES.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveHeroSlide(idx)}
+                    aria-label={`Go to slide ${idx + 1}`}
+                    className={`transition-all duration-300 rounded-full h-1 cursor-pointer ${
+                      activeHeroSlide === idx ? "w-6 bg-[#D4AF37]" : "w-1.5 bg-neutral-600 hover:bg-neutral-400"
+                    }`}
+                  />
+                ))}
               </div>
             </div>
           </div>
