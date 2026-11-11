@@ -140,3 +140,4 @@ c5.save('public/vittal/cat-candy-chocolates.png', 'PNG', quality=95)
 c5.save('public/vittal/cat-chocolates.png', 'PNG', quality=95)
 
 print("All 5 luxury category images generated successfully!")
+

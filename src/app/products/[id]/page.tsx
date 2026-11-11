@@ -82,8 +82,12 @@ function resolveProduct(idOrSlug: string): Product {
   if (rawId.includes("creatine")) {
     return DEFAULT_PRODUCTS.find((p) => p.id === "creatine-monohydrate") || DEFAULT_PRODUCTS[0];
   }
-  if (rawId.includes("chocolate")) {
-    return DEFAULT_PRODUCTS.find((p) => p.id === "artisan-dark-chocolates") || DEFAULT_PRODUCTS[0];
+  if (rawId.includes("chocolate") || rawId.includes("candy") || rawId.includes("box")) {
+    return (
+      DEFAULT_PRODUCTS.find((p) => p.id === "premium-black-candy-box") ||
+      DEFAULT_PRODUCTS.find((p) => p.id === "artisan-dark-chocolates") ||
+      DEFAULT_PRODUCTS[0]
+    );
   }
   if (rawId.includes("set") || rawId.includes("gym")) {
     return DEFAULT_PRODUCTS.find((p) => p.id === "athletic-gym-set") || DEFAULT_PRODUCTS[0];
@@ -179,11 +183,11 @@ function getProductVariants(product: Product) {
       defaultIndex: 1,
     };
   }
-  if (cat.includes("choc") || cat.includes("candy")) {
+  if (cat.includes("choc") || cat.includes("candy") || n.includes("candy")) {
     return {
       label: "Select Pack",
       guideLabel: "Guide",
-      options: ["12 Pcs (240g)", "24 Pcs (480g)"],
+      options: ["16 Pcs (250g)", "32 Pcs (500g)"],
       defaultIndex: 0,
     };
   }
