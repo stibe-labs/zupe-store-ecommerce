@@ -49,15 +49,15 @@ interface TrackingCheckpoint {
 }
 
 function getProductImageFallback(productName?: string): string {
-  if (!productName) return "/vittal/wireless-earbuds.png";
+  if (!productName) return "/vittal/product-whey-protein-jar.png";
   const norm = productName.toLowerCase();
   const match = DEFAULT_PRODUCTS.find((p) =>
     p.name.toLowerCase().includes(norm) || norm.includes(p.name.toLowerCase())
   );
   if (match) {
-    return match.poster_image || match.images[0] || "/vittal/wireless-earbuds.png";
+    return match.poster_image || match.images[0] || "/vittal/product-whey-protein-jar.png";
   }
-  return "/vittal/wireless-earbuds.png";
+  return "/vittal/product-whey-protein-jar.png";
 }
 
 function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): TrackingCheckpoint[] {
@@ -463,65 +463,65 @@ function OrderTrackingContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAFBFD] text-slate-900 flex flex-col justify-between selection:bg-[#002D62] selection:text-white font-sans">
+    <div className="min-h-screen bg-[#070708] text-white flex flex-col justify-between selection:bg-[#D4A373] selection:text-black font-mograph">
       <Navbar />
 
       <main className="flex-1 pb-20">
         {/* ================================================================= */}
-        {/* HERO SECTION: DEEP NAVY GRADIENT MATCHING HOMEPAGE DESIGN        */}
+        {/* HERO SECTION: DEEP OBSIDIAN GRADIENT MATCHING BRAND DESIGN       */}
         {/* ================================================================= */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-[#001D40] via-[#002855] to-[#001D40] text-white pt-10 sm:pt-14 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 border-b border-blue-900/40">
+        <section className="relative overflow-hidden bg-gradient-to-b from-[#0e0e11] via-[#09090b] to-[#070708] text-white pt-10 sm:pt-14 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 border-b border-white/10">
           {/* Subtle Ambient Radial Lighting */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-blue-500/10 blur-[100px] pointer-events-none" />
-          <div className="absolute -bottom-10 right-10 w-[300px] h-[200px] bg-[#FFBE00]/10 blur-[80px] pointer-events-none" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#D4AF37]/10 blur-[100px] pointer-events-none" />
+          <div className="absolute -bottom-10 right-10 w-[300px] h-[200px] bg-[#D4A373]/10 blur-[80px] pointer-events-none" />
 
           <div className="relative max-w-4xl mx-auto text-center">
             {/* Breadcrumb Navigation */}
-            <div className="flex items-center justify-center gap-2 text-xs font-medium text-blue-200/70 mb-4">
-              <Link href="/" className="hover:text-white transition-colors">
+            <div className="flex items-center justify-center gap-2 text-xs font-medium text-neutral-400 mb-4">
+              <Link href="/" className="hover:text-[#D4A373] transition-colors">
                 Home
               </Link>
-              <ChevronRight className="w-3.5 h-3.5 text-blue-300/40" />
-              <span className="text-[#FFBE00] font-semibold">Track Order</span>
+              <ChevronRight className="w-3.5 h-3.5 text-neutral-600" />
+              <span className="text-[#D4AF37] font-semibold">Track Order</span>
             </div>
 
             {/* Live Tracking Pill */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-[#FFBE00] border border-[#FFBE00]/30 shadow-xs mb-4">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#272015] border border-[#D4AF37]/30 text-[#D4AF37] shadow-xs mb-4 font-movault uppercase tracking-wider">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
               </span>
-              <span className="text-[11px] font-black uppercase tracking-wider">
-                Live Shipment Radar & Tracking
+              <span className="text-[11px] font-bold">
+                Live Shipment Radar &amp; Tracking
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-              Track Your <span className="text-[#FFBE00]">Order</span>
+            <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight uppercase font-movault">
+              Track Your <span className="text-[#D4A373]">Order</span>
             </h1>
-            <p className="mt-3 text-sm sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
+            <p className="mt-3 text-sm sm:text-base text-neutral-300 max-w-xl mx-auto leading-relaxed font-normal">
               Enter your Order ID, courier AWB tracking number, or 10-digit mobile number for real-time delivery milestone updates.
             </p>
 
             {/* Tracking Search Input Card (Clean, modern rounded card) */}
-            <div className="mt-8 max-w-2xl mx-auto bg-white rounded-2xl sm:rounded-full shadow-2xl p-2 sm:p-2.5 border border-white/20">
+            <div className="mt-8 max-w-2xl mx-auto bg-[#141416] rounded-2xl sm:rounded-full shadow-2xl p-2 sm:p-2.5 border border-white/15">
               <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1 flex items-center">
-                  <div className="absolute left-4 sm:left-5 text-slate-400">
-                    <Search className="w-5 h-5 text-[#002D62]" />
+                  <div className="absolute left-4 sm:left-5 text-neutral-400">
+                    <Search className="w-5 h-5 text-[#D4AF37]" />
                   </div>
                   <input
                     type="text"
                     value={inputTerm}
                     onChange={(e) => setInputTerm(e.target.value)}
-                    placeholder="Enter Order ID (e.g. #VD-1001), AWB, or Phone..."
-                    className="w-full pl-12 sm:pl-13 pr-10 py-3.5 sm:py-4 text-sm sm:text-base bg-transparent text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
+                    placeholder="Enter Order ID (e.g. #VL-1001), AWB, or Phone..."
+                    className="w-full pl-12 sm:pl-13 pr-10 py-3.5 sm:py-4 text-sm sm:text-base bg-transparent text-white placeholder:text-neutral-500 focus:outline-none font-medium"
                   />
                   {inputTerm && (
                     <button
                       type="button"
                       onClick={() => setInputTerm("")}
-                      className="absolute right-3 p-1.5 text-slate-400 hover:text-slate-600 rounded-full cursor-pointer transition-colors"
+                      className="absolute right-3 p-1.5 text-neutral-400 hover:text-white rounded-full cursor-pointer transition-colors"
                       title="Clear"
                     >
                       <X className="w-4 h-4" />
@@ -532,11 +532,11 @@ function OrderTrackingContent() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-xl sm:rounded-full bg-[#FFBE00] hover:bg-[#E5AA00] active:scale-95 text-slate-950 font-black text-sm sm:text-base transition-all shadow-md hover:shadow-lg disabled:opacity-70 cursor-pointer shrink-0"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-xl sm:rounded-full bg-[#D4A373] hover:bg-[#c29263] active:scale-95 text-black font-bold text-sm sm:text-base transition-all shadow-md hover:shadow-lg disabled:opacity-70 cursor-pointer shrink-0 font-movault uppercase tracking-wider"
                 >
                   {loading ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+                      <RefreshCw className="w-4 h-4 animate-spin text-black" />
                       <span>Locating Parcel...</span>
                     </>
                   ) : (
@@ -550,23 +550,23 @@ function OrderTrackingContent() {
             </div>
 
             {/* Quick helper format chips */}
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-blue-200/80 font-medium">
-              <span className="text-slate-400">Accepted formats:</span>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-neutral-400 font-medium">
+              <span>Accepted formats:</span>
               <button
                 type="button"
-                onClick={() => setInputTerm("#VD-")}
-                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white font-mono text-[11px] transition-colors cursor-pointer"
+                onClick={() => setInputTerm("#VL-")}
+                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 font-mono text-[11px] transition-colors cursor-pointer"
               >
-                #VD-1001
+                #VL-1001
               </button>
               <button
                 type="button"
                 onClick={() => setInputTerm("SR-AWB-")}
-                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white font-mono text-[11px] transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 font-mono text-[11px] transition-colors cursor-pointer"
               >
                 Courier AWB
               </button>
-              <span className="px-2.5 py-1 rounded-lg bg-white/10 border border-white/10 text-white font-mono text-[11px]">
+              <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-neutral-200 font-mono text-[11px]">
                 10-Digit Mobile
               </span>
             </div>
@@ -574,25 +574,25 @@ function OrderTrackingContent() {
         </section>
 
         {/* ================================================================= */}
-        {/* TRUST BADGES STRIP: SLIM WHITE CURVED CARD (HOMEPAGE MATCH)      */}
+        {/* TRUST BADGES STRIP: SLIM DARK CURVED CARD                         */}
         {/* ================================================================= */}
         <div className="max-w-5xl mx-auto px-4 -mt-6 sm:-mt-8 relative z-10">
-          <div className="bg-white text-slate-900 rounded-xl sm:rounded-2xl md:rounded-3xl border border-slate-200/90 shadow-md py-3 px-2 sm:py-4 sm:px-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 items-center text-center">
+          <div className="bg-[#141416] text-white rounded-xl sm:rounded-2xl md:rounded-3xl border border-white/10 shadow-xl py-3 px-2 sm:py-4 sm:px-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/5 items-center text-center">
               {[
                 {
                   icon: BadgeCheck,
                   label: "100% Authentic",
-                  desc: "Brand New & Sealed",
+                  desc: "Pure & Lab Certified",
                 },
                 {
                   icon: ShieldCheck,
-                  label: "1-Year Warranty",
-                  desc: "All-India Comprehensive",
+                  label: "Quality Guarantee",
+                  desc: "Verified Batch Purity",
                 },
                 {
                   icon: Truck,
-                  label: "Express Air Cargo",
+                  label: "Express Shipping",
                   desc: "5-7 Days Priority Transit",
                 },
                 {
@@ -609,13 +609,13 @@ function OrderTrackingContent() {
                       idx >= 2 ? "pt-3 sm:pt-2" : ""
                     }`}
                   >
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shadow-2xs mb-1.5 shrink-0">
-                      <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#002D62]" />
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#272015] border border-[#D4AF37]/20 flex items-center justify-center shadow-xs mb-1.5 shrink-0">
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#D4AF37]" />
                     </div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                    <span className="text-xs sm:text-sm font-bold text-white leading-tight font-movault uppercase tracking-wide">
                       {item.label}
                     </span>
-                    <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium leading-tight mt-0.5">
+                    <span className="text-[10px] sm:text-[11px] text-neutral-400 font-medium leading-tight mt-0.5">
                       {item.desc}
                     </span>
                   </div>
@@ -631,25 +631,25 @@ function OrderTrackingContent() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-10">
           {/* Success Banner if redirected from 1-Click Fastrr Checkout */}
           {orderStatus === "SUCCESS" && (
-            <div className="mb-8 p-6 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-950 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-4">
+            <div className="mb-8 p-6 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 text-white shadow-xl flex flex-col sm:flex-row items-center sm:items-start gap-4">
               <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
                 <CheckCircle2 className="w-7 h-7" />
               </div>
               <div className="text-center sm:text-left flex-1">
-                <h2 className="text-lg sm:text-xl font-black text-emerald-950">
+                <h2 className="text-lg sm:text-xl font-bold text-white font-movault uppercase tracking-wider">
                   🎉 Order Placed Successfully!
                 </h2>
-                <p className="text-xs sm:text-sm text-emerald-800 mt-1 leading-relaxed">
-                  Thank you! Your order has been placed. Your devices are undergoing serial verification and being secured in multi-layer shockproof electronics packaging.
+                <p className="text-xs sm:text-sm text-neutral-300 mt-1 leading-relaxed">
+                  Thank you! Your order has been placed. Your products are undergoing quality verification and being secured in airtight protective packaging.
                 </p>
                 <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  <span className="px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-900 font-bold text-xs">
-                    1-Year Warranty Activated
+                  <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs">
+                    Quality Guarantee Active
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-900 font-bold text-xs">
-                    Priority Air Dispatch
+                  <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs">
+                    Priority Dispatch
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-900 font-bold text-xs">
+                  <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs">
                     WhatsApp Updates Enabled
                   </span>
                 </div>
@@ -659,11 +659,11 @@ function OrderTrackingContent() {
 
           {/* Error Message */}
           {errorMessage && (
-            <div className="mb-8 p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3 shadow-xs">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-600" />
+            <div className="mb-8 p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-200 flex items-start gap-3 shadow-lg">
+              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-400" />
               <div className="text-sm flex-1">
-                <p className="font-bold">{errorMessage}</p>
-                <p className="text-xs text-rose-600 mt-1 leading-relaxed">
+                <p className="font-bold text-white">{errorMessage}</p>
+                <p className="text-xs text-neutral-400 mt-1 leading-relaxed">
                   Tip: Please check your Email/WhatsApp confirmation or try searching with your 10-digit registered mobile number.
                 </p>
                 {errorSupport && (
@@ -672,7 +672,7 @@ function OrderTrackingContent() {
                       href={errorSupport}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors shadow-xs"
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
                       <span>Chat with {siteConfig.name} Concierge on WhatsApp</span>
@@ -686,7 +686,7 @@ function OrderTrackingContent() {
           {/* If Multiple Orders Match (e.g. searched by phone number) */}
           {matchedOrders.length > 1 && (
             <div className="mb-8">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+              <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3 font-movault">
                 Found {matchedOrders.length} orders matching your search:
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -701,22 +701,22 @@ function OrderTrackingContent() {
                       }}
                       className={`text-left p-4 rounded-2xl border transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-blue-50/90 border-[#002D62] ring-2 ring-[#002D62]/20 shadow-sm"
-                          : "bg-white border-slate-200 hover:border-slate-300 shadow-xs"
+                          ? "bg-[#18181c] border-[#D4AF37] ring-1 ring-[#D4AF37]/40 shadow-lg text-white"
+                          : "bg-[#141416] border-white/10 hover:border-white/20 text-neutral-300 shadow-sm"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-sm text-slate-900">
+                        <span className="font-bold text-sm text-white">
                           {ord.shopify_order_id || ord.id}
                         </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-[#D4AF37]">
                           {ord.delivery_status || ord.status}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 truncate">
-                        {ord.items?.[0]?.product_name || `${siteConfig.name} Electronics`}
+                      <p className="text-xs text-neutral-400 truncate">
+                        {ord.items?.[0]?.product_name || `${siteConfig.name} Products`}
                       </p>
-                      <p className="text-xs font-bold text-[#002D62] mt-2">
+                      <p className="text-xs font-bold text-[#D4AF37] mt-2 font-mono">
                         ₹{ord.total_amount?.toLocaleString("en-IN")}
                       </p>
                     </button>
@@ -738,13 +738,13 @@ function OrderTrackingContent() {
                 const checkpoints = buildTrackingCheckpoints(selectedOrder, liveTracking);
 
                 return (
-                  <div className="bg-white rounded-3xl border border-slate-200/90 shadow-md overflow-hidden">
+                  <div className="bg-[#141416] rounded-3xl border border-white/10 shadow-xl overflow-hidden text-white">
                     {/* Header Strip */}
-                    <div className="p-6 sm:p-8 bg-gradient-to-r from-slate-50 via-white to-blue-50/30 border-b border-slate-100">
+                    <div className="p-6 sm:p-8 bg-[#18181c] border-b border-white/10">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-3">
-                            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-movault uppercase">
                               Order {selectedOrder.shopify_order_id || selectedOrder.id}
                             </h2>
                             <button

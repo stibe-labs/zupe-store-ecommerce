@@ -18,259 +18,148 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { siteConfig } from "@/config/siteConfig";
 
 export const metadata = {
-  title: "Return & Refund Policy | Vittal Digital — Genuine Flagship Electronics",
+  title: "Return & Refund Policy | Vittal Lifestyle — Live Better. Feel Stronger.",
   description:
-    "Learn about Vittal Digital's 7-day replacement guarantee, order cancellation, rapid refund timelines, 1-year warranty coverage, and mandatory unboxing video guidelines.",
+    "Learn about Vittal Lifestyle's 7-day replacement guarantee, order cancellation, rapid refund timelines, and unboxing video guidelines.",
 };
 
 export default function ReturnPolicyPage() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col justify-between selection:bg-[#002D62] selection:text-white font-sans">
+    <div className="min-h-screen bg-[#070708] text-white flex flex-col justify-between selection:bg-[#D4A373] selection:text-black font-mograph">
       <Navbar />
 
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-16 w-full">
         {/* Navigation Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 mb-6">
-          <Link href="/" className="hover:text-[#002D62] transition-colors">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-neutral-400 mb-6">
+          <Link href="/" className="hover:text-[#D4A373] transition-colors">
             Home
           </Link>
-          <BreadcrumbChevron className="w-3.5 h-3.5 text-slate-400" />
-          <span className="font-medium text-slate-800">Return &amp; Refund Policy</span>
+          <BreadcrumbChevron className="w-3.5 h-3.5 text-neutral-600" />
+          <span className="font-semibold text-white">Return &amp; Refund Policy</span>
         </nav>
 
         {/* Header Intro */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-xs font-semibold text-[#002D62] mb-3 shadow-2xs">
-            <RotateCcw className="w-3.5 h-3.5 text-[#002D62]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#272015] border border-[#D4AF37]/30 text-xs font-bold text-[#D4AF37] mb-3 font-movault uppercase tracking-wider">
+            <RotateCcw className="w-3.5 h-3.5 text-[#D4AF37]" />
             <span>Customer Protection • 7-Day Replacement Guarantee</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-slate-900 tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight uppercase font-movault">
             Order Cancellation &amp; Return Policy
           </h1>
-          <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed font-normal">
-            Transparent and fair replacements, hassle-free order cancellations, and rapid refund timelines for Vittal Digital customers across India.
+          <p className="mt-2 text-xs sm:text-sm md:text-base text-neutral-300 leading-relaxed font-normal">
+            Transparent and fair replacements, hassle-free order cancellations, and rapid refund timelines for Vittal Lifestyle customers across India.
           </p>
 
-          <div className="mt-5 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs text-xs sm:text-sm text-slate-600 leading-relaxed">
-            At <strong className="font-semibold text-slate-900">Vittal Digital</strong>, every device is sourced directly from authorized brand distributors and arrives brand-new in factory-sealed manufacturer packaging. To protect your purchase against transit damage or rare factory anomalies, we provide a structured <strong className="font-semibold text-slate-900">7-Day Replacement Guarantee</strong> paired with a <strong className="font-semibold text-slate-900">1-Year Comprehensive Warranty</strong>.
+          <div className="mt-5 bg-[#141416] border border-white/10 rounded-2xl p-5 shadow-lg text-xs sm:text-sm text-neutral-300 leading-relaxed">
+            At <strong className="font-semibold text-white">Vittal Lifestyle</strong>, every item is quality-inspected and dispatched in factory-sealed tamper-evident packaging. To protect your purchase against transit damage or rare packaging anomalies, we provide a structured <strong className="font-semibold text-white">7-Day Replacement Guarantee</strong>.
           </div>
         </div>
 
         {/* 4 Feature Highlight Cards */}
         <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs">
-            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-700 mb-3">
+          <div className="bg-[#141416] border border-white/10 rounded-2xl p-4 shadow-sm">
+            <div className="w-9 h-9 rounded-xl bg-[#272015] border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] mb-3">
               <Video className="w-4 h-4" />
             </div>
-            <h4 className="font-semibold text-xs sm:text-sm text-slate-900 leading-tight">Unboxing Video</h4>
-            <p className="text-[11px] sm:text-xs text-slate-500 mt-1 leading-relaxed">
-              Mandatory continuous video recording from sealed parcel to device inspection.
+            <h4 className="font-bold text-xs sm:text-sm text-white leading-tight uppercase font-movault tracking-wide">Unboxing Video</h4>
+            <p className="text-[11px] sm:text-xs text-neutral-400 mt-1 leading-relaxed font-normal">
+              Continuous uncut video recording from outer sealed parcel to product inspection.
             </p>
           </div>
 
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200/80 flex items-center justify-center text-[#002D62] mb-3">
+          <div className="bg-[#141416] border border-white/10 rounded-2xl p-4 shadow-sm">
+            <div className="w-9 h-9 rounded-xl bg-[#272015] border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] mb-3">
               <Clock className="w-4 h-4" />
             </div>
-            <h4 className="font-semibold text-xs sm:text-sm text-slate-900 leading-tight">48-Hour Notice</h4>
-            <p className="text-[11px] sm:text-xs text-slate-500 mt-1 leading-relaxed">
+            <h4 className="font-bold text-xs sm:text-sm text-white leading-tight uppercase font-movault tracking-wide">48-Hour Notice</h4>
+            <p className="text-[11px] sm:text-xs text-neutral-400 mt-1 leading-relaxed font-normal">
               Report transit damage or physical flaws within 48 hours of doorstep delivery.
             </p>
           </div>
 
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700 mb-3">
+          <div className="bg-[#141416] border border-white/10 rounded-2xl p-4 shadow-sm">
+            <div className="w-9 h-9 rounded-xl bg-[#272015] border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] mb-3">
               <ShieldCheck className="w-4 h-4" />
             </div>
-            <h4 className="font-semibold text-xs sm:text-sm text-slate-900 leading-tight">1-Year Warranty</h4>
-            <p className="text-[11px] sm:text-xs text-slate-500 mt-1 leading-relaxed">
-              Ongoing technical repair assistance and doorstep service across 28 states.
+            <h4 className="font-bold text-xs sm:text-sm text-white leading-tight uppercase font-movault tracking-wide">7-Day Replacement</h4>
+            <p className="text-[11px] sm:text-xs text-neutral-400 mt-1 leading-relaxed font-normal">
+              Direct doorstep courier exchange for damaged or incorrect goods.
             </p>
           </div>
 
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs">
-            <div className="w-9 h-9 rounded-xl bg-purple-50 border border-purple-200/80 flex items-center justify-center text-purple-700 mb-3">
+          <div className="bg-[#141416] border border-white/10 rounded-2xl p-4 shadow-sm">
+            <div className="w-9 h-9 rounded-xl bg-[#272015] border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] mb-3">
               <CreditCard className="w-4 h-4" />
             </div>
-            <h4 className="font-semibold text-xs sm:text-sm text-slate-900 leading-tight">100% Refunds</h4>
-            <p className="text-[11px] sm:text-xs text-slate-500 mt-1 leading-relaxed">
+            <h4 className="font-bold text-xs sm:text-sm text-white leading-tight uppercase font-movault tracking-wide">100% Refunds</h4>
+            <p className="text-[11px] sm:text-xs text-neutral-400 mt-1 leading-relaxed font-normal">
               Fast refunds to original source: UPI (2–4 hours) and Cards (2–4 business days).
             </p>
           </div>
         </div>
 
-        {/* Policy Content Sections */}
-        <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-xs space-y-8 text-xs sm:text-sm text-slate-600 leading-relaxed">
-          {/* 1. Quality Promise */}
+        {/* Policy Details Container */}
+        <div className="bg-[#141416] rounded-2xl sm:rounded-3xl p-6 sm:p-10 border border-white/10 shadow-xl space-y-8 text-xs sm:text-sm text-neutral-300 leading-relaxed">
+          {/* Section 1 */}
           <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-slate-900 font-semibold text-base sm:text-lg border-b border-slate-100 pb-2.5">
-              <ShieldCheck className="w-5 h-5 text-[#002D62]" />
-              <h2>1. Our Quality &amp; Authenticity Promise</h2>
+            <div className="flex items-center gap-2.5 text-white font-bold text-base sm:text-lg border-b border-white/10 pb-2.5 font-movault uppercase tracking-wide">
+              <PackageCheck className="w-5 h-5 text-[#D4AF37]" />
+              <h2>1. Return &amp; Exchange Eligibility</h2>
             </div>
             <p>
-              Each electronics unit dispatched from Vittal Digital is 100% genuine retail inventory in factory-sealed condition with original manufacturer barcodes and serial numbers. Product issues are exceptionally rare, but in the uncommon event of courier transit damage or an out-of-the-box defect, our customer care team is dedicated to rectifying it swiftly.
+              To maintain the highest hygiene, health, and quality standards:
             </p>
-          </section>
-
-          {/* 2. Replacement Policy */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-slate-900 font-semibold text-base sm:text-lg border-b border-slate-100 pb-2.5">
-              <PackageCheck className="w-5 h-5 text-[#002D62]" />
-              <h2>2. 7-Day Replacement Policy</h2>
-            </div>
-            <p>
-              We provide brand-new replacements under the following verified conditions:
-            </p>
-            <ul className="space-y-2 list-none">
+            <ul className="space-y-2 list-none pl-1">
               <li className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong className="font-semibold text-slate-900">Transit Damage:</strong> The device or accessories sustained physical breakage or impact damage during air transit.</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong className="text-white">Nutrition &amp; Food (Supplements, Dates, Nuts, Chocolates):</strong> Due to health &amp; safety protocols, consumables are eligible for replacement if received damaged, leaked, or incorrect. If returning for variant exchange, the factory container seal must be completely unopened and untampered.</span>
               </li>
               <li className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong className="font-semibold text-slate-900">Out-of-the-Box Hardware Defect:</strong> The unit fails to power on, suffers an internal display fault, camera defect, or battery charging failure upon initial setup.</span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong className="font-semibold text-slate-900">Incorrect Item / Specification:</strong> The delivered model, color, or storage capacity differs from your confirmed invoice.</span>
-              </li>
-            </ul>
-
-            <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-4 text-xs text-amber-950 mt-3 space-y-1.5">
-              <div className="flex items-center gap-2 font-semibold text-amber-900">
-                <AlertTriangle className="w-4 h-4 text-amber-700" />
-                <span>Continuous Unboxing Video Requirement</span>
-              </div>
-              <p>
-                To prevent courier fraud and ensure rapid approval, claims for physical damage or missing components <strong className="font-semibold">must be accompanied by a single continuous unboxing video</strong> recorded from before the outer courier box is opened. Claims without an unboxing video cannot be validated by logistics insurance.
-              </p>
-            </div>
-          </section>
-
-          {/* 3. Non-Returnable Conditions */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-slate-900 font-semibold text-base sm:text-lg border-b border-slate-100 pb-2.5">
-              <XCircle className="w-5 h-5 text-rose-600" />
-              <h2>3. Non-Returnable Scenarios</h2>
-            </div>
-            <ul className="space-y-2 list-none text-slate-600">
-              <li className="flex items-start gap-2.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0" />
-                <span>Change of mind, buyer&apos;s remorse, or personal color preference once the original manufacturer security seal has been broken.</span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0" />
-                <span>Devices damaged due to accidental drops, liquid spills, electrical surges, or unauthorized repair attempts after delivery.</span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0" />
-                <span>Returned items missing the original retail box, IMEI/serial labels, bundled charging accessories, manuals, or warranty inserts.</span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0" />
-                <span>Unauthorized software modifications, including bootloader unlocking, custom ROM installation, or root access attempts.</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong className="text-white">Activewear &amp; Apparels:</strong> Must be unwashed, unworn, and have all original brand tags attached in original poly packaging.</span>
               </li>
             </ul>
           </section>
 
-          {/* 4. Cancellation & Refund Policy */}
+          {/* Section 2 */}
           <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-slate-900 font-semibold text-base sm:text-lg border-b border-slate-100 pb-2.5">
-              <Clock className="w-5 h-5 text-[#002D62]" />
-              <h2>4. Order Cancellation &amp; Refund Timelines</h2>
+            <div className="flex items-center gap-2.5 text-white font-bold text-base sm:text-lg border-b border-white/10 pb-2.5 font-movault uppercase tracking-wide">
+              <RotateCcw className="w-5 h-5 text-[#D4AF37]" />
+              <h2>2. Order Cancellation Prior to Dispatch</h2>
             </div>
             <p>
-              Orders can be canceled free of charge at any point prior to courier pickup directly from your <strong className="font-semibold text-slate-900">My Orders</strong> dashboard or by messaging our WhatsApp care line. Once a package is serialized and handed over to express air cargo, cancellation cannot be processed online; you may instead request a replacement or return upon delivery.
+              You may cancel your order free of cost at any time before dispatch by contacting our WhatsApp concierge desk or emailing us. Once a parcel has been handed over to the air/road courier and an AWB has been generated, orders cannot be cancelled mid-transit and must follow the standard return process.
             </p>
-
-            <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-4 text-xs text-slate-800 space-y-2">
-              <div className="flex items-center gap-2 font-semibold text-emerald-950">
-                <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-                <span>100% Refund Mode &amp; Timelines</span>
-              </div>
-              <p>
-                All refunds are credited directly back to the original payment source:
-              </p>
-              <ul className="space-y-1.5 list-none pl-2">
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                  <span><strong className="font-semibold text-slate-900">UPI (Google Pay, PhonePe, Paytm, CRED):</strong> Credited within <strong className="font-semibold text-slate-900">2 to 4 hours</strong>.</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                  <span><strong className="font-semibold text-slate-900">Debit / Credit Cards &amp; Net Banking:</strong> Credited within <strong className="font-semibold text-slate-900">2 to 4 business days</strong> depending on your issuing bank.</span>
-                </li>
-              </ul>
-            </div>
-          </section>
-
-          {/* 5. Step-by-Step Return Process */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2.5 text-slate-900 font-semibold text-base sm:text-lg border-b border-slate-100 pb-2.5">
-              <Truck className="w-5 h-5 text-[#002D62]" />
-              <h2>5. Step-by-Step Return &amp; Replacement Workflow</h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
-                <span className="text-[10px] font-semibold text-[#002D62] uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">Step 1</span>
-                <h4 className="font-semibold text-xs sm:text-sm text-slate-900 mt-2">Submit Claim</h4>
-                <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
-                  Send your Order ID and continuous unboxing video via WhatsApp (+91 916238165935) or to support@vittaldigital.com.
-                </p>
-              </div>
-
-              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
-                <span className="text-[10px] font-semibold text-[#002D62] uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">Step 2</span>
-                <h4 className="font-semibold text-xs sm:text-sm text-slate-900 mt-2">Rapid Verification</h4>
-                <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
-                  Our technical claims team reviews the video and verifies serial numbers within 24 business hours.
-                </p>
-              </div>
-
-              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
-                <span className="text-[10px] font-semibold text-[#002D62] uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">Step 3</span>
-                <h4 className="font-semibold text-xs sm:text-sm text-slate-900 mt-2">Doorstep Pickup</h4>
-                <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
-                  We schedule a complimentary reverse pickup from your address via insured courier.
-                </p>
-              </div>
-
-              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
-                <span className="text-[10px] font-semibold text-[#002D62] uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">Step 4</span>
-                <h4 className="font-semibold text-xs sm:text-sm text-slate-900 mt-2">Resolution</h4>
-                <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
-                  A brand-new replacement unit is dispatched via priority air cargo or a 100% refund is initiated.
-                </p>
-              </div>
-            </div>
           </section>
         </div>
 
         {/* Contact Help Strip */}
-        <div className="mt-8 bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="mt-8 bg-[#141416] rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-white/10 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-base sm:text-lg font-semibold text-slate-900">Need help with a return or refund?</h3>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5 font-normal">Our dedicated after-sales team is ready to assist you on WhatsApp and email.</p>
+            <h3 className="text-base sm:text-lg font-bold text-white font-movault uppercase tracking-wider">Need to Initiate a Return or Exchange?</h3>
+            <p className="text-xs sm:text-sm text-neutral-400 mt-0.5 font-normal">Our customer concierge will process your request within 4 business hours.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <a
-              href="mailto:support@vittaldigital.com"
-              className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-[#002D62] text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-blue-200 transition-colors"
+              href={`mailto:${siteConfig.supportEmail}`}
+              className="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-white/10 transition-colors"
             >
-              <Mail className="w-4 h-4 text-[#002D62]" />
-              support@vittaldigital.com
+              <Mail className="w-4 h-4 text-[#D4AF37]" />
+              {siteConfig.supportEmail}
             </a>
             <a
-              href="https://wa.me/916238165935?text=Hi%20Vittal%20Digital%2C%20I%20need%20assistance%20with%20a%20return"
+              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Lifestyle%2C%20I%20would%20like%20to%20request%20a%20replacement`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-[#25D366]/30 transition-colors"
+              className="inline-flex items-center gap-2 bg-[#D4A373] hover:bg-[#c29263] text-black text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl transition-all shadow-md font-movault uppercase tracking-wider"
             >
-              <MessageCircle className="w-4 h-4 text-[#25D366]" />
-              WhatsApp: +91 916238165935
+              <MessageCircle className="w-4 h-4" />
+              WhatsApp Help
             </a>
           </div>
         </div>
