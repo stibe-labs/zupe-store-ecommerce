@@ -106,40 +106,30 @@ export function Navbar() {
       tagline: "Whey Isolate, Creatine & Pre-workout",
       href: "/products?category=Gym+Supplementaries",
       icon: Dumbbell,
-      badge: "Pure Formula",
-      badgeColor: "bg-[#D4AF37]/15 text-[#D4AF37] border-[#D4AF37]/30",
     },
     {
       name: "Outfits & Athleisure",
       tagline: "Performance fit, 4-way stretch gym sets",
       href: "/products?category=Outfits",
       icon: Sparkles,
-      badge: "Trending",
-      badgeColor: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
     },
     {
       name: "Apparels & Tees",
       tagline: "Heavyweight streetwear & oversized fits",
       href: "/products?category=Apparels",
       icon: Shirt,
-      badge: "VL Edition",
-      badgeColor: "bg-neutral-800 text-neutral-300 border-white/10",
     },
     {
       name: "Royal Dates & Superfoods",
       tagline: "Exotic Ajwa, Medjool & gourmet raw dry fruits",
       href: "/products?category=Dates+%26+Nuts",
       icon: Crown,
-      badge: "100% Pure",
-      badgeColor: "bg-amber-500/15 text-amber-400 border-amber-500/30",
     },
     {
       name: "Candy & Dark Chocolates",
       tagline: "Artisanal 70% dark cocoa & protein bites",
       href: "/products?category=Candy+%26+Chocolates",
       icon: Cookie,
-      badge: "Gourmet",
-      badgeColor: "bg-[#D4A373]/15 text-[#D4A373] border-[#D4A373]/30",
     },
   ];
 
@@ -262,16 +252,9 @@ export function Navbar() {
                               <Icon className="w-4.5 h-4.5" />
                             </div>
                             <div className="truncate">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold text-white group-hover:text-[#D4AF37] transition-colors truncate">
-                                  {cat.name}
-                                </span>
-                                <span
-                                  className={`text-[9px] px-1.5 py-0.2 rounded-full border font-bold uppercase tracking-wider ${cat.badgeColor}`}
-                                >
-                                  {cat.badge}
-                                </span>
-                              </div>
+                              <span className="text-xs font-bold text-white group-hover:text-[#D4AF37] transition-colors truncate block">
+                                {cat.name}
+                              </span>
                               <p className="text-[11px] text-neutral-400 truncate">
                                 {cat.tagline}
                               </p>
@@ -307,9 +290,6 @@ export function Navbar() {
               className="px-3.5 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide text-neutral-300 hover:text-white hover:bg-white/[0.04] transition-all flex items-center gap-1.5"
             >
               <span>Best Sellers</span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 font-bold uppercase">
-                ★ Hot
-              </span>
             </Link>
 
             {/* About Page */}

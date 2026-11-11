@@ -239,16 +239,11 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
               </span>
 
               {/* Main Headline */}
-              <h1 className="font-movault text-2xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-wider text-white leading-[0.95] mb-1.5 sm:mb-2.5 transition-all duration-500">
+              <h1 className="font-movault text-2xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-wider text-white leading-[0.95] mb-3.5 sm:mb-5 transition-all duration-500">
                 {HERO_SLIDES[activeHeroSlide].headline1}
                 <br />
                 <span className="text-[#D4AF37]">{HERO_SLIDES[activeHeroSlide].headline2}</span>
               </h1>
-
-              {/* Tagline */}
-              <p className="font-mograph text-[11px] sm:text-sm text-neutral-300 font-medium leading-relaxed mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-none transition-all duration-500">
-                {HERO_SLIDES[activeHeroSlide].tagline}
-              </p>
 
               {/* CTA Button */}
               <Link
