@@ -273,38 +273,40 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
           {/* =============================================================== */}
           {/* DESKTOP ONLY: Category Cards Row Inside Bottom of Hero Banner    */}
           {/* =============================================================== */}
-          <div className="hidden lg:block relative z-10 w-full pb-5 xl:pb-6">
+          <div className="hidden lg:block relative z-10 w-full pb-10 lg:pb-12 xl:pb-14">
             {/* Smooth dark gradient behind cards so they stand out crisply */}
-            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none -z-1" />
+            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none -z-1" />
 
-            <div className="max-w-[940px] xl:max-w-[1020px] w-full mx-auto px-4 sm:px-6">
-              <div className="grid grid-cols-5 gap-2.5 xl:gap-3.5 w-full">
-                {CATEGORY_ITEMS.map((cat) => (
-                  <Link
-                    key={cat.name}
-                    href={cat.link}
-                    className="group relative rounded-xl xl:rounded-2xl overflow-hidden bg-[#141416]/90 hover:bg-[#1C1C20] border border-white/10 hover:border-[#D4AF37]/50 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl hover:shadow-black/90 backdrop-blur-md cursor-pointer"
-                  >
-                    {/* Image Container (Reduced height for compact luxury look) */}
-                    <div className="relative aspect-[4/3.2] w-full overflow-hidden bg-black">
-                      <Image
-                        src={cat.image}
-                        alt={cat.alt}
-                        fill
-                        className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                        sizes="200px"
-                      />
-                      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#141416] via-[#141416]/40 to-transparent pointer-events-none" />
-                    </div>
+            <div className="max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-12">
+              <div className="max-w-[860px] xl:max-w-[940px]">
+                <div className="grid grid-cols-5 gap-2.5 xl:gap-3.5 w-full">
+                  {CATEGORY_ITEMS.map((cat) => (
+                    <Link
+                      key={cat.name}
+                      href={cat.link}
+                      className="group relative rounded-xl xl:rounded-2xl overflow-hidden bg-[#141416]/90 hover:bg-[#1C1C20] border border-white/10 hover:border-[#D4AF37]/50 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl hover:shadow-black/90 backdrop-blur-md cursor-pointer"
+                    >
+                      {/* Image Container (Reduced height for compact luxury look) */}
+                      <div className="relative aspect-[4/3.2] w-full overflow-hidden bg-black">
+                        <Image
+                          src={cat.image}
+                          alt={cat.alt}
+                          fill
+                          className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                          sizes="200px"
+                        />
+                        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#141416] via-[#141416]/40 to-transparent pointer-events-none" />
+                      </div>
 
-                    {/* Label Bar */}
-                    <div className="py-1.5 px-1.5 text-center bg-[#141416] group-hover:bg-[#18181C] transition-colors border-t border-white/5">
-                      <span className="font-mograph text-[11px] xl:text-xs font-bold text-neutral-200 group-hover:text-white transition-colors leading-tight line-clamp-1 tracking-tight">
-                        {cat.name}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
+                      {/* Label Bar */}
+                      <div className="py-1.5 px-1.5 text-center bg-[#141416] group-hover:bg-[#18181C] transition-colors border-t border-white/5">
+                        <span className="font-mograph text-[11px] xl:text-xs font-bold text-neutral-200 group-hover:text-white transition-colors leading-tight line-clamp-1 tracking-tight">
+                          {cat.name}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
