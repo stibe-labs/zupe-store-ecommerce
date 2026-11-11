@@ -12,23 +12,14 @@ import {
   Menu,
   X,
   ChevronDown,
-  Truck,
   Dumbbell,
   Shirt,
   Sparkles,
-  ShieldCheck,
-  BadgeCheck,
   ArrowRight,
-  Flame,
-  Award,
   Crown,
   Cookie,
-  Apple,
   MessageCircle,
-  HelpCircle,
-  ExternalLink,
   ChevronRight,
-  Zap,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -152,74 +143,10 @@ export function Navbar() {
     },
   ];
 
-  // Quick horizontal category pill tags
-  const quickPills = [
-    { label: "All Products", href: "/products", icon: null },
-    { label: "Whey Isolate", href: "/products/whey-protein-isolate", icon: Zap, highlight: true },
-    { label: "Creatine 250g", href: "/products/creatine-monohydrate", icon: Dumbbell },
-    { label: "Gym Outfits", href: "/products?category=Outfits", icon: Sparkles },
-    { label: "Oversized Tees", href: "/products/oversized-athletic-tshirt", icon: Shirt },
-    { label: "Royal Dates", href: "/products/premium-royal-dates", icon: Crown },
-    { label: "Dark Chocolates", href: "/products/artisan-dark-chocolates", icon: Cookie },
-    { label: "Up to 50% Deals", href: "/products?sort=discount", icon: Flame, badge: "Deals" },
-  ];
-
   return (
     <header className="sticky top-0 z-50 w-full font-mograph select-none">
       {/* =================================================================== */}
-      {/* 1. TOP LUXURY MICRO-ANNOUNCEMENT & VIP TICKER BAR                   */}
-      {/* =================================================================== */}
-      <div className="bg-[#050506] text-neutral-400 text-[10px] sm:text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 border-b border-white/[0.06] tracking-wide">
-        <div className="max-w-[1720px] mx-auto flex items-center justify-between">
-          {/* Left Trust Proof Badges */}
-          <div className="flex items-center gap-2.5 sm:gap-4 overflow-hidden">
-            <span className="flex items-center gap-1.5 text-neutral-300 font-medium">
-              <BadgeCheck className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
-              <span className="truncate">100% Genuine Certified Formulation</span>
-            </span>
-            <span className="hidden sm:inline text-neutral-700 font-light">•</span>
-            <span className="hidden sm:flex items-center gap-1.5 text-neutral-300 font-medium">
-              <Truck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>Express Insured Delivery</span>
-            </span>
-            <span className="hidden lg:inline text-neutral-700 font-light">•</span>
-            <span className="hidden lg:flex items-center gap-1.5 text-neutral-300 font-medium">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
-              <span>Pan-India Doorstep Support</span>
-            </span>
-          </div>
-
-          {/* Right VIP Concierge & Fast Order Links */}
-          <div className="flex items-center gap-3 sm:gap-4 font-medium shrink-0">
-            <span className="hidden md:inline text-neutral-400">
-              Free Express Delivery Above <span className="text-white font-bold">₹1,999</span>
-            </span>
-            <span className="hidden md:inline text-neutral-700 font-light">•</span>
-            <Link
-              href="/order-tracking"
-              className="text-neutral-300 hover:text-[#D4AF37] transition-colors flex items-center gap-1"
-            >
-              <span>Track Order</span>
-            </Link>
-            <span className="text-neutral-700 font-light">•</span>
-            <a
-              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20need%20VIP%20concierge%20support%20with%20Vittal%20Lifestyle`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 transition-colors"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span className="font-semibold">Concierge</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* =================================================================== */}
-      {/* 2. MAIN CREATIVE FLOATING GLASS NAVBAR                              */}
+      {/* MAIN CREATIVE FLOATING GLASS NAVBAR                                 */}
       {/* =================================================================== */}
       <div
         className={`w-full transition-all duration-300 relative border-b ${
@@ -511,37 +438,10 @@ export function Navbar() {
             </button>
           </div>
         </div>
-
-        {/* =================================================================== */}
-        {/* 3. CREATIVE CATEGORY QUICK-RAIL (Compact Luxury Pill Bar)           */}
-        {/* =================================================================== */}
-        <div className="w-full mt-2 pt-2 border-t border-white/[0.05] overflow-x-auto no-scrollbar">
-          <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 shrink-0 py-0.5">
-            {quickPills.map((pill) => {
-              const Icon = pill.icon;
-              return (
-                <Link
-                  key={pill.label}
-                  href={pill.href}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                    pill.badge === "Deals"
-                      ? "bg-gradient-to-r from-amber-500/20 to-red-500/20 text-amber-300 border border-amber-500/40 hover:border-amber-400 shadow-sm"
-                      : pill.highlight
-                      ? "bg-white/[0.08] text-[#D4AF37] border border-[#D4AF37]/40 hover:bg-white/[0.12]"
-                      : "bg-white/[0.03] text-neutral-300 border border-white/[0.06] hover:bg-white/[0.08] hover:text-white hover:border-white/20"
-                  }`}
-                >
-                  {Icon && <Icon className="w-3 h-3 text-[#D4AF37] shrink-0" />}
-                  <span>{pill.label}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
       </div>
 
       {/* =================================================================== */}
-      {/* 4. MOBILE CREATIVE SLIDE-OUT DRAWER                                 */}
+      {/* MOBILE CREATIVE SLIDE-OUT DRAWER                                    */}
       {/* =================================================================== */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
