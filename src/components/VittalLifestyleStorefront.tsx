@@ -458,110 +458,217 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
           </p>
         </div>
 
-        {/* 3 Campaign Cards Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-12 gap-2.5 sm:gap-3.5 md:gap-4 lg:gap-5 w-full items-stretch">
+        {/* ================================================================= */}
+        {/* DESKTOP LAYOUT (>= md): 3 Cards in a Row Matching Reference       */}
+        {/* ================================================================= */}
+        <div className="hidden md:flex md:flex-row gap-3.5 lg:gap-5 w-full items-stretch">
           
-          {/* Card 1: Jackets & Sweatshirts */}
+          {/* Card 1: Jackets & Sweatshirts (Wide Horizontal Card) */}
           <Link
             href="/products?category=Apparels"
-            className="group col-span-1 row-span-2 md:col-span-6 lg:col-span-5 md:row-span-1 rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50 border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-3 sm:p-4 md:p-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
+            className="group md:w-[43%] rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50/80 border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-4 lg:p-5 flex flex-row items-stretch justify-between gap-4 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
           >
-            {/* Image */}
-            <div className="order-1 md:order-2 relative aspect-[4/4.8] md:aspect-[4/4.5] w-full md:w-[48%] rounded-xl sm:rounded-2xl overflow-hidden bg-neutral-100 shrink-0 border border-neutral-200/60">
+            {/* Left: Text Info */}
+            <div className="flex flex-col justify-between py-2 pr-2 flex-1 min-w-0">
+              <h4 className="font-movault text-xl lg:text-2xl xl:text-3xl font-black uppercase italic tracking-wide text-neutral-950 leading-[1.15] mb-2 group-hover:text-[#6B9E3A] transition-colors">
+                Jackets &amp; Sweatshirts
+              </h4>
+              <div className="mt-auto">
+                <span className="font-mograph text-[10px] lg:text-xs text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
+                  Starting At
+                </span>
+                <span className="font-movault text-2xl lg:text-3xl xl:text-4xl font-black text-[#6B9E3A] tracking-tight">
+                  ₹999<span className="text-sm font-normal text-neutral-400">*</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Right: Inner Image */}
+            <div className="relative w-[48%] self-stretch min-h-[220px] rounded-xl lg:rounded-2xl overflow-hidden bg-neutral-100 shrink-0 border border-neutral-200/60">
               <Image
-                src="/vittal/drop-jackets.png"
+                src="/vittal/drop-teveo-run.jpg"
                 alt="Jackets & Sweatshirts"
                 fill
                 className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                sizes="(max-width: 768px) 50vw, 360px"
+                sizes="(max-width: 1200px) 25vw, 360px"
               />
-            </div>
-
-            {/* Text info */}
-            <div className="order-2 md:order-1 flex flex-col justify-end md:justify-center flex-1 min-w-0 pr-0 md:pr-2">
-              <h4 className="font-movault text-base sm:text-lg md:text-xl lg:text-2xl font-black uppercase italic tracking-wide text-neutral-950 leading-tight mb-1.5 group-hover:text-[#6B9E3A] transition-colors">
-                Jackets &amp; Sweatshirts
-              </h4>
-              <div className="mt-auto md:mt-2">
-                <span className="font-mograph text-[9px] sm:text-[10px] md:text-xs text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
-                  Starting At
-                </span>
-                <span className="font-movault text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-[#6B9E3A] tracking-tight">
-                  ₹999<span className="text-xs sm:text-sm font-normal text-neutral-400">*</span>
-                </span>
-              </div>
             </div>
           </Link>
 
           {/* Card 2: Joggers & Track Pants */}
           <Link
             href="/products?category=Outfits"
-            className="group col-span-1 md:col-span-3 lg:col-span-3.5 rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50 border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-3 sm:p-4 md:p-5 flex flex-col justify-between gap-2.5 sm:gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
+            className="group md:w-[28.5%] rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50/80 border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-4 lg:p-5 flex flex-col justify-between gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
           >
-            {/* Image on top */}
-            <div className="relative aspect-[4/3] sm:aspect-[4/3.2] md:aspect-[4/3] w-full rounded-xl sm:rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
+            {/* Top: Inner Image */}
+            <div className="relative aspect-[4/3] w-full rounded-xl lg:rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
               <Image
-                src="/vittal/drop-joggers.png"
+                src="/vittal/drop-mountain.jpg"
                 alt="Joggers & Track Pants"
                 fill
                 className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                sizes="(max-width: 768px) 50vw, 300px"
+                sizes="(max-width: 1200px) 20vw, 300px"
               />
             </div>
 
-            {/* Text at bottom */}
-            <div className="flex items-end justify-between gap-1 mt-auto pt-1">
+            {/* Bottom: Text Info & Bare Arrow */}
+            <div className="flex items-end justify-between gap-2 mt-auto pt-2">
               <div className="min-w-0 flex-1">
-                <h4 className="font-movault text-xs sm:text-sm md:text-base font-black uppercase tracking-wide text-neutral-950 leading-tight mb-1 truncate group-hover:text-[#6B9E3A] transition-colors">
+                <h4 className="font-movault text-sm lg:text-base xl:text-lg font-black uppercase tracking-wide text-neutral-950 leading-tight mb-1 truncate group-hover:text-[#6B9E3A] transition-colors">
                   Joggers &amp; Track Pants
                 </h4>
-                <span className="font-mograph text-[9px] sm:text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
+                <span className="font-mograph text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
                   Starting At
                 </span>
-                <span className="font-movault text-base sm:text-lg md:text-xl lg:text-2xl font-black text-[#6B9E3A] tracking-tight">
+                <span className="font-movault text-lg lg:text-xl xl:text-2xl font-black text-[#6B9E3A] tracking-tight">
                   ₹899<span className="text-xs font-normal text-neutral-400">*</span>
                 </span>
               </div>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#E5F2D0] group-hover:bg-[#6B9E3A] text-[#3B581C] group-hover:text-white flex items-center justify-center transition-all shrink-0">
-                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
-              </div>
+              <ArrowUpRight className="w-5 h-5 lg:w-6 lg:h-6 text-neutral-900 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-1" />
             </div>
           </Link>
 
           {/* Card 3: Full Sleeve T-Shirts */}
           <Link
             href="/products?category=Apparels"
-            className="group col-span-1 md:col-span-3 lg:col-span-3.5 rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50 border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-3 sm:p-4 md:p-5 flex flex-col justify-between gap-2.5 sm:gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
+            className="group md:w-[28.5%] rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50/80 border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-4 lg:p-5 flex flex-col justify-between gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
           >
-            {/* Image on top */}
-            <div className="relative aspect-[4/3] sm:aspect-[4/3.2] md:aspect-[4/3] w-full rounded-xl sm:rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
+            {/* Top: Inner Image */}
+            <div className="relative aspect-[4/3] w-full rounded-xl lg:rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
               <Image
-                src="/vittal/drop-tees.png"
+                src="/vittal/drop-run-fitness.jpg"
                 alt="Full Sleeve T-Shirts"
                 fill
                 className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                sizes="(max-width: 768px) 50vw, 300px"
+                sizes="(max-width: 1200px) 20vw, 300px"
               />
             </div>
 
-            {/* Text at bottom */}
-            <div className="flex items-end justify-between gap-1 mt-auto pt-1">
+            {/* Bottom: Text Info & Bare Arrow */}
+            <div className="flex items-end justify-between gap-2 mt-auto pt-2">
               <div className="min-w-0 flex-1">
-                <h4 className="font-movault text-xs sm:text-sm md:text-base font-black uppercase tracking-wide text-neutral-950 leading-tight mb-1 truncate group-hover:text-[#6B9E3A] transition-colors">
+                <h4 className="font-movault text-sm lg:text-base xl:text-lg font-black uppercase tracking-wide text-neutral-950 leading-tight mb-1 truncate group-hover:text-[#6B9E3A] transition-colors">
                   Full Sleeve T-Shirts
                 </h4>
-                <span className="font-mograph text-[9px] sm:text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
+                <span className="font-mograph text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
                   Starting At
                 </span>
-                <span className="font-movault text-base sm:text-lg md:text-xl lg:text-2xl font-black text-[#6B9E3A] tracking-tight">
+                <span className="font-movault text-lg lg:text-xl xl:text-2xl font-black text-[#6B9E3A] tracking-tight">
                   ₹799<span className="text-xs font-normal text-neutral-400">*</span>
                 </span>
               </div>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#E5F2D0] group-hover:bg-[#6B9E3A] text-[#3B581C] group-hover:text-white flex items-center justify-center transition-all shrink-0">
-                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+              <ArrowUpRight className="w-5 h-5 lg:w-6 lg:h-6 text-neutral-900 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-1" />
+            </div>
+          </Link>
+        </div>
+
+        {/* ================================================================= */}
+        {/* MOBILE LAYOUT (< md): 2 Columns Grid Matching Reference           */}
+        {/* ================================================================= */}
+        <div className="grid grid-cols-2 md:hidden gap-2.5 sm:gap-3 w-full items-stretch">
+          
+          {/* Column 1: Card 1 (Tall Card, Tall Image on Top) */}
+          <Link
+            href="/products?category=Apparels"
+            className="group rounded-2xl bg-white border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-2.5 sm:p-3 flex flex-col justify-between h-full transition-all duration-300 shadow-2xs hover:shadow-md cursor-pointer"
+          >
+            {/* Top: Tall Image Filling Upper Section */}
+            <div className="relative aspect-[4/5.6] w-full rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
+              <Image
+                src="/vittal/drop-teveo-run.jpg"
+                alt="Jackets & Sweatshirts"
+                fill
+                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                sizes="50vw"
+              />
+            </div>
+
+            {/* Bottom: Text Info */}
+            <div className="flex flex-col justify-end flex-1 min-w-0 pt-2 pb-0.5">
+              <h4 className="font-movault text-xs xs:text-sm font-black uppercase italic tracking-wide text-neutral-950 leading-tight mb-1 group-hover:text-[#6B9E3A] transition-colors">
+                Jackets &amp; Sweatshirts
+              </h4>
+              <div className="mt-auto">
+                <span className="font-mograph text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">
+                  Starting At
+                </span>
+                <span className="font-movault text-base xs:text-lg font-black text-[#6B9E3A] tracking-tight">
+                  ₹999<span className="text-[10px] font-normal text-neutral-400">*</span>
+                </span>
               </div>
             </div>
           </Link>
+
+          {/* Column 2: Stacked Cards (Card 2 & Card 3) */}
+          <div className="flex flex-col gap-2.5 sm:gap-3 h-full">
+            
+            {/* Card 2: Joggers & Track Pants */}
+            <Link
+              href="/products?category=Outfits"
+              className="group rounded-2xl bg-white border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-2.5 sm:p-3 flex flex-col justify-between flex-1 transition-all duration-300 shadow-2xs hover:shadow-md cursor-pointer"
+            >
+              {/* Top: Inner Image */}
+              <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
+                <Image
+                  src="/vittal/drop-mountain.jpg"
+                  alt="Joggers & Track Pants"
+                  fill
+                  className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                  sizes="50vw"
+                />
+              </div>
+
+              {/* Bottom: Text Info & Bare Arrow */}
+              <div className="flex items-end justify-between gap-1 mt-auto pt-1.5">
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-movault text-[11px] xs:text-xs font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate group-hover:text-[#6B9E3A] transition-colors">
+                    Joggers &amp; Track Pants
+                  </h4>
+                  <span className="font-mograph text-[8.5px] text-neutral-500 font-bold uppercase tracking-wider block">
+                    Starting At
+                  </span>
+                  <span className="font-movault text-sm xs:text-base font-black text-[#6B9E3A] tracking-tight">
+                    ₹899<span className="text-[9px] font-normal text-neutral-400">*</span>
+                  </span>
+                </div>
+                <ArrowUpRight className="w-4 h-4 xs:w-4.5 xs:h-4.5 text-neutral-900 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-0.5" />
+              </div>
+            </Link>
+
+            {/* Card 3: Full Sleeve T-Shirts */}
+            <Link
+              href="/products?category=Apparels"
+              className="group rounded-2xl bg-white border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-2.5 sm:p-3 flex flex-col justify-between flex-1 transition-all duration-300 shadow-2xs hover:shadow-md cursor-pointer"
+            >
+              {/* Top: Inner Image */}
+              <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
+                <Image
+                  src="/vittal/drop-run-fitness.jpg"
+                  alt="Full Sleeve T-Shirts"
+                  fill
+                  className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                  sizes="50vw"
+                />
+              </div>
+
+              {/* Bottom: Text Info & Bare Arrow */}
+              <div className="flex items-end justify-between gap-1 mt-auto pt-1.5">
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-movault text-[11px] xs:text-xs font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate group-hover:text-[#6B9E3A] transition-colors">
+                    Full Sleeve T-Shirts
+                  </h4>
+                  <span className="font-mograph text-[8.5px] text-neutral-500 font-bold uppercase tracking-wider block">
+                    Starting At
+                  </span>
+                  <span className="font-movault text-sm xs:text-base font-black text-[#6B9E3A] tracking-tight">
+                    ₹799<span className="text-[9px] font-normal text-neutral-400">*</span>
+                  </span>
+                </div>
+                <ArrowUpRight className="w-4 h-4 xs:w-4.5 xs:h-4.5 text-neutral-900 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-0.5" />
+              </div>
+            </Link>
+
+          </div>
         </div>
       </section>
     </div>
