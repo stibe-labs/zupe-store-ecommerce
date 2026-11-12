@@ -34,12 +34,10 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-      if ((ord as any).whatsapp_confirm_status === "confirmed") {
-        return NextResponse.json(
-          { success: false, error: "This order has already been confirmed and is being processed for dispatch." },
-          { status: 400 }
-        );
-      }
+      // Note: whatsapp_confirm_status === "confirmed" means the customer confirmed via WhatsApp,
+      // but the order may still be cancellable if it hasn't physically shipped yet.
+      // We already block cancellation above for "shipped" and "delivered" statuses.
+      // Do NOT block cancellation here based on whatsapp_confirm_status === "confirmed" alone.
     }
 
     // Cancel order and restock inventory

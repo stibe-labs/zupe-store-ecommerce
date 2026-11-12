@@ -507,15 +507,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           }
 
           // Fallback if quantity changes manually and no longer matches bundle tier
-          const isBundle = item.bundle_tier && item.bundle_tier === quantity;
+          // Keep offer price (item.price) intact — do NOT replace with original_price (MRP)
           return {
             ...item,
             quantity,
-            price: isBundle ? item.price : (item.original_price || item.price),
-            bundle_tier: isBundle ? item.bundle_tier : undefined,
-            bundle_savings: isBundle ? item.bundle_savings : undefined,
-            bundle_total: isBundle ? item.bundle_total : undefined,
-            offer_label: isBundle ? item.offer_label : undefined,
+            bundle_tier: undefined,
+            bundle_savings: undefined,
+            bundle_total: undefined,
+            offer_label: undefined,
           };
         }
         return item;

@@ -492,10 +492,10 @@ export default function AccountPage() {
                 </div>
 
                 {user.phone ? (
-                  <p className="text-xs sm:text-sm text-amber-100/90 flex items-center gap-2 truncate">
+                  <p className="text-xs sm:text-sm text-amber-100/90 flex items-center gap-2 flex-wrap">
                     <Phone className="w-3.5 h-3.5 text-[#25D366] flex-shrink-0" />
-                    <span className="font-semibold">{user.phone}</span>
-                    <span className="text-[10px] text-emerald-300 font-bold bg-[#0e4a3b]/70 px-1.5 py-0.5 rounded border border-emerald-400/40">
+                    <span className="font-semibold flex-shrink-0">{user.phone}</span>
+                    <span className="text-[10px] text-emerald-300 font-bold bg-[#0e4a3b]/70 px-1.5 py-0.5 rounded border border-emerald-400/40 flex-shrink-0 whitespace-nowrap">
                       WhatsApp Verified
                     </span>
                   </p>
