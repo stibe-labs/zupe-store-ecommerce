@@ -42,7 +42,7 @@ export function Navbar() {
 
   const flyoutRef = useRef<HTMLDivElement>(null);
 
-  // Detect scroll for dynamic navbar glass elevation
+  // Detect scroll for dynamic navbar elevation
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 20) {
@@ -61,7 +61,11 @@ export function Navbar() {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         openSearch();
-      } else if (e.key === "/" && (e.target as HTMLElement).tagName !== "INPUT" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
+      } else if (
+        e.key === "/" &&
+        (e.target as HTMLElement).tagName !== "INPUT" &&
+        (e.target as HTMLElement).tagName !== "TEXTAREA"
+      ) {
         e.preventDefault();
         openSearch();
       }
@@ -99,7 +103,7 @@ export function Navbar() {
     }
   };
 
-  // Curated category mega-flyout items with luxury descriptors
+  // Curated category mega-flyout items
   const categoryFlyout = [
     {
       name: "Gym Supplementaries",
@@ -136,44 +140,177 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full font-mograph select-none">
       {/* =================================================================== */}
-      {/* MAIN CREATIVE FLOATING GLASS NAVBAR                                 */}
+      {/* MINIMAL CLEAN NAVBAR WITH CENTERED VL LOGO                         */}
       {/* =================================================================== */}
       <div
         className={`w-full transition-all duration-300 relative border-b ${
           scrolled
-            ? "bg-white/95 backdrop-blur-2xl border-neutral-200/90 shadow-[0_4px_24px_rgba(0,0,0,0.06)] py-2 sm:py-2.5"
-            : "bg-white/90 backdrop-blur-xl border-neutral-200/70 shadow-[0_2px_12px_rgba(0,0,0,0.04)] py-2.5 sm:py-3"
+            ? "bg-white/95 backdrop-blur-2xl border-neutral-200/90 shadow-[0_4px_24px_rgba(0,0,0,0.04)] py-2 sm:py-2.5"
+            : "bg-white/95 backdrop-blur-xl border-neutral-200/70 shadow-[0_2px_10px_rgba(0,0,0,0.02)] py-2.5 sm:py-3"
         }`}
       >
-        {/* Subtle gold glow line accent at the bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#C5A059]/35 to-transparent pointer-events-none" />
-
-        <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-6">
+        <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-6 relative">
           
           {/* =============================================================== */}
-          {/* MOBILE VIEW: LEFT HAMBURGER BUTTON                              */}
+          {/* LEFT: MOBILE HAMBURGER / DESKTOP NAV LINKS                      */}
           {/* =============================================================== */}
-          <div className="flex lg:hidden items-center shrink-0">
+          <div className="flex items-center gap-1 xl:gap-2 shrink-0">
+            {/* Mobile Menu Icon */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="p-2 -ml-2 rounded-xl text-neutral-800 hover:text-black hover:bg-neutral-100 border border-transparent hover:border-neutral-200 transition-all flex items-center justify-center cursor-pointer"
+              className="lg:hidden p-2 -ml-2 rounded-xl text-neutral-800 hover:text-black hover:bg-[#F4F5F7] transition-all flex items-center justify-center cursor-pointer"
               aria-label="Open navigation menu"
             >
               <Menu className="w-5 h-5 stroke-[2]" />
             </button>
+
+            {/* Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5">
+              {/* Home Link */}
+              <Link
+                href="/"
+                className={`px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
+                  pathname === "/"
+                    ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
+                    : "text-neutral-700 hover:text-black hover:bg-[#F4F5F7]"
+                }`}
+              >
+                Home
+              </Link>
+
+              {/* Shop Collections Dropdown Flyout */}
+              <div
+                className="relative"
+                ref={flyoutRef}
+                onMouseEnter={() => setShopFlyoutOpen(true)}
+                onMouseLeave={() => setShopFlyoutOpen(false)}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShopFlyoutOpen((prev) => !prev)}
+                  className={`px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all flex items-center gap-1 cursor-pointer ${
+                    shopFlyoutOpen || pathname?.startsWith("/products")
+                      ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
+                      : "text-neutral-700 hover:text-black hover:bg-[#F4F5F7]"
+                  }`}
+                >
+                  <span>Collections</span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      shopFlyoutOpen ? "rotate-180 text-[#6B9E3A]" : "text-neutral-500"
+                    }`}
+                  />
+                </button>
+
+                {/* Clean Mega Flyout Menu */}
+                {shopFlyoutOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-[460px] bg-white border border-neutral-200 rounded-2xl shadow-xl p-4 z-50 backdrop-blur-2xl animate-in fade-in duration-150">
+                    <div className="flex items-center justify-between pb-3 mb-2 border-b border-neutral-100">
+                      <span className="text-[11px] uppercase tracking-wider text-neutral-500 font-bold">
+                        Curated Departments
+                      </span>
+                      <Link
+                        href="/products"
+                        onClick={() => setShopFlyoutOpen(false)}
+                        className="text-xs text-[#6B9E3A] hover:underline font-semibold flex items-center gap-1"
+                      >
+                        <span>View All</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </Link>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      {categoryFlyout.map((cat) => {
+                        const Icon = cat.icon;
+                        return (
+                          <Link
+                            key={cat.name}
+                            href={cat.href}
+                            onClick={() => setShopFlyoutOpen(false)}
+                            className="flex items-center justify-between p-2.5 rounded-xl hover:bg-[#F4F5F7] transition-all group"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-9 h-9 rounded-xl bg-[#F4F5F7] border border-neutral-200/80 flex items-center justify-center text-neutral-700 group-hover:text-[#6B9E3A] group-hover:bg-[#E5F2D0]/40 transition-colors shrink-0">
+                                <Icon className="w-4.5 h-4.5" />
+                              </div>
+                              <div className="truncate">
+                                <span className="text-xs font-bold text-neutral-900 group-hover:text-[#6B9E3A] transition-colors truncate block">
+                                  {cat.name}
+                                </span>
+                                <p className="text-[11px] text-neutral-500 truncate">
+                                  {cat.tagline}
+                                </p>
+                              </div>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                          </Link>
+                        );
+                      })}
+                    </div>
+
+                    {/* Mega Menu Footer Callout */}
+                    <div className="mt-3 pt-3 border-t border-neutral-100 bg-[#F4F5F7] p-3 rounded-xl border border-neutral-200/70 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-neutral-900">Pure Protein. Maximum Performance.</p>
+                        <p className="text-[10px] text-neutral-500">Lab-certified 100% ultra-filtered whey isolate</p>
+                      </div>
+                      <Link
+                        href="/products/whey-protein-isolate"
+                        onClick={() => setShopFlyoutOpen(false)}
+                        className="px-3 py-1 rounded-lg bg-[#6B9E3A] hover:bg-[#5C8931] text-white font-extrabold text-xs transition-colors shrink-0"
+                      >
+                        Shop Isolate
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Best Sellers */}
+              <Link
+                href="/products?sort=best_selling"
+                className="px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide text-neutral-700 hover:text-black hover:bg-[#F4F5F7] transition-all"
+              >
+                Best Sellers
+              </Link>
+
+              {/* About Page */}
+              <Link
+                href="/about"
+                className={`px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
+                  pathname === "/about"
+                    ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
+                    : "text-neutral-700 hover:text-black hover:bg-[#F4F5F7]"
+                }`}
+              >
+                About
+              </Link>
+
+              {/* Contact Page */}
+              <Link
+                href="/contact"
+                className={`px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
+                  pathname === "/contact"
+                    ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
+                    : "text-neutral-700 hover:text-black hover:bg-[#F4F5F7]"
+                }`}
+              >
+                Contact
+              </Link>
+            </nav>
           </div>
 
           {/* =============================================================== */}
-          {/* BRAND LOGO: LEFT ON DESKTOP, CENTERED ON MOBILE                 */}
+          {/* CENTER: VL LOGO (EXACTLY CENTERED ON MOBILE & DESKTOP)          */}
           {/* =============================================================== */}
-          <div className="flex items-center lg:static absolute left-1/2 -translate-x-1/2 lg:translate-x-0 z-10 shrink-0">
-            <Link href="/" className="flex items-center group cursor-pointer">
-              <div className="relative h-11 sm:h-12 md:h-14 lg:h-15 w-40 sm:w-48 md:w-56 lg:w-64 transition-transform duration-300 group-hover:scale-[1.02]">
+          <div className="absolute left-1/2 -translate-x-1/2 z-10 shrink-0">
+            <Link href="/" className="flex items-center justify-center group cursor-pointer">
+              <div className="relative h-10 sm:h-12 md:h-13 w-36 sm:w-44 md:w-52 transition-transform duration-300 group-hover:scale-[1.02]">
                 <Image
                   src="/vl-logo-black.png"
                   alt="Vittal Lifestyle"
                   fill
-                  className="object-contain object-center lg:object-left"
+                  className="object-contain object-center"
                   priority
                 />
               </div>
@@ -181,261 +318,78 @@ export function Navbar() {
           </div>
 
           {/* =============================================================== */}
-          {/* DESKTOP CENTER NAVIGATION WITH CREATIVE MEGA FLYOUT             */}
+          {/* RIGHT ACTION DOCK (Minimal Icons: Search, Wishlist, User, Bag)   */}
           {/* =============================================================== */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
-            {/* Home Link */}
-            <Link
-              href="/"
-              className={`px-3.5 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
-                pathname === "/"
-                  ? "text-[#A67C2E] bg-neutral-100 shadow-xs font-bold"
-                  : "text-neutral-700 hover:text-black hover:bg-neutral-100/70"
-              }`}
-            >
-              Home
-            </Link>
-
-            {/* Shop Collections Dropdown Flyout */}
-            <div
-              className="relative"
-              ref={flyoutRef}
-              onMouseEnter={() => setShopFlyoutOpen(true)}
-              onMouseLeave={() => setShopFlyoutOpen(false)}
-            >
-              <button
-                type="button"
-                onClick={() => setShopFlyoutOpen((prev) => !prev)}
-                className={`px-3.5 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all flex items-center gap-1.5 cursor-pointer ${
-                  shopFlyoutOpen || pathname?.startsWith("/products")
-                    ? "text-[#A67C2E] bg-neutral-100 font-bold"
-                    : "text-neutral-700 hover:text-black hover:bg-neutral-100/70"
-                }`}
-              >
-                <span>Collections</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                    shopFlyoutOpen ? "rotate-180 text-[#A67C2E]" : "text-neutral-500"
-                  }`}
-                />
-              </button>
-
-              {/* Luxury Mega Flyout Menu */}
-              {shopFlyoutOpen && (
-                <div className="absolute top-full left-0 mt-2 w-[460px] bg-white border border-neutral-200 rounded-2xl shadow-2xl p-4 z-50 backdrop-blur-2xl animate-in fade-in duration-150">
-                  <div className="flex items-center justify-between pb-3 mb-2 border-b border-neutral-100">
-                    <span className="text-[11px] uppercase tracking-wider text-neutral-500 font-bold">
-                      Curated Departments
-                    </span>
-                    <Link
-                      href="/products"
-                      onClick={() => setShopFlyoutOpen(false)}
-                      className="text-xs text-[#A67C2E] hover:underline font-semibold flex items-center gap-1"
-                    >
-                      <span>View All</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </Link>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    {categoryFlyout.map((cat) => {
-                      const Icon = cat.icon;
-                      return (
-                        <Link
-                          key={cat.name}
-                          href={cat.href}
-                          onClick={() => setShopFlyoutOpen(false)}
-                          className="flex items-center justify-between p-2.5 rounded-xl hover:bg-neutral-50 transition-all group"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-9 h-9 rounded-xl bg-neutral-100 border border-neutral-200/80 flex items-center justify-center text-neutral-700 group-hover:text-[#A67C2E] group-hover:border-[#C5A059]/40 transition-colors shrink-0">
-                              <Icon className="w-4.5 h-4.5" />
-                            </div>
-                            <div className="truncate">
-                              <span className="text-xs font-bold text-neutral-900 group-hover:text-[#A67C2E] transition-colors truncate block">
-                                {cat.name}
-                              </span>
-                              <p className="text-[11px] text-neutral-500 truncate">
-                                {cat.tagline}
-                              </p>
-                            </div>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#A67C2E] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
-                        </Link>
-                      );
-                    })}
-                  </div>
-
-                  {/* Mega Menu Footer Callout */}
-                  <div className="mt-3 pt-3 border-t border-neutral-100 bg-gradient-to-r from-[#FAF5EC] via-[#FDFBF7] to-[#FAF5EC] p-3 rounded-xl border border-[#F3DFC3] flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-bold text-neutral-900">Pure Protein. Maximum Performance.</p>
-                      <p className="text-[10px] text-neutral-500">Lab-certified 100% ultra-filtered whey isolate</p>
-                    </div>
-                    <Link
-                      href="/products/whey-protein-isolate"
-                      onClick={() => setShopFlyoutOpen(false)}
-                      className="px-3 py-1 rounded-lg bg-[#D4A373] hover:bg-[#C89565] text-neutral-950 font-extrabold text-xs transition-colors shrink-0"
-                    >
-                      Shop Isolate
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Best Sellers */}
-            <Link
-              href="/products?sort=best_selling"
-              className="px-3.5 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide text-neutral-700 hover:text-black hover:bg-neutral-100/70 transition-all flex items-center gap-1.5"
-            >
-              <span>Best Sellers</span>
-            </Link>
-
-            {/* About Page */}
-            <Link
-              href="/about"
-              className={`px-3.5 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
-                pathname === "/about"
-                  ? "text-[#A67C2E] bg-neutral-100 font-bold"
-                  : "text-neutral-700 hover:text-black hover:bg-neutral-100/70"
-              }`}
-            >
-              About
-            </Link>
-
-            {/* Contact Page */}
-            <Link
-              href="/contact"
-              className={`px-3.5 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
-                pathname === "/contact"
-                  ? "text-[#A67C2E] bg-neutral-100 font-bold"
-                  : "text-neutral-700 hover:text-black hover:bg-neutral-100/70"
-              }`}
-            >
-              Contact
-            </Link>
-          </nav>
-
-          {/* =============================================================== */}
-          {/* DESKTOP CREATIVE INTEGRATED SEARCH PILL                         */}
-          {/* =============================================================== */}
-          <div className="hidden lg:flex items-center flex-1 max-w-xs xl:max-w-sm ml-2">
-            <form
-              onSubmit={handleSearchSubmit}
-              onClick={() => openSearch()}
-              className="w-full relative flex items-center rounded-full bg-neutral-100 hover:bg-neutral-150 border border-neutral-200/80 hover:border-[#C5A059]/40 focus-within:border-[#C5A059] focus-within:ring-2 focus-within:ring-[#C5A059]/20 transition-all h-9 px-3.5 group cursor-pointer"
-            >
-              <Search className="w-3.5 h-3.5 text-[#A67C2E] mr-2 shrink-0 group-hover:scale-110 transition-transform" />
-              <input
-                type="text"
-                readOnly
-                placeholder="Search Whey, Outfits, Dates..."
-                className="w-full bg-transparent text-xs text-neutral-900 placeholder:text-neutral-500 focus:outline-none cursor-pointer"
-              />
-              <span className="hidden xl:inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-mono shrink-0 ml-1">
-                ⌘K
-              </span>
-            </form>
-          </div>
-
-          {/* =============================================================== */}
-          {/* RIGHT ACTION DOCK (Wishlist, Account, Shopping Bag)              */}
-          {/* =============================================================== */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 z-20 shrink-0">
-            {/* Mobile Search Icon */}
+          <div className="flex items-center gap-1 sm:gap-2 z-20 shrink-0">
+            {/* Search Icon (Mobile & Desktop) */}
             <button
               onClick={openSearch}
-              className="lg:hidden p-2 rounded-xl text-neutral-800 hover:text-black hover:bg-neutral-100 transition-all cursor-pointer"
+              className="p-2 rounded-xl text-neutral-800 hover:text-black hover:bg-[#F4F5F7] transition-all cursor-pointer"
               aria-label="Open search"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-5 h-5 stroke-[1.8]" />
             </button>
 
             {/* Desktop Wishlist Pill */}
             <Link
               href="/wishlist"
-              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-neutral-100 border border-transparent hover:border-neutral-200 transition-all group"
+              className="hidden lg:flex items-center p-2 rounded-xl hover:bg-[#F4F5F7] text-neutral-800 hover:text-black transition-all relative"
               aria-label="Wishlist"
             >
-              <div className="relative">
-                <Heart
-                  className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                    totalWishlistItems > 0
-                      ? "fill-rose-500 text-rose-500"
-                      : "text-neutral-700 group-hover:text-black"
-                  }`}
-                />
-                {totalWishlistItems > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-[#D4A373] text-black text-[9px] font-black rounded-full min-w-[15px] h-[15px] px-0.5 flex items-center justify-center">
-                    {totalWishlistItems}
-                  </span>
-                )}
-              </div>
-              <span className="text-xs font-semibold text-neutral-700 group-hover:text-black">
-                Wishlist
-              </span>
+              <Heart
+                className={`w-5 h-5 transition-transform hover:scale-110 ${
+                  totalWishlistItems > 0
+                    ? "fill-[#6B9E3A] text-[#6B9E3A]"
+                    : "text-neutral-700 stroke-[1.8]"
+                }`}
+              />
+              {totalWishlistItems > 0 && (
+                <span className="absolute top-1 right-1 bg-[#6B9E3A] text-white text-[9px] font-black rounded-full min-w-[16px] h-[16px] px-0.5 flex items-center justify-center">
+                  {totalWishlistItems}
+                </span>
+              )}
             </Link>
 
-            {/* Desktop Account Pill */}
+            {/* Desktop Account Icon */}
             <button
               onClick={handleAccountClick}
-              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-neutral-100 border border-transparent hover:border-neutral-200 transition-all group cursor-pointer"
+              className="hidden lg:flex items-center p-2 rounded-xl hover:bg-[#F4F5F7] text-neutral-800 hover:text-black transition-all cursor-pointer"
               aria-label="Account"
             >
-              <div className="w-7 h-7 rounded-full bg-neutral-100 group-hover:bg-[#FAF5EC] border border-neutral-200/80 flex items-center justify-center text-neutral-700 group-hover:text-[#A67C2E] transition-all">
-                <User className="w-3.5 h-3.5" />
-              </div>
-              <span className="text-xs font-semibold text-neutral-700 group-hover:text-black">
-                {isAuthenticated ? "My Profile" : "Sign In"}
-              </span>
+              <User className="w-5 h-5 stroke-[1.8]" />
             </button>
 
-            {/* Luxury Creative Shopping Bag Button (Desktop & Mobile) */}
+            {/* Minimal Shopping Bag with Pastel Lime Green Badge */}
             <button
               onClick={openCart}
-              className="flex items-center gap-2.5 p-1 pl-1.5 pr-3 sm:pr-3.5 rounded-full bg-gradient-to-r from-[#FBF6ED] to-[#F5EBD9] hover:from-[#F7EDDC] hover:to-[#EFE2CA] border border-[#E5D2B3] text-neutral-900 shadow-sm transition-all group cursor-pointer active:scale-95"
+              className="relative p-2 rounded-xl text-neutral-800 hover:text-black hover:bg-[#F4F5F7] transition-all cursor-pointer flex items-center justify-center"
               aria-label="View Shopping Cart"
             >
-              <div className="relative">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border border-[#E5D2B3] flex items-center justify-center text-[#A67C2E] group-hover:scale-105 transition-transform shadow-2xs">
-                  <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
-                </div>
-                {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#D4A373] text-neutral-950 text-[9px] font-black rounded-full min-w-[16px] h-[16px] px-0.5 flex items-center justify-center shadow-xs animate-in zoom-in">
-                    {totalItems}
-                  </span>
-                )}
-              </div>
-              <div className="hidden sm:block text-left leading-tight">
-                <span className="block text-neutral-500 text-[9px] font-semibold uppercase tracking-wider">
-                  Bag
-                </span>
-                <span className="block text-neutral-900 font-extrabold text-xs">
-                  ₹{subtotal.toLocaleString("en-IN")}
-                </span>
-              </div>
+              <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
+              <span className="absolute top-1 right-1 bg-[#6B9E3A] text-white text-[9px] font-bold rounded-full min-w-[16px] h-[16px] px-0.5 flex items-center justify-center shadow-xs">
+                {totalItems > 0 ? totalItems : 1}
+              </span>
             </button>
           </div>
         </div>
       </div>
 
       {/* =================================================================== */}
-      {/* MOBILE CREATIVE SLIDE-OUT DRAWER                                    */}
+      {/* MOBILE SLIDE-OUT DRAWER                                             */}
       {/* =================================================================== */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
           />
 
           {/* Drawer Panel */}
           <div className="fixed inset-y-0 left-0 w-[85%] max-w-sm bg-white border-r border-neutral-200 text-neutral-900 shadow-2xl flex flex-col z-50 overflow-y-auto">
             {/* Drawer Header */}
-            <div className="p-4 border-b border-neutral-200 flex items-center justify-between bg-neutral-50">
-              <div className="relative h-10 w-40">
+            <div className="p-4 border-b border-neutral-200 flex items-center justify-between bg-white">
+              <div className="relative h-9 w-36">
                 <Image
                   src="/vl-logo-black.png"
                   alt="Vittal Lifestyle"
@@ -459,10 +413,10 @@ export function Navbar() {
                   setMobileMenuOpen(false);
                   openSearch();
                 }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-neutral-100 border border-neutral-200 text-neutral-600 text-xs text-left"
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-full bg-[#F4F5F7] border border-neutral-200 text-neutral-600 text-xs text-left"
               >
-                <Search className="w-4 h-4 text-[#A67C2E]" />
-                <span>Search all products &amp; flavours...</span>
+                <Search className="w-4 h-4 text-[#6B9E3A]" />
+                <span>Search for supplements...</span>
               </button>
             </div>
 
@@ -474,8 +428,8 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-xl text-sm font-bold transition-colors ${
                     pathname === "/"
-                      ? "text-[#A67C2E] bg-[#FAF5EC]"
-                      : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50"
+                      ? "text-[#6B9E3A] bg-[#E5F2D0]/40"
+                      : "text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
                   }`}
                 >
                   Home
@@ -483,7 +437,7 @@ export function Navbar() {
                 <Link
                   href="/products"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl text-sm font-semibold text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50"
+                  className="block px-3 py-2 rounded-xl text-sm font-semibold text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
                 >
                   Shop All Collections
                 </Link>
@@ -492,8 +446,8 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
                     pathname === "/about"
-                      ? "text-[#A67C2E] bg-[#FAF5EC]"
-                      : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50"
+                      ? "text-[#6B9E3A] bg-[#E5F2D0]/40"
+                      : "text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
                   }`}
                 >
                   About Vittal Lifestyle
@@ -503,8 +457,8 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
                     pathname === "/contact"
-                      ? "text-[#A67C2E] bg-[#FAF5EC]"
-                      : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50"
+                      ? "text-[#6B9E3A] bg-[#E5F2D0]/40"
+                      : "text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
                   }`}
                 >
                   Contact &amp; Support
@@ -512,18 +466,18 @@ export function Navbar() {
                 <Link
                   href="/order-tracking"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl text-sm font-semibold text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50"
+                  className="block px-3 py-2 rounded-xl text-sm font-semibold text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
                 >
                   Track Order
                 </Link>
                 <Link
                   href="/wishlist"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50"
+                  className="flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
                 >
                   <span>Wishlist</span>
                   {totalWishlistItems > 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#D4A373] text-black">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#E5F2D0] text-[#3B581C]">
                       {totalWishlistItems}
                     </span>
                   )}
@@ -533,7 +487,7 @@ export function Navbar() {
                     setMobileMenuOpen(false);
                     handleAccountClick(e);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl text-sm font-semibold text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50"
+                  className="w-full text-left px-3 py-2 rounded-xl text-sm font-semibold text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
                 >
                   {isAuthenticated ? "My Profile" : "Sign In / Register"}
                 </button>
@@ -552,10 +506,10 @@ export function Navbar() {
                         key={cat.name}
                         href={cat.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-neutral-50 transition-colors group"
+                        className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F4F5F7] transition-colors group"
                       >
                         <div className="flex items-center gap-2.5">
-                          <Icon className="w-4 h-4 text-[#A67C2E]" />
+                          <Icon className="w-4 h-4 text-[#6B9E3A]" />
                           <span className="text-xs font-semibold text-neutral-800 group-hover:text-black">
                             {cat.name}
                           </span>
@@ -573,13 +527,13 @@ export function Navbar() {
                   href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20need%20assistance%20from%20Vittal%20Lifestyle`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-transparent border border-emerald-200 hover:border-emerald-300 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-2xl bg-[#E5F2D0]/30 border border-[#D5E9BC] hover:bg-[#E5F2D0]/50 transition-colors"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-[#6B9E3A] text-white flex items-center justify-center shrink-0">
                     <MessageCircle className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="block text-[10px] text-emerald-700 font-bold uppercase tracking-wider">
+                    <span className="block text-[10px] text-[#3B581C] font-bold uppercase tracking-wider">
                       Live Concierge
                     </span>
                     <span className="block text-xs font-bold text-neutral-900">

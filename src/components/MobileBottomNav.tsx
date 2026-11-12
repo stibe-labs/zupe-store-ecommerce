@@ -37,9 +37,9 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Mobile Bottom Navigation"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-neutral-200/90 px-2 sm:px-4 pt-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(0,0,0,0.06)] select-none font-mograph"
+      className="md:hidden fixed bottom-4 left-4 right-4 max-w-md mx-auto z-40 bg-white/95 backdrop-blur-xl border border-neutral-200/80 rounded-full py-2 px-3 shadow-[0_10px_35px_rgba(0,0,0,0.08)] select-none font-mograph"
     >
-      <div className="grid grid-cols-5 items-center justify-items-center max-w-md mx-auto">
+      <div className="grid grid-cols-5 items-center justify-items-center w-full">
         {/* 1. Home */}
         <button
           type="button"
@@ -51,18 +51,18 @@ export function MobileBottomNav() {
             }
           }}
           className={`flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none ${
-            isHome ? "text-[#A67C2E]" : "text-neutral-500 hover:text-black"
+            isHome ? "text-[#6B9E3A]" : "text-neutral-400 hover:text-neutral-700"
           }`}
           aria-label="Home"
         >
           <Home
             className={`w-5 h-5 transition-transform duration-200 ${
-              isHome ? "stroke-[2.4] scale-105" : "stroke-[1.8]"
+              isHome ? "stroke-[2.2] fill-[#6B9E3A] scale-105" : "stroke-[1.8]"
             }`}
           />
           <span
             className={`text-[10px] tracking-tight ${
-              isHome ? "font-bold text-[#A67C2E]" : "font-medium"
+              isHome ? "font-bold text-[#6B9E3A]" : "font-medium"
             }`}
           >
             Home
@@ -74,18 +74,18 @@ export function MobileBottomNav() {
           type="button"
           onClick={() => router.push("/products")}
           className={`flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none ${
-            isCategories ? "text-[#A67C2E]" : "text-neutral-500 hover:text-black"
+            isCategories ? "text-[#6B9E3A]" : "text-neutral-400 hover:text-neutral-700"
           }`}
           aria-label="Categories"
         >
           <LayoutGrid
             className={`w-5 h-5 transition-transform duration-200 ${
-              isCategories ? "stroke-[2.4] scale-105" : "stroke-[1.8]"
+              isCategories ? "stroke-[2.2] scale-105" : "stroke-[1.8]"
             }`}
           />
           <span
             className={`text-[10px] tracking-tight ${
-              isCategories ? "font-bold text-[#A67C2E]" : "font-medium"
+              isCategories ? "font-bold text-[#6B9E3A]" : "font-medium"
             }`}
           >
             Categories
@@ -97,7 +97,7 @@ export function MobileBottomNav() {
           type="button"
           onClick={() => router.push("/wishlist")}
           className={`relative flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none ${
-            isWishlist ? "text-[#A67C2E]" : "text-neutral-500 hover:text-black"
+            isWishlist ? "text-[#6B9E3A]" : "text-neutral-400 hover:text-neutral-700"
           }`}
           aria-label="Wishlist"
         >
@@ -105,19 +105,19 @@ export function MobileBottomNav() {
             <Heart
               className={`w-5 h-5 transition-transform duration-200 ${
                 isWishlist
-                  ? "stroke-[2.4] fill-[#D4AF37]/20 scale-105"
+                  ? "stroke-[2.2] fill-[#6B9E3A]/20 scale-105"
                   : "stroke-[1.8]"
               }`}
             />
             {totalWishlistItems > 0 && (
-              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-[#D4A373] text-black text-[9px] font-black flex items-center justify-center shadow-xs">
+              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-[#6B9E3A] text-white text-[9px] font-bold flex items-center justify-center shadow-xs">
                 {totalWishlistItems > 9 ? "9+" : totalWishlistItems}
               </span>
             )}
           </div>
           <span
             className={`text-[10px] tracking-tight ${
-              isWishlist ? "font-bold text-[#A67C2E]" : "font-medium"
+              isWishlist ? "font-bold text-[#6B9E3A]" : "font-medium"
             }`}
           >
             Wishlist
@@ -137,18 +137,18 @@ export function MobileBottomNav() {
             }
           }}
           className={`flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none ${
-            isAccount ? "text-[#A67C2E]" : "text-neutral-500 hover:text-black"
+            isAccount ? "text-[#6B9E3A]" : "text-neutral-400 hover:text-neutral-700"
           }`}
           aria-label="Account"
         >
           <User
             className={`w-5 h-5 transition-transform duration-200 ${
-              isAccount ? "stroke-[2.4] scale-105" : "stroke-[1.8]"
+              isAccount ? "stroke-[2.2] scale-105" : "stroke-[1.8]"
             }`}
           />
           <span
             className={`text-[10px] tracking-tight ${
-              isAccount ? "font-bold text-[#A67C2E]" : "font-medium"
+              isAccount ? "font-bold text-[#6B9E3A]" : "font-medium"
             }`}
           >
             Account
@@ -159,13 +159,13 @@ export function MobileBottomNav() {
         <button
           type="button"
           onClick={openCart}
-          className="relative flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none text-neutral-500 hover:text-black"
+          className="relative flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none text-neutral-400 hover:text-neutral-700"
           aria-label="Cart & More"
         >
           <div className="relative">
             <MoreHorizontal className="w-5 h-5 stroke-[2]" />
             {totalItems > 0 && (
-              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-[#D4A373] text-black text-[9px] font-black flex items-center justify-center shadow-xs">
+              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-[#6B9E3A] text-white text-[9px] font-bold flex items-center justify-center shadow-xs">
                 {totalItems > 9 ? "9+" : totalItems}
               </span>
             )}

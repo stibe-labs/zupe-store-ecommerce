@@ -44,7 +44,7 @@
 
 /* ─── Base Styles ─── */
 html {
-  background-color: #FAF9F5;
+  background-color: #FFFFFF;
   color: #111111;
   font-family: var(--font-mograph), var(--font-sans);
   scroll-behavior: smooth;
@@ -57,7 +57,7 @@ html.lenis body {
 }
 
 body {
-  background-color: #FAF9F5;
+  background-color: #FFFFFF;
   color: #111111;
   font-family: var(--font-mograph), var(--font-sans);
   overflow-x: clip;
@@ -68,8 +68,8 @@ p, li, span:not([class*="tracking"]), label, td, th, blockquote {
 }
 
 ::selection {
-  background-color: #D4A373;
-  color: #000000;
+  background-color: #E5F2D0;
+  color: #1E300E;
 }
 
 /* ─── Custom Scrollbars ─── */
