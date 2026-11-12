@@ -215,14 +215,14 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
           </div>
 
           {/* Static Left Content Overlay (Never changes) */}
-          <div className="relative z-10 px-5 sm:px-8 lg:px-12 py-6 sm:py-8 md:py-10 max-w-[64%] sm:max-w-md md:max-w-lg lg:max-w-xl">
+          <div className="relative z-10 px-4 sm:px-8 lg:px-12 py-5 sm:py-8 md:py-10 max-w-[50%] xs:max-w-[48%] sm:max-w-md md:max-w-lg lg:max-w-xl">
             {/* Black Pill Eyebrow Badge */}
-            <div className="inline-block bg-[#111111] text-white text-[10px] sm:text-xs font-semibold px-3 sm:px-3.5 py-1 rounded-full mb-2.5 sm:mb-3.5 shadow-xs">
+            <div className="inline-block bg-[#111111] text-white text-[9px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full mb-2 sm:mb-3.5 shadow-xs">
               Limited Offer
             </div>
 
-            {/* Headline matching reference */}
-            <h1 className="font-mograph font-bold text-xl sm:text-3xl md:text-4xl lg:text-5xl text-[#111111] leading-[1.12] tracking-tight mb-3.5 sm:mb-6">
+            {/* Headline matching reference - mobile size reduced for clean separation from cutouts */}
+            <h1 className="font-mograph font-bold text-[15px] xs:text-base sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl text-[#111111] leading-tight sm:leading-[1.12] tracking-tight mb-2.5 sm:mb-6">
               First Purchase Enjoy
               <br />
               a Special Offer
@@ -231,11 +231,11 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
             {/* Black Pill CTA Button with White Circle Up-Right Arrow -> Redirects to /products */}
             <Link
               href="/products"
-              className="inline-flex items-center gap-3 bg-[#111111] hover:bg-black text-white font-bold text-xs sm:text-sm pl-4.5 pr-1.5 py-1.5 sm:pl-5 sm:pr-2 sm:py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 group"
+              className="inline-flex items-center gap-2 sm:gap-3 bg-[#111111] hover:bg-black text-white font-bold text-[11px] sm:text-sm pl-3.5 pr-1 py-1 sm:pl-5 sm:pr-2 sm:py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 group"
             >
               <span>Shop Now</span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-[#111111] flex items-center justify-center shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shadow-xs">
-                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white text-[#111111] flex items-center justify-center shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shadow-xs">
+                <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 stroke-[2.5]" />
               </div>
             </Link>
           </div>
