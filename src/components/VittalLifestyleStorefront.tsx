@@ -53,6 +53,12 @@ const CATEGORY_ITEMS = [
     link: "/products?category=Candy+%26+Chocolates",
     image: "/vittal/cat-icon-chocolates-trans.png",
   },
+  {
+    name: "All Categories",
+    link: "/products",
+    image: "/vittal/cat-icon-all-categories-trans.png",
+    desktopOnly: true,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -286,30 +292,42 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
           </Link>
         </div>
 
-        {/* 5-Column Responsive Cards Grid matching Cult Reference */}
-        <div className="grid grid-cols-5 gap-1.5 sm:gap-3 md:gap-4 lg:gap-5 w-full">
+        {/* Responsive Grid: 5 columns on Mobile, 6 columns on Desktop */}
+        <div className="grid grid-cols-5 md:grid-cols-6 gap-1.5 sm:gap-2.5 md:gap-3.5 lg:gap-4 w-full">
           {CATEGORY_ITEMS.map((cat) => (
             <Link
               key={cat.name}
               href={cat.link}
-              className="group relative rounded-xl sm:rounded-2xl md:rounded-3xl bg-[#111111] border border-neutral-200/90 hover:border-black/70 flex flex-col items-center justify-between transition-all duration-300 hover:-translate-y-1 shadow-2xs hover:shadow-md cursor-pointer overflow-hidden"
+              className={`group relative rounded-xl sm:rounded-2xl md:rounded-3xl bg-[#111111] border border-neutral-200/90 hover:border-black/70 flex-col items-center justify-between transition-all duration-300 hover:-translate-y-1 shadow-2xs hover:shadow-md cursor-pointer overflow-hidden ${
+                cat.desktopOnly ? "hidden md:flex" : "flex"
+              }`}
             >
-              {/* Top Image Section: Banner Lime Green Background with Inward-Curved Bottom Corners */}
-              <div className="w-full bg-[#B8ED3E] rounded-b-[12px] sm:rounded-b-[18px] md:rounded-b-[24px] flex items-center justify-center p-1.5 sm:p-2.5 md:p-3 aspect-[1/1.05] relative">
-                <div className="relative w-full h-full flex items-center justify-center">
+              {/* Top Image Section: Banner Hero Green Texture with Inward-Curved Bottom Corners & Bottom-Aligned Image */}
+              <div className="w-full relative aspect-[1/1.05] sm:aspect-square rounded-b-[12px] sm:rounded-b-[18px] md:rounded-b-[22px] overflow-hidden flex items-end justify-center bg-[#95CF42]">
+                {/* Banner's Matching Green Wave Texture */}
+                <Image
+                  src="/vittal/banner-hero-green-texture.jpg"
+                  alt=""
+                  fill
+                  sizes="(max-width: 768px) 20vw, 200px"
+                  className="object-cover object-center pointer-events-none select-none"
+                />
+
+                {/* Inside Category Product Image - Enlarged and Lower-Aligned flush to bottom edge */}
+                <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-0.5 sm:px-1">
                   <Image
                     src={cat.image}
                     alt={cat.name}
                     fill
-                    sizes="(max-width: 640px) 20vw, (max-width: 1024px) 20vw, 260px"
-                    className="object-contain p-0.5 sm:p-1 group-hover:scale-108 transition-transform duration-300 drop-shadow-xs"
+                    sizes="(max-width: 640px) 20vw, (max-width: 1024px) 20vw, 240px"
+                    className="object-contain object-bottom group-hover:scale-108 transition-transform duration-300 drop-shadow-sm"
                   />
                 </div>
               </div>
 
               {/* Bottom Label Section: Solid Black with Bold White Text */}
               <div className="w-full bg-[#111111] py-1.5 sm:py-2.5 md:py-3 px-1 sm:px-2 flex items-center justify-center text-center mt-auto min-h-[30px] xs:min-h-[34px] sm:min-h-[40px] md:min-h-[46px]">
-                <span className="font-mograph font-bold text-[9px] xs:text-[10px] sm:text-xs md:text-sm lg:text-[15px] text-white group-hover:text-[#B8ED3E] tracking-tight leading-tight transition-colors line-clamp-2 block w-full px-0.5">
+                <span className="font-mograph font-bold text-[9px] xs:text-[10px] sm:text-xs md:text-sm lg:text-[14px] text-white group-hover:text-[#B8ED3E] tracking-tight leading-tight transition-colors line-clamp-2 block w-full px-0.5">
                   {cat.name}
                 </span>
               </div>
