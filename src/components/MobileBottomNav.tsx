@@ -37,7 +37,7 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Mobile Bottom Navigation"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0B0B0C]/95 backdrop-blur-lg border-t border-white/10 px-2 sm:px-4 pt-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(0,0,0,0.6)] select-none font-mograph"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-neutral-200/90 px-2 sm:px-4 pt-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(0,0,0,0.06)] select-none font-mograph"
     >
       <div className="grid grid-cols-5 items-center justify-items-center max-w-md mx-auto">
         {/* 1. Home */}
@@ -51,7 +51,7 @@ export function MobileBottomNav() {
             }
           }}
           className={`flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none ${
-            isHome ? "text-[#D4AF37]" : "text-neutral-400 hover:text-white"
+            isHome ? "text-[#A67C2E]" : "text-neutral-500 hover:text-black"
           }`}
           aria-label="Home"
         >
@@ -62,7 +62,7 @@ export function MobileBottomNav() {
           />
           <span
             className={`text-[10px] tracking-tight ${
-              isHome ? "font-bold text-[#D4AF37]" : "font-medium"
+              isHome ? "font-bold text-[#A67C2E]" : "font-medium"
             }`}
           >
             Home
@@ -74,7 +74,7 @@ export function MobileBottomNav() {
           type="button"
           onClick={() => router.push("/products")}
           className={`flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none ${
-            isCategories ? "text-[#D4AF37]" : "text-neutral-400 hover:text-white"
+            isCategories ? "text-[#A67C2E]" : "text-neutral-500 hover:text-black"
           }`}
           aria-label="Categories"
         >
@@ -85,7 +85,7 @@ export function MobileBottomNav() {
           />
           <span
             className={`text-[10px] tracking-tight ${
-              isCategories ? "font-bold text-[#D4AF37]" : "font-medium"
+              isCategories ? "font-bold text-[#A67C2E]" : "font-medium"
             }`}
           >
             Categories
@@ -97,7 +97,7 @@ export function MobileBottomNav() {
           type="button"
           onClick={() => router.push("/wishlist")}
           className={`relative flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none ${
-            isWishlist ? "text-[#D4AF37]" : "text-neutral-400 hover:text-white"
+            isWishlist ? "text-[#A67C2E]" : "text-neutral-500 hover:text-black"
           }`}
           aria-label="Wishlist"
         >
@@ -110,14 +110,14 @@ export function MobileBottomNav() {
               }`}
             />
             {totalWishlistItems > 0 && (
-              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-[#D4AF37] text-black text-[9px] font-black flex items-center justify-center shadow-xs">
+              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-[#D4A373] text-black text-[9px] font-black flex items-center justify-center shadow-xs">
                 {totalWishlistItems > 9 ? "9+" : totalWishlistItems}
               </span>
             )}
           </div>
           <span
             className={`text-[10px] tracking-tight ${
-              isWishlist ? "font-bold text-[#D4AF37]" : "font-medium"
+              isWishlist ? "font-bold text-[#A67C2E]" : "font-medium"
             }`}
           >
             Wishlist
@@ -137,7 +137,7 @@ export function MobileBottomNav() {
             }
           }}
           className={`flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none ${
-            isAccount ? "text-[#D4AF37]" : "text-neutral-400 hover:text-white"
+            isAccount ? "text-[#A67C2E]" : "text-neutral-500 hover:text-black"
           }`}
           aria-label="Account"
         >
@@ -148,7 +148,7 @@ export function MobileBottomNav() {
           />
           <span
             className={`text-[10px] tracking-tight ${
-              isAccount ? "font-bold text-[#D4AF37]" : "font-medium"
+              isAccount ? "font-bold text-[#A67C2E]" : "font-medium"
             }`}
           >
             Account
@@ -159,13 +159,13 @@ export function MobileBottomNav() {
         <button
           type="button"
           onClick={openCart}
-          className="relative flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none text-neutral-400 hover:text-white"
+          className="relative flex flex-col items-center justify-center gap-1 transition-all duration-200 py-1 px-2 touch-manipulation focus:outline-none text-neutral-500 hover:text-black"
           aria-label="Cart & More"
         >
           <div className="relative">
             <MoreHorizontal className="w-5 h-5 stroke-[2]" />
             {totalItems > 0 && (
-              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-[#D4AF37] text-black text-[9px] font-black flex items-center justify-center shadow-xs">
+              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-[#D4A373] text-black text-[9px] font-black flex items-center justify-center shadow-xs">
                 {totalItems > 9 ? "9+" : totalItems}
               </span>
             )}

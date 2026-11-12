@@ -38,6 +38,16 @@ interface VittalLifestyleStorefrontProps {
 // ---------------------------------------------------------------------------
 const HERO_SLIDES = [
   {
+    image: "/vittal/banner-hero-light.jpg",
+    imagePosition: "object-[80%_center] sm:object-right md:object-[75%_center] lg:object-top lg:object-[80%_top]",
+    eyebrow: "GYM SUPPLEMENTS",
+    headline1: "FUEL YOUR",
+    headline2: "GAINS.",
+    tagline: "Whey Protein · Creatine · Omega-3 — Pure Performance, Zero Compromise.",
+    ctaLabel: "Shop Supplements",
+    ctaLink: "/products?category=Gym+Supplementaries",
+  },
+  {
     image: "/vittal/hero-fitness-gold.png",
     imagePosition: "object-[75%_center] sm:object-right md:object-[70%_center] lg:object-top lg:object-[80%_top]",
     eyebrow: "VITTAL LIFESTYLE",
@@ -46,16 +56,6 @@ const HERO_SLIDES = [
     tagline: "Your One-Stop Lifestyle Store for Fitness, Fashion & More.",
     ctaLabel: "Shop Now",
     ctaLink: "/products",
-  },
-  {
-    image: "/vittal/banner-performance-strength.png",
-    imagePosition: "object-[72%_center] sm:object-right lg:object-top lg:object-[75%_top]",
-    eyebrow: "GYM SUPPLEMENTS",
-    headline1: "FUEL YOUR",
-    headline2: "GAINS.",
-    tagline: "Whey Protein · Creatine · Omega-3 — Pure Performance, Zero Compromise.",
-    ctaLabel: "Shop Supplements",
-    ctaLink: "/products?category=Gym+Supplementaries",
   },
   {
     image: "/vittal/banner-dates-chocolate-indulgence.png",
@@ -206,11 +206,11 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
   };
 
   return (
-    <div className="bg-[#0B0B0C] text-white font-mograph min-h-screen selection:bg-[#D4AF37] selection:text-black">
+    <div className="bg-[#FAF9F5] text-neutral-900 font-mograph min-h-screen selection:bg-[#D4A373] selection:text-black">
       {/* ===================================================================== */}
       {/* 1. HERO SECTION — 4-Banner Rotating Carousel                        */}
       {/* ===================================================================== */}
-      <section className="relative w-full overflow-hidden bg-black border-b border-white/5">
+      <section className="relative w-full overflow-hidden bg-[#FAF8F5] border-b border-neutral-200/80">
         <div className="relative w-full h-[260px] sm:h-[320px] md:h-[380px] lg:h-[calc(100vh-68px)] lg:min-h-[700px] lg:max-h-[960px] flex flex-col justify-between">
           {/* Background images — all rendered, only active is fully visible */}
           {HERO_SLIDES.map((slide, idx) => (
@@ -225,9 +225,9 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                 priority={idx === 0}
                 className={`object-cover ${slide.imagePosition}`}
               />
-              {/* Cinematic Gradient Overlays */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 sm:via-black/60 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/20" />
+              {/* Luxury Light Gradient Overlays */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#FAF9F5] via-[#FAF9F5]/85 sm:via-[#FAF9F5]/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#FAF9F5]/70 via-transparent to-transparent" />
             </div>
           ))}
 
@@ -235,21 +235,21 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
           <div className="relative z-10 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-12 pt-8 sm:pt-10 lg:pt-14 xl:pt-16 flex flex-col items-start my-auto lg:my-0">
             <div className="max-w-xs sm:max-w-md lg:max-w-xl xl:max-w-2xl">
               {/* Eyebrow label */}
-              <span className="font-movault text-[10px] sm:text-xs lg:text-sm font-bold tracking-[0.25em] uppercase text-[#D4AF37] block mb-1.5 sm:mb-2 transition-all duration-500">
+              <span className="font-movault text-[10px] sm:text-xs lg:text-sm font-bold tracking-[0.25em] uppercase text-[#A67C2E] block mb-1.5 sm:mb-2 transition-all duration-500">
                 {HERO_SLIDES[activeHeroSlide].eyebrow}
               </span>
 
               {/* Main Headline — Increased slightly on desktop */}
-              <h1 className="font-movault text-2xl sm:text-4xl lg:text-[3.25rem] xl:text-[3.85rem] font-bold uppercase tracking-wider text-white leading-[0.92] mb-4 sm:mb-6 transition-all duration-500">
+              <h1 className="font-movault text-2xl sm:text-4xl lg:text-[3.25rem] xl:text-[3.85rem] font-bold uppercase tracking-wider text-neutral-950 leading-[0.92] mb-4 sm:mb-6 transition-all duration-500">
                 {HERO_SLIDES[activeHeroSlide].headline1}
                 <br />
-                <span className="text-[#D4AF37]">{HERO_SLIDES[activeHeroSlide].headline2}</span>
+                <span className="text-[#C5A059]">{HERO_SLIDES[activeHeroSlide].headline2}</span>
               </h1>
 
               {/* CTA Button */}
               <Link
                 href={HERO_SLIDES[activeHeroSlide].ctaLink}
-                className="font-movault tracking-wider uppercase inline-flex items-center gap-2 bg-[#D4A373] hover:bg-[#C89565] text-neutral-950 font-bold text-xs sm:text-sm lg:text-base px-5 py-2 sm:px-6 sm:py-2.5 lg:px-7 lg:py-3 rounded-full transition-all transform hover:scale-105 shadow-md shadow-[#D4A373]/20"
+                className="font-movault tracking-wider uppercase inline-flex items-center gap-2 bg-[#D4A373] hover:bg-[#C89565] text-neutral-950 font-bold text-xs sm:text-sm lg:text-base px-5 py-2 sm:px-6 sm:py-2.5 lg:px-7 lg:py-3 rounded-full transition-all transform hover:scale-105 shadow-md shadow-[#D4A373]/25"
               >
                 <span>{HERO_SLIDES[activeHeroSlide].ctaLabel}</span>
                 <ArrowRight className="w-3.5 h-3.5 lg:w-4 lg:h-4 stroke-[2.5]" />
@@ -263,7 +263,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                     onClick={() => setActiveHeroSlide(idx)}
                     aria-label={`Go to slide ${idx + 1}`}
                     className={`transition-all duration-300 rounded-full h-1 cursor-pointer ${
-                      activeHeroSlide === idx ? "w-6 bg-[#D4AF37]" : "w-1.5 bg-neutral-600 hover:bg-neutral-400"
+                      activeHeroSlide === idx ? "w-6 bg-[#C5A059]" : "w-1.5 bg-neutral-300 hover:bg-neutral-400"
                     }`}
                   />
                 ))}
@@ -275,8 +275,8 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
           {/* DESKTOP ONLY: Category Cards Row Inside Bottom of Hero Banner    */}
           {/* =============================================================== */}
           <div className="hidden lg:block relative z-10 w-full pb-10 lg:pb-12 xl:pb-14">
-            {/* Smooth dark gradient behind cards so they stand out crisply */}
-            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none -z-1" />
+            {/* Smooth light gradient behind cards so they stand out crisply */}
+            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#FAF9F5] via-[#FAF9F5]/80 to-transparent pointer-events-none -z-1" />
 
             <div className="max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-12">
               <div className="max-w-[860px] xl:max-w-[940px]">
@@ -285,10 +285,10 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                     <Link
                       key={cat.name}
                       href={cat.link}
-                      className="group relative rounded-xl xl:rounded-2xl overflow-hidden bg-[#141416]/90 hover:bg-[#1C1C20] border border-white/10 hover:border-[#D4AF37]/50 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl hover:shadow-black/90 backdrop-blur-md cursor-pointer"
+                      className="group relative rounded-xl xl:rounded-2xl overflow-hidden bg-white/95 hover:bg-white border border-neutral-200/90 hover:border-[#C5A059]/60 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-md hover:shadow-lg backdrop-blur-md cursor-pointer"
                     >
                       {/* Image Container (Reduced height for compact luxury look) */}
-                      <div className="relative aspect-[4/3.2] w-full overflow-hidden bg-black">
+                      <div className="relative aspect-[4/3.2] w-full overflow-hidden bg-[#F8F8F8]">
                         <Image
                           src={cat.image}
                           alt={cat.alt}
@@ -296,12 +296,12 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                           className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
                           sizes="200px"
                         />
-                        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#141416] via-[#141416]/40 to-transparent pointer-events-none" />
+                        <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-white via-white/40 to-transparent pointer-events-none" />
                       </div>
 
                       {/* Label Bar */}
-                      <div className="py-1.5 px-1.5 text-center bg-[#141416] group-hover:bg-[#18181C] transition-colors border-t border-white/5">
-                        <span className="font-mograph text-[11px] xl:text-xs font-bold text-neutral-200 group-hover:text-white transition-colors leading-tight line-clamp-1 tracking-tight">
+                      <div className="py-1.5 px-1.5 text-center bg-white group-hover:bg-neutral-50 transition-colors border-t border-neutral-100">
+                        <span className="font-mograph text-[11px] xl:text-xs font-bold text-neutral-800 group-hover:text-black transition-colors leading-tight line-clamp-1 tracking-tight">
                           {cat.name}
                         </span>
                       </div>
@@ -324,10 +324,10 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
             <Link
               key={cat.name}
               href={cat.link}
-              className="group relative rounded-xl sm:rounded-2xl overflow-hidden bg-[#141416] hover:bg-[#1C1C20] border border-white/10 hover:border-[#D4AF37]/50 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-black/70 cursor-pointer"
+              className="group relative rounded-xl sm:rounded-2xl overflow-hidden bg-white hover:bg-neutral-50 border border-neutral-200/90 hover:border-[#C5A059]/60 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
             >
               {/* Image Container (Top Photographic Area) */}
-              <div className="relative aspect-square sm:aspect-[4/5] w-full overflow-hidden bg-black">
+              <div className="relative aspect-square sm:aspect-[4/5] w-full overflow-hidden bg-[#F8F8F8]">
                 <Image
                   src={cat.image}
                   alt={cat.alt}
@@ -336,13 +336,13 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                   sizes="(max-width: 640px) 20vw, 300px"
                   priority
                 />
-                {/* Subtle dark gradient overlay at base of image */}
-                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#141416] via-[#141416]/40 to-transparent pointer-events-none" />
+                {/* Subtle light gradient overlay at base of image */}
+                <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-white via-white/40 to-transparent pointer-events-none" />
               </div>
 
               {/* Label Bar (Matching Reference bottom area) */}
-              <div className="py-1 sm:py-2 px-0.5 sm:px-2 text-center bg-[#141416] group-hover:bg-[#18181C] transition-colors border-t border-white/5">
-                <span className="font-mograph text-[9px] sm:text-[11px] font-bold text-neutral-200 group-hover:text-white transition-colors leading-tight line-clamp-1 tracking-tight">
+              <div className="py-1 sm:py-2 px-0.5 sm:px-2 text-center bg-white group-hover:bg-neutral-50 transition-colors border-t border-neutral-100">
+                <span className="font-mograph text-[9px] sm:text-[11px] font-bold text-neutral-800 group-hover:text-black transition-colors leading-tight line-clamp-1 tracking-tight">
                   {cat.name}
                 </span>
               </div>
@@ -355,40 +355,40 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       {/* 3. PROMO BANNER (Compact Height, Full-Card Background Image Fill)     */}
       {/* ===================================================================== */}
       <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5">
-        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 shadow-xl h-[155px] sm:h-[185px] md:h-[210px] lg:h-[230px] flex items-center bg-black">
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-neutral-200/90 shadow-md h-[155px] sm:h-[185px] md:h-[210px] lg:h-[230px] flex items-center bg-[#FAF8F5]">
           {/* Background Image: Fills entire card with products on right */}
           <div className="absolute inset-0 z-0">
             <Image
-              src="/vittal/banner-showcase-protein.png"
+              src="/vittal/banner-promo-light.jpg"
               alt="Premium Quality Deals - Up to 50% OFF"
               fill
               className="object-cover object-[80%_center] sm:object-right"
               priority
             />
-            {/* Cinematic Gradient: Dark overlay on left for sharp text legibility, transparent on right */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 sm:via-black/55 to-transparent z-1" />
+            {/* Cinematic Light Gradient: Overlay on left for sharp text legibility, transparent on right */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#FAF8F5]/95 via-[#FAF8F5]/80 sm:via-[#FAF8F5]/50 to-transparent z-1" />
           </div>
 
           {/* Left Text Overlay */}
           <div className="relative z-10 px-4 sm:px-8 lg:px-10 max-w-[62%] sm:max-w-md">
             <div className="flex items-center gap-2 mb-1 sm:mb-1.5">
-              <span className="font-movault text-[9px] sm:text-xs font-bold tracking-[0.2em] text-[#D4AF37] uppercase">
+              <span className="font-movault text-[9px] sm:text-xs font-bold tracking-[0.2em] text-[#A67C2E] uppercase">
                 PREMIUM QUALITY
               </span>
-              <span className="w-5 sm:w-10 h-[1px] bg-neutral-600/80" />
+              <span className="w-5 sm:w-10 h-[1px] bg-neutral-300" />
             </div>
 
-            <h2 className="font-movault text-xl sm:text-3xl md:text-4xl font-bold uppercase tracking-wide text-white leading-none mb-1 sm:mb-1.5">
-              Up to <span className="text-[#D4AF37]">50% OFF</span>
+            <h2 className="font-movault text-xl sm:text-3xl md:text-4xl font-bold uppercase tracking-wide text-neutral-950 leading-none mb-1 sm:mb-1.5">
+              Up to <span className="text-[#C5A059]">50% OFF</span>
             </h2>
 
-            <p className="font-mograph text-[10px] sm:text-xs md:text-sm text-neutral-300 mb-2.5 sm:mb-3.5 font-medium line-clamp-1">
+            <p className="font-mograph text-[10px] sm:text-xs md:text-sm text-neutral-600 mb-2.5 sm:mb-3.5 font-medium line-clamp-1">
               On Your Favorite Picks
             </p>
 
             <Link
               href="/products?category=Gym+Supplementaries"
-              className="font-movault tracking-wider uppercase inline-flex items-center gap-1.5 sm:gap-2 border border-[#D4AF37]/80 hover:bg-[#D4AF37] hover:text-black text-white text-[10px] sm:text-xs font-bold px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-full transition-all hover:scale-105"
+              className="font-movault tracking-wider uppercase inline-flex items-center gap-1.5 sm:gap-2 border border-[#C5A059] bg-white/80 hover:bg-[#D4A373] text-neutral-900 hover:text-black text-[10px] sm:text-xs font-bold px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-full transition-all hover:scale-105 shadow-xs"
             >
               <span>Shop Deals</span>
               <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -402,12 +402,12 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       {/* ===================================================================== */}
       <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <h2 className="font-movault text-2xl sm:text-4xl font-bold uppercase tracking-wider text-white">
+          <h2 className="font-movault text-2xl sm:text-4xl font-bold uppercase tracking-wider text-neutral-950">
             Trending Now
           </h2>
           <Link
             href="/products"
-            className="font-mograph text-xs sm:text-sm font-semibold text-neutral-400 hover:text-[#D4AF37] flex items-center gap-1 transition-colors"
+            className="font-mograph text-xs sm:text-sm font-semibold text-neutral-500 hover:text-[#A67C2E] flex items-center gap-1 transition-colors"
           >
             <span>View All</span>
             <ChevronRight className="w-4 h-4" />
@@ -441,9 +441,9 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
             return (
               <div
                 key={product.id}
-                className="group relative rounded-2xl bg-[#141416] hover:bg-[#18181C] border border-white/5 hover:border-white/15 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 shadow-sm hover:shadow-md"
+                className="group relative rounded-2xl bg-white hover:bg-white border border-neutral-200/90 hover:border-[#C5A059]/60 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 shadow-xs hover:shadow-md"
               >
-                {/* Wishlist Heart Icon (Clean minimal outline matching reference) */}
+                {/* Wishlist Heart Icon */}
                 <button
                   type="button"
                   onClick={(e) => {
@@ -456,7 +456,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                       image: product.poster_image,
                     });
                   }}
-                  className="absolute top-3 right-3 z-10 text-neutral-400 hover:text-white transition-colors p-1"
+                  className="absolute top-3 right-3 z-10 text-neutral-400 hover:text-neutral-900 transition-colors p-1"
                   aria-label="Wishlist"
                 >
                   <Heart
@@ -466,10 +466,10 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                   />
                 </button>
 
-                {/* Product Poster Image (Transparent cutout floating seamlessly on card background) */}
+                {/* Product Poster Image Container */}
                 <Link
                   href={`/products/${product.id || product.slug}`}
-                  className="relative w-full aspect-square flex items-center justify-center my-1"
+                  className="relative w-full aspect-square flex items-center justify-center my-1 bg-[#F8F8F8] rounded-xl overflow-hidden"
                 >
                   <Image
                     src={product.poster_image || "/vittal/product-whey-protein-jar.png"}
@@ -486,22 +486,22 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                     href={`/products/${product.id || product.slug}`}
                     className="block"
                   >
-                    <h3 className="font-mograph text-xs sm:text-sm font-semibold text-white group-hover:text-[#D4AF37] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-0.5">
+                    <h3 className="font-mograph text-xs sm:text-sm font-semibold text-neutral-900 group-hover:text-[#A67C2E] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-0.5">
                       {product.name}
                     </h3>
                   </Link>
 
-                  <p className="font-mograph text-[10px] sm:text-xs text-neutral-400 font-medium mb-1.5 truncate">
+                  <p className="font-mograph text-[10px] sm:text-xs text-neutral-500 font-medium mb-1.5 truncate">
                     {shortCategory}
                   </p>
 
                   {/* Price Row */}
                   <div className="flex items-baseline gap-1.5 mb-1.5">
-                    <span className="font-mograph text-sm sm:text-base font-extrabold text-white">
+                    <span className="font-mograph text-sm sm:text-base font-extrabold text-neutral-950">
                       ₹{product.price.toLocaleString("en-IN")}
                     </span>
                     {product.mrp && product.mrp > product.price && (
-                      <span className="font-mograph text-[11px] sm:text-xs text-neutral-500 line-through">
+                      <span className="font-mograph text-[11px] sm:text-xs text-neutral-400 line-through">
                         ₹{product.mrp.toLocaleString("en-IN")}
                       </span>
                     )}
@@ -510,17 +510,17 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                   {/* Discount Badge & Add to Cart Button */}
                   <div className="flex items-center justify-between gap-2 mt-1">
                     {discountPercent ? (
-                      <span className="font-movault bg-[#2B2317] text-[#E5C07B] text-[10px] sm:text-[11px] font-bold tracking-wider uppercase px-2 py-0.5 rounded inline-block">
+                      <span className="font-movault bg-[#FDF6EC] text-[#9A6B2F] border border-[#F3DFC3] text-[10px] sm:text-[11px] font-bold tracking-wider uppercase px-2 py-0.5 rounded inline-block">
                         {discountPercent}% OFF
                       </span>
                     ) : (
-                      <span className="font-mograph text-[10px] text-neutral-400">In Stock</span>
+                      <span className="font-mograph text-[10px] text-neutral-500">In Stock</span>
                     )}
 
                     <button
                       type="button"
                       onClick={(e) => handleAddToCart(e, product)}
-                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#222226] hover:bg-[#D4A373] text-neutral-300 hover:text-black active:scale-95 flex items-center justify-center transition-all cursor-pointer shadow-sm hover:scale-105 shrink-0"
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-neutral-900 hover:bg-[#D4A373] text-white hover:text-black active:scale-95 flex items-center justify-center transition-all cursor-pointer shadow-xs hover:scale-105 shrink-0"
                       title="Add to Cart"
                       aria-label="Add to Cart"
                     >
@@ -539,28 +539,28 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       {/* ===================================================================== */}
       <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Top Header Banner */}
-        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#141416] via-[#1E1B15] to-[#141416] border border-white/10 p-5 sm:p-7 md:p-8 text-center mb-3 sm:mb-5 shadow-2xl">
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#FBF8F3] via-[#F4ECE1] to-[#FBF8F3] border border-neutral-200/80 p-5 sm:p-7 md:p-8 text-center mb-3 sm:mb-5 shadow-xs">
           {/* Subtle gold ambient glow */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.15),transparent_70%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,163,115,0.12),transparent_70%)] pointer-events-none" />
 
-          <h3 className="relative font-movault text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white tracking-wide mb-1 sm:mb-2">
-            Fresh <span className="font-mograph italic font-bold text-[#D4AF37]">Winterwear</span> Drops
+          <h3 className="relative font-movault text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-neutral-950 tracking-wide mb-1 sm:mb-2">
+            Fresh <span className="font-mograph italic font-bold text-[#A67C2E]">Winterwear</span> Drops
           </h3>
-          <p className="relative font-movault text-xs sm:text-sm md:text-base font-bold text-[#D4AF37] tracking-[0.2em] uppercase">
+          <p className="relative font-movault text-xs sm:text-sm md:text-base font-bold text-[#A67C2E] tracking-[0.2em] uppercase">
             #UninterruptedByWinter
           </p>
         </div>
 
-        {/* 3 Campaign Cards Grid (Mobile 2-column with tall card on left, Desktop 12-col 3 cards) */}
+        {/* 3 Campaign Cards Grid */}
         <div className="grid grid-cols-2 md:grid-cols-12 gap-2.5 sm:gap-3.5 md:gap-4 lg:gap-5 w-full items-stretch">
           
-          {/* Card 1: Jackets & Sweatshirts (Mobile: Left Tall Card row-span-2; Desktop: Col-span-5 Horizontal) */}
+          {/* Card 1: Jackets & Sweatshirts */}
           <Link
             href="/products?category=Apparels"
-            className="group col-span-1 row-span-2 md:col-span-6 lg:col-span-5 md:row-span-1 rounded-2xl sm:rounded-3xl bg-[#141416] hover:bg-[#18181C] border border-white/10 hover:border-[#D4AF37]/60 p-3 sm:p-4 md:p-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4 transition-all duration-300 hover:-translate-y-1 shadow-xl hover:shadow-2xl hover:shadow-[#D4AF37]/5 cursor-pointer"
+            className="group col-span-1 row-span-2 md:col-span-6 lg:col-span-5 md:row-span-1 rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50 border border-neutral-200/90 hover:border-[#C5A059]/60 p-3 sm:p-4 md:p-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
           >
-            {/* Image (Mobile: top of the card; Desktop: right side of the card) */}
-            <div className="order-1 md:order-2 relative aspect-[4/4.8] md:aspect-[4/4.5] w-full md:w-[48%] rounded-xl sm:rounded-2xl overflow-hidden bg-black shrink-0 border border-white/5">
+            {/* Image */}
+            <div className="order-1 md:order-2 relative aspect-[4/4.8] md:aspect-[4/4.5] w-full md:w-[48%] rounded-xl sm:rounded-2xl overflow-hidden bg-neutral-100 shrink-0 border border-neutral-200/60">
               <Image
                 src="/vittal/drop-jackets.png"
                 alt="Jackets & Sweatshirts"
@@ -568,32 +568,31 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                 className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
                 sizes="(max-width: 768px) 50vw, 360px"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none md:hidden" />
             </div>
 
-            {/* Text info (Mobile: bottom; Desktop: left) */}
+            {/* Text info */}
             <div className="order-2 md:order-1 flex flex-col justify-end md:justify-center flex-1 min-w-0 pr-0 md:pr-2">
-              <h4 className="font-movault text-base sm:text-lg md:text-xl lg:text-2xl font-black uppercase italic tracking-wide text-white leading-tight mb-1.5 group-hover:text-[#D4AF37] transition-colors">
+              <h4 className="font-movault text-base sm:text-lg md:text-xl lg:text-2xl font-black uppercase italic tracking-wide text-neutral-950 leading-tight mb-1.5 group-hover:text-[#A67C2E] transition-colors">
                 Jackets &amp; Sweatshirts
               </h4>
               <div className="mt-auto md:mt-2">
-                <span className="font-mograph text-[9px] sm:text-[10px] md:text-xs text-neutral-400 font-bold uppercase tracking-wider block mb-0.5">
+                <span className="font-mograph text-[9px] sm:text-[10px] md:text-xs text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
                   Starting At
                 </span>
-                <span className="font-movault text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-[#D4AF37] tracking-tight">
+                <span className="font-movault text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-[#A67C2E] tracking-tight">
                   ₹999<span className="text-xs sm:text-sm font-normal text-neutral-400">*</span>
                 </span>
               </div>
             </div>
           </Link>
 
-          {/* Card 2: Joggers & Track Pants (Mobile: Top Right; Desktop: Col-span-3.5 Vertical) */}
+          {/* Card 2: Joggers & Track Pants */}
           <Link
             href="/products?category=Outfits"
-            className="group col-span-1 md:col-span-3 lg:col-span-3.5 rounded-2xl sm:rounded-3xl bg-[#141416] hover:bg-[#18181C] border border-white/10 hover:border-[#D4AF37]/60 p-3 sm:p-4 md:p-5 flex flex-col justify-between gap-2.5 sm:gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xl hover:shadow-2xl hover:shadow-[#D4AF37]/5 cursor-pointer"
+            className="group col-span-1 md:col-span-3 lg:col-span-3.5 rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50 border border-neutral-200/90 hover:border-[#C5A059]/60 p-3 sm:p-4 md:p-5 flex flex-col justify-between gap-2.5 sm:gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
           >
             {/* Image on top */}
-            <div className="relative aspect-[4/3] sm:aspect-[4/3.2] md:aspect-[4/3] w-full rounded-xl sm:rounded-2xl overflow-hidden bg-black border border-white/5 shrink-0">
+            <div className="relative aspect-[4/3] sm:aspect-[4/3.2] md:aspect-[4/3] w-full rounded-xl sm:rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
               <Image
                 src="/vittal/drop-joggers.png"
                 alt="Joggers & Track Pants"
@@ -606,29 +605,29 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
             {/* Text at bottom */}
             <div className="flex items-end justify-between gap-1 mt-auto pt-1">
               <div className="min-w-0 flex-1">
-                <h4 className="font-movault text-xs sm:text-sm md:text-base font-black uppercase tracking-wide text-white leading-tight mb-1 truncate group-hover:text-[#D4AF37] transition-colors">
+                <h4 className="font-movault text-xs sm:text-sm md:text-base font-black uppercase tracking-wide text-neutral-950 leading-tight mb-1 truncate group-hover:text-[#A67C2E] transition-colors">
                   Joggers &amp; Track Pants
                 </h4>
-                <span className="font-mograph text-[9px] sm:text-[10px] text-neutral-400 font-bold uppercase tracking-wider block mb-0.5">
+                <span className="font-mograph text-[9px] sm:text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
                   Starting At
                 </span>
-                <span className="font-movault text-base sm:text-lg md:text-xl lg:text-2xl font-black text-[#D4AF37] tracking-tight">
+                <span className="font-movault text-base sm:text-lg md:text-xl lg:text-2xl font-black text-[#A67C2E] tracking-tight">
                   ₹899<span className="text-xs font-normal text-neutral-400">*</span>
                 </span>
               </div>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 group-hover:bg-[#D4AF37] text-neutral-300 group-hover:text-black flex items-center justify-center transition-all shrink-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-neutral-100 group-hover:bg-[#D4A373] text-neutral-700 group-hover:text-black flex items-center justify-center transition-all shrink-0">
                 <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
               </div>
             </div>
           </Link>
 
-          {/* Card 3: Full Sleeve T-Shirts (Mobile: Bottom Right; Desktop: Col-span-3.5 Vertical) */}
+          {/* Card 3: Full Sleeve T-Shirts */}
           <Link
             href="/products?category=Apparels"
-            className="group col-span-1 md:col-span-3 lg:col-span-3.5 rounded-2xl sm:rounded-3xl bg-[#141416] hover:bg-[#18181C] border border-white/10 hover:border-[#D4AF37]/60 p-3 sm:p-4 md:p-5 flex flex-col justify-between gap-2.5 sm:gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xl hover:shadow-2xl hover:shadow-[#D4AF37]/5 cursor-pointer"
+            className="group col-span-1 md:col-span-3 lg:col-span-3.5 rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50 border border-neutral-200/90 hover:border-[#C5A059]/60 p-3 sm:p-4 md:p-5 flex flex-col justify-between gap-2.5 sm:gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
           >
             {/* Image on top */}
-            <div className="relative aspect-[4/3] sm:aspect-[4/3.2] md:aspect-[4/3] w-full rounded-xl sm:rounded-2xl overflow-hidden bg-black border border-white/5 shrink-0">
+            <div className="relative aspect-[4/3] sm:aspect-[4/3.2] md:aspect-[4/3] w-full rounded-xl sm:rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
               <Image
                 src="/vittal/drop-tees.png"
                 alt="Full Sleeve T-Shirts"
@@ -641,17 +640,17 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
             {/* Text at bottom */}
             <div className="flex items-end justify-between gap-1 mt-auto pt-1">
               <div className="min-w-0 flex-1">
-                <h4 className="font-movault text-xs sm:text-sm md:text-base font-black uppercase tracking-wide text-white leading-tight mb-1 truncate group-hover:text-[#D4AF37] transition-colors">
+                <h4 className="font-movault text-xs sm:text-sm md:text-base font-black uppercase tracking-wide text-neutral-950 leading-tight mb-1 truncate group-hover:text-[#A67C2E] transition-colors">
                   Full Sleeve T-Shirts
                 </h4>
-                <span className="font-mograph text-[9px] sm:text-[10px] text-neutral-400 font-bold uppercase tracking-wider block mb-0.5">
+                <span className="font-mograph text-[9px] sm:text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
                   Starting At
                 </span>
-                <span className="font-movault text-base sm:text-lg md:text-xl lg:text-2xl font-black text-[#D4AF37] tracking-tight">
+                <span className="font-movault text-base sm:text-lg md:text-xl lg:text-2xl font-black text-[#A67C2E] tracking-tight">
                   ₹799<span className="text-xs font-normal text-neutral-400">*</span>
                 </span>
               </div>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 group-hover:bg-[#D4AF37] text-neutral-300 group-hover:text-black flex items-center justify-center transition-all shrink-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-neutral-100 group-hover:bg-[#D4A373] text-neutral-700 group-hover:text-black flex items-center justify-center transition-all shrink-0">
                 <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
               </div>
             </div>
@@ -664,37 +663,37 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       {/* 6. BRAND VALUE PROPOSITIONS STRIP                                     */}
       {/* ===================================================================== */}
       <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
-        <div className="rounded-3xl bg-[#141416] border border-white/5 p-6 sm:p-8 grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+        <div className="rounded-3xl bg-white border border-neutral-200/80 p-6 sm:p-8 grid grid-cols-2 lg:grid-cols-4 gap-6 text-center shadow-xs">
           <div className="flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-[#272015] text-[#D4AF37] flex items-center justify-center mb-2">
+            <div className="w-10 h-10 rounded-full bg-[#FAF5EC] text-[#A67C2E] border border-[#F3DFC3] flex items-center justify-center mb-2">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <h4 className="font-movault text-sm sm:text-base font-bold uppercase tracking-wide text-white mb-0.5">100% Certified</h4>
-            <p className="font-mograph text-[10px] sm:text-xs text-neutral-400">Lab-tested pure ingredients</p>
+            <h4 className="font-movault text-sm sm:text-base font-bold uppercase tracking-wide text-neutral-950 mb-0.5">100% Certified</h4>
+            <p className="font-mograph text-[10px] sm:text-xs text-neutral-500">Lab-tested pure ingredients</p>
           </div>
 
           <div className="flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-[#272015] text-[#D4AF37] flex items-center justify-center mb-2">
+            <div className="w-10 h-10 rounded-full bg-[#FAF5EC] text-[#A67C2E] border border-[#F3DFC3] flex items-center justify-center mb-2">
               <Truck className="w-5 h-5" />
             </div>
-            <h4 className="font-movault text-sm sm:text-base font-bold uppercase tracking-wide text-white mb-0.5">Pan-India Express</h4>
-            <p className="font-mograph text-[10px] sm:text-xs text-neutral-400">Insured express doorstep delivery</p>
+            <h4 className="font-movault text-sm sm:text-base font-bold uppercase tracking-wide text-neutral-950 mb-0.5">Pan-India Express</h4>
+            <p className="font-mograph text-[10px] sm:text-xs text-neutral-500">Insured express doorstep delivery</p>
           </div>
 
           <div className="flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-[#272015] text-[#D4AF37] flex items-center justify-center mb-2">
+            <div className="w-10 h-10 rounded-full bg-[#FAF5EC] text-[#A67C2E] border border-[#F3DFC3] flex items-center justify-center mb-2">
               <RotateCcw className="w-5 h-5" />
             </div>
-            <h4 className="font-movault text-sm sm:text-base font-bold uppercase tracking-wide text-white mb-0.5">Hassle-Free Returns</h4>
-            <p className="font-mograph text-[10px] sm:text-xs text-neutral-400">7-day easy exchange guarantee</p>
+            <h4 className="font-movault text-sm sm:text-base font-bold uppercase tracking-wide text-neutral-950 mb-0.5">Hassle-Free Returns</h4>
+            <p className="font-mograph text-[10px] sm:text-xs text-neutral-500">7-day easy exchange guarantee</p>
           </div>
 
           <div className="flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-[#272015] text-[#D4AF37] flex items-center justify-center mb-2">
+            <div className="w-10 h-10 rounded-full bg-[#FAF5EC] text-[#A67C2E] border border-[#F3DFC3] flex items-center justify-center mb-2">
               <Award className="w-5 h-5" />
             </div>
-            <h4 className="font-movault text-sm sm:text-base font-bold uppercase tracking-wide text-white mb-0.5">Direct Farm & Factory</h4>
-            <p className="font-mograph text-[10px] sm:text-xs text-neutral-400">Sourced at source for purity</p>
+            <h4 className="font-movault text-sm sm:text-base font-bold uppercase tracking-wide text-neutral-950 mb-0.5">Direct Farm & Factory</h4>
+            <p className="font-mograph text-[10px] sm:text-xs text-neutral-500">Sourced at source for purity</p>
           </div>
         </div>
       </section>

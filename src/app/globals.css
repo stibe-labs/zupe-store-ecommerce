@@ -44,8 +44,8 @@
 
 /* ─── Base Styles ─── */
 html {
-  background-color: #070708;
-  color: #FFFFFF;
+  background-color: #FAF9F5;
+  color: #111111;
   font-family: var(--font-mograph), var(--font-sans);
   scroll-behavior: smooth;
 }
@@ -57,8 +57,8 @@ html.lenis body {
 }
 
 body {
-  background-color: #070708;
-  color: #FFFFFF;
+  background-color: #FAF9F5;
+  color: #111111;
   font-family: var(--font-mograph), var(--font-sans);
   overflow-x: clip;
 }
@@ -68,8 +68,8 @@ p, li, span:not([class*="tracking"]), label, td, th, blockquote {
 }
 
 ::selection {
-  background-color: var(--zp-accent);
-  color: var(--zp-snow);
+  background-color: #D4A373;
+  color: #000000;
 }
 
 /* ─── Custom Scrollbars ─── */

@@ -63,7 +63,7 @@ export default function RootLayout({
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                background-color: #0B0B0C;
+                background-color: #FAF9F5;
                 pointer-events: auto;
                 transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out;
               }
@@ -92,7 +92,7 @@ export default function RootLayout({
                 width: 8px;
                 height: 8px;
                 border-radius: 9999px;
-                background-color: #D4AF37;
+                background-color: #D4A373;
                 animation: splash-bounce 1s infinite ease-in-out;
               }
               .splash-dot-1 { animation-delay: -0.3s; }
@@ -118,7 +118,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className="antialiased font-mograph bg-[#0B0B0C] text-white selection:bg-[#D4AF37] selection:text-black"
+        className="antialiased font-mograph bg-[#FAF9F5] text-[#111111] selection:bg-[#D4A373] selection:text-black"
         suppressHydrationWarning
       >
         <div id="initial-splash-screen" aria-hidden="true">

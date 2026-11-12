@@ -84,8 +84,8 @@ export const siteConfig: SiteConfig = {
   legalName: process.env.NEXT_PUBLIC_LEGAL_NAME || "Vittal Lifestyle India",
   orderPrefix: process.env.NEXT_PUBLIC_ORDER_PREFIX || "VL",
 
-  logoUrl: process.env.NEXT_PUBLIC_LOGO_URL || "/vl-logo-nobg.png",
-  logoPng: process.env.NEXT_PUBLIC_LOGO_PNG || "/vl-logo-nobg.png",
+  logoUrl: process.env.NEXT_PUBLIC_LOGO_URL || "/vl-logo-black.png",
+  logoPng: process.env.NEXT_PUBLIC_LOGO_PNG || "/vl-logo-black.png",
   faviconUrl: process.env.NEXT_PUBLIC_FAVICON_URL || "/favicon.ico",
 
   supportEmail:
