@@ -10,6 +10,7 @@ import {
   ShoppingCart,
   Zap,
   ArrowRight,
+  ArrowUpRight,
   ChevronRight,
   Star,
   Check,
@@ -534,7 +535,133 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       </section>
 
       {/* ===================================================================== */}
-      {/* 5. BRAND VALUE PROPOSITIONS STRIP                                     */}
+      {/* 5. FRESH WINTERWEAR DROPS (Campaign Showcase matching mockup)        */}
+      {/* ===================================================================== */}
+      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Top Header Banner */}
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#141416] via-[#1E1B15] to-[#141416] border border-white/10 p-5 sm:p-7 md:p-8 text-center mb-3 sm:mb-5 shadow-2xl">
+          {/* Subtle gold ambient glow */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.15),transparent_70%)] pointer-events-none" />
+
+          <h3 className="relative font-movault text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white tracking-wide mb-1 sm:mb-2">
+            Fresh <span className="font-mograph italic font-bold text-[#D4AF37]">Winterwear</span> Drops
+          </h3>
+          <p className="relative font-movault text-xs sm:text-sm md:text-base font-bold text-[#D4AF37] tracking-[0.2em] uppercase">
+            #UninterruptedByWinter
+          </p>
+        </div>
+
+        {/* 3 Campaign Cards Grid (Mobile 2-column with tall card on left, Desktop 12-col 3 cards) */}
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-2.5 sm:gap-3.5 md:gap-4 lg:gap-5 w-full items-stretch">
+          
+          {/* Card 1: Jackets & Sweatshirts (Mobile: Left Tall Card row-span-2; Desktop: Col-span-5 Horizontal) */}
+          <Link
+            href="/products?category=Apparels"
+            className="group col-span-1 row-span-2 md:col-span-6 lg:col-span-5 md:row-span-1 rounded-2xl sm:rounded-3xl bg-[#141416] hover:bg-[#18181C] border border-white/10 hover:border-[#D4AF37]/60 p-3 sm:p-4 md:p-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4 transition-all duration-300 hover:-translate-y-1 shadow-xl hover:shadow-2xl hover:shadow-[#D4AF37]/5 cursor-pointer"
+          >
+            {/* Image (Mobile: top of the card; Desktop: right side of the card) */}
+            <div className="order-1 md:order-2 relative aspect-[4/4.8] md:aspect-[4/4.5] w-full md:w-[48%] rounded-xl sm:rounded-2xl overflow-hidden bg-black shrink-0 border border-white/5">
+              <Image
+                src="/vittal/drop-jackets.png"
+                alt="Jackets & Sweatshirts"
+                fill
+                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                sizes="(max-width: 768px) 50vw, 360px"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none md:hidden" />
+            </div>
+
+            {/* Text info (Mobile: bottom; Desktop: left) */}
+            <div className="order-2 md:order-1 flex flex-col justify-end md:justify-center flex-1 min-w-0 pr-0 md:pr-2">
+              <h4 className="font-movault text-base sm:text-lg md:text-xl lg:text-2xl font-black uppercase italic tracking-wide text-white leading-tight mb-1.5 group-hover:text-[#D4AF37] transition-colors">
+                Jackets &amp; Sweatshirts
+              </h4>
+              <div className="mt-auto md:mt-2">
+                <span className="font-mograph text-[9px] sm:text-[10px] md:text-xs text-neutral-400 font-bold uppercase tracking-wider block mb-0.5">
+                  Starting At
+                </span>
+                <span className="font-movault text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-[#D4AF37] tracking-tight">
+                  ₹999<span className="text-xs sm:text-sm font-normal text-neutral-400">*</span>
+                </span>
+              </div>
+            </div>
+          </Link>
+
+          {/* Card 2: Joggers & Track Pants (Mobile: Top Right; Desktop: Col-span-3.5 Vertical) */}
+          <Link
+            href="/products?category=Outfits"
+            className="group col-span-1 md:col-span-3 lg:col-span-3.5 rounded-2xl sm:rounded-3xl bg-[#141416] hover:bg-[#18181C] border border-white/10 hover:border-[#D4AF37]/60 p-3 sm:p-4 md:p-5 flex flex-col justify-between gap-2.5 sm:gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xl hover:shadow-2xl hover:shadow-[#D4AF37]/5 cursor-pointer"
+          >
+            {/* Image on top */}
+            <div className="relative aspect-[4/3] sm:aspect-[4/3.2] md:aspect-[4/3] w-full rounded-xl sm:rounded-2xl overflow-hidden bg-black border border-white/5 shrink-0">
+              <Image
+                src="/vittal/drop-joggers.png"
+                alt="Joggers & Track Pants"
+                fill
+                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                sizes="(max-width: 768px) 50vw, 300px"
+              />
+            </div>
+
+            {/* Text at bottom */}
+            <div className="flex items-end justify-between gap-1 mt-auto pt-1">
+              <div className="min-w-0 flex-1">
+                <h4 className="font-movault text-xs sm:text-sm md:text-base font-black uppercase tracking-wide text-white leading-tight mb-1 truncate group-hover:text-[#D4AF37] transition-colors">
+                  Joggers &amp; Track Pants
+                </h4>
+                <span className="font-mograph text-[9px] sm:text-[10px] text-neutral-400 font-bold uppercase tracking-wider block mb-0.5">
+                  Starting At
+                </span>
+                <span className="font-movault text-base sm:text-lg md:text-xl lg:text-2xl font-black text-[#D4AF37] tracking-tight">
+                  ₹899<span className="text-xs font-normal text-neutral-400">*</span>
+                </span>
+              </div>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 group-hover:bg-[#D4AF37] text-neutral-300 group-hover:text-black flex items-center justify-center transition-all shrink-0">
+                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+              </div>
+            </div>
+          </Link>
+
+          {/* Card 3: Full Sleeve T-Shirts (Mobile: Bottom Right; Desktop: Col-span-3.5 Vertical) */}
+          <Link
+            href="/products?category=Apparels"
+            className="group col-span-1 md:col-span-3 lg:col-span-3.5 rounded-2xl sm:rounded-3xl bg-[#141416] hover:bg-[#18181C] border border-white/10 hover:border-[#D4AF37]/60 p-3 sm:p-4 md:p-5 flex flex-col justify-between gap-2.5 sm:gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xl hover:shadow-2xl hover:shadow-[#D4AF37]/5 cursor-pointer"
+          >
+            {/* Image on top */}
+            <div className="relative aspect-[4/3] sm:aspect-[4/3.2] md:aspect-[4/3] w-full rounded-xl sm:rounded-2xl overflow-hidden bg-black border border-white/5 shrink-0">
+              <Image
+                src="/vittal/drop-tees.png"
+                alt="Full Sleeve T-Shirts"
+                fill
+                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                sizes="(max-width: 768px) 50vw, 300px"
+              />
+            </div>
+
+            {/* Text at bottom */}
+            <div className="flex items-end justify-between gap-1 mt-auto pt-1">
+              <div className="min-w-0 flex-1">
+                <h4 className="font-movault text-xs sm:text-sm md:text-base font-black uppercase tracking-wide text-white leading-tight mb-1 truncate group-hover:text-[#D4AF37] transition-colors">
+                  Full Sleeve T-Shirts
+                </h4>
+                <span className="font-mograph text-[9px] sm:text-[10px] text-neutral-400 font-bold uppercase tracking-wider block mb-0.5">
+                  Starting At
+                </span>
+                <span className="font-movault text-base sm:text-lg md:text-xl lg:text-2xl font-black text-[#D4AF37] tracking-tight">
+                  ₹799<span className="text-xs font-normal text-neutral-400">*</span>
+                </span>
+              </div>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 group-hover:bg-[#D4AF37] text-neutral-300 group-hover:text-black flex items-center justify-center transition-all shrink-0">
+                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+              </div>
+            </div>
+          </Link>
+
+        </div>
+      </section>
+
+      {/* ===================================================================== */}
+      {/* 6. BRAND VALUE PROPOSITIONS STRIP                                     */}
       {/* ===================================================================== */}
       <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         <div className="rounded-3xl bg-[#141416] border border-white/5 p-6 sm:p-8 grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
