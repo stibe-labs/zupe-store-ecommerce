@@ -135,17 +135,17 @@ export function Navbar() {
           {/* LEFT: FLOATING CIRCULAR HAMBURGER BUTTON / DESKTOP NAV LINKS    */}
           {/* =============================================================== */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Circular White Floating Hamburger Button (matching reference) */}
+            {/* Circular White Floating Hamburger Button (mobile/tablet only) */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-100 flex items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              className="lg:hidden w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-100 flex items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all cursor-pointer"
               aria-label="Open navigation menu"
             >
               <Menu className="w-5 h-5 stroke-[2]" />
             </button>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 ml-2">
+            <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 ml-0">
               {/* Home Link */}
               <Link
                 href="/"

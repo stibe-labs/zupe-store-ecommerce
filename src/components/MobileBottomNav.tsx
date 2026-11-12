@@ -4,20 +4,18 @@ import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Home,
-  ShoppingBag,
+  ShoppingCart,
   Heart,
   User,
 } from "lucide-react";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
-import { useCart } from "@/context/CartContext";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { totalWishlistItems } = useWishlist();
   const { isAuthenticated } = useAuth();
-  const { openCart, totalItems } = useCart();
 
   // Route guard: hide on admin dashboard and checkout flows
   if (pathname?.startsWith("/admin") || pathname?.startsWith("/checkout")) {
@@ -25,6 +23,7 @@ export function MobileBottomNav() {
   }
 
   const isHome = pathname === "/";
+  const isShop = pathname?.startsWith("/products") || pathname === "/shop";
   const isWishlist = pathname === "/wishlist";
   const isAccount =
     pathname === "/account" ||
@@ -63,18 +62,30 @@ export function MobileBottomNav() {
           </button>
         )}
 
-        {/* 2. Shopping Bag / Cart */}
-        <button
-          type="button"
-          onClick={openCart}
-          className="w-10 h-10 flex items-center justify-center text-neutral-600 hover:text-black transition-colors cursor-pointer relative"
-          aria-label="Shopping Cart"
-        >
-          <ShoppingBag className="w-5 h-5 stroke-[1.8]" />
-          {totalItems > 0 && (
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#8EBF47]" />
-          )}
-        </button>
+        {/* 2. Shop / Explore All Products (Shopping Trolley) */}
+        {isShop ? (
+          <button
+            type="button"
+            className="flex items-center gap-2 bg-[#EAF3DE] rounded-full py-1.5 pl-1.5 pr-3.5 transition-all duration-300 shadow-2xs"
+            aria-label="Shop (Active)"
+          >
+            <div className="w-8 h-8 rounded-full bg-[#8EBF47] flex items-center justify-center text-[#15230D] shrink-0 shadow-2xs">
+              <ShoppingCart className="w-4 h-4 stroke-[2.2]" />
+            </div>
+            <span className="font-bold text-xs sm:text-sm text-[#15230D] tracking-tight">
+              Shop
+            </span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => router.push("/products")}
+            className="w-10 h-10 flex items-center justify-center text-neutral-600 hover:text-black transition-colors cursor-pointer"
+            aria-label="Shop"
+          >
+            <ShoppingCart className="w-5 h-5 stroke-[1.8]" />
+          </button>
+        )}
 
         {/* 3. Wishlist */}
         {isWishlist ? (
