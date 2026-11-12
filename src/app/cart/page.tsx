@@ -72,7 +72,7 @@ export default function CartPage() {
             <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-[#E5F2D0] border border-[#95CF42]/30 flex items-center justify-center text-[#3B581C] shadow-xs">
               <ShoppingBag className="w-10 h-10 stroke-[1.5]" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-950 mb-2 font-movault uppercase tracking-wider">
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-950 mb-2 tracking-tight">
               Your Cart is Empty
             </h1>
             <p className="text-xs sm:text-sm text-neutral-600 mb-8 leading-relaxed font-normal">
@@ -99,7 +99,7 @@ export default function CartPage() {
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-16 flex-1 w-full">
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-neutral-200/80">
           <div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-neutral-950 font-movault uppercase tracking-wider">
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-950 tracking-tight">
               Shopping Bag
             </h1>
             <p className="text-xs text-neutral-500 mt-0.5 font-medium">
@@ -233,7 +233,7 @@ export default function CartPage() {
           {/* Order Summary Card */}
           <div className="lg:col-span-1">
             <div className="p-6 sm:p-7 rounded-3xl bg-[#F7F8FA] border border-neutral-200/80 shadow-xs space-y-6 sticky top-28">
-              <h2 className="font-bold text-xl text-neutral-950 font-movault uppercase tracking-wider">
+              <h2 className="font-bold text-xl text-neutral-950 tracking-tight">
                 Order Summary
               </h2>
 
@@ -295,7 +295,7 @@ export default function CartPage() {
                 <hr className="border-neutral-200 pt-2" />
 
                 <div className="flex justify-between items-baseline text-base font-bold text-neutral-950">
-                  <span className="font-movault uppercase tracking-wider">Total Amount</span>
+                  <span className="font-bold uppercase tracking-tight">Total Amount</span>
                   <span className="text-2xl font-extrabold text-[#6B9E3A] font-mono">
                     ₹{grandTotal.toLocaleString("en-IN")}
                   </span>

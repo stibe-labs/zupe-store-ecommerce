@@ -35,7 +35,7 @@ export default function WishlistPage() {
             <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-5 rounded-2xl bg-[#E5F2D0] border border-[#95CF42]/30 flex items-center justify-center text-[#3B581C] shadow-xs">
               <Heart className="w-8 h-8 sm:w-10 sm:h-10 fill-rose-500/20 stroke-rose-500 stroke-[1.75]" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-neutral-950 mb-2 font-movault uppercase tracking-wider">
+            <h1 className="text-xl sm:text-2xl font-bold text-neutral-950 mb-2 tracking-tight">
               Sign In to View Wishlist
             </h1>
             <p className="text-xs sm:text-sm text-neutral-600 mb-6 sm:mb-8 leading-relaxed font-normal">
@@ -74,7 +74,7 @@ export default function WishlistPage() {
               <Sparkles className="w-3.5 h-3.5 text-[#3B581C]" />
               <span>Saved Items</span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-neutral-950 font-movault uppercase tracking-wider">
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-950 tracking-tight">
               My Wishlist
             </h1>
             <p className="text-xs text-neutral-500 mt-0.5 font-medium">
@@ -85,7 +85,7 @@ export default function WishlistPage() {
           {wishlist.length > 0 && (
             <button
               onClick={clearWishlist}
-              className="text-xs font-bold text-neutral-500 hover:text-rose-600 transition-colors cursor-pointer font-movault uppercase tracking-wider"
+              className="text-xs font-bold text-neutral-500 hover:text-rose-600 transition-colors cursor-pointer tracking-tight"
             >
               Clear All
             </button>
@@ -98,7 +98,7 @@ export default function WishlistPage() {
               <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#E5F2D0] border border-[#95CF42]/30 flex items-center justify-center text-[#3B581C] shadow-xs">
                 <Heart className="w-8 h-8 fill-rose-500/20 stroke-rose-500 stroke-[1.75]" />
               </div>
-              <h2 className="text-xl font-bold text-neutral-950 mb-2 font-movault uppercase tracking-wider">
+              <h2 className="text-xl font-bold text-neutral-950 mb-2 tracking-tight">
                 Your Wishlist is Empty
               </h2>
               <p className="text-xs sm:text-sm text-neutral-600 mb-6 leading-relaxed font-normal">

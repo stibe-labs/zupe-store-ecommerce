@@ -76,7 +76,7 @@ export function CartDrawer() {
                 <div className="w-8 h-8 rounded-lg bg-[#E5F2D0] flex items-center justify-center text-[#3B581C]">
                   <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
                 </div>
-                <h2 className="font-bold text-lg text-neutral-950 font-movault uppercase tracking-wider">
+                <h2 className="font-bold text-lg text-neutral-950 tracking-tight">
                   Your Cart
                 </h2>
                 <span className="text-xs font-bold bg-[#E5F2D0] text-[#3B581C] px-2.5 py-0.5 rounded-full">
@@ -128,7 +128,7 @@ export function CartDrawer() {
                   <div className="w-20 h-20 rounded-2xl bg-[#E5F2D0] flex items-center justify-center mb-4 text-[#3B581C]">
                     <ShoppingBag className="w-10 h-10 stroke-[1.5]" />
                   </div>
-                  <p className="text-base font-bold text-neutral-950 mb-1 font-movault uppercase tracking-wider">Your cart is empty</p>
+                  <p className="text-base font-bold text-neutral-950 mb-1 tracking-tight">Your cart is empty</p>
                   <p className="text-xs text-neutral-500 max-w-xs mb-5">
                     Browse our lab-tested gym supplements, activewear, dates &amp; artisan chocolates.
                   </p>
