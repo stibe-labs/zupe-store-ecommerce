@@ -12,10 +12,6 @@ import {
   ChevronRight,
   Search,
   SlidersHorizontal,
-  ShieldCheck,
-  Truck,
-  RotateCcw,
-  Award,
 } from "lucide-react";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
@@ -558,46 +554,6 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
               </div>
             </div>
           </Link>
-
-        </div>
-      </section>
-
-      {/* ===================================================================== */}
-      {/* 6. BRAND VALUE PROPOSITIONS STRIP                                     */}
-      {/* ===================================================================== */}
-      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
-        <div className="rounded-3xl bg-[#F4F5F7] border border-neutral-200/80 p-6 sm:p-8 grid grid-cols-2 lg:grid-cols-4 gap-6 text-center shadow-xs">
-          <div className="flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-[#E5F2D0] text-[#3B581C] border border-[#D5E9BC] flex items-center justify-center mb-2">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <h4 className="text-sm sm:text-base font-bold text-neutral-950 mb-0.5">100% Certified</h4>
-            <p className="text-[10px] sm:text-xs text-neutral-500 font-medium">Lab-tested pure ingredients</p>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-[#E5F2D0] text-[#3B581C] border border-[#D5E9BC] flex items-center justify-center mb-2">
-              <Truck className="w-5 h-5" />
-            </div>
-            <h4 className="text-sm sm:text-base font-bold text-neutral-950 mb-0.5">Pan-India Express</h4>
-            <p className="text-[10px] sm:text-xs text-neutral-500 font-medium">Insured express doorstep delivery</p>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-[#E5F2D0] text-[#3B581C] border border-[#D5E9BC] flex items-center justify-center mb-2">
-              <RotateCcw className="w-5 h-5" />
-            </div>
-            <h4 className="text-sm sm:text-base font-bold text-neutral-950 mb-0.5">Hassle-Free Returns</h4>
-            <p className="text-[10px] sm:text-xs text-neutral-500 font-medium">7-day easy exchange guarantee</p>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-[#E5F2D0] text-[#3B581C] border border-[#D5E9BC] flex items-center justify-center mb-2">
-              <Award className="w-5 h-5" />
-            </div>
-            <h4 className="text-sm sm:text-base font-bold text-neutral-950 mb-0.5">Direct Farm &amp; Factory</h4>
-            <p className="text-[10px] sm:text-xs text-neutral-500 font-medium">Sourced at source for purity</p>
-          </div>
         </div>
       </section>
     </div>
