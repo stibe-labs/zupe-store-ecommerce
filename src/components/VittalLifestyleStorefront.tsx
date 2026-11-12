@@ -275,9 +275,6 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
           {/* DESKTOP ONLY: Category Cards Row Inside Bottom of Hero Banner    */}
           {/* =============================================================== */}
           <div className="hidden lg:block relative z-10 w-full pb-10 lg:pb-12 xl:pb-14">
-            {/* Smooth light gradient behind cards so they stand out crisply */}
-            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#FAF9F5] via-[#FAF9F5]/80 to-transparent pointer-events-none -z-1" />
-
             <div className="max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-12">
               <div className="max-w-[860px] xl:max-w-[940px]">
                 <div className="grid grid-cols-5 gap-2.5 xl:gap-3.5 w-full">
@@ -285,23 +282,22 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                     <Link
                       key={cat.name}
                       href={cat.link}
-                      className="group relative rounded-xl xl:rounded-2xl overflow-hidden bg-white/95 hover:bg-white border border-neutral-200/90 hover:border-[#C5A059]/60 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-md hover:shadow-lg backdrop-blur-md cursor-pointer"
+                      className="group relative rounded-2xl overflow-hidden bg-white border border-neutral-200/80 hover:border-[#C5A059]/60 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-md hover:shadow-lg cursor-pointer"
                     >
-                      {/* Image Container (Reduced height for compact luxury look) */}
-                      <div className="relative aspect-[4/3.2] w-full overflow-hidden bg-[#F8F8F8]">
+                      {/* Image Container — Clean photographic presentation matching reference (no fade or glow) */}
+                      <div className="relative aspect-[4/3.4] w-full overflow-hidden bg-neutral-950">
                         <Image
                           src={cat.image}
                           alt={cat.alt}
                           fill
                           className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                          sizes="200px"
+                          sizes="220px"
                         />
-                        <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-white via-white/40 to-transparent pointer-events-none" />
                       </div>
 
-                      {/* Label Bar */}
-                      <div className="py-1.5 px-1.5 text-center bg-white group-hover:bg-neutral-50 transition-colors border-t border-neutral-100">
-                        <span className="font-mograph text-[11px] xl:text-xs font-bold text-neutral-800 group-hover:text-black transition-colors leading-tight line-clamp-1 tracking-tight">
+                      {/* Label Bar — Solid reference background (#FDF2EC) with crisp solid deep black text */}
+                      <div className="py-2 px-2.5 sm:px-3 text-left bg-[#FDF2EC] group-hover:bg-[#F6EBE3] transition-colors">
+                        <span className="font-mograph text-xs xl:text-sm font-bold text-neutral-950 transition-colors leading-tight line-clamp-1 block">
                           {cat.name}
                         </span>
                       </div>
@@ -317,17 +313,17 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       {/* ===================================================================== */}
       {/* 2. CATEGORY NAVIGATION (Mobile / Tablet Only — Below Hero)            */}
       {/* ===================================================================== */}
-      <section className="lg:hidden w-full max-w-[1680px] mx-auto px-3 sm:px-6 py-2 sm:py-4">
+      <section className="lg:hidden w-full max-w-[1680px] mx-auto px-3 sm:px-6 py-2.5 sm:py-4">
         {/* Responsive 5-column single row on mobile and tablet */}
-        <div className="grid grid-cols-5 gap-1.5 sm:gap-3 w-full">
+        <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5 w-full">
           {CATEGORY_ITEMS.map((cat) => (
             <Link
               key={cat.name}
               href={cat.link}
-              className="group relative rounded-xl sm:rounded-2xl overflow-hidden bg-white hover:bg-neutral-50 border border-neutral-200/90 hover:border-[#C5A059]/60 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
+              className="group relative rounded-xl sm:rounded-2xl overflow-hidden bg-white border border-neutral-200/80 hover:border-[#C5A059]/60 flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 shadow-xs hover:shadow-sm cursor-pointer"
             >
-              {/* Image Container (Top Photographic Area) */}
-              <div className="relative aspect-square sm:aspect-[4/5] w-full overflow-hidden bg-[#F8F8F8]">
+              {/* Image Container (Top Photographic Area — No gradient/fade) */}
+              <div className="relative aspect-square sm:aspect-[4/4.5] w-full overflow-hidden bg-neutral-950">
                 <Image
                   src={cat.image}
                   alt={cat.alt}
@@ -336,13 +332,11 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                   sizes="(max-width: 640px) 20vw, 300px"
                   priority
                 />
-                {/* Subtle light gradient overlay at base of image */}
-                <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-white via-white/40 to-transparent pointer-events-none" />
               </div>
 
-              {/* Label Bar (Matching Reference bottom area) */}
-              <div className="py-1 sm:py-2 px-0.5 sm:px-2 text-center bg-white group-hover:bg-neutral-50 transition-colors border-t border-neutral-100">
-                <span className="font-mograph text-[9px] sm:text-[11px] font-bold text-neutral-800 group-hover:text-black transition-colors leading-tight line-clamp-1 tracking-tight">
+              {/* Label Bar — Matching reference card with solid #FDF2EC background and crisp deep black text */}
+              <div className="py-1.5 px-1.5 sm:px-2 text-left bg-[#FDF2EC] group-hover:bg-[#F6EBE3] transition-colors min-h-[30px] sm:min-h-[36px] flex items-center">
+                <span className="font-mograph text-[9px] sm:text-[11px] font-bold text-neutral-950 transition-colors leading-[1.15] line-clamp-2 block">
                   {cat.name}
                 </span>
               </div>
