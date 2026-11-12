@@ -93,7 +93,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const hasLoadedRemoteRef = React.useRef(false);
   const [outOfStockItemIds, setOutOfStockItemIds] = useState<string[]>([]);
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState<number>(499);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState<number>(0);
   const [standardShippingFee, setStandardShippingFee] = useState<number>(49);
   const [codFee, setCodFee] = useState<number>(49);
 

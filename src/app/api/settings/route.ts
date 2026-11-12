@@ -14,13 +14,13 @@ export async function GET() {
         supportEmail: profile.supportEmail || "support@turkiyejam.com",
         supportPhone: profile.supportPhone || "+91 62381 65935",
         currency: profile.currency || "INR (₹)",
-        freeShippingThreshold: Number(profile.freeShippingThreshold ?? 499),
+        freeShippingThreshold: Number(profile.freeShippingThreshold ?? 0),
         standardShippingFee: Number(profile.standardShippingFee ?? 49),
         codFee: Number(profile.codFee ?? 49),
       },
     }, {
       headers: {
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
       },
     });
   } catch (err: any) {
@@ -31,7 +31,7 @@ export async function GET() {
         supportEmail: "support@turkiyejam.com",
         supportPhone: "+91 62381 65935",
         currency: "INR (₹)",
-        freeShippingThreshold: 499,
+        freeShippingThreshold: 0,
         standardShippingFee: 49,
         codFee: 49,
       },

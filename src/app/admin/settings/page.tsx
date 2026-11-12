@@ -38,7 +38,7 @@ export default function AdminSettingsPage() {
   const [testEmailAddress, setTestEmailAddress] = useState("support@turkiyejam.com");
   const [supportPhone, setSupportPhone] = useState("+91 62381 65935");
   const [currency, setCurrency] = useState("INR (₹)");
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState("499");
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState("0");
   const [standardShippingFee, setStandardShippingFee] = useState("49");
   const [codFee, setCodFee] = useState("49");
 
@@ -76,7 +76,7 @@ export default function AdminSettingsPage() {
           setSupportEmail(s.storeProfile.supportEmail || "support@turkiyejam.com");
           setSupportPhone(s.storeProfile.supportPhone || "+91 62381 65935");
           setCurrency(s.storeProfile.currency || "INR (₹)");
-          setFreeShippingThreshold(String(s.storeProfile.freeShippingThreshold ?? 499));
+          setFreeShippingThreshold(String(s.storeProfile.freeShippingThreshold ?? 0));
           setStandardShippingFee(String(s.storeProfile.standardShippingFee ?? 49));
           setCodFee(String(s.storeProfile.codFee ?? 49));
         }
@@ -126,7 +126,7 @@ export default function AdminSettingsPage() {
         supportEmail: supportEmail.trim(),
         supportPhone: supportPhone.trim(),
         currency,
-        freeShippingThreshold: Number(freeShippingThreshold) || 499,
+        freeShippingThreshold: Number(freeShippingThreshold) >= 0 && !isNaN(Number(freeShippingThreshold)) ? Number(freeShippingThreshold) : 0,
         standardShippingFee: Number(standardShippingFee) !== undefined && !isNaN(Number(standardShippingFee)) ? Number(standardShippingFee) : 49,
         codFee: Number(codFee) !== undefined && !isNaN(Number(codFee)) ? Number(codFee) : 49,
       },

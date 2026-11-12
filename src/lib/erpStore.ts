@@ -1604,7 +1604,7 @@ let inMemorySettings: ERPIntegrationsSettings = {
     supportEmail: "support@turkiyejam.com",
     supportPhone: "+91 62381 65935",
     currency: "INR (₹)",
-    freeShippingThreshold: 499,
+    freeShippingThreshold: 0,
     standardShippingFee: 49,
     codFee: 49,
   },
