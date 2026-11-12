@@ -79,7 +79,7 @@ export function ProductComparisonTable({
     <div className={`w-full my-7 select-none font-mograph ${className}`}>
       {/* Section Title */}
       <div className="text-center mb-4 sm:mb-5">
-        <h2 className="text-[17px] sm:text-[20px] font-movault font-black text-neutral-950 tracking-tight leading-tight">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#111111] tracking-tight leading-tight">
           Why Choose This Product?
         </h2>
         <p className="text-[12px] sm:text-[13px] text-neutral-500 font-normal mt-0.5 leading-snug">

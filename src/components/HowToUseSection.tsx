@@ -157,7 +157,7 @@ function HowToUseCard({
       {/* 2. Text Content: Step Badge, Optional Title, Optional Description */}
       <div className={`flex flex-col flex-1 min-w-0 ${isMobilePreview ? "p-2" : "p-2 sm:p-2.5"}`}>
         {/* Step Badge (Always displayed automatically in sequential order) */}
-        <span className={`font-movault font-black uppercase tracking-wider text-[#6B9E3A] leading-none ${
+        <span className={`font-bold uppercase tracking-wider text-[#6B9E3A] leading-none ${
           isMobilePreview ? "text-[10px]" : "text-[10px] sm:text-[11px]"
         }`}>
           {stepBadge}
@@ -339,7 +339,7 @@ export function HowToUseSection({
         {/* 1. SECTION HEADER (Fixed Text, Center-Aligned, Compact Spacing) */}
         <div className="text-center mb-3 sm:mb-4">
           <h2
-            className={`font-movault font-black text-neutral-950 tracking-tight leading-tight ${
+            className={`font-bold text-[#111111] tracking-tight leading-tight ${
               isMobilePreview ? "text-[16px]" : "text-[17px] sm:text-[20px]"
             }`}
           >

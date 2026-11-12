@@ -567,7 +567,7 @@ export default function ProductDetailPage() {
           <div className="lg:col-span-6 flex flex-col justify-start">
             {/* Brand Header Line: VITTAL LIFESTYLE ───── */}
             <div className="flex items-center gap-3 mb-1.5">
-              <span className="font-movault text-[11px] font-bold tracking-[0.25em] uppercase text-[#6B9E3A]">
+              <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#6B9E3A]">
                 VITTAL LIFESTYLE
               </span>
               <div className="h-[1px] w-12 bg-[#6B9E3A]/30" />
@@ -601,7 +601,7 @@ export default function ProductDetailPage() {
                 </span>
               )}
               {discountPercent > 0 && (
-                <span className="font-movault bg-[#E5F2D0] text-[#3B581C] border border-[#BBDC92]/60 text-xs font-bold px-3 py-0.5 rounded-full uppercase tracking-wider">
+                <span className="bg-[#E5F2D0] text-[#3B581C] border border-[#BBDC92]/60 text-xs font-bold px-3 py-0.5 rounded-full">
                   {discountPercent}% OFF
                 </span>
               )}
@@ -707,7 +707,7 @@ export default function ProductDetailPage() {
             {/* ============================================================= */}
             {/* PRIMARY ACTION BUTTONS: Add to Cart & Buy Now                 */}
             {/* ============================================================= */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 my-4 font-movault tracking-wider uppercase">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 my-4 font-bold">
               <button
                 onClick={handleAddToCart}
                 className="bg-[#111111] hover:bg-black active:scale-[0.98] text-white font-bold py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 shadow-md transition-all text-sm sm:text-base cursor-pointer hover:-translate-y-0.5"
@@ -718,7 +718,7 @@ export default function ProductDetailPage() {
 
               <button
                 onClick={handleBuyNow}
-                className="bg-[#95CF42] hover:bg-[#85BE33] active:scale-[0.98] text-neutral-950 font-black py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-[#95CF42]/20 transition-all text-sm sm:text-base cursor-pointer hover:-translate-y-0.5"
+                className="bg-[#95CF42] hover:bg-[#85BE33] active:scale-[0.98] text-neutral-950 font-bold py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-[#95CF42]/20 transition-all text-sm sm:text-base cursor-pointer hover:-translate-y-0.5"
               >
                 <Zap className="w-4 h-4 fill-neutral-950 text-neutral-950" />
                 <span>Buy Now</span>
@@ -882,15 +882,15 @@ export default function ProductDetailPage() {
         {/* YOU MAY ALSO LIKE (Related Products Grid Matching Home Page)       */}
         {/* ================================================================= */}
         <section className="mt-12 sm:mt-16 pt-8 border-t border-neutral-200">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-movault text-xl sm:text-3xl font-bold uppercase tracking-wider text-neutral-950">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#111111] tracking-tight">
               You May Also Like
             </h2>
             <Link
               href="/products"
-              className="font-mograph text-xs sm:text-sm font-semibold text-[#6B9E3A] hover:text-[#527C2B] flex items-center gap-1 transition-colors"
+              className="text-xs sm:text-sm font-semibold text-[#6B9E3A] hover:text-[#527C2B] flex items-center gap-0.5 transition-colors"
             >
-              <span>View All</span>
+              <span>See all</span>
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
@@ -1026,7 +1026,7 @@ export default function ProductDetailPage() {
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
-            className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-neutral-200/90 px-4 py-3 sm:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center justify-between gap-3 font-movault tracking-wider uppercase"
+            className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-neutral-200/90 px-4 py-3 sm:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center justify-between gap-3 font-bold"
           >
             <div className="flex items-center gap-2.5 overflow-hidden">
               <img

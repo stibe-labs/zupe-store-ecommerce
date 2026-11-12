@@ -296,7 +296,7 @@ export function ProductReviewsSection({
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>100% Verified Buyer Feedback</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-movault font-black text-[#111111] tracking-tight">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111111] tracking-tight">
             Customer Reviews &amp; Ratings
           </h2>
         </div>
@@ -306,7 +306,7 @@ export function ProductReviewsSection({
           {/* Big Score Column */}
           <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left justify-center md:border-r md:border-neutral-200/80 md:pr-8">
             <div className="flex items-baseline gap-2">
-              <span className="text-5xl sm:text-6xl font-movault font-black text-gray-900 tracking-tight">
+              <span className="text-5xl sm:text-6xl font-extrabold text-gray-900 tracking-tight">
                 {displayTotal > 0 ? displayAverage.toFixed(1) : "0.0"}
               </span>
               <span className="text-lg font-bold text-gray-400">/ 5.0</span>

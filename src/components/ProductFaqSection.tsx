@@ -74,7 +74,7 @@ export function ProductFaqSection({ className = "" }: ProductFaqSectionProps) {
           <HelpCircle className="w-3.5 h-3.5" />
           <span>FAQ</span>
         </div>
-        <h2 className="text-[18px] sm:text-[22px] font-movault font-black text-neutral-950 tracking-tight leading-tight">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#111111] tracking-tight leading-tight">
           Frequently Asked Questions
         </h2>
         <p className="text-[12px] sm:text-[13px] text-neutral-500 font-normal mt-1 leading-snug max-w-md mx-auto">

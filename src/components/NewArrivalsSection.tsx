@@ -55,7 +55,7 @@ export function NewArrivalsSection({ initialProductIds }: NewArrivalsSectionProp
       {/* Header */}
       <div className="flex items-end justify-between mb-6">
         <div>
-          <h2 className="text-xl sm:text-2xl font-display font-extrabold text-[#111111]">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#111111] tracking-tight">
             New Arrivals
           </h2>
           <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
