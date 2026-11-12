@@ -59,11 +59,39 @@ const CATEGORY_ITEMS = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// 3 Hero Cutouts Rotating every 3 seconds over the static textured background
+// ---------------------------------------------------------------------------
+const HERO_CUTOUTS = [
+  {
+    image: "/vittal/cutout-hero-1.png",
+    alt: "First Purchase Special Offer - Shopping Girl",
+  },
+  {
+    image: "/vittal/cutout-hero-2.png",
+    alt: "Muscular Athlete with VL Supplements",
+  },
+  {
+    image: "/vittal/cutout-hero-3.png",
+    alt: "Fitness Duo in Coordinated Black Activewear",
+  },
+];
+
 export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleStorefrontProps) {
   const router = useRouter();
   const { addItem, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { openSearch } = useSearch();
+
+  // 3-second auto-rotating hero cutout slides (total 3 slides)
+  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveHeroIndex((prev) => (prev + 1) % HERO_CUTOUTS.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
 
   const products = initialProducts && initialProducts.length > 0 ? initialProducts : [];
 
@@ -140,13 +168,24 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       </section>
 
       {/* ===================================================================== */}
-      {/* 2. HERO BANNER CARD (MATCHING REFERENCE MOCKUP)                       */}
+      {/* 2. HERO BANNER CARD (ROTATING CUTOUTS WITH STATIC TEXT & BG)          */}
       {/* ===================================================================== */}
       <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
-        <div className="relative rounded-3xl sm:rounded-[32px] overflow-hidden bg-[#95CF42] border border-[#85BE33]/50 shadow-sm min-h-[240px] sm:min-h-[290px] md:min-h-[350px] lg:min-h-[440px] flex items-center">
+        <div className="relative rounded-3xl sm:rounded-[32px] overflow-hidden bg-[#95CF42] border border-[#85BE33]/50 shadow-sm min-h-[250px] sm:min-h-[300px] md:min-h-[360px] lg:min-h-[440px] flex items-center">
           
-          {/* Subtle Organic Fluid Wave Pattern Behind Image */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30 z-0">
+          {/* Static Lime Green Textured Background (Never changes) */}
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="/vittal/banner-hero-green-texture.jpg"
+              alt="Hero Textured Background"
+              fill
+              priority
+              className="object-cover object-center"
+            />
+          </div>
+
+          {/* Subtle Organic Fluid Wave Pattern Behind Cutouts */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-25 z-0">
             <svg className="w-full h-full object-cover" viewBox="0 0 800 450" fill="none" preserveAspectRatio="none">
               <path d="M -100,50 Q 200,200 400,100 T 900,150" stroke="#7EBA2B" strokeWidth="40" fill="none" />
               <path d="M -50,150 Q 250,300 500,200 T 950,250" stroke="#7EBA2B" strokeWidth="50" fill="none" />
@@ -154,19 +193,29 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
             </svg>
           </div>
 
-          {/* Model Image on Right */}
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="/vittal/banner-hero-shopping-girl.jpg"
-              alt="First Purchase Enjoy a Special Offer"
-              fill
-              priority
-              className="object-cover object-[85%_center] sm:object-right"
-            />
+          {/* 3 Cutout Images Rotating Every 3 Seconds (Smooth crossfade on the right) */}
+          <div className="absolute inset-0 z-[5] pointer-events-none">
+            {HERO_CUTOUTS.map((cutout, idx) => (
+              <div
+                key={cutout.image}
+                className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                  activeHeroIndex === idx ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <Image
+                  src={cutout.image}
+                  alt={cutout.alt}
+                  fill
+                  priority={idx === 0}
+                  className="object-cover object-right"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 1680px"
+                />
+              </div>
+            ))}
           </div>
 
-          {/* Left Content Overlay */}
-          <div className="relative z-10 px-5 sm:px-8 lg:px-12 py-6 sm:py-8 md:py-10 max-w-[66%] sm:max-w-md md:max-w-lg lg:max-w-xl">
+          {/* Static Left Content Overlay (Never changes) */}
+          <div className="relative z-10 px-5 sm:px-8 lg:px-12 py-6 sm:py-8 md:py-10 max-w-[64%] sm:max-w-md md:max-w-lg lg:max-w-xl">
             {/* Black Pill Eyebrow Badge */}
             <div className="inline-block bg-[#111111] text-white text-[10px] sm:text-xs font-semibold px-3 sm:px-3.5 py-1 rounded-full mb-2.5 sm:mb-3.5 shadow-xs">
               Limited Offer
@@ -179,7 +228,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
               a Special Offer
             </h1>
 
-            {/* Black Pill CTA Button with White Circle Up-Right Arrow */}
+            {/* Black Pill CTA Button with White Circle Up-Right Arrow -> Redirects to /products */}
             <Link
               href="/products"
               className="inline-flex items-center gap-3 bg-[#111111] hover:bg-black text-white font-bold text-xs sm:text-sm pl-4.5 pr-1.5 py-1.5 sm:pl-5 sm:pr-2 sm:py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 group"
@@ -191,7 +240,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
             </Link>
           </div>
 
-          {/* Signature Bottom Scoop Notch with Pagination Indicators */}
+          {/* Signature Bottom Scoop Notch with 3 Pagination Indicators Synced to Active Hero Index */}
           <div className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 z-20 flex flex-col items-center pointer-events-none">
             <div className="relative">
               {/* Arched scoop cutting into the card from page background */}
@@ -205,9 +254,19 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
 
               {/* 3 Indicators inside scoop */}
               <div className="absolute inset-0 flex items-center justify-center gap-1.5 sm:gap-2 pb-0.5 pointer-events-auto">
-                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-neutral-300" />
-                <span className="w-6 sm:w-7 h-1.5 sm:h-2 rounded-full bg-[#B8ED3E] shadow-2xs" />
-                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-neutral-300" />
+                {HERO_CUTOUTS.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActiveHeroIndex(idx)}
+                    aria-label={`Go to slide ${idx + 1}`}
+                    className={`transition-all duration-300 cursor-pointer ${
+                      activeHeroIndex === idx
+                        ? "w-6 sm:w-7 h-1.5 sm:h-2 rounded-full bg-[#B8ED3E] shadow-2xs"
+                        : "w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-neutral-300 hover:bg-neutral-400"
+                    }`}
+                  />
+                ))}
               </div>
             </div>
           </div>
