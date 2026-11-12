@@ -110,27 +110,31 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       {/* ===================================================================== */}
       {/* 1. LARGE ROUNDED SEARCH BAR WITH FILTER ICON                          */}
       {/* ===================================================================== */}
-      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-5 pb-1 sm:pb-2">
+      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-2 pb-2 sm:pb-3">
         <div
           onClick={() => openSearch()}
-          className="w-full max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto bg-[#F4F5F7] hover:bg-[#ECEEF2] border border-neutral-200/80 rounded-2xl sm:rounded-full py-2.5 sm:py-3 px-4 sm:px-5 flex items-center justify-between transition-all duration-200 shadow-2xs cursor-pointer group"
+          className="w-full max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto bg-[#F7F8FA] hover:bg-[#EFF1F4] border border-neutral-200/70 rounded-full py-2.5 sm:py-3 px-4 sm:px-5 flex items-center justify-between transition-all duration-200 shadow-2xs cursor-pointer group"
         >
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <Search className="w-5 h-5 text-neutral-400 group-hover:text-neutral-700 transition-colors shrink-0" />
-            <span className="text-xs sm:text-sm text-neutral-500 font-normal truncate">
+            <Search className="w-5 h-5 text-neutral-400 group-hover:text-neutral-600 transition-colors shrink-0 stroke-[2]" />
+            <span className="text-xs sm:text-sm text-neutral-400 font-normal truncate">
               Search for supplements...
             </span>
           </div>
+
+          {/* Vertical divider line right before filter icon matching reference */}
+          <div className="w-[1px] h-5 bg-neutral-200/90 mx-3 shrink-0" />
+
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               openSearch();
             }}
-            className="p-1 text-neutral-600 hover:text-black transition-colors shrink-0 cursor-pointer"
+            className="p-1 text-neutral-800 hover:text-black transition-colors shrink-0 cursor-pointer"
             aria-label="Filter products"
           >
-            <SlidersHorizontal className="w-4.5 h-4.5 sm:w-5 sm:h-5 stroke-[1.8]" />
+            <SlidersHorizontal className="w-5 h-5 stroke-[2]" />
           </button>
         </div>
       </section>

@@ -27,7 +27,7 @@ export default async function Home() {
   const initialProducts = await getInitialProducts();
 
   return (
-    <main className="min-h-screen bg-[#0B0B0C] text-white selection:bg-[#D4AF37] selection:text-black pb-16 md:pb-0">
+    <main className="min-h-screen bg-white text-neutral-900 selection:bg-[#E5F2D0] selection:text-[#1E300E] pb-16 md:pb-0">
       {/* 1. Brand Navigation Bar */}
       <Navbar />
 

@@ -38,22 +38,8 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [shopFlyoutOpen, setShopFlyoutOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
-  const [scrolled, setScrolled] = useState(false);
 
   const flyoutRef = useRef<HTMLDivElement>(null);
-
-  // Detect scroll for dynamic navbar elevation
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   // Keyboard shortcut (⌘K or / to open search)
   useEffect(() => {
@@ -138,34 +124,28 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full font-mograph select-none">
+    <header className="sticky top-0 z-50 w-full bg-white font-mograph select-none border-none shadow-none">
       {/* =================================================================== */}
-      {/* MINIMAL CLEAN NAVBAR WITH CENTERED VL LOGO                         */}
+      {/* SEAMLESS CLEAN WHITE NAVBAR WITH FLOATING CIRCULAR BUTTONS          */}
       {/* =================================================================== */}
-      <div
-        className={`w-full transition-all duration-300 relative border-b ${
-          scrolled
-            ? "bg-white/95 backdrop-blur-2xl border-neutral-200/90 shadow-[0_4px_24px_rgba(0,0,0,0.04)] py-2 sm:py-2.5"
-            : "bg-white/95 backdrop-blur-xl border-neutral-200/70 shadow-[0_2px_10px_rgba(0,0,0,0.02)] py-2.5 sm:py-3"
-        }`}
-      >
+      <div className="w-full bg-white pt-3 pb-1.5 sm:pt-4 sm:pb-2">
         <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-6 relative">
           
           {/* =============================================================== */}
-          {/* LEFT: MOBILE HAMBURGER / DESKTOP NAV LINKS                      */}
+          {/* LEFT: FLOATING CIRCULAR HAMBURGER BUTTON / DESKTOP NAV LINKS    */}
           {/* =============================================================== */}
-          <div className="flex items-center gap-1 xl:gap-2 shrink-0">
-            {/* Mobile Menu Icon */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Circular White Floating Hamburger Button (matching reference) */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 -ml-2 rounded-xl text-neutral-800 hover:text-black hover:bg-[#F4F5F7] transition-all flex items-center justify-center cursor-pointer"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-100 flex items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all cursor-pointer"
               aria-label="Open navigation menu"
             >
               <Menu className="w-5 h-5 stroke-[2]" />
             </button>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5">
+            <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 ml-2">
               {/* Home Link */}
               <Link
                 href="/"
@@ -301,11 +281,11 @@ export function Navbar() {
           </div>
 
           {/* =============================================================== */}
-          {/* CENTER: VL LOGO (EXACTLY CENTERED ON MOBILE & DESKTOP)          */}
+          {/* CENTER: VL LOGO (EXACTLY CENTERED MATCHING REFERENCE)           */}
           {/* =============================================================== */}
           <div className="absolute left-1/2 -translate-x-1/2 z-10 shrink-0">
             <Link href="/" className="flex items-center justify-center group cursor-pointer">
-              <div className="relative h-10 sm:h-12 md:h-13 w-36 sm:w-44 md:w-52 transition-transform duration-300 group-hover:scale-[1.02]">
+              <div className="relative h-10 sm:h-11 w-28 sm:w-32 transition-transform duration-300 group-hover:scale-[1.02]">
                 <Image
                   src="/vl-logo-black.png"
                   alt="Vittal Lifestyle"
@@ -318,33 +298,33 @@ export function Navbar() {
           </div>
 
           {/* =============================================================== */}
-          {/* RIGHT ACTION DOCK (Minimal Icons: Search, Wishlist, User, Bag)   */}
+          {/* RIGHT: FLOATING CIRCULAR WHITE BUTTONS (Search & Bag)           */}
           {/* =============================================================== */}
-          <div className="flex items-center gap-1 sm:gap-2 z-20 shrink-0">
-            {/* Search Icon (Mobile & Desktop) */}
+          <div className="flex items-center gap-2 sm:gap-2.5 z-20 shrink-0">
+            {/* Circular White Floating Search Button */}
             <button
               onClick={openSearch}
-              className="p-2 rounded-xl text-neutral-800 hover:text-black hover:bg-[#F4F5F7] transition-all cursor-pointer"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-100 flex items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all cursor-pointer"
               aria-label="Open search"
             >
-              <Search className="w-5 h-5 stroke-[1.8]" />
+              <Search className="w-5 h-5 stroke-[2]" />
             </button>
 
             {/* Desktop Wishlist Pill */}
             <Link
               href="/wishlist"
-              className="hidden lg:flex items-center p-2 rounded-xl hover:bg-[#F4F5F7] text-neutral-800 hover:text-black transition-all relative"
+              className="hidden lg:flex w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-100 items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all relative"
               aria-label="Wishlist"
             >
               <Heart
-                className={`w-5 h-5 transition-transform hover:scale-110 ${
+                className={`w-5 h-5 transition-transform ${
                   totalWishlistItems > 0
                     ? "fill-[#6B9E3A] text-[#6B9E3A]"
-                    : "text-neutral-700 stroke-[1.8]"
+                    : "text-neutral-900 stroke-[2]"
                 }`}
               />
               {totalWishlistItems > 0 && (
-                <span className="absolute top-1 right-1 bg-[#6B9E3A] text-white text-[9px] font-black rounded-full min-w-[16px] h-[16px] px-0.5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-[#6B9E3A] text-white text-[9px] font-black rounded-full min-w-[16px] h-[16px] px-0.5 flex items-center justify-center">
                   {totalWishlistItems}
                 </span>
               )}
@@ -353,20 +333,20 @@ export function Navbar() {
             {/* Desktop Account Icon */}
             <button
               onClick={handleAccountClick}
-              className="hidden lg:flex items-center p-2 rounded-xl hover:bg-[#F4F5F7] text-neutral-800 hover:text-black transition-all cursor-pointer"
+              className="hidden lg:flex w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-100 items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all cursor-pointer"
               aria-label="Account"
             >
-              <User className="w-5 h-5 stroke-[1.8]" />
+              <User className="w-5 h-5 stroke-[2]" />
             </button>
 
-            {/* Minimal Shopping Bag with Pastel Lime Green Badge */}
+            {/* Circular White Floating Shopping Bag Button with Green Badge */}
             <button
               onClick={openCart}
-              className="relative p-2 rounded-xl text-neutral-800 hover:text-black hover:bg-[#F4F5F7] transition-all cursor-pointer flex items-center justify-center"
+              className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-100 flex items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all cursor-pointer"
               aria-label="View Shopping Cart"
             >
-              <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
-              <span className="absolute top-1 right-1 bg-[#6B9E3A] text-white text-[9px] font-bold rounded-full min-w-[16px] h-[16px] px-0.5 flex items-center justify-center shadow-xs">
+              <ShoppingBag className="w-5 h-5 stroke-[2]" />
+              <span className="absolute -top-1 -right-1 bg-[#72A63D] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center shadow-xs">
                 {totalItems > 0 ? totalItems : 1}
               </span>
             </button>
