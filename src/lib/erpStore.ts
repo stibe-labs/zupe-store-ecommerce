@@ -1002,16 +1002,6 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
     }
   }
 
-  // Outbound push to Shopify Admin API (asynchronously, non-blocking)
-  try {
-    const { pushOrderToShopify } = await import("@/lib/shopifyOutbound");
-    pushOrderToShopify(newOrder).catch((e) =>
-      console.warn("Asynchronous Shopify order push warning:", e)
-    );
-  } catch (pushErr) {
-    console.warn("Shopify push loader warning:", pushErr);
-  }
-
   return newOrder;
 }
 

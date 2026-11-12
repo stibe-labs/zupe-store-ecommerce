@@ -42,14 +42,6 @@ export default function AdminSettingsPage() {
   const [standardShippingFee, setStandardShippingFee] = useState("49");
   const [codFee, setCodFee] = useState("49");
 
-  // Shopify
-  const [shopifyDomain, setShopifyDomain] = useState("turkiyejam.myshopify.com");
-  const [shopifyToken, setShopifyToken] = useState("shpat_live_98a76d54f32e10cba");
-  const [shopifyWebhookSecret, setShopifyWebhookSecret] = useState("whsec_9871122334455");
-  const [shopifyAutoPush, setShopifyAutoPush] = useState(true);
-  const [shopifyApiVersion, setShopifyApiVersion] = useState("2024-01");
-  const [shopifyActive, setShopifyActive] = useState(true);
-
   // Shiprocket
   const [shiprocketEmail, setShiprocketEmail] = useState("support@turkiyejam.com");
   const [shiprocketPassword, setShiprocketPassword] = useState("");
@@ -79,14 +71,6 @@ export default function AdminSettingsPage() {
           setFreeShippingThreshold(String(s.storeProfile.freeShippingThreshold ?? 0));
           setStandardShippingFee(String(s.storeProfile.standardShippingFee ?? 49));
           setCodFee(String(s.storeProfile.codFee ?? 49));
-        }
-        if (s.shopify) {
-          setShopifyDomain(s.shopify.domain || "");
-          setShopifyToken(s.shopify.token || "");
-          setShopifyWebhookSecret(s.shopify.webhookSecret || "");
-          setShopifyAutoPush((s.shopify as any).autoPushOrders !== false);
-          setShopifyApiVersion((s.shopify as any).apiVersion || "2024-01");
-          setShopifyActive(s.shopify.isActive !== false);
         }
         if (s.shiprocket) {
           setShiprocketEmail(s.shiprocket.email || "");
@@ -130,14 +114,6 @@ export default function AdminSettingsPage() {
         standardShippingFee: Number(standardShippingFee) !== undefined && !isNaN(Number(standardShippingFee)) ? Number(standardShippingFee) : 49,
         codFee: Number(codFee) !== undefined && !isNaN(Number(codFee)) ? Number(codFee) : 49,
       },
-      shopify: {
-        domain: shopifyDomain.trim(),
-        token: shopifyToken.trim(),
-        webhookSecret: shopifyWebhookSecret.trim(),
-        autoPushOrders: shopifyAutoPush,
-        apiVersion: shopifyApiVersion.trim() || "2024-01",
-        isActive: shopifyActive,
-      },
       shiprocket: {
         email: shiprocketEmail.trim(),
         password: shiprocketPassword.trim(),
@@ -173,16 +149,12 @@ export default function AdminSettingsPage() {
     }
   };
 
-  const handleTestConnection = async (provider: "shopify" | "shiprocket" | "meta" | "email") => {
+  const handleTestConnection = async (provider: "shiprocket" | "meta" | "email") => {
     setTestingProvider(provider);
     setTestResult(null);
 
     let testPayload: any = { action: "test_connection", provider };
-    if (provider === "shopify") {
-      testPayload.domain = shopifyDomain;
-      testPayload.token = shopifyToken;
-      testPayload.apiVersion = shopifyApiVersion;
-    } else if (provider === "shiprocket") {
+    if (provider === "shiprocket") {
       testPayload.email = shiprocketEmail.trim();
       testPayload.password = shiprocketPassword.trim();
       testPayload.token = shiprocketToken.trim();
@@ -228,7 +200,6 @@ export default function AdminSettingsPage() {
         standardShippingFee,
       },
       integrations: {
-        shopify: { domain: shopifyDomain, isActive: shopifyActive },
         shiprocket: { email: shiprocketEmail, preferredCourier, autoSync: shiprocketAutoSync },
         meta: { accountId: metaAccountId, pixelId: metaPixelId },
       },
@@ -429,110 +400,7 @@ export default function AdminSettingsPage() {
                 </div>
               </div>
 
-              {/* 2. Shopify Integration Box */}
-              <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                      <ShoppingBag className="w-4 h-4 stroke-[2.2]" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-base">Shopify Storefront Sync</h3>
-                      <p className="text-xs text-slate-500">Automatic order ingest and fulfillment tracking sync</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleTestConnection("shopify")}
-                      disabled={testingProvider === "shopify"}
-                      className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
-                    >
-                      {testingProvider === "shopify" ? "Testing..." : "Test Connection"}
-                    </button>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Active
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">
-                      Shopify Store Domain (.myshopify.com)
-                    </label>
-                    <input
-                      type="text"
-                      value={shopifyDomain}
-                      onChange={(e) => setShopifyDomain(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">
-                      Shopify Admin Access Token
-                    </label>
-                    <input
-                      type="password"
-                      value={shopifyToken}
-                      onChange={(e) => setShopifyToken(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">
-                      Shopify API Version
-                    </label>
-                    <select
-                      value={shopifyApiVersion}
-                      onChange={(e) => setShopifyApiVersion(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs font-semibold"
-                    >
-                      <option value="2024-01">2024-01 (Stable LTS)</option>
-                      <option value="2024-04">2024-04 (Latest)</option>
-                      <option value="2024-07">2024-07</option>
-                      <option value="2024-10">2024-10</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">
-                      Auto-Configured Webhook Ingestion URL
-                    </label>
-                    <input
-                      type="text"
-                      readOnly
-                      value={siteConfig.getAbsoluteUrl("/api/admin/sync/shopify")}
-                      className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-mono text-xs text-slate-600 cursor-not-allowed"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-slate-900 text-xs">Automatically Push Web Orders to Shopify</p>
-                    <p className="text-[11px] text-slate-500">
-                      When customers place orders on Turkiye Jam, instantly post them to Shopify Admin API so fulfillment apps (Roposo/GlowRoad/DSers) can process them.
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
-                    <input
-                      type="checkbox"
-                      checked={shopifyAutoPush}
-                      onChange={(e) => setShopifyAutoPush(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                  </label>
-                </div>
-              </div>
-
-              {/* 3. Shiprocket Logistics Box */}
+              {/* 2. Shiprocket Logistics Box */}
               <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">

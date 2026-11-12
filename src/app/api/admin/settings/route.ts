@@ -17,14 +17,6 @@ export async function POST(req: NextRequest) {
     // Check if this is a connection test request
     if (body.action === "test_connection") {
       const { provider } = body;
-      if (provider === "shopify") {
-        const domain = body.domain || "";
-        const token = body.token || "";
-        const { testShopifyConnection } = await import("@/lib/shopifyOutbound");
-        const testRes = await testShopifyConnection(domain, token, body.apiVersion || "2024-01");
-        return NextResponse.json(testRes);
-      }
-
       if (provider === "shiprocket") {
         const { testShiprocketConnection } = await import("@/lib/shiprocketService");
         const testRes = await testShiprocketConnection({

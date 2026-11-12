@@ -66,7 +66,6 @@ function AdminOrdersContent() {
   const [editRemittance, setEditRemittance] = useState<string>("Pending");
   const [isSavingOrder, setIsSavingOrder] = useState<boolean>(false);
   const [isCreditingSupplier, setIsCreditingSupplier] = useState<boolean>(false);
-  const [isPushingToShopify, setIsPushingToShopify] = useState<boolean>(false);
   const [isGeneratingAWB, setIsGeneratingAWB] = useState<boolean>(false);
   const [orderModalMsg, setOrderModalMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
@@ -180,43 +179,6 @@ function AdminOrdersContent() {
       showToast("error", errMsg);
     } finally {
       setIsSavingOrder(false);
-    }
-  };
-
-  const handlePushToShopify = async () => {
-    if (!selectedOrder) return;
-    setIsPushingToShopify(true);
-    setOrderModalMsg(null);
-    try {
-      const res = await fetch("/api/admin/sync/shopify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "push_order",
-          order_id: selectedOrder.id,
-        }),
-      });
-      const data = await res.json();
-      if (data.success && data.shopifyOrderId) {
-        const updated = { ...selectedOrder, shopify_order_id: data.shopifyOrderId };
-        setSelectedOrder(updated);
-        setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
-        showToast("success", `Pushed order to Shopify! Assigned Order ID: ${data.shopifyOrderId}`);
-        setOrderModalMsg({
-          text: `Successfully synced with Shopify! Assigned Order: ${data.shopifyOrderId}`,
-          type: "success",
-        });
-      } else {
-        const errMsg = data.error || data.message || "Failed to push order to Shopify";
-        setOrderModalMsg({ text: errMsg, type: "error" });
-        showToast("error", errMsg);
-      }
-    } catch (err: any) {
-      const errMsg = err.message || "Network error while pushing to Shopify";
-      setOrderModalMsg({ text: errMsg, type: "error" });
-      showToast("error", errMsg);
-    } finally {
-      setIsPushingToShopify(false);
     }
   };
 
@@ -677,7 +639,7 @@ function AdminOrdersContent() {
               <table className="w-full text-left text-xs sm:text-sm text-slate-700">
                 <thead className="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <tr>
-                    <th className="py-3.5 px-4 sm:px-6">Shopify ID</th>
+                    <th className="py-3.5 px-4 sm:px-6">Order ID</th>
                     <th className="py-3.5 px-4">Date</th>
                     <th className="py-3.5 px-4">Customer</th>
                     <th className="py-3.5 px-4">Payment</th>
@@ -1423,36 +1385,6 @@ function AdminOrdersContent() {
 
                   return null;
                 })()}
-              </div>
-
-              {/* Shopify Sync Card */}
-              <div className="bg-emerald-50/60 p-3.5 rounded-xl border border-emerald-200/80 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                    <ShoppingBag className="w-4 h-4 stroke-[2.2]" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Shopify Order:</span>
-                      <span className="font-mono font-bold text-xs text-emerald-800">
-                        {selectedOrder.shopify_order_id || "Unsynced"}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-500">
-                      Syncs order with Shopify Admin API for fulfillment app routing
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handlePushToShopify}
-                  disabled={isPushingToShopify}
-                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50 shrink-0"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isPushingToShopify ? "animate-spin" : ""}`} />
-                  <span>{isPushingToShopify ? "Syncing..." : "Push to Shopify"}</span>
-                </button>
               </div>
 
               {/* Editable Operational Controls */}
