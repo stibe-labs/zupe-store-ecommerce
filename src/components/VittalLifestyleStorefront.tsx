@@ -172,7 +172,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       {/* ===================================================================== */}
       {/* 2. HERO BANNER CARD (ROTATING CUTOUTS WITH STATIC TEXT & BG)          */}
       {/* ===================================================================== */}
-      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
+      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-1 sm:pb-2">
         <div className="relative rounded-3xl sm:rounded-[32px] overflow-hidden bg-[#95CF42] border border-[#85BE33]/50 shadow-sm min-h-[250px] sm:min-h-[300px] md:min-h-[360px] lg:min-h-[440px] flex items-center">
           
           {/* Static Lime Green Textured Background (Never changes) */}
@@ -276,58 +276,48 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       </section>
 
       {/* ===================================================================== */}
-      {/* 3. CATEGORIES SECTION (Light-Grey Rounded Cards)                      */}
+      {/* 3. CATEGORIES SECTION (Reference Tile Cards with Outside Labels)      */}
       {/* ===================================================================== */}
-      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-6">
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#111111] tracking-tight">
-            Categories
-          </h2>
-          <Link
-            href="/products"
-            className="text-xs sm:text-sm font-semibold text-[#6B9E3A] hover:text-[#527C2B] flex items-center gap-0.5 transition-colors"
-          >
-            <span>See all</span>
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
-
+      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-2 pb-4 sm:pb-6">
         {/* Responsive Grid: 5 columns on Mobile, 6 columns on Desktop */}
-        <div className="grid grid-cols-5 md:grid-cols-6 gap-1.5 sm:gap-2.5 md:gap-3.5 lg:gap-4 w-full">
+        <div className="grid grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-5 w-full">
           {CATEGORY_ITEMS.map((cat) => (
             <Link
               key={cat.name}
               href={cat.link}
-              className={`group relative rounded-xl sm:rounded-2xl md:rounded-3xl bg-[#111111] border border-neutral-200/90 hover:border-black/70 flex-col items-center justify-between transition-all duration-300 hover:-translate-y-1 shadow-2xs hover:shadow-md cursor-pointer overflow-hidden ${
+              className={`group flex flex-col items-center cursor-pointer transition-transform duration-300 hover:-translate-y-1 ${
                 cat.desktopOnly ? "hidden md:flex" : "flex"
               }`}
             >
-              {/* Top Image Section: Banner Hero Green Texture with Inward-Curved Bottom Corners & Bottom-Aligned Image */}
-              <div className="w-full relative aspect-[1/1.05] sm:aspect-square rounded-b-[12px] sm:rounded-b-[18px] md:rounded-b-[22px] overflow-hidden flex items-end justify-center bg-[#95CF42]">
+              {/* Card Image Tile: Top-to-Lower Fade (Banner green texture fading to white at the bottom) */}
+              <div className="w-full relative aspect-square rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white border border-neutral-200/80 group-hover:border-[#6B9E3A]/60 shadow-2xs group-hover:shadow-md transition-all duration-300 flex items-end justify-center">
                 {/* Banner's Matching Green Wave Texture */}
                 <Image
                   src="/vittal/banner-hero-green-texture.jpg"
                   alt=""
                   fill
                   sizes="(max-width: 768px) 20vw, 200px"
-                  className="object-cover object-center pointer-events-none select-none"
+                  className="object-cover object-top pointer-events-none select-none opacity-90"
                 />
 
-                {/* Inside Category Product Image - Enlarged and Lower-Aligned flush to bottom edge */}
-                <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-0.5 sm:px-1">
+                {/* Top-to-lower fade: Top shows the green texture, fading down to crisp clean white */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
+
+                {/* Inside Category Product Image - Lower-aligned directly to bottom */}
+                <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1">
                   <Image
                     src={cat.image}
                     alt={cat.name}
                     fill
                     sizes="(max-width: 640px) 20vw, (max-width: 1024px) 20vw, 240px"
-                    className="object-contain object-bottom group-hover:scale-108 transition-transform duration-300 drop-shadow-sm"
+                    className="object-contain object-bottom group-hover:scale-108 transition-transform duration-300 drop-shadow-xs"
                   />
                 </div>
               </div>
 
-              {/* Bottom Label Section: Solid Black with Bold White Text */}
-              <div className="w-full bg-[#111111] py-1.5 sm:py-2.5 md:py-3 px-1 sm:px-2 flex items-center justify-center text-center mt-auto min-h-[30px] xs:min-h-[34px] sm:min-h-[40px] md:min-h-[46px]">
-                <span className="font-mograph font-bold text-[9px] xs:text-[10px] sm:text-xs md:text-sm lg:text-[14px] text-white group-hover:text-[#B8ED3E] tracking-tight leading-tight transition-colors line-clamp-2 block w-full px-0.5">
+              {/* Outside Category Label: Current brand font, no background filling, centered below card */}
+              <div className="w-full mt-1.5 sm:mt-2 text-center">
+                <span className="font-mograph font-bold text-[9.5px] xs:text-[10.5px] sm:text-xs md:text-sm text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-tight line-clamp-2 block w-full px-0.5">
                   {cat.name}
                 </span>
               </div>
