@@ -1663,7 +1663,12 @@ export function getSubcategoriesForCategory(categoryName: string, dynamicCategor
 
 export function doesCategoryMatch(productCategory: string, selectedCategory: string, dynamicCategories?: any[]): boolean {
   if (!selectedCategory || selectedCategory === "All Categories" || selectedCategory === "all" || selectedCategory === "All Products") return true;
-  return productCategory.toLowerCase() === selectedCategory.toLowerCase();
+  const p = productCategory.toLowerCase().trim();
+  const s = selectedCategory.toLowerCase().trim();
+  if (p === s) return true;
+  if ((p === "gym supplementaries" || p === "gym supplements") && (s === "gym supplementaries" || s === "gym supplements")) return true;
+  if ((p === "candy & chocolates" || p === "candy and chocolates") && (s === "candy & chocolates" || s === "candy and chocolates")) return true;
+  return false;
 }
 
 export function doesSubcategoryMatch(product: Product, selectedSubcategory: string): boolean {

@@ -33,8 +33,8 @@ interface VittalLifestyleStorefrontProps {
 // ---------------------------------------------------------------------------
 const CATEGORY_ITEMS = [
   {
-    name: "Gym Supplementaries",
-    link: "/products?category=Gym+Supplementaries",
+    name: "Gym Supplements",
+    link: "/products?category=Gym+Supplements",
     image: "/vittal/cat-icon-gym-supplements-trans.png",
   },
   {
@@ -290,29 +290,33 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
           </Link>
         </div>
 
-        {/* 5-Column Responsive Cards Grid */}
-        <div className="grid grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-5 w-full">
+        {/* 5-Column Responsive Cards Grid matching Cult Reference */}
+        <div className="grid grid-cols-5 gap-1.5 sm:gap-3 md:gap-4 lg:gap-5 w-full">
           {CATEGORY_ITEMS.map((cat) => (
             <Link
               key={cat.name}
               href={cat.link}
-              className="group relative rounded-2xl sm:rounded-3xl bg-[#F4F5F7] hover:bg-[#EAECEF] border border-neutral-200/60 hover:border-[#6B9E3A]/40 p-2 sm:p-3 md:p-4 flex flex-col items-center justify-between transition-all duration-200 hover:-translate-y-1 shadow-2xs hover:shadow-xs cursor-pointer min-h-[105px] sm:min-h-[135px] md:min-h-[155px]"
+              className="group relative rounded-xl sm:rounded-2xl md:rounded-3xl bg-[#111111] border border-neutral-200/90 hover:border-black/70 flex flex-col items-center justify-between transition-all duration-300 hover:-translate-y-1 shadow-2xs hover:shadow-md cursor-pointer overflow-hidden"
             >
-              {/* Product Cutout Image */}
-              <div className="relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mb-1 sm:mb-2 flex items-center justify-center shrink-0">
-                <Image
-                  src={cat.image}
-                  alt={cat.name}
-                  fill
-                  sizes="(max-width: 640px) 20vw, 150px"
-                  className="object-contain p-0.5 group-hover:scale-105 transition-transform duration-300"
-                />
+              {/* Top Image Section: Pure White Background with Inward-Curved Bottom Corners */}
+              <div className="w-full bg-white rounded-b-[12px] sm:rounded-b-[18px] md:rounded-b-[24px] flex items-center justify-center p-1.5 sm:p-2.5 md:p-3 aspect-[1/1.05] relative shadow-[0_2px_6px_rgba(0,0,0,0.03)]">
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <Image
+                    src={cat.image}
+                    alt={cat.name}
+                    fill
+                    sizes="(max-width: 640px) 20vw, (max-width: 1024px) 20vw, 260px"
+                    className="object-contain p-0.5 sm:p-1 group-hover:scale-108 transition-transform duration-300 drop-shadow-xs"
+                  />
+                </div>
               </div>
 
-              {/* Category Label */}
-              <span className="font-semibold text-[10px] sm:text-xs md:text-sm text-neutral-900 group-hover:text-[#6B9E3A] text-center leading-tight line-clamp-2 transition-colors">
-                {cat.name}
-              </span>
+              {/* Bottom Label Section: Solid Black with Bold White Text */}
+              <div className="w-full bg-[#111111] py-1.5 sm:py-2.5 md:py-3 px-1 sm:px-2 flex items-center justify-center text-center mt-auto min-h-[30px] xs:min-h-[34px] sm:min-h-[40px] md:min-h-[46px]">
+                <span className="font-mograph font-bold text-[9px] xs:text-[10px] sm:text-xs md:text-sm lg:text-[15px] text-white group-hover:text-[#B8ED3E] tracking-tight leading-tight transition-colors line-clamp-2 block w-full px-0.5">
+                  {cat.name}
+                </span>
+              </div>
             </Link>
           ))}
         </div>
