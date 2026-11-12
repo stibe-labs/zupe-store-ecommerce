@@ -140,61 +140,76 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       </section>
 
       {/* ===================================================================== */}
-      {/* 2. HERO BANNER — PASTEL LIME GREEN WITH CTA                           */}
+      {/* 2. HERO BANNER CARD (MATCHING REFERENCE MOCKUP)                       */}
       {/* ===================================================================== */}
       <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#EBF5DF] via-[#E2F0CE] to-[#D5E9BB] border border-[#D5E9BC]/70 shadow-sm min-h-[240px] sm:min-h-[290px] md:min-h-[350px] lg:min-h-[460px] flex items-center">
+        <div className="relative rounded-3xl sm:rounded-[32px] overflow-hidden bg-[#95CF42] border border-[#85BE33]/50 shadow-sm min-h-[240px] sm:min-h-[290px] md:min-h-[350px] lg:min-h-[440px] flex items-center">
           
-          {/* Athlete Hero Image on Right */}
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="/vittal/banner-hero-pastel-green.jpg"
-              alt="Fuel Your Performance — Vittal Lifestyle"
-              fill
-              priority
-              className="object-cover object-right sm:object-right"
-            />
-            {/* Soft Organic Gradient Overlays for High-Contrast Text Legibility */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#EBF5DF] via-[#EBF5DF]/95 sm:via-[#EBF5DF]/70 to-transparent z-1" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#EBF5DF]/60 via-transparent to-transparent z-1" />
+          {/* Subtle Organic Fluid Wave Pattern Behind Image */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30 z-0">
+            <svg className="w-full h-full object-cover" viewBox="0 0 800 450" fill="none" preserveAspectRatio="none">
+              <path d="M -100,50 Q 200,200 400,100 T 900,150" stroke="#7EBA2B" strokeWidth="40" fill="none" />
+              <path d="M -50,150 Q 250,300 500,200 T 950,250" stroke="#7EBA2B" strokeWidth="50" fill="none" />
+              <path d="M -100,280 Q 200,420 500,320 T 900,400" stroke="#7EBA2B" strokeWidth="60" fill="none" />
+            </svg>
           </div>
 
-          {/* Left Hero Content */}
-          <div className="relative z-10 px-5 sm:px-8 lg:px-12 py-6 sm:py-8 md:py-10 max-w-[68%] sm:max-w-md md:max-w-lg lg:max-w-xl">
-            {/* Eyebrow Pill */}
-            <span className="bg-[#6B9E3A] text-white text-[10px] sm:text-xs font-semibold px-3 py-1 rounded-full inline-block mb-2 sm:mb-3 shadow-xs">
-              Premium Nutrition
-            </span>
+          {/* Model Image on Right */}
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="/vittal/banner-hero-shopping-girl.jpg"
+              alt="First Purchase Enjoy a Special Offer"
+              fill
+              priority
+              className="object-cover object-[85%_center] sm:object-right"
+            />
+          </div>
 
-            {/* Headline */}
-            <h1 className="font-extrabold text-2xl sm:text-4xl md:text-5xl lg:text-6xl text-[#15230D] leading-[1.03] tracking-tight mb-1 sm:mb-2">
-              Fuel Your
+          {/* Left Content Overlay */}
+          <div className="relative z-10 px-5 sm:px-8 lg:px-12 py-6 sm:py-8 md:py-10 max-w-[66%] sm:max-w-md md:max-w-lg lg:max-w-xl">
+            {/* Black Pill Eyebrow Badge */}
+            <div className="inline-block bg-[#111111] text-white text-[10px] sm:text-xs font-semibold px-3 sm:px-3.5 py-1 rounded-full mb-2.5 sm:mb-3.5 shadow-xs">
+              Limited Offer
+            </div>
+
+            {/* Headline matching reference */}
+            <h1 className="font-mograph font-bold text-xl sm:text-3xl md:text-4xl lg:text-5xl text-[#111111] leading-[1.12] tracking-tight mb-3.5 sm:mb-6">
+              First Purchase Enjoy
               <br />
-              Performance
+              a Special Offer
             </h1>
 
-            {/* Subtitle */}
-            <p className="text-xs sm:text-sm md:text-base font-medium text-[#415C29] mb-3.5 sm:mb-6">
-              Stronger. Healthier. Happier.
-            </p>
-
-            {/* CTA Button */}
+            {/* Black Pill CTA Button with White Circle Up-Right Arrow */}
             <Link
-              href="/products?category=Gym+Supplementaries"
-              className="inline-flex items-center gap-2.5 bg-[#6B9E3A] hover:bg-[#5C8931] text-white font-bold text-xs sm:text-sm px-4.5 py-2.5 sm:px-6 sm:py-3 rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 group"
+              href="/products"
+              className="inline-flex items-center gap-3 bg-[#111111] hover:bg-black text-white font-bold text-xs sm:text-sm pl-4.5 pr-1.5 py-1.5 sm:pl-5 sm:pr-2 sm:py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 group"
             >
               <span>Shop Now</span>
-              <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white text-[#6B9E3A] flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform">
-                <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[2.5]" />
-              </span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-[#111111] flex items-center justify-center shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shadow-xs">
+                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+              </div>
             </Link>
           </div>
 
-          {/* Carousel Pagination Dots at Bottom Center */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5">
-            <span className="w-5 sm:w-6 h-1.5 bg-[#6B9E3A] rounded-full transition-all shadow-xs" />
-            <span className="w-1.5 h-1.5 bg-[#96B86C] rounded-full" />
-            <span className="w-1.5 h-1.5 bg-[#96B86C] rounded-full" />
+          {/* Signature Bottom Scoop Notch with Pagination Indicators */}
+          <div className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 z-20 flex flex-col items-center pointer-events-none">
+            <div className="relative">
+              {/* Arched scoop cutting into the card from page background */}
+              <svg
+                viewBox="0 0 160 30"
+                className="w-32 sm:w-40 md:w-48 h-6 sm:h-7 md:h-8 fill-white block"
+                preserveAspectRatio="none"
+              >
+                <path d="M 0,30 C 22,30 26,0 48,0 L 112,0 C 134,0 138,30 160,30 Z" />
+              </svg>
+
+              {/* 3 Indicators inside scoop */}
+              <div className="absolute inset-0 flex items-center justify-center gap-1.5 sm:gap-2 pb-0.5 pointer-events-auto">
+                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-neutral-300" />
+                <span className="w-6 sm:w-7 h-1.5 sm:h-2 rounded-full bg-[#B8ED3E] shadow-2xs" />
+                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-neutral-300" />
+              </div>
+            </div>
           </div>
         </div>
       </section>
