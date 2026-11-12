@@ -298,8 +298,8 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
               href={cat.link}
               className="group relative rounded-xl sm:rounded-2xl md:rounded-3xl bg-[#111111] border border-neutral-200/90 hover:border-black/70 flex flex-col items-center justify-between transition-all duration-300 hover:-translate-y-1 shadow-2xs hover:shadow-md cursor-pointer overflow-hidden"
             >
-              {/* Top Image Section: Pure White Background with Inward-Curved Bottom Corners */}
-              <div className="w-full bg-white rounded-b-[12px] sm:rounded-b-[18px] md:rounded-b-[24px] flex items-center justify-center p-1.5 sm:p-2.5 md:p-3 aspect-[1/1.05] relative shadow-[0_2px_6px_rgba(0,0,0,0.03)]">
+              {/* Top Image Section: Pastel Lime Green Background with Inward-Curved Bottom Corners */}
+              <div className="w-full bg-[#E8F5D0] rounded-b-[12px] sm:rounded-b-[18px] md:rounded-b-[24px] flex items-center justify-center p-1.5 sm:p-2.5 md:p-3 aspect-[1/1.05] relative shadow-[0_2px_6px_rgba(0,0,0,0.03)]">
                 <div className="relative w-full h-full flex items-center justify-center">
                   <Image
                     src={cat.image}
