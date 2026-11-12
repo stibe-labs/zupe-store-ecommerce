@@ -29,23 +29,23 @@ interface VittalLifestyleStorefrontProps {
 }
 
 // ---------------------------------------------------------------------------
-// 5 Core Categories matching the reference mockup
+// 5 Core Categories: Vittal Lifestyle Brand Departments
 // ---------------------------------------------------------------------------
 const CATEGORY_ITEMS = [
   {
-    name: "Whey Protein",
-    link: "/products?category=Gym+Supplementaries&subcategory=Whey+Protein",
-    image: "/vittal/cat-icon-whey-trans.png",
+    name: "Gym Supplementaries",
+    link: "/products?category=Gym+Supplementaries",
+    image: "/vittal/cat-icon-gym-supplements-trans.png",
   },
   {
-    name: "Creatine",
-    link: "/products?category=Gym+Supplementaries&subcategory=Creatine+Monohydrate",
-    image: "/vittal/cat-icon-creatine-trans.png",
+    name: "Outfits",
+    link: "/products?category=Outfits",
+    image: "/vittal/cat-icon-outfits-trans.png",
   },
   {
-    name: "Omega 3 Fish Oil",
-    link: "/products?category=Gym+Supplementaries&subcategory=Omega+3",
-    image: "/vittal/cat-icon-omega-trans.png",
+    name: "Apparels",
+    link: "/products?category=Apparels",
+    image: "/vittal/cat-icon-apparels-trans.png",
   },
   {
     name: "Dates & Nuts",
