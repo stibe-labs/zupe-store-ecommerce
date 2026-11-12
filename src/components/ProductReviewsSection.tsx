@@ -296,17 +296,17 @@ export function ProductReviewsSection({
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>100% Verified Buyer Feedback</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-display font-extrabold text-[#111111] tracking-tight">
-            Customer Reviews & Ratings
+          <h2 className="text-2xl sm:text-3xl font-movault font-black text-[#111111] tracking-tight">
+            Customer Reviews &amp; Ratings
           </h2>
         </div>
 
         {/* Rating Breakdown Summary Card */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-8 items-center mb-6">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-neutral-200/80 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-8 items-center mb-6">
           {/* Big Score Column */}
-          <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left justify-center md:border-r md:border-gray-100 md:pr-8">
+          <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left justify-center md:border-r md:border-neutral-200/80 md:pr-8">
             <div className="flex items-baseline gap-2">
-              <span className="text-5xl sm:text-6xl font-display font-black text-gray-900 tracking-tight">
+              <span className="text-5xl sm:text-6xl font-movault font-black text-gray-900 tracking-tight">
                 {displayTotal > 0 ? displayAverage.toFixed(1) : "0.0"}
               </span>
               <span className="text-lg font-bold text-gray-400">/ 5.0</span>
@@ -341,7 +341,7 @@ export function ProductReviewsSection({
                   </div>
                   <div className="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden relative">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-[#FF7A00] transition-all duration-500"
+                      className="h-full rounded-full bg-gradient-to-r from-[#9CD33B] to-[#6B9E3A] transition-all duration-500"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -359,7 +359,7 @@ export function ProductReviewsSection({
           <button
             onClick={handleOpenWriteReview}
             disabled={checkingEligibility}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#111111] text-white text-xs sm:text-sm font-bold hover:bg-[#FF7A00] transition-all shadow-sm cursor-pointer disabled:opacity-60"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#111111] text-white text-xs sm:text-sm font-bold hover:bg-[#6B9E3A] transition-all shadow-sm cursor-pointer disabled:opacity-60"
           >
             {checkingEligibility ? (
               <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
@@ -375,13 +375,13 @@ export function ProductReviewsSection({
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 mb-3.5">
               <div className="flex items-center gap-2">
-                <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF7A00] shrink-0" />
+                <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-[#6B9E3A] shrink-0" />
                 <h3 className="text-sm sm:text-base font-bold text-gray-900">
-                  Customer Photos & Unboxing ({stats.customerPhotos.length})
+                  Customer Photos &amp; Unboxing ({stats.customerPhotos.length})
                 </h3>
               </div>
               <span className="text-[11px] sm:text-xs text-gray-400 font-medium">
-                Click any photo to zoom & read review
+                Click any photo to zoom &amp; read review
               </span>
             </div>
 
@@ -393,7 +393,7 @@ export function ProductReviewsSection({
                     key={idx}
                     type="button"
                     onClick={() => setLightboxData({ image: photoUrl, review: matchingReview })}
-                    className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-gray-200 group hover:ring-2 hover:ring-[#FF7A00] transition-all shadow-xs cursor-pointer bg-white"
+                    className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-gray-200 group hover:ring-2 hover:ring-[#6B9E3A] transition-all shadow-xs cursor-pointer bg-white"
                   >
                     <Image
                       src={photoUrl}
@@ -430,7 +430,7 @@ export function ProductReviewsSection({
                 onClick={() => setActiveFilter("photos")}
                 className={`inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
                   activeFilter === "photos"
-                    ? "bg-[#FF7A00] text-white shadow-xs"
+                    ? "bg-[#6B9E3A] text-white shadow-xs"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
@@ -467,7 +467,7 @@ export function ProductReviewsSection({
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
               aria-label="Sort customer reviews"
-              className="bg-white border border-gray-200 rounded-lg sm:rounded-xl px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] sm:text-xs font-bold text-gray-800 focus:outline-none focus:border-[#FF7A00] cursor-pointer"
+              className="bg-white border border-gray-200 rounded-lg sm:rounded-xl px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] sm:text-xs font-bold text-gray-800 focus:outline-none focus:border-[#6B9E3A] cursor-pointer"
             >
               <option value="newest">Newest First</option>
               <option value="highest">Highest Rating</option>
@@ -488,7 +488,7 @@ export function ProductReviewsSection({
                 handleOpenWriteReview();
               }}
               disabled={checkingEligibility}
-              className="px-5 py-2 rounded-full bg-[#FF7A00] text-white text-xs font-bold hover:bg-[#E66E00] disabled:opacity-60 cursor-pointer"
+              className="px-5 py-2 rounded-full bg-[#6B9E3A] text-white text-xs font-bold hover:bg-[#527C2B] disabled:opacity-60 cursor-pointer"
             >
               Write First Review
             </button>
@@ -553,7 +553,7 @@ export function ProductReviewsSection({
                         key={imgIdx}
                         type="button"
                         onClick={() => setLightboxData({ image: imgUrl, review: rev })}
-                        className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 hover:ring-2 hover:ring-[#FF7A00] transition-all cursor-pointer shadow-xs"
+                        className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 hover:ring-2 hover:ring-[#6B9E3A] transition-all cursor-pointer shadow-xs"
                       >
                         <Image
                           src={imgUrl}
@@ -706,7 +706,7 @@ export function ProductReviewsSection({
                       value={formTitle}
                       onChange={(e) => setFormTitle(e.target.value)}
                       placeholder="e.g. Stunning design and fast delivery!"
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FF7A00]"
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#6B9E3A]"
                     />
                   </div>
 
@@ -721,7 +721,7 @@ export function ProductReviewsSection({
                       value={formComment}
                       onChange={(e) => setFormComment(e.target.value)}
                       placeholder="What did you love about the product? Mention quality, packaging, finish, or functionality..."
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF7A00]"
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#6B9E3A]"
                     />
                   </div>
 
@@ -730,7 +730,7 @@ export function ProductReviewsSection({
                     <label className="block text-xs font-bold text-gray-700 mb-1">
                       Upload Photos & Images (Optional)
                     </label>
-                    <label className="cursor-pointer border-2 border-dashed border-gray-200 hover:border-[#FF7A00] bg-gray-50 hover:bg-orange-50/50 rounded-2xl p-4 flex flex-col items-center justify-center transition-all">
+                    <label className="cursor-pointer border-2 border-dashed border-gray-200 hover:border-[#6B9E3A] bg-gray-50 hover:bg-lime-50/40 rounded-2xl p-4 flex flex-col items-center justify-center transition-all">
                       <Camera className="w-6 h-6 text-gray-400 mb-1" />
                       <span className="text-xs font-bold text-gray-700">Click to upload product pictures</span>
                       <span className="text-[10px] text-gray-400">Supports PNG, JPG, WebP</span>
@@ -775,7 +775,7 @@ export function ProductReviewsSection({
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
                       placeholder="e.g. Rahul M."
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FF7A00]"
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#6B9E3A]"
                     />
                   </div>
 
@@ -790,7 +790,7 @@ export function ProductReviewsSection({
                     <button
                       type="submit"
                       disabled={submitting || !formComment.trim()}
-                      className="px-6 py-2.5 rounded-full text-xs font-bold text-white bg-[#FF7A00] hover:bg-[#E66E00] disabled:opacity-50 transition-all cursor-pointer shadow-sm"
+                      className="px-6 py-2.5 rounded-full text-xs font-bold text-white bg-[#6B9E3A] hover:bg-[#527C2B] disabled:opacity-50 transition-all cursor-pointer shadow-sm"
                     >
                       {submitting ? "Publishing Review..." : "Submit Review"}
                     </button>
@@ -846,7 +846,7 @@ export function ProductReviewsSection({
                   </div>
                 </div>
                 {lightboxData.review.title && (
-                  <h4 className="font-bold text-xs text-orange-200 mb-1">{lightboxData.review.title}</h4>
+                  <h4 className="font-bold text-xs text-lime-300 mb-1">{lightboxData.review.title}</h4>
                 )}
                 <p className="text-xs text-slate-300 leading-relaxed">{lightboxData.review.comment}</p>
               </div>

@@ -67,17 +67,17 @@ export function ProductFaqSection({ className = "" }: ProductFaqSectionProps) {
   };
 
   return (
-    <div className={`w-full my-8 select-none ${className}`}>
+    <div className={`w-full my-8 select-none font-mograph ${className}`}>
       {/* Header */}
       <div className="text-center mb-5">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/80 text-[#FF5722] text-[11px] font-bold uppercase tracking-wider mb-2">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5F2D0] border border-[#BBDC92]/60 text-[#3B581C] text-[11px] font-bold uppercase tracking-wider mb-2">
           <HelpCircle className="w-3.5 h-3.5" />
           <span>FAQ</span>
         </div>
-        <h2 className="text-[18px] sm:text-[22px] font-display font-extrabold text-[#0F172A] tracking-tight leading-tight">
+        <h2 className="text-[18px] sm:text-[22px] font-movault font-black text-neutral-950 tracking-tight leading-tight">
           Frequently Asked Questions
         </h2>
-        <p className="text-[12px] sm:text-[13px] text-gray-500 font-normal mt-1 leading-snug max-w-md mx-auto">
+        <p className="text-[12px] sm:text-[13px] text-neutral-500 font-normal mt-1 leading-snug max-w-md mx-auto">
           Find quick answers to common questions about this product.
         </p>
       </div>
@@ -89,31 +89,31 @@ export function ProductFaqSection({ className = "" }: ProductFaqSectionProps) {
           return (
             <div
               key={item.id}
-              className={`rounded-xl border transition-all duration-200 overflow-hidden ${
+              className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
                 isOpen
-                  ? "bg-white border-orange-300 shadow-xs"
-                  : "bg-white/80 border-gray-200/80 hover:border-gray-300"
+                  ? "bg-white border-[#6B9E3A]/50 shadow-xs"
+                  : "bg-white/80 border-neutral-200/80 hover:border-neutral-300"
               }`}
             >
               <button
                 type="button"
                 onClick={() => toggle(item.id)}
-                className="w-full flex items-center justify-between p-3 sm:p-3.5 text-left gap-3 focus:outline-hidden"
+                className="w-full flex items-center justify-between p-3.5 sm:p-4 text-left gap-3 focus:outline-hidden cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
-                  {/* Orange Number Badge */}
+                  {/* Lime Number Badge */}
                   <span
                     className={`shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-colors ${
                       isOpen
-                        ? "bg-[#FF5722] text-white shadow-2xs"
-                        : "bg-orange-100 text-[#FF5722]"
+                        ? "bg-[#6B9E3A] text-white shadow-2xs"
+                        : "bg-[#E5F2D0] text-[#3B581C]"
                     }`}
                   >
                     {item.id}
                   </span>
                   <span
                     className={`text-xs sm:text-[13px] font-bold leading-snug line-clamp-2 ${
-                      isOpen ? "text-[#FF5722]" : "text-gray-900"
+                      isOpen ? "text-[#6B9E3A]" : "text-neutral-900"
                     }`}
                   >
                     {item.question}
@@ -121,13 +121,13 @@ export function ProductFaqSection({ className = "" }: ProductFaqSectionProps) {
                 </div>
                 <ChevronDown
                   className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
-                    isOpen ? "rotate-180 text-[#FF5722]" : "text-gray-400"
+                    isOpen ? "rotate-180 text-[#6B9E3A]" : "text-neutral-400"
                   }`}
                 />
               </button>
 
               {isOpen && (
-                <div className="px-3.5 sm:px-4 pb-3.5 pt-0 text-gray-600 text-[11px] sm:text-xs leading-relaxed border-t border-orange-100/50 mt-1">
+                <div className="px-4 sm:px-5 pb-4 pt-0 text-neutral-600 text-xs sm:text-[13px] leading-relaxed border-t border-neutral-100 mt-1">
                   <div className="pt-2">{item.answer}</div>
                 </div>
               )}

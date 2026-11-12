@@ -76,38 +76,38 @@ export function ProductComparisonTable({
   const fallbackPoster = product.poster_image || product.images?.[0] || "/products/ripple-lamp.jpg";
 
   return (
-    <div className={`w-full my-7 select-none ${className}`}>
+    <div className={`w-full my-7 select-none font-mograph ${className}`}>
       {/* Section Title */}
       <div className="text-center mb-4 sm:mb-5">
-        <h2 className="text-[17px] sm:text-[20px] font-display font-extrabold text-[#0F172A] tracking-tight leading-tight">
+        <h2 className="text-[17px] sm:text-[20px] font-movault font-black text-neutral-950 tracking-tight leading-tight">
           Why Choose This Product?
         </h2>
-        <p className="text-[12px] sm:text-[13px] text-gray-500 font-normal mt-0.5 leading-snug">
+        <p className="text-[12px] sm:text-[13px] text-neutral-500 font-normal mt-0.5 leading-snug">
           See how it compares with common alternatives.
         </p>
       </div>
 
       {/* Comparison Table Box */}
-      <div className="rounded-2xl border border-gray-200/90 overflow-hidden shadow-xs bg-white">
+      <div className="rounded-2xl border border-neutral-200/90 overflow-hidden shadow-xs bg-white">
         <table className="w-full border-collapse text-left">
           {/* Table Header */}
           <thead>
-            <tr className="border-b border-gray-200">
+            <tr className="border-b border-neutral-200">
               {/* Features Column */}
-              <th className="w-[42%] p-2.5 sm:p-3.5 bg-gray-50/90 text-gray-900 font-bold text-xs sm:text-sm tracking-tight align-middle">
+              <th className="w-[42%] p-2.5 sm:p-3.5 bg-neutral-50/90 text-neutral-900 font-bold text-xs sm:text-sm tracking-tight align-middle">
                 Features
               </th>
 
-              {/* Turkiye Jam Product Column (Orange Header) */}
-              <th className="w-[29%] p-2 sm:p-3 bg-gradient-to-b from-[#cb0805] to-[#a80604] text-white text-center align-middle border-x border-red-500/30">
+              {/* Vittal Lifestyle Product Column (Lime Header) */}
+              <th className="w-[29%] p-2 sm:p-3 bg-gradient-to-b from-[#95CF42] to-[#7EBA2B] text-neutral-950 text-center align-middle border-x border-[#6B9E3A]/40">
                 <div className="flex flex-col items-center justify-center gap-1">
-                  <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider block leading-tight text-white line-clamp-1">
-                    Turkiye Jam
+                  <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider block leading-tight text-neutral-950 line-clamp-1">
+                    Vittal Lifestyle
                   </span>
-                  <span className="text-[10px] sm:text-[11px] font-semibold text-orange-100 block leading-tight line-clamp-1">
+                  <span className="text-[10px] sm:text-[11px] font-bold text-[#1E300E] block leading-tight line-clamp-1">
                     {shortName}
                   </span>
-                  <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-lg overflow-hidden bg-white/20 border border-white/40 shadow-2xs mt-0.5">
+                  <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-lg overflow-hidden bg-white/40 border border-white/60 shadow-2xs mt-0.5">
                     <img
                       src={fallbackPoster}
                       alt={product.name}
@@ -119,16 +119,16 @@ export function ProductComparisonTable({
               </th>
 
               {/* Regular Alternative Column (Charcoal Header) */}
-              <th className="w-[29%] p-2 sm:p-3 bg-[#0F172A] text-white text-center align-middle">
+              <th className="w-[29%] p-2 sm:p-3 bg-[#111111] text-white text-center align-middle">
                 <div className="flex flex-col items-center justify-center gap-1">
-                  <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider block leading-tight text-gray-200 line-clamp-1">
+                  <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider block leading-tight text-neutral-200 line-clamp-1">
                     Regular
                   </span>
-                  <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 block leading-tight line-clamp-1">
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-neutral-400 block leading-tight line-clamp-1">
                     Alternative
                   </span>
                   <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-lg overflow-hidden bg-white/10 border border-white/20 shadow-2xs mt-0.5 flex items-center justify-center">
-                    <div className="w-5 h-5 rounded-full bg-gray-700/80 flex items-center justify-center text-gray-400 text-[10px] font-black">
+                    <div className="w-5 h-5 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-300 text-[10px] font-black">
                       vs
                     </div>
                   </div>

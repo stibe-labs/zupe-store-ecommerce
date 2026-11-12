@@ -100,9 +100,9 @@ function HowToUseCard({
       ref={cardRef}
       className={`flex flex-col h-full bg-white select-none transition-all duration-200 overflow-hidden ${cardRadius} ${cardBorder} ${cardShadow}`}
     >
-      {/* 1. Square 1:1 Media Container with #FFF3E8 background */}
+      {/* 1. Square 1:1 Media Container with #F2F8EB background */}
       {hasMedia ? (
-        <div className="relative w-full aspect-square bg-[#FFF3E8] overflow-hidden flex items-center justify-center shrink-0">
+        <div className="relative w-full aspect-square bg-[#F2F8EB] overflow-hidden flex items-center justify-center shrink-0">
           {isVideo ? (
             <video
               ref={videoRef}
@@ -133,8 +133,8 @@ function HowToUseCard({
           )}
         </div>
       ) : (
-        <div className="relative w-full aspect-square bg-[#FFF3E8]/85 border-b border-[#FF7A00]/10 flex flex-col items-center justify-center p-2 text-center shrink-0">
-          <div className="w-8 h-8 rounded-full bg-[#FF7A00]/10 flex items-center justify-center mb-1 text-[#FF7A00]">
+        <div className="relative w-full aspect-square bg-[#F2F8EB]/85 border-b border-[#6B9E3A]/10 flex flex-col items-center justify-center p-2 text-center shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#E5F2D0] flex items-center justify-center mb-1 text-[#3B581C]">
             <svg
               className="w-4 h-4 stroke-[2]"
               viewBox="0 0 24 24"
@@ -148,7 +148,7 @@ function HowToUseCard({
               <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
             </svg>
           </div>
-          <span className="text-[9px] font-bold text-[#FF7A00]/80 uppercase tracking-wider">
+          <span className="text-[9px] font-bold text-[#6B9E3A] uppercase tracking-wider">
             {isPreview ? "Upload Media" : stepBadge}
           </span>
         </div>
@@ -157,7 +157,7 @@ function HowToUseCard({
       {/* 2. Text Content: Step Badge, Optional Title, Optional Description */}
       <div className={`flex flex-col flex-1 min-w-0 ${isMobilePreview ? "p-2" : "p-2 sm:p-2.5"}`}>
         {/* Step Badge (Always displayed automatically in sequential order) */}
-        <span className={`font-extrabold uppercase tracking-wider text-[#FF7A00] leading-none ${
+        <span className={`font-movault font-black uppercase tracking-wider text-[#6B9E3A] leading-none ${
           isMobilePreview ? "text-[10px]" : "text-[10px] sm:text-[11px]"
         }`}>
           {stepBadge}
@@ -339,14 +339,14 @@ export function HowToUseSection({
         {/* 1. SECTION HEADER (Fixed Text, Center-Aligned, Compact Spacing) */}
         <div className="text-center mb-3 sm:mb-4">
           <h2
-            className={`font-display font-extrabold text-[#0F172A] tracking-tight leading-tight ${
+            className={`font-movault font-black text-neutral-950 tracking-tight leading-tight ${
               isMobilePreview ? "text-[16px]" : "text-[17px] sm:text-[20px]"
             }`}
           >
             How to Use
           </h2>
           <p
-            className={`text-gray-500 font-normal mt-0.5 leading-snug ${
+            className={`text-neutral-500 font-normal mt-0.5 leading-snug ${
               isMobilePreview ? "text-[11px]" : "text-[12px] sm:text-[13px]"
             }`}
           >
@@ -364,7 +364,7 @@ export function HowToUseSection({
               aria-label="Previous step"
               className={`${
                 isDesktopPreview ? "flex" : "hidden md:flex"
-              } absolute -left-3.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/95 border border-gray-200/90 text-gray-700 shadow-md items-center justify-center hover:bg-[#FF7A00] hover:text-white hover:border-[#FF7A00] active:scale-95 transition-all duration-150`}
+              } absolute -left-3.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/95 border border-neutral-200 text-neutral-700 shadow-md items-center justify-center hover:bg-[#6B9E3A] hover:text-white hover:border-[#6B9E3A] active:scale-95 transition-all duration-150 cursor-pointer`}
             >
               <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
             </button>
@@ -378,7 +378,7 @@ export function HowToUseSection({
               aria-label="Next step"
               className={`${
                 isDesktopPreview ? "flex" : "hidden md:flex"
-              } absolute -right-3.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/95 border border-gray-200/90 text-gray-700 shadow-md items-center justify-center hover:bg-[#FF7A00] hover:text-white hover:border-[#FF7A00] active:scale-95 transition-all duration-150`}
+              } absolute -right-3.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/95 border border-neutral-200 text-neutral-700 shadow-md items-center justify-center hover:bg-[#6B9E3A] hover:text-white hover:border-[#6B9E3A] active:scale-95 transition-all duration-150 cursor-pointer`}
             >
               <ChevronRight className="w-4 h-4 stroke-[2.5]" />
             </button>

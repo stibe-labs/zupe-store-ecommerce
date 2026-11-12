@@ -438,15 +438,15 @@ export default function ProductDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0B0C] text-white font-mograph selection:bg-[#D4AF37] selection:text-black pb-20 md:pb-12">
+    <div className="min-h-screen bg-white text-neutral-900 font-mograph selection:bg-[#E5F2D0] selection:text-[#1E300E] pb-24 md:pb-12">
       {/* 1. Global Navigation Bar */}
       <Navbar />
 
-      {/* 2. Top Sub-Navigation Bar matching reference (< Back, Share, Wishlist) */}
-      <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between border-b border-white/5">
+      {/* 2. Top Sub-Navigation Bar matching home page clean borders (< Back, Share, Wishlist) */}
+      <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between border-b border-neutral-200/80">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-neutral-300 hover:text-white transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-neutral-600 hover:text-neutral-950 transition-colors cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
           <span>Back</span>
@@ -455,7 +455,7 @@ export default function ProductDetailPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={handleShare}
-            className="w-8 h-8 rounded-full bg-[#141416] hover:bg-[#1C1814] border border-white/10 text-neutral-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-[#F7F8FA] hover:bg-[#EFF1F4] border border-neutral-200 text-neutral-700 hover:text-black flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
             title="Share Product"
             aria-label="Share product"
           >
@@ -470,8 +470,8 @@ export default function ProductDetailPage() {
                 image: currentDisplayImage,
               });
             }}
-            className={`w-8 h-8 rounded-full bg-[#141416] hover:bg-[#1C1814] border border-white/10 flex items-center justify-center transition-colors cursor-pointer ${
-              isWish ? "text-rose-500 border-rose-500/30" : "text-neutral-300 hover:text-white"
+            className={`w-8 h-8 rounded-full bg-[#F7F8FA] hover:bg-[#EFF1F4] border border-neutral-200 flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${
+              isWish ? "text-rose-500 border-rose-200 bg-rose-50" : "text-neutral-700 hover:text-black"
             }`}
             title="Wishlist Product"
             aria-label="Wishlist"
@@ -495,10 +495,10 @@ export default function ProductDetailPage() {
                 <button
                   key={idx}
                   onClick={() => setSelectedImageIndex(idx)}
-                  className={`relative w-13 h-13 sm:w-16 sm:h-16 rounded-xl p-1.5 bg-[#141416] border transition-all flex items-center justify-center overflow-hidden shrink-0 cursor-pointer ${
+                  className={`relative w-13 h-13 sm:w-16 sm:h-16 rounded-2xl p-1.5 transition-all flex items-center justify-center overflow-hidden shrink-0 cursor-pointer ${
                     selectedImageIndex === idx
-                      ? "border-[#D4A373] ring-1 ring-[#D4A373]/40 shadow-md shadow-[#D4A373]/10"
-                      : "border-white/10 hover:border-white/20 opacity-70 hover:opacity-100"
+                      ? "bg-[#F2F8EB] border-2 border-[#6B9E3A] shadow-xs"
+                      : "bg-[#F7F8FA] hover:bg-[#EFF1F4] border border-neutral-200/80 opacity-80 hover:opacity-100"
                   }`}
                   aria-label={`View image ${idx + 1}`}
                 >
@@ -511,12 +511,12 @@ export default function ProductDetailPage() {
               ))}
             </div>
 
-            {/* Main Stage Image (Transparent Cutout floating on dark backdrop) */}
-            <div className="relative flex-1 aspect-square rounded-3xl bg-gradient-to-b from-[#18181C]/60 to-[#0F0F11] border border-white/5 flex items-center justify-center p-6 sm:p-10 overflow-hidden group select-none shadow-xl">
+            {/* Main Stage Image (Transparent Cutout floating on soft light backdrop) */}
+            <div className="relative flex-1 aspect-square rounded-3xl bg-gradient-to-b from-[#F2F8EB] via-[#F8FAF4] to-[#FFFFFF] border border-neutral-200/80 flex items-center justify-center p-6 sm:p-10 overflow-hidden group select-none shadow-[0_2px_16px_rgba(0,0,0,0.04)]">
               {/* Expand Fullscreen Button */}
               <button
                 onClick={() => setIsLightboxOpen(true)}
-                className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-[#141416]/80 hover:bg-[#141416] border border-white/10 text-neutral-300 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-md"
+                className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/90 hover:bg-white border border-neutral-200 text-neutral-700 hover:text-black flex items-center justify-center transition-all cursor-pointer shadow-xs"
                 title="Expand fullscreen"
                 aria-label="Expand fullscreen"
               >
@@ -530,7 +530,7 @@ export default function ProductDetailPage() {
                     onClick={() =>
                       setSelectedImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1))
                     }
-                    className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[#141416]/70 hover:bg-[#141416] border border-white/10 text-neutral-300 hover:text-white flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white border border-neutral-200 text-neutral-700 hover:text-black flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100 shadow-xs"
                     aria-label="Previous image"
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -539,7 +539,7 @@ export default function ProductDetailPage() {
                     onClick={() =>
                       setSelectedImageIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1))
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[#141416]/70 hover:bg-[#141416] border border-white/10 text-neutral-300 hover:text-white flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white border border-neutral-200 text-neutral-700 hover:text-black flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100 shadow-xs"
                     aria-label="Next image"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -552,12 +552,12 @@ export default function ProductDetailPage() {
                 <img
                   src={currentDisplayImage}
                   alt={activeProduct.name}
-                  className="max-w-full max-h-full object-contain filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-transform duration-500"
+                  className="max-w-full max-h-full object-contain filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.12)] group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
 
               {/* Soft Radial Backlight Glow */}
-              <div className="absolute inset-0 bg-radial from-[#D4AF37]/5 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-radial from-[#9CD33B]/10 via-transparent to-transparent pointer-events-none" />
             </div>
           </div>
 
@@ -567,63 +567,63 @@ export default function ProductDetailPage() {
           <div className="lg:col-span-6 flex flex-col justify-start">
             {/* Brand Header Line: VITTAL LIFESTYLE ───── */}
             <div className="flex items-center gap-3 mb-1.5">
-              <span className="font-movault text-[11px] font-bold tracking-[0.25em] uppercase text-neutral-400">
+              <span className="font-movault text-[11px] font-bold tracking-[0.25em] uppercase text-[#6B9E3A]">
                 VITTAL LIFESTYLE
               </span>
-              <div className="h-[1px] w-12 bg-white/15" />
+              <div className="h-[1px] w-12 bg-[#6B9E3A]/30" />
             </div>
 
             {/* Product Title */}
-            <h1 className="font-mograph text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-wide leading-tight mb-2">
+            <h1 className="font-mograph text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-950 tracking-tight leading-tight mb-2">
               {activeProduct.name}
             </h1>
 
             {/* Ratings & Reviews Row */}
             <div className="flex items-center gap-2 mb-3">
-              <div className="flex items-center gap-0.5 text-[#D4AF37]">
+              <div className="flex items-center gap-0.5 text-amber-400">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-current stroke-current" />
                 ))}
               </div>
-              <span className="text-xs sm:text-sm text-neutral-400 font-medium">
+              <span className="text-xs sm:text-sm text-neutral-500 font-medium">
                 {activeProduct.rating || 4.6} ({activeProduct.review_count ? activeProduct.review_count.toLocaleString() : "12,548"} Reviews)
               </span>
             </div>
 
             {/* Price & Discount Row */}
             <div className="flex items-baseline gap-3 mb-1">
-              <span className="font-mograph text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white">
+              <span className="font-mograph text-2xl sm:text-3xl lg:text-4xl font-extrabold text-neutral-950">
                 ₹{(activeProduct.offer_price || activeProduct.price).toLocaleString("en-IN")}
               </span>
               {activeProduct.mrp && activeProduct.mrp > (activeProduct.offer_price || activeProduct.price) && (
-                <span className="font-mograph text-base sm:text-lg text-neutral-500 line-through">
+                <span className="font-mograph text-base sm:text-lg text-neutral-400 line-through">
                   ₹{activeProduct.mrp.toLocaleString("en-IN")}
                 </span>
               )}
               {discountPercent > 0 && (
-                <span className="font-movault bg-[#D4A373]/20 text-[#D4A373] border border-[#D4A373]/30 text-xs font-bold px-3 py-0.5 rounded-full uppercase tracking-wider">
+                <span className="font-movault bg-[#E5F2D0] text-[#3B581C] border border-[#BBDC92]/60 text-xs font-bold px-3 py-0.5 rounded-full uppercase tracking-wider">
                   {discountPercent}% OFF
                 </span>
               )}
             </div>
 
             {/* Tagline / Subtitle */}
-            <p className="font-mograph text-xs sm:text-sm text-neutral-400 font-medium mb-4">
+            <p className="font-mograph text-xs sm:text-sm text-neutral-500 font-medium mb-4">
               {activeProduct.tagline || activeProduct.subtitle || "Pure Protein. Maximum Performance."}
             </p>
 
             {/* ============================================================= */}
             {/* 4 FEATURE HIGHLIGHTS GRID (Matching reference mockup)         */}
             {/* ============================================================= */}
-            <div className="grid grid-cols-4 gap-2 sm:gap-3 py-4 my-2 border-y border-white/10">
+            <div className="grid grid-cols-4 gap-2 sm:gap-3 py-4 my-2 border-y border-neutral-200/80">
               {categoryHighlights.map((hl, idx) => {
                 const IconComponent = hl.icon;
                 return (
                   <div key={idx} className="flex flex-col items-center text-center">
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#141416] border border-white/5 flex items-center justify-center text-[#D4A373] mb-1.5 shadow-xs">
-                      <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.8]" />
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#E5F2D0] border border-[#D5EBBF] flex items-center justify-center text-[#3B581C] mb-1.5 shadow-2xs">
+                      <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
                     </div>
-                    <span className="font-mograph text-[10px] sm:text-xs text-neutral-300 font-medium leading-tight line-clamp-2">
+                    <span className="font-mograph text-[10px] sm:text-xs text-neutral-800 font-bold leading-tight line-clamp-2">
                       {hl.label}
                     </span>
                   </div>
@@ -636,13 +636,13 @@ export default function ProductDetailPage() {
             {/* ============================================================= */}
             <div className="my-3">
               <div className="flex items-center justify-between mb-2.5">
-                <span className="font-mograph text-xs sm:text-sm font-semibold text-white">
+                <span className="font-mograph text-xs sm:text-sm font-bold text-neutral-900">
                   {variantsConfig.label}
                 </span>
                 <button
                   type="button"
                   onClick={() => toggleAccordion("nutrition")}
-                  className="text-xs text-neutral-400 hover:text-[#D4AF37] flex items-center gap-1 transition-colors cursor-pointer"
+                  className="text-xs text-neutral-500 hover:text-[#6B9E3A] flex items-center gap-1 transition-colors cursor-pointer font-medium"
                 >
                   <span>{variantsConfig.guideLabel}</span>
                   <Ruler className="w-3.5 h-3.5" />
@@ -659,12 +659,12 @@ export default function ProductDetailPage() {
                       onClick={() => setSelectedVariantIndex(idx)}
                       className={`font-mograph text-xs sm:text-sm font-semibold px-5 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
                         isSelected
-                          ? "border border-[#D4A373] bg-[#1C1814] text-white shadow-sm shadow-[#D4A373]/10"
-                          : "border border-white/10 bg-[#141416] hover:border-white/20 text-neutral-300 hover:text-white"
+                          ? "border-2 border-[#6B9E3A] bg-[#F2F8EB] text-[#284214] font-bold shadow-xs"
+                          : "border border-neutral-200 bg-[#F7F8FA] hover:bg-[#EFF1F4] text-neutral-700 hover:text-neutral-950"
                       }`}
                     >
                       <span>{opt}</span>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-[#D4AF37] stroke-[2.5]" />}
+                      {isSelected && <Check className="w-3.5 h-3.5 text-[#6B9E3A] stroke-[2.5]" />}
                     </button>
                   );
                 })}
@@ -674,22 +674,22 @@ export default function ProductDetailPage() {
             {/* Quantity Stepper & In-Stock Status */}
             <div className="flex items-center justify-between gap-4 my-3 pt-2">
               <div className="flex items-center gap-3">
-                <span className="font-mograph text-xs font-semibold text-neutral-400">Qty:</span>
-                <div className="flex items-center border border-white/10 rounded-xl bg-[#141416] px-2 py-1">
+                <span className="font-mograph text-xs font-bold text-neutral-600">Qty:</span>
+                <div className="flex items-center border border-neutral-200 rounded-xl bg-[#F7F8FA] px-2 py-1">
                   <button
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                     disabled={quantity <= 1}
-                    className="w-7 h-7 flex items-center justify-center text-neutral-400 hover:text-white disabled:opacity-30 transition-colors cursor-pointer"
+                    className="w-7 h-7 flex items-center justify-center text-neutral-500 hover:text-neutral-950 disabled:opacity-30 transition-colors cursor-pointer"
                     aria-label="Decrease quantity"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="w-8 text-center text-sm font-bold text-white">
+                  <span className="w-8 text-center text-sm font-bold text-neutral-900">
                     {quantity}
                   </span>
                   <button
                     onClick={() => setQuantity((q) => Math.min(10, q + 1))}
-                    className="w-7 h-7 flex items-center justify-center text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    className="w-7 h-7 flex items-center justify-center text-neutral-500 hover:text-neutral-950 transition-colors cursor-pointer"
                     aria-label="Increase quantity"
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -698,8 +698,8 @@ export default function ProductDetailPage() {
               </div>
 
               {/* In Stock Badge */}
-              <div className="flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-500/30 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-400">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <div className="flex items-center gap-1.5 bg-[#E5F2D0] border border-[#BBDC92]/60 rounded-xl px-3 py-1.5 text-xs font-bold text-[#3B581C]">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#3B581C] shrink-0" />
                 <span>In Stock • Only {activeProduct.stock_count || 50} left</span>
               </div>
             </div>
@@ -710,7 +710,7 @@ export default function ProductDetailPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 my-4 font-movault tracking-wider uppercase">
               <button
                 onClick={handleAddToCart}
-                className="bg-[#D4A373] hover:bg-[#C89565] active:scale-[0.98] text-neutral-950 font-bold py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-[#D4A373]/20 transition-all text-sm sm:text-base cursor-pointer"
+                className="bg-[#111111] hover:bg-black active:scale-[0.98] text-white font-bold py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 shadow-md transition-all text-sm sm:text-base cursor-pointer hover:-translate-y-0.5"
               >
                 <ShoppingBag className="w-4 h-4 stroke-[2.2]" />
                 <span>Add to Cart</span>
@@ -718,31 +718,31 @@ export default function ProductDetailPage() {
 
               <button
                 onClick={handleBuyNow}
-                className="border border-[#D4A373]/60 hover:border-[#D4A373] bg-[#141416] hover:bg-[#1C1814] active:scale-[0.98] text-white font-bold py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 transition-all text-sm sm:text-base cursor-pointer shadow-sm"
+                className="bg-[#95CF42] hover:bg-[#85BE33] active:scale-[0.98] text-neutral-950 font-black py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-[#95CF42]/20 transition-all text-sm sm:text-base cursor-pointer hover:-translate-y-0.5"
               >
-                <Zap className="w-4 h-4 fill-[#D4AF37] text-[#D4AF37]" />
+                <Zap className="w-4 h-4 fill-neutral-950 text-neutral-950" />
                 <span>Buy Now</span>
               </button>
             </div>
 
             {/* Delivery Pincode Card */}
-            <div className="rounded-2xl bg-[#141416] border border-white/5 p-3.5 my-2">
+            <div className="rounded-2xl bg-[#F7F8FA] border border-neutral-200/80 p-3.5 my-2">
               <div className="flex items-center justify-between text-xs mb-1">
-                <div className="flex items-center gap-1.5 text-neutral-400 font-medium">
-                  <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <div className="flex items-center gap-1.5 text-neutral-500 font-medium">
+                  <MapPin className="w-3.5 h-3.5 text-[#6B9E3A]" />
                   <span>Deliver to</span>
                 </div>
                 {editingPincode ? (
                   <button
                     onClick={() => setEditingPincode(false)}
-                    className="text-neutral-400 hover:text-white text-xs cursor-pointer"
+                    className="text-neutral-500 hover:text-neutral-900 text-xs cursor-pointer font-medium"
                   >
                     Cancel
                   </button>
                 ) : (
                   <button
                     onClick={() => setEditingPincode(true)}
-                    className="text-[#D4AF37] hover:underline font-bold text-xs cursor-pointer"
+                    className="text-[#6B9E3A] hover:underline font-bold text-xs cursor-pointer"
                   >
                     Change
                   </button>
@@ -756,26 +756,26 @@ export default function ProductDetailPage() {
                     value={tempPincode}
                     maxLength={6}
                     onChange={(e) => setTempPincode(e.target.value.replace(/\D/g, ""))}
-                    className="w-full px-3 py-1.5 text-xs bg-black/60 border border-white/10 rounded-lg text-white focus:outline-[#D4AF37]"
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-neutral-300 rounded-lg text-neutral-900 focus:outline-[#6B9E3A]"
                     placeholder="Enter 6-digit Pincode"
                   />
                   <button
                     type="submit"
-                    className="bg-[#D4A373] text-black px-3 py-1.5 text-xs font-bold rounded-lg hover:bg-[#C89565] shrink-0 cursor-pointer"
+                    className="bg-[#111111] text-white px-3 py-1.5 text-xs font-bold rounded-lg hover:bg-black shrink-0 cursor-pointer"
                   >
                     Apply
                   </button>
                 </form>
               ) : (
-                <div className="text-xs sm:text-sm font-semibold text-white">{deliveryLocation}</div>
+                <div className="text-xs sm:text-sm font-semibold text-neutral-900">{deliveryLocation}</div>
               )}
 
-              <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5 text-xs">
-                <div className="flex items-center gap-1.5 text-neutral-300">
+              <div className="flex items-center justify-between mt-2 pt-2 border-t border-neutral-200/70 text-xs">
+                <div className="flex items-center gap-1.5 text-neutral-600">
                   <Truck className="w-3.5 h-3.5 text-neutral-400" />
                   <span>Express Doorstep Delivery in 2–4 Business Days</span>
                 </div>
-                <span className="bg-emerald-950/80 text-emerald-400 font-bold px-2 py-0.5 rounded text-[10px]">
+                <span className="bg-[#E5F2D0] text-[#3B581C] font-bold px-2 py-0.5 rounded text-[10px]">
                   FREE
                 </span>
               </div>
@@ -784,13 +784,13 @@ export default function ProductDetailPage() {
             {/* ============================================================= */}
             {/* EXPANDABLE ACCORDIONS: Product Details, Nutrition, Reviews    */}
             {/* ============================================================= */}
-            <div className="divide-y divide-white/10 border-t border-white/10 mt-4">
+            <div className="divide-y divide-neutral-200 border-t border-neutral-200 mt-4">
               {/* Accordion 1: Product Details */}
               <div className="py-3">
                 <button
                   type="button"
                   onClick={() => toggleAccordion("details")}
-                  className="w-full flex items-center justify-between text-left font-mograph text-sm sm:text-base font-semibold text-white hover:text-[#D4AF37] transition-colors cursor-pointer py-1"
+                  className="w-full flex items-center justify-between text-left font-mograph text-sm sm:text-base font-bold text-neutral-950 hover:text-[#6B9E3A] transition-colors cursor-pointer py-1"
                 >
                   <span>Product Details</span>
                   <span className="text-lg font-light text-neutral-400">
@@ -798,13 +798,13 @@ export default function ProductDetailPage() {
                   </span>
                 </button>
                 {openAccordions.details && (
-                  <div className="pt-2 pb-1 text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal space-y-2.5">
+                  <div className="pt-2 pb-1 text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal space-y-2.5">
                     <p>{activeProduct.description}</p>
                     {activeProduct.features && activeProduct.features.length > 0 && (
                       <ul className="space-y-1.5 pt-1">
                         {activeProduct.features.map((feat, i) => (
                           <li key={i} className="flex items-start gap-2">
-                            <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                            <Check className="w-3.5 h-3.5 text-[#6B9E3A] shrink-0 mt-0.5 stroke-[2.5]" />
                             <span>{feat}</span>
                           </li>
                         ))}
@@ -819,7 +819,7 @@ export default function ProductDetailPage() {
                 <button
                   type="button"
                   onClick={() => toggleAccordion("nutrition")}
-                  className="w-full flex items-center justify-between text-left font-mograph text-sm sm:text-base font-semibold text-white hover:text-[#D4AF37] transition-colors cursor-pointer py-1"
+                  className="w-full flex items-center justify-between text-left font-mograph text-sm sm:text-base font-bold text-neutral-950 hover:text-[#6B9E3A] transition-colors cursor-pointer py-1"
                 >
                   <span>Nutrition Facts &amp; Specifications</span>
                   <span className="text-lg font-light text-neutral-400">
@@ -827,21 +827,21 @@ export default function ProductDetailPage() {
                   </span>
                 </button>
                 {openAccordions.nutrition && (
-                  <div className="pt-2 pb-1 text-xs sm:text-sm text-neutral-300">
+                  <div className="pt-2 pb-1 text-xs sm:text-sm text-neutral-600">
                     {activeProduct.specifications && Object.keys(activeProduct.specifications).length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {Object.entries(activeProduct.specifications).map(([k, v]) => (
                           <div
                             key={k}
-                            className="flex justify-between items-center p-2.5 bg-[#141416] rounded-xl border border-white/5"
+                            className="flex justify-between items-center p-2.5 bg-[#F7F8FA] rounded-xl border border-neutral-200/80"
                           >
-                            <span className="text-neutral-400 font-medium">{k}</span>
-                            <span className="font-semibold text-white text-right">{String(v)}</span>
+                            <span className="text-neutral-500 font-medium">{k}</span>
+                            <span className="font-bold text-neutral-900 text-right">{String(v)}</span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-neutral-400">
+                      <p className="text-neutral-500">
                         100% genuine formulation, tested for purity and quality assurance.
                       </p>
                     )}
@@ -854,7 +854,7 @@ export default function ProductDetailPage() {
                 <button
                   type="button"
                   onClick={() => toggleAccordion("reviews")}
-                  className="w-full flex items-center justify-between text-left font-mograph text-sm sm:text-base font-semibold text-white hover:text-[#D4AF37] transition-colors cursor-pointer py-1"
+                  className="w-full flex items-center justify-between text-left font-mograph text-sm sm:text-base font-bold text-neutral-950 hover:text-[#6B9E3A] transition-colors cursor-pointer py-1"
                 >
                   <span>
                     Reviews ({activeProduct.review_count ? activeProduct.review_count.toLocaleString() : "12,548"})
@@ -864,7 +864,7 @@ export default function ProductDetailPage() {
                   </span>
                 </button>
                 {openAccordions.reviews && (
-                  <div className="pt-3 pb-1 bg-[#141416] text-white rounded-2xl p-4 sm:p-6 my-2 border border-white/5">
+                  <div className="pt-3 pb-1 bg-white text-neutral-900 rounded-2xl p-4 sm:p-6 my-2 border border-neutral-200/80">
                     <ProductReviewsSection
                       productId={activeProduct.id}
                       productName={activeProduct.name}
@@ -879,16 +879,16 @@ export default function ProductDetailPage() {
         </div>
 
         {/* ================================================================= */}
-        {/* YOU MAY ALSO LIKE (Related Products Grid in Luxury Dark Theme)     */}
+        {/* YOU MAY ALSO LIKE (Related Products Grid Matching Home Page)       */}
         {/* ================================================================= */}
-        <section className="mt-12 sm:mt-16 pt-8 border-t border-white/5">
+        <section className="mt-12 sm:mt-16 pt-8 border-t border-neutral-200">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-movault text-xl sm:text-3xl font-bold uppercase tracking-wider text-white">
+            <h2 className="font-movault text-xl sm:text-3xl font-bold uppercase tracking-wider text-neutral-950">
               You May Also Like
             </h2>
             <Link
               href="/products"
-              className="font-mograph text-xs sm:text-sm font-semibold text-neutral-400 hover:text-[#D4AF37] flex items-center gap-1 transition-colors"
+              className="font-mograph text-xs sm:text-sm font-semibold text-[#6B9E3A] hover:text-[#527C2B] flex items-center gap-1 transition-colors"
             >
               <span>View All</span>
               <ChevronRight className="w-4 h-4" />
@@ -906,7 +906,7 @@ export default function ProductDetailPage() {
               return (
                 <div
                   key={prod.id}
-                  className="group relative rounded-2xl bg-[#141416] hover:bg-[#18181C] border border-white/5 hover:border-white/15 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 shadow-sm hover:shadow-md"
+                  className="group relative rounded-3xl bg-white border border-neutral-200/80 hover:border-[#6B9E3A]/50 p-3 sm:p-4 flex flex-col justify-between transition-all duration-300 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1"
                 >
                   <button
                     type="button"
@@ -920,11 +920,11 @@ export default function ProductDetailPage() {
                         image: prod.poster_image,
                       });
                     }}
-                    className="absolute top-2.5 right-2.5 z-10 text-neutral-400 hover:text-white transition-colors p-1"
+                    className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-white/80 hover:bg-white text-neutral-400 hover:text-neutral-900 flex items-center justify-center transition-colors shadow-2xs"
                     aria-label="Wishlist"
                   >
                     <Heart
-                      className={`w-4 h-4 transition-colors ${
+                      className={`w-3.5 h-3.5 transition-colors ${
                         isRelWish ? "fill-rose-500 text-rose-500" : "stroke-current"
                       }`}
                     />
@@ -932,78 +932,82 @@ export default function ProductDetailPage() {
 
                   <Link
                     href={`/products/${prod.id || prod.slug}`}
-                    className="relative w-full aspect-square flex items-center justify-center my-1"
+                    className="relative aspect-square w-full rounded-2xl bg-gradient-to-b from-[#F2F8EB] via-[#F8FAF4] to-[#FFFFFF] p-3 flex items-center justify-center overflow-hidden mb-2.5"
                   >
                     <img
                       src={prod.poster_image || "/vittal/product-whey-protein-jar.png"}
                       alt={prod.name}
-                      className="max-w-full max-h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                      className="max-w-full max-h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
                     />
                   </Link>
 
-                  <div className="mt-1">
-                    <Link href={`/products/${prod.id || prod.slug}`} className="block">
-                      <h3 className="font-mograph text-xs sm:text-sm font-semibold text-white group-hover:text-[#D4AF37] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-0.5">
-                        {prod.name}
-                      </h3>
-                    </Link>
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                      <Link href={`/products/${prod.id || prod.slug}`} className="block">
+                        <h3 className="font-semibold text-xs sm:text-sm text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-1">
+                          {prod.name}
+                        </h3>
+                      </Link>
 
-                    <p className="font-mograph text-[10px] sm:text-xs text-neutral-400 font-medium mb-1.5 truncate">
-                      {prod.category}
-                    </p>
-
-                    <div className="flex items-baseline gap-1.5 mb-1.5 flex-wrap">
-                      <span className="font-mograph text-sm sm:text-base font-extrabold text-white">
-                        ₹{prod.price.toLocaleString("en-IN")}
-                      </span>
-                      {prod.mrp && prod.mrp > prod.price && (
-                        <span className="font-mograph text-[11px] sm:text-xs text-neutral-500 line-through">
-                          ₹{prod.mrp.toLocaleString("en-IN")}
-                        </span>
-                      )}
+                      <p className="font-mograph text-[10px] sm:text-xs text-neutral-400 font-medium mb-1.5 truncate">
+                        {prod.category}
+                      </p>
                     </div>
 
-                    {/* Discount Badge & Add to Cart Button */}
-                    <div className="flex items-center justify-between gap-2 mt-1">
-                      {relDiscount ? (
-                        <span className="font-movault bg-[#2B2317] text-[#E5C07B] text-[10px] sm:text-[11px] font-bold tracking-wider uppercase px-2 py-0.5 rounded inline-block">
-                          {relDiscount}% OFF
+                    <div>
+                      <div className="flex items-baseline gap-1.5 mb-2 flex-wrap">
+                        <span className="font-mograph text-sm sm:text-base font-extrabold text-neutral-950">
+                          ₹{prod.price.toLocaleString("en-IN")}
                         </span>
-                      ) : (
-                        <span className="font-mograph text-[10px] text-neutral-400">In Stock</span>
-                      )}
+                        {prod.mrp && prod.mrp > prod.price && (
+                          <span className="font-mograph text-[11px] sm:text-xs text-neutral-400 line-through">
+                            ₹{prod.mrp.toLocaleString("en-IN")}
+                          </span>
+                        )}
+                      </div>
 
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          addItem(
-                            {
-                              id: prod.id,
-                              slug: prod.slug || prod.id,
-                              name: prod.name,
-                              price: prod.price,
-                              mrp: prod.mrp,
-                              offer_price: prod.price,
-                              stock_count: prod.stock_count || 50,
-                              poster_image: prod.poster_image || "/vittal/product-whey-protein-jar.png",
-                              in_stock: prod.in_stock ?? 1,
-                              category: prod.category || "Fitness",
-                              tagline: prod.tagline || "",
-                              description: prod.description || "",
-                            },
-                            1
-                          );
-                          setShowToast(`Added ${prod.name} to Cart!`);
-                          openCart();
-                        }}
-                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#222226] hover:bg-[#D4A373] text-neutral-300 hover:text-black active:scale-95 flex items-center justify-center transition-all cursor-pointer shadow-sm hover:scale-105 shrink-0"
-                        title="Add to Cart"
-                        aria-label="Add to Cart"
-                      >
-                        <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
-                      </button>
+                      {/* Discount Badge & Add to Cart Button */}
+                      <div className="flex items-center justify-between gap-2 pt-1 border-t border-neutral-100">
+                        {relDiscount ? (
+                          <span className="bg-[#E5F2D0] text-[#3B581C] text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full inline-flex items-center">
+                            {relDiscount}% OFF
+                          </span>
+                        ) : (
+                          <span className="font-mograph text-[10px] text-neutral-400 font-medium">In Stock</span>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            addItem(
+                              {
+                                id: prod.id,
+                                slug: prod.slug || prod.id,
+                                name: prod.name,
+                                price: prod.price,
+                                mrp: prod.mrp,
+                                offer_price: prod.price,
+                                stock_count: prod.stock_count || 50,
+                                poster_image: prod.poster_image || "/vittal/product-whey-protein-jar.png",
+                                in_stock: prod.in_stock ?? 1,
+                                category: prod.category || "Fitness",
+                                tagline: prod.tagline || "",
+                                description: prod.description || "",
+                              },
+                              1
+                            );
+                            setShowToast(`Added ${prod.name} to Cart!`);
+                            openCart();
+                          }}
+                          className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-2xl bg-[#E5F2D0] hover:bg-[#D5EBBF] text-[#3B581C] hover:text-[#284214] flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
+                          title="Add to Cart"
+                          aria-label="Add to Cart"
+                        >
+                          <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1022,19 +1026,19 @@ export default function ProductDetailPage() {
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
-            className="fixed bottom-0 left-0 right-0 z-40 bg-[#141416]/95 backdrop-blur-md border-t border-white/10 px-4 py-3 sm:hidden shadow-2xl flex items-center justify-between gap-3 font-movault tracking-wider uppercase"
+            className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-neutral-200/90 px-4 py-3 sm:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center justify-between gap-3 font-movault tracking-wider uppercase"
           >
             <div className="flex items-center gap-2.5 overflow-hidden">
               <img
                 src={currentDisplayImage}
                 alt={activeProduct.name}
-                className="w-10 h-10 rounded-lg object-contain bg-black/40 border border-white/10 shrink-0 p-1"
+                className="w-10 h-10 rounded-xl object-contain bg-[#F7F8FA] border border-neutral-200 shrink-0 p-1"
               />
               <div className="truncate font-mograph">
-                <span className="text-xs font-bold text-white block truncate">
+                <span className="text-xs font-bold text-neutral-900 block truncate">
                   {activeProduct.name}
                 </span>
-                <span className="text-sm font-extrabold text-[#D4AF37]">
+                <span className="text-sm font-extrabold text-[#6B9E3A]">
                   ₹{(activeProduct.offer_price || activeProduct.price).toLocaleString("en-IN")}
                 </span>
               </div>
@@ -1043,16 +1047,16 @@ export default function ProductDetailPage() {
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={handleAddToCart}
-                className="bg-[#D4A373] text-black px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm"
+                className="bg-[#111111] hover:bg-black text-white px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
               >
                 <ShoppingBag className="w-3.5 h-3.5 stroke-[2.2]" />
                 <span>Cart</span>
               </button>
               <button
                 onClick={handleBuyNow}
-                className="border border-[#D4A373]/60 bg-black text-white px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1 shadow-sm"
+                className="bg-[#95CF42] hover:bg-[#85BE33] text-neutral-950 px-3.5 py-2.5 rounded-xl font-black text-xs flex items-center gap-1 shadow-sm active:scale-95 transition-all"
               >
-                <Zap className="w-3.5 h-3.5 fill-[#D4AF37] text-[#D4AF37]" />
+                <Zap className="w-3.5 h-3.5 fill-neutral-950 text-neutral-950" />
                 <span>Buy</span>
               </button>
             </div>
@@ -1091,9 +1095,9 @@ export default function ProductDetailPage() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-[#1C1814] text-white border border-[#D4A373] px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold shadow-2xl flex items-center gap-2"
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-[#111111] text-white border border-[#6B9E3A]/40 px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold shadow-2xl flex items-center gap-2"
           >
-            <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
+            <CheckCircle2 className="w-4 h-4 text-[#95CF42]" />
             <span>{showToast}</span>
           </motion.div>
         )}
