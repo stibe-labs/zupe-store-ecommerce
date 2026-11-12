@@ -91,7 +91,7 @@ export default function AdminHeader({
   ];
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200/80 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
+    <header className="h-16 bg-white border-b border-neutral-200/80 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 font-mograph">
       {/* Left: Mobile hamburger & Global Search */}
       <div className="flex items-center gap-3 flex-1 max-w-xl">
         <button
@@ -109,7 +109,7 @@ export default function AdminHeader({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search orders, customers, AWB..."
-            className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20 focus:border-[#002D62] transition-all"
+          className="w-full pl-9 pr-8 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#B8ED3E]/40 focus:border-[#7ABF1E] transition-all"
           />
           {searchQuery && (
             <button
@@ -130,7 +130,7 @@ export default function AdminHeader({
           <button
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="p-2 text-slate-500 hover:text-[#002D62] hover:bg-blue-50 rounded-xl transition-all"
+            className="p-2 text-neutral-500 hover:text-[#4A7C0F] hover:bg-[#B8ED3E]/10 rounded-xl transition-all"
             title="Refresh ERP Data"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-[#002D62]" : ""}`} />
@@ -140,7 +140,7 @@ export default function AdminHeader({
         <Link
           href="/"
           target="_blank"
-          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-[#002D62] hover:bg-blue-50 hover:border-blue-200 rounded-xl border border-slate-200/70 transition-all"
+          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:text-[#4A7C0F] hover:bg-[#B8ED3E]/10 hover:border-[#B8ED3E]/40 rounded-xl border border-neutral-200/70 transition-all"
         >
           <span>Live Storefront</span>
           <ExternalLink className="w-3.5 h-3.5" />
@@ -154,8 +154,8 @@ export default function AdminHeader({
           title={theme === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"}
           className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all duration-200 select-none cursor-pointer ${
             theme === "dark"
-              ? "bg-[#182234] border-white/15 text-amber-300 hover:bg-[#1E293B] hover:border-amber-400/40 shadow-sm"
-              : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 shadow-sm"
+              ? "bg-[#111111] border-[#B8ED3E]/30 text-[#B8ED3E] hover:bg-[#1a1a1a] hover:border-[#B8ED3E]/60 shadow-sm"
+              : "bg-neutral-50 border-neutral-200 text-neutral-700 hover:bg-[#B8ED3E]/10 hover:border-[#B8ED3E]/40 shadow-sm"
           }`}
         >
           {theme === "dark" ? (
@@ -175,7 +175,7 @@ export default function AdminHeader({
         <div className="relative" ref={rangeRef}>
           <button
             onClick={() => setShowRangeDropdown(!showRangeDropdown)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 transition-all"
+            className="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 border border-neutral-200 hover:bg-[#B8ED3E]/10 hover:border-[#B8ED3E]/40 rounded-xl text-xs sm:text-sm font-semibold text-neutral-700 transition-all"
           >
             <Calendar className="w-4 h-4 text-slate-500" />
             <span className="hidden sm:inline">{selectedRange}</span>
@@ -183,7 +183,7 @@ export default function AdminHeader({
           </button>
 
           {showRangeDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-neutral-200 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
               {dateOptions.map((opt) => (
                 <button
                   key={opt}
@@ -191,8 +191,8 @@ export default function AdminHeader({
                     setSelectedRange(opt);
                     setShowRangeDropdown(false);
                   }}
-                  className={`w-full text-left px-4 py-2 hover:bg-slate-50 font-medium ${
-                    selectedRange === opt ? "text-[#002D62] bg-blue-50/80 font-bold" : "text-slate-700"
+                  className={`w-full text-left px-4 py-2 hover:bg-[#B8ED3E]/10 font-medium ${
+                    selectedRange === opt ? "text-[#4A7C0F] bg-[#B8ED3E]/20 font-bold" : "text-neutral-700"
                   }`}
                 >
                   {opt}
@@ -206,7 +206,7 @@ export default function AdminHeader({
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl relative transition-all"
+            className="p-2 text-neutral-500 hover:text-neutral-800 hover:bg-neutral-100 rounded-xl relative transition-all"
             title="Notifications & Alerts"
           >
             <Bell className="w-4 h-4" />
@@ -218,25 +218,25 @@ export default function AdminHeader({
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in">
-              <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-neutral-200 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in">
+              <div className="px-4 py-2 border-b border-neutral-100 flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <h4 className="font-bold text-slate-900 text-sm">ERP Alerts</h4>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                  <h4 className="font-bold text-neutral-900 text-sm">ERP Alerts</h4>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#B8ED3E]/30 text-[#4A7C0F]">
                     {alerts.length} New
                   </span>
                 </div>
                 <button
                   onClick={() => setAlerts([])}
-                  className="text-xs text-slate-400 hover:text-slate-600 font-medium"
+                  className="text-xs text-neutral-400 hover:text-neutral-600 font-medium"
                 >
                   Clear all
                 </button>
               </div>
 
-              <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
+              <div className="max-h-72 overflow-y-auto divide-y divide-neutral-100">
                 {alerts.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-slate-400">
+                  <div className="p-6 text-center text-xs text-neutral-400">
                     No new alerts. All operations running smoothly!
                   </div>
                 ) : (
@@ -247,21 +247,21 @@ export default function AdminHeader({
                         key={alt.id}
                         href={alt.href}
                         onClick={() => setShowNotifications(false)}
-                        className="p-3.5 flex items-start gap-3 hover:bg-slate-50 transition-colors block"
+                        className="p-3.5 flex items-start gap-3 hover:bg-[#B8ED3E]/5 transition-colors block"
                       >
                         <div className={`p-2 rounded-xl shrink-0 ${alt.iconColor}`}>
                           <Icon className="w-4 h-4" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <p className="text-xs font-bold text-slate-900 truncate">
+                            <p className="text-xs font-bold text-neutral-900 truncate">
                               {alt.title}
                             </p>
-                            <span className="text-[10px] text-slate-400 font-mono">
+                            <span className="text-[10px] text-neutral-400 font-mono">
                               {alt.time}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                          <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">
                             {alt.description}
                           </p>
                         </div>
@@ -275,37 +275,37 @@ export default function AdminHeader({
         </div>
 
         {/* User Avatar & Dropdown */}
-        <div className="relative pl-2 border-l border-slate-200" ref={userRef}>
+        <div className="relative pl-2 border-l border-neutral-200" ref={userRef}>
           <button
             onClick={() => setShowAdminUserDropdown(!showAdminUserDropdown)}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <div className="w-8 h-8 rounded-full bg-[#D4A373] text-black font-extrabold flex items-center justify-center text-xs shadow-sm ring-2 ring-[#D4A373]/30">
+            <div className="w-8 h-8 rounded-full bg-[#B8ED3E] text-[#111111] font-extrabold flex items-center justify-center text-xs shadow-sm ring-2 ring-[#B8ED3E]/40">
               VL
             </div>
-            <span className="text-xs sm:text-sm font-semibold text-slate-800 hidden md:inline">
+            <span className="text-xs sm:text-sm font-semibold text-neutral-800 hidden md:inline">
               Administrator
             </span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden md:inline" />
+            <ChevronDown className="w-3.5 h-3.5 text-neutral-400 hidden md:inline" />
           </button>
 
           {showAdminUserDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
-              <div className="px-4 py-2 border-b border-slate-100">
-                <p className="font-bold text-slate-900">Vittal Lifestyle Admin</p>
-                <p className="text-[11px] text-slate-400">admin@vittallifestyle.com</p>
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-neutral-200 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
+              <div className="px-4 py-2 border-b border-neutral-100">
+                <p className="font-bold text-neutral-900">Vittal Lifestyle Admin</p>
+                <p className="text-[11px] text-neutral-400">admin@vittallifestyle.com</p>
               </div>
               <Link
                 href="/admin/settings"
                 onClick={() => setShowAdminUserDropdown(false)}
-                className="block px-4 py-2 text-slate-700 hover:text-[#D4AF37] hover:bg-white/5 font-medium"
+                className="block px-4 py-2 text-neutral-700 hover:text-[#4A7C0F] hover:bg-[#B8ED3E]/10 font-medium"
               >
                 Store Settings
               </Link>
               <Link
                 href="/admin/reports"
                 onClick={() => setShowAdminUserDropdown(false)}
-                className="block px-4 py-2 text-slate-700 hover:text-[#D4AF37] hover:bg-white/5 font-medium"
+                className="block px-4 py-2 text-neutral-700 hover:text-[#4A7C0F] hover:bg-[#B8ED3E]/10 font-medium"
               >
                 P&L Reports
               </Link>
@@ -315,13 +315,13 @@ export default function AdminHeader({
                   toggleTheme();
                   setShowAdminUserDropdown(false);
                 }}
-                className="w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-slate-700 hover:text-[#D4AF37] hover:bg-white/5 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-neutral-700 hover:text-[#4A7C0F] hover:bg-[#B8ED3E]/10 transition-colors"
               >
                 <span className="flex items-center gap-2">
-                  {theme === "dark" ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-slate-500" />}
+                  {theme === "dark" ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-neutral-500" />}
                   Theme
                 </span>
-                <span className="text-[11px] font-bold text-[#D4AF37] uppercase">
+                <span className="text-[11px] font-bold text-[#4A7C0F] uppercase">
                   {theme}
                 </span>
               </button>
@@ -330,7 +330,7 @@ export default function AdminHeader({
                   await fetch("/api/admin/auth/logout", { method: "POST" });
                   window.location.href = "/";
                 }}
-                className="w-full text-left px-4 py-2 text-rose-600 hover:bg-rose-50 font-semibold border-t border-slate-100"
+                className="w-full text-left px-4 py-2 text-rose-600 hover:bg-rose-50 font-semibold border-t border-neutral-100"
               >
                 Lock & Sign Out
               </button>
