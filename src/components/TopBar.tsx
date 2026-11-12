@@ -26,8 +26,7 @@ const ANNOUNCEMENT_ITEMS = [
   },
   {
     icon: Headphones,
-    text: "WhatsApp Order & Inquiries: +91 62381 65935",
-    href: "https://wa.me/916238165935?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam",
+    text: "Customer Care & Inquiries: +91 62381 65935",
   },
 ];
 
