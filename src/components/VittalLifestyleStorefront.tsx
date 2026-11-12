@@ -282,10 +282,10 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                     <Link
                       key={cat.name}
                       href={cat.link}
-                      className="group relative rounded-2xl overflow-hidden bg-white border border-neutral-200/80 hover:border-[#C5A059]/60 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-md hover:shadow-lg cursor-pointer"
+                      className="group relative rounded-2xl xl:rounded-[22px] overflow-hidden bg-[#EEDBB6] border border-[#DEC69A]/80 hover:border-[#C5A059] flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-md hover:shadow-lg cursor-pointer"
                     >
-                      {/* Image Container — Clean photographic presentation matching reference (no fade or glow) */}
-                      <div className="relative aspect-[4/3.4] w-full overflow-hidden bg-neutral-950">
+                      {/* Image Container with rounded bottom corners creating the curved division matching reference */}
+                      <div className="relative aspect-[4/3.8] w-full rounded-t-2xl xl:rounded-t-[22px] rounded-b-2xl xl:rounded-b-[20px] overflow-hidden bg-neutral-950 shrink-0">
                         <Image
                           src={cat.image}
                           alt={cat.alt}
@@ -295,8 +295,8 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                         />
                       </div>
 
-                      {/* Label Bar — Solid reference background (#FDF2EC) with crisp solid deep black text */}
-                      <div className="py-2 px-2.5 sm:px-3 text-left bg-[#FDF2EC] group-hover:bg-[#F6EBE3] transition-colors">
+                      {/* Label Bar — Champagne gold with crisp deep black text */}
+                      <div className="py-2.5 px-3 text-left bg-[#EEDBB6] group-hover:bg-[#E5D0A7] transition-colors flex items-center min-h-[38px] xl:min-h-[42px]">
                         <span className="font-mograph text-xs xl:text-sm font-bold text-neutral-950 transition-colors leading-tight line-clamp-1 block">
                           {cat.name}
                         </span>
@@ -320,10 +320,10 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
             <Link
               key={cat.name}
               href={cat.link}
-              className="group relative rounded-xl sm:rounded-2xl overflow-hidden bg-white border border-neutral-200/80 hover:border-[#C5A059]/60 flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 shadow-xs hover:shadow-sm cursor-pointer"
+              className="group relative rounded-xl sm:rounded-2xl overflow-hidden bg-[#EEDBB6] border border-[#DEC69A]/80 hover:border-[#C5A059] flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 shadow-xs hover:shadow-sm cursor-pointer"
             >
-              {/* Image Container (Top Photographic Area — No gradient/fade) */}
-              <div className="relative aspect-square sm:aspect-[4/4.5] w-full overflow-hidden bg-neutral-950">
+              {/* Image Container with rounded bottom corners creating the curved division matching reference */}
+              <div className="relative aspect-square sm:aspect-[4/4.5] w-full rounded-t-xl sm:rounded-t-2xl rounded-b-xl sm:rounded-b-[18px] overflow-hidden bg-neutral-950 shrink-0">
                 <Image
                   src={cat.image}
                   alt={cat.alt}
@@ -334,8 +334,8 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                 />
               </div>
 
-              {/* Label Bar — Matching reference card with solid #FDF2EC background and crisp deep black text */}
-              <div className="py-1.5 px-1.5 sm:px-2 text-left bg-[#FDF2EC] group-hover:bg-[#F6EBE3] transition-colors min-h-[30px] sm:min-h-[36px] flex items-center">
+              {/* Label Bar — Champagne gold with crisp deep black text */}
+              <div className="py-1.5 px-1.5 sm:px-2 text-left bg-[#EEDBB6] group-hover:bg-[#E5D0A7] transition-colors min-h-[30px] sm:min-h-[36px] flex items-center">
                 <span className="font-mograph text-[9px] sm:text-[11px] font-bold text-neutral-950 transition-colors leading-[1.15] line-clamp-2 block">
                   {cat.name}
                 </span>
