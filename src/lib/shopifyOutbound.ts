@@ -532,93 +532,15 @@ export async function pullShopifyOrders(options?: {
       token.startsWith("shpat_mock") ||
       token.length < 20;
 
-    // 1. Simulated Shopify order pull for sandbox / demo
+    // 1. If no live Shopify token is configured, skip pulling to avoid generating fake test orders
     if (isMock) {
-      const mockShopifyOrders = [
-        {
-          id: 5900001061,
-          order_number: 1061,
-          name: "#1061",
-          created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-          financial_status: "pending",
-          gateway: "Cash on Delivery (COD)",
-          total_price: "1299.00",
-          customer: {
-            first_name: "Rohan",
-            last_name: "Mehra",
-            phone: "+91 98711 22334",
-            email: "rohan.mehra@gmail.com",
-          },
-          shipping_address: {
-            name: "Rohan Mehra",
-            address1: "Flat 201, Lotus Boulevard, Sector 100",
-            city: "Noida",
-            province: "Uttar Pradesh",
-            zip: "201304",
-            phone: "+91 98711 22334",
-          },
-          line_items: [
-            {
-              id: 981123,
-              title: "Turkiye Jam (3 Sachet Pack)",
-              price: "1099.00",
-              quantity: 1,
-              sku: "TJ-STRIP-03",
-            },
-          ],
-        },
-        {
-          id: 5900001062,
-          order_number: 1062,
-          name: "#1062",
-          created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
-          financial_status: "paid",
-          gateway: "Razorpay / UPI",
-          total_price: "2499.00",
-          customer: {
-            first_name: "Meera",
-            last_name: "Iyer",
-            phone: "+91 98450 99887",
-            email: "meera.iyer@yahoo.com",
-          },
-          shipping_address: {
-            name: "Meera Iyer",
-            address1: "42, 4th Cross, Indiranagar",
-            city: "Bengaluru",
-            province: "Karnataka",
-            zip: "560038",
-            phone: "+91 98450 99887",
-          },
-          line_items: [
-            {
-              id: 981124,
-              title: "Turkiye Jam - 240g Royal Glass Jar",
-              price: "2499.00",
-              quantity: 1,
-              sku: "TJ-JAR-240G",
-            },
-          ],
-        },
-      ];
-
-      let newCount = 0;
-      let updatedCount = 0;
-      const results: any[] = [];
-
-      for (const ord of mockShopifyOrders) {
-        const res = await processShopifyOrder(ord);
-        if (res.isNew) newCount++;
-        else updatedCount++;
-        results.push(res);
-      }
-
       return {
-        success: true,
-        pulledCount: mockShopifyOrders.length,
-        newOrdersCount: newCount,
-        updatedOrdersCount: updatedCount,
-        message: `Shopify sync completed (Simulated). Pulled ${mockShopifyOrders.length} orders (${newCount} new, ${updatedCount} updated).`,
-        orders: results,
+        success: false,
+        pulledCount: 0,
+        newOrdersCount: 0,
+        updatedOrdersCount: 0,
+        message: "Shopify sync skipped: No active Shopify Admin access token configured in settings.",
+        orders: [],
       };
     }
 

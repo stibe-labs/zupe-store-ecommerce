@@ -3,7 +3,13 @@
 import React from "react";
 import { Truck, Banknote, Headphones, ShieldCheck, Sparkles, CheckCircle2 } from "lucide-react";
 
-const ANNOUNCEMENT_ITEMS = [
+interface AnnouncementItem {
+  icon: React.ComponentType<{ className?: string }>;
+  text: string;
+  href?: string;
+}
+
+const ANNOUNCEMENT_ITEMS: AnnouncementItem[] = [
   {
     icon: Sparkles,
     text: "🇹🇷 100% Authentic Turkish Import • Themra Herbal Paste",
