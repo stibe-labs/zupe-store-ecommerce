@@ -7,7 +7,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingBag,
-  ShoppingCart,
   Heart,
   Star,
   Search,
@@ -17,7 +16,6 @@ import {
   ChevronRight,
   ChevronDown,
   Sparkles,
-  Tag,
   X,
   Layers,
   Dumbbell,
@@ -26,21 +24,19 @@ import {
   Cookie,
   Check,
   RotateCcw,
-  ShieldCheck,
-  Truck,
-  Package,
   Award,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { DEFAULT_PRODUCTS, doesCategoryMatch } from "@/data/zupeProducts";
-import { addRecentlyViewed } from "@/lib/recentlyViewed";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { getClientProducts } from "@/lib/productsClientCache";
 import { useWishlist } from "@/context/WishlistContext";
-import { launchFastrrCheckout } from "@/lib/fastrrClient";
 
+// ---------------------------------------------------------------------------
+// 5 Core Departments + All Collections
+// ---------------------------------------------------------------------------
 const EXPLORE_CATEGORIES = [
   { id: "All", name: "All Collections", icon: Layers, query: "All" },
   { id: "Gym Supplementaries", name: "Gym Supplements", icon: Dumbbell, query: "Gym Supplementaries" },
@@ -58,24 +54,410 @@ const SORT_OPTIONS: {
   {
     value: "featured",
     label: "Featured & Curated",
-    icon: <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />,
+    icon: <Sparkles className="w-3.5 h-3.5 text-[#6B9E3A]" />,
   },
   {
     value: "price-asc",
     label: "Price: Low to High",
-    icon: <ArrowUp className="w-3.5 h-3.5 text-[#D4A373]" />,
+    icon: <ArrowUp className="w-3.5 h-3.5 text-neutral-600" />,
   },
   {
     value: "price-desc",
     label: "Price: High to Low",
-    icon: <ArrowDown className="w-3.5 h-3.5 text-[#D4A373]" />,
+    icon: <ArrowDown className="w-3.5 h-3.5 text-neutral-600" />,
   },
   {
     value: "rating",
     label: "Highest Customer Rating",
-    icon: <Star className="w-3.5 h-3.5 fill-[#D4AF37] text-[#D4AF37]" />,
+    icon: <Star className="w-3.5 h-3.5 fill-[#E5C07B] text-[#E5C07B]" />,
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Dynamic Filter Facets Schema (Inspired by SportsJam & Modern E-Commerce)
+// ---------------------------------------------------------------------------
+interface FacetOption {
+  value: string;
+  label: string;
+}
+
+interface FacetGroup {
+  id: string;
+  name: string;
+  options: FacetOption[];
+}
+
+const CATEGORY_FACETS: Record<string, FacetGroup[]> = {
+  Outfits: [
+    {
+      id: "gender",
+      name: "Gender / Ideal For",
+      options: [
+        { value: "Men", label: "Men" },
+        { value: "Women", label: "Women" },
+        { value: "Unisex", label: "Unisex" },
+      ],
+    },
+    {
+      id: "productType",
+      name: "Product Type",
+      options: [
+        { value: "Oversized T-Shirts", label: "Oversized T-Shirts" },
+        { value: "Compression Wear", label: "Compression Wear" },
+        { value: "Gym Matching Sets", label: "Gym Matching Sets" },
+        { value: "Performance Tees", label: "Performance Tees" },
+      ],
+    },
+    {
+      id: "size",
+      name: "Size",
+      options: [
+        { value: "S", label: "S" },
+        { value: "M", label: "M" },
+        { value: "L", label: "L" },
+        { value: "XL", label: "XL" },
+        { value: "XXL", label: "XXL" },
+      ],
+    },
+    {
+      id: "material",
+      name: "Material / Fabric",
+      options: [
+        { value: "100% Combed Cotton", label: "100% Combed Cotton" },
+        { value: "Nylon-Spandex", label: "Nylon-Spandex Performance" },
+        { value: "Breathable Dri-FIT", label: "Breathable Dri-FIT" },
+      ],
+    },
+    {
+      id: "color",
+      name: "Color",
+      options: [
+        { value: "Pitch Black", label: "Pitch Black" },
+        { value: "Pure White", label: "Pure White" },
+        { value: "Onyx Black", label: "Onyx Black" },
+      ],
+    },
+  ],
+  Apparels: [
+    {
+      id: "gender",
+      name: "Gender / Ideal For",
+      options: [
+        { value: "Men", label: "Men" },
+        { value: "Women", label: "Women" },
+        { value: "Unisex", label: "Unisex" },
+      ],
+    },
+    {
+      id: "productType",
+      name: "Product Type",
+      options: [
+        { value: "Oversized T-Shirts", label: "Oversized T-Shirts" },
+        { value: "Performance Tees", label: "Performance Tees" },
+        { value: "Compression Wear", label: "Compression Wear" },
+      ],
+    },
+    {
+      id: "size",
+      name: "Size",
+      options: [
+        { value: "S", label: "S" },
+        { value: "M", label: "M" },
+        { value: "L", label: "L" },
+        { value: "XL", label: "XL" },
+      ],
+    },
+    {
+      id: "material",
+      name: "Material / Fabric",
+      options: [
+        { value: "100% Combed Cotton", label: "100% Combed Cotton (240 GSM)" },
+        { value: "Breathable Dri-FIT", label: "Breathable Dri-FIT" },
+      ],
+    },
+    {
+      id: "color",
+      name: "Color",
+      options: [
+        { value: "Pitch Black", label: "Pitch Black" },
+        { value: "Pure White", label: "Pure White" },
+      ],
+    },
+  ],
+  "Gym Supplementaries": [
+    {
+      id: "supplementType",
+      name: "Supplement Type",
+      options: [
+        { value: "Whey Protein Isolate", label: "Whey Protein Isolate" },
+        { value: "Creatine Monohydrate", label: "Creatine Monohydrate" },
+        { value: "Mass Gainer", label: "Mass Gainer Complex" },
+      ],
+    },
+    {
+      id: "flavor",
+      name: "Flavor",
+      options: [
+        { value: "Chocolate", label: "Rich Chocolate Fudge" },
+        { value: "Swiss Chocolate", label: "Swiss Chocolate" },
+        { value: "Unflavored", label: "Unflavored" },
+      ],
+    },
+    {
+      id: "weight",
+      name: "Pack Size / Weight",
+      options: [
+        { value: "250g", label: "250g (83 Servings)" },
+        { value: "1kg", label: "1kg / 2.2 lbs (30 Servings)" },
+      ],
+    },
+    {
+      id: "goal",
+      name: "Dietary & Goals",
+      options: [
+        { value: "Zero Added Sugar", label: "Zero Added Sugar" },
+        { value: "100% Pure Isolate", label: "100% Pure Isolate" },
+        { value: "Lean Muscle Growth", label: "Lean Muscle Growth" },
+        { value: "Vegetarian", label: "100% Vegetarian" },
+      ],
+    },
+  ],
+  "Dates & Nuts": [
+    {
+      id: "variety",
+      name: "Variety & Origin",
+      options: [
+        { value: "Jumbo Medjool Dates", label: "Jumbo Medjool Dates" },
+        { value: "Royal Ajwa Dates", label: "Royal Ajwa Dates (Medina)" },
+        { value: "California Almonds", label: "California Roasted Almonds" },
+      ],
+    },
+    {
+      id: "packSize",
+      name: "Pack Size",
+      options: [
+        { value: "500g", label: "500g Fresh Pack" },
+        { value: "1kg", label: "1kg Value Pack" },
+      ],
+    },
+    {
+      id: "roastStyle",
+      name: "Roast & Style",
+      options: [
+        { value: "Raw Sun-Ripened", label: "Raw Sun-Ripened" },
+        { value: "Lightly Salted & Roasted", label: "Lightly Salted & Roasted" },
+      ],
+    },
+    {
+      id: "dietary",
+      name: "Dietary Benefits",
+      options: [
+        { value: "100% Natural Superfood", label: "100% Natural Superfood" },
+        { value: "Zero Added Sugar", label: "Zero Added Sugar" },
+        { value: "Gluten Free", label: "Gluten Free" },
+      ],
+    },
+  ],
+  "Candy & Chocolates": [
+    {
+      id: "chocolateType",
+      name: "Confectionery Type",
+      options: [
+        { value: "Artisan Dark Chocolate Truffles", label: "Artisan Dark Chocolate Truffles" },
+        { value: "70% Dark Cocoa Delicacies", label: "70% Dark Cocoa Delicacies" },
+        { value: "Protein Chocolate Bites", label: "Protein Chocolate Bites" },
+        { value: "Signature Black Candy Box", label: "Signature Black Candy Box" },
+      ],
+    },
+    {
+      id: "cocoaContent",
+      name: "Cocoa Content",
+      options: [
+        { value: "70% Single-Origin", label: "70% Single-Origin Dark" },
+        { value: "Gourmet Cocoa", label: "Gourmet Cocoa Blend" },
+      ],
+    },
+    {
+      id: "dietary",
+      name: "Dietary & Purity",
+      options: [
+        { value: "Zero Palm Oil", label: "Zero Palm Oil" },
+        { value: "Zero Trans Fat", label: "Zero Trans Fat" },
+        { value: "High Protein Infused", label: "High Protein Infused" },
+        { value: "Vegetarian", label: "100% Vegetarian" },
+      ],
+    },
+    {
+      id: "packaging",
+      name: "Packaging Format",
+      options: [
+        { value: "16-Piece Luxury Box", label: "16-Piece Luxury Gift Box" },
+        { value: "300g Gourmet Jar", label: "300g Gourmet Fresh Jar" },
+      ],
+    },
+  ],
+  All: [
+    {
+      id: "quickFeature",
+      name: "Popular Filters",
+      options: [
+        { value: "Zero Added Sugar", label: "Zero Added Sugar" },
+        { value: "High Protein", label: "High Protein" },
+        { value: "100% Pure & Natural", label: "100% Pure & Natural" },
+        { value: "Oversized Fit", label: "Oversized Fit" },
+        { value: "Single-Origin Cocoa", label: "Single-Origin Dark Cocoa" },
+      ],
+    },
+  ],
+};
+
+function getCategoryFacets(category: string): FacetGroup[] {
+  if (!category || category === "All") return CATEGORY_FACETS["All"] || [];
+  if (doesCategoryMatch("Gym Supplementaries", category)) return CATEGORY_FACETS["Gym Supplementaries"] || [];
+  if (doesCategoryMatch("Outfits", category)) return CATEGORY_FACETS["Outfits"] || [];
+  if (doesCategoryMatch("Apparels", category)) return CATEGORY_FACETS["Apparels"] || [];
+  if (doesCategoryMatch("Dates & Nuts", category)) return CATEGORY_FACETS["Dates & Nuts"] || [];
+  if (doesCategoryMatch("Candy & Chocolates", category)) return CATEGORY_FACETS["Candy & Chocolates"] || [];
+  return CATEGORY_FACETS["All"] || [];
+}
+
+function productMatchesFacetValue(product: Product, facetId: string, value: string): boolean {
+  const pName = (product.name || "").toLowerCase();
+  const pSubcat = (product.subcategory || "").toLowerCase();
+  const pCat = (product.category || "").toLowerCase();
+  const pDesc = (product.description || "").toLowerCase();
+  const pTagline = (product.tagline || "").toLowerCase();
+  const pFeatures = Array.isArray(product.features) ? product.features.join(" ").toLowerCase() : "";
+  const pVolume = (product.volume || "").toLowerCase();
+  const pColor = (product.color || "").toLowerCase();
+  const pMaterial = (product.material || "").toLowerCase();
+  const specs = product.specifications || {};
+  const specsStr = Object.values(specs).join(" ").toLowerCase();
+  const allText = `${pName} ${pSubcat} ${pCat} ${pDesc} ${pTagline} ${pFeatures} ${pVolume} ${pColor} ${pMaterial} ${specsStr}`;
+
+  switch (facetId) {
+    case "gender":
+      if (value === "Men") {
+        return allText.includes("men") || pCat.includes("apparel") || pCat.includes("outfit") || pName.includes("t-shirt");
+      }
+      if (value === "Women") {
+        return allText.includes("women") || allText.includes("seamless") || allText.includes("athleisure");
+      }
+      if (value === "Unisex") {
+        return allText.includes("unisex") || pCat.includes("apparel") || pCat.includes("outfit");
+      }
+      return true;
+
+    case "productType":
+      if (value === "Oversized T-Shirts") {
+        return pName.includes("oversized") || pSubcat.includes("t-shirt") || specsStr.includes("oversized");
+      }
+      if (value === "Compression Wear") {
+        return allText.includes("compression") || pSubcat.includes("gym matching sets");
+      }
+      if (value === "Gym Matching Sets") {
+        return allText.includes("gym set") || allText.includes("matching set") || pSubcat.includes("gym matching sets");
+      }
+      if (value === "Performance Tees") {
+        return pName.includes("t-shirt") || pSubcat.includes("t-shirt");
+      }
+      return allText.includes(value.toLowerCase());
+
+    case "size":
+      return pVolume.includes(value.toLowerCase()) || pCat.includes("apparel") || pCat.includes("outfit");
+
+    case "material":
+      if (value === "100% Combed Cotton") return allText.includes("cotton");
+      if (value === "Nylon-Spandex") return allText.includes("spandex") || allText.includes("nylon");
+      if (value === "Breathable Dri-FIT") {
+        return allText.includes("breathable") || allText.includes("dry") || allText.includes("wicking");
+      }
+      return allText.includes(value.toLowerCase());
+
+    case "color":
+      if (value === "Pitch Black" || value === "Onyx Black") {
+        return pColor.includes("black") || allText.includes("black");
+      }
+      if (value === "Pure White") {
+        return pColor.includes("white") || allText.includes("white");
+      }
+      return pColor.includes(value.toLowerCase());
+
+    case "supplementType":
+      if (value === "Whey Protein Isolate") return allText.includes("isolate") || allText.includes("whey");
+      if (value === "Creatine Monohydrate") return allText.includes("creatine");
+      if (value === "Mass Gainer") return allText.includes("mass gainer") || allText.includes("gainer");
+      return allText.includes(value.toLowerCase());
+
+    case "flavor":
+      if (value === "Chocolate") return allText.includes("chocolate") || allText.includes("fudge");
+      if (value === "Swiss Chocolate") return allText.includes("swiss chocolate");
+      if (value === "Unflavored") return allText.includes("unflavored");
+      return allText.includes(value.toLowerCase());
+
+    case "weight":
+    case "packSize":
+      if (value === "250g") return allText.includes("250g") || allText.includes("250 g");
+      if (value === "500g") return allText.includes("500g") || allText.includes("500 g");
+      if (value === "1kg") return allText.includes("1kg") || allText.includes("1 kg");
+      if (value === "2kg") return allText.includes("2kg") || allText.includes("2 kg");
+      return allText.includes(value.toLowerCase());
+
+    case "goal":
+    case "dietary":
+      if (value === "Zero Added Sugar") {
+        return allText.includes("zero added sugar") || allText.includes("zero sugar") || allText.includes("no added sugar");
+      }
+      if (value === "100% Pure Isolate") return allText.includes("isolate");
+      if (value === "Lean Muscle Growth") return allText.includes("muscle");
+      if (value === "Vegetarian") return allText.includes("vegetarian");
+      if (value === "100% Natural Superfood") return allText.includes("superfood") || allText.includes("natural");
+      if (value === "Gluten Free") return true;
+      if (value === "Zero Palm Oil") return allText.includes("palm oil");
+      if (value === "Zero Trans Fat") return allText.includes("trans fat");
+      if (value === "High Protein Infused") return allText.includes("protein");
+      return allText.includes(value.toLowerCase());
+
+    case "variety":
+      if (value === "Jumbo Medjool Dates") return allText.includes("medjool") || allText.includes("royal dates") || allText.includes("dates");
+      if (value === "Royal Ajwa Dates") return allText.includes("ajwa");
+      if (value === "California Almonds") return allText.includes("almond");
+      return allText.includes(value.toLowerCase());
+
+    case "roastStyle":
+      if (value === "Raw Sun-Ripened") return allText.includes("sun-ripened") || allText.includes("natural") || allText.includes("raw");
+      if (value === "Lightly Salted & Roasted") return allText.includes("roasted") || allText.includes("salt");
+      return allText.includes(value.toLowerCase());
+
+    case "chocolateType":
+      if (value === "Artisan Dark Chocolate Truffles") return allText.includes("truffle") || allText.includes("artisan");
+      if (value === "70% Dark Cocoa Delicacies") return allText.includes("70%") || allText.includes("delicacies");
+      if (value === "Protein Chocolate Bites") return allText.includes("protein") && allText.includes("chocolate");
+      if (value === "Signature Black Candy Box") return allText.includes("candy box") || allText.includes("black candy");
+      return allText.includes(value.toLowerCase());
+
+    case "cocoaContent":
+      if (value === "70% Single-Origin") return allText.includes("70%");
+      if (value === "Gourmet Cocoa") return allText.includes("cocoa");
+      return allText.includes(value.toLowerCase());
+
+    case "packaging":
+      if (value === "16-Piece Luxury Box") return allText.includes("16-piece") || allText.includes("16");
+      if (value === "300g Gourmet Jar") return allText.includes("300g");
+      return allText.includes(value.toLowerCase());
+
+    case "quickFeature":
+      if (value === "Zero Added Sugar") return allText.includes("zero sugar") || allText.includes("zero added sugar");
+      if (value === "High Protein") return allText.includes("protein");
+      if (value === "100% Pure & Natural") return allText.includes("pure") || allText.includes("natural");
+      if (value === "Oversized Fit") return allText.includes("oversized");
+      if (value === "Single-Origin Cocoa") return allText.includes("single-origin") || allText.includes("70%");
+      return allText.includes(value.toLowerCase());
+
+    default:
+      return allText.includes(value.toLowerCase());
+  }
+}
 
 function ProductsContent() {
   const router = useRouter();
@@ -90,6 +472,8 @@ function ProductsContent() {
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "rating">("featured");
   const [maxPrice, setMaxPrice] = useState<number>(10000);
   const [onlyInStock, setOnlyInStock] = useState(false);
+  const [selectedFacets, setSelectedFacets] = useState<Record<string, string[]>>({});
+  const [openFacetAccordions, setOpenFacetAccordions] = useState<Record<string, boolean>>({});
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
@@ -143,6 +527,7 @@ function ProductsContent() {
 
   const handleCategorySelect = (catQuery: string) => {
     setSelectedCategory(catQuery);
+    setSelectedFacets({}); // Reset facets on category change for clean context
     const params = new URLSearchParams(searchParams.toString());
     if (catQuery === "All") {
       params.delete("category");
@@ -152,21 +537,54 @@ function ProductsContent() {
     router.push(`/products?${params.toString()}`, { scroll: false });
   };
 
+  const handleFacetToggle = (facetId: string, value: string) => {
+    setSelectedFacets((prev) => {
+      const currentList = prev[facetId] || [];
+      const isSelected = currentList.includes(value);
+      const nextList = isSelected ? currentList.filter((v) => v !== value) : [...currentList, value];
+      if (nextList.length === 0) {
+        const copy = { ...prev };
+        delete copy[facetId];
+        return copy;
+      }
+      return { ...prev, [facetId]: nextList };
+    });
+  };
+
+  const toggleFacetAccordion = (facetId: string) => {
+    setOpenFacetAccordions((prev) => ({
+      ...prev,
+      [facetId]: prev[facetId] === undefined ? false : !prev[facetId],
+    }));
+  };
+
+  const handleResetAllFilters = () => {
+    setSelectedCategory("All");
+    setSearchQuery("");
+    setMaxPrice(10000);
+    setOnlyInStock(false);
+    setSelectedFacets({});
+    router.push("/products", { scroll: false });
+  };
+
+  // Base products matching category, search, price & stock
+  const baseCategoryProducts = useMemo(() => {
+    return products.filter((product) => {
+      if (selectedCategory && selectedCategory !== "All") {
+        const match = doesCategoryMatch(product.category || "", selectedCategory);
+        const subMatch = product.subcategory ? doesCategoryMatch(product.subcategory, selectedCategory) : false;
+        if (!match && !subMatch) return false;
+      }
+      return true;
+    });
+  }, [products, selectedCategory]);
+
   // Filter and sort products
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
-    return products
+    return baseCategoryProducts
       .filter((product) => {
-        // Category filter
-        if (selectedCategory && selectedCategory !== "All") {
-          const match = doesCategoryMatch(product.category || "", selectedCategory);
-          const subMatch = product.subcategory
-            ? doesCategoryMatch(product.subcategory, selectedCategory)
-            : false;
-          if (!match && !subMatch) return false;
-        }
-
         // Search filter
         if (query) {
           const name = (product.name || "").toLowerCase();
@@ -174,23 +592,25 @@ function ProductsContent() {
           const cat = (product.category || "").toLowerCase();
           const subcat = (product.subcategory || "").toLowerCase();
           const matches =
-            name.includes(query) ||
-            desc.includes(query) ||
-            cat.includes(query) ||
-            subcat.includes(query);
+            name.includes(query) || desc.includes(query) || cat.includes(query) || subcat.includes(query);
           if (!matches) return false;
         }
 
         // Price filter
-        if (product.price > maxPrice) {
-          return false;
-        }
+        if (product.price > maxPrice) return false;
 
         // In-stock filter
         if (onlyInStock) {
           if (product.in_stock === 0 || (product.stock_count !== undefined && product.stock_count <= 0)) {
             return false;
           }
+        }
+
+        // Dynamic Facets filter (AND across groups, OR within groups)
+        for (const [facetId, selectedValues] of Object.entries(selectedFacets)) {
+          if (!selectedValues || selectedValues.length === 0) continue;
+          const matchesAnyInGroup = selectedValues.some((val) => productMatchesFacetValue(product, facetId, val));
+          if (!matchesAnyInGroup) return false;
         }
 
         return true;
@@ -201,7 +621,25 @@ function ProductsContent() {
         if (sortBy === "rating") return (b.rating || 4.5) - (a.rating || 4.5);
         return 0; // featured default
       });
-  }, [products, selectedCategory, searchQuery, maxPrice, onlyInStock, sortBy]);
+  }, [baseCategoryProducts, searchQuery, maxPrice, onlyInStock, selectedFacets, sortBy]);
+
+  // Current active dynamic facets for the selected category
+  const activeFacetGroups = useMemo(() => {
+    return getCategoryFacets(selectedCategory);
+  }, [selectedCategory]);
+
+  // Total count of applied filters
+  const totalAppliedFiltersCount = useMemo(() => {
+    let count = 0;
+    if (selectedCategory !== "All") count++;
+    if (searchQuery.trim().length > 0) count++;
+    if (maxPrice < 10000) count++;
+    if (onlyInStock) count++;
+    Object.values(selectedFacets).forEach((arr) => {
+      count += arr.length;
+    });
+    return count;
+  }, [selectedCategory, searchQuery, maxPrice, onlyInStock, selectedFacets]);
 
   const handleAddToCart = (product: Product) => {
     addItem(product, 1);
@@ -222,37 +660,38 @@ function ProductsContent() {
   const currentSortOption = SORT_OPTIONS.find((o) => o.value === sortBy) || SORT_OPTIONS[0];
 
   return (
-    <div className="min-h-screen bg-[#070708] text-white flex flex-col justify-between selection:bg-[#D4A373] selection:text-black font-mograph">
+    <div className="min-h-screen bg-white text-neutral-900 flex flex-col justify-between selection:bg-[#E5F2D0] selection:text-[#1E300E] font-mograph">
       <Navbar />
 
       {/* ===================================================================== */}
-      {/* HERO BANNER: Deep Obsidian with Ambient Gold Studio Lighting          */}
+      {/* 1. HERO BANNER: Clean White & Pastel Lime Aesthetic                    */}
       {/* ===================================================================== */}
-      <div className="pt-24 sm:pt-28 pb-8 sm:pb-12 bg-gradient-to-b from-[#0e0e11] via-[#09090b] to-[#070708] text-white border-b border-white/10 relative overflow-hidden">
-        {/* Ambient Radial Lighting Glow */}
-        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-96 h-96 bg-[#D4A373]/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="pt-24 sm:pt-28 pb-6 sm:pb-8 bg-gradient-to-b from-[#F2F8EB]/70 via-[#F8FAF4] to-white border-b border-neutral-200/70 relative overflow-hidden">
+        {/* Ambient Subtle Lime Glows */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#95CF42]/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/3 left-1/4 w-80 h-80 bg-[#E5F2D0]/40 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-xs text-neutral-400 mb-3">
-            <Link href="/" className="hover:text-[#D4A373] transition-colors font-medium">
+          <div className="flex items-center gap-2 text-xs text-neutral-500 mb-3 font-medium">
+            <Link href="/" className="hover:text-[#6B9E3A] transition-colors">
               Home
             </Link>
-            <ChevronRight className="w-3.5 h-3.5 text-neutral-600" />
-            <span className="text-[#D4AF37] font-bold">Shop All Products</span>
+            <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+            <span className="text-neutral-900 font-bold">Shop All Products</span>
           </div>
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#272015] border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold uppercase tracking-wider mb-2 font-movault">
-                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>DIRECT CURATION • 100% PURE &amp; AUTHENTIC</span>
+              {/* Soft Lime Eyebrow Pill */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5F2D0] text-[#3B581C] text-xs font-semibold mb-2.5 shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 text-[#6B9E3A]" />
+                <span>Direct Curation • 100% Pure &amp; Authentic</span>
               </div>
-              <h1 className="font-movault text-3xl sm:text-5xl lg:text-6xl font-bold uppercase tracking-wider text-white">
+              <h1 className="font-mograph font-bold text-2xl sm:text-4xl md:text-5xl text-neutral-950 tracking-tight mb-2">
                 Shop The Collection
               </h1>
-              <p className="font-mograph text-xs sm:text-sm text-neutral-300 mt-1 max-w-xl font-medium leading-relaxed">
+              <p className="font-mograph text-xs sm:text-sm text-neutral-600 max-w-xl font-medium leading-relaxed">
                 Discover lab-tested Gym Supplements, high-mobility Outfits, heavyweight Apparels, Royal Dates &amp; Handcrafted Chocolates.
               </p>
             </div>
@@ -262,15 +701,15 @@ function ProductsContent() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
               <input
                 type="text"
-                placeholder="Search protein, gym wear, dates, chocolates..."
+                placeholder="Search supplements, outfits, dates, chocolates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-[#141416] hover:bg-[#18181c] focus:bg-[#18181c] text-white placeholder:text-neutral-500 border border-white/15 focus:border-[#D4AF37]/80 text-xs sm:text-sm font-medium transition-all focus:outline-none shadow-sm"
+                className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-white hover:bg-neutral-50/80 focus:bg-white text-neutral-900 placeholder:text-neutral-400 border border-neutral-200/90 focus:border-[#6B9E3A] focus:ring-2 focus:ring-[#6B9E3A]/20 text-xs sm:text-sm font-medium transition-all outline-none shadow-xs"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 transition-colors cursor-pointer"
                   aria-label="Clear search"
                 >
                   <X className="w-4 h-4" />
@@ -282,9 +721,9 @@ function ProductsContent() {
       </div>
 
       {/* ===================================================================== */}
-      {/* HORIZONTAL CATEGORY CAPSULE BAR                                       */}
+      {/* 2. HORIZONTAL CATEGORY CAPSULE BAR                                    */}
       {/* ===================================================================== */}
-      <div className="bg-[#0B0B0C]/95 backdrop-blur-md border-b border-white/10 sticky top-16 sm:top-20 z-20 shadow-md">
+      <div className="bg-white/95 backdrop-blur-md border-b border-neutral-200/70 sticky top-16 sm:top-20 z-20 shadow-2xs">
         <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
             {EXPLORE_CATEGORIES.map((cat) => {
@@ -299,11 +738,11 @@ function ProductsContent() {
                   onClick={() => handleCategorySelect(cat.query)}
                   className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                     isSelected
-                      ? "bg-[#D4A373] text-black shadow-md scale-[1.02] font-movault uppercase tracking-wider"
-                      : "bg-[#141416] hover:bg-[#1c1c20] text-neutral-300 border border-white/10"
+                      ? "bg-[#111111] text-white shadow-xs scale-[1.02]"
+                      : "bg-white hover:bg-[#F8FAF4] text-neutral-700 border border-neutral-200/80 hover:border-neutral-300"
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isSelected ? "text-black" : "text-[#D4AF37]"}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isSelected ? "text-[#95CF42]" : "text-[#6B9E3A]"}`} />
                   <span>{cat.name}</span>
                 </button>
               );
@@ -313,15 +752,16 @@ function ProductsContent() {
       </div>
 
       {/* ===================================================================== */}
-      {/* MAIN CATALOG WORKSPACE: Sidebar Filters + Products Grid               */}
+      {/* 3. MAIN CATALOG WORKSPACE: Dynamic Facet Sidebar + Products Grid       */}
       {/* ===================================================================== */}
       <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 w-full">
         {/* Controls Bar: Result Count & Sort Options */}
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <div className="text-xs sm:text-sm font-semibold text-neutral-400">
-            Showing <span className="text-white font-extrabold">{filteredProducts.length}</span> {filteredProducts.length === 1 ? "product" : "products"}
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="text-xs sm:text-sm font-semibold text-neutral-600 font-mograph">
+            Showing <span className="text-neutral-950 font-bold">{filteredProducts.length}</span>{" "}
+            {filteredProducts.length === 1 ? "product" : "products"}
             {selectedCategory !== "All" && (
-              <span className="ml-1 text-[#D4AF37] font-medium">in &ldquo;{selectedCategory}&rdquo;</span>
+              <span className="ml-1 text-[#6B9E3A] font-bold">in &ldquo;{selectedCategory}&rdquo;</span>
             )}
           </div>
 
@@ -329,10 +769,15 @@ function ProductsContent() {
             {/* Mobile Filters Trigger */}
             <button
               onClick={() => setMobileFilterOpen(true)}
-              className="lg:hidden flex items-center gap-1.5 px-3.5 py-2 bg-[#141416] border border-white/10 rounded-xl text-xs font-bold text-white shadow-sm hover:bg-[#1a1a1d] cursor-pointer"
+              className="lg:hidden flex items-center gap-1.5 px-3.5 py-2 bg-white border border-neutral-200/90 rounded-xl text-xs font-bold text-neutral-900 shadow-xs hover:bg-neutral-50 cursor-pointer"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <SlidersHorizontal className="w-3.5 h-3.5 text-[#6B9E3A]" />
               <span>Filters</span>
+              {totalAppliedFiltersCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-[#111111] text-white text-[10px] flex items-center justify-center font-bold">
+                  {totalAppliedFiltersCount}
+                </span>
+              )}
             </button>
 
             {/* Custom Sort Dropdown */}
@@ -340,12 +785,16 @@ function ProductsContent() {
               <button
                 type="button"
                 onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-                className="flex items-center gap-2 px-3.5 py-2 bg-[#141416] border border-white/10 hover:border-white/20 rounded-xl text-xs font-bold text-white shadow-sm cursor-pointer transition-colors"
+                className="flex items-center gap-2 px-3.5 py-2 bg-white border border-neutral-200/90 hover:border-neutral-300 rounded-xl text-xs font-bold text-neutral-900 shadow-xs cursor-pointer transition-colors"
               >
                 {currentSortOption.icon}
-                <span className="hidden sm:inline text-neutral-400 font-normal">Sort:</span>
+                <span className="hidden sm:inline text-neutral-500 font-normal">Sort:</span>
                 <span>{currentSortOption.label}</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-neutral-400 transition-transform ${sortDropdownOpen ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-neutral-400 transition-transform ${
+                    sortDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
               </button>
 
               <AnimatePresence>
@@ -354,7 +803,7 @@ function ProductsContent() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 4 }}
-                    className="absolute right-0 top-full mt-1.5 w-56 bg-[#141416] rounded-xl shadow-2xl border border-white/15 p-1.5 z-40 text-white"
+                    className="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-2xl shadow-xl border border-neutral-200/90 p-1.5 z-40 text-neutral-900"
                   >
                     {SORT_OPTIONS.map((opt) => (
                       <button
@@ -363,17 +812,17 @@ function ProductsContent() {
                           setSortBy(opt.value);
                           setSortDropdownOpen(false);
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
                           sortBy === opt.value
-                            ? "bg-[#272015] text-[#D4AF37] border border-[#D4AF37]/30"
-                            : "text-neutral-300 hover:bg-white/5"
+                            ? "bg-[#E5F2D0] text-[#3B581C]"
+                            : "text-neutral-700 hover:bg-neutral-50"
                         }`}
                       >
                         <div className="flex items-center gap-2">
                           {opt.icon}
                           <span>{opt.label}</span>
                         </div>
-                        {sortBy === opt.value && <Check className="w-3.5 h-3.5 text-[#D4AF37]" />}
+                        {sortBy === opt.value && <Check className="w-3.5 h-3.5 text-[#3B581C]" />}
                       </button>
                     ))}
                   </motion.div>
@@ -383,26 +832,115 @@ function ProductsContent() {
           </div>
         </div>
 
+        {/* Active Filters Chips Bar */}
+        {totalAppliedFiltersCount > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-4 p-2 sm:p-2.5 rounded-2xl bg-[#F8FAF4] border border-[#E5F2D0]">
+            <span className="text-[11px] sm:text-xs font-bold text-neutral-600 mr-1 flex items-center gap-1">
+              <SlidersHorizontal className="w-3 h-3 text-[#6B9E3A]" />
+              Active:
+            </span>
+
+            {/* Category Chip */}
+            {selectedCategory !== "All" && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-neutral-200 text-neutral-800 text-xs font-medium shadow-2xs">
+                <span>{selectedCategory}</span>
+                <button
+                  onClick={() => handleCategorySelect("All")}
+                  className="hover:text-rose-500 transition-colors ml-0.5"
+                  aria-label="Remove category filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {/* Price Chip */}
+            {maxPrice < 10000 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-neutral-200 text-neutral-800 text-xs font-medium shadow-2xs">
+                <span>Under ₹{maxPrice.toLocaleString("en-IN")}</span>
+                <button
+                  onClick={() => setMaxPrice(10000)}
+                  className="hover:text-rose-500 transition-colors ml-0.5"
+                  aria-label="Remove price filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {/* Stock Chip */}
+            {onlyInStock && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-neutral-200 text-neutral-800 text-xs font-medium shadow-2xs">
+                <span>In-Stock Only</span>
+                <button
+                  onClick={() => setOnlyInStock(false)}
+                  className="hover:text-rose-500 transition-colors ml-0.5"
+                  aria-label="Remove stock filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {/* Search Query Chip */}
+            {searchQuery && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-neutral-200 text-neutral-800 text-xs font-medium shadow-2xs">
+                <span>&ldquo;{searchQuery}&rdquo;</span>
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="hover:text-rose-500 transition-colors ml-0.5"
+                  aria-label="Remove search keyword"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {/* Dynamic Facets Chips */}
+            {Object.entries(selectedFacets).flatMap(([facetId, values]) =>
+              values.map((val) => (
+                <span
+                  key={`${facetId}-${val}`}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E5F2D0] text-[#3B581C] border border-[#D5E9BC] text-xs font-semibold shadow-2xs"
+                >
+                  <span>{val}</span>
+                  <button
+                    onClick={() => handleFacetToggle(facetId, val)}
+                    className="hover:text-rose-700 transition-colors ml-0.5"
+                    aria-label={`Remove filter ${val}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))
+            )}
+
+            {/* Reset All Button */}
+            <button
+              onClick={handleResetAllFilters}
+              className="text-xs font-bold text-[#6B9E3A] hover:text-[#4F7529] hover:underline flex items-center gap-1 ml-auto cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Clear All</span>
+            </button>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 xl:gap-8 items-start">
           {/* ================================================================= */}
-          {/* DESKTOP SIDEBAR FILTERS                                           */}
+          {/* DESKTOP SIDEBAR: Dynamic Multi-Facet Filters (SportsJam Pattern)    */}
           {/* ================================================================= */}
-          <aside className="hidden lg:block lg:col-span-1 bg-[#141416] border border-white/10 rounded-2xl p-5 shadow-lg sticky top-36 space-y-6 text-white">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5 font-movault">
-                <SlidersHorizontal className="w-3.5 h-3.5 text-[#D4AF37]" />
+          <aside className="hidden lg:block lg:col-span-1 bg-white border border-neutral-200/80 rounded-3xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] sticky top-36 space-y-5 text-neutral-900">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-200/70">
+              <span className="text-sm font-bold text-neutral-950 flex items-center gap-2 font-mograph">
+                <SlidersHorizontal className="w-4 h-4 text-[#6B9E3A]" />
                 Filters
               </span>
-              {(selectedCategory !== "All" || searchQuery || maxPrice < 10000 || onlyInStock) && (
+              {totalAppliedFiltersCount > 0 && (
                 <button
-                  onClick={() => {
-                    setSelectedCategory("All");
-                    setSearchQuery("");
-                    setMaxPrice(10000);
-                    setOnlyInStock(false);
-                    router.push("/products");
-                  }}
-                  className="text-[11px] font-bold text-[#D4A373] hover:underline flex items-center gap-0.5 cursor-pointer font-movault tracking-wide"
+                  onClick={handleResetAllFilters}
+                  className="text-xs font-bold text-[#6B9E3A] hover:underline flex items-center gap-1 cursor-pointer font-mograph"
                 >
                   <RotateCcw className="w-3 h-3" />
                   <span>Reset All</span>
@@ -410,11 +948,13 @@ function ProductsContent() {
               )}
             </div>
 
-            {/* Price Filter Slider */}
+            {/* 1. Max Budget Range Slider */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-bold text-neutral-300 uppercase font-movault tracking-wide">Max Budget</label>
-                <span className="text-xs font-black text-[#D4AF37] font-mono">
+                <label className="text-xs font-bold text-neutral-800 uppercase tracking-wide font-mograph">
+                  Max Budget
+                </label>
+                <span className="text-xs font-bold text-[#3B581C] font-mono px-2 py-0.5 rounded-full bg-[#E5F2D0]">
                   ₹{maxPrice.toLocaleString("en-IN")}
                 </span>
               </div>
@@ -425,32 +965,32 @@ function ProductsContent() {
                 step={250}
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-[#D4A373] cursor-pointer"
+                className="w-full accent-[#6B9E3A] cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] text-neutral-500 font-medium mt-1">
+              <div className="flex justify-between text-[10px] text-neutral-400 font-medium mt-1">
                 <span>₹500</span>
                 <span>₹10,000+</span>
               </div>
             </div>
 
-            {/* In-Stock Toggle */}
-            <div className="pt-3 border-t border-white/10">
+            {/* 2. In-Stock Items Only Toggle */}
+            <div className="pt-3 border-t border-neutral-200/70">
               <label className="flex items-center gap-2.5 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={onlyInStock}
                   onChange={(e) => setOnlyInStock(e.target.checked)}
-                  className="w-4 h-4 rounded border-white/20 text-[#D4AF37] accent-[#D4A373] cursor-pointer"
+                  className="w-4 h-4 rounded border-neutral-300 text-[#6B9E3A] accent-[#6B9E3A] cursor-pointer"
                 />
-                <span className="text-xs font-semibold text-neutral-200">
+                <span className="text-xs font-semibold text-neutral-800">
                   In-Stock Items Only
                 </span>
               </label>
             </div>
 
-            {/* Categories List in Sidebar */}
-            <div className="pt-4 border-t border-white/10">
-              <label className="block text-xs font-bold text-neutral-300 mb-2 uppercase tracking-wider font-movault">
+            {/* 3. Departments / Collections */}
+            <div className="pt-3 border-t border-neutral-200/70">
+              <label className="block text-xs font-bold text-neutral-800 mb-2 uppercase tracking-wide font-mograph">
                 Departments
               </label>
               <div className="space-y-1">
@@ -464,52 +1004,123 @@ function ProductsContent() {
                       onClick={() => handleCategorySelect(cat.query)}
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer text-left ${
                         isSelected
-                          ? "bg-[#272015] text-[#D4AF37] font-bold border border-[#D4AF37]/40 shadow-xs"
-                          : "text-neutral-400 hover:text-white hover:bg-white/5 font-medium"
+                          ? "bg-[#E5F2D0] text-[#3B581C] font-bold shadow-2xs"
+                          : "text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 font-medium"
                       }`}
                     >
                       <span>{cat.name}</span>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-[#D4AF37]" />}
+                      {isSelected && <Check className="w-3.5 h-3.5 text-[#3B581C]" />}
                     </button>
                   );
                 })}
               </div>
             </div>
 
+            {/* 4. DYNAMIC CATEGORY FACETS (Dynamic per Department) */}
+            {activeFacetGroups.map((group) => {
+              const isOpen = openFacetAccordions[group.id] !== false; // open by default
+              const selectedValuesInGroup = selectedFacets[group.id] || [];
+
+              return (
+                <div key={group.id} className="pt-3 border-t border-neutral-200/70">
+                  <button
+                    type="button"
+                    onClick={() => toggleFacetAccordion(group.id)}
+                    className="w-full flex items-center justify-between py-1 text-xs font-bold text-neutral-800 hover:text-neutral-950 transition-colors font-mograph text-left cursor-pointer"
+                  >
+                    <span className="uppercase tracking-wide">{group.name}</span>
+                    <div className="flex items-center gap-1.5">
+                      {selectedValuesInGroup.length > 0 && (
+                        <span className="w-4 h-4 rounded-full bg-[#E5F2D0] text-[#3B581C] text-[10px] font-bold flex items-center justify-center">
+                          {selectedValuesInGroup.length}
+                        </span>
+                      )}
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 text-neutral-400 transition-transform ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </div>
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pt-2 space-y-1.5">
+                          {group.options.map((opt) => {
+                            const isChecked = selectedValuesInGroup.includes(opt.value);
+                            // Real matching count preview
+                            const matchCount = baseCategoryProducts.filter((p) =>
+                              productMatchesFacetValue(p, group.id, opt.value)
+                            ).length;
+
+                            return (
+                              <label
+                                key={opt.value}
+                                className={`flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer transition-colors text-xs select-none ${
+                                  isChecked
+                                    ? "bg-[#F4F9EE] text-[#284214] font-semibold"
+                                    : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => handleFacetToggle(group.id, opt.value)}
+                                    className="w-3.5 h-3.5 rounded border-neutral-300 text-[#6B9E3A] accent-[#6B9E3A] cursor-pointer"
+                                  />
+                                  <span>{opt.label}</span>
+                                </div>
+                                <span className="text-[10px] text-neutral-400 font-medium">
+                                  ({matchCount})
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+
             {/* Trust Certification Card */}
-            <div className="p-4 rounded-xl bg-[#1a1a1d] border border-white/10 text-center space-y-1.5 shadow-xs">
-              <Award className="w-5 h-5 text-[#D4AF37] mx-auto mb-1" />
-              <p className="text-xs font-bold text-white uppercase font-movault tracking-wider">100% Lab Tested &amp; Pure</p>
-              <p className="text-[11px] text-neutral-400 leading-snug font-normal">
+            <div className="p-4 rounded-2xl bg-gradient-to-b from-[#F2F8EB] to-[#FAFCF7] border border-[#D5E9BC]/70 text-center space-y-1 shadow-2xs">
+              <Award className="w-5 h-5 text-[#6B9E3A] mx-auto mb-1" />
+              <p className="text-xs font-bold text-[#15230D] uppercase tracking-wide font-mograph">
+                100% Lab Tested &amp; Pure
+              </p>
+              <p className="text-[11px] text-[#415C29] leading-snug font-normal">
                 Direct brand sourcing with verified purity, authentic nutrition, and express pan-India insured shipping.
               </p>
             </div>
           </aside>
 
           {/* ================================================================= */}
-          {/* PRODUCT CARDS GRID (Mobile 2 per row, Desktop 3-4 per row)        */}
+          {/* PRODUCT CARDS GRID (Home Page Theme & Font Style)                  */}
           {/* ================================================================= */}
           <main className="lg:col-span-3">
             {filteredProducts.length === 0 ? (
-              <div className="bg-[#141416] rounded-2xl border border-white/10 p-12 text-center shadow-lg text-white">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center mb-4 text-[#D4AF37]">
+              <div className="bg-white rounded-3xl border border-neutral-200/80 p-12 text-center shadow-xs text-neutral-900">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-[#F2F8EB] flex items-center justify-center mb-4 text-[#6B9E3A]">
                   <Search className="w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-1 uppercase font-movault">
+                <h3 className="text-lg font-bold text-neutral-950 mb-1 font-mograph">
                   No products found
                 </h3>
-                <p className="text-xs sm:text-sm text-neutral-400 mb-6 max-w-sm mx-auto">
-                  Try adjusting your budget slider, clearing search keywords, or selecting a different department.
+                <p className="text-xs sm:text-sm text-neutral-500 mb-6 max-w-sm mx-auto leading-relaxed">
+                  Try adjusting your budget slider, clearing selected filter facets, or choosing a different department.
                 </p>
                 <button
-                  onClick={() => {
-                    setSelectedCategory("All");
-                    setSearchQuery("");
-                    setMaxPrice(10000);
-                    setOnlyInStock(false);
-                    router.push("/products");
-                  }}
-                  className="px-6 py-2.5 rounded-xl bg-[#D4A373] hover:bg-[#c29263] text-black text-xs font-bold transition-all shadow-md cursor-pointer uppercase font-movault tracking-wider"
+                  onClick={handleResetAllFilters}
+                  className="px-6 py-2.5 rounded-full bg-[#111111] hover:bg-black text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
                 >
                   Reset All Filters
                 </button>
@@ -525,11 +1136,17 @@ function ProductsContent() {
 
                   // Clean short category label for secondary metadata line
                   const shortCategory =
-                    (product as any).subcategory ||
+                    product.subcategory ||
                     (product.category === "Gym Supplementaries"
-                      ? (product.name.toLowerCase().includes("creatine") ? "Creatine" : product.name.toLowerCase().includes("gainer") ? "Mass Gainer" : "Isolate")
+                      ? product.name.toLowerCase().includes("creatine")
+                        ? "Creatine"
+                        : product.name.toLowerCase().includes("gainer")
+                        ? "Mass Gainer"
+                        : "Whey Isolate"
                       : product.category === "Dates & Nuts"
-                      ? (product.name.toLowerCase().includes("almond") ? "Almonds" : "Dates")
+                      ? product.name.toLowerCase().includes("almond")
+                        ? "Almonds"
+                        : "Dates"
                       : product.category === "Candy & Chocolates"
                       ? "Chocolates"
                       : product.category === "Outfits"
@@ -544,26 +1161,26 @@ function ProductsContent() {
                       layout
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="group relative rounded-2xl bg-[#141416] hover:bg-[#18181C] border border-white/5 hover:border-white/15 p-3 sm:p-4 flex flex-col justify-between transition-all duration-200 shadow-sm hover:shadow-md"
+                      className="group relative rounded-3xl bg-white border border-neutral-200/80 hover:border-[#6B9E3A]/50 p-3 sm:p-4 flex flex-col justify-between transition-all duration-300 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1"
                     >
-                      {/* Wishlist Heart Icon (Top-right clean outline) */}
+                      {/* Wishlist Heart Icon */}
                       <button
                         type="button"
                         onClick={(e) => handleToggleWishlist(e, product)}
-                        className="absolute top-3 right-3 z-10 text-neutral-400 hover:text-white transition-colors p-1"
+                        className="absolute top-3.5 right-3.5 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-neutral-400 hover:text-rose-500 transition-colors shadow-2xs cursor-pointer"
                         aria-label="Wishlist"
                       >
                         <Heart
-                          className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
+                          className={`w-4 h-4 transition-colors ${
                             wishlisted ? "fill-rose-500 text-rose-500" : "stroke-current"
                           }`}
                         />
                       </button>
 
-                      {/* Product Poster Image (Transparent cutout floating seamlessly on card background) */}
+                      {/* Product Poster Image with Pastel Lime Gradient Backing */}
                       <Link
                         href={`/products/${product.id || product.slug}`}
-                        className="relative w-full aspect-square flex items-center justify-center my-1"
+                        className="relative aspect-square w-full rounded-2xl bg-gradient-to-b from-[#F2F8EB] via-[#F8FAF4] to-[#FFFFFF] p-3 flex items-center justify-center overflow-hidden mb-2.5"
                       >
                         <Image
                           src={product.poster_image || "/vittal/product-whey-protein-jar.png"}
@@ -575,47 +1192,47 @@ function ProductsContent() {
                       </Link>
 
                       {/* Product Metadata */}
-                      <div className="mt-1">
+                      <div>
                         <Link href={`/products/${product.id || product.slug}`} className="block">
-                          <h3 className="font-mograph text-xs sm:text-sm font-semibold text-white group-hover:text-[#D4AF37] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-0.5">
+                          <h3 className="font-mograph font-semibold text-xs sm:text-sm text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-0.5">
                             {product.name}
                           </h3>
                         </Link>
 
-                        <p className="font-mograph text-[10px] sm:text-xs text-neutral-400 font-medium mb-1.5 truncate">
+                        <p className="font-mograph text-[10px] sm:text-xs text-neutral-500 font-medium mb-1.5 truncate">
                           {shortCategory}
                         </p>
 
                         {/* Price Row */}
-                        <div className="flex items-baseline gap-1.5 mb-1.5">
-                          <span className="font-mograph text-sm sm:text-base font-extrabold text-white">
+                        <div className="flex items-baseline gap-1.5 mb-2">
+                          <span className="font-mograph text-sm sm:text-base font-extrabold text-neutral-950">
                             ₹{product.price.toLocaleString("en-IN")}
                           </span>
                           {product.mrp && product.mrp > product.price && (
-                            <span className="font-mograph text-[11px] sm:text-xs text-neutral-500 line-through">
+                            <span className="font-mograph text-xs text-neutral-400 line-through">
                               ₹{product.mrp.toLocaleString("en-IN")}
                             </span>
                           )}
                         </div>
 
                         {/* Discount Badge & Add to Cart Button */}
-                        <div className="flex items-center justify-between gap-2 mt-1">
+                        <div className="flex items-center justify-between gap-2">
                           {discountPercent ? (
-                            <span className="font-movault bg-[#2B2317] text-[#E5C07B] text-[10px] sm:text-[11px] font-bold tracking-wider uppercase px-2 py-0.5 rounded inline-block">
+                            <span className="bg-[#E5F2D0] text-[#3B581C] text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center">
                               {discountPercent}% OFF
                             </span>
                           ) : (
-                            <span className="font-mograph text-[10px] text-neutral-400">In Stock</span>
+                            <span className="text-[10px] text-neutral-500 font-medium">In Stock</span>
                           )}
 
                           <button
                             type="button"
                             onClick={() => handleAddToCart(product)}
-                            className="w-8 h-8 rounded-lg bg-[#222226] hover:bg-[#D4A373] text-white hover:text-black flex items-center justify-center transition-all cursor-pointer shadow-sm shrink-0"
+                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-[#E5F2D0] hover:bg-[#D5EBBF] text-[#3B581C] hover:text-[#284214] flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
                             aria-label="Add to cart"
                             title="Add to cart"
                           >
-                            <ShoppingCart className="w-4 h-4 stroke-[2]" />
+                            <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
                           </button>
                         </div>
                       </div>
@@ -629,7 +1246,7 @@ function ProductsContent() {
       </div>
 
       {/* ===================================================================== */}
-      {/* MOBILE FILTER MODAL                                                   */}
+      {/* 4. MOBILE FILTER MODAL DRAWER (SportsJam Multi-Facet Drawer)           */}
       {/* ===================================================================== */}
       <AnimatePresence>
         {mobileFilterOpen && (
@@ -638,7 +1255,7 @@ function ProductsContent() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 lg:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 lg:hidden"
               onClick={() => setMobileFilterOpen(false)}
             />
             <motion.div
@@ -646,24 +1263,39 @@ function ProductsContent() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 280 }}
-              className="fixed inset-x-0 bottom-0 bg-[#141416] border-t border-white/10 text-white rounded-t-3xl p-6 z-50 lg:hidden max-h-[85vh] overflow-y-auto space-y-6 shadow-2xl"
+              className="fixed inset-x-0 bottom-0 bg-white border-t border-neutral-200 text-neutral-900 rounded-t-3xl p-5 z-50 lg:hidden max-h-[85vh] overflow-y-auto space-y-5 shadow-2xl"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                <h3 className="font-bold text-lg text-white font-movault uppercase tracking-wider">Filter Products</h3>
-                <button
-                  onClick={() => setMobileFilterOpen(false)}
-                  className="p-1 rounded-full text-neutral-400 hover:text-white"
-                  aria-label="Close filters"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-200">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4 text-[#6B9E3A]" />
+                  <h3 className="font-bold text-base text-neutral-950 font-mograph">Filter Products</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  {totalAppliedFiltersCount > 0 && (
+                    <button
+                      onClick={handleResetAllFilters}
+                      className="text-xs font-bold text-[#6B9E3A] hover:underline cursor-pointer"
+                    >
+                      Reset All
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setMobileFilterOpen(false)}
+                    className="p-1 rounded-full text-neutral-400 hover:text-neutral-700 cursor-pointer"
+                    aria-label="Close filters"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               {/* Price Slider */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-bold text-neutral-300 uppercase font-movault tracking-wide">Max Budget</label>
-                  <span className="text-xs font-black text-[#D4AF37] font-mono">
+                  <label className="text-xs font-bold text-neutral-800 uppercase tracking-wide font-mograph">
+                    Max Budget
+                  </label>
+                  <span className="text-xs font-bold text-[#3B581C] font-mono px-2 py-0.5 rounded-full bg-[#E5F2D0]">
                     ₹{maxPrice.toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -674,7 +1306,7 @@ function ProductsContent() {
                   step={250}
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
-                  className="w-full accent-[#D4A373]"
+                  className="w-full accent-[#6B9E3A]"
                 />
               </div>
 
@@ -685,9 +1317,9 @@ function ProductsContent() {
                     type="checkbox"
                     checked={onlyInStock}
                     onChange={(e) => setOnlyInStock(e.target.checked)}
-                    className="w-4 h-4 rounded border-white/20 text-[#D4AF37] accent-[#D4A373]"
+                    className="w-4 h-4 rounded border-neutral-300 text-[#6B9E3A] accent-[#6B9E3A]"
                   />
-                  <span className="text-xs font-semibold text-neutral-200">
+                  <span className="text-xs font-semibold text-neutral-800">
                     In-Stock Items Only
                   </span>
                 </label>
@@ -695,23 +1327,22 @@ function ProductsContent() {
 
               {/* Categories */}
               <div>
-                <label className="block text-xs font-bold text-neutral-300 mb-2 uppercase tracking-wider font-movault">
+                <label className="block text-xs font-bold text-neutral-800 mb-2 uppercase tracking-wide font-mograph">
                   Departments
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {EXPLORE_CATEGORIES.map((cat) => {
-                    const isSelected = selectedCategory === cat.query;
+                    const isSelected =
+                      selectedCategory === cat.query ||
+                      (cat.query === "All" && (!selectedCategory || selectedCategory === "All"));
                     return (
                       <button
                         key={cat.id}
-                        onClick={() => {
-                          handleCategorySelect(cat.query);
-                          setMobileFilterOpen(false);
-                        }}
+                        onClick={() => handleCategorySelect(cat.query)}
                         className={`p-2.5 rounded-xl text-xs font-bold text-left transition-colors cursor-pointer ${
                           isSelected
-                            ? "bg-[#D4A373] text-black"
-                            : "bg-[#222226] text-neutral-300 hover:bg-[#2a2a30]"
+                            ? "bg-[#111111] text-white shadow-xs"
+                            : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200/70"
                         }`}
                       >
                         {cat.name}
@@ -721,12 +1352,57 @@ function ProductsContent() {
                 </div>
               </div>
 
-              <button
-                onClick={() => setMobileFilterOpen(false)}
-                className="w-full py-3.5 bg-[#D4A373] hover:bg-[#c29263] text-black font-bold text-sm rounded-xl shadow-lg uppercase font-movault tracking-wider transition-all"
-              >
-                Apply Filters ({filteredProducts.length} products)
-              </button>
+              {/* Dynamic Facets in Mobile Drawer */}
+              {activeFacetGroups.map((group) => {
+                const selectedValuesInGroup = selectedFacets[group.id] || [];
+                return (
+                  <div key={group.id} className="pt-3 border-t border-neutral-200">
+                    <label className="block text-xs font-bold text-neutral-800 mb-2 uppercase tracking-wide font-mograph">
+                      {group.name}
+                    </label>
+                    <div className="space-y-1.5">
+                      {group.options.map((opt) => {
+                        const isChecked = selectedValuesInGroup.includes(opt.value);
+                        const matchCount = baseCategoryProducts.filter((p) =>
+                          productMatchesFacetValue(p, group.id, opt.value)
+                        ).length;
+
+                        return (
+                          <label
+                            key={opt.value}
+                            className={`flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer text-xs transition-colors ${
+                              isChecked
+                                ? "bg-[#E5F2D0] text-[#3B581C] font-bold"
+                                : "bg-neutral-50 text-neutral-700 hover:bg-neutral-100"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => handleFacetToggle(group.id, opt.value)}
+                                className="w-4 h-4 rounded border-neutral-300 text-[#6B9E3A] accent-[#6B9E3A]"
+                              />
+                              <span>{opt.label}</span>
+                            </div>
+                            <span className="text-[10px] text-neutral-400">({matchCount})</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Bottom Sticky Action */}
+              <div className="pt-2 sticky bottom-0 bg-white">
+                <button
+                  onClick={() => setMobileFilterOpen(false)}
+                  className="w-full py-3.5 bg-[#111111] hover:bg-black text-white font-bold text-sm rounded-2xl shadow-lg transition-all cursor-pointer font-mograph"
+                >
+                  Apply Filters ({filteredProducts.length} {filteredProducts.length === 1 ? "product" : "products"})
+                </button>
+              </div>
             </motion.div>
           </>
         )}
@@ -741,10 +1417,10 @@ export default function ProductsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#070708] text-white flex items-center justify-center font-mograph">
+        <div className="min-h-screen bg-white text-neutral-900 flex items-center justify-center font-mograph">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm font-bold text-neutral-300 font-movault uppercase tracking-wider">Loading catalog...</p>
+            <div className="w-10 h-10 border-4 border-[#6B9E3A] border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm font-bold text-neutral-600 font-mograph">Loading catalog...</p>
           </div>
         </div>
       }
