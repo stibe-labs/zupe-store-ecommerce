@@ -55,10 +55,10 @@ export function Footer() {
     <footer className="relative bg-[#111111] text-neutral-300 rounded-t-[32px] sm:rounded-t-[40px] md:rounded-t-[48px] overflow-hidden pt-6 sm:pt-10 pb-24 md:pb-16 font-mograph border-t border-neutral-800 shadow-2xl">
       <div className="max-w-[1680px] mx-auto px-4 sm:px-8">
         {/* ================================================================= */}
-        {/* UPPER INSIDE FOOTER: SLIM CURVED CARD (4 TRUST BADGES IN 1 ROW)   */}
+        {/* UPPER INSIDE FOOTER: WHITE PLAIN CURVED CARD (4 TRUST BADGES)     */}
         {/* ================================================================= */}
-        <div className="bg-[#18181C] text-white rounded-2xl md:rounded-3xl border border-white/10 shadow-sm py-3 px-2 sm:py-4 sm:px-6 mb-8 sm:mb-10">
-          <div className="grid grid-cols-4 divide-x divide-white/10 items-center text-center">
+        <div className="bg-white text-neutral-900 rounded-2xl md:rounded-3xl border border-neutral-200/90 shadow-sm py-3 px-2 sm:py-4 sm:px-6 mb-8 sm:mb-10">
+          <div className="grid grid-cols-4 divide-x divide-neutral-200/80 items-center text-center">
             {[
               {
                 icon: BadgeCheck,
@@ -89,14 +89,14 @@ export function Footer() {
                   key={item.label}
                   className="flex flex-col items-center justify-center px-1 sm:px-2 md:px-3 text-center"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#1F2E14] border border-[#95CF42]/30 flex items-center justify-center shadow-xs mb-1 sm:mb-1.5 shrink-0 text-[#95CF42]">
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#95CF42]" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#E5F2D0] border border-[#95CF42]/40 flex items-center justify-center shadow-2xs mb-1 sm:mb-1.5 shrink-0 text-[#3B581C]">
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#3B581C]" />
                   </div>
-                  <p className="text-[10px] sm:text-xs md:text-sm font-bold text-white leading-tight font-mograph">
+                  <p className="text-[10px] sm:text-xs md:text-sm font-bold text-neutral-900 leading-tight font-mograph">
                     <span className="sm:hidden">{item.label}</span>
                     <span className="hidden sm:inline">{item.fullLabel || item.label}</span>
                   </p>
-                  <p className="text-[8px] sm:text-[10px] md:text-xs text-neutral-400 font-medium leading-tight mt-0.5 truncate max-w-full font-mograph">
+                  <p className="text-[8px] sm:text-[10px] md:text-xs text-neutral-500 font-medium leading-tight mt-0.5 truncate max-w-full font-mograph">
                     {item.desc}
                   </p>
                 </div>
