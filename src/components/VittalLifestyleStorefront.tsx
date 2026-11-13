@@ -138,12 +138,12 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
   return (
     <div className="bg-white text-neutral-900 font-mograph min-h-screen selection:bg-[#E5F2D0] selection:text-[#1E300E] pb-24 md:pb-12">
       {/* ===================================================================== */}
-      {/* 1. LARGE ROUNDED SEARCH BAR WITH FILTER ICON                          */}
+      {/* 1. LARGE ROUNDED SEARCH BAR WITH FILTER ICON (Mobile only, hidden on desktop) */}
       {/* ===================================================================== */}
-      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-2 pb-2 sm:pb-3">
+      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-2 pb-2 sm:pb-3 md:hidden">
         <div
           onClick={() => openSearch()}
-          className="w-full max-w-xl sm:max-w-2xl md:max-w-3xl mx-auto bg-[#F7F8FA] hover:bg-[#EFF1F4] border border-neutral-200/70 rounded-full py-2.5 sm:py-3 px-4 sm:px-5 flex items-center justify-between transition-all duration-200 shadow-2xs cursor-pointer group"
+          className="w-full max-w-xl sm:max-w-2xl mx-auto bg-[#F7F8FA] hover:bg-[#EFF1F4] border border-neutral-200/70 rounded-full py-2.5 sm:py-3 px-4 sm:px-5 flex items-center justify-between transition-all duration-200 shadow-2xs cursor-pointer group"
         >
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <Search className="w-5 h-5 text-neutral-400 group-hover:text-neutral-600 transition-colors shrink-0 stroke-[2]" />
@@ -170,11 +170,11 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       </section>
 
       {/* ===================================================================== */}
-      {/* 2. CATEGORIES SECTION (Placed Upper of Banner, Compact on Desktop)   */}
+      {/* 2. CATEGORIES SECTION (Placed Upper of Banner, Edge-to-Edge with Banner) */}
       {/* ===================================================================== */}
-      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-2 pb-2 sm:pb-3">
-        {/* Responsive Grid: 5 columns on Mobile, 6 columns on Desktop with Reduced Card Size */}
-        <div className="w-full max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-[1020px] mx-auto grid grid-cols-5 md:grid-cols-6 gap-2 sm:gap-2.5 md:gap-3.5 lg:gap-4">
+      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-3 md:pt-4 pb-2 sm:pb-4">
+        {/* Responsive Grid: 5 columns on Mobile, 6 columns on Desktop spanning from banner's left edge to right edge */}
+        <div className="w-full grid grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-8">
           {CATEGORY_ITEMS.map((cat) => (
             <Link
               key={cat.name}
@@ -190,7 +190,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                   src="/vittal/banner-hero-green-texture.jpg"
                   alt=""
                   fill
-                  sizes="(max-width: 768px) 20vw, 180px"
+                  sizes="(max-width: 768px) 20vw, 250px"
                   className="object-cover object-top pointer-events-none select-none opacity-90"
                 />
 
@@ -203,7 +203,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                     src={cat.image}
                     alt={cat.name}
                     fill
-                    sizes="(max-width: 640px) 20vw, (max-width: 1024px) 20vw, 200px"
+                    sizes="(max-width: 640px) 20vw, (max-width: 1024px) 20vw, 250px"
                     className="object-contain object-bottom group-hover:scale-108 transition-transform duration-300 drop-shadow-xs"
                   />
                 </div>
