@@ -46,6 +46,49 @@ const EXPLORE_CATEGORIES = [
   { id: "Candy & Chocolates", name: "Candy & Chocolates", icon: Cookie, query: "Candy & Chocolates" },
 ];
 
+// ---------------------------------------------------------------------------
+// Shop Page Category Cards (Homepage visual style with green wave & icons)
+// "All Categories" placed first on the left corner
+// ---------------------------------------------------------------------------
+const SHOP_CATEGORY_CARDS = [
+  {
+    id: "All",
+    name: "All Categories",
+    query: "All",
+    image: "/vittal/cat-icon-all-categories-trans.png",
+  },
+  {
+    id: "Gym Supplementaries",
+    name: "Gym Supplements",
+    query: "Gym Supplementaries",
+    image: "/vittal/cat-icon-gym-supplements-trans.png",
+  },
+  {
+    id: "Outfits",
+    name: "Outfits",
+    query: "Outfits",
+    image: "/vittal/cat-icon-outfits-trans.png",
+  },
+  {
+    id: "Apparels",
+    name: "Apparels",
+    query: "Apparels",
+    image: "/vittal/cat-icon-apparels-trans.png",
+  },
+  {
+    id: "Dates & Nuts",
+    name: "Dates & Nuts",
+    query: "Dates & Nuts",
+    image: "/vittal/cat-icon-dates-trans.png",
+  },
+  {
+    id: "Candy & Chocolates",
+    name: "Candy & Chocolates",
+    query: "Candy & Chocolates",
+    image: "/vittal/cat-icon-chocolates-trans.png",
+  },
+];
+
 const SORT_OPTIONS: {
   value: "featured" | "price-asc" | "price-desc" | "rating";
   label: string;
@@ -801,14 +844,14 @@ function ProductsContent() {
       {/* ===================================================================== */}
       {/* 1. HERO BANNER: Clean White & Pastel Lime Aesthetic                    */}
       {/* ===================================================================== */}
-      <div className="pt-24 sm:pt-28 pb-6 sm:pb-8 bg-gradient-to-b from-[#F2F8EB]/70 via-[#F8FAF4] to-white border-b border-neutral-200/70 relative overflow-hidden">
+      <div className="pt-3 sm:pt-4 md:pt-5 pb-3 sm:pb-4 bg-gradient-to-b from-[#F2F8EB]/70 via-[#F8FAF4] to-white border-b border-neutral-200/70 relative overflow-hidden">
         {/* Ambient Subtle Lime Glows */}
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#95CF42]/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute top-1/3 left-1/4 w-80 h-80 bg-[#E5F2D0]/40 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-xs text-neutral-500 mb-3 font-medium">
+          {/* Breadcrumb - Reduced upper gap */}
+          <div className="flex items-center gap-2 text-xs text-neutral-500 mb-1.5 sm:mb-2 font-medium">
             <Link href="/" className="hover:text-[#6B9E3A] transition-colors">
               Home
             </Link>
@@ -816,19 +859,11 @@ function ProductsContent() {
             <span className="text-neutral-900 font-bold">Shop All Products</span>
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
             <div>
-              {/* Soft Lime Eyebrow Pill */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5F2D0] text-[#3B581C] text-xs font-semibold mb-2.5 shadow-2xs">
-                <Sparkles className="w-3.5 h-3.5 text-[#6B9E3A]" />
-                <span>Direct Curation • 100% Pure &amp; Authentic</span>
-              </div>
-              <h1 className="font-mograph font-bold text-2xl sm:text-4xl md:text-5xl text-neutral-950 tracking-tight mb-2">
+              <h1 className="font-mograph font-bold text-2xl sm:text-3xl md:text-4xl text-neutral-950 tracking-tight">
                 Shop The Collection
               </h1>
-              <p className="font-mograph text-xs sm:text-sm text-neutral-600 max-w-xl font-medium leading-relaxed">
-                Discover lab-tested Gym Supplements, high-mobility Outfits, heavyweight Apparels, Royal Dates &amp; Handcrafted Chocolates.
-              </p>
             </div>
 
             {/* Fast Search Input */}
@@ -856,29 +891,71 @@ function ProductsContent() {
       </div>
 
       {/* ===================================================================== */}
-      {/* 2. HORIZONTAL CATEGORY CAPSULE BAR                                    */}
+      {/* 2. HORIZONTAL CATEGORY SWIPER ROW (Homepage Category Cards Design)     */}
       {/* ===================================================================== */}
       <div className="bg-white/95 backdrop-blur-md border-b border-neutral-200/70 sticky top-16 sm:top-20 z-20 shadow-2xs">
-        <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
-            {EXPLORE_CATEGORIES.map((cat) => {
-              const Icon = cat.icon;
+        <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
+          <div className="flex items-start gap-2.5 sm:gap-3 md:gap-4 lg:gap-5 overflow-x-auto no-scrollbar scroll-smooth touch-pan-x py-1">
+            {SHOP_CATEGORY_CARDS.map((cat) => {
               const isSelected =
-                selectedCategory === cat.query ||
-                (cat.query === "All" && (!selectedCategory || selectedCategory === "All"));
+                (cat.query === "All" && (!selectedCategory || selectedCategory === "All" || selectedCategory === "All Categories")) ||
+                selectedCategory.toLowerCase() === cat.query.toLowerCase() ||
+                ((selectedCategory.toLowerCase() === "gym supplements" || selectedCategory.toLowerCase() === "gym supplementaries") &&
+                 (cat.query.toLowerCase() === "gym supplements" || cat.query.toLowerCase() === "gym supplementaries"));
 
               return (
                 <button
                   key={cat.id}
+                  type="button"
                   onClick={() => handleCategorySelect(cat.query)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-                    isSelected
-                      ? "bg-[#111111] text-white shadow-xs scale-[1.02]"
-                      : "bg-white hover:bg-[#F8FAF4] text-neutral-700 border border-neutral-200/80 hover:border-neutral-300"
-                  }`}
+                  className="group flex flex-col items-center shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none w-[74px] xs:w-[82px] sm:w-[90px] md:w-[100px] lg:w-[110px]"
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isSelected ? "text-[#95CF42]" : "text-[#6B9E3A]"}`} />
-                  <span>{cat.name}</span>
+                  {/* Card Tile matching Home Page */}
+                  <div
+                    className={`w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white transition-all duration-300 flex items-end justify-center ${
+                      isSelected
+                        ? "border-2 border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md scale-[1.03]"
+                        : "border border-neutral-200/80 group-hover:border-[#6B9E3A]/60 shadow-2xs group-hover:shadow-md"
+                    }`}
+                  >
+                    {/* Banner's Matching Green Wave Texture */}
+                    <Image
+                      src="/vittal/banner-hero-green-texture.jpg"
+                      alt=""
+                      fill
+                      sizes="(max-width: 768px) 85px, 110px"
+                      className="object-cover object-top pointer-events-none select-none opacity-90"
+                    />
+
+                    {/* Top-to-lower fade */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
+
+                    {/* Inside Category Product Image */}
+                    <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1">
+                      <Image
+                        src={cat.image}
+                        alt={cat.name}
+                        width={110}
+                        height={110}
+                        className={`w-full h-full object-contain object-bottom pointer-events-none select-none transition-transform duration-300 ${
+                          isSelected
+                            ? "scale-105 drop-shadow-[0_4px_8px_rgba(107,158,58,0.3)]"
+                            : "drop-shadow-[0_4px_8px_rgba(0,0,0,0.12)] group-hover:scale-105"
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Category Name Label */}
+                  <span
+                    className={`mt-1.5 text-[10px] xs:text-[11px] sm:text-xs text-center line-clamp-1 transition-colors ${
+                      isSelected
+                        ? "text-[#6B9E3A] font-bold"
+                        : "font-semibold text-neutral-800 group-hover:text-[#6B9E3A]"
+                    }`}
+                  >
+                    {cat.name}
+                  </span>
                 </button>
               );
             })}
