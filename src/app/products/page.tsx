@@ -103,9 +103,13 @@ const CATEGORY_FACETS: Record<string, FacetGroup[]> = {
       name: "Product Type",
       options: [
         { value: "Oversized T-Shirts", label: "Oversized T-Shirts" },
-        { value: "Compression Wear", label: "Compression Wear" },
-        { value: "Gym Matching Sets", label: "Gym Matching Sets" },
         { value: "Performance Tees", label: "Performance Tees" },
+        { value: "Gym Matching Sets", label: "Gym Matching Sets" },
+        { value: "Athleisure Sets", label: "Athleisure Sets" },
+        { value: "Track Jackets", label: "Track Jackets & Hoodies" },
+        { value: "Gym Shorts", label: "Gym Shorts" },
+        { value: "Jogger Pants", label: "Joggers & Track Pants" },
+        { value: "Compression Wear", label: "Compression Tops" },
       ],
     },
     {
@@ -123,9 +127,10 @@ const CATEGORY_FACETS: Record<string, FacetGroup[]> = {
       id: "material",
       name: "Material / Fabric",
       options: [
-        { value: "100% Combed Cotton", label: "100% Combed Cotton" },
+        { value: "100% Combed Cotton", label: "100% Combed Cotton (240 GSM)" },
         { value: "Nylon-Spandex", label: "Nylon-Spandex Performance" },
-        { value: "Breathable Dri-FIT", label: "Breathable Dri-FIT" },
+        { value: "Breathable Dri-FIT", label: "Breathable Dri-FIT / AEROREADY" },
+        { value: "French Terry Fleece", label: "French Terry Fleece" },
       ],
     },
     {
@@ -134,11 +139,27 @@ const CATEGORY_FACETS: Record<string, FacetGroup[]> = {
       options: [
         { value: "Pitch Black", label: "Pitch Black" },
         { value: "Pure White", label: "Pure White" },
-        { value: "Onyx Black", label: "Onyx Black" },
+        { value: "Charcoal Heather", label: "Charcoal Heather / Slate" },
+        { value: "Crimson Red", label: "Crimson Red" },
+        { value: "Midnight Navy", label: "Midnight Navy" },
       ],
     },
   ],
   Apparels: [
+    {
+      id: "productType",
+      name: "Category & Style",
+      options: [
+        { value: "Footwear & Sneakers", label: "Footwear & Sneakers" },
+        { value: "Fragrance & Perfume", label: "Fragrance & Perfume" },
+        { value: "Cosmetics & Beauty", label: "Cosmetics & Beauty" },
+        { value: "Performance Tees", label: "Performance Athletic Tees" },
+        { value: "Oversized T-Shirts", label: "Oversized Streetwear Tees" },
+        { value: "Gym Shorts", label: "Gym & Athletic Shorts" },
+        { value: "Jogger Pants", label: "Tapered Fleece Joggers" },
+        { value: "Track Jackets", label: "Track Jackets & Compression" },
+      ],
+    },
     {
       id: "gender",
       name: "Gender / Ideal For",
@@ -149,38 +170,29 @@ const CATEGORY_FACETS: Record<string, FacetGroup[]> = {
       ],
     },
     {
-      id: "productType",
-      name: "Product Type",
+      id: "brand",
+      name: "Brand Collection",
       options: [
-        { value: "Oversized T-Shirts", label: "Oversized T-Shirts" },
-        { value: "Performance Tees", label: "Performance Tees" },
-        { value: "Compression Wear", label: "Compression Wear" },
+        { value: "Vittal Lifestyle", label: "Vittal Lifestyle" },
+        { value: "Nike", label: "Nike" },
+        { value: "Adidas", label: "Adidas" },
+        { value: "Elie Saab", label: "Elie Saab" },
+        { value: "Vittal Luxury", label: "Vittal Luxury & Noir" },
       ],
     },
     {
       id: "size",
-      name: "Size",
+      name: "Size / Dimensions",
       options: [
         { value: "S", label: "S" },
         { value: "M", label: "M" },
         { value: "L", label: "L" },
         { value: "XL", label: "XL" },
-      ],
-    },
-    {
-      id: "material",
-      name: "Material / Fabric",
-      options: [
-        { value: "100% Combed Cotton", label: "100% Combed Cotton (240 GSM)" },
-        { value: "Breathable Dri-FIT", label: "Breathable Dri-FIT" },
-      ],
-    },
-    {
-      id: "color",
-      name: "Color",
-      options: [
-        { value: "Pitch Black", label: "Pitch Black" },
-        { value: "Pure White", label: "Pure White" },
+        { value: "UK 7", label: "UK 7" },
+        { value: "UK 8", label: "UK 8" },
+        { value: "UK 9", label: "UK 9" },
+        { value: "UK 10", label: "UK 10" },
+        { value: "100ml", label: "90ml - 100ml Perfume" },
       ],
     },
   ],
@@ -189,26 +201,39 @@ const CATEGORY_FACETS: Record<string, FacetGroup[]> = {
       id: "supplementType",
       name: "Supplement Type",
       options: [
-        { value: "Whey Protein Isolate", label: "Whey Protein Isolate" },
+        { value: "Whey Protein Isolate", label: "Whey Protein & Isolate" },
         { value: "Creatine Monohydrate", label: "Creatine Monohydrate" },
-        { value: "Mass Gainer", label: "Mass Gainer Complex" },
+        { value: "Omega-3", label: "Omega-3 Fish Oil & Wellness" },
+      ],
+    },
+    {
+      id: "brand",
+      name: "Brand",
+      options: [
+        { value: "Optimum Nutrition", label: "Optimum Nutrition (ON)" },
+        { value: "MuscleTech", label: "MuscleTech" },
+        { value: "GNC", label: "GNC Pro Performance" },
+        { value: "Sports Research", label: "Sports Research" },
+        { value: "Vittal Lifestyle", label: "Vittal Lifestyle" },
       ],
     },
     {
       id: "flavor",
       name: "Flavor",
       options: [
-        { value: "Chocolate", label: "Rich Chocolate Fudge" },
-        { value: "Swiss Chocolate", label: "Swiss Chocolate" },
-        { value: "Unflavored", label: "Unflavored" },
+        { value: "Chocolate", label: "Double Rich / Milk Chocolate" },
+        { value: "Unflavored", label: "100% Pure Unflavored" },
       ],
     },
     {
       id: "weight",
       name: "Pack Size / Weight",
       options: [
-        { value: "250g", label: "250g (83 Servings)" },
-        { value: "1kg", label: "1kg / 2.2 lbs (30 Servings)" },
+        { value: "250g", label: "250g - 300g (Creatine)" },
+        { value: "1kg", label: "1kg / 2.2 lbs (Whey)" },
+        { value: "2kg", label: "2.27kg / 5 lbs Mega Tub" },
+        { value: "4kg", label: "4kg / 8.8 lbs Giant Bucket" },
+        { value: "180 Softgels", label: "180 Softgels (Omega-3)" },
       ],
     },
     {
@@ -217,7 +242,7 @@ const CATEGORY_FACETS: Record<string, FacetGroup[]> = {
       options: [
         { value: "Zero Added Sugar", label: "Zero Added Sugar" },
         { value: "100% Pure Isolate", label: "100% Pure Isolate" },
-        { value: "Lean Muscle Growth", label: "Lean Muscle Growth" },
+        { value: "Lean Muscle Growth", label: "Lean Muscle & Power" },
         { value: "Vegetarian", label: "100% Vegetarian" },
       ],
     },
@@ -227,25 +252,29 @@ const CATEGORY_FACETS: Record<string, FacetGroup[]> = {
       id: "variety",
       name: "Variety & Origin",
       options: [
-        { value: "Jumbo Medjool Dates", label: "Jumbo Medjool Dates" },
-        { value: "Royal Ajwa Dates", label: "Royal Ajwa Dates (Medina)" },
+        { value: "Jumbo Medjool Dates", label: "Royal Saudi Medjool Dates" },
+        { value: "Jumbo Cashews", label: "W180 King Jumbo Cashews" },
         { value: "California Almonds", label: "California Roasted Almonds" },
+        { value: "California Pistachios", label: "California Roasted Pistachios" },
+        { value: "Organic Chia Seeds", label: "Organic Raw Chia Seeds" },
       ],
     },
     {
       id: "packSize",
-      name: "Pack Size",
+      name: "Pack Size / Format",
       options: [
-        { value: "500g", label: "500g Fresh Pack" },
-        { value: "1kg", label: "1kg Value Pack" },
+        { value: "Glass Jar", label: "Luxury Gold Lid Glass Jar" },
+        { value: "Fresh Pouch", label: "Gold-Trimmed Fresh Pouch" },
+        { value: "400g", label: "350g - 400g" },
+        { value: "500g", label: "450g - 500g" },
       ],
     },
     {
       id: "roastStyle",
       name: "Roast & Style",
       options: [
-        { value: "Raw Sun-Ripened", label: "Raw Sun-Ripened" },
-        { value: "Lightly Salted & Roasted", label: "Lightly Salted & Roasted" },
+        { value: "Raw Sun-Ripened", label: "Raw Sun-Ripened Whole" },
+        { value: "Lightly Salted & Roasted", label: "Lightly Salted & Air-Roasted" },
       ],
     },
     {
@@ -254,7 +283,7 @@ const CATEGORY_FACETS: Record<string, FacetGroup[]> = {
       options: [
         { value: "100% Natural Superfood", label: "100% Natural Superfood" },
         { value: "Zero Added Sugar", label: "Zero Added Sugar" },
-        { value: "Gluten Free", label: "Gluten Free" },
+        { value: "Gluten Free", label: "Gluten Free & Vegan" },
       ],
     },
   ],
@@ -263,36 +292,29 @@ const CATEGORY_FACETS: Record<string, FacetGroup[]> = {
       id: "chocolateType",
       name: "Confectionery Type",
       options: [
-        { value: "Artisan Dark Chocolate Truffles", label: "Artisan Dark Chocolate Truffles" },
-        { value: "70% Dark Cocoa Delicacies", label: "70% Dark Cocoa Delicacies" },
-        { value: "Protein Chocolate Bites", label: "Protein Chocolate Bites" },
-        { value: "Signature Black Candy Box", label: "Signature Black Candy Box" },
-      ],
-    },
-    {
-      id: "cocoaContent",
-      name: "Cocoa Content",
-      options: [
-        { value: "70% Single-Origin", label: "70% Single-Origin Dark" },
-        { value: "Gourmet Cocoa", label: "Gourmet Cocoa Blend" },
+        { value: "Ferrero Rocher", label: "Ferrero Rocher Hazelnut Box" },
+        { value: "Cadbury Dairy Milk", label: "Cadbury Silk Roasted Almond" },
+        { value: "Bounty", label: "Bounty Tender Coconut Bars" },
+        { value: "Lindt Lindor", label: "Lindt Lindor Swiss Truffles" },
+        { value: "Signature Black Candy Box", label: "Signature Black Candy Box (70% Dark)" },
       ],
     },
     {
       id: "dietary",
-      name: "Dietary & Purity",
+      name: "Dietary & Features",
       options: [
-        { value: "Zero Palm Oil", label: "Zero Palm Oil" },
-        { value: "Zero Trans Fat", label: "Zero Trans Fat" },
-        { value: "High Protein Infused", label: "High Protein Infused" },
         { value: "Vegetarian", label: "100% Vegetarian" },
+        { value: "Zero Palm Oil", label: "Zero Palm Oil / Zero Trans Fat" },
+        { value: "Single-Origin", label: "Single-Origin Dark Cocoa" },
+        { value: "Whole Nuts", label: "Whole Roasted Hazelnuts / Almonds" },
       ],
     },
     {
       id: "packaging",
       name: "Packaging Format",
       options: [
-        { value: "16-Piece Luxury Box", label: "16-Piece Luxury Gift Box" },
-        { value: "300g Gourmet Jar", label: "300g Gourmet Fresh Jar" },
+        { value: "Luxury Gift Box", label: "Luxury Presentation Gift Box" },
+        { value: "Multipack", label: "Convenient Multipack Bundle" },
       ],
     },
   ],
@@ -349,18 +371,48 @@ function productMatchesFacetValue(product: Product, facetId: string, value: stri
       return true;
 
     case "productType":
+      if (value === "Footwear & Sneakers") {
+        return allText.includes("sneaker") || allText.includes("running") || allText.includes("footwear") || pSubcat.includes("footwear");
+      }
+      if (value === "Fragrance & Perfume") {
+        return allText.includes("parfum") || allText.includes("fragrance") || allText.includes("eau de") || pSubcat.includes("fragrance");
+      }
+      if (value === "Cosmetics & Beauty") {
+        return allText.includes("makeup") || allText.includes("lipstick") || allText.includes("cosmetics") || pSubcat.includes("cosmetics");
+      }
       if (value === "Oversized T-Shirts") {
         return pName.includes("oversized") || pSubcat.includes("t-shirt") || specsStr.includes("oversized");
       }
       if (value === "Compression Wear") {
-        return allText.includes("compression") || pSubcat.includes("gym matching sets");
+        return allText.includes("compression") || pSubcat.includes("compression");
       }
-      if (value === "Gym Matching Sets") {
-        return allText.includes("gym set") || allText.includes("matching set") || pSubcat.includes("gym matching sets");
+      if (value === "Gym Matching Sets" || value === "Athleisure Sets") {
+        return allText.includes("set") || allText.includes("seamless") || pSubcat.includes("sets");
+      }
+      if (value === "Track Jackets") {
+        return allText.includes("jacket") || allText.includes("track") || pSubcat.includes("jackets");
+      }
+      if (value === "Gym Shorts") {
+        return allText.includes("shorts") || pSubcat.includes("shorts");
+      }
+      if (value === "Jogger Pants") {
+        return allText.includes("jogger") || allText.includes("pants") || pSubcat.includes("joggers");
       }
       if (value === "Performance Tees") {
-        return pName.includes("t-shirt") || pSubcat.includes("t-shirt");
+        return pName.includes("t-shirt") || pName.includes("tee") || pSubcat.includes("t-shirt");
       }
+      return allText.includes(value.toLowerCase());
+
+    case "brand":
+      if (value === "Optimum Nutrition") return allText.includes("optimum nutrition") || allText.includes("on ");
+      if (value === "MuscleTech") return allText.includes("muscletech") || allText.includes("nitro-tech");
+      if (value === "GNC") return allText.includes("gnc");
+      if (value === "Sports Research") return allText.includes("sports research");
+      if (value === "Nike") return allText.includes("nike");
+      if (value === "Adidas") return allText.includes("adidas");
+      if (value === "Elie Saab") return allText.includes("elie saab");
+      if (value === "Vittal Luxury") return allText.includes("vittal luxury") || allText.includes("vittal noir");
+      if (value === "Vittal Lifestyle") return allText.includes("vittal lifestyle");
       return allText.includes(value.toLowerCase());
 
     case "size":
@@ -386,6 +438,7 @@ function productMatchesFacetValue(product: Product, facetId: string, value: stri
     case "supplementType":
       if (value === "Whey Protein Isolate") return allText.includes("isolate") || allText.includes("whey");
       if (value === "Creatine Monohydrate") return allText.includes("creatine");
+      if (value === "Omega-3") return allText.includes("omega-3") || allText.includes("fish oil");
       if (value === "Mass Gainer") return allText.includes("mass gainer") || allText.includes("gainer");
       return allText.includes(value.toLowerCase());
 
@@ -397,10 +450,15 @@ function productMatchesFacetValue(product: Product, facetId: string, value: stri
 
     case "weight":
     case "packSize":
-      if (value === "250g") return allText.includes("250g") || allText.includes("250 g");
-      if (value === "500g") return allText.includes("500g") || allText.includes("500 g");
-      if (value === "1kg") return allText.includes("1kg") || allText.includes("1 kg");
-      if (value === "2kg") return allText.includes("2kg") || allText.includes("2 kg");
+      if (value === "Glass Jar") return allText.includes("glass jar") || allText.includes("jar");
+      if (value === "Fresh Pouch") return allText.includes("pouch") || allText.includes("bag");
+      if (value === "250g") return allText.includes("250g") || allText.includes("300g") || allText.includes("250 g");
+      if (value === "400g") return allText.includes("350g") || allText.includes("400g");
+      if (value === "500g") return allText.includes("450g") || allText.includes("500g") || allText.includes("500 g");
+      if (value === "1kg") return allText.includes("1kg") || allText.includes("1 kg") || allText.includes("2.2 lbs");
+      if (value === "2kg") return allText.includes("2.27kg") || allText.includes("5 lbs");
+      if (value === "4kg") return allText.includes("4kg") || allText.includes("8.8 lbs");
+      if (value === "180 Softgels") return allText.includes("softgels") || allText.includes("180");
       return allText.includes(value.toLowerCase());
 
     case "goal":
@@ -409,19 +467,22 @@ function productMatchesFacetValue(product: Product, facetId: string, value: stri
         return allText.includes("zero added sugar") || allText.includes("zero sugar") || allText.includes("no added sugar");
       }
       if (value === "100% Pure Isolate") return allText.includes("isolate");
-      if (value === "Lean Muscle Growth") return allText.includes("muscle");
-      if (value === "Vegetarian") return allText.includes("vegetarian");
+      if (value === "Lean Muscle Growth") return allText.includes("muscle") || allText.includes("recovery");
+      if (value === "Vegetarian") return allText.includes("vegetarian") || allText.includes("vegan");
       if (value === "100% Natural Superfood") return allText.includes("superfood") || allText.includes("natural");
       if (value === "Gluten Free") return true;
-      if (value === "Zero Palm Oil") return allText.includes("palm oil");
+      if (value === "Zero Palm Oil") return allText.includes("palm oil") || allText.includes("single-origin");
       if (value === "Zero Trans Fat") return allText.includes("trans fat");
-      if (value === "High Protein Infused") return allText.includes("protein");
+      if (value === "Single-Origin") return allText.includes("single-origin");
+      if (value === "Whole Nuts") return allText.includes("almond") || allText.includes("hazelnut") || allText.includes("nut");
       return allText.includes(value.toLowerCase());
 
     case "variety":
-      if (value === "Jumbo Medjool Dates") return allText.includes("medjool") || allText.includes("royal dates") || allText.includes("dates");
-      if (value === "Royal Ajwa Dates") return allText.includes("ajwa");
+      if (value === "Jumbo Medjool Dates") return allText.includes("medjool") || allText.includes("dates");
+      if (value === "Jumbo Cashews") return allText.includes("cashew");
       if (value === "California Almonds") return allText.includes("almond");
+      if (value === "California Pistachios") return allText.includes("pistachio");
+      if (value === "Organic Chia Seeds") return allText.includes("chia");
       return allText.includes(value.toLowerCase());
 
     case "roastStyle":
@@ -430,9 +491,10 @@ function productMatchesFacetValue(product: Product, facetId: string, value: stri
       return allText.includes(value.toLowerCase());
 
     case "chocolateType":
-      if (value === "Artisan Dark Chocolate Truffles") return allText.includes("truffle") || allText.includes("artisan");
-      if (value === "70% Dark Cocoa Delicacies") return allText.includes("70%") || allText.includes("delicacies");
-      if (value === "Protein Chocolate Bites") return allText.includes("protein") && allText.includes("chocolate");
+      if (value === "Ferrero Rocher") return allText.includes("ferrero");
+      if (value === "Cadbury Dairy Milk") return allText.includes("cadbury");
+      if (value === "Bounty") return allText.includes("bounty");
+      if (value === "Lindt Lindor") return allText.includes("lindt");
       if (value === "Signature Black Candy Box") return allText.includes("candy box") || allText.includes("black candy");
       return allText.includes(value.toLowerCase());
 
