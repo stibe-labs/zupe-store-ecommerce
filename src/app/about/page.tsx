@@ -87,7 +87,7 @@ function CountUpNumber({
   }, [hasStarted, target, duration]);
 
   return (
-    <div ref={ref} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#6B9E3A] tracking-tight font-movault">
+    <div ref={ref} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#6B9E3A] tracking-tight font-mograph">
       {count.toLocaleString()}
       {suffix}
     </div>
@@ -340,28 +340,28 @@ export default function AboutPage() {
 
             <div className="text-center max-w-3xl mx-auto">
               {/* Tagline Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-xs font-semibold text-[#3D6318] mb-5 shadow-xs">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-xs font-semibold text-[#3D6318] mb-5 shadow-xs font-mograph">
                 <Sparkles className="w-3.5 h-3.5 text-[#6B9E3A]" />
-                <span className="tracking-wide uppercase font-movault text-[13px]">
+                <span className="tracking-wide text-xs sm:text-[13px] font-semibold">
                   Pure Nutrition • Performance Apparel • Mindful Living
                 </span>
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-950 tracking-tight leading-tight uppercase font-movault">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-neutral-950 tracking-tight leading-tight font-mograph">
                 Live Better. <span className="text-[#6B9E3A]">Feel Stronger.</span>
               </h1>
 
               {/* Subtitle */}
-              <p className="mt-4 text-sm sm:text-base md:text-lg text-neutral-600 leading-relaxed font-normal max-w-2xl mx-auto">
+              <p className="mt-4 text-sm sm:text-base md:text-lg text-neutral-600 leading-relaxed font-normal max-w-2xl mx-auto font-mograph">
                 Vittal Lifestyle was built on a simple conviction: you should never have to compromise between physical strength, peak wellness, and premium everyday aesthetics. We craft lab-certified supplements, ergonomic activewear, farm-sourced dates &amp; nuts, and artisan dark chocolates directly for discerning Indian athletes and mindful families.
               </p>
 
               {/* Action Buttons */}
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 font-mograph">
                 <Link
                   href="/products"
-                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-extrabold text-sm shadow-md hover:shadow-lg hover:shadow-[#95CF42]/25 transition-all font-movault uppercase tracking-wider cursor-pointer"
+                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-sm sm:text-base shadow-md hover:shadow-lg hover:shadow-[#95CF42]/25 transition-all cursor-pointer"
                 >
                   <span>Explore Catalog</span>
                   <ArrowRight className="w-4 h-4 stroke-[2.5]" />
@@ -415,9 +415,9 @@ export default function AboutPage() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Stat 1 */}
-              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md">
+              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md font-mograph">
                 <CountUpNumber target={100} suffix="%" duration={1600} />
-                <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 uppercase tracking-wider font-movault">
+                <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 tracking-tight">
                   Certified Pure Stock
                 </span>
                 <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-500 font-medium">
@@ -426,9 +426,9 @@ export default function AboutPage() {
               </div>
 
               {/* Stat 2 */}
-              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md">
+              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md font-mograph">
                 <CountUpNumber target={25000} suffix="+" duration={1800} />
-                <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 uppercase tracking-wider font-movault">
+                <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 tracking-tight">
                   Active Fitness Enthusiasts
                 </span>
                 <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-500 font-medium">
@@ -437,11 +437,11 @@ export default function AboutPage() {
               </div>
 
               {/* Stat 3 */}
-              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md">
-                <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#6B9E3A] tracking-tight font-movault">
+              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md font-mograph">
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#6B9E3A] tracking-tight">
                   4.9 <span className="text-xl sm:text-2xl text-neutral-400">/ 5.0</span>
                 </div>
-                <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 uppercase tracking-wider font-movault">
+                <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 tracking-tight">
                   Verified Customer Rating
                 </span>
                 <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-500 font-medium">
@@ -450,11 +450,11 @@ export default function AboutPage() {
               </div>
 
               {/* Stat 4 */}
-              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md">
-                <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#6B9E3A] tracking-tight font-movault">
+              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md font-mograph">
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#6B9E3A] tracking-tight">
                   48 Hrs
                 </div>
-                <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 uppercase tracking-wider font-movault">
+                <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 tracking-tight">
                   Priority Dispatch
                 </span>
                 <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-500 font-medium">
@@ -470,18 +470,18 @@ export default function AboutPage() {
            ======================================================== */}
         <section className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#3D6318] bg-[#F4FBE8] px-3.5 py-1.5 rounded-full border border-[#95CF42]/40 inline-block mb-3 font-movault">
+            <span className="text-xs font-semibold text-[#3D6318] bg-[#F4FBE8] px-3.5 py-1.5 rounded-full border border-[#95CF42]/40 inline-block mb-3 font-mograph">
               Our 5 Core Departments
             </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-neutral-950 tracking-tight uppercase font-movault">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-950 tracking-tight font-mograph">
               Curated for Strength, Style &amp; Sustenance
             </h2>
-            <p className="mt-2 text-xs sm:text-sm text-neutral-500 leading-relaxed font-normal">
+            <p className="mt-2 text-xs sm:text-sm text-neutral-500 leading-relaxed font-normal font-mograph">
               Every product in our store is formulated or designed under strict guidelines for physical endurance, comfort, and vitality.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 font-mograph">
             {LIFESTYLE_PILLARS.map((pillar, idx) => {
               const Icon = pillar.icon;
               return (
@@ -501,7 +501,7 @@ export default function AboutPage() {
                       </span>
                     </div>
 
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#6B9E3A] mb-1 font-movault">
+                    <h3 className="text-xs font-bold text-[#6B9E3A] mb-1 font-mograph">
                       {pillar.category}
                     </h3>
                     <h4 className="text-base sm:text-lg font-bold text-neutral-950 mb-2 leading-snug">
@@ -515,7 +515,7 @@ export default function AboutPage() {
                   <div className="mt-6 pt-4 border-t border-neutral-100 flex items-center justify-between">
                     <Link
                       href={pillar.link}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#3D6318] hover:text-[#6B9E3A] transition-colors uppercase font-movault tracking-wider"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#3D6318] hover:text-[#6B9E3A] transition-colors font-mograph"
                     >
                       <span>Explore {pillar.category}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -533,18 +533,18 @@ export default function AboutPage() {
         <section className="py-12 sm:py-16 bg-[#FAFCF6] border-y border-neutral-100">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#3D6318] bg-[#F4FBE8] px-3.5 py-1.5 rounded-full border border-[#95CF42]/40 inline-block mb-3 font-movault">
+              <span className="text-xs font-semibold text-[#3D6318] bg-[#F4FBE8] px-3.5 py-1.5 rounded-full border border-[#95CF42]/40 inline-block mb-3 font-mograph">
                 The Vittal Standard
               </span>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-neutral-950 tracking-tight uppercase font-movault">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-950 tracking-tight font-mograph">
                 From Origin to Your Hands
               </h2>
-              <p className="mt-2 text-xs sm:text-sm text-neutral-500 font-normal">
+              <p className="mt-2 text-xs sm:text-sm text-neutral-500 font-normal font-mograph">
                 Strict quality verification guarantees that what arrives at your doorstep meets Olympic-grade expectations.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative font-mograph">
               {[
                 {
                   step: "01",
@@ -571,7 +571,7 @@ export default function AboutPage() {
                   key={item.step}
                   className="relative p-6 rounded-2xl bg-white border border-neutral-200/90 hover:border-[#95CF42] shadow-xs transition-all"
                 >
-                  <span className="text-3xl font-extrabold text-[#95CF42]/60 font-movault block mb-2">
+                  <span className="text-3xl font-extrabold text-[#95CF42]/60 font-mograph block mb-2">
                     {item.step}
                   </span>
                   <h4 className="text-sm sm:text-base font-bold text-neutral-950 mb-2">
@@ -592,14 +592,14 @@ export default function AboutPage() {
         <section className="py-14 sm:py-20 bg-gradient-to-b from-white via-[#FAFCF6] to-white overflow-hidden border-b border-neutral-100">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-10 max-w-xl mx-auto">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] text-xs font-bold uppercase tracking-wider mb-3 font-movault">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] text-xs font-semibold mb-3 font-mograph">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#6B9E3A]" />
                 <span>Verified Athletes &amp; Customers</span>
               </div>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-neutral-950 tracking-tight uppercase font-movault">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-950 tracking-tight font-mograph">
                 Voices of Vittal Lifestyle
               </h2>
-              <p className="mt-1.5 text-xs sm:text-sm text-neutral-500 max-w-md mx-auto font-normal">
+              <p className="mt-1.5 text-xs sm:text-sm text-neutral-500 max-w-md mx-auto font-normal font-mograph">
                 Real feedback from lifters, runners, and mindful food lovers nationwide.
               </p>
             </div>
@@ -674,7 +674,7 @@ export default function AboutPage() {
                           <span className="text-[11px] text-neutral-500 font-normal">{item.location}</span>
                         </div>
 
-                        <span className="text-[11px] font-bold text-[#3D6318] bg-[#F4FBE8] border border-[#95CF42]/30 px-3 py-1 rounded-full self-start sm:self-auto font-movault tracking-wide">
+                        <span className="text-[11px] font-bold text-[#3D6318] bg-[#F4FBE8] border border-[#95CF42]/30 px-3 py-1 rounded-full self-start sm:self-auto font-mograph tracking-tight">
                           {item.product}
                         </span>
                       </div>
@@ -727,30 +727,30 @@ export default function AboutPage() {
         {/* ========================================================
             6. FINAL CALL TO ACTION (CTA)
            ======================================================== */}
-        <section className="py-12 sm:py-16 max-w-5xl mx-auto px-4 sm:px-6">
+        <section className="py-12 sm:py-16 max-w-5xl mx-auto px-4 sm:px-6 font-mograph">
           <div className="rounded-3xl bg-gradient-to-r from-[#95CF42] via-[#85BE33] to-[#6B9E3A] text-neutral-950 p-8 sm:p-12 md:p-14 text-center relative overflow-hidden shadow-xl">
             {/* Ambient Lighting Gradients */}
             <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-white/20 blur-[90px] pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-black/10 blur-[90px] pointer-events-none" />
 
             <div className="relative z-10 max-w-2xl mx-auto">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/10 text-xs font-bold text-neutral-950 mb-4 border border-black/15 uppercase font-movault tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/10 text-xs font-semibold text-neutral-950 mb-4 border border-black/15 font-mograph">
                 <Sparkles className="w-3.5 h-3.5 text-neutral-950" />
                 <span>Join The Vittal Lifestyle</span>
               </div>
 
-              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-neutral-950 tracking-tight leading-tight uppercase font-movault">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-neutral-950 tracking-tight leading-tight font-mograph">
                 Elevate Your Health &amp; Performance Today
               </h2>
 
-              <p className="mt-3.5 text-xs sm:text-sm md:text-base text-neutral-900 leading-relaxed font-normal max-w-xl mx-auto">
+              <p className="mt-3.5 text-xs sm:text-sm md:text-base text-neutral-900 leading-relaxed font-normal max-w-xl mx-auto font-mograph">
                 Explore our full line-up of gym supplements, athletic wear, organic dates, and artisan chocolates. Delivered express with 100% authenticity guarantee.
               </p>
 
-              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 font-mograph">
                 <Link
                   href="/products"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-black hover:bg-neutral-900 text-white text-sm font-bold shadow-lg hover:shadow-black/20 transition-all font-movault uppercase tracking-wider cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-black hover:bg-neutral-900 text-white text-sm font-bold shadow-lg hover:shadow-black/20 transition-all cursor-pointer"
                 >
                   <span>Explore Shop</span>
                   <ArrowRight className="w-4 h-4 stroke-[2.5]" />

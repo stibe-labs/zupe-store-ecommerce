@@ -419,14 +419,14 @@ export default function AccountPage() {
             <div className="w-16 h-16 rounded-2xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30 flex items-center justify-center mx-auto mb-4 shadow-xs">
               <User className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-extrabold text-neutral-950 mb-2 font-movault uppercase tracking-tight">Sign In to Your Account</h2>
+            <h2 className="text-2xl font-bold text-neutral-950 mb-2 font-mograph tracking-tight">Sign In to Your Account</h2>
             <p className="text-xs sm:text-sm text-neutral-600 mb-6 leading-relaxed font-normal">
               View your orders, manage saved delivery addresses, and track shipments in real-time.
             </p>
-            <div className="space-y-3">
+            <div className="space-y-3 font-mograph">
               <Link
                 href="/signin?redirect=/account"
-                className="w-full inline-flex items-center justify-center px-6 py-3 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-extrabold text-sm shadow-sm transition-colors uppercase font-movault tracking-wider"
+                className="w-full inline-flex items-center justify-center px-6 py-3 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-sm shadow-sm transition-colors"
               >
                 Sign In
               </Link>
@@ -458,12 +458,12 @@ export default function AccountPage() {
 
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-6">
             <div className="flex items-center gap-4 sm:gap-5">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#95CF42] text-black font-black text-2xl sm:text-3xl flex items-center justify-center shadow-md shrink-0 font-movault">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#95CF42] text-black font-bold text-2xl sm:text-3xl flex items-center justify-center shadow-md shrink-0 font-mograph">
                 {initial}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 font-mograph">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h1 className="text-lg sm:text-2xl font-extrabold text-white tracking-wide truncate uppercase font-movault">
+                  <h1 className="text-lg sm:text-2xl font-bold text-white tracking-tight truncate font-mograph">
                     {user.name}
                   </h1>
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#F4FBE8] text-[#3D6318] text-[10px] font-bold tracking-wide uppercase border border-[#95CF42]/40">
@@ -529,7 +529,7 @@ export default function AccountPage() {
               {isSuperAdmin && (
                 <Link
                   href="/admin"
-                  className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-xs font-black text-black transition-colors shadow-xs font-movault uppercase tracking-wider"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-xs font-bold text-black transition-colors shadow-xs font-mograph"
                 >
                   <Shield className="w-3.5 h-3.5" />
                   <span>Admin Portal</span>
@@ -688,7 +688,7 @@ export default function AccountPage() {
             <button
               type="button"
               onClick={handleOpenAddAddress}
-              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-black shadow-xs transition-colors cursor-pointer whitespace-nowrap self-start sm:self-center font-movault uppercase tracking-wider"
+              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-bold shadow-xs transition-colors cursor-pointer whitespace-nowrap self-start sm:self-center font-mograph"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Add New Address</span>
@@ -713,7 +713,7 @@ export default function AccountPage() {
                 <button
                   type="button"
                   onClick={handleOpenAddAddress}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-black shadow-xs transition-colors cursor-pointer font-movault uppercase tracking-wider"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-bold shadow-xs transition-colors cursor-pointer font-mograph"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Add First Address</span>
@@ -746,7 +746,7 @@ export default function AccountPage() {
                         </div>
 
                         {addr.is_default ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#95CF42] text-black text-[10px] font-black uppercase font-movault tracking-wider">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#95CF42] text-black text-[10px] font-bold font-mograph">
                             <Star className="w-2.5 h-2.5 fill-black text-black" />
                             Default
                           </span>
@@ -817,14 +817,14 @@ export default function AccountPage() {
 
         {/* Dedicated Support Banner in Vittal Lifestyle Theme */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#111111] via-[#1a1c17] to-[#111111] text-white p-5 sm:p-6 shadow-md border border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
+          <div className="font-mograph">
             <div className="flex items-center gap-2 text-[#95CF42] mb-1">
               <Sparkles className="w-4 h-4 text-[#95CF42]" />
-              <span className="text-[11px] font-bold uppercase tracking-wider font-movault">
+              <span className="text-[11px] font-bold tracking-wide font-mograph">
                 24/7 Dedicated Support
               </span>
             </div>
-            <h4 className="text-base font-bold text-white font-movault uppercase tracking-wide">
+            <h4 className="text-base font-bold text-white font-mograph tracking-tight">
               Need help with an order or address change?
             </h4>
             <p className="text-xs text-neutral-300 mt-1 max-w-md font-normal">
@@ -870,7 +870,7 @@ export default function AccountPage() {
                 <MapPin className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-extrabold font-movault uppercase tracking-tight text-neutral-950">
+                <h3 className="text-base sm:text-lg font-bold font-mograph tracking-tight text-neutral-950">
                   {editingAddressId ? "Edit Delivery Address" : "Add New Delivery Address"}
                 </h3>
                 <p className="text-xs text-neutral-500 mt-0.5 font-normal">
@@ -1024,7 +1024,7 @@ export default function AccountPage() {
                 <button
                   type="submit"
                   disabled={addressSaving}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-black transition-all shadow-md shadow-[#95CF42]/20 cursor-pointer disabled:opacity-50 font-movault uppercase tracking-wider"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-bold transition-all shadow-md shadow-[#95CF42]/20 cursor-pointer disabled:opacity-50 font-mograph"
                 >
                   {addressSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>Save Address</span>
@@ -1052,7 +1052,7 @@ export default function AccountPage() {
                 <User className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-extrabold font-movault uppercase tracking-tight text-neutral-950">
+                <h3 className="text-base sm:text-lg font-bold font-mograph tracking-tight text-neutral-950">
                   Update Profile Details
                 </h3>
                 <p className="text-xs text-neutral-500 mt-0.5 font-normal">
@@ -1132,7 +1132,7 @@ export default function AccountPage() {
                 <button
                   type="submit"
                   disabled={profileSaving || profileSuccess}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-black transition-all shadow-md shadow-[#95CF42]/20 cursor-pointer disabled:opacity-50 font-movault uppercase tracking-wider"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-bold transition-all shadow-md shadow-[#95CF42]/20 cursor-pointer disabled:opacity-50 font-mograph"
                 >
                   {profileSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>Save Changes</span>

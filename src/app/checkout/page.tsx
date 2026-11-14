@@ -1221,10 +1221,10 @@ function CheckoutContent() {
             >
               <CheckCircle2 className="w-10 h-10" />
             </motion.div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#F4FBE8] text-[#3D6318] mb-2 border border-[#95CF42]/40 font-movault uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F4FBE8] text-[#3D6318] mb-2 border border-[#95CF42]/40 font-mograph">
               ✓ Switched to Prepaid &amp; Saved ₹49
             </span>
-            <h1 className="text-3xl font-extrabold text-neutral-950 mb-2 font-movault uppercase tracking-tight">
+            <h1 className="text-3xl font-bold text-neutral-950 mb-2 font-mograph tracking-tight">
               Payment Successful!
             </h1>
             <p className="text-sm text-neutral-600 mb-6 leading-relaxed font-normal">
@@ -1259,7 +1259,7 @@ function CheckoutContent() {
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
                 href={`/order-tracking?query=${encodeURIComponent(switchSuccessOrderId)}`}
-                className="flex-1 py-3.5 px-6 rounded-full bg-[#95CF42] text-black font-extrabold text-sm hover:bg-[#85BE33] transition-colors flex items-center justify-center gap-2 shadow-sm font-movault uppercase tracking-wider"
+                className="flex-1 py-3.5 px-6 rounded-full bg-[#95CF42] text-black font-bold text-sm hover:bg-[#85BE33] transition-colors flex items-center justify-center gap-2 shadow-sm font-mograph"
               >
                 <Truck className="w-4 h-4" />
                 <span>Track Order</span>
@@ -1305,10 +1305,10 @@ function CheckoutContent() {
           {/* Header Banner */}
           <div className="bg-gradient-to-r from-[#111111] via-[#1a1c17] to-[#111111] rounded-3xl p-6 text-white text-center shadow-lg border border-neutral-800 mb-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 translate-x-4 -translate-y-4 w-28 h-28 bg-[#95CF42]/20 rounded-full blur-xl pointer-events-none" />
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black bg-[#95CF42] text-black uppercase tracking-wider mb-3 shadow-xs font-movault">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-[#95CF42] text-black mb-3 shadow-xs font-mograph">
               ⚡ Instant ₹49 Discount Offer
             </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-movault uppercase">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight font-mograph">
               Switch to Prepaid &amp; Save ₹49!
             </h1>
             <p className="text-xs sm:text-sm text-neutral-300 mt-2 max-w-md mx-auto leading-relaxed font-normal">
@@ -1338,12 +1338,12 @@ function CheckoutContent() {
               {/* Order Info */}
               <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider font-movault">Order Reference</span>
+                  <span className="text-[10px] font-bold text-neutral-400 block tracking-wider font-mograph">Order Reference</span>
                   <span className="font-mono font-bold text-base text-neutral-900">
                     {switchOrder.display_id || switchOrder.id}
                   </span>
                 </div>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/40 font-movault uppercase">
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/40 font-mograph">
                   Current: Cash on Delivery
                 </span>
               </div>
@@ -1417,7 +1417,7 @@ function CheckoutContent() {
                       type="button"
                       onClick={handlePayForCodOrder}
                       disabled={switchPaying}
-                      className="w-full py-4 px-6 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-extrabold text-base shadow-lg shadow-[#95CF42]/25 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 mt-4 font-movault uppercase tracking-wider"
+                      className="w-full py-4 px-6 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-base shadow-lg shadow-[#95CF42]/25 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 mt-4 font-mograph"
                     >
                       {switchPaying ? (
                         <>
@@ -1475,7 +1475,7 @@ function CheckoutContent() {
                 className="space-y-3"
               >
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 uppercase mb-1 font-movault">
+                  <label className="block text-xs font-bold text-neutral-700 mb-1 font-mograph">
                     Order ID or Mobile Number
                   </label>
                   <input
@@ -1483,14 +1483,14 @@ function CheckoutContent() {
                     value={switchQuery}
                     onChange={(e) => setSwitchQuery(e.target.value)}
                     placeholder="e.g. ord_177374... or 9876543210"
-                    className="w-full px-4 py-3 bg-neutral-50 border border-neutral-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#95CF42]/30 focus:border-[#95CF42]"
+                    className="w-full px-4 py-3 bg-neutral-50 border border-neutral-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#95CF42]/30 focus:border-[#95CF42] font-mograph"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={switchLoading || !switchQuery.trim()}
-                  className="w-full py-3.5 px-6 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-extrabold text-sm transition-all shadow-md shadow-[#95CF42]/25 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 font-movault uppercase tracking-wider"
+                  className="w-full py-3.5 px-6 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-sm transition-all shadow-md shadow-[#95CF42]/25 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 font-mograph"
                 >
                   <Search className="w-4 h-4 stroke-[2.5]" />
                   <span>Find Order &amp; Claim ₹49 Discount</span>
@@ -1545,11 +1545,11 @@ function CheckoutContent() {
           </motion.div>
 
           {/* Status Badge */}
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-[#F4FBE8] text-[#3D6318] mb-2 border border-[#95CF42]/40 font-movault uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-[#F4FBE8] text-[#3D6318] mb-2 border border-[#95CF42]/40 font-mograph">
             Cash on Delivery Confirmed
           </span>
 
-          <h1 className="text-3xl font-extrabold text-neutral-950 mb-2 font-movault uppercase tracking-tight">
+          <h1 className="text-3xl font-bold text-neutral-950 mb-2 font-mograph tracking-tight">
             Order Confirmed, {name || "Shopper"}!
           </h1>
 
@@ -1607,17 +1607,17 @@ function CheckoutContent() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 font-mograph">
             <Link
               href={`/order-tracking?query=${encodeURIComponent(confirmedOrderId)}`}
-              className="flex-1 py-3.5 px-6 rounded-full bg-[#95CF42] text-black font-extrabold text-sm hover:bg-[#85BE33] transition-colors flex items-center justify-center gap-2 shadow-sm font-movault uppercase tracking-wider"
+              className="flex-1 py-3.5 px-6 rounded-full bg-[#95CF42] text-black font-bold text-sm hover:bg-[#85BE33] transition-colors flex items-center justify-center gap-2 shadow-sm font-mograph"
             >
               <Truck className="w-4 h-4 stroke-[2.5]" />
               <span>Track Order</span>
             </Link>
             <Link
               href="/"
-              className="flex-1 py-3.5 px-6 rounded-full bg-neutral-100 text-neutral-800 font-bold text-sm hover:bg-neutral-200 transition-colors flex items-center justify-center"
+              className="flex-1 py-3.5 px-6 rounded-full bg-neutral-100 text-neutral-800 font-bold text-sm hover:bg-neutral-200 transition-colors flex items-center justify-center font-mograph"
             >
               Continue Shopping
             </Link>
@@ -1650,15 +1650,15 @@ function CheckoutContent() {
           </div>
         </header>
 
-        <main className="max-w-md mx-auto py-24 px-4 text-center">
+        <main className="max-w-md mx-auto py-24 px-4 text-center font-mograph">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#F4FBE8] border border-[#95CF42]/30 flex items-center justify-center text-[#3D6318]">
             <ShoppingBag className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-extrabold text-neutral-950 mb-2 font-movault uppercase tracking-tight">Your Bag is Empty</h2>
+          <h2 className="text-2xl font-bold text-neutral-950 mb-2 font-mograph tracking-tight">Your Bag is Empty</h2>
           <p className="text-sm text-neutral-500 mb-6 font-normal">You don&apos;t have any products ready for checkout yet.</p>
           <Link
             href="/products"
-            className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-extrabold text-sm shadow-sm transition-colors font-movault uppercase tracking-wider"
+            className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-sm shadow-sm transition-colors font-mograph"
           >
             Explore Collection
           </Link>
@@ -1674,7 +1674,7 @@ function CheckoutContent() {
   return (
     <div className="min-h-screen bg-[#FAFCF6] font-mograph text-neutral-900 antialiased selection:bg-[#E2F5B4] selection:text-[#2E4D12]">
       {/* 1. TOP TRUST HEADER */}
-      <header className="relative border-b border-neutral-200/90 bg-white pt-4 pb-4 sm:pt-5 sm:pb-5 overflow-hidden shadow-xs">
+      <header className="relative border-b border-neutral-200/90 bg-white pt-4 pb-4 sm:pt-5 sm:pb-5 overflow-hidden shadow-xs font-mograph">
         <div className="relative max-w-5xl mx-auto px-4 flex flex-col items-center text-center space-y-2.5">
           {/* Centered Logo */}
           <Link href="/" className="inline-block transition-transform active:scale-95">
@@ -1690,7 +1690,7 @@ function CheckoutContent() {
 
           {/* Secure Checkout Heading */}
           <div>
-            <div className="flex items-center justify-center gap-1.5 text-neutral-950 font-movault font-extrabold text-base sm:text-lg uppercase tracking-wide">
+            <div className="flex items-center justify-center gap-1.5 text-neutral-950 font-mograph font-bold text-base sm:text-lg tracking-tight">
               <Lock className="w-4 h-4 text-[#6B9E3A]" />
               <span>100% Encrypted Safe Checkout</span>
             </div>
@@ -1757,7 +1757,7 @@ function CheckoutContent() {
                   <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6B9E3A]" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-extrabold text-[11px] sm:text-sm text-neutral-900 leading-tight truncate font-movault uppercase tracking-wide">
+                  <p className="font-bold text-[11px] sm:text-sm text-neutral-900 leading-tight truncate font-mograph tracking-tight">
                     Limited-Time Offer
                   </p>
                   <p className="text-[10px] sm:text-xs text-neutral-500 truncate mt-0.5 font-normal">
@@ -1906,7 +1906,7 @@ function CheckoutContent() {
                           type="button"
                           onClick={handleApplyPromo}
                           disabled={promoLoading}
-                          className="px-4 py-2.5 rounded-xl bg-[#95CF42] hover:bg-[#85BE33] text-black font-extrabold text-xs shadow-xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60 font-movault uppercase tracking-wider"
+                          className="px-4 py-2.5 rounded-xl bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-xs shadow-xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60 font-mograph"
                         >
                           {promoLoading ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />
@@ -2017,7 +2017,7 @@ function CheckoutContent() {
                     2
                   </span>
                   <div>
-                    <h2 className="text-lg sm:text-xl font-extrabold font-movault text-neutral-950 leading-tight uppercase tracking-tight">
+                    <h2 className="text-lg sm:text-xl font-bold font-mograph text-neutral-950 leading-tight tracking-tight">
                       Delivery details
                     </h2>
                     <p className="text-[11px] text-neutral-400 font-normal">
@@ -2118,7 +2118,7 @@ function CheckoutContent() {
               {detectedPostOffices.length > 0 && (
                 <div className="p-3 bg-[#F4FBE8] border border-[#95CF42]/30 rounded-xl space-y-1.5 animate-in fade-in duration-200">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-gray-800 flex items-center gap-1 font-movault tracking-wide">
+                    <span className="text-[11px] font-bold text-gray-800 flex items-center gap-1 font-mograph tracking-tight">
                       <MapPin className="w-3.5 h-3.5 text-[#6B9E3A]" />
                       Select your locality / post office in {postalCode || city}:
                     </span>
@@ -2152,7 +2152,7 @@ function CheckoutContent() {
               {/* Saved Delivery Addresses Selection Cards */}
               {savedAddresses.length > 0 && !isUsingNewAddress && (
                 <div className="bg-[#FAFCF6] p-3.5 rounded-xl border border-neutral-200 space-y-2.5">
-                  <p className="text-[11px] font-bold text-neutral-700 uppercase tracking-wider flex items-center gap-1.5 font-movault">
+                  <p className="text-xs font-bold text-neutral-800 tracking-tight flex items-center gap-1.5 font-mograph">
                     <MapPin className="w-3.5 h-3.5 text-[#6B9E3A]" />
                     Saved Addresses ({savedAddresses.length})
                   </p>
@@ -2191,8 +2191,8 @@ function CheckoutContent() {
 
               {/* Full Name */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-neutral-700 tracking-wider uppercase font-movault">
-                  Full name *
+                <label className="block text-xs font-bold text-neutral-800 tracking-tight font-mograph">
+                  Full Name *
                 </label>
                 <div className="relative">
                   <User className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -2216,8 +2216,8 @@ function CheckoutContent() {
 
               {/* Email Address */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-neutral-700 tracking-wider uppercase font-movault">
-                  Email address <span className="text-neutral-400 font-normal lowercase">(optional)</span>
+                <label className="block text-xs font-bold text-neutral-800 tracking-tight font-mograph">
+                  Email Address <span className="text-neutral-400 font-normal lowercase">(optional)</span>
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -2251,8 +2251,8 @@ function CheckoutContent() {
               {/* Complete Address */}
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <label className="block text-[11px] font-bold text-neutral-700 tracking-wider uppercase font-movault">
-                    Complete address *
+                  <label className="block text-xs font-bold text-neutral-800 tracking-tight font-mograph">
+                    Complete Address *
                   </label>
                   <span className="text-[11px] text-neutral-400">
                     {address.length} / 200
@@ -2277,7 +2277,7 @@ function CheckoutContent() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <label className="block text-[11px] font-bold text-neutral-700 tracking-wider uppercase font-movault">
+                    <label className="block text-xs font-bold text-neutral-800 tracking-tight font-mograph">
                       Pincode *
                     </label>
                     {pincodeLoading && (
@@ -2308,7 +2308,7 @@ function CheckoutContent() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-[11px] font-bold text-neutral-700 tracking-wider uppercase font-movault">
+                  <label className="block text-xs font-bold text-neutral-800 tracking-tight font-mograph">
                     City *
                   </label>
                   <div className="relative">
@@ -2328,7 +2328,7 @@ function CheckoutContent() {
 
               {/* State */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-neutral-700 tracking-wider uppercase font-movault">
+                <label className="block text-xs font-bold text-neutral-800 tracking-tight font-mograph">
                   State *
                 </label>
                 <div className="relative">
@@ -2422,7 +2422,7 @@ function CheckoutContent() {
                         const el = document.getElementById("name-input");
                         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
                       }}
-                      className="text-[#3D6318] hover:text-[#6B9E3A] font-bold text-xs hover:underline cursor-pointer shrink-0 ml-2 font-movault tracking-wide"
+                      className="text-[#3D6318] hover:text-[#6B9E3A] font-bold text-xs hover:underline cursor-pointer shrink-0 ml-2 font-mograph tracking-tight"
                     >
                       Edit Address
                     </button>
@@ -2435,7 +2435,7 @@ function CheckoutContent() {
                         3
                       </span>
                       <div>
-                        <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
+                        <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight font-mograph">
                           Payment Option
                         </h3>
                         <p className="text-xs text-gray-500 mt-0.5">
@@ -2460,8 +2460,8 @@ function CheckoutContent() {
                       className="relative p-4 sm:p-5 pt-6 rounded-2xl border-2 border-[#95CF42] bg-[#F8FBEF] shadow-sm ring-1 ring-[#95CF42]/30"
                     >
                       {/* RECOMMENDED BADGE */}
-                      <span className="absolute -top-3 left-4 px-3.5 py-0.5 rounded-full bg-[#95CF42] text-black text-[10px] font-extrabold uppercase tracking-wider shadow-xs flex items-center gap-1 font-movault">
-                        ★ CASH ON DELIVERY
+                      <span className="absolute -top-3 left-4 px-3 py-0.5 rounded-full bg-[#95CF42] text-black text-[10px] font-bold tracking-tight shadow-xs flex items-center gap-1 font-mograph">
+                        ★ Cash on Delivery
                       </span>
 
                       {/* Top Row: Radio + Icon + Title */}
@@ -2476,7 +2476,7 @@ function CheckoutContent() {
                           </div>
 
                           <div>
-                            <h4 className="text-sm sm:text-base font-bold text-neutral-950 leading-tight">
+                            <h4 className="text-sm sm:text-base font-bold text-neutral-950 leading-tight font-mograph tracking-tight">
                               Cash on Delivery (Doorstep Delivery)
                             </h4>
                             <p className="text-xs text-neutral-500 mt-0.5 font-normal">
@@ -2488,9 +2488,9 @@ function CheckoutContent() {
 
                       {/* Delivery Details Strip */}
                       <div className="mt-3.5 p-2.5 rounded-xl bg-[#F4FBE8] border border-[#95CF42]/30 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1.5 text-[#3D6318] font-bold font-movault">
+                        <div className="flex items-center gap-1.5 text-[#3D6318] font-bold font-mograph">
                           <Truck className="w-3.5 h-3.5 text-[#6B9E3A]" />
-                          <span className="tracking-wide uppercase text-[11px]">COURIER DISPATCH</span>
+                          <span className="tracking-tight text-xs">Courier Dispatch</span>
                         </div>
                         <span className="text-[11px] font-semibold text-[#3D6318]">5–7 Business Days • Discreet Plain Box</span>
                       </div>
@@ -2632,7 +2632,7 @@ function CheckoutContent() {
                     <button
                       type="submit"
                       disabled={loading || hasOutOfStockItems}
-                      className={`w-full py-4 px-6 rounded-full text-black font-extrabold text-base shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer font-movault uppercase tracking-wider ${
+                      className={`w-full py-4 px-6 rounded-full text-black font-bold text-base shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer font-mograph tracking-tight ${
                         loading || hasOutOfStockItems
                           ? "bg-neutral-300 text-neutral-500 cursor-not-allowed opacity-80"
                           : "bg-[#95CF42] hover:bg-[#85BE33] active:bg-[#78AC2C] shadow-[#95CF42]/30 hover:shadow-xl active:scale-[0.99]"
@@ -2840,7 +2840,7 @@ function CheckoutContent() {
                     type="button"
                     onClick={handleApplyPromo}
                     disabled={promoLoading}
-                    className="px-5 py-2.5 rounded-xl bg-[#95CF42] hover:bg-[#85BE33] text-black font-extrabold text-xs shadow-xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60 font-movault uppercase tracking-wider"
+                    className="px-5 py-2.5 rounded-xl bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-xs shadow-xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60 font-mograph tracking-tight"
                   >
                     {promoLoading ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />
@@ -2935,7 +2935,7 @@ function CheckoutContent() {
               {/* YOU MIGHT ALSO LIKE (Bump Offers) */}
               {availableUpsells.length > 0 && (
                 <div className="pt-4 border-t border-neutral-100 space-y-3">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-neutral-700 uppercase tracking-wider font-movault">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-800 tracking-tight font-mograph">
                     <Sparkles className="w-3.5 h-3.5 text-[#6B9E3A]" />
                     <span>You Might Also Like</span>
                   </div>
@@ -2971,7 +2971,7 @@ function CheckoutContent() {
                         <button
                           type="button"
                           onClick={() => addToCart(item, 1)}
-                          className="px-3.5 py-1.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-extrabold uppercase font-movault transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
+                          className="px-3.5 py-1.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-bold font-mograph tracking-tight transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                           <span>Add</span>

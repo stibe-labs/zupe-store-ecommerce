@@ -65,7 +65,7 @@ function SignInContent() {
 
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-extrabold bg-[#95CF42] hover:bg-[#85BE33] text-black px-5 py-2 rounded-full shadow-xs hover:shadow-md transition-all cursor-pointer font-movault uppercase tracking-wider"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold bg-[#95CF42] hover:bg-[#85BE33] text-black px-5 py-2 rounded-full shadow-xs hover:shadow-md transition-all cursor-pointer font-mograph"
           >
             <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
             <span>Back to Store</span>
