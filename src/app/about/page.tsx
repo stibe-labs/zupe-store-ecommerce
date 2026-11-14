@@ -87,7 +87,7 @@ function CountUpNumber({
   }, [hasStarted, target, duration]);
 
   return (
-    <div ref={ref} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#D4A373] tracking-tight font-movault">
+    <div ref={ref} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#6B9E3A] tracking-tight font-movault">
       {count.toLocaleString()}
       {suffix}
     </div>
@@ -314,46 +314,46 @@ export default function AboutPage() {
     VOICES_OF_TRUST.length;
 
   return (
-    <div className="min-h-screen bg-[#070708] text-white flex flex-col justify-between selection:bg-[#D4A373] selection:text-black font-mograph">
+    <div className="min-h-screen bg-white text-neutral-900 flex flex-col justify-between selection:bg-[#E2F5B4] selection:text-[#2E4D12] font-mograph">
       <Navbar />
 
       <main className="flex-1">
         {/* ========================================================
             1. HERO SECTION: BRAND INTRODUCTION
            ======================================================== */}
-        <section className="relative pt-6 sm:pt-12 pb-14 sm:pb-20 bg-gradient-to-b from-[#0e0e11] via-[#09090b] to-[#070708] border-b border-white/10 overflow-hidden">
-          {/* Subtle Luxury Ambient Background Gradients */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none overflow-hidden opacity-40">
-            <div className="absolute -top-32 left-1/4 w-96 h-96 rounded-full bg-[#D4AF37]/10 blur-[100px]" />
-            <div className="absolute top-10 right-1/4 w-80 h-80 rounded-full bg-[#D4A373]/10 blur-[100px]" />
+        <section className="relative pt-6 sm:pt-12 pb-14 sm:pb-20 bg-gradient-to-b from-[#F4FBE8]/60 via-white to-white border-b border-neutral-100 overflow-hidden">
+          {/* Subtle Ambient Background Gradients */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none overflow-hidden opacity-60">
+            <div className="absolute -top-32 left-1/4 w-96 h-96 rounded-full bg-[#95CF42]/15 blur-[120px]" />
+            <div className="absolute top-10 right-1/4 w-80 h-80 rounded-full bg-[#E2F5B4]/40 blur-[100px]" />
           </div>
 
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6">
             {/* Clean Breadcrumb */}
-            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-neutral-400 mb-6">
-              <Link href="/" className="hover:text-[#D4A373] transition-colors">
+            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-neutral-500 mb-6">
+              <Link href="/" className="hover:text-[#6B9E3A] transition-colors">
                 Home
               </Link>
-              <BreadcrumbChevron className="w-3.5 h-3.5 text-neutral-600" />
-              <span className="font-semibold text-white">About Us</span>
+              <BreadcrumbChevron className="w-3.5 h-3.5 text-neutral-400" />
+              <span className="font-semibold text-neutral-900">About Us</span>
             </nav>
 
             <div className="text-center max-w-3xl mx-auto">
               {/* Tagline Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#272015] border border-[#D4AF37]/30 text-xs font-semibold text-[#D4AF37] mb-5 shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-xs font-semibold text-[#3D6318] mb-5 shadow-xs">
+                <Sparkles className="w-3.5 h-3.5 text-[#6B9E3A]" />
                 <span className="tracking-wide uppercase font-movault text-[13px]">
                   Pure Nutrition • Performance Apparel • Mindful Living
                 </span>
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight uppercase font-movault">
-                Live Better. <span className="text-[#D4A373]">Feel Stronger.</span>
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-950 tracking-tight leading-tight uppercase font-movault">
+                Live Better. <span className="text-[#6B9E3A]">Feel Stronger.</span>
               </h1>
 
               {/* Subtitle */}
-              <p className="mt-4 text-sm sm:text-base md:text-lg text-neutral-300 leading-relaxed font-normal max-w-2xl mx-auto">
+              <p className="mt-4 text-sm sm:text-base md:text-lg text-neutral-600 leading-relaxed font-normal max-w-2xl mx-auto">
                 Vittal Lifestyle was built on a simple conviction: you should never have to compromise between physical strength, peak wellness, and premium everyday aesthetics. We craft lab-certified supplements, ergonomic activewear, farm-sourced dates &amp; nuts, and artisan dark chocolates directly for discerning Indian athletes and mindful families.
               </p>
 
@@ -361,16 +361,16 @@ export default function AboutPage() {
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href="/products"
-                  className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#D4A373] hover:bg-[#c29263] text-black font-bold text-sm shadow-lg hover:shadow-[#D4A373]/20 transition-all font-movault uppercase tracking-wider"
+                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-extrabold text-sm shadow-md hover:shadow-lg hover:shadow-[#95CF42]/25 transition-all font-movault uppercase tracking-wider cursor-pointer"
                 >
                   <span>Explore Catalog</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                 </Link>
                 <a
                   href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Lifestyle%2C%20I%20would%20like%20to%20know%20more%20about%20your%20products`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 hover:bg-white/10 text-white border border-white/15 text-sm font-semibold transition-all"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white hover:bg-neutral-50 text-neutral-900 border border-neutral-300 text-sm font-semibold transition-all shadow-xs cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4 text-[#25D366]" />
                   <span>Talk to Concierge</span>
@@ -383,21 +383,21 @@ export default function AboutPage() {
         {/* ========================================================
             TRUST STRIP (Lab Tested, Outfits, Farm Direct, etc.)
            ======================================================== */}
-        <section className="py-5 sm:py-6 border-b border-white/10 bg-[#0B0B0C] shadow-sm">
+        <section className="py-5 sm:py-6 border-b border-neutral-100 bg-[#FAFCF6] shadow-xs">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
               {TRUST_ITEMS.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div key={item.title} className="flex items-center gap-3">
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#18181b] border border-white/10 flex items-center justify-center shrink-0">
-                      <Icon className="w-5 h-5 text-[#D4AF37]" />
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#F4FBE8] border border-[#95CF42]/30 flex items-center justify-center shrink-0 shadow-xs">
+                      <Icon className="w-5 h-5 text-[#3D6318]" />
                     </div>
                     <div>
-                      <h4 className="text-xs sm:text-sm font-bold text-white leading-tight">
+                      <h4 className="text-xs sm:text-sm font-bold text-neutral-900 leading-tight">
                         {item.title}
                       </h4>
-                      <p className="text-[11px] sm:text-xs text-neutral-400 leading-tight mt-0.5">
+                      <p className="text-[11px] sm:text-xs text-neutral-500 leading-tight mt-0.5">
                         {item.sub}
                       </p>
                     </div>
@@ -411,53 +411,53 @@ export default function AboutPage() {
         {/* ========================================================
             2. COUNTED METRICS BANNER
            ======================================================== */}
-        <section className="py-10 sm:py-14 border-b border-white/10 bg-[#0E0E10]">
+        <section className="py-10 sm:py-14 border-b border-neutral-100 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Stat 1 */}
-              <div className="bg-[#141416] rounded-2xl border border-white/10 p-5 sm:p-6 text-center transition-all hover:border-[#D4AF37]/30 hover:shadow-lg">
+              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md">
                 <CountUpNumber target={100} suffix="%" duration={1600} />
-                <span className="block mt-2 text-xs sm:text-sm font-bold text-white uppercase tracking-wider font-movault">
+                <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 uppercase tracking-wider font-movault">
                   Certified Pure Stock
                 </span>
-                <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-400 font-medium">
+                <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-500 font-medium">
                   Lab tested macros &amp; zero fillers
                 </span>
               </div>
 
               {/* Stat 2 */}
-              <div className="bg-[#141416] rounded-2xl border border-white/10 p-5 sm:p-6 text-center transition-all hover:border-[#D4AF37]/30 hover:shadow-lg">
+              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md">
                 <CountUpNumber target={25000} suffix="+" duration={1800} />
-                <span className="block mt-2 text-xs sm:text-sm font-bold text-white uppercase tracking-wider font-movault">
+                <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 uppercase tracking-wider font-movault">
                   Active Fitness Enthusiasts
                 </span>
-                <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-400 font-medium">
+                <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-500 font-medium">
                   Delivered across 28 Indian states
                 </span>
               </div>
 
               {/* Stat 3 */}
-              <div className="bg-[#141416] rounded-2xl border border-white/10 p-5 sm:p-6 text-center transition-all hover:border-[#D4AF37]/30 hover:shadow-lg">
-                <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#D4A373] tracking-tight font-movault">
+              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md">
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#6B9E3A] tracking-tight font-movault">
                   4.9 <span className="text-xl sm:text-2xl text-neutral-400">/ 5.0</span>
                 </div>
-                <span className="block mt-2 text-xs sm:text-sm font-bold text-white uppercase tracking-wider font-movault">
+                <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 uppercase tracking-wider font-movault">
                   Verified Customer Rating
                 </span>
-                <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-400 font-medium">
+                <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-500 font-medium">
                   Over 1,400+ 5-star verified reviews
                 </span>
               </div>
 
               {/* Stat 4 */}
-              <div className="bg-[#141416] rounded-2xl border border-white/10 p-5 sm:p-6 text-center transition-all hover:border-[#D4AF37]/30 hover:shadow-lg">
-                <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#D4A373] tracking-tight font-movault">
+              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md">
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#6B9E3A] tracking-tight font-movault">
                   48 Hrs
                 </div>
-                <span className="block mt-2 text-xs sm:text-sm font-bold text-white uppercase tracking-wider font-movault">
+                <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 uppercase tracking-wider font-movault">
                   Priority Dispatch
                 </span>
-                <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-400 font-medium">
+                <span className="block mt-0.5 text-[11px] sm:text-xs text-neutral-500 font-medium">
                   Insured express courier delivery
                 </span>
               </div>
@@ -470,13 +470,13 @@ export default function AboutPage() {
            ======================================================== */}
         <section className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] bg-[#272015] px-3.5 py-1.5 rounded-full border border-[#D4AF37]/30 inline-block mb-3 font-movault">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#3D6318] bg-[#F4FBE8] px-3.5 py-1.5 rounded-full border border-[#95CF42]/40 inline-block mb-3 font-movault">
               Our 5 Core Departments
             </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight uppercase font-movault">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-neutral-950 tracking-tight uppercase font-movault">
               Curated for Strength, Style &amp; Sustenance
             </h2>
-            <p className="mt-2 text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">
+            <p className="mt-2 text-xs sm:text-sm text-neutral-500 leading-relaxed font-normal">
               Every product in our store is formulated or designed under strict guidelines for physical endurance, comfort, and vitality.
             </p>
           </div>
@@ -487,35 +487,35 @@ export default function AboutPage() {
               return (
                 <div
                   key={pillar.category}
-                  className={`p-6 rounded-2xl bg-[#141416] border border-white/10 hover:border-[#D4AF37]/40 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between ${
+                  className={`p-6 rounded-2xl bg-white border border-neutral-200/90 hover:border-[#95CF42] shadow-xs hover:shadow-xl transition-all group flex flex-col justify-between ${
                     idx === 4 ? "md:col-span-2 lg:col-span-1" : ""
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 rounded-xl bg-[#272015] text-[#D4AF37] flex items-center justify-center border border-[#D4AF37]/20 group-hover:scale-105 transition-transform">
+                      <div className="w-12 h-12 rounded-xl bg-[#F4FBE8] text-[#3D6318] flex items-center justify-center border border-[#95CF42]/30 group-hover:scale-105 transition-transform">
                         <Icon className="w-6 h-6" />
                       </div>
-                      <span className="text-[10px] sm:text-xs font-semibold px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300">
+                      <span className="text-[10px] sm:text-xs font-semibold px-2.5 py-1 rounded-full bg-neutral-100 border border-neutral-200 text-neutral-600">
                         {pillar.tag}
                       </span>
                     </div>
 
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#D4A373] mb-1 font-movault">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#6B9E3A] mb-1 font-movault">
                       {pillar.category}
                     </h3>
-                    <h4 className="text-base sm:text-lg font-bold text-white mb-2 leading-snug">
+                    <h4 className="text-base sm:text-lg font-bold text-neutral-950 mb-2 leading-snug">
                       {pillar.title}
                     </h4>
-                    <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">
+                    <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal">
                       {pillar.desc}
                     </p>
                   </div>
 
-                  <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
+                  <div className="mt-6 pt-4 border-t border-neutral-100 flex items-center justify-between">
                     <Link
                       href={pillar.link}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D4A373] hover:text-white transition-colors uppercase font-movault tracking-wider"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#3D6318] hover:text-[#6B9E3A] transition-colors uppercase font-movault tracking-wider"
                     >
                       <span>Explore {pillar.category}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -530,16 +530,16 @@ export default function AboutPage() {
         {/* ========================================================
             4. QUALITY & SOURCING WORKFLOW
            ======================================================== */}
-        <section className="py-12 sm:py-16 bg-[#0B0B0D] border-y border-white/10">
+        <section className="py-12 sm:py-16 bg-[#FAFCF6] border-y border-neutral-100">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] bg-[#272015] px-3.5 py-1.5 rounded-full border border-[#D4AF37]/30 inline-block mb-3 font-movault">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#3D6318] bg-[#F4FBE8] px-3.5 py-1.5 rounded-full border border-[#95CF42]/40 inline-block mb-3 font-movault">
                 The Vittal Standard
               </span>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight uppercase font-movault">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-neutral-950 tracking-tight uppercase font-movault">
                 From Origin to Your Hands
               </h2>
-              <p className="mt-2 text-xs sm:text-sm text-neutral-400 font-normal">
+              <p className="mt-2 text-xs sm:text-sm text-neutral-500 font-normal">
                 Strict quality verification guarantees that what arrives at your doorstep meets Olympic-grade expectations.
               </p>
             </div>
@@ -569,15 +569,15 @@ export default function AboutPage() {
               ].map((item) => (
                 <div
                   key={item.step}
-                  className="relative p-6 rounded-2xl bg-[#141416] border border-white/10 hover:border-[#D4AF37]/30 transition-all"
+                  className="relative p-6 rounded-2xl bg-white border border-neutral-200/90 hover:border-[#95CF42] shadow-xs transition-all"
                 >
-                  <span className="text-3xl font-extrabold text-[#D4AF37]/30 font-movault block mb-2">
+                  <span className="text-3xl font-extrabold text-[#95CF42]/60 font-movault block mb-2">
                     {item.step}
                   </span>
-                  <h4 className="text-sm sm:text-base font-bold text-white mb-2">
+                  <h4 className="text-sm sm:text-base font-bold text-neutral-950 mb-2">
                     {item.title}
                   </h4>
-                  <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">
+                  <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal">
                     {item.desc}
                   </p>
                 </div>
@@ -589,17 +589,17 @@ export default function AboutPage() {
         {/* ========================================================
             5. VOICES OF TRUST: CAROUSEL TESTIMONIALS
            ======================================================== */}
-        <section className="py-14 sm:py-20 bg-gradient-to-b from-[#070708] via-[#0D0D0F] to-[#070708] overflow-hidden border-b border-white/10">
+        <section className="py-14 sm:py-20 bg-gradient-to-b from-white via-[#FAFCF6] to-white overflow-hidden border-b border-neutral-100">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-10 max-w-xl mx-auto">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#272015] border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold uppercase tracking-wider mb-3 font-movault">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] text-xs font-bold uppercase tracking-wider mb-3 font-movault">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#6B9E3A]" />
                 <span>Verified Athletes &amp; Customers</span>
               </div>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight uppercase font-movault">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-neutral-950 tracking-tight uppercase font-movault">
                 Voices of Vittal Lifestyle
               </h2>
-              <p className="mt-1.5 text-xs sm:text-sm text-neutral-400 max-w-md mx-auto font-normal">
+              <p className="mt-1.5 text-xs sm:text-sm text-neutral-500 max-w-md mx-auto font-normal">
                 Real feedback from lifters, runners, and mindful food lovers nationwide.
               </p>
             </div>
@@ -638,8 +638,8 @@ export default function AboutPage() {
                       }}
                       className={`rounded-2xl sm:rounded-3xl p-6 sm:p-7 transition-all duration-520 select-none flex flex-col justify-between shrink-0 border ${
                         isCurrent
-                          ? "bg-[#18181b] border-[#D4AF37]/40 shadow-2xl scale-100 opacity-100 ring-1 ring-[#D4AF37]/20"
-                          : "bg-[#121214] border-white/5 shadow-sm scale-[0.93] sm:scale-95 opacity-55 hover:opacity-85 cursor-pointer"
+                          ? "bg-white border-[#95CF42] shadow-xl scale-100 opacity-100 ring-2 ring-[#95CF42]/30"
+                          : "bg-[#FAFCF6] border-neutral-200/70 shadow-xs scale-[0.93] sm:scale-95 opacity-60 hover:opacity-90 cursor-pointer"
                       }`}
                       style={{
                         width: `${cardWidth}px`,
@@ -648,33 +648,33 @@ export default function AboutPage() {
                     >
                       <div>
                         <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-1 text-[#D4AF37]">
+                          <div className="flex items-center gap-1 text-[#95CF42]">
                             {[...Array(item.rating)].map((_, s) => (
                               <Star key={s} className="w-4 h-4 fill-current" />
                             ))}
                           </div>
-                          <Quote className="w-6 h-6 text-white/10 rotate-180" />
+                          <Quote className="w-6 h-6 text-neutral-300 rotate-180" />
                         </div>
 
-                        <p className="text-xs sm:text-sm md:text-base text-neutral-200 leading-relaxed font-normal">
+                        <p className="text-xs sm:text-sm md:text-base text-neutral-700 leading-relaxed font-normal">
                           &ldquo;{item.quote}&rdquo;
                         </p>
                       </div>
 
-                      <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="mt-6 pt-4 border-t border-neutral-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-white text-xs sm:text-sm">
+                            <span className="font-bold text-neutral-900 text-xs sm:text-sm">
                               {item.author}
                             </span>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30">
                               <CheckCircle2 className="w-2.5 h-2.5" /> Verified Buyer
                             </span>
                           </div>
-                          <span className="text-[11px] text-neutral-400 font-normal">{item.location}</span>
+                          <span className="text-[11px] text-neutral-500 font-normal">{item.location}</span>
                         </div>
 
-                        <span className="text-[11px] font-bold text-[#D4AF37] bg-[#272015] border border-[#D4AF37]/30 px-3 py-1 rounded-full self-start sm:self-auto font-movault tracking-wide">
+                        <span className="text-[11px] font-bold text-[#3D6318] bg-[#F4FBE8] border border-[#95CF42]/30 px-3 py-1 rounded-full self-start sm:self-auto font-movault tracking-wide">
                           {item.product}
                         </span>
                       </div>
@@ -696,8 +696,8 @@ export default function AboutPage() {
                     }}
                     className={`h-2 rounded-full transition-all cursor-pointer ${
                       dotIdx === realActiveIndex
-                        ? "w-8 bg-[#D4A373]"
-                        : "w-2 bg-white/20 hover:bg-white/40"
+                        ? "w-8 bg-[#95CF42]"
+                        : "w-2 bg-neutral-300 hover:bg-neutral-400"
                     }`}
                     aria-label={`Go to slide ${dotIdx + 1}`}
                   />
@@ -707,14 +707,14 @@ export default function AboutPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={prevSlide}
-                  className="w-9 h-9 rounded-full bg-[#141416] border border-white/10 text-white hover:bg-white/10 shadow-sm flex items-center justify-center transition-all cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-100 shadow-xs flex items-center justify-center transition-all cursor-pointer"
                   aria-label="Previous review"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={nextSlide}
-                  className="w-9 h-9 rounded-full bg-[#141416] border border-white/10 text-white hover:bg-white/10 shadow-sm flex items-center justify-center transition-all cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-100 shadow-xs flex items-center justify-center transition-all cursor-pointer"
                   aria-label="Next review"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -728,39 +728,39 @@ export default function AboutPage() {
             6. FINAL CALL TO ACTION (CTA)
            ======================================================== */}
         <section className="py-12 sm:py-16 max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="rounded-3xl bg-[#141416] border border-[#D4AF37]/30 text-white p-8 sm:p-12 md:p-14 text-center relative overflow-hidden shadow-2xl">
+          <div className="rounded-3xl bg-gradient-to-r from-[#95CF42] via-[#85BE33] to-[#6B9E3A] text-neutral-950 p-8 sm:p-12 md:p-14 text-center relative overflow-hidden shadow-xl">
             {/* Ambient Lighting Gradients */}
-            <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-[#D4AF37]/10 blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-[#D4A373]/10 blur-[100px] pointer-events-none" />
+            <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-white/20 blur-[90px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-black/10 blur-[90px] pointer-events-none" />
 
             <div className="relative z-10 max-w-2xl mx-auto">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#272015] text-xs font-bold text-[#D4AF37] mb-4 border border-[#D4AF37]/30 uppercase font-movault tracking-wider">
-                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/10 text-xs font-bold text-neutral-950 mb-4 border border-black/15 uppercase font-movault tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-neutral-950" />
                 <span>Join The Vittal Lifestyle</span>
               </div>
 
-              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight uppercase font-movault">
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-neutral-950 tracking-tight leading-tight uppercase font-movault">
                 Elevate Your Health &amp; Performance Today
               </h2>
 
-              <p className="mt-3.5 text-xs sm:text-sm md:text-base text-neutral-300 leading-relaxed font-normal max-w-xl mx-auto">
+              <p className="mt-3.5 text-xs sm:text-sm md:text-base text-neutral-900 leading-relaxed font-normal max-w-xl mx-auto">
                 Explore our full line-up of gym supplements, athletic wear, organic dates, and artisan chocolates. Delivered express with 100% authenticity guarantee.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link
                   href="/products"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#D4A373] hover:bg-[#c29263] text-black text-sm font-bold shadow-lg hover:shadow-[#D4A373]/25 transition-all font-movault uppercase tracking-wider"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-black hover:bg-neutral-900 text-white text-sm font-bold shadow-lg hover:shadow-black/20 transition-all font-movault uppercase tracking-wider cursor-pointer"
                 >
                   <span>Explore Shop</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                 </Link>
 
                 <a
                   href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Lifestyle%2C%20I%20have%20an%20inquiry%20about%20a%20product`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-white text-sm font-semibold shadow-sm transition-all"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-white hover:bg-neutral-50 border border-black/10 text-neutral-950 text-sm font-semibold shadow-sm transition-all cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4 text-[#25D366]" />
                   <span>Chat on WhatsApp</span>

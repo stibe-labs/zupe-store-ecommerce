@@ -77,10 +77,9 @@ export default function AccountPage() {
   const [profileError, setProfileError] = useState("");
   const [profileSuccess, setProfileSuccess] = useState(false);
 
-  // Strict Super Admin Verification State (only true for verified admin@vittaldigital.com or admin@zupestore.com)
+  // Strict Super Admin Verification State
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
-  // Strictly verify Super Admin credentials & cryptographic session
   useEffect(() => {
     const isCandidate =
       user?.role === "admin" &&
@@ -92,24 +91,19 @@ export default function AccountPage() {
       return;
     }
 
-    // Immediately grant UI readiness for verified admin candidate
     setIsSuperAdmin(true);
 
-    // Cryptographic server-side verification: strictly validates signed HTTP-only token
     let isMounted = true;
     fetch("/api/admin/auth/verify")
       .then((res) => res.json())
       .then((data) => {
         if (isMounted) {
-          // If server rejects the token, strictly revoke admin privileges
           if (!data?.isSuperAdmin) {
             setIsSuperAdmin(false);
           }
         }
       })
-      .catch(() => {
-        // Keep candidate state if network drops during session
-      });
+      .catch(() => {});
 
     return () => {
       isMounted = false;
@@ -137,14 +131,11 @@ export default function AccountPage() {
     }
   }, [isAddressModalOpen, isProfileModalOpen]);
 
-  // Key for local address cache
   const getCacheKey = (email: string) => `zp_user_addresses_${email.toLowerCase().trim()}`;
 
-  // Load and auto-sync delivery addresses for this customer
   const loadAddresses = async () => {
     if (!user?.email) return;
 
-    // 1. Immediately read from local storage for 0ms instant display (deduplicating any legacy entries)
     try {
       const cached = localStorage.getItem(getCacheKey(user.email));
       if (cached) {
@@ -175,7 +166,6 @@ export default function AccountPage() {
             localStorage.setItem(getCacheKey(user.email), JSON.stringify(deduplicated));
           } catch (e) {}
         } else {
-          // If server returned 0 but client has cached addresses, sync client cache to server!
           try {
             const cached = localStorage.getItem(getCacheKey(user.email));
             if (cached) {
@@ -193,7 +183,6 @@ export default function AccountPage() {
           } catch (e) {}
         }
 
-        // If user has no phone in profile, but has a phone in an address, sync it to profile
         if (!user.phone && data.addresses.length > 0) {
           const withPhone = data.addresses.find((a: UserAddress) => a.phone && a.phone.trim().length > 0);
           if (withPhone) {
@@ -214,7 +203,6 @@ export default function AccountPage() {
     }
   }, [user?.email, user?.id]);
 
-  // Open modal to add address
   const handleOpenAddAddress = () => {
     setEditingAddressId(null);
     setRecipientName(user?.name || "");
@@ -229,7 +217,6 @@ export default function AccountPage() {
     setIsAddressModalOpen(true);
   };
 
-  // Open modal to edit existing address
   const handleOpenEditAddress = (addr: UserAddress) => {
     setEditingAddressId(addr.id);
     setRecipientName(addr.recipient_name);
@@ -244,108 +231,109 @@ export default function AccountPage() {
     setIsAddressModalOpen(true);
   };
 
-  // Save address (Add or Update)
   const handleSaveAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.email) return;
 
-    if (!recipientName.trim() || !street.trim() || !city.trim() || !postalCode.trim()) {
-      setAddressError("Please fill in all mandatory address fields (*).");
+    if (!recipientName.trim()) {
+      setAddressError("Please enter recipient name.");
       return;
     }
-
-    if (addressPhone.trim() && addressPhone.replace(/\D/g, "").length < 10) {
-      setAddressError("Please enter a valid 10-digit mobile phone number.");
+    if (!street.trim()) {
+      setAddressError("Please enter street address.");
+      return;
+    }
+    if (!city.trim()) {
+      setAddressError("Please enter city.");
+      return;
+    }
+    if (!postalCode.trim() || postalCode.replace(/\D/g, "").length < 6) {
+      setAddressError("Please enter a valid 6-digit postal PIN code.");
       return;
     }
 
     setAddressSaving(true);
     setAddressError("");
 
-    const newAddr: UserAddress = {
-      id: editingAddressId || `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    const newAddressData = {
+      id: editingAddressId || undefined,
       user_id: user.id,
-      user_email: user.email,
+      email: user.email,
       recipient_name: recipientName.trim(),
-      phone: addressPhone.trim(),
+      phone: addressPhone.trim() || user.phone || "",
       street: street.trim(),
       city: city.trim(),
       state: state.trim(),
       postal_code: postalCode.trim(),
       country: "India",
-      is_default: isDefault || addresses.length === 0,
       tag,
-      created_at: new Date().toISOString(),
+      is_default: isDefault,
     };
-
-    // Instant optimistic update in state & localStorage (cleanly deduplicated)
-    let otherList = addresses.filter((a) => a.id !== newAddr.id);
-    if (newAddr.is_default) {
-      otherList = otherList.map((a) => ({ ...a, is_default: false }));
-    }
-    const updatedList = deduplicateAddresses([newAddr, ...otherList]);
-    setAddresses(updatedList);
-    try {
-      localStorage.setItem(getCacheKey(user.email), JSON.stringify(updatedList));
-    } catch (e) {}
 
     try {
       const res = await fetch("/api/user/addresses", {
-        method: "POST",
+        method: editingAddressId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newAddr),
+        body: JSON.stringify(newAddressData),
       });
 
       const data = await res.json();
-      if (!res.ok || !data.success) {
-        setAddressError(data.error || "Failed to save address. Please try again.");
-        return;
-      }
 
-      // Auto update user profile phone if not previously set
-      if (!user.phone && addressPhone.trim()) {
-        updateUserProfile({ phone: addressPhone.trim() });
-      }
+      if (data.success && data.address) {
+        let updated: UserAddress[];
+        if (editingAddressId) {
+          updated = addresses.map((a) => (a.id === editingAddressId ? data.address : a));
+        } else {
+          updated = [data.address, ...addresses];
+        }
 
-      setIsAddressModalOpen(false);
-      setAddressNotice("Delivery address saved successfully!");
-      setTimeout(() => setAddressNotice(null), 3500);
-      loadAddresses();
+        if (isDefault) {
+          updated = updated.map((a) => ({
+            ...a,
+            is_default: a.id === data.address.id,
+          }));
+        }
+
+        const deduplicated = deduplicateAddresses<UserAddress>(updated);
+        setAddresses(deduplicated);
+        try {
+          localStorage.setItem(getCacheKey(user.email), JSON.stringify(deduplicated));
+        } catch (e) {}
+
+        setIsAddressModalOpen(false);
+        setAddressNotice(editingAddressId ? "Address updated successfully" : "New address saved successfully");
+        setTimeout(() => setAddressNotice(null), 3000);
+      } else {
+        setAddressError(data.error || "Failed to save address.");
+      }
     } catch (err: any) {
-      // Even if network fails, address is safely kept in localStorage
-      setIsAddressModalOpen(false);
-      setAddressNotice("Delivery address saved locally!");
-      setTimeout(() => setAddressNotice(null), 3500);
+      setAddressError("Network error. Please try again.");
     } finally {
       setAddressSaving(false);
     }
   };
 
-  // Delete address
   const handleDeleteAddress = async (id: string) => {
     if (!user?.email) return;
     if (!confirm("Are you sure you want to delete this delivery address?")) return;
 
-    const updated = addresses.filter((a) => a.id !== id);
-    if (updated.length > 0 && !updated.some((a) => a.is_default)) {
-      updated[0].is_default = true;
-    }
-    setAddresses(updated);
+    const filtered = addresses.filter((a) => a.id !== id);
+    setAddresses(filtered);
     try {
-      localStorage.setItem(getCacheKey(user.email), JSON.stringify(updated));
+      localStorage.setItem(getCacheKey(user.email), JSON.stringify(filtered));
     } catch (e) {}
 
     try {
-      await fetch(
-        `/api/user/addresses?id=${encodeURIComponent(id)}&email=${encodeURIComponent(user.email)}`,
-        { method: "DELETE" }
-      );
+      await fetch(`/api/user/addresses?id=${encodeURIComponent(id)}&email=${encodeURIComponent(user.email)}`, {
+        method: "DELETE",
+      });
+      setAddressNotice("Address deleted");
+      setTimeout(() => setAddressNotice(null), 3000);
     } catch (err) {
       console.warn("Failed to delete address:", err);
     }
   };
 
-  // Set default address
   const handleSetDefaultAddress = async (id: string) => {
     if (!user?.email) return;
 
@@ -369,7 +357,6 @@ export default function AccountPage() {
     }
   };
 
-  // Open Edit Profile / Phone modal
   const handleOpenProfileModal = () => {
     setProfileName(user?.name || "");
     setProfilePhone(user?.phone || "");
@@ -378,7 +365,6 @@ export default function AccountPage() {
     setIsProfileModalOpen(true);
   };
 
-  // Save Profile Name & Phone
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profileName.trim()) {
@@ -414,10 +400,10 @@ export default function AccountPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col justify-between font-sans">
+      <div className="min-h-screen bg-[#FAFCF6] text-neutral-900 flex flex-col justify-between font-mograph">
         <Navbar />
         <div className="flex-1 flex items-center justify-center py-32">
-          <div className="w-10 h-10 border-4 border-slate-200 border-t-[#002D62] rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-neutral-200 border-t-[#95CF42] rounded-full animate-spin" />
         </div>
         <Footer />
       </div>
@@ -426,27 +412,27 @@ export default function AccountPage() {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col justify-between font-sans">
+      <div className="min-h-screen bg-[#FAFCF6] text-neutral-900 flex flex-col justify-between font-mograph">
         <Navbar />
         <div className="max-w-md mx-auto px-4 pt-32 pb-24 text-center">
-          <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
-            <div className="w-16 h-16 rounded-2xl bg-blue-50 text-[#002D62] border border-blue-100 flex items-center justify-center mx-auto mb-4 shadow-xs">
+          <div className="bg-white rounded-2xl p-8 border border-neutral-200 shadow-sm">
+            <div className="w-16 h-16 rounded-2xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30 flex items-center justify-center mx-auto mb-4 shadow-xs">
               <User className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2 font-sans tracking-tight">Sign In to Your Account</h2>
-            <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
+            <h2 className="text-2xl font-extrabold text-neutral-950 mb-2 font-movault uppercase tracking-tight">Sign In to Your Account</h2>
+            <p className="text-xs sm:text-sm text-neutral-600 mb-6 leading-relaxed font-normal">
               View your orders, manage saved delivery addresses, and track shipments in real-time.
             </p>
             <div className="space-y-3">
               <Link
                 href="/signin?redirect=/account"
-                className="w-full inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#002D62] hover:bg-[#0A3D78] text-white font-bold text-sm shadow-xs transition-colors"
+                className="w-full inline-flex items-center justify-center px-6 py-3 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-extrabold text-sm shadow-sm transition-colors uppercase font-movault tracking-wider"
               >
                 Sign In
               </Link>
               <Link
                 href="/signin?mode=signup&redirect=/account"
-                className="w-full inline-flex items-center justify-center px-6 py-3 rounded-xl bg-white border border-slate-300 text-slate-800 font-bold text-sm hover:bg-slate-50 transition-colors shadow-xs"
+                className="w-full inline-flex items-center justify-center px-6 py-3 rounded-full bg-white border border-neutral-300 text-neutral-800 font-bold text-sm hover:bg-neutral-50 transition-colors shadow-xs"
               >
                 Create New Account
               </Link>
@@ -461,55 +447,55 @@ export default function AccountPage() {
   const initial = user.name ? user.name.charAt(0).toUpperCase() : "U";
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col justify-between pb-24 sm:pb-0 font-sans">
+    <div className="min-h-screen bg-[#FAFCF6] text-neutral-900 flex flex-col justify-between pb-24 sm:pb-0 font-mograph">
       <Navbar />
 
       <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 pt-24 sm:pt-28 pb-16">
-        {/* Profile Header Banner in Vittal Digital Luxury Navy Theme */}
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#001D40] via-[#002D62] to-[#0A3D78] text-white p-5 sm:p-7 shadow-lg border border-[#0A3D78]/40 mb-6 sm:mb-8">
-          <div className="absolute -top-16 -right-16 w-64 h-64 bg-amber-400/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-sky-400/10 rounded-full blur-3xl pointer-events-none" />
+        {/* Profile Header Banner in Luxury Vittal Lifestyle Theme */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#111111] via-[#1a1c17] to-[#111111] text-white p-5 sm:p-7 shadow-xl border border-neutral-800 mb-6 sm:mb-8">
+          <div className="absolute -top-16 -right-16 w-64 h-64 bg-[#95CF42]/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-[#E2F5B4]/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-6">
             <div className="flex items-center gap-4 sm:gap-5">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#FFBE00] text-slate-950 font-black text-2xl sm:text-3xl flex items-center justify-center shadow-md flex-shrink-0">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#95CF42] text-black font-black text-2xl sm:text-3xl flex items-center justify-center shadow-md shrink-0 font-movault">
                 {initial}
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h1 className="text-lg sm:text-2xl font-bold text-white tracking-tight truncate font-sans">
+                  <h1 className="text-lg sm:text-2xl font-extrabold text-white tracking-wide truncate uppercase font-movault">
                     {user.name}
                   </h1>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold tracking-wide uppercase border border-emerald-400/30">
-                    <ShieldCheck className="w-3 h-3" />
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#F4FBE8] text-[#3D6318] text-[10px] font-bold tracking-wide uppercase border border-[#95CF42]/40">
+                    <ShieldCheck className="w-3 h-3 text-[#6B9E3A]" />
                     Verified
                   </span>
                   {isSuperAdmin && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-bold tracking-wide uppercase border border-amber-400/30">
-                      <Shield className="w-3 h-3 text-[#FFBE00]" />
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#95CF42]/20 text-[#95CF42] text-[10px] font-bold tracking-wide uppercase border border-[#95CF42]/40">
+                      <Shield className="w-3 h-3 text-[#95CF42]" />
                       Super Admin
                     </span>
                   )}
                 </div>
 
                 {user.phone ? (
-                  <p className="text-xs sm:text-sm text-slate-200/90 flex items-center gap-2 truncate">
-                    <Phone className="w-3.5 h-3.5 text-[#25D366] flex-shrink-0" />
+                  <p className="text-xs sm:text-sm text-neutral-300 flex items-center gap-2 truncate">
+                    <Phone className="w-3.5 h-3.5 text-[#25D366] shrink-0" />
                     <span className="font-semibold text-white">{user.phone}</span>
-                    <span className="text-[10px] text-emerald-300 font-bold bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-400/30">
+                    <span className="text-[10px] text-[#3D6318] font-bold bg-[#F4FBE8] px-1.5 py-0.5 rounded border border-[#95CF42]/40">
                       WhatsApp Verified
                     </span>
                   </p>
                 ) : user.email ? (
-                  <p className="text-xs sm:text-sm text-slate-200/80 flex items-center gap-2 truncate">
-                    <Mail className="w-3.5 h-3.5 text-amber-300 flex-shrink-0" />
+                  <p className="text-xs sm:text-sm text-neutral-300 flex items-center gap-2 truncate">
+                    <Mail className="w-3.5 h-3.5 text-[#95CF42] shrink-0" />
                     <span className="truncate">{user.email}</span>
                   </p>
                 ) : null}
 
                 {user.email && !siteConfig.isSyntheticEmail(user.email) && (
-                  <p className="text-xs text-slate-300 flex items-center gap-2 truncate mt-0.5">
-                    <Mail className="w-3 h-3 text-amber-300/80 flex-shrink-0" />
+                  <p className="text-xs text-neutral-400 flex items-center gap-2 truncate mt-0.5">
+                    <Mail className="w-3 h-3 text-[#95CF42]/80 shrink-0" />
                     <span className="truncate">{user.email}</span>
                   </p>
                 )}
@@ -521,14 +507,14 @@ export default function AccountPage() {
                     onClick={handleOpenProfileModal}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition-colors cursor-pointer"
                   >
-                    <Edit2 className="w-3 h-3 text-[#FFBE00]" />
+                    <Edit2 className="w-3 h-3 text-[#95CF42]" />
                     <span>Edit Profile Details</span>
                   </button>
 
                   {isSuperAdmin && (
                     <Link
                       href="/admin"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-[#FFBE00] text-xs font-bold border border-amber-400/30 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#95CF42]/20 hover:bg-[#95CF42]/30 text-[#95CF42] text-xs font-bold border border-[#95CF42]/40 transition-colors cursor-pointer"
                     >
                       <LayoutDashboard className="w-3 h-3" />
                       <span>Admin Portal</span>
@@ -543,11 +529,11 @@ export default function AccountPage() {
               {isSuperAdmin && (
                 <Link
                   href="/admin"
-                  className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] text-xs font-bold text-slate-950 transition-colors shadow-xs"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-xs font-black text-black transition-colors shadow-xs font-movault uppercase tracking-wider"
                 >
                   <Shield className="w-3.5 h-3.5" />
                   <span>Admin Portal</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
                 </Link>
               )}
               <button
@@ -555,7 +541,7 @@ export default function AccountPage() {
                   logout();
                   router.push("/");
                 }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-white border border-white/20 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold text-white border border-white/20 transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Sign Out</span>
@@ -566,34 +552,34 @@ export default function AccountPage() {
 
         {/* Global Toast Notice */}
         {addressNotice && (
-          <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2 shadow-xs">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+          <div className="mb-6 p-4 rounded-xl bg-[#F4FBE8] border border-[#95CF42]/50 text-[#3D6318] text-xs font-bold flex items-center gap-2 shadow-xs">
+            <CheckCircle2 className="w-4 h-4 text-[#6B9E3A] shrink-0" />
             <span>{addressNotice}</span>
           </div>
         )}
 
-        {/* Core Navigation Cards: 2 cols on mobile (compact 2x2 grid), 4 cols on desktop in 1 row (Reduced Height) */}
+        {/* Core Navigation Cards: 2 cols on mobile, 4 cols on desktop in 1 row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {/* 1. My Orders */}
           <Link
             href="/orders"
-            className="group bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between"
+            className="group bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/90 shadow-xs hover:shadow-md hover:border-[#95CF42] transition-all flex flex-col justify-between"
           >
-            <div className="flex items-center justify-between mb-2 sm:mb-2.5">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 text-[#002D62] flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Package className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Package className="w-5 h-5" />
               </div>
-              <span className="text-[11px] font-semibold text-slate-400 group-hover:text-[#002D62] transition-colors flex items-center gap-0.5">
+              <span className="text-[11px] font-semibold text-neutral-400 group-hover:text-[#6B9E3A] transition-colors flex items-center gap-0.5">
                 <span>View</span>
                 <ChevronRight className="w-3 h-3" />
               </span>
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#002D62] transition-colors leading-tight">
+              <h3 className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-tight">
                 My Orders
               </h3>
-              <p className="text-[11px] sm:text-xs text-slate-500 line-clamp-1 mt-0.5">
-                Status, returns & invoices
+              <p className="text-[11px] sm:text-xs text-neutral-500 line-clamp-1 mt-0.5 font-normal">
+                Status, returns &amp; invoices
               </p>
             </div>
           </Link>
@@ -601,22 +587,22 @@ export default function AccountPage() {
           {/* 2. Order Tracking */}
           <Link
             href="/order-tracking"
-            className="group bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between"
+            className="group bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/90 shadow-xs hover:shadow-md hover:border-[#95CF42] transition-all flex flex-col justify-between"
           >
-            <div className="flex items-center justify-between mb-2 sm:mb-2.5">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Truck className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Truck className="w-5 h-5" />
               </div>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200 leading-none">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F4FBE8] text-[#3D6318] text-[10px] font-bold border border-[#95CF42]/40 leading-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#95CF42] animate-pulse" />
                 Live
               </span>
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#002D62] transition-colors leading-tight">
+              <h3 className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-tight">
                 Order Tracking
               </h3>
-              <p className="text-[11px] sm:text-xs text-slate-500 line-clamp-1 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-neutral-500 line-clamp-1 mt-0.5 font-normal">
                 Live courier milestone updates
               </p>
             </div>
@@ -625,29 +611,29 @@ export default function AccountPage() {
           {/* 3. My Wishlist */}
           <Link
             href="/wishlist"
-            className="group bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between"
+            className="group bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/90 shadow-xs hover:shadow-md hover:border-[#95CF42] transition-all flex flex-col justify-between"
           >
-            <div className="flex items-center justify-between mb-2 sm:mb-2.5">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Heart className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Heart className="w-5 h-5" />
               </div>
               {totalWishlistItems > 0 ? (
-                <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 text-[10px] font-bold border border-rose-200 leading-none">
+                <span className="px-2 py-0.5 rounded-full bg-[#F4FBE8] text-[#3D6318] text-[10px] font-bold border border-[#95CF42]/40 leading-none">
                   {totalWishlistItems} saved
                 </span>
               ) : (
-                <span className="text-[11px] font-semibold text-slate-400 group-hover:text-[#002D62] transition-colors flex items-center gap-0.5">
+                <span className="text-[11px] font-semibold text-neutral-400 group-hover:text-[#6B9E3A] transition-colors flex items-center gap-0.5">
                   <span>View</span>
                   <ChevronRight className="w-3 h-3" />
                 </span>
               )}
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#002D62] transition-colors leading-tight">
+              <h3 className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-tight">
                 My Wishlist
               </h3>
-              <p className="text-[11px] sm:text-xs text-slate-500 line-clamp-1 mt-0.5">
-                Saved items & price drops
+              <p className="text-[11px] sm:text-xs text-neutral-500 line-clamp-1 mt-0.5 font-normal">
+                Saved items &amp; price drops
               </p>
             </div>
           </Link>
@@ -656,21 +642,21 @@ export default function AccountPage() {
           <button
             type="button"
             onClick={openCart}
-            className="group text-left bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between cursor-pointer"
+            className="group text-left bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/90 shadow-xs hover:shadow-md hover:border-[#95CF42] transition-all flex flex-col justify-between cursor-pointer"
           >
-            <div className="flex items-center justify-between mb-2 sm:mb-2.5">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <ShoppingBag className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <ShoppingBag className="w-5 h-5" />
               </div>
-              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold border border-slate-200 leading-none">
+              <span className="px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-700 text-[10px] font-bold border border-neutral-200 leading-none">
                 {totalItems} item{totalItems === 1 ? "" : "s"}
               </span>
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-[#002D62] transition-colors leading-tight">
+              <h3 className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-tight">
                 Shopping Bag
               </h3>
-              <p className="text-[11px] sm:text-xs text-slate-500 line-clamp-1 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-neutral-500 line-clamp-1 mt-0.5 font-normal">
                 Express 1-click checkout cart
               </p>
             </div>
@@ -678,21 +664,21 @@ export default function AccountPage() {
         </div>
 
         {/* ─── Delivery Addresses Management Section ─── */}
-        <div className="bg-white rounded-2xl p-5 sm:p-7 border border-slate-200/90 shadow-xs mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+        <div className="bg-white rounded-2xl p-5 sm:p-7 border border-neutral-200/90 shadow-xs mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-neutral-100">
             <div>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#002D62] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30 flex items-center justify-center">
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <h2 className="text-base sm:text-lg font-bold text-neutral-950 flex items-center gap-2">
                     <span>Delivery Addresses</span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-300">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#F4FBE8] text-[#3D6318] text-[10px] font-bold border border-[#95CF42]/30">
                       1-Click Checkout Synced
                     </span>
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-neutral-500 mt-0.5 font-normal">
                     Saved addresses automatically fill your checkout form for faster purchasing.
                   </p>
                 </div>
@@ -702,9 +688,9 @@ export default function AccountPage() {
             <button
               type="button"
               onClick={handleOpenAddAddress}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#002D62] hover:bg-[#0A3D78] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer whitespace-nowrap self-start sm:self-center"
+              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-black shadow-xs transition-colors cursor-pointer whitespace-nowrap self-start sm:self-center font-movault uppercase tracking-wider"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Add New Address</span>
             </button>
           </div>
@@ -713,23 +699,23 @@ export default function AccountPage() {
           <div className="pt-5">
             {loadingAddresses ? (
               <div className="py-12 flex items-center justify-center">
-                <Loader2 className="w-7 h-7 text-[#002D62] animate-spin" />
+                <Loader2 className="w-7 h-7 text-[#6B9E3A] animate-spin" />
               </div>
             ) : addresses.length === 0 ? (
-              <div className="text-center py-10 px-4 rounded-xl bg-slate-50 border border-dashed border-slate-300">
-                <div className="w-12 h-12 rounded-xl bg-blue-50 text-[#002D62] flex items-center justify-center mx-auto mb-3">
+              <div className="text-center py-10 px-4 rounded-xl bg-[#FAFCF6] border border-dashed border-neutral-300">
+                <div className="w-12 h-12 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30 flex items-center justify-center mx-auto mb-3">
                   <MapPin className="w-6 h-6" />
                 </div>
-                <h3 className="text-sm font-bold text-slate-900 mb-1">No Delivery Addresses Saved Yet</h3>
-                <p className="text-xs text-slate-500 max-w-md mx-auto mb-4 leading-relaxed">
+                <h3 className="text-sm font-bold text-neutral-900 mb-1">No Delivery Addresses Saved Yet</h3>
+                <p className="text-xs text-neutral-500 max-w-md mx-auto mb-4 leading-relaxed font-normal">
                   Add your home or office address now, or when you complete your next order at checkout it will be automatically synced here.
                 </p>
                 <button
                   type="button"
                   onClick={handleOpenAddAddress}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#002D62] hover:bg-[#0A3D78] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-black shadow-xs transition-colors cursor-pointer font-movault uppercase tracking-wider"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Add First Address</span>
                 </button>
               </div>
@@ -740,16 +726,16 @@ export default function AccountPage() {
                     key={addr.id}
                     className={`rounded-xl p-4 sm:p-5 border transition-all relative flex flex-col justify-between ${
                       addr.is_default
-                        ? "bg-blue-50/40 border-blue-200 shadow-xs"
-                        : "bg-white border-slate-200 hover:border-slate-300 shadow-xs"
+                        ? "bg-[#F8FBEF] border-[#95CF42] shadow-xs ring-1 ring-[#95CF42]/30"
+                        : "bg-white border-neutral-200 hover:border-neutral-300 shadow-xs"
                     }`}
                   >
                     <div>
                       {/* Address Badges */}
                       <div className="flex items-center justify-between gap-2 mb-2.5">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-slate-900">{addr.recipient_name}</span>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                          <span className="font-bold text-sm text-neutral-900">{addr.recipient_name}</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 text-neutral-700 border border-neutral-200">
                             {addr.tag === "Work" ? (
                               <Building className="w-2.5 h-2.5" />
                             ) : (
@@ -760,15 +746,15 @@ export default function AccountPage() {
                         </div>
 
                         {addr.is_default ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#002D62] text-white text-[10px] font-bold">
-                            <Star className="w-2.5 h-2.5 fill-amber-300 text-amber-300" />
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#95CF42] text-black text-[10px] font-black uppercase font-movault tracking-wider">
+                            <Star className="w-2.5 h-2.5 fill-black text-black" />
                             Default
                           </span>
                         ) : (
                           <button
                             type="button"
                             onClick={() => handleSetDefaultAddress(addr.id)}
-                            className="text-[11px] font-semibold text-slate-500 hover:text-[#002D62] hover:underline cursor-pointer"
+                            className="text-[11px] font-semibold text-[#3D6318] hover:text-[#6B9E3A] hover:underline cursor-pointer"
                           >
                             Set Default
                           </button>
@@ -777,29 +763,29 @@ export default function AccountPage() {
 
                       {/* Phone */}
                       {addr.phone && (
-                        <p className="text-xs text-slate-700 flex items-center gap-1.5 mb-1.5 font-medium">
-                          <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                        <p className="text-xs text-neutral-700 flex items-center gap-1.5 mb-1.5 font-medium">
+                          <Phone className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
                           <span>{addr.phone}</span>
                         </p>
                       )}
 
                       {/* Full Street Address */}
-                      <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                      <p className="text-xs text-neutral-600 leading-relaxed mb-3 font-normal">
                         {addr.street}
                         <br />
-                        <span className="font-semibold text-slate-900">
+                        <span className="font-semibold text-neutral-900">
                           {addr.city}
                           {addr.state ? `, ${addr.state}` : ""} - {addr.postal_code}
                         </span>
                         <br />
-                        <span className="text-slate-400">{addr.country || "India"}</span>
+                        <span className="text-neutral-400">{addr.country || "India"}</span>
                       </p>
                     </div>
 
                     {/* Action buttons */}
-                    <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    <div className="pt-2.5 border-t border-neutral-100 flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-[#3D6318] font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-[#6B9E3A]" />
                         <span>Ready for checkout</span>
                       </span>
 
@@ -807,9 +793,9 @@ export default function AccountPage() {
                         <button
                           type="button"
                           onClick={() => handleOpenEditAddress(addr)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 transition-colors cursor-pointer"
                         >
-                          <Edit2 className="w-3 h-3" />
+                          <Edit2 className="w-3 h-3 text-[#6B9E3A]" />
                           <span>Edit</span>
                         </button>
                         <button
@@ -829,34 +815,36 @@ export default function AccountPage() {
           </div>
         </div>
 
-        {/* Dedicated Support Banner in Vittal Digital Luxury Theme */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#001D40] via-[#002D62] to-[#0A3D78] text-white p-5 sm:p-6 shadow-md border border-[#0A3D78]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        {/* Dedicated Support Banner in Vittal Lifestyle Theme */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#111111] via-[#1a1c17] to-[#111111] text-white p-5 sm:p-6 shadow-md border border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <div className="flex items-center gap-2 text-amber-300 mb-1">
-              <Sparkles className="w-4 h-4" />
-              <span className="text-[11px] font-bold uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-[#95CF42] mb-1">
+              <Sparkles className="w-4 h-4 text-[#95CF42]" />
+              <span className="text-[11px] font-bold uppercase tracking-wider font-movault">
                 24/7 Dedicated Support
               </span>
             </div>
-            <h4 className="text-base font-bold text-white font-sans">Need help with an order or address change?</h4>
-            <p className="text-xs text-slate-300 mt-1 max-w-md">
+            <h4 className="text-base font-bold text-white font-movault uppercase tracking-wide">
+              Need help with an order or address change?
+            </h4>
+            <p className="text-xs text-neutral-300 mt-1 max-w-md font-normal">
               Our support concierge is standing by to assist with deliveries, returns, or order modifications.
             </p>
           </div>
 
           <div className="flex flex-wrap sm:flex-nowrap gap-2.5">
             <a
-              href="https://wa.me/919600048000?text=Hi%20Vittal%20Digital%2C%20I%20need%20help%20with%20my%20order%20or%20account"
+              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Lifestyle%2C%20I%20need%20help%20with%20my%20order%20or%20account`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-slate-950 text-xs font-bold transition-colors whitespace-nowrap shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-black text-xs font-bold transition-colors whitespace-nowrap shadow-xs cursor-pointer font-mograph"
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>WhatsApp</span>
             </a>
             <a
               href="tel:+919600048000"
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors whitespace-nowrap border border-white/20 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors whitespace-nowrap border border-white/20 cursor-pointer font-mograph"
             >
               <Phone className="w-3.5 h-3.5" />
               <span>Call Us</span>
@@ -867,25 +855,25 @@ export default function AccountPage() {
 
       {/* ─── Modal 1: Add / Edit Delivery Address ─── */}
       {isAddressModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-          <div data-lenis-prevent className="bg-white rounded-2xl w-full max-w-lg p-6 sm:p-7 border border-slate-200 shadow-2xl relative max-h-[90vh] overflow-y-auto overscroll-contain">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn font-mograph">
+          <div data-lenis-prevent className="bg-white rounded-2xl w-full max-w-lg p-6 sm:p-7 border border-neutral-200 shadow-2xl relative max-h-[90vh] overflow-y-auto overscroll-contain">
             <button
               type="button"
               onClick={() => setIsAddressModalOpen(false)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors border border-slate-200 cursor-pointer"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-neutral-800 flex items-center justify-center transition-colors border border-neutral-200 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#002D62] border border-blue-100 flex items-center justify-center shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30 flex items-center justify-center shadow-xs">
                 <MapPin className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-bold font-sans text-slate-900">
+                <h3 className="text-base sm:text-lg font-extrabold font-movault uppercase tracking-tight text-neutral-950">
                   {editingAddressId ? "Edit Delivery Address" : "Add New Delivery Address"}
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-neutral-500 mt-0.5 font-normal">
                   This address will be available for fast 1-click checkout.
                 </p>
               </div>
@@ -893,7 +881,7 @@ export default function AccountPage() {
 
             {addressError && (
               <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-600" />
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
                 <span>{addressError}</span>
               </div>
             )}
@@ -901,7 +889,7 @@ export default function AccountPage() {
             <form onSubmit={handleSaveAddress} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
                     Recipient Full Name *
                   </label>
                   <input
@@ -910,12 +898,12 @@ export default function AccountPage() {
                     value={recipientName}
                     onChange={(e) => setRecipientName(e.target.value)}
                     placeholder="e.g. John Doe"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62] focus:border-transparent transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
                     Mobile Phone *
                   </label>
                   <input
@@ -924,13 +912,13 @@ export default function AccountPage() {
                     value={addressPhone}
                     onChange={(e) => setAddressPhone(e.target.value)}
                     placeholder="10-digit mobile number"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62] focus:border-transparent transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 mb-1">
                   Street Address / House No. / Area *
                 </label>
                 <input
@@ -939,13 +927,13 @@ export default function AccountPage() {
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
                   placeholder="Flat / House No., Apartment, Street, Landmark"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62] focus:border-transparent transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
                     City *
                   </label>
                   <input
@@ -954,12 +942,12 @@ export default function AccountPage() {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="City"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62] focus:border-transparent transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
                     State
                   </label>
                   <input
@@ -967,12 +955,12 @@ export default function AccountPage() {
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     placeholder="State"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62] focus:border-transparent transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
                     PIN Code *
                   </label>
                   <input
@@ -981,14 +969,14 @@ export default function AccountPage() {
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
                     placeholder="6-digit PIN"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62] focus:border-transparent transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
                   />
                 </div>
               </div>
 
               {/* Address Tag Selector */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
                   Address Type
                 </label>
                 <div className="flex items-center gap-3">
@@ -999,8 +987,8 @@ export default function AccountPage() {
                       onClick={() => setTag(t)}
                       className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border ${
                         tag === t
-                          ? "bg-[#002D62] text-white border-[#002D62] shadow-sm"
-                          : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                          ? "bg-[#95CF42] text-black border-[#95CF42] font-bold shadow-xs"
+                          : "bg-neutral-50 text-neutral-700 border-neutral-200 hover:bg-neutral-100"
                       }`}
                     >
                       {t === "Home" && <Home className="w-3.5 h-3.5" />}
@@ -1018,9 +1006,9 @@ export default function AccountPage() {
                   type="checkbox"
                   checked={isDefault}
                   onChange={(e) => setIsDefault(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#002D62] focus:ring-[#002D62] border-slate-300 cursor-pointer"
+                  className="w-4 h-4 rounded text-[#95CF42] focus:ring-[#95CF42] border-neutral-300 cursor-pointer accent-[#95CF42]"
                 />
-                <span className="text-xs font-medium text-slate-700">
+                <span className="text-xs font-medium text-neutral-700">
                   Make this my default delivery address
                 </span>
               </label>
@@ -1029,14 +1017,14 @@ export default function AccountPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddressModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer border border-slate-200"
+                  className="px-4 py-2.5 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-semibold transition-colors cursor-pointer border border-neutral-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={addressSaving}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#002D62] hover:bg-[#0A3D78] text-white text-xs font-bold transition-all shadow-md shadow-[#002D62]/20 cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-black transition-all shadow-md shadow-[#95CF42]/20 cursor-pointer disabled:opacity-50 font-movault uppercase tracking-wider"
                 >
                   {addressSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>Save Address</span>
@@ -1049,25 +1037,25 @@ export default function AccountPage() {
 
       {/* ─── Modal 2: Edit Profile & Phone Number ─── */}
       {isProfileModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-          <div data-lenis-prevent className="bg-white rounded-2xl w-full max-w-md p-6 sm:p-7 border border-slate-200 shadow-2xl relative max-h-[90vh] overflow-y-auto overscroll-contain">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn font-mograph">
+          <div data-lenis-prevent className="bg-white rounded-2xl w-full max-w-md p-6 sm:p-7 border border-neutral-200 shadow-2xl relative max-h-[90vh] overflow-y-auto overscroll-contain">
             <button
               type="button"
               onClick={() => setIsProfileModalOpen(false)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors border border-slate-200 cursor-pointer"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-neutral-800 flex items-center justify-center transition-colors border border-neutral-200 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#002D62] border border-blue-100 flex items-center justify-center shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30 flex items-center justify-center shadow-xs">
                 <User className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-bold font-sans text-slate-900">
+                <h3 className="text-base sm:text-lg font-extrabold font-movault uppercase tracking-tight text-neutral-950">
                   Update Profile Details
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-neutral-500 mt-0.5 font-normal">
                   Manage your name and phone number for delivery updates.
                 </p>
               </div>
@@ -1075,21 +1063,21 @@ export default function AccountPage() {
 
             {profileError && (
               <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-600" />
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
                 <span>{profileError}</span>
               </div>
             )}
 
             {profileSuccess && (
-              <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-600" />
+              <div className="mb-4 p-3 rounded-xl bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] text-xs font-semibold flex items-center gap-2">
+                <Check className="w-4 h-4 text-[#6B9E3A]" />
                 <span>Profile updated successfully!</span>
               </div>
             )}
 
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 mb-1">
                   Full Name *
                 </label>
                 <input
@@ -1098,12 +1086,12 @@ export default function AccountPage() {
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
                   placeholder="Your full name"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62] focus:border-transparent transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 mb-1">
                   Mobile Phone Number
                 </label>
                 <input
@@ -1111,24 +1099,24 @@ export default function AccountPage() {
                   value={profilePhone}
                   onChange={(e) => setProfilePhone(e.target.value)}
                   placeholder="e.g. 9876543210"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#002D62] focus:border-transparent transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
                 />
-                <p className="text-[11px] text-slate-500 mt-1">
+                <p className="text-[11px] text-neutral-500 mt-1 font-normal">
                   Used for order tracking SMS, courier OTP, and delivery coordination.
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 mb-1">
                   Email Address
                 </label>
                 <input
                   type="email"
                   disabled
                   value={user?.email || ""}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 text-xs font-medium cursor-not-allowed"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-neutral-100 text-neutral-500 text-xs font-medium cursor-not-allowed"
                 />
-                <p className="text-[11px] text-slate-500 mt-1">
+                <p className="text-[11px] text-neutral-500 mt-1 font-normal">
                   Email is locked to your verified account credentials.
                 </p>
               </div>
@@ -1137,14 +1125,14 @@ export default function AccountPage() {
                 <button
                   type="button"
                   onClick={() => setIsProfileModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer border border-slate-200"
+                  className="px-4 py-2.5 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-semibold transition-colors cursor-pointer border border-neutral-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={profileSaving || profileSuccess}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#002D62] hover:bg-[#0A3D78] text-white text-xs font-bold transition-all shadow-md shadow-[#002D62]/20 cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-black transition-all shadow-md shadow-[#95CF42]/20 cursor-pointer disabled:opacity-50 font-movault uppercase tracking-wider"
                 >
                   {profileSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>Save Changes</span>

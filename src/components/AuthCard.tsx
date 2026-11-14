@@ -16,7 +16,7 @@ import {
   MessageCircle,
   Clock,
   ShieldCheck,
-  Zap,
+  Sparkles,
   Truck,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -176,39 +176,39 @@ export function AuthCard({
   };
 
   return (
-    <div className="w-full relative font-sans">
+    <div className="w-full relative font-mograph">
       {/* Notice Banner */}
       {notice && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 sm:mb-5 p-3.5 sm:p-4 rounded-xl bg-blue-50 text-blue-950 border border-blue-200 shadow-sm flex items-start gap-3 relative overflow-hidden"
+          className="mb-4 sm:mb-5 p-3.5 sm:p-4 rounded-xl bg-[#F4FBE8] text-[#2E4D12] border border-[#95CF42]/40 shadow-xs flex items-start gap-3 relative overflow-hidden"
         >
-          <div className="w-7 h-7 rounded-full bg-[#FFBE00] text-slate-950 font-black text-sm flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+          <div className="w-7 h-7 rounded-full bg-[#95CF42] text-black font-extrabold text-sm flex items-center justify-center shrink-0 shadow-xs mt-0.5 font-movault">
             !
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+            <h4 className="text-xs font-extrabold text-neutral-900 uppercase tracking-wider font-movault">
               Sign In Required
             </h4>
-            <p className="text-xs text-slate-600 mt-0.5 leading-relaxed font-medium">
+            <p className="text-xs text-neutral-700 mt-0.5 leading-relaxed font-normal">
               {notice}
             </p>
           </div>
         </motion.div>
       )}
 
-      {/* Main Form Card - Sleek Tech Electronics aesthetic matching Home Page */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xl relative overflow-hidden transition-all duration-300">
+      {/* Main Form Card - Vittal Lifestyle luxury aesthetic */}
+      <div className="bg-white rounded-2xl border border-neutral-200/90 shadow-xl relative overflow-hidden transition-all duration-300">
         {/* Brand Top Header Banner */}
-        <div className="bg-gradient-to-r from-[#0A2540] via-[#0F172A] to-[#0A2540] px-6 py-4 border-b border-slate-800 relative flex items-center justify-center">
+        <div className="bg-gradient-to-r from-[#111111] via-[#1a1c17] to-[#111111] px-6 py-4 border-b border-neutral-800 relative flex items-center justify-center">
           <div className="flex items-center justify-center py-1">
             <Image
               src={siteConfig.logoUrl}
               alt={siteConfig.name}
               width={140}
               height={42}
-              className="h-8 w-auto object-contain drop-shadow-md brightness-105"
+              className="h-8 w-auto object-contain brightness-105"
               priority
             />
           </div>
@@ -230,17 +230,17 @@ export function AuthCard({
         <div className="p-6 sm:p-7 relative">
           {/* Header */}
           <div className="text-center mb-6">
-            <span className="inline-block px-3 py-1 rounded-full bg-blue-50 border border-blue-200/70 text-[#0047AB] font-bold text-[11px] uppercase tracking-wider mb-2">
-              {step === "phone" ? "Authentic Electronics" : "Quick Verification"}
+            <span className="inline-block px-3 py-1 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] font-bold text-[11px] uppercase tracking-wider mb-2 font-movault">
+              {step === "phone" ? "100% Authentic Vittal Lifestyle" : "Quick Verification"}
             </span>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-neutral-950 tracking-tight uppercase font-movault">
               {step === "phone" ? (
                 <>Welcome to {siteConfig.name}</>
               ) : (
                 "Enter Verification Code"
               )}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1 font-medium leading-relaxed max-w-sm mx-auto">
+            <p className="text-xs sm:text-sm text-neutral-500 mt-1 font-normal leading-relaxed max-w-sm mx-auto">
               {step === "phone"
                 ? "Enter your 10-digit mobile number to sign in or create an account"
                 : `Enter the 6-digit code sent to +91 ${phone.length === 10 ? phone.slice(0, 5) + " " + phone.slice(5) : phone}`}
@@ -252,7 +252,7 @@ export function AuthCard({
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-bold flex items-center gap-2.5 shadow-sm"
+              className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-bold flex items-center gap-2.5 shadow-xs"
             >
               <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-600" />
               <span>{error}</span>
@@ -264,9 +264,9 @@ export function AuthCard({
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-2.5 shadow-sm"
+              className="mb-4 p-3 rounded-xl bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] text-xs font-bold flex items-center gap-2.5 shadow-xs"
             >
-              <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600" />
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-[#6B9E3A]" />
               <span>{success}</span>
             </motion.div>
           )}
@@ -276,20 +276,20 @@ export function AuthCard({
             <form onSubmit={handleSendOtp} className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider font-movault">
                     Mobile Number
                   </label>
-                  <span className="text-[11px] font-semibold text-slate-400">
+                  <span className="text-[11px] font-semibold text-neutral-400">
                     10-digit number
                   </span>
                 </div>
                 <div className="flex gap-2">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-bold select-none shrink-0 shadow-sm">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-neutral-200 bg-[#FAFCF6] text-neutral-900 text-sm font-bold select-none shrink-0 shadow-xs">
                     <span>🇮🇳</span>
                     <span>+91</span>
                   </div>
                   <div className="relative flex-1">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                     <input
                       type="tel"
                       inputMode="numeric"
@@ -300,7 +300,7 @@ export function AuthCard({
                       placeholder="Enter 10-digit number"
                       value={phone}
                       onChange={handlePhoneChange}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 bg-white placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 shadow-sm transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-300 text-sm font-bold text-neutral-900 bg-white placeholder:text-neutral-400 placeholder:font-normal focus:outline-none focus:border-[#95CF42] focus:ring-4 focus:ring-[#95CF42]/20 shadow-xs transition-all"
                     />
                   </div>
                 </div>
@@ -309,10 +309,10 @@ export function AuthCard({
               <button
                 type="submit"
                 disabled={loading || phone.length !== 10}
-                className="w-full mt-3 py-3 px-5 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-sm tracking-wide shadow-sm hover:shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-3 py-3 px-5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] active:bg-[#78AC2C] text-black font-extrabold text-sm tracking-wider uppercase font-movault shadow-md hover:shadow-lg hover:shadow-[#95CF42]/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
+                  <Loader2 className="w-5 h-5 animate-spin text-black" />
                 ) : (
                   <>
                     <span>Continue</span>
@@ -322,15 +322,15 @@ export function AuthCard({
               </button>
 
               {/* Trust badges footer */}
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center gap-2 flex-wrap">
-                <span className="px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-700 font-bold text-[11px] flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600" /> 100% Genuine
+              <div className="mt-6 pt-4 border-t border-neutral-100 flex items-center justify-center gap-2 flex-wrap">
+                <span className="px-3 py-1 rounded-full bg-[#F4FBE8] border border-[#95CF42]/30 text-[#3D6318] font-bold text-[11px] flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#6B9E3A]" /> 100% Lab Tested
                 </span>
-                <span className="px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-700 font-bold text-[11px] flex items-center gap-1">
-                  <Truck className="w-3.5 h-3.5 text-emerald-600" /> All-India Delivery
+                <span className="px-3 py-1 rounded-full bg-[#F4FBE8] border border-[#95CF42]/30 text-[#3D6318] font-bold text-[11px] flex items-center gap-1.5">
+                  <Truck className="w-3.5 h-3.5 text-[#6B9E3A]" /> Pan-India Air Logistics
                 </span>
-                <span className="px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-700 font-bold text-[11px] flex items-center gap-1">
-                  <Zap className="w-3.5 h-3.5 text-amber-500" /> 1-Year Warranty
+                <span className="px-3 py-1 rounded-full bg-[#F4FBE8] border border-[#95CF42]/30 text-[#3D6318] font-bold text-[11px] flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[#6B9E3A]" /> Direct Farm Fresh
                 </span>
               </div>
             </form>
@@ -340,10 +340,10 @@ export function AuthCard({
           {step === "otp" && (
             <form onSubmit={handleVerifyOtp} className="space-y-4">
               {/* Phone Info & Change button */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs shadow-sm">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#FAFCF6] border border-neutral-200 text-xs shadow-xs">
                 <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-blue-600" />
-                  <span className="font-bold text-slate-900 text-sm">
+                  <Phone className="w-4 h-4 text-[#6B9E3A]" />
+                  <span className="font-bold text-neutral-900 text-sm">
                     +91 {phone.length === 10 ? `${phone.slice(0, 5)} ${phone.slice(5)}` : phone}
                   </span>
                 </div>
@@ -354,7 +354,7 @@ export function AuthCard({
                     setError(null);
                     setSuccess(null);
                   }}
-                  className="font-bold text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                  className="font-bold text-xs text-[#3D6318] hover:text-[#6B9E3A] hover:underline cursor-pointer"
                 >
                   Change
                 </button>
@@ -363,14 +363,14 @@ export function AuthCard({
               {/* OTP Input */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider font-movault">
                     6-Digit Code
                   </label>
-                  <div className="flex items-center gap-1 text-[11px] font-bold text-slate-500">
-                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                  <div className="flex items-center gap-1 text-[11px] font-bold text-neutral-500">
+                    <Clock className="w-3.5 h-3.5 text-neutral-400" />
                     <span>
                       {expiryCountdown > 0 ? (
-                        <>Expires in <span className="font-mono text-blue-600 font-bold">{formatTime(expiryCountdown)}</span></>
+                        <>Expires in <span className="font-mono text-[#3D6318] font-bold">{formatTime(expiryCountdown)}</span></>
                       ) : (
                         <span className="text-red-600 font-bold">Code Expired</span>
                       )}
@@ -393,7 +393,7 @@ export function AuthCard({
                       setOtp(digits);
                       if (error) setError(null);
                     }}
-                    className="w-full text-center tracking-[0.5em] text-xl font-mono font-black py-3 rounded-xl border border-slate-200 text-slate-900 bg-white placeholder:text-slate-300 placeholder:tracking-widest focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 shadow-sm transition-all"
+                    className="w-full text-center tracking-[0.5em] text-xl font-mono font-black py-3 rounded-xl border border-neutral-300 text-neutral-900 bg-white placeholder:text-neutral-300 placeholder:tracking-widest focus:outline-none focus:border-[#95CF42] focus:ring-4 focus:ring-[#95CF42]/20 shadow-xs transition-all"
                   />
                 </div>
 
@@ -403,7 +403,7 @@ export function AuthCard({
                     type="button"
                     disabled={loading || expiryCountdown > 120}
                     onClick={() => handleSendOtp()}
-                    className="text-xs font-bold text-blue-600 hover:text-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-1 cursor-pointer"
+                    className="text-xs font-bold text-[#3D6318] hover:text-[#6B9E3A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-1 cursor-pointer"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>
@@ -418,17 +418,17 @@ export function AuthCard({
               {/* Optional Name field for new user */}
               {!isExistingUser && (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Your Full Name <span className="text-slate-400 font-normal lowercase">(optional)</span>
+                  <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5 font-movault">
+                    Your Full Name <span className="text-neutral-400 font-normal lowercase">(optional)</span>
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                     <input
                       type="text"
                       placeholder="e.g. Alex Johnson"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-900 bg-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 shadow-sm transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-300 text-sm font-semibold text-neutral-900 bg-white placeholder:text-neutral-400 focus:outline-none focus:border-[#95CF42] focus:ring-4 focus:ring-[#95CF42]/20 shadow-xs transition-all"
                     />
                   </div>
                 </div>
@@ -438,13 +438,13 @@ export function AuthCard({
               <button
                 type="submit"
                 disabled={loading || otp.length < 6 || expiryCountdown <= 0}
-                className="w-full mt-2 py-3 px-4 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] active:bg-[#CC9600] text-slate-950 font-black text-sm tracking-wide shadow-sm hover:shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-2 py-3 px-4 rounded-full bg-[#95CF42] hover:bg-[#85BE33] active:bg-[#78AC2C] text-black font-extrabold text-sm tracking-wider uppercase font-movault shadow-md hover:shadow-lg hover:shadow-[#95CF42]/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
+                  <Loader2 className="w-5 h-5 animate-spin text-black" />
                 ) : (
                   <>
-                    <span>Verify & Continue</span>
+                    <span>Verify &amp; Continue</span>
                     <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                   </>
                 )}
@@ -453,15 +453,15 @@ export function AuthCard({
               {/* WhatsApp helper */}
               <div className="pt-2 text-center">
                 <a
-                  href="https://wa.me/916238165935?text=Hi"
+                  href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi`}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => {
                     setExpiryCountdown(0);
                   }}
-                  className="inline-flex items-center gap-1.5 text-xs text-emerald-800 font-bold bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3.5 py-1.5 rounded-full transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-xs text-[#3D6318] font-bold bg-[#F4FBE8] hover:bg-[#E2F5B4] border border-[#95CF42]/40 px-4 py-1.5 rounded-full transition-colors cursor-pointer"
                 >
-                  <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                  <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
                   <span>Didn&apos;t get code? Tap to send &ldquo;Hi&rdquo; on WhatsApp</span>
                 </a>
               </div>
