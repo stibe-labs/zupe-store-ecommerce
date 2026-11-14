@@ -220,25 +220,25 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       {/* ===================================================================== */}
       {/* 2. CATEGORIES SECTION (Placed Upper of Banner, Edge-to-Edge with Banner) */}
       {/* ===================================================================== */}
-      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-3 md:pt-3 pb-1.5 sm:pb-2 md:pb-2.5">
+      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-3 md:pt-2.5 pb-1 sm:pb-1.5 md:pb-2">
         {/* Responsive Grid: 5 columns on Mobile, 6 columns on Desktop spanning from banner's left edge to right edge */}
         <div className="w-full grid grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 justify-center">
           {CATEGORY_ITEMS.map((cat) => (
             <Link
               key={cat.name}
               href={cat.link}
-              className={`group flex flex-col items-center cursor-pointer transition-transform duration-300 hover:-translate-y-1 w-full md:max-w-[122px] lg:max-w-[136px] xl:max-w-[148px] mx-auto ${
+              className={`group flex flex-col items-center cursor-pointer transition-transform duration-300 hover:-translate-y-1 w-full md:max-w-[94px] lg:max-w-[104px] xl:max-w-[114px] mx-auto ${
                 cat.desktopOnly ? "hidden md:flex" : "flex"
               }`}
             >
               {/* Card Image Tile: Top-to-Lower Fade (Banner green texture fading to white at the bottom) */}
-              <div className="w-full relative aspect-square rounded-2xl sm:rounded-[22px] md:rounded-2xl lg:rounded-[22px] overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white border border-neutral-200/80 group-hover:border-[#6B9E3A]/60 shadow-2xs group-hover:shadow-md transition-all duration-300 flex items-end justify-center">
+              <div className="w-full relative aspect-square rounded-2xl sm:rounded-2xl md:rounded-[18px] lg:rounded-2xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white border border-neutral-200/80 group-hover:border-[#6B9E3A]/60 shadow-2xs group-hover:shadow-md transition-all duration-300 flex items-end justify-center">
                 {/* Banner's Matching Green Wave Texture */}
                 <Image
                   src="/vittal/banner-hero-green-texture.jpg"
                   alt=""
                   fill
-                  sizes="(max-width: 768px) 20vw, 160px"
+                  sizes="(max-width: 768px) 20vw, 130px"
                   className="object-cover object-top pointer-events-none select-none opacity-90"
                 />
 
@@ -246,20 +246,20 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
 
                 {/* Inside Category Product Image - Lower-aligned directly to bottom */}
-                <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] md:h-[84%] lg:h-[85%] flex items-end justify-center px-1.5 sm:px-2 md:px-2.5">
+                <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] md:h-[84%] lg:h-[85%] flex items-end justify-center px-1.5 sm:px-2 md:px-2">
                   <Image
                     src={cat.image}
                     alt={cat.name}
                     fill
-                    sizes="(max-width: 640px) 20vw, (max-width: 1024px) 20vw, 160px"
+                    sizes="(max-width: 640px) 20vw, (max-width: 1024px) 20vw, 130px"
                     className="object-contain object-bottom group-hover:scale-108 transition-transform duration-300 drop-shadow-xs"
                   />
                 </div>
               </div>
 
               {/* Outside Category Label: Current brand font, no background filling, centered below card */}
-              <div className="w-full mt-1.5 sm:mt-2 text-center">
-                <span className="font-mograph font-bold text-[9.5px] xs:text-[10px] sm:text-[11px] md:text-[11.5px] lg:text-xs text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-tight line-clamp-2 block w-full px-0.5">
+              <div className="w-full mt-1 sm:mt-1.5 text-center">
+                <span className="font-mograph font-semibold text-[9px] xs:text-[9.5px] sm:text-[10px] md:text-[11px] lg:text-[11.5px] text-neutral-800 group-hover:text-[#6B9E3A] transition-colors leading-tight line-clamp-1 block w-full px-0.5">
                   {cat.name}
                 </span>
               </div>
