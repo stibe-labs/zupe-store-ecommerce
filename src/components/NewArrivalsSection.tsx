@@ -47,7 +47,7 @@ export function NewArrivalsSection({ initialProductIds }: NewArrivalsSectionProp
         .filter(Boolean) as typeof products;
       if (mapped.length > 0) return mapped.slice(0, 10);
     }
-    return products.slice(5, 10);
+    return products.slice(0, 10);
   }, [curatedIds, products]);
 
   return (

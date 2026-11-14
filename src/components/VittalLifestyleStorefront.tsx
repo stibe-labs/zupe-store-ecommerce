@@ -79,6 +79,32 @@ const HERO_CUTOUTS = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Curated 10 New Arrivals for Homepage Grid:
+// 1. T-Shirt: Crimson Red VL Core Performance Athletic T-Shirt
+// 2. Dates: Royal Saudi Medjool Glossy Dates (Gold Lid Jar)
+// 3. Cashew Nuts: Premium Jumbo Roasted Cashews (Gold Lid Jar)
+// 4. Ferrero Rocher Candy: Ferrero Rocher Golden Luxury Truffle Hazelnut Gift Box
+// 5. Nike Shoe: Nike Air Zoom Pegasus Athletic Running Sneakers (Black/White)
+// 6. Ladies Seamless Compression: Charcoal Seamless Ribbed Compression Activewear Set
+// 7. Makeup Set: Luxury Gold & Obsidian Deluxe Makeup Palette & Brush Collection
+// 8. Frosted Perfume: Frosted Gunmetal Eau de Parfum 100ml
+// 9. Track Jacket: Nike Pro Charcoal Full-Zip Dri-FIT Performance Track Jacket
+// 10. Creatine: Optimum Nutrition Micronized Creatine
+// ---------------------------------------------------------------------------
+const HOMEPAGE_NEW_ARRIVALS_ORDER = [
+  "red-vl-athletic-tee",
+  "golden-jar-glossy-dates",
+  "glass-jar-cashews",
+  "golden-ferrero-rocher-box",
+  "nike-air-zoom-sneaker",
+  "charcoal-seamless-activewear",
+  "luxury-makeup-collection",
+  "frosted-gunmetal-parfum",
+  "nike-pro-charcoal-jacket",
+  "on-creatine-container",
+];
+
 export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleStorefrontProps) {
   const router = useRouter();
   const { addItem, openCart } = useCart();
@@ -97,9 +123,31 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
 
   const products = initialProducts && initialProducts.length > 0 ? initialProducts : [];
 
-  // Filter products for homepage (10 items)
+  // Filter products for homepage New Arrivals (10 curated items matching user specification)
   const trendingProducts = useMemo(() => {
-    return products.slice(0, 10);
+    const list: Product[] = [];
+    const used = new Set<string>();
+
+    for (const id of HOMEPAGE_NEW_ARRIVALS_ORDER) {
+      const found = products.find((p) => p.id === id || p.slug === id);
+      if (found && !used.has(found.id)) {
+        list.push(found);
+        used.add(found.id);
+      }
+    }
+
+    // Fallback if any target is not in the dataset yet, fill up to 10
+    if (list.length < 10) {
+      for (const p of products) {
+        if (!used.has(p.id)) {
+          list.push(p);
+          used.add(p.id);
+          if (list.length >= 10) break;
+        }
+      }
+    }
+
+    return list.slice(0, 10);
   }, [products]);
 
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
