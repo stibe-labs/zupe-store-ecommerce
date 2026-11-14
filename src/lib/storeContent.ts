@@ -294,6 +294,8 @@ export async function getBanners(includeInactive = false): Promise<HeroBannerSli
               mobileOffsetY: typeof b.mobileOffsetY === "number" ? b.mobileOffsetY : 0,
               active: b.active !== false,
               order: typeof b.order === "number" ? b.order : idx + 1,
+              imageFit: b.imageFit || "contain",
+              mobileImageFit: b.mobileImageFit || "contain",
               image: b.cutoutImage || b.image || `/vittal/cutout-hero-${(idx % 3) + 1}.png`,
               ctaText: b.buttonText || b.ctaText || "Shop Now",
               ctaLink: b.buttonLink || b.ctaLink || "/products",

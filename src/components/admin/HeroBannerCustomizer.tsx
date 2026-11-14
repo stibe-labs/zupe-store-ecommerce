@@ -463,14 +463,18 @@ export function HeroBannerCustomizer({
                     className="absolute inset-0 transition-transform duration-150"
                     style={{
                       transform: `translate(${previewOffsetX}px, ${previewOffsetY}px) scale(${previewScale / 100})`,
-                      transformOrigin: "right center",
+                      transformOrigin: "right bottom",
                     }}
                   >
                     <Image
                       src={currentSlide.cutoutImage}
                       alt="Cutout Preview"
                       fill
-                      className="object-cover object-right"
+                      className={
+                        currentSlide?.imageFit === "cover"
+                          ? "object-cover object-right"
+                          : "object-contain object-right-bottom"
+                      }
                     />
                   </div>
                 ) : (
@@ -551,14 +555,18 @@ export function HeroBannerCustomizer({
                     className="absolute inset-0 transition-transform duration-150"
                     style={{
                       transform: `translate(${previewOffsetX}px, ${previewOffsetY}px) scale(${previewScale / 100})`,
-                      transformOrigin: "right center",
+                      transformOrigin: "right bottom",
                     }}
                   >
                     <Image
                       src={currentSlide.cutoutImage}
                       alt="Cutout Preview"
                       fill
-                      className="object-cover object-right"
+                      className={
+                        currentSlide?.mobileImageFit === "cover" || currentSlide?.imageFit === "cover"
+                          ? "object-cover object-right"
+                          : "object-contain object-right-bottom"
+                      }
                     />
                   </div>
                 ) : (
@@ -657,7 +665,7 @@ export function HeroBannerCustomizer({
                         src={slide.cutoutImage}
                         alt=""
                         fill
-                        className="object-cover object-right"
+                        className="object-contain object-center"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-neutral-400">
@@ -856,6 +864,43 @@ export function HeroBannerCustomizer({
                       {preset.label}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Fit Mode Toggle */}
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[11px] font-bold text-neutral-600">
+                  Image Fit Mode:
+                </span>
+                <div className="flex items-center gap-1 bg-neutral-100 p-0.5 rounded-lg text-[10px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleUpdateCurrentSlide("imageFit", "contain");
+                      showToast("success", "Fit set to Contain (Full subject visible, no crop)");
+                    }}
+                    className={`px-2 py-1 rounded-md transition-all cursor-pointer ${
+                      (currentSlide?.imageFit || "contain") === "contain"
+                        ? "bg-white text-neutral-900 shadow-xs font-extrabold"
+                        : "text-neutral-500 hover:text-neutral-900"
+                    }`}
+                  >
+                    Contain (No Crop)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleUpdateCurrentSlide("imageFit", "cover");
+                      showToast("success", "Fit set to Cover");
+                    }}
+                    className={`px-2 py-1 rounded-md transition-all cursor-pointer ${
+                      currentSlide?.imageFit === "cover"
+                        ? "bg-white text-neutral-900 shadow-xs font-extrabold"
+                        : "text-neutral-500 hover:text-neutral-900"
+                    }`}
+                  >
+                    Cover (Fill Frame)
+                  </button>
                 </div>
               </div>
             </div>

@@ -82,6 +82,8 @@ export async function POST(req: NextRequest) {
           mobileOffsetY: typeof b.mobileOffsetY === "number" ? b.mobileOffsetY : 0,
           active: b.active !== false,
           order: typeof b.order === "number" ? b.order : idx + 1,
+          imageFit: b.imageFit || "contain",
+          mobileImageFit: b.mobileImageFit || "contain",
           image: finalCutout,
           ctaText: (b.buttonText ?? b.ctaText ?? "Shop Now").trim(),
           ctaLink: (b.buttonLink ?? b.ctaLink ?? "/products").trim(),

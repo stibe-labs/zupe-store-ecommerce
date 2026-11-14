@@ -351,6 +351,9 @@ export function VittalLifestyleStorefront({
                   const mobY = slide.mobileOffsetY ?? 0;
                   const cutoutSrc = slide.cutoutImage || slide.image || `/vittal/cutout-hero-${(idx % 3) + 1}.png`;
 
+                  const deskFit = slide.imageFit === "cover" ? "object-cover object-right" : "object-contain object-right-bottom";
+                  const mobFit = (slide.mobileImageFit === "cover" || slide.imageFit === "cover") ? "object-cover object-right" : "object-contain object-right-bottom";
+
                   return (
                     <div
                       key={slide.id || idx}
@@ -363,7 +366,7 @@ export function VittalLifestyleStorefront({
                         className="hidden md:block absolute inset-0 transition-transform duration-300"
                         style={{
                           transform: `translate(${deskX}px, ${deskY}px) scale(${deskScale})`,
-                          transformOrigin: "right center",
+                          transformOrigin: "right bottom",
                         }}
                       >
                         <Image
@@ -371,7 +374,7 @@ export function VittalLifestyleStorefront({
                           alt={slide.heading || `Hero Cutout ${idx + 1}`}
                           fill
                           priority={idx === 0}
-                          className="object-cover object-right"
+                          className={deskFit}
                           sizes="(max-width: 1024px) 70vw, 1680px"
                         />
                       </div>
@@ -381,7 +384,7 @@ export function VittalLifestyleStorefront({
                         className="block md:hidden absolute inset-0 transition-transform duration-300"
                         style={{
                           transform: `translate(${mobX}px, ${mobY}px) scale(${mobScale})`,
-                          transformOrigin: "right center",
+                          transformOrigin: "right bottom",
                         }}
                       >
                         <Image
@@ -389,7 +392,7 @@ export function VittalLifestyleStorefront({
                           alt={slide.heading || `Hero Cutout ${idx + 1}`}
                           fill
                           priority={idx === 0}
-                          className="object-cover object-right"
+                          className={mobFit}
                           sizes="100vw"
                         />
                       </div>
