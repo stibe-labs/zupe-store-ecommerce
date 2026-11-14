@@ -99,172 +99,194 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
       !order.shiprocket_awb.toUpperCase().includes("PENDING")
   );
 
-  // Status: Processing / Newly Placed
-  if (status === "Processing" || status.toLowerCase() === "pending" || !status) {
+  // Status-driven milestone progression for Vittal Lifestyle orders
+  if (status.toLowerCase().includes("delivered")) {
     return [
       {
-        title: "Order Confirmed & Verified",
-        location: siteConfig.fulfillmentCenter,
+        title: "Order Placed & Verified",
+        location: "Vittal Central Fulfillment Hub",
         timestamp: formatPlacedTime,
         completed: true,
-        active: false,
-        description: "Order verified with serial registration and confirmed for fulfillment queue.",
+        description: "Order confirmed with purity inspection and tamper-evident seal verified.",
       },
       {
-        title: "Quality Check & Shockproof Packaging",
-        location: siteConfig.fulfillmentCenter,
-        timestamp: "In Progress",
-        completed: false,
+        title: "Quality Check & Secured Packaging",
+        location: "Cleanroom Packaging Unit",
+        timestamp: "Day 1",
+        completed: true,
+        description: "Packed in hermetic, food-grade temperature-controlled protective casing.",
+      },
+      {
+        title: "Dispatched via Express Air Cargo",
+        location: "National Airport Logistics Center",
+        timestamp: "Day 2",
+        completed: true,
+        description: `Dispatched with ${courier}. Waybill barcode scanned at transit hub.`,
+      },
+      {
+        title: `Arrived at ${city} Hub`,
+        location: `${city} Regional Facility`,
+        timestamp: "Day 4",
+        completed: true,
+        description: "Consignment sorted for local last-mile courier delivery associate.",
+      },
+      {
+        title: "Delivered to Customer",
+        location: order.shipping_address || city,
+        timestamp: "Completed",
+        completed: true,
         active: true,
-        description: "Device undergoing multi-point inspection and packed in tamper-proof electronics foam.",
-      },
-      {
-        title: "Courier Handover & AWB Activation",
-        location: siteConfig.dispatchBay,
-        timestamp: "Expected within 24 business hours",
-        completed: false,
-        active: false,
-        description: "Express air cargo partner assigned and real-time tracking activated upon pickup.",
-      },
-      {
-        title: "Out for Delivery & OTP Verification",
-        location: `${city} Delivery Address`,
-        timestamp: "Estimated 5-7 business days",
-        completed: false,
-        active: false,
-        description: "Secure contactless handover. Cash on Delivery (COD) or UPI payable directly to courier.",
+        description: "Package handed over with OTP verification. 100% Authentic Guarantee active.",
       },
     ];
   }
 
-  if (status === "In Transit") {
+  if (status.toLowerCase().includes("out for delivery")) {
     return [
       {
-        title: "Order Confirmed & Verified",
-        location: siteConfig.fulfillmentCenter,
+        title: "Order Placed & Verified",
+        location: "Vittal Central Fulfillment Hub",
         timestamp: formatPlacedTime,
         completed: true,
-        active: false,
-        description: "Order confirmed and verified.",
+        description: "Order confirmed with purity inspection and tamper-evident seal verified.",
       },
       {
-        title: "Dispatched from Fulfillment Hub",
-        location: siteConfig.fulfillmentCenter,
-        timestamp: "Dispatched",
+        title: "Quality Check & Secured Packaging",
+        location: "Cleanroom Packaging Unit",
+        timestamp: "Completed",
         completed: true,
-        active: false,
-        description: `Handed over to ${courier}. ${hasAwb ? `AWB: ${order.shiprocket_awb}` : ""}`,
+        description: "Packed in hermetic, food-grade temperature-controlled protective casing.",
       },
       {
-        title: "In Transit via Air Cargo Corridor",
-        location: `En Route to ${city}`,
-        timestamp: "In Transit",
+        title: "Dispatched via Express Air Cargo",
+        location: "National Airport Logistics Center",
+        timestamp: "Completed",
         completed: true,
-        active: true,
-        description: `Shipment is moving via express transit lines to the ${city} destination airport hub.`,
+        description: `Handed over to ${courier}. Air consignment in priority transit.`,
       },
       {
-        title: "Out for Delivery & Doorstep Handover",
-        location: `${city} Delivery Address`,
-        timestamp: "Upcoming",
-        completed: false,
-        active: false,
-        description: "Payable via Cash on Delivery or UPI upon doorstep handover.",
-      },
-    ];
-  }
-
-  if (status === "Out for Delivery") {
-    return [
-      {
-        title: "Order Confirmed & Dispatched",
-        location: siteConfig.fulfillmentCenter,
-        timestamp: formatPlacedTime,
-        completed: true,
-        active: false,
-        description: `Dispatched via ${courier}.`,
-      },
-      {
-        title: "Arrived at Destination Facility",
-        location: `${city} Hub`,
-        timestamp: "Arrived",
-        completed: true,
-        active: false,
-        description: `Package processed at ${city} courier hub for final-mile route.`,
-      },
-      {
-        title: "Out for Delivery Today",
-        location: `${city} Local Route`,
+        title: `Out for Delivery in ${city}`,
+        location: `${city} Last-Mile Station`,
         timestamp: "Today",
         completed: true,
         active: true,
-        description: "Delivery executive is on the way. Please keep your phone reachable for OTP.",
+        description: "Courier executive is out with your package. Keep your OTP and cash/UPI ready.",
       },
       {
-        title: "Doorstep Handover & Inspection",
-        location: `${city} Delivery Address`,
-        timestamp: "Expected Today",
+        title: "Delivered at Doorstep",
+        location: order.shipping_address || city,
+        timestamp: "Pending Delivery",
         completed: false,
-        active: false,
-        description: "Verify seal upon delivery. Cash or UPI accepted.",
+        description: "Final doorstep verification and handover.",
       },
     ];
   }
 
-  if (status === "Delivered") {
+  if (status.toLowerCase().includes("transit") || status.toLowerCase().includes("shipped")) {
     return [
       {
-        title: "Order Placed & Dispatched",
-        location: siteConfig.fulfillmentCenter,
+        title: "Order Placed & Verified",
+        location: "Vittal Central Fulfillment Hub",
         timestamp: formatPlacedTime,
         completed: true,
-        active: false,
-        description: "Order processed and dispatched.",
+        description: "Order confirmed with purity inspection and tamper-evident seal verified.",
       },
       {
-        title: "In Transit & Out for Delivery",
-        location: `${city} Hub`,
+        title: "Quality Check & Secured Packaging",
+        location: "Cleanroom Packaging Unit",
         timestamp: "Completed",
         completed: true,
-        active: false,
-        description: `Handled via ${courier}.`,
+        description: "Packed in hermetic, food-grade temperature-controlled protective casing.",
       },
       {
-        title: "Delivered Successfully",
-        location: `${city} Delivery Address`,
-        timestamp: "Delivered",
+        title: "In Transit via Express Logistics",
+        location: hasAwb ? `${courier} Sorting Hub` : "National Air Logistics Center",
+        timestamp: "In Progress",
         completed: true,
         active: true,
-        description: `Package handed over safely. 1-Year ${siteConfig.name} brand warranty is now active!`,
+        description: `Consignment en route to ${city}. Real-time tracking active on ${courier}.`,
+      },
+      {
+        title: `Arrival at ${city} Hub`,
+        location: `${city} Regional Facility`,
+        timestamp: "Next Milestone",
+        completed: false,
+        description: "Sorting for final delivery dispatch.",
+      },
+      {
+        title: "Doorstep Handover",
+        location: order.shipping_address || city,
+        timestamp: "Pending",
+        completed: false,
+        description: "Delivery executive will contact via WhatsApp/SMS prior to arrival.",
       },
     ];
   }
 
-  // RTO / Return
+  if (status.toLowerCase().includes("rto") || status.toLowerCase().includes("returned")) {
+    return [
+      {
+        title: "Order Placed & Verified",
+        location: "Vittal Central Fulfillment Hub",
+        timestamp: formatPlacedTime,
+        completed: true,
+        description: "Order received and processed.",
+      },
+      {
+        title: "Dispatched to Destination",
+        location: "Logistics Hub",
+        timestamp: "Completed",
+        completed: true,
+        description: `Consignment dispatched with ${courier}.`,
+      },
+      {
+        title: "Delivery Attempt Incomplete",
+        location: `${city} Hub`,
+        timestamp: "Recent Update",
+        completed: true,
+        active: true,
+        description: "Consignment returning to origin hub. Contact support to arrange redelivery.",
+      },
+    ];
+  }
+
+  // Default: Processing / Quality Packaging
   return [
     {
-      title: "Order Placed & Dispatched",
-      location: siteConfig.fulfillmentCenter,
+      title: "Order Placed & Confirmed",
+      location: "Vittal Central Fulfillment Hub",
       timestamp: formatPlacedTime,
       completed: true,
-      active: false,
-      description: "Order processed and dispatched.",
+      description: "Order received in our ERP system. Batch purity & macro certification assigned.",
     },
     {
-      title: "Delivery Unsuccessful",
-      location: `${city} Hub`,
-      timestamp: "Unsuccessful",
-      completed: true,
-      active: false,
-      description: order.ndr_status || "Customer unreachable after multiple delivery attempts.",
-    },
-    {
-      title: "Return to Origin (RTO)",
-      location: siteConfig.fulfillmentCenter,
+      title: "Quality Check & Sealed Packaging",
+      location: "Cleanroom Packaging Unit",
       timestamp: "In Progress",
       completed: true,
       active: true,
-      description: "Shipment returning to fulfillment warehouse.",
+      description: "Undergoing batch inspection and packed in certified airtight protective casing.",
+    },
+    {
+      title: "Courier Handover & AWB Generation",
+      location: "National Logistics Dispatch",
+      timestamp: "Estimated 24-48 Hours",
+      completed: false,
+      description: "Courier partner allocation and shipment waybill activation.",
+    },
+    {
+      title: "Express Air Transit",
+      location: "Priority Air Network",
+      timestamp: "Upcoming",
+      completed: false,
+      description: `Direct air cargo transit to ${city}.`,
+    },
+    {
+      title: "Doorstep Handover",
+      location: order.shipping_address || city,
+      timestamp: "Upcoming",
+      completed: false,
+      description: "Secure delivery with SMS/WhatsApp OTP confirmation.",
     },
   ];
 }
@@ -397,21 +419,21 @@ function OrderTrackingContent() {
     switch (status) {
       case "Delivered":
         return {
-          bg: "bg-emerald-50 text-emerald-700 border-emerald-200",
+          bg: "bg-emerald-50 text-emerald-800 border-emerald-300",
           dot: "bg-emerald-500",
           icon: CheckCircle2,
           label: "Delivered",
         };
       case "Out for Delivery":
         return {
-          bg: "bg-purple-50 text-purple-700 border-purple-200",
-          dot: "bg-purple-500 animate-pulse",
+          bg: "bg-[#F4FBE8] text-[#3D6318] border-[#95CF42]/40",
+          dot: "bg-[#6B9E3A] animate-pulse",
           icon: Truck,
           label: "Out for Delivery Today",
         };
       case "In Transit":
         return {
-          bg: "bg-blue-50 text-blue-700 border-blue-200",
+          bg: "bg-blue-50 text-blue-800 border-blue-200",
           dot: "bg-blue-500 animate-pulse",
           icon: Plane,
           label: "In Transit (Air Cargo)",
@@ -427,8 +449,8 @@ function OrderTrackingContent() {
         };
       default:
         return {
-          bg: "bg-amber-50 text-amber-800 border-amber-200",
-          dot: "bg-amber-500 animate-pulse",
+          bg: "bg-[#F4FBE8] text-[#3D6318] border-[#95CF42]/40",
+          dot: "bg-[#6B9E3A] animate-pulse",
           icon: Clock,
           label: "Processing & Quality Inspection",
         };
@@ -438,15 +460,15 @@ function OrderTrackingContent() {
   const faqs = [
     {
       q: "Where can I find my Order ID or AWB Tracking Number?",
-      a: `Your Order ID (e.g. #${siteConfig.orderPrefix}-1001) is displayed immediately upon placing your order and sent to your WhatsApp and Email. Once your electronics parcel is dispatched from our hub, your courier AWB tracking number (Delhivery, Blue Dart, DTDC) is sent directly via WhatsApp with real-time tracking links.`,
+      a: `Your Order ID (e.g. #${siteConfig.orderPrefix}-1001) is displayed immediately upon order confirmation and sent to your WhatsApp and Email. Once your products are dispatched from our hub, your courier AWB tracking number (Delhivery, Blue Dart, DTDC) is sent directly via WhatsApp with real-time tracking links.`,
     },
     {
       q: "How fast is express delivery across India?",
-      a: "Orders are verified and packaged within 24 business hours. Express air logistics delivery typically takes 5 to 7 business days across metro, tier-1, and regional destinations in India.",
+      a: "Orders are verified and packaged within 24 business hours. Express air logistics delivery typically takes 3 to 5 business days across metro, tier-1, and regional destinations in India.",
     },
     {
-      q: "How are fragile electronics protected during shipping?",
-      a: "Every unit is enclosed in custom anti-static bubble sleeves, reinforced corner cushions, and heavy-duty tamper-proof outer boxes with factory serial verification to ensure it reaches you in pristine condition.",
+      q: "How are supplements, dates & nuts, and activewear protected during shipping?",
+      a: "Every supplement container is factory sealed with tamper-evident induction wads. Royal dates and nuts are vacuum sealed in food-grade, multi-layer aroma-barrier pouches. Activewear is packed in individual hygienic zip envelopes inside heavy-duty cartons.",
     },
     {
       q: "Can I track Cash on Delivery (COD) orders?",
@@ -457,71 +479,71 @@ function OrderTrackingContent() {
       a: "Our courier partners attempt delivery up to 3 times. You will receive the delivery associate's contact details via WhatsApp. You can request a delivery re-attempt or reschedule the date without extra cost.",
     },
     {
-      q: "How do I claim the 1-year warranty on my electronics?",
-      a: `Every device purchased from ${siteConfig.name} includes a comprehensive 1-year warranty card with GST invoice. In case of any technical queries or support, simply email us at ${siteConfig.supportEmail} or connect with our dedicated concierge via WhatsApp at +91 73567 65036.`,
+      q: "How do I contact customer support or ask about product authenticity?",
+      a: `Every product from ${siteConfig.name} is 100% authentic and lab tested. For any queries or order assistance, connect with our dedicated concierge via WhatsApp at +91 ${siteConfig.whatsappNumber} or email us at ${siteConfig.supportEmail}.`,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#070708] text-white flex flex-col justify-between selection:bg-[#D4A373] selection:text-black font-mograph">
+    <div className="min-h-screen bg-[#FAFCF6] text-neutral-900 flex flex-col justify-between selection:bg-[#E2F5B4] selection:text-[#2E4D12] font-mograph">
       <Navbar />
 
       <main className="flex-1 pb-20">
         {/* ================================================================= */}
-        {/* HERO SECTION: DEEP OBSIDIAN GRADIENT MATCHING BRAND DESIGN       */}
+        {/* HERO SECTION: CLEAN LUXURY WHITE WITH SOFT GREEN AMBIENT GLOW   */}
         {/* ================================================================= */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-[#0e0e11] via-[#09090b] to-[#070708] text-white pt-10 sm:pt-14 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 border-b border-white/10">
+        <section className="relative overflow-hidden bg-white pt-10 sm:pt-14 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 border-b border-neutral-200/80">
           {/* Subtle Ambient Radial Lighting */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#D4AF37]/10 blur-[100px] pointer-events-none" />
-          <div className="absolute -bottom-10 right-10 w-[300px] h-[200px] bg-[#D4A373]/10 blur-[80px] pointer-events-none" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#95CF42]/10 blur-[100px] pointer-events-none" />
+          <div className="absolute -bottom-10 right-10 w-[300px] h-[200px] bg-[#95CF42]/8 blur-[80px] pointer-events-none" />
 
           <div className="relative max-w-4xl mx-auto text-center">
             {/* Breadcrumb Navigation */}
-            <div className="flex items-center justify-center gap-2 text-xs font-medium text-neutral-400 mb-4">
-              <Link href="/" className="hover:text-[#D4A373] transition-colors">
+            <div className="flex items-center justify-center gap-2 text-xs font-medium text-neutral-500 mb-4">
+              <Link href="/" className="hover:text-[#6B9E3A] transition-colors">
                 Home
               </Link>
-              <ChevronRight className="w-3.5 h-3.5 text-neutral-600" />
-              <span className="text-[#D4AF37] font-semibold">Track Order</span>
+              <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+              <span className="text-neutral-900 font-semibold">Track Order</span>
             </div>
 
             {/* Live Tracking Pill */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#272015] border border-[#D4AF37]/30 text-[#D4AF37] shadow-xs mb-4 font-movault uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] shadow-xs mb-4 font-movault uppercase tracking-wider">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#6B9E3A] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#6B9E3A]"></span>
               </span>
               <span className="text-[11px] font-bold">
                 Live Shipment Radar &amp; Tracking
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight uppercase font-movault">
-              Track Your <span className="text-[#D4A373]">Order</span>
+            <h1 className="text-3xl sm:text-5xl font-extrabold text-neutral-950 tracking-tight leading-tight uppercase font-movault">
+              Track Your <span className="text-[#6B9E3A]">Order</span>
             </h1>
-            <p className="mt-3 text-sm sm:text-base text-neutral-300 max-w-xl mx-auto leading-relaxed font-normal">
+            <p className="mt-3 text-sm sm:text-base text-neutral-600 max-w-xl mx-auto leading-relaxed font-normal">
               Enter your Order ID, courier AWB tracking number, or 10-digit mobile number for real-time delivery milestone updates.
             </p>
 
             {/* Tracking Search Input Card (Clean, modern rounded card) */}
-            <div className="mt-8 max-w-2xl mx-auto bg-[#141416] rounded-2xl sm:rounded-full shadow-2xl p-2 sm:p-2.5 border border-white/15">
+            <div className="mt-8 max-w-2xl mx-auto bg-white rounded-2xl sm:rounded-full shadow-lg p-2 sm:p-2.5 border border-neutral-200/90 ring-1 ring-black/5">
               <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1 flex items-center">
-                  <div className="absolute left-4 sm:left-5 text-neutral-400">
-                    <Search className="w-5 h-5 text-[#D4AF37]" />
+                  <div className="absolute left-4 sm:left-5 text-[#6B9E3A]">
+                    <Search className="w-5 h-5" />
                   </div>
                   <input
                     type="text"
                     value={inputTerm}
                     onChange={(e) => setInputTerm(e.target.value)}
                     placeholder="Enter Order ID (e.g. #VL-1001), AWB, or Phone..."
-                    className="w-full pl-12 sm:pl-13 pr-10 py-3.5 sm:py-4 text-sm sm:text-base bg-transparent text-white placeholder:text-neutral-500 focus:outline-none font-medium"
+                    className="w-full pl-12 sm:pl-13 pr-10 py-3.5 sm:py-4 text-sm sm:text-base bg-transparent text-neutral-900 placeholder:text-neutral-400 focus:outline-none font-medium"
                   />
                   {inputTerm && (
                     <button
                       type="button"
                       onClick={() => setInputTerm("")}
-                      className="absolute right-3 p-1.5 text-neutral-400 hover:text-white rounded-full cursor-pointer transition-colors"
+                      className="absolute right-3 p-1.5 text-neutral-400 hover:text-neutral-700 rounded-full cursor-pointer transition-colors"
                       title="Clear"
                     >
                       <X className="w-4 h-4" />
@@ -532,7 +554,7 @@ function OrderTrackingContent() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-xl sm:rounded-full bg-[#D4A373] hover:bg-[#c29263] active:scale-95 text-black font-bold text-sm sm:text-base transition-all shadow-md hover:shadow-lg disabled:opacity-70 cursor-pointer shrink-0 font-movault uppercase tracking-wider"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-full bg-[#95CF42] hover:bg-[#85BE33] active:scale-95 text-black font-extrabold text-sm sm:text-base transition-all shadow-md hover:shadow-lg disabled:opacity-70 cursor-pointer shrink-0 font-movault uppercase tracking-wider"
                 >
                   {loading ? (
                     <>
@@ -550,23 +572,23 @@ function OrderTrackingContent() {
             </div>
 
             {/* Quick helper format chips */}
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-neutral-400 font-medium">
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-neutral-500 font-medium">
               <span>Accepted formats:</span>
               <button
                 type="button"
                 onClick={() => setInputTerm("#VL-")}
-                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 font-mono text-[11px] transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-[#F4FBE8] hover:bg-[#EAF8D7] border border-[#95CF42]/30 text-[#3D6318] font-mono text-[11px] font-semibold transition-colors cursor-pointer"
               >
                 #VL-1001
               </button>
               <button
                 type="button"
                 onClick={() => setInputTerm("SR-AWB-")}
-                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 font-mono text-[11px] transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-[#F4FBE8] hover:bg-[#EAF8D7] border border-[#95CF42]/30 text-[#3D6318] font-mono text-[11px] font-semibold transition-colors cursor-pointer"
               >
                 Courier AWB
               </button>
-              <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-neutral-200 font-mono text-[11px]">
+              <span className="px-2.5 py-1 rounded-lg bg-[#F4FBE8] border border-[#95CF42]/30 text-[#3D6318] font-mono text-[11px] font-semibold">
                 10-Digit Mobile
               </span>
             </div>
@@ -574,11 +596,11 @@ function OrderTrackingContent() {
         </section>
 
         {/* ================================================================= */}
-        {/* TRUST BADGES STRIP: SLIM DARK CURVED CARD                         */}
+        {/* TRUST BADGES STRIP: SLIM CLEAN CARD                               */}
         {/* ================================================================= */}
         <div className="max-w-5xl mx-auto px-4 -mt-6 sm:-mt-8 relative z-10">
-          <div className="bg-[#141416] text-white rounded-xl sm:rounded-2xl md:rounded-3xl border border-white/10 shadow-xl py-3 px-2 sm:py-4 sm:px-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/5 items-center text-center">
+          <div className="bg-white text-neutral-900 rounded-xl sm:rounded-2xl md:rounded-3xl border border-neutral-200/80 shadow-md py-4 px-3 sm:py-5 sm:px-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-neutral-100 items-center text-center">
               {[
                 {
                   icon: BadgeCheck,
@@ -593,7 +615,7 @@ function OrderTrackingContent() {
                 {
                   icon: Truck,
                   label: "Express Shipping",
-                  desc: "5-7 Days Priority Transit",
+                  desc: "3-5 Days Priority Transit",
                 },
                 {
                   icon: MessageSquare,
@@ -609,13 +631,13 @@ function OrderTrackingContent() {
                       idx >= 2 ? "pt-3 sm:pt-2" : ""
                     }`}
                   >
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#272015] border border-[#D4AF37]/20 flex items-center justify-center shadow-xs mb-1.5 shrink-0">
-                      <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#D4AF37]" />
+                    <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#F4FBE8] border border-[#95CF42]/30 flex items-center justify-center shadow-xs mb-2 shrink-0">
+                      <Icon className="w-5 h-5 text-[#3D6318]" />
                     </div>
-                    <span className="text-xs sm:text-sm font-bold text-white leading-tight font-movault uppercase tracking-wide">
+                    <span className="text-xs sm:text-sm font-bold text-neutral-900 leading-tight font-movault uppercase tracking-wide">
                       {item.label}
                     </span>
-                    <span className="text-[10px] sm:text-[11px] text-neutral-400 font-medium leading-tight mt-0.5">
+                    <span className="text-[10px] sm:text-[11px] text-neutral-500 font-medium leading-tight mt-0.5">
                       {item.desc}
                     </span>
                   </div>
@@ -631,25 +653,25 @@ function OrderTrackingContent() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-10">
           {/* Success Banner if redirected from 1-Click Fastrr Checkout */}
           {orderStatus === "SUCCESS" && (
-            <div className="mb-8 p-6 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 text-white shadow-xl flex flex-col sm:flex-row items-center sm:items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
+            <div className="mb-8 p-6 rounded-3xl bg-[#F4FBE8] border border-[#95CF42]/40 text-neutral-900 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-[#95CF42] text-black flex items-center justify-center shrink-0 shadow-md">
                 <CheckCircle2 className="w-7 h-7" />
               </div>
               <div className="text-center sm:text-left flex-1">
-                <h2 className="text-lg sm:text-xl font-bold text-white font-movault uppercase tracking-wider">
+                <h2 className="text-lg sm:text-xl font-bold text-neutral-950 font-movault uppercase tracking-wider">
                   🎉 Order Placed Successfully!
                 </h2>
-                <p className="text-xs sm:text-sm text-neutral-300 mt-1 leading-relaxed">
+                <p className="text-xs sm:text-sm text-neutral-600 mt-1 leading-relaxed font-normal">
                   Thank you! Your order has been placed. Your products are undergoing quality verification and being secured in airtight protective packaging.
                 </p>
                 <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs">
+                  <span className="px-3 py-1 rounded-full bg-white border border-[#95CF42]/40 text-[#3D6318] font-bold text-xs font-movault uppercase">
                     Quality Guarantee Active
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs">
+                  <span className="px-3 py-1 rounded-full bg-white border border-[#95CF42]/40 text-[#3D6318] font-bold text-xs font-movault uppercase">
                     Priority Dispatch
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs">
+                  <span className="px-3 py-1 rounded-full bg-white border border-[#95CF42]/40 text-[#3D6318] font-bold text-xs font-movault uppercase">
                     WhatsApp Updates Enabled
                   </span>
                 </div>
@@ -659,11 +681,11 @@ function OrderTrackingContent() {
 
           {/* Error Message */}
           {errorMessage && (
-            <div className="mb-8 p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-200 flex items-start gap-3 shadow-lg">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-400" />
+            <div className="mb-8 p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3 shadow-xs">
+              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-600" />
               <div className="text-sm flex-1">
-                <p className="font-bold text-white">{errorMessage}</p>
-                <p className="text-xs text-neutral-400 mt-1 leading-relaxed">
+                <p className="font-bold text-rose-900">{errorMessage}</p>
+                <p className="text-xs text-rose-600 mt-1 leading-relaxed">
                   Tip: Please check your Email/WhatsApp confirmation or try searching with your 10-digit registered mobile number.
                 </p>
                 {errorSupport && (
@@ -686,7 +708,7 @@ function OrderTrackingContent() {
           {/* If Multiple Orders Match (e.g. searched by phone number) */}
           {matchedOrders.length > 1 && (
             <div className="mb-8">
-              <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3 font-movault">
+              <h3 className="text-xs font-bold text-neutral-600 uppercase tracking-wider mb-3 font-movault">
                 Found {matchedOrders.length} orders matching your search:
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -701,22 +723,22 @@ function OrderTrackingContent() {
                       }}
                       className={`text-left p-4 rounded-2xl border transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-[#18181c] border-[#D4AF37] ring-1 ring-[#D4AF37]/40 shadow-lg text-white"
-                          : "bg-[#141416] border-white/10 hover:border-white/20 text-neutral-300 shadow-sm"
+                          ? "bg-[#F4FBE8] border-[#95CF42] ring-2 ring-[#95CF42]/40 shadow-md text-neutral-900"
+                          : "bg-white border-neutral-200/80 hover:border-neutral-300 text-neutral-700 shadow-2xs"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-sm text-white">
+                        <span className="font-bold text-sm text-neutral-900 font-movault uppercase">
                           {ord.shopify_order_id || ord.id}
                         </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-[#D4AF37]">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30">
                           {ord.delivery_status || ord.status}
                         </span>
                       </div>
-                      <p className="text-xs text-neutral-400 truncate">
+                      <p className="text-xs text-neutral-500 truncate">
                         {ord.items?.[0]?.product_name || `${siteConfig.name} Products`}
                       </p>
-                      <p className="text-xs font-bold text-[#D4AF37] mt-2 font-mono">
+                      <p className="text-xs font-bold text-[#3D6318] mt-2 font-mono">
                         ₹{ord.total_amount?.toLocaleString("en-IN")}
                       </p>
                     </button>
@@ -738,13 +760,13 @@ function OrderTrackingContent() {
                 const checkpoints = buildTrackingCheckpoints(selectedOrder, liveTracking);
 
                 return (
-                  <div className="bg-[#141416] rounded-3xl border border-white/10 shadow-xl overflow-hidden text-white">
+                  <div className="bg-white rounded-3xl border border-neutral-200/90 shadow-md overflow-hidden text-neutral-900">
                     {/* Header Strip */}
-                    <div className="p-6 sm:p-8 bg-[#18181c] border-b border-white/10">
+                    <div className="p-6 sm:p-8 bg-[#FAFCF6] border-b border-neutral-200/80">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-3">
-                            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-movault uppercase">
+                            <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-950 tracking-tight font-movault uppercase">
                               Order {selectedOrder.shopify_order_id || selectedOrder.id}
                             </h2>
                             <button
@@ -754,7 +776,7 @@ function OrderTrackingContent() {
                                   "id"
                                 )
                               }
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors cursor-pointer"
                               title="Copy Order ID"
                             >
                               {copiedOrderId ? (
@@ -764,7 +786,7 @@ function OrderTrackingContent() {
                               )}
                             </button>
                           </div>
-                          <p className="text-xs text-slate-500 mt-1">
+                          <p className="text-xs text-neutral-500 mt-1 font-medium">
                             Placed on{" "}
                             {new Date(selectedOrder.created_at || Date.now()).toLocaleDateString(
                               "en-IN",
@@ -786,21 +808,21 @@ function OrderTrackingContent() {
                             !liveTracking.isPending &&
                             Array.isArray(liveTracking.activities) &&
                             liveTracking.activities.length > 0 && (
-                              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/40 font-movault uppercase">
+                                <span className="w-2 h-2 rounded-full bg-[#6B9E3A] animate-pulse" />
                                 Live Carrier Scan
                               </span>
                             )}
 
                           {liveTracking?.edd && !liveTracking.isPending && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200">
                               <Clock className="w-3.5 h-3.5" />
                               Est. Delivery: {liveTracking.edd}
                             </span>
                           )}
 
                           <span
-                            className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold border ${badge.bg}`}
+                            className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold border ${badge.bg} font-movault uppercase`}
                           >
                             <span className={`w-2 h-2 rounded-full ${badge.dot}`} />
                             <BadgeIcon className="w-4 h-4" />
@@ -818,11 +840,11 @@ function OrderTrackingContent() {
                             }
                             disabled={loading}
                             title="Refresh live status from courier"
-                            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200/80 cursor-pointer"
+                            className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors border border-neutral-200/80 cursor-pointer"
                           >
                             <RefreshCw
                               className={`w-4 h-4 ${
-                                loading ? "animate-spin text-[#002D62]" : ""
+                                loading ? "animate-spin text-[#3D6318]" : ""
                               }`}
                             />
                           </button>
@@ -834,16 +856,16 @@ function OrderTrackingContent() {
                     <div
                       id="live-shipment-journey"
                       ref={journeySectionRef}
-                      className="p-6 sm:p-8 border-t border-slate-100 scroll-mt-24"
+                      className="p-6 sm:p-8 border-t border-neutral-100 scroll-mt-24"
                     >
                       <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
-                        <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                          <Truck className="w-5 h-5 text-[#002D62]" />
+                        <h3 className="text-base font-bold text-neutral-900 flex items-center gap-2 font-movault uppercase tracking-wide">
+                          <Truck className="w-5 h-5 text-[#6B9E3A]" />
                           <span>Live Shipment Journey</span>
                         </h3>
                         {lastUpdated && (
-                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shadow-2xs">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#3D6318] bg-[#F4FBE8] px-2.5 py-1 rounded-full border border-[#95CF42]/30 shadow-2xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#6B9E3A] animate-pulse" />
                             Live Status Updated • {lastUpdated}
                           </span>
                         )}
@@ -865,7 +887,7 @@ function OrderTrackingContent() {
                                       (checkpoints[idx + 1]?.completed ||
                                         checkpoints[idx + 1]?.active)
                                         ? "bg-emerald-400"
-                                        : "bg-slate-200"
+                                        : "bg-neutral-200"
                                     }`}
                                   />
                                 )}
@@ -873,42 +895,42 @@ function OrderTrackingContent() {
                                 <div
                                   className={`relative z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 transition-transform ${
                                     cp.active
-                                      ? "bg-[#002D62] border-white ring-4 ring-blue-100 text-white shadow-sm"
+                                      ? "bg-[#95CF42] border-white ring-4 ring-[#95CF42]/30 text-black shadow-sm"
                                       : cp.completed
                                       ? "bg-emerald-500 border-white text-white shadow-xs"
-                                      : "bg-slate-100 border-slate-300 text-slate-400"
+                                      : "bg-neutral-100 border-neutral-300 text-neutral-400"
                                   }`}
                                 >
                                   {cp.active ? (
-                                    <span className="w-2.5 h-2.5 rounded-full bg-[#FFBE00] animate-ping" />
+                                    <span className="w-2.5 h-2.5 rounded-full bg-black animate-ping" />
                                   ) : cp.completed ? (
                                     <Check className="w-4 h-4 text-white stroke-[2.5]" />
                                   ) : (
-                                    <span className="w-2 h-2 rounded-full bg-slate-400" />
+                                    <span className="w-2 h-2 rounded-full bg-neutral-400" />
                                   )}
                                 </div>
                               </div>
 
                               {/* Content Card */}
-                              <div className="flex-1 bg-slate-50/70 hover:bg-slate-50 rounded-2xl p-4 sm:p-5 border border-slate-200/80 transition-colors">
+                              <div className="flex-1 bg-[#FAFCF6] hover:bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/80 transition-colors shadow-2xs">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
                                   <h4
-                                    className={`text-sm sm:text-base font-bold ${
-                                      cp.active ? "text-[#002D62]" : "text-slate-900"
+                                    className={`text-sm sm:text-base font-bold font-movault uppercase tracking-wide ${
+                                      cp.active ? "text-[#3D6318]" : "text-neutral-900"
                                     }`}
                                   >
                                     {cp.title}
                                   </h4>
-                                  <span className="text-[11px] sm:text-xs font-semibold text-slate-400">
+                                  <span className="text-[11px] sm:text-xs font-semibold text-neutral-400">
                                     {cp.timestamp}
                                   </span>
                                 </div>
-                                <p className="text-xs sm:text-sm font-semibold text-slate-600 mb-1 flex items-center gap-1.5">
-                                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                <p className="text-xs sm:text-sm font-semibold text-neutral-600 mb-1 flex items-center gap-1.5">
+                                  <MapPin className="w-3.5 h-3.5 text-[#6B9E3A] shrink-0" />
                                   <span>{cp.location}</span>
                                 </p>
                                 {cp.description && (
-                                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed mt-1">
+                                  <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed mt-1">
                                     {cp.description}
                                   </p>
                                 )}
@@ -945,31 +967,31 @@ function OrderTrackingContent() {
                             : "Express Air Logistics";
 
                         return (
-                          <div className="mt-8 pt-6 border-t border-slate-200/60 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100">
-                              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-1">
+                          <div className="mt-8 pt-6 border-t border-neutral-200/80 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="bg-[#FAFCF6] rounded-2xl p-4 border border-neutral-200/80">
+                              <span className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider block mb-1 font-movault">
                                 Courier Partner
                               </span>
                               <div className="flex items-center gap-2">
-                                <Truck className="w-4 h-4 text-[#002D62]" />
-                                <span className="text-sm font-bold text-slate-900">
+                                <Truck className="w-4 h-4 text-[#6B9E3A]" />
+                                <span className="text-sm font-bold text-neutral-900">
                                   {courierName}
                                 </span>
                               </div>
                             </div>
 
-                            <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100">
-                              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-1">
+                            <div className="bg-[#FAFCF6] rounded-2xl p-4 border border-neutral-200/80">
+                              <span className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider block mb-1 font-movault">
                                 AWB / Waybill Number
                               </span>
                               <div className="flex items-center justify-between">
-                                <span className="text-sm font-mono font-bold text-slate-900">
+                                <span className="text-sm font-mono font-bold text-neutral-900">
                                   {hasRealAwb ? rawAwb : "Generating upon courier pickup"}
                                 </span>
                                 {hasRealAwb && (
                                   <button
                                     onClick={() => copyToClipboard(rawAwb, "awb")}
-                                    className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"
+                                    className="p-1 text-neutral-400 hover:text-neutral-700 cursor-pointer"
                                     title="Copy AWB"
                                   >
                                     {copiedAWB ? (
@@ -982,8 +1004,8 @@ function OrderTrackingContent() {
                               </div>
                             </div>
 
-                            <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100">
-                              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-1">
+                            <div className="bg-[#FAFCF6] rounded-2xl p-4 border border-neutral-200/80">
+                              <span className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider block mb-1 font-movault">
                                 External Tracking Portal
                               </span>
                               {hasRealAwb ? (
@@ -1001,13 +1023,13 @@ function OrderTrackingContent() {
                                   }
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#002D62] hover:underline cursor-pointer"
+                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#3D6318] hover:text-[#6B9E3A] hover:underline cursor-pointer"
                                 >
                                   <span>Open {courierName} Portal</span>
                                   <ExternalLink className="w-3.5 h-3.5" />
                                 </a>
                               ) : (
-                                <span className="text-xs text-slate-500 font-medium">
+                                <span className="text-xs text-neutral-500 font-medium">
                                   Activated once handed to courier
                                 </span>
                               )}
@@ -1023,13 +1045,13 @@ function OrderTrackingContent() {
               {/* Card 2: Items & Delivery Details Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Items in this Shipment */}
-                <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8">
-                  <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-                    <Package className="w-5 h-5 text-[#002D62]" />
+                <div className="lg:col-span-2 bg-white rounded-3xl border border-neutral-200/90 shadow-sm p-6 sm:p-8">
+                  <h3 className="text-base font-bold text-neutral-900 mb-4 flex items-center gap-2 font-movault uppercase tracking-wide">
+                    <Package className="w-5 h-5 text-[#6B9E3A]" />
                     <span>Items in this Shipment</span>
                   </h3>
 
-                  <div className="divide-y divide-slate-100">
+                  <div className="divide-y divide-neutral-100">
                     {selectedOrder.items && selectedOrder.items.length > 0 ? (
                       selectedOrder.items.map((it: any, idx: number) => {
                         const productName =
@@ -1060,30 +1082,30 @@ function OrderTrackingContent() {
                             key={idx}
                             className="py-4 first:pt-0 last:pb-0 flex items-center gap-4"
                           >
-                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 overflow-hidden flex-shrink-0 border border-slate-100">
+                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#FAFCF6] overflow-hidden flex-shrink-0 border border-neutral-200/80">
                               <Image
                                 src={img}
                                 alt={productName}
                                 fill
-                                className="object-cover"
+                                className="object-contain p-1"
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-bold text-slate-900 truncate">
+                              <h4 className="text-sm font-bold text-neutral-900 truncate">
                                 {productName}
                               </h4>
-                              <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                              <p className="text-xs text-neutral-500 mt-0.5 font-medium">
                                 Qty: {quantity} × ₹{unitPrice.toLocaleString("en-IN")}
                               </p>
                               <div className="mt-1 flex items-center gap-2">
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#002D62] bg-blue-50 px-2 py-0.5 rounded">
-                                  <ShieldCheck className="w-3 h-3" />
-                                  1-Yr Warranty
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#3D6318] bg-[#F4FBE8] px-2 py-0.5 rounded-md border border-[#95CF42]/30">
+                                  <ShieldCheck className="w-3 h-3 text-[#6B9E3A]" />
+                                  100% Authentic
                                 </span>
                               </div>
                             </div>
                             <div className="text-right">
-                              <span className="text-sm font-extrabold text-slate-900">
+                              <span className="text-sm font-extrabold text-neutral-900">
                                 ₹{totalPrice.toLocaleString("en-IN")}
                               </span>
                             </div>
@@ -1092,25 +1114,25 @@ function OrderTrackingContent() {
                       })
                     ) : (
                       <div className="py-4 flex items-center gap-4">
-                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 overflow-hidden flex-shrink-0 border border-slate-100">
+                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#FAFCF6] overflow-hidden flex-shrink-0 border border-neutral-200/80">
                           <Image
-                            src="/vittal/wireless-earbuds.png"
+                            src="/vittal/product-whey-protein-jar.png"
                             alt={siteConfig.name}
                             fill
-                            className="object-cover"
+                            className="object-contain p-1"
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-slate-900 truncate">
-                            {siteConfig.name} Premium Electronics
+                          <p className="text-sm font-bold text-neutral-900 truncate">
+                            {siteConfig.name} Curated Products
                           </p>
-                          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                          <p className="text-xs text-neutral-500 mt-0.5 font-medium">
                             Qty: 1 × ₹
                             {(selectedOrder.total_amount || 2999).toLocaleString("en-IN")}
                           </p>
                         </div>
                         <div className="text-right">
-                          <span className="text-sm font-extrabold text-slate-900">
+                          <span className="text-sm font-extrabold text-neutral-900">
                             ₹{(selectedOrder.total_amount || 2999).toLocaleString("en-IN")}
                           </span>
                         </div>
@@ -1130,10 +1152,10 @@ function OrderTrackingContent() {
                       (selectedOrder.payment_status || "").toLowerCase() === "completed";
 
                     return (
-                      <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
-                        <div className="flex justify-between text-xs text-slate-500">
+                      <div className="mt-6 pt-4 border-t border-neutral-100 space-y-2">
+                        <div className="flex justify-between text-xs text-neutral-500">
                           <span>Payment Method</span>
-                          <span className="font-semibold text-slate-900">
+                          <span className="font-semibold text-neutral-900">
                             {isCod
                               ? "Cash on Delivery (COD)"
                               : selectedOrder.payment_method || "Prepaid Online"}
@@ -1141,30 +1163,30 @@ function OrderTrackingContent() {
                         </div>
                         {isCod && !isPaid ? (
                           <>
-                            <div className="flex justify-between text-xs text-slate-500">
+                            <div className="flex justify-between text-xs text-neutral-500">
                               <span>Payment Status</span>
-                              <span className="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">
+                              <span className="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
                                 Payable on Delivery
                               </span>
                             </div>
-                            <div className="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-100">
+                            <div className="flex justify-between text-base font-bold text-neutral-900 pt-2 border-t border-neutral-100">
                               <span>Payable at Doorstep</span>
-                              <span className="text-[#002D62]">
+                              <span className="text-[#3D6318] font-movault text-lg">
                                 ₹{selectedOrder.total_amount?.toLocaleString("en-IN")}
                               </span>
                             </div>
                           </>
                         ) : (
                           <>
-                            <div className="flex justify-between text-xs text-slate-500">
+                            <div className="flex justify-between text-xs text-neutral-500">
                               <span>Payment Status</span>
-                              <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                              <span className="font-semibold text-[#3D6318] bg-[#F4FBE8] px-2 py-0.5 rounded-md border border-[#95CF42]/30">
                                 Paid Online (Verified)
                               </span>
                             </div>
-                            <div className="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-100">
+                            <div className="flex justify-between text-base font-bold text-neutral-900 pt-2 border-t border-neutral-100">
                               <span>Total Paid</span>
-                              <span className="text-emerald-600">
+                              <span className="text-[#3D6318] font-movault text-lg">
                                 ₹{selectedOrder.total_amount?.toLocaleString("en-IN")}
                               </span>
                             </div>
@@ -1178,36 +1200,36 @@ function OrderTrackingContent() {
                 {/* Delivery Address & Customer Support */}
                 <div className="space-y-6">
                   {/* Delivery Address */}
-                  <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6">
-                    <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-[#002D62]" />
+                  <div className="bg-white rounded-3xl border border-neutral-200/90 shadow-sm p-6">
+                    <h3 className="text-sm font-bold text-neutral-900 mb-3 flex items-center gap-2 font-movault uppercase tracking-wide">
+                      <MapPin className="w-4 h-4 text-[#6B9E3A]" />
                       <span>Shipping Destination</span>
                     </h3>
-                    <p className="text-sm font-bold text-slate-900">
+                    <p className="text-sm font-bold text-neutral-900">
                       {selectedOrder.customer_name}
                     </p>
-                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                    <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
                       {selectedOrder.shipping_address}
                     </p>
                     {selectedOrder.customer_phone && (
-                      <p className="text-xs text-slate-500 mt-2 font-mono">
+                      <p className="text-xs text-neutral-500 mt-2 font-mono">
                         Phone: {selectedOrder.customer_phone}
                       </p>
                     )}
                   </div>
 
-                  {/* Need Help Concierge Card (Deep Navy Theme) */}
-                  <div className="bg-gradient-to-br from-[#001D40] via-[#002654] to-[#001833] rounded-3xl p-6 text-white shadow-md border border-blue-900/40">
-                    <div className="flex items-center gap-2 text-[#FFBE00] mb-2">
-                      <ShieldCheck className="w-5 h-5" />
-                      <span className="text-xs font-black uppercase tracking-wider">
+                  {/* Need Help Concierge Card (Deep Forest Luxury Theme) */}
+                  <div className="bg-gradient-to-br from-[#111A0B] via-[#1A2812] to-[#0D1509] rounded-3xl p-6 text-white shadow-md border border-[#95CF42]/20">
+                    <div className="flex items-center gap-2 text-[#95CF42] mb-2">
+                      <ShieldCheck className="w-5 h-5 text-[#95CF42]" />
+                      <span className="text-xs font-black uppercase tracking-wider font-movault">
                         {siteConfig.name} Concierge
                       </span>
                     </div>
-                    <h4 className="text-base font-bold mb-1">
+                    <h4 className="text-base font-bold mb-1 font-movault uppercase tracking-wide">
                       Need help with this shipment?
                     </h4>
-                    <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                    <p className="text-xs text-neutral-300 leading-relaxed mb-4">
                       Our support team can help you update addresses, coordinate courier delivery, or schedule preferred delivery timings.
                     </p>
 
@@ -1220,7 +1242,7 @@ function OrderTrackingContent() {
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-extrabold transition-all shadow-xs cursor-pointer font-movault uppercase tracking-wider"
                       >
                         <MessageSquare className="w-4 h-4" />
                         <span>Chat on WhatsApp</span>
@@ -1229,14 +1251,14 @@ function OrderTrackingContent() {
                         href={`mailto:${siteConfig.supportEmail}?subject=${encodeURIComponent(`Support Request - Order ${selectedOrder.shopify_order_id || selectedOrder.id}`)}`}
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors border border-white/10 cursor-pointer"
                       >
-                        <Mail className="w-4 h-4 text-[#FFBE00]" />
+                        <Mail className="w-4 h-4 text-[#95CF42]" />
                         <span>Email {siteConfig.supportEmail}</span>
                       </a>
                       <a
                         href={`tel:${siteConfig.supportPhone}`}
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors border border-white/10 cursor-pointer"
                       >
-                        <Phone className="w-4 h-4 text-[#FFBE00]" />
+                        <Phone className="w-4 h-4 text-[#95CF42]" />
                         <span>Call {siteConfig.supportPhone}</span>
                       </a>
                     </div>
@@ -1253,112 +1275,112 @@ function OrderTrackingContent() {
             <div className="space-y-12 my-10">
               {/* Section Header */}
               <div className="text-center max-w-xl mx-auto">
-                <span className="text-[10px] font-black uppercase tracking-wider bg-blue-50 text-[#002D62] px-3 py-1 rounded-full border border-blue-100">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-[#F4FBE8] text-[#3D6318] px-3.5 py-1.5 rounded-full border border-[#95CF42]/30 font-movault">
                   How Shipping Works
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2.5 tracking-tight">
+                <h2 className="text-2xl sm:text-3xl font-black text-neutral-950 mt-3 tracking-tight font-movault uppercase">
                   Our Express Delivery Process
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                  From our fulfillment warehouse right to your door with end-to-end security.
+                <p className="text-xs sm:text-sm text-neutral-600 mt-1">
+                  From our fulfillment warehouse right to your door with end-to-end security and freshness protection.
                 </p>
               </div>
 
               {/* 3 Step Process Cards (Redesigned to match Homepage aesthetic) */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Step 1 */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-200 transition-all group flex flex-col justify-between">
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#95CF42]/50 transition-all group flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-[10px] font-black uppercase tracking-wider bg-blue-50 text-[#002D62] px-2.5 py-1 rounded-full">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-[#F4FBE8] text-[#3D6318] px-2.5 py-1 rounded-full font-movault">
                         Step 01
                       </span>
-                      <span className="text-xs font-bold text-slate-400">Within 24 Hours</span>
+                      <span className="text-xs font-bold text-neutral-400">Within 24 Hours</span>
                     </div>
 
-                    <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#002D62] group-hover:bg-[#FFBE00]/20 transition-colors flex items-center justify-center mb-4">
-                      <Package className="w-6 h-6 text-[#002D62]" />
+                    <div className="w-12 h-12 rounded-2xl bg-[#F4FBE8] text-[#3D6318] group-hover:bg-[#95CF42]/20 transition-colors flex items-center justify-center mb-4">
+                      <Package className="w-6 h-6 text-[#3D6318]" />
                     </div>
 
-                    <h3 className="font-bold text-base sm:text-lg text-slate-900 mb-2">
-                      1. Quality Inspection & Packaging
+                    <h3 className="font-bold text-base sm:text-lg text-neutral-900 mb-2 font-movault uppercase tracking-wide">
+                      1. Quality Inspection &amp; Packaging
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                      Every electronic unit undergoes multi-point serial check and is packaged in certified anti-static, shockproof cushions with tamper-evident seals.
+                    <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
+                      Every batch undergoes strict purity verification. Products are sealed in airtight, food-safe and UV-protected containers with tamper-evident holograms.
                     </p>
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-bold text-blue-900">
-                    <ShieldCheck className="w-4 h-4 text-[#002D62]" />
-                    <span>Tamper-Proof Factory Seal</span>
+                  <div className="mt-5 pt-4 border-t border-neutral-100 flex items-center gap-1.5 text-[11px] font-bold text-[#3D6318]">
+                    <ShieldCheck className="w-4 h-4 text-[#6B9E3A]" />
+                    <span>Tamper-Proof Hermetic Seal</span>
                   </div>
                 </div>
 
                 {/* Step 2 */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-200 transition-all group flex flex-col justify-between">
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#95CF42]/50 transition-all group flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-[#F4FBE8] text-[#3D6318] px-2.5 py-1 rounded-full font-movault">
                         Step 02
                       </span>
-                      <span className="text-xs font-bold text-slate-400">5-7 Days Air Cargo</span>
+                      <span className="text-xs font-bold text-neutral-400">3-5 Days Priority Air</span>
                     </div>
 
-                    <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 group-hover:bg-[#FFBE00]/20 transition-colors flex items-center justify-center mb-4">
-                      <Truck className="w-6 h-6 text-amber-600" />
+                    <div className="w-12 h-12 rounded-2xl bg-[#F4FBE8] text-[#3D6318] group-hover:bg-[#95CF42]/20 transition-colors flex items-center justify-center mb-4">
+                      <Truck className="w-6 h-6 text-[#3D6318]" />
                     </div>
 
-                    <h3 className="font-bold text-base sm:text-lg text-slate-900 mb-2">
+                    <h3 className="font-bold text-base sm:text-lg text-neutral-900 mb-2 font-movault uppercase tracking-wide">
                       2. Express Air Logistics
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                      Handed over to premier logistics partners (Delhivery, Blue Dart, DTDC, Shadowfax) with live milestone barcode scans at every regional airport hub.
+                    <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
+                      Handed over to premier logistics partners (Delhivery, Blue Dart, DTDC) with live milestone barcode scans at regional airport hubs.
                     </p>
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-bold text-amber-700">
-                    <Plane className="w-4 h-4 text-amber-600" />
+                  <div className="mt-5 pt-4 border-t border-neutral-100 flex items-center gap-1.5 text-[11px] font-bold text-[#3D6318]">
+                    <Plane className="w-4 h-4 text-[#6B9E3A]" />
                     <span>Real-Time Milestone Radar</span>
                   </div>
                 </div>
 
                 {/* Step 3 */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-200 transition-all group flex flex-col justify-between">
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#95CF42]/50 transition-all group flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-[#F4FBE8] text-[#3D6318] px-2.5 py-1 rounded-full font-movault">
                         Step 03
                       </span>
-                      <span className="text-xs font-bold text-slate-400">Verified Handover</span>
+                      <span className="text-xs font-bold text-neutral-400">Verified Handover</span>
                     </div>
 
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100 transition-colors flex items-center justify-center mb-4">
-                      <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                    <div className="w-12 h-12 rounded-2xl bg-[#F4FBE8] text-[#3D6318] group-hover:bg-[#95CF42]/20 transition-colors flex items-center justify-center mb-4">
+                      <CheckCircle2 className="w-6 h-6 text-[#3D6318]" />
                     </div>
 
-                    <h3 className="font-bold text-base sm:text-lg text-slate-900 mb-2">
+                    <h3 className="font-bold text-base sm:text-lg text-neutral-900 mb-2 font-movault uppercase tracking-wide">
                       3. OTP Doorstep Delivery
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                      Instant WhatsApp & SMS alerts with delivery partner contact details. Safe contactless handover with OTP confirmation and flexible COD/UPI payment.
+                    <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
+                      Instant WhatsApp &amp; SMS alerts with delivery associate contact details. Safe contactless handover with OTP confirmation and flexible COD / UPI payment.
                     </p>
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
-                    <Award className="w-4 h-4 text-emerald-600" />
-                    <span>1-Year Active Brand Warranty</span>
+                  <div className="mt-5 pt-4 border-t border-neutral-100 flex items-center gap-1.5 text-[11px] font-bold text-[#3D6318]">
+                    <Award className="w-4 h-4 text-[#6B9E3A]" />
+                    <span>100% Authentic Quality Guarantee</span>
                   </div>
                 </div>
               </div>
 
               {/* Verified Courier Partners Banner */}
-              <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs">
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                    <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wider font-movault">
                       Trusted Express Logistics Partners
                     </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-neutral-500 mt-0.5">
                       We partner with India&apos;s leading logistics networks to guarantee timely and insured delivery.
                     </p>
                   </div>
@@ -1366,7 +1388,7 @@ function OrderTrackingContent() {
                     {["Delhivery Air", "Blue Dart Express", "DTDC Courier", "Shadowfax", "Xpressbees", "India Post Speed"].map((courier) => (
                       <span
                         key={courier}
-                        className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200/80 transition-colors"
+                        className="px-3 py-1.5 rounded-xl bg-[#FAFCF6] hover:bg-[#F4FBE8] text-neutral-700 font-bold text-xs border border-neutral-200/80 transition-colors"
                       >
                         {courier}
                       </span>
@@ -1375,31 +1397,31 @@ function OrderTrackingContent() {
                 </div>
               </div>
 
-              {/* FAQs Accordion (Matching Homepage FAQs Style) */}
-              <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-10">
+              {/* FAQs Accordion */}
+              <div className="bg-white rounded-3xl border border-neutral-200/80 shadow-sm p-6 sm:p-10">
                 <div className="text-center max-w-xl mx-auto mb-8">
-                  <span className="text-[10px] font-black uppercase tracking-wider bg-blue-50 text-[#002D62] px-3 py-1 rounded-full border border-blue-100">
+                  <span className="text-[10px] font-black uppercase tracking-wider bg-[#F4FBE8] text-[#3D6318] px-3.5 py-1.5 rounded-full border border-[#95CF42]/30 font-movault">
                     Got Questions?
                   </span>
-                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-2">
+                  <h3 className="text-xl sm:text-2xl font-black text-neutral-950 mt-3 font-movault uppercase">
                     Frequently Asked Questions
                   </h3>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Find quick answers about delivery timelines, order IDs, courier tracking, and warranty support.
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Find quick answers about delivery timelines, order IDs, courier tracking, and authenticity.
                   </p>
                 </div>
 
-                <div className="divide-y divide-slate-100 max-w-3xl mx-auto">
+                <div className="divide-y divide-neutral-100 max-w-3xl mx-auto">
                   {faqs.map((faq, idx) => {
                     const isOpen = faqOpen === idx;
                     return (
                       <div key={idx} className="py-4.5">
                         <button
                           onClick={() => setFaqOpen(isOpen ? null : idx)}
-                          className="w-full flex items-center justify-between text-left font-bold text-sm sm:text-base text-slate-900 hover:text-[#002D62] transition-colors py-1 cursor-pointer"
+                          className="w-full flex items-center justify-between text-left font-bold text-sm sm:text-base text-neutral-900 hover:text-[#6B9E3A] transition-colors py-1 cursor-pointer"
                         >
                           <span className="pr-4">{faq.q}</span>
-                          <div className={`p-1 rounded-full transition-colors ${isOpen ? "bg-blue-50 text-[#002D62]" : "text-slate-400"}`}>
+                          <div className={`p-1.5 rounded-full transition-colors ${isOpen ? "bg-[#F4FBE8] text-[#3D6318]" : "text-neutral-400"}`}>
                             {isOpen ? (
                               <ChevronUp className="w-4 h-4" />
                             ) : (
@@ -1408,7 +1430,7 @@ function OrderTrackingContent() {
                           </div>
                         </button>
                         {isOpen && (
-                          <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed pl-1 pr-6 animate-fadeIn">
+                          <p className="mt-2 text-xs sm:text-sm text-neutral-600 leading-relaxed pl-1 pr-6 animate-fadeIn">
                             {faq.a}
                           </p>
                         )}
@@ -1418,14 +1440,14 @@ function OrderTrackingContent() {
                 </div>
               </div>
 
-              {/* Help & Support Bottom Card */}
-              <div className="bg-gradient-to-r from-[#001D40] via-[#002B5E] to-[#001D40] rounded-3xl p-6 sm:p-8 text-white text-center shadow-lg border border-blue-900/50">
+              {/* Help & Support Bottom Card (Deep Forest Luxury Theme) */}
+              <div className="bg-gradient-to-r from-[#111A0B] via-[#1A2812] to-[#111A0B] rounded-3xl p-6 sm:p-8 text-white text-center shadow-lg border border-[#95CF42]/25">
                 <div className="max-w-xl mx-auto">
-                  <HelpCircle className="w-8 h-8 text-[#FFBE00] mx-auto mb-3" />
-                  <h3 className="text-lg sm:text-xl font-black">
+                  <HelpCircle className="w-8 h-8 text-[#95CF42] mx-auto mb-3" />
+                  <h3 className="text-lg sm:text-xl font-black font-movault uppercase tracking-wider">
                     Need Help With Your Shipment or Delivery Address?
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-neutral-300 mt-1.5 leading-relaxed">
                     Our customer care team is available 24/7 to assist with live tracking, address corrections, or courier coordination.
                   </p>
                   <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
@@ -1435,7 +1457,7 @@ function OrderTrackingContent() {
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors shadow-sm cursor-pointer"
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-extrabold text-xs transition-colors shadow-sm cursor-pointer font-movault uppercase tracking-wider"
                     >
                       <MessageSquare className="w-4 h-4" />
                       <span>WhatsApp Support</span>
@@ -1444,14 +1466,14 @@ function OrderTrackingContent() {
                       href={`mailto:${siteConfig.supportEmail}`}
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
                     >
-                      <Mail className="w-4 h-4 text-[#FFBE00]" />
+                      <Mail className="w-4 h-4 text-[#95CF42]" />
                       <span>Email: {siteConfig.supportEmail}</span>
                     </a>
                     <a
                       href={`tel:${siteConfig.supportPhone}`}
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
                     >
-                      <Phone className="w-4 h-4 text-[#FFBE00]" />
+                      <Phone className="w-4 h-4 text-[#95CF42]" />
                       <span>Call Concierge: {siteConfig.supportPhone}</span>
                     </a>
                   </div>
@@ -1471,8 +1493,8 @@ export default function OrderTrackingPage() {
   return (
     <React.Suspense
       fallback={
-        <div className="min-h-screen bg-[#FAFBFD] flex items-center justify-center">
-          <RefreshCw className="w-6 h-6 text-[#002D62] animate-spin" />
+        <div className="min-h-screen bg-[#FAFCF6] flex items-center justify-center">
+          <RefreshCw className="w-6 h-6 text-[#6B9E3A] animate-spin" />
         </div>
       }
     >
