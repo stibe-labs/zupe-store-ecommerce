@@ -4,26 +4,39 @@ import { executeD1Query } from "@/lib/d1";
 export interface HeroBannerSlide {
   id: string;
   badge?: string;
-  titleLine1?: string;
-  titleLine2?: string;
-  headlineHighlight?: string; // Optional gold highlight phrase (e.g. "To Life")
-  subLabel?: string;          // Optional sub-label before price (e.g. "Starting at")
-  price?: string;             // Optional price / discount (e.g. "₹44,990")
-  description?: string;
-  ctaText?: string;
-  ctaLink?: string; // Optional: destination URL when tapping banner
-  showTextOverlay?: boolean; // When false, renders banner image clean without text overlay
-  image: string; // Desktop view photo (1 direct background image 16:9 / landscape)
-  mobileImage?: string; // Mobile view photo (4:5 / 1:1 portrait)
-  imageScale?: number; // Desktop zoom level in % (50 to 200, default 100)
-  imagePosition?: string; // CSS object-position (e.g. "center", "top", "bottom")
-  imageFit?: "cover" | "contain"; // "cover" to fill frame or "contain" to show full image
-  mobileImageScale?: number; // Mobile zoom level in % (50 to 200, default 100)
-  mobileImagePosition?: string; // CSS object-position for mobile
-  mobileImageFit?: "cover" | "contain"; // "cover" to fill frame or "contain"
-  taglineRight?: string;
+  heading?: string;
+  buttonText?: string;
+  buttonLink?: string;
+  bgImage?: string;
+  cutoutImage?: string;
+  desktopScale?: number; // Zoom level in % (50 to 200, default 100)
+  desktopOffsetX?: number; // Horizontal offset in px (-250 to +250, default 0)
+  desktopOffsetY?: number; // Vertical offset in px (-200 to +200, default 0)
+  mobileScale?: number; // Mobile zoom level in % (50 to 200, default 100)
+  mobileOffsetX?: number; // Mobile horizontal offset in px (-250 to +250, default 0)
+  mobileOffsetY?: number; // Mobile vertical offset in px (-200 to +200, default 0)
   active: boolean;
   order?: number;
+
+  // Legacy / fallback fields
+  titleLine1?: string;
+  titleLine2?: string;
+  headlineHighlight?: string;
+  subLabel?: string;
+  price?: string;
+  description?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  showTextOverlay?: boolean;
+  image?: string;
+  mobileImage?: string;
+  imageScale?: number;
+  imagePosition?: string;
+  imageFit?: "cover" | "contain";
+  mobileImageScale?: number;
+  mobileImagePosition?: string;
+  mobileImageFit?: "cover" | "contain";
+  taglineRight?: string;
 }
 
 export type CategoryIconShape = "round" | "square";
@@ -49,58 +62,64 @@ export interface StoreCategory {
 
 export const DEFAULT_HERO_BANNERS: HeroBannerSlide[] = [
   {
-    id: "vittal-supplements",
-    badge: "VITTAL LIFESTYLE ESSENTIALS",
-    titleLine1: "Unleash Your",
-    titleLine2: "Peak Fitness",
-    headlineHighlight: "Peak Fitness",
-    subLabel: "Starting at",
-    price: "₹1,499",
-    description: "Premium Whey Protein, Micronized Creatine, and Pre-Workouts to power your daily training.",
-    ctaText: "Shop Supplements",
-    ctaLink: "/products?category=Gym+Supplementaries",
-    showTextOverlay: true,
-    image: "/vl-logo-nobg.png",
-    mobileImage: "/vl-logo-nobg.png",
-    taglineRight: "100% Certified",
+    id: "hero-slide-1",
+    badge: "Limited Offer",
+    heading: "First Purchase Enjoy\na Special Offer",
+    buttonText: "Shop Now",
+    buttonLink: "/products",
+    bgImage: "/vittal/banner-hero-green-texture.jpg",
+    cutoutImage: "/vittal/cutout-hero-1.png",
+    desktopScale: 100,
+    desktopOffsetX: 0,
+    desktopOffsetY: 0,
+    mobileScale: 100,
+    mobileOffsetX: 0,
+    mobileOffsetY: 0,
     active: true,
     order: 1,
+    image: "/vittal/cutout-hero-1.png",
+    ctaText: "Shop Now",
+    ctaLink: "/products",
   },
   {
-    id: "vittal-outfits-apparels",
-    badge: "ATHLEISURE & FASHION",
-    titleLine1: "Elevate Your",
-    titleLine2: "Active Style",
-    headlineHighlight: "Active Style",
-    subLabel: "Trending",
-    price: "UP TO 40% OFF",
-    description: "Ergonomic gym outfits, breathable performance tees, compression wear, and everyday streetwear.",
-    ctaText: "Explore Outfits",
-    ctaLink: "/products?category=Outfits",
-    showTextOverlay: true,
-    image: "/vl-logo-nobg.png",
-    mobileImage: "/vl-logo-nobg.png",
-    taglineRight: "Premium Fabric",
+    id: "hero-slide-2",
+    badge: "Limited Offer",
+    heading: "First Purchase Enjoy\na Special Offer",
+    buttonText: "Shop Now",
+    buttonLink: "/products",
+    bgImage: "/vittal/banner-hero-green-texture.jpg",
+    cutoutImage: "/vittal/cutout-hero-2.png",
+    desktopScale: 100,
+    desktopOffsetX: 0,
+    desktopOffsetY: 0,
+    mobileScale: 100,
+    mobileOffsetX: 0,
+    mobileOffsetY: 0,
     active: true,
     order: 2,
+    image: "/vittal/cutout-hero-2.png",
+    ctaText: "Shop Now",
+    ctaLink: "/products",
   },
   {
-    id: "vittal-dates-nuts",
-    badge: "GOURMET SUPERFOODS",
-    titleLine1: "Handpicked Dates",
-    titleLine2: "& Crunchy Nuts",
-    headlineHighlight: "& Crunchy Nuts",
-    subLabel: "Pure & Organic",
-    price: "FROM ₹499",
-    description: "Authentic Medjool & Ajwa dates, rich California almonds, roasted cashews, and artisanal chocolates.",
-    ctaText: "Shop Gourmet",
-    ctaLink: "/products?category=Dates+%26+Nuts",
-    showTextOverlay: true,
-    image: "/vl-logo-nobg.png",
-    mobileImage: "/vl-logo-nobg.png",
-    taglineRight: "Farm Fresh",
+    id: "hero-slide-3",
+    badge: "Limited Offer",
+    heading: "First Purchase Enjoy\na Special Offer",
+    buttonText: "Shop Now",
+    buttonLink: "/products",
+    bgImage: "/vittal/banner-hero-green-texture.jpg",
+    cutoutImage: "/vittal/cutout-hero-3.png",
+    desktopScale: 100,
+    desktopOffsetX: 0,
+    desktopOffsetY: 0,
+    mobileScale: 100,
+    mobileOffsetX: 0,
+    mobileOffsetY: 0,
     active: true,
     order: 3,
+    image: "/vittal/cutout-hero-3.png",
+    ctaText: "Shop Now",
+    ctaLink: "/products",
   },
 ];
 
@@ -254,7 +273,32 @@ export async function getBanners(includeInactive = false): Promise<HeroBannerSli
       if (rows && rows.length > 0 && rows[0].config_data) {
         const parsed = JSON.parse(rows[0].config_data);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          inMemoryBanners = parsed;
+          // If legacy placeholders found, use default hero banners
+          const isLegacy = parsed.some((b: any) => b.id === "vittal-supplements" || b.image === "/vl-logo-nobg.png");
+          if (isLegacy) {
+            inMemoryBanners = [...DEFAULT_HERO_BANNERS];
+          } else {
+            inMemoryBanners = parsed.map((b: any, idx: number) => ({
+              id: b.id || `hero-slide-${idx + 1}`,
+              badge: b.badge || "Limited Offer",
+              heading: b.heading || (b.titleLine1 ? `${b.titleLine1}\n${b.titleLine2 || ""}`.trim() : "First Purchase Enjoy\na Special Offer"),
+              buttonText: b.buttonText || b.ctaText || "Shop Now",
+              buttonLink: b.buttonLink || b.ctaLink || "/products",
+              bgImage: b.bgImage || "/vittal/banner-hero-green-texture.jpg",
+              cutoutImage: b.cutoutImage || b.image || `/vittal/cutout-hero-${(idx % 3) + 1}.png`,
+              desktopScale: typeof b.desktopScale === "number" ? b.desktopScale : 100,
+              desktopOffsetX: typeof b.desktopOffsetX === "number" ? b.desktopOffsetX : 0,
+              desktopOffsetY: typeof b.desktopOffsetY === "number" ? b.desktopOffsetY : 0,
+              mobileScale: typeof b.mobileScale === "number" ? b.mobileScale : 100,
+              mobileOffsetX: typeof b.mobileOffsetX === "number" ? b.mobileOffsetX : 0,
+              mobileOffsetY: typeof b.mobileOffsetY === "number" ? b.mobileOffsetY : 0,
+              active: b.active !== false,
+              order: typeof b.order === "number" ? b.order : idx + 1,
+              image: b.cutoutImage || b.image || `/vittal/cutout-hero-${(idx % 3) + 1}.png`,
+              ctaText: b.buttonText || b.ctaText || "Shop Now",
+              ctaLink: b.buttonLink || b.ctaLink || "/products",
+            }));
+          }
         }
       }
       bannersCachedAt = Date.now();

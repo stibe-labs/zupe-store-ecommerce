@@ -53,6 +53,7 @@ import {
 import { StoreCategory } from "@/lib/storeContent";
 import { getSubcategoriesForCategory } from "@/data/zupeProducts";
 import { PromoCardsCustomizer } from "@/components/admin/PromoCardsCustomizer";
+import { HeroBannerCustomizer } from "@/components/admin/HeroBannerCustomizer";
 import { ShowcaseCollectionsCustomizer } from "@/components/admin/ShowcaseCollectionsCustomizer";
 import { siteConfig } from "@/config/siteConfig";
 import {
@@ -92,7 +93,7 @@ const CATEGORY_COLORS = [
 
 export default function WebsiteContentPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"promo_cards" | "categories" | "showcase">("promo_cards");
+  const [activeTab, setActiveTab] = useState<"hero_banner" | "categories" | "showcase">("hero_banner");
 
   const [categories, setCategories] = useState<StoreCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -523,15 +524,15 @@ export default function WebsiteContentPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="p-2 rounded-xl bg-orange-50 text-[#002D62]">
-                  <Palette className="w-5 h-5" />
+                <span className="p-2 rounded-xl bg-[#E2F5B4] text-[#3D6318]">
+                  <Sparkles className="w-5 h-5 stroke-[2.2]" />
                 </span>
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-display">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 font-mograph">
                   Website Content & Store Customizer
                 </h1>
               </div>
-              <p className="text-xs sm:text-sm text-slate-500">
-                Super Admin portal to manage promotional cards, categories, and showcase collections across mobile & web in real-time.
+              <p className="text-xs sm:text-sm text-neutral-500 font-mograph">
+                Super Admin portal to manage hero banner cards, store categories, and showcase collections across mobile & web in real-time.
               </p>
             </div>
 
@@ -539,7 +540,7 @@ export default function WebsiteContentPage() {
               <Link
                 href="/"
                 target="_blank"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-2xs font-mograph"
               >
                 <Eye className="w-3.5 h-3.5" />
                 <span>View Live Site</span>
@@ -550,7 +551,7 @@ export default function WebsiteContentPage() {
                 type="button"
                 onClick={handleResetDefaults}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 transition-colors cursor-pointer font-mograph"
                 title="Restore default categories"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -562,7 +563,7 @@ export default function WebsiteContentPage() {
           {/* Toast Message */}
           {message && (
             <div
-              className={`p-4 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 border animate-fadeIn ${
+              className={`p-4 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 border animate-fadeIn font-mograph ${
                 message.type === "success"
                   ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                   : "bg-rose-50 text-rose-800 border-rose-200"
@@ -577,20 +578,20 @@ export default function WebsiteContentPage() {
             </div>
           )}
 
-          {/* Tabs Selector */}
-          <div className="flex border-b border-slate-200 gap-4">
+          {/* Tabs Selector (Vittal Lifestyle Brand Theme) */}
+          <div className="flex border-b border-slate-200 gap-4 font-mograph">
             <button
-              onClick={() => setActiveTab("promo_cards")}
+              onClick={() => setActiveTab("hero_banner")}
               className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
-                activeTab === "promo_cards"
-                  ? "border-[#FF7A00] text-[#002D62]"
+                activeTab === "hero_banner"
+                  ? "border-[#6B9E3A] text-neutral-900"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
-              <Layers className="w-4 h-4" />
-              <span>Promo Dual Cards</span>
-              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-orange-100 text-[#002D62] font-extrabold">
-                2 Cards
+              <Sparkles className="w-4 h-4 text-[#6B9E3A]" />
+              <span>Hero Banner Cards</span>
+              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-[#E2F5B4] text-[#3D6318] font-extrabold">
+                Customizable
               </span>
             </button>
 
@@ -598,7 +599,7 @@ export default function WebsiteContentPage() {
               onClick={() => setActiveTab("categories")}
               className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                 activeTab === "categories"
-                  ? "border-[#FF7A00] text-[#002D62]"
+                  ? "border-[#6B9E3A] text-neutral-900"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -613,13 +614,13 @@ export default function WebsiteContentPage() {
               onClick={() => setActiveTab("showcase")}
               className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                 activeTab === "showcase"
-                  ? "border-[#FF7A00] text-[#002D62]"
+                  ? "border-[#6B9E3A] text-neutral-900"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
-              <Sparkles className="w-4 h-4" />
+              <Layers className="w-4 h-4" />
               <span>Showcase Collections</span>
-              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-purple-100 text-purple-700 font-extrabold">
+              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-700 font-extrabold">
                 4 Sections
               </span>
             </button>
@@ -684,16 +685,16 @@ export default function WebsiteContentPage() {
 
               {loading ? (
                 <div className="p-12 text-center bg-white rounded-2xl border border-slate-200">
-                  <RefreshCw className="w-6 h-6 animate-spin text-[#002D62] mx-auto mb-2" />
-                  <p className="text-xs text-slate-500">Loading categories...</p>
+                  <RefreshCw className="w-6 h-6 animate-spin text-[#6B9E3A] mx-auto mb-2" />
+                  <p className="text-xs text-slate-500 font-mograph">Loading categories...</p>
                 </div>
               ) : categories.length === 0 ? (
                 <div className="p-12 text-center bg-white rounded-2xl border border-slate-200">
                   <Tag className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                  <p className="text-sm font-bold text-slate-700">No Categories Found</p>
+                  <p className="text-sm font-bold text-slate-700 font-mograph">No Categories Found</p>
                   <button
                     onClick={handleResetDefaults}
-                    className="mt-3 px-4 py-2 rounded-xl bg-orange-50 text-[#002D62] text-xs font-bold hover:bg-orange-100"
+                    className="mt-3 px-4 py-2 rounded-xl bg-[#E2F5B4] text-[#3D6318] text-xs font-bold hover:bg-[#d6f09e] font-mograph"
                   >
                     Load Default Categories
                   </button>
@@ -701,7 +702,7 @@ export default function WebsiteContentPage() {
               ) : (
                 <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs sm:text-sm">
+                    <table className="w-full text-left text-xs sm:text-sm font-mograph">
                       <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px] font-extrabold uppercase tracking-wider">
                         <tr>
                           <th className="py-3 px-4">Category Name</th>
@@ -725,8 +726,8 @@ export default function WebsiteContentPage() {
                                 <div className="flex items-center gap-2.5">
                                   <div
                                     className={`w-10 h-10 ${shapeClass} flex items-center justify-center font-bold text-xs overflow-hidden shadow-xs shrink-0 ${
-                                      cat.bgColor || (isAll ? "bg-[#EEF2FF]" : "bg-orange-50")
-                                    } ${cat.iconColor || (isAll ? "text-[#3B82F6]" : "text-[#002D62]")}`}
+                                      cat.bgColor || (isAll ? "bg-[#EEF2FF]" : "bg-[#F4FBE8]")
+                                    } ${cat.iconColor || (isAll ? "text-[#3B82F6]" : "text-[#3D6318]")}`}
                                   >
                                     {cat.customIcon ? (
                                       // eslint-disable-next-line @next/next/no-img-element
@@ -792,7 +793,7 @@ export default function WebsiteContentPage() {
                                               );
                                             })}
                                             {subs.length > 3 && (
-                                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-orange-50 text-[#002D62] text-[10px] font-bold">
+                                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#F4FBE8] text-[#3D6318] text-[10px] font-bold border border-[#85BE33]/30">
                                                 +{subs.length - 3} more
                                               </span>
                                             )}
@@ -868,7 +869,7 @@ export default function WebsiteContentPage() {
                                   <button
                                     type="button"
                                     onClick={() => handleOpenEditCategory(cat)}
-                                    className="p-1.5 text-slate-500 hover:text-[#002D62] hover:bg-orange-50 rounded-lg transition-colors cursor-pointer"
+                                    className="p-1.5 text-slate-500 hover:text-[#3D6318] hover:bg-[#F4FBE8] rounded-lg transition-colors cursor-pointer"
                                     title="Edit category"
                                   >
                                     <Edit2 className="w-4 h-4" />
@@ -909,10 +910,10 @@ export default function WebsiteContentPage() {
           )}
 
           {/* ========================================================
-              TAB 3: PROMO DUAL CARDS (HOMEPAGE 2-CARD GRID)
+              TAB 1: HERO BANNER CARDS (HOMEPAGE HERO SECTION)
              ======================================================== */}
-          {activeTab === "promo_cards" && (
-            <PromoCardsCustomizer
+          {activeTab === "hero_banner" && (
+            <HeroBannerCustomizer
               categories={categories}
               showToast={showToast}
             />
@@ -970,7 +971,7 @@ export default function WebsiteContentPage() {
                     });
                   }}
                   placeholder="e.g. Gaming Gear, Pet Essentials, Kitchenware"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#002D62]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-[#85BE33]"
                 />
               </div>
 
@@ -983,7 +984,7 @@ export default function WebsiteContentPage() {
                   value={categoryForm.slug}
                   onChange={(e) => setCategoryForm({ ...categoryForm, slug: e.target.value })}
                   placeholder="e.g. Gaming Gear (will be /products?category=Gaming+Gear)"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 focus:outline-none focus:border-[#002D62]"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 focus:outline-none focus:border-[#85BE33]"
                 />
               </div>
 
@@ -1001,7 +1002,7 @@ export default function WebsiteContentPage() {
                   <button
                     type="button"
                     onClick={handleLoadDefaultSubcategories}
-                    className="text-[11px] font-bold text-[#002D62] hover:underline cursor-pointer"
+                    className="text-[11px] font-bold text-[#4A7220] hover:underline cursor-pointer"
                   >
                     Suggest Presets
                   </button>
@@ -1024,13 +1025,13 @@ export default function WebsiteContentPage() {
                         handleAddSubcategory();
                       }
                     }}
-                    placeholder="Type subcategory name (e.g. Mobile & Charging)..."
-                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-[#002D62]"
+                    placeholder="Type subcategory name (e.g. Whey Protein, Creatine)..."
+                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-[#85BE33]"
                   />
                   <select
                     value={newSubcategoryIcon}
                     onChange={(e) => setNewSubcategoryIcon(e.target.value)}
-                    className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-2.5 py-2 focus:outline-none focus:border-[#002D62] cursor-pointer"
+                    className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-2.5 py-2 focus:outline-none focus:border-[#85BE33] cursor-pointer"
                     title="Choose icon for new subcategory"
                   >
                     {AVAILABLE_CATEGORY_ICONS.map((iconName) => (
@@ -1042,7 +1043,7 @@ export default function WebsiteContentPage() {
                   <button
                     type="button"
                     onClick={handleAddSubcategory}
-                    className="px-3.5 py-2 rounded-xl bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold text-xs font-bold transition-all shadow-xs shrink-0 flex items-center gap-1 cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-xs font-mograph transition-all shadow-xs shrink-0 flex items-center gap-1 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>Add</span>
@@ -1057,10 +1058,10 @@ export default function WebsiteContentPage() {
                       return (
                         <div
                           key={sub}
-                          className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-slate-50/70 border border-slate-200/60 hover:border-[#FF7A00]/40 transition-colors"
+                          className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-slate-50/70 border border-slate-200/60 hover:border-[#85BE33]/50 transition-colors"
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <div className="w-6 h-6 rounded-md bg-orange-50 text-[#002D62] flex items-center justify-center shrink-0 border border-orange-200/50">
+                            <div className="w-6 h-6 rounded-md bg-[#F4FBE8] text-[#3D6318] flex items-center justify-center shrink-0 border border-[#85BE33]/30">
                               {renderIconOrCustom({
                                 iconName: currentIcon,
                                 fallbackName: sub,
@@ -1074,7 +1075,7 @@ export default function WebsiteContentPage() {
                             <select
                               value={currentIcon}
                               onChange={(e) => handleSubcategoryIconChange(sub, e.target.value)}
-                              className="text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg px-2 py-0.5 focus:outline-none focus:border-[#002D62] cursor-pointer"
+                              className="text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg px-2 py-0.5 focus:outline-none focus:border-[#85BE33] cursor-pointer"
                               title="Change subcategory icon"
                             >
                               {AVAILABLE_CATEGORY_ICONS.map((iconName) => (
@@ -1129,7 +1130,7 @@ export default function WebsiteContentPage() {
                       onClick={() => setCategoryIconTab("custom")}
                       className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1 ${
                         categoryIconTab === "custom"
-                          ? "bg-white text-[#002D62] shadow-xs"
+                          ? "bg-white text-[#3D6318] shadow-xs"
                           : "text-slate-500 hover:text-slate-800"
                       }`}
                     >
@@ -1220,7 +1221,7 @@ export default function WebsiteContentPage() {
                             }
                             className={`p-2 rounded-xl flex flex-col items-center gap-1 transition-all border ${
                               isSelected
-                                ? "bg-white border-[#FF7A00] shadow-xs text-[#002D62]"
+                                ? "bg-white border-[#85BE33] shadow-xs text-[#3D6318]"
                                 : "bg-white hover:bg-slate-50 border-slate-200/60 text-slate-700"
                             }`}
                             title={preset.label}
@@ -1253,7 +1254,7 @@ export default function WebsiteContentPage() {
                           setCategoryForm({ ...categoryForm, customIcon: e.target.value })
                         }
                         placeholder="Paste image/SVG URL or upload below"
-                        className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#002D62]"
+                        className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-[#85BE33]"
                       />
                       <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-black text-white text-xs font-bold transition-all shadow-xs shrink-0">
                         <Upload className="w-3.5 h-3.5" />
@@ -1277,7 +1278,7 @@ export default function WebsiteContentPage() {
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-bold text-slate-800 flex items-center gap-1.5">
                             <span>Adjust Icon Size:</span>
-                            <span className="px-1.5 py-0.5 rounded bg-orange-100 text-[#002D62] font-mono font-extrabold text-[11px]">
+                            <span className="px-1.5 py-0.5 rounded bg-[#E2F5B4] text-[#3D6318] font-mono font-extrabold text-[11px]">
                               {categoryForm.iconSize || 85}%
                             </span>
                           </span>
@@ -1296,7 +1297,7 @@ export default function WebsiteContentPage() {
                                 }
                                 className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                                   (categoryForm.iconSize || 85) === sizeOpt.value
-                                    ? "bg-[#FFBE00] text-slate-950 text-white shadow-xs"
+                                    ? "bg-[#95CF42] text-black shadow-xs font-extrabold"
                                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                                 }`}
                               >
@@ -1321,7 +1322,7 @@ export default function WebsiteContentPage() {
                                 iconSize: Number(e.target.value),
                               })
                             }
-                            className="flex-1 accent-[#FF7A00] cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none"
+                            className="flex-1 accent-[#85BE33] cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none"
                           />
                           <span className="text-[10px] text-slate-400 font-bold shrink-0">100%</span>
                         </div>
@@ -1346,7 +1347,7 @@ export default function WebsiteContentPage() {
                       Choose Round circle or Edge curved square for the storefront pill.
                     </p>
                   </div>
-                  <span className="text-[11px] font-extrabold text-[#002D62] bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
+                  <span className="text-[11px] font-extrabold text-[#3D6318] bg-[#E2F5B4] px-2 py-0.5 rounded-md border border-[#85BE33]/30">
                     {categoryForm.iconShape === "square" ? "Curved Square" : "Round"}
                   </span>
                 </div>
@@ -1358,7 +1359,7 @@ export default function WebsiteContentPage() {
                     onClick={() => setCategoryForm({ ...categoryForm, iconShape: "round" })}
                     className={`p-3 rounded-xl border flex items-center justify-center gap-2.5 text-xs font-bold transition-all cursor-pointer ${
                       categoryForm.iconShape !== "square"
-                        ? "border-[#FF7A00] bg-white text-[#002D62] shadow-xs ring-2 ring-[#FF7A00]/20"
+                        ? "border-[#85BE33] bg-white text-[#3D6318] shadow-xs ring-2 ring-[#85BE33]/25"
                         : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
                     }`}
                   >
@@ -1371,7 +1372,7 @@ export default function WebsiteContentPage() {
                     onClick={() => setCategoryForm({ ...categoryForm, iconShape: "square" })}
                     className={`p-3 rounded-xl border flex items-center justify-center gap-2.5 text-xs font-bold transition-all cursor-pointer ${
                       categoryForm.iconShape === "square"
-                        ? "border-[#FF7A00] bg-white text-[#002D62] shadow-xs ring-2 ring-[#FF7A00]/20"
+                        ? "border-[#85BE33] bg-white text-[#3D6318] shadow-xs ring-2 ring-[#85BE33]/25"
                         : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
                     }`}
                   >
@@ -1387,14 +1388,14 @@ export default function WebsiteContentPage() {
                       type="checkbox"
                       checked={applyShapeToAll}
                       onChange={(e) => setApplyShapeToAll(e.target.checked)}
-                      className="w-4 h-4 rounded text-[#002D62] focus:ring-[#002D62]"
+                      className="w-4 h-4 rounded text-[#6B9E3A] focus:ring-[#85BE33]"
                     />
                     <span>Apply this shape to all category icons</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => handleApplyShapeToAll(categoryForm.iconShape || "round")}
-                    className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold text-slate-700 bg-white hover:bg-orange-50 hover:text-[#002D62] border border-slate-200 transition-all cursor-pointer shadow-2xs"
+                    className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold text-slate-700 bg-white hover:bg-[#F4FBE8] hover:text-[#3D6318] border border-slate-200 transition-all cursor-pointer shadow-2xs"
                   >
                     <span>Apply shape to all now</span>
                   </button>
@@ -1422,7 +1423,7 @@ export default function WebsiteContentPage() {
                         col.bg
                       } ${col.text} ${
                         categoryForm.bgColor === col.bg
-                          ? "border-[#FF7A00] ring-2 ring-[#FF7A00]/20"
+                          ? "border-[#85BE33] ring-2 ring-[#85BE33]/25"
                           : "border-transparent"
                       }`}
                     >
@@ -1442,7 +1443,7 @@ export default function WebsiteContentPage() {
                     onChange={(e) =>
                       setCategoryForm({ ...categoryForm, showInNavbar: e.target.checked })
                     }
-                    className="w-4 h-4 rounded text-[#002D62] focus:ring-[#002D62]"
+                    className="w-4 h-4 rounded text-[#6B9E3A] focus:ring-[#85BE33]"
                   />
                   <label htmlFor="cat-navbar" className="text-xs font-bold text-slate-800">
                     Display in Navbar Sub-Nav Row
@@ -1457,7 +1458,7 @@ export default function WebsiteContentPage() {
                     onChange={(e) =>
                       setCategoryForm({ ...categoryForm, showInPills: e.target.checked })
                     }
-                    className="w-4 h-4 rounded text-[#002D62] focus:ring-[#002D62]"
+                    className="w-4 h-4 rounded text-[#6B9E3A] focus:ring-[#85BE33]"
                   />
                   <label htmlFor="cat-pills" className="text-xs font-bold text-slate-800">
                     Display in Home Circular Category Pills
@@ -1472,7 +1473,7 @@ export default function WebsiteContentPage() {
                     onChange={(e) =>
                       setCategoryForm({ ...categoryForm, active: e.target.checked })
                     }
-                    className="w-4 h-4 rounded text-[#002D62] focus:ring-[#002D62]"
+                    className="w-4 h-4 rounded text-[#6B9E3A] focus:ring-[#85BE33]"
                   />
                   <label htmlFor="cat-active" className="text-xs font-bold text-slate-800">
                     Active (Include in product catalog dropdowns & filters)
@@ -1491,7 +1492,7 @@ export default function WebsiteContentPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#FFBE00] hover:bg-[#E5AA00] disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl text-xs font-bold text-black bg-[#95CF42] hover:bg-[#85BE33] transition-all shadow-xs disabled:opacity-50 font-mograph cursor-pointer"
                 >
                   {saving ? "Saving..." : editingCategory ? "Save Changes" : "Create Category"}
                 </button>

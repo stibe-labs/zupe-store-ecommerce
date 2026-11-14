@@ -40,6 +40,58 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, banners: reset });
     }
 
+    // Save entire array of slides from Hero Banner Customizer
+    if (Array.isArray(body.banners)) {
+      const sanitized: HeroBannerSlide[] = [];
+      for (let idx = 0; idx < body.banners.length; idx++) {
+        const b = body.banners[idx];
+        let finalCutout = (b.cutoutImage || b.image || "").trim();
+        let finalBg = (b.bgImage || "/vittal/banner-hero-green-texture.jpg").trim();
+
+        if (finalCutout.startsWith("data:")) {
+          try {
+            const { uploadBase64Media } = await import("@/lib/r2");
+            finalCutout = await uploadBase64Media(finalCutout, "images");
+          } catch (e) {
+            console.warn("R2 upload error for cutout:", e);
+          }
+        }
+
+        if (finalBg.startsWith("data:")) {
+          try {
+            const { uploadBase64Media } = await import("@/lib/r2");
+            finalBg = await uploadBase64Media(finalBg, "images");
+          } catch (e) {
+            console.warn("R2 upload error for background:", e);
+          }
+        }
+
+        sanitized.push({
+          id: b.id || `hero-slide-${Date.now()}-${idx + 1}`,
+          badge: (b.badge ?? "Limited Offer").trim(),
+          heading: (b.heading ?? "First Purchase Enjoy\na Special Offer").trim(),
+          buttonText: (b.buttonText ?? b.ctaText ?? "Shop Now").trim(),
+          buttonLink: (b.buttonLink ?? b.ctaLink ?? "/products").trim(),
+          bgImage: finalBg,
+          cutoutImage: finalCutout,
+          desktopScale: typeof b.desktopScale === "number" ? b.desktopScale : 100,
+          desktopOffsetX: typeof b.desktopOffsetX === "number" ? b.desktopOffsetX : 0,
+          desktopOffsetY: typeof b.desktopOffsetY === "number" ? b.desktopOffsetY : 0,
+          mobileScale: typeof b.mobileScale === "number" ? b.mobileScale : 100,
+          mobileOffsetX: typeof b.mobileOffsetX === "number" ? b.mobileOffsetX : 0,
+          mobileOffsetY: typeof b.mobileOffsetY === "number" ? b.mobileOffsetY : 0,
+          active: b.active !== false,
+          order: typeof b.order === "number" ? b.order : idx + 1,
+          image: finalCutout,
+          ctaText: (b.buttonText ?? b.ctaText ?? "Shop Now").trim(),
+          ctaLink: (b.buttonLink ?? b.ctaLink ?? "/products").trim(),
+        });
+      }
+
+      const updated = await saveBanners(sanitized);
+      return NextResponse.json({ success: true, banners: updated });
+    }
+
     const {
       badge,
       titleLine1,

@@ -14,6 +14,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { Product } from "@/types/product";
+import { HeroBannerSlide, DEFAULT_HERO_BANNERS } from "@/lib/storeContent";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useSearch } from "@/context/SearchContext";
@@ -22,6 +23,7 @@ import { addRecentlyViewed } from "@/lib/recentlyViewed";
 
 interface VittalLifestyleStorefrontProps {
   initialProducts?: Product[];
+  initialHeroBanners?: HeroBannerSlide[];
 }
 
 // ---------------------------------------------------------------------------
@@ -105,20 +107,54 @@ const HOMEPAGE_NEW_ARRIVALS_ORDER = [
   "on-creatine-container",
 ];
 
-export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleStorefrontProps) {
+export function VittalLifestyleStorefront({
+  initialProducts,
+  initialHeroBanners,
+}: VittalLifestyleStorefrontProps) {
   const router = useRouter();
   const { addItem, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { openSearch } = useSearch();
 
-  // 3-second auto-rotating hero cutout slides (total 3 slides)
+  // Dynamic Hero Banner Slides from Admin / D1
+  const [heroBanners, setHeroBanners] = useState<HeroBannerSlide[]>(
+    initialHeroBanners && initialHeroBanners.length > 0
+      ? initialHeroBanners
+      : DEFAULT_HERO_BANNERS
+  );
+
+  // Active slides only
+  const activeSlides = useMemo(() => {
+    const filtered = heroBanners.filter((b) => b.active !== false);
+    return filtered.length > 0 ? filtered : DEFAULT_HERO_BANNERS;
+  }, [heroBanners]);
+
+  // Auto-rotating hero cutout slides synced to active slides count
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
 
   useEffect(() => {
+    if (activeHeroIndex >= activeSlides.length) {
+      setActiveHeroIndex(0);
+    }
+  }, [activeSlides.length, activeHeroIndex]);
+
+  useEffect(() => {
+    if (activeSlides.length <= 1) return;
     const timer = setInterval(() => {
-      setActiveHeroIndex((prev) => (prev + 1) % HERO_CUTOUTS.length);
-    }, 3000);
+      setActiveHeroIndex((prev) => (prev + 1) % activeSlides.length);
+    }, 3500);
     return () => clearInterval(timer);
+  }, [activeSlides.length]);
+
+  // Real-time sync listener for admin updates
+  useEffect(() => {
+    const handleUpdate = (e: any) => {
+      if (e.detail?.banners && Array.isArray(e.detail.banners)) {
+        setHeroBanners(e.detail.banners);
+      }
+    };
+    window.addEventListener("vittal_banners_updated" as any, handleUpdate);
+    return () => window.removeEventListener("vittal_banners_updated" as any, handleUpdate);
   }, []);
 
   const products = initialProducts && initialProducts.length > 0 ? initialProducts : [];
@@ -269,110 +305,159 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       </section>
 
       {/* ===================================================================== */}
-      {/* 3. HERO BANNER CARD (ROTATING CUTOUTS WITH STATIC TEXT & BG)          */}
+      {/* 3. HERO BANNER CARD (DYNAMIC ADMIN-CUSTOMIZABLE SLIDES & CUTOUTS)     */}
       {/* ===================================================================== */}
-      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-2 pb-2 sm:pb-3">
-        <div className="relative rounded-3xl sm:rounded-[32px] overflow-hidden bg-[#95CF42] border border-[#85BE33]/50 shadow-sm min-h-[250px] sm:min-h-[300px] md:min-h-[290px] lg:min-h-[340px] xl:min-h-[360px] flex items-center">
-          
-          {/* Static Lime Green Textured Background (Never changes) */}
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="/vittal/banner-hero-green-texture.jpg"
-              alt="Hero Textured Background"
-              fill
-              priority
-              className="object-cover object-center"
-            />
-          </div>
+      {(() => {
+        const currentSlide = activeSlides[activeHeroIndex] || activeSlides[0];
+        const bgUrl = currentSlide?.bgImage || "/vittal/banner-hero-green-texture.jpg";
+        const badgeText = currentSlide?.badge || "Limited Offer";
+        const headingText = currentSlide?.heading || "First Purchase Enjoy\na Special Offer";
+        const ctaBtnText = currentSlide?.buttonText || currentSlide?.ctaText || "Shop Now";
+        const ctaBtnLink = currentSlide?.buttonLink || currentSlide?.ctaLink || "/products";
 
-          {/* Subtle Organic Fluid Wave Pattern Behind Cutouts */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-25 z-0">
-            <svg className="w-full h-full object-cover" viewBox="0 0 800 450" fill="none" preserveAspectRatio="none">
-              <path d="M -100,50 Q 200,200 400,100 T 900,150" stroke="#7EBA2B" strokeWidth="40" fill="none" />
-              <path d="M -50,150 Q 250,300 500,200 T 950,250" stroke="#7EBA2B" strokeWidth="50" fill="none" />
-              <path d="M -100,280 Q 200,420 500,320 T 900,400" stroke="#7EBA2B" strokeWidth="60" fill="none" />
-            </svg>
-          </div>
-
-          {/* 3 Cutout Images Rotating Every 3 Seconds (Smooth crossfade on the right) */}
-          <div className="absolute inset-0 z-[5] pointer-events-none">
-            {HERO_CUTOUTS.map((cutout, idx) => (
-              <div
-                key={cutout.image}
-                className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                  activeHeroIndex === idx ? "opacity-100" : "opacity-0"
-                }`}
-              >
+        return (
+          <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-2 pb-2 sm:pb-3">
+            <div className="relative rounded-3xl sm:rounded-[32px] overflow-hidden bg-[#95CF42] border border-[#85BE33]/50 shadow-sm min-h-[250px] sm:min-h-[300px] md:min-h-[290px] lg:min-h-[340px] xl:min-h-[360px] flex items-center">
+              
+              {/* Dynamic Lime Green / Custom Textured Background */}
+              <div className="absolute inset-0 z-0">
                 <Image
-                  src={cutout.image}
-                  alt={cutout.alt}
+                  src={bgUrl}
+                  alt="Hero Background"
                   fill
-                  priority={idx === 0}
-                  className="object-cover object-right"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 1680px"
+                  priority
+                  className="object-cover object-center"
                 />
               </div>
-            ))}
-          </div>
 
-          {/* Static Left Content Overlay (Never changes) */}
-          <div className="relative z-10 px-4 sm:px-8 lg:px-12 py-5 sm:py-7 md:py-7 lg:py-8 max-w-[50%] xs:max-w-[48%] sm:max-w-md md:max-w-lg lg:max-w-xl">
-            {/* Black Pill Eyebrow Badge */}
-            <div className="inline-block bg-[#111111] text-white text-[9px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full mb-2 sm:mb-3 shadow-xs">
-              Limited Offer
-            </div>
-
-            {/* Headline matching reference - mobile size reduced for clean separation from cutouts */}
-            <h1 className="font-mograph font-bold text-[15px] xs:text-base sm:text-2xl md:text-3xl lg:text-[34px] xl:text-[40px] text-[#111111] leading-tight sm:leading-[1.12] tracking-tight mb-2.5 sm:mb-4 md:mb-5">
-              First Purchase Enjoy
-              <br />
-              a Special Offer
-            </h1>
-
-            {/* Black Pill CTA Button with White Circle Up-Right Arrow -> Redirects to /products */}
-            <Link
-              href="/products"
-              className="inline-flex items-center gap-2 sm:gap-3 bg-[#111111] hover:bg-black text-white font-bold text-[11px] sm:text-sm pl-3.5 pr-1 py-1 sm:pl-5 sm:pr-2 sm:py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 group"
-            >
-              <span>Shop Now</span>
-              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white text-[#111111] flex items-center justify-center shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shadow-xs">
-                <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 stroke-[2.5]" />
+              {/* Subtle Organic Fluid Wave Pattern Behind Cutouts */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-25 z-0">
+                <svg className="w-full h-full object-cover" viewBox="0 0 800 450" fill="none" preserveAspectRatio="none">
+                  <path d="M -100,50 Q 200,200 400,100 T 900,150" stroke="#7EBA2B" strokeWidth="40" fill="none" />
+                  <path d="M -50,150 Q 250,300 500,200 T 950,250" stroke="#7EBA2B" strokeWidth="50" fill="none" />
+                  <path d="M -100,280 Q 200,420 500,320 T 900,400" stroke="#7EBA2B" strokeWidth="60" fill="none" />
+                </svg>
               </div>
-            </Link>
-          </div>
 
-          {/* Signature Bottom Scoop Notch with 3 Pagination Indicators Synced to Active Hero Index */}
-          <div className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 z-20 flex flex-col items-center pointer-events-none">
-            <div className="relative">
-              {/* Arched scoop cutting into the card from page background */}
-              <svg
-                viewBox="0 0 160 30"
-                className="w-32 sm:w-40 md:w-48 h-6 sm:h-7 md:h-8 fill-white block"
-                preserveAspectRatio="none"
-              >
-                <path d="M 0,30 C 22,30 26,0 48,0 L 112,0 C 134,0 138,30 160,30 Z" />
-              </svg>
+              {/* Cutout Images Rotating with Viewport-Specific Zoom & Position */}
+              <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
+                {activeSlides.map((slide, idx) => {
+                  const isCurrent = activeHeroIndex === idx;
+                  const deskScale = (slide.desktopScale ?? 100) / 100;
+                  const deskX = slide.desktopOffsetX ?? 0;
+                  const deskY = slide.desktopOffsetY ?? 0;
+                  const mobScale = (slide.mobileScale ?? 100) / 100;
+                  const mobX = slide.mobileOffsetX ?? 0;
+                  const mobY = slide.mobileOffsetY ?? 0;
+                  const cutoutSrc = slide.cutoutImage || slide.image || `/vittal/cutout-hero-${(idx % 3) + 1}.png`;
 
-              {/* 3 Indicators inside scoop */}
-              <div className="absolute inset-0 flex items-center justify-center gap-1.5 sm:gap-2 pb-0.5 pointer-events-auto">
-                {HERO_CUTOUTS.map((_, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setActiveHeroIndex(idx)}
-                    aria-label={`Go to slide ${idx + 1}`}
-                    className={`transition-all duration-300 cursor-pointer ${
-                      activeHeroIndex === idx
-                        ? "w-6 sm:w-7 h-1.5 sm:h-2 rounded-full bg-[#B8ED3E] shadow-2xs"
-                        : "w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-neutral-300 hover:bg-neutral-400"
-                    }`}
-                  />
-                ))}
+                  return (
+                    <div
+                      key={slide.id || idx}
+                      className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                        isCurrent ? "opacity-100" : "opacity-0"
+                      }`}
+                    >
+                      {/* Desktop View Cutout with Desktop Zoom & Position */}
+                      <div
+                        className="hidden md:block absolute inset-0 transition-transform duration-300"
+                        style={{
+                          transform: `translate(${deskX}px, ${deskY}px) scale(${deskScale})`,
+                          transformOrigin: "right center",
+                        }}
+                      >
+                        <Image
+                          src={cutoutSrc}
+                          alt={slide.heading || `Hero Cutout ${idx + 1}`}
+                          fill
+                          priority={idx === 0}
+                          className="object-cover object-right"
+                          sizes="(max-width: 1024px) 70vw, 1680px"
+                        />
+                      </div>
+
+                      {/* Mobile View Cutout with Mobile Zoom & Position */}
+                      <div
+                        className="block md:hidden absolute inset-0 transition-transform duration-300"
+                        style={{
+                          transform: `translate(${mobX}px, ${mobY}px) scale(${mobScale})`,
+                          transformOrigin: "right center",
+                        }}
+                      >
+                        <Image
+                          src={cutoutSrc}
+                          alt={slide.heading || `Hero Cutout ${idx + 1}`}
+                          fill
+                          priority={idx === 0}
+                          className="object-cover object-right"
+                          sizes="100vw"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Left Content Overlay (Dynamic Badge, Heading, Button) */}
+              <div className="relative z-10 px-4 sm:px-8 lg:px-12 py-5 sm:py-7 md:py-7 lg:py-8 max-w-[50%] xs:max-w-[48%] sm:max-w-md md:max-w-lg lg:max-w-xl">
+                {/* Black Pill Eyebrow Badge */}
+                {badgeText && (
+                  <div className="inline-block bg-[#111111] text-white text-[9px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full mb-2 sm:mb-3 shadow-xs">
+                    {badgeText}
+                  </div>
+                )}
+
+                {/* Headline matching reference */}
+                <h1 className="font-mograph font-bold text-[15px] xs:text-base sm:text-2xl md:text-3xl lg:text-[34px] xl:text-[40px] text-[#111111] leading-tight sm:leading-[1.12] tracking-tight mb-2.5 sm:mb-4 md:mb-5 whitespace-pre-line">
+                  {headingText}
+                </h1>
+
+                {/* Black Pill CTA Button with White Circle Up-Right Arrow */}
+                <Link
+                  href={ctaBtnLink}
+                  className="inline-flex items-center gap-2 sm:gap-3 bg-[#111111] hover:bg-black text-white font-bold text-[11px] sm:text-sm pl-3.5 pr-1 py-1 sm:pl-5 sm:pr-2 sm:py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 group"
+                >
+                  <span>{ctaBtnText}</span>
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white text-[#111111] flex items-center justify-center shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shadow-xs">
+                    <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 stroke-[2.5]" />
+                  </div>
+                </Link>
+              </div>
+
+              {/* Signature Bottom Scoop Notch with Pagination Indicators Synced to Active Hero Index */}
+              <div className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 z-20 flex flex-col items-center pointer-events-none">
+                <div className="relative">
+                  {/* Arched scoop cutting into the card from page background */}
+                  <svg
+                    viewBox="0 0 160 30"
+                    className="w-32 sm:w-40 md:w-48 h-6 sm:h-7 md:h-8 fill-white block"
+                    preserveAspectRatio="none"
+                  >
+                    <path d="M 0,30 C 22,30 26,0 48,0 L 112,0 C 134,0 138,30 160,30 Z" />
+                  </svg>
+
+                  {/* Indicators inside scoop */}
+                  <div className="absolute inset-0 flex items-center justify-center gap-1.5 sm:gap-2 pb-0.5 pointer-events-auto">
+                    {activeSlides.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setActiveHeroIndex(idx)}
+                        aria-label={`Go to slide ${idx + 1}`}
+                        className={`transition-all duration-300 cursor-pointer ${
+                          activeHeroIndex === idx
+                            ? "w-6 sm:w-7 h-1.5 sm:h-2 rounded-full bg-[#B8ED3E] shadow-2xs"
+                            : "w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-neutral-300 hover:bg-neutral-400"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       {/* ===================================================================== */}
       {/* 4. NEW ARRIVALS (Product Cards matching mockup)                       */}
