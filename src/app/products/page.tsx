@@ -931,7 +931,7 @@ function ProductsContent() {
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
 
                     {/* Inside Category Product Image */}
-                    <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1">
+                    <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1.5 xs:px-2">
                       <Image
                         src={cat.image}
                         alt={cat.name}
@@ -939,8 +939,8 @@ function ProductsContent() {
                         height={110}
                         className={`w-full h-full object-contain object-bottom pointer-events-none select-none transition-transform duration-300 ${
                           isSelected
-                            ? "scale-105 drop-shadow-[0_4px_8px_rgba(107,158,58,0.3)]"
-                            : "drop-shadow-[0_4px_8px_rgba(0,0,0,0.12)] group-hover:scale-105"
+                            ? "scale-100 drop-shadow-[0_4px_8px_rgba(107,158,58,0.25)]"
+                            : "drop-shadow-[0_4px_8px_rgba(0,0,0,0.12)] group-hover:scale-[1.02]"
                         }`}
                       />
                     </div>

@@ -246,7 +246,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
 
                 {/* Inside Category Product Image - Lower-aligned directly to bottom */}
-                <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1">
+                <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1.5 sm:px-2">
                   <Image
                     src={cat.image}
                     alt={cat.name}
