@@ -222,12 +222,12 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       {/* ===================================================================== */}
       <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-3 md:pt-4 pb-2 sm:pb-4">
         {/* Responsive Grid: 5 columns on Mobile, 6 columns on Desktop spanning from banner's left edge to right edge */}
-        <div className="w-full grid grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-8">
+        <div className="w-full grid grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 justify-center">
           {CATEGORY_ITEMS.map((cat) => (
             <Link
               key={cat.name}
               href={cat.link}
-              className={`group flex flex-col items-center cursor-pointer transition-transform duration-300 hover:-translate-y-1 ${
+              className={`group flex flex-col items-center cursor-pointer transition-transform duration-300 hover:-translate-y-1 w-full md:max-w-[155px] lg:max-w-[175px] xl:max-w-[190px] mx-auto ${
                 cat.desktopOnly ? "hidden md:flex" : "flex"
               }`}
             >
@@ -238,20 +238,20 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
                   src="/vittal/banner-hero-green-texture.jpg"
                   alt=""
                   fill
-                  sizes="(max-width: 768px) 20vw, 250px"
+                  sizes="(max-width: 768px) 20vw, 200px"
                   className="object-cover object-top pointer-events-none select-none opacity-90"
                 />
 
                 {/* Top-to-lower fade: Top shows the green texture, fading down to crisp clean white */}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
 
-                {/* Inside Category Product Image - Lower-aligned directly to bottom */}
-                <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1.5 sm:px-2">
+                {/* Inside Category Product Image - Lower-aligned directly to bottom, reduced slightly in desktop view */}
+                <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] md:h-[86%] lg:h-[88%] flex items-end justify-center px-1.5 sm:px-2 md:px-3">
                   <Image
                     src={cat.image}
                     alt={cat.name}
                     fill
-                    sizes="(max-width: 640px) 20vw, (max-width: 1024px) 20vw, 250px"
+                    sizes="(max-width: 640px) 20vw, (max-width: 1024px) 20vw, 200px"
                     className="object-contain object-bottom group-hover:scale-108 transition-transform duration-300 drop-shadow-xs"
                   />
                 </div>
@@ -259,7 +259,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
 
               {/* Outside Category Label: Current brand font, no background filling, centered below card */}
               <div className="w-full mt-1.5 sm:mt-2 text-center">
-                <span className="font-mograph font-bold text-[9.5px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-[13px] text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-tight line-clamp-2 block w-full px-0.5">
+                <span className="font-mograph font-bold text-[9.5px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-[12.5px] text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-tight line-clamp-2 block w-full px-0.5">
                   {cat.name}
                 </span>
               </div>
@@ -272,7 +272,7 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
       {/* 3. HERO BANNER CARD (ROTATING CUTOUTS WITH STATIC TEXT & BG)          */}
       {/* ===================================================================== */}
       <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-2 pb-2 sm:pb-3">
-        <div className="relative rounded-3xl sm:rounded-[32px] overflow-hidden bg-[#95CF42] border border-[#85BE33]/50 shadow-sm min-h-[250px] sm:min-h-[300px] md:min-h-[360px] lg:min-h-[440px] flex items-center">
+        <div className="relative rounded-3xl sm:rounded-[32px] overflow-hidden bg-[#95CF42] border border-[#85BE33]/50 shadow-sm min-h-[250px] sm:min-h-[300px] md:min-h-[290px] lg:min-h-[340px] xl:min-h-[360px] flex items-center">
           
           {/* Static Lime Green Textured Background (Never changes) */}
           <div className="absolute inset-0 z-0">
@@ -316,14 +316,14 @@ export function VittalLifestyleStorefront({ initialProducts }: VittalLifestyleSt
           </div>
 
           {/* Static Left Content Overlay (Never changes) */}
-          <div className="relative z-10 px-4 sm:px-8 lg:px-12 py-5 sm:py-8 md:py-10 max-w-[50%] xs:max-w-[48%] sm:max-w-md md:max-w-lg lg:max-w-xl">
+          <div className="relative z-10 px-4 sm:px-8 lg:px-12 py-5 sm:py-7 md:py-7 lg:py-8 max-w-[50%] xs:max-w-[48%] sm:max-w-md md:max-w-lg lg:max-w-xl">
             {/* Black Pill Eyebrow Badge */}
-            <div className="inline-block bg-[#111111] text-white text-[9px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full mb-2 sm:mb-3.5 shadow-xs">
+            <div className="inline-block bg-[#111111] text-white text-[9px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full mb-2 sm:mb-3 shadow-xs">
               Limited Offer
             </div>
 
             {/* Headline matching reference - mobile size reduced for clean separation from cutouts */}
-            <h1 className="font-mograph font-bold text-[15px] xs:text-base sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl text-[#111111] leading-tight sm:leading-[1.12] tracking-tight mb-2.5 sm:mb-6">
+            <h1 className="font-mograph font-bold text-[15px] xs:text-base sm:text-2xl md:text-3xl lg:text-[34px] xl:text-[40px] text-[#111111] leading-tight sm:leading-[1.12] tracking-tight mb-2.5 sm:mb-4 md:mb-5">
               First Purchase Enjoy
               <br />
               a Special Offer
