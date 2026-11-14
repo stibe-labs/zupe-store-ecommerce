@@ -891,9 +891,9 @@ function ProductsContent() {
       </div>
 
       {/* ===================================================================== */}
-      {/* 2. HORIZONTAL CATEGORY SWIPER ROW (Homepage Category Cards Design)     */}
+      {/* 2. HORIZONTAL CATEGORY SWIPER ROW (Sticky on Mobile, Static on Desktop) */}
       {/* ===================================================================== */}
-      <div className="bg-white/95 backdrop-blur-md border-b border-neutral-200/70 sticky top-16 sm:top-20 z-20 shadow-2xs">
+      <div className="bg-white/95 backdrop-blur-md border-b border-neutral-200/70 sticky md:static top-16 md:top-auto z-20 md:z-auto shadow-2xs md:shadow-none">
         <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
           <div className="flex items-start gap-2.5 sm:gap-3 md:gap-4 lg:gap-5 overflow-x-auto no-scrollbar scroll-smooth touch-pan-x py-1">
             {SHOP_CATEGORY_CARDS.map((cat) => {
