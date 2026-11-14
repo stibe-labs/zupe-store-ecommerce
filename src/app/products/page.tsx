@@ -521,6 +521,79 @@ function productMatchesFacetValue(product: Product, facetId: string, value: stri
   }
 }
 
+function CatalogProductImage({ product }: { product: Product }) {
+  const images = useMemo(() => {
+    if (product.images && product.images.length > 1) {
+      return product.images;
+    }
+    return [product.poster_image || "/vittal/product-whey-protein-jar.png"];
+  }, [product.images, product.poster_image]);
+
+  const [activeIdx, setActiveIdx] = useState(0);
+  const hasMultiple = images.length > 1;
+
+  return (
+    <div
+      className="relative aspect-square w-full rounded-2xl bg-gradient-to-b from-[#F2F8EB] via-[#F8FAF4] to-[#FFFFFF] p-3 flex items-center justify-center overflow-hidden mb-2.5 group/cardimg"
+      onMouseEnter={() => {
+        if (hasMultiple) setActiveIdx(1);
+      }}
+      onMouseLeave={() => {
+        if (hasMultiple) setActiveIdx(0);
+      }}
+    >
+      <Link
+        href={`/products/${product.id || product.slug}`}
+        className="block w-full h-full relative"
+      >
+        <Image
+          src={images[0]}
+          alt={product.name}
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className={`object-contain p-2 transition-all duration-300 ${
+            hasMultiple && activeIdx === 1 ? "opacity-0 scale-95" : "opacity-100 group-hover:scale-105"
+          }`}
+        />
+        {hasMultiple && (
+          <Image
+            src={images[1]}
+            alt={`${product.name} alternate view`}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className={`object-contain p-2 transition-all duration-300 absolute inset-0 ${
+              activeIdx === 1 ? "opacity-100 scale-105" : "opacity-0 scale-95 pointer-events-none"
+            }`}
+          />
+        )}
+      </Link>
+
+      {/* Alternate view / swipe indicator pills when product has multiple images */}
+      {hasMultiple && (
+        <div className="absolute bottom-2 inset-x-0 flex items-center justify-center gap-1.5 z-10 pointer-events-auto">
+          {images.slice(0, 3).map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveIdx(idx);
+              }}
+              aria-label={`View photo ${idx + 1}`}
+              className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                activeIdx === idx
+                  ? "w-4 bg-[#6B9E3A] shadow-xs"
+                  : "w-1.5 bg-neutral-300/80 hover:bg-neutral-400"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProductsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1239,19 +1312,8 @@ function ProductsContent() {
                         />
                       </button>
 
-                      {/* Product Poster Image with Pastel Lime Gradient Backing */}
-                      <Link
-                        href={`/products/${product.id || product.slug}`}
-                        className="relative aspect-square w-full rounded-2xl bg-gradient-to-b from-[#F2F8EB] via-[#F8FAF4] to-[#FFFFFF] p-3 flex items-center justify-center overflow-hidden mb-2.5"
-                      >
-                        <Image
-                          src={product.poster_image || "/vittal/product-whey-protein-jar.png"}
-                          alt={product.name}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                          className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </Link>
+                      {/* Product Image with Hover / Multi-Image Preview */}
+                      <CatalogProductImage product={product} />
 
                       {/* Product Metadata */}
                       <div>
