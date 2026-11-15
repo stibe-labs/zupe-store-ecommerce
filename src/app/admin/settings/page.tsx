@@ -36,7 +36,7 @@ export default function AdminSettingsPage() {
   const [storeName, setStoreName] = useState("Vittal Digital");
   const [supportEmail, setSupportEmail] = useState("support@vittaldigital.com");
   const [testEmailAddress, setTestEmailAddress] = useState("support@vittaldigital.com");
-  const [supportPhone, setSupportPhone] = useState("+91 62381 65935");
+  const [supportPhone, setSupportPhone] = useState("+91 73567 65036");
   const [currency, setCurrency] = useState("INR (₹)");
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("499");
   const [standardShippingFee, setStandardShippingFee] = useState("49");
@@ -73,7 +73,7 @@ export default function AdminSettingsPage() {
         if (s.storeProfile) {
           setStoreName(s.storeProfile.storeName || "Vittal Digital");
           setSupportEmail(s.storeProfile.supportEmail || "support@vittaldigital.com");
-          setSupportPhone(s.storeProfile.supportPhone || "+91 62381 65935");
+          setSupportPhone(s.storeProfile.supportPhone || "+91 73567 65036");
           setCurrency(s.storeProfile.currency || "INR (₹)");
           setFreeShippingThreshold(String(s.storeProfile.freeShippingThreshold ?? 499));
           setStandardShippingFee(String(s.storeProfile.standardShippingFee ?? 49));

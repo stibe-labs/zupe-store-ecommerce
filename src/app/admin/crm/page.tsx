@@ -85,7 +85,7 @@ export default function AdminCRMPage() {
 
   // WhatsApp CRM Integration State
   const [whatsappConfig, setWhatsappConfig] = useState({
-    phoneNumber: "916238165935",
+    phoneNumber: "",
     phoneNumberId: "1477900698733187",
     token: "",
     templateName: "vittaldigital_otp",
@@ -2422,7 +2422,7 @@ export default function AdminCRMPage() {
                             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                             : "bg-amber-500/10 text-amber-400 border-amber-500/20"
                         }`}>
-                          {whatsappConfig.hasToken ? "Connected (+91 6238 165 935)" : "Needs Token"}
+                          {whatsappConfig.hasToken ? (whatsappConfig.phoneNumber ? `Connected (+${whatsappConfig.phoneNumber})` : "Connected") : "Needs Token"}
                         </span>
                       </div>
                     </div>
@@ -2449,10 +2449,9 @@ export default function AdminCRMPage() {
                           type="text"
                           value={whatsappConfig.phoneNumber}
                           onChange={(e) => setWhatsappConfig({ ...whatsappConfig, phoneNumber: e.target.value })}
-                          placeholder="e.g. 916238165935"
+                          placeholder="e.g. 91XXXXXXXXXX"
                           className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
                         />
-                        <span className="text-[10px] text-slate-500 mt-1 block">Live Store Number: +91 6238 165 935</span>
                       </div>
 
                       <div>

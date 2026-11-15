@@ -41,7 +41,7 @@ export interface SiteConfig {
   // Contact & Support
   supportEmail: string;
   supportPhone: string;
-  whatsappNumber: string; // Country code + digits, e.g. "916238165935"
+  whatsappNumber: string; // Country code + digits, e.g. "91XXXXXXXXXX"
   whatsappWebhookVerifyToken: string;
 
   // Customer synthetic email domain (for phone-only customers)
@@ -91,7 +91,7 @@ export const siteConfig: SiteConfig = {
   supportEmail:
     process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@vittaldigital.com",
   supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE || "+91 73567 65036",
-  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916238165935",
+  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "",
   whatsappWebhookVerifyToken:
     process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || `${siteSlug}_wa_secret_2026`,
 
