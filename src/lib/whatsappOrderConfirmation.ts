@@ -57,7 +57,7 @@ export async function sendOrderPreConfirmationWhatsApp(
   }
 
   // Meta API does not permit sending messages from the business account to its own number
-  if (digits === "916238165935" || digits === "6238165935") {
+  if (digits === "919747195000" || digits === "9747195000") {
     console.warn("⚠️ [WA Pre-Confirm] Recipient phone is the business's own WhatsApp number. Meta requires testing with an external customer mobile number.");
   }
 

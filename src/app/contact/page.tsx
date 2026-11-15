@@ -154,7 +154,7 @@ export default function ContactPage() {
                 WhatsApp Support
               </span>
               <h3 className="text-base sm:text-lg font-bold text-neutral-950 mb-1 font-mograph">
-                +{siteConfig.whatsappNumber}
+                {siteConfig.supportPhone}
               </h3>
               <p className="text-xs text-neutral-500 leading-relaxed mb-4">
                 Chat live with our concierge for dispatch photos, sizing recommendations, and rapid order help.
@@ -193,7 +193,7 @@ export default function ContactPage() {
 
             <div className="pt-4 border-t border-neutral-200/70">
               <a
-                href={`tel:${siteConfig.supportPhone}`}
+                href={`tel:${siteConfig.supportPhone.replace(/\s+/g, "")}`}
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-bold text-xs border border-neutral-200/80 shadow-sm transition-colors cursor-pointer font-mograph"
               >
                 <Phone className="w-3.5 h-3.5 text-[#6B9E3A]" />

@@ -1578,9 +1578,9 @@ export interface ERPIntegrationsSettings {
 
 let inMemorySettings: ERPIntegrationsSettings = {
   storeProfile: {
-    storeName: "Vittal Digital",
-    supportEmail: "support@vittaldigital.com",
-    supportPhone: "+91 62381 65935",
+    storeName: "Vittal Lifestyle",
+    supportEmail: "support@vittallifestyle.com",
+    supportPhone: "+91 9747 19 5000",
     currency: "INR (₹)",
     freeShippingThreshold: 499,
     standardShippingFee: 49,

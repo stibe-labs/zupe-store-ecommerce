@@ -843,7 +843,7 @@ export default function AccountPage() {
               <span>WhatsApp</span>
             </a>
             <a
-              href="tel:+919600048000"
+              href={`tel:${siteConfig.supportPhone.replace(/\s+/g, "")}`}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors whitespace-nowrap border border-white/20 cursor-pointer font-mograph"
             >
               <Phone className="w-3.5 h-3.5" />

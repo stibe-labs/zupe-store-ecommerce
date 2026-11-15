@@ -2422,7 +2422,7 @@ export default function AdminCRMPage() {
                             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                             : "bg-amber-500/10 text-amber-400 border-amber-500/20"
                         }`}>
-                          {whatsappConfig.hasToken ? "Connected (+91 6238 165 935)" : "Needs Token"}
+                          {whatsappConfig.hasToken ? `Connected (${whatsappConfig.phoneNumber ? `+${whatsappConfig.phoneNumber}` : "+91 9747 19 5000"})` : "Needs Token"}
                         </span>
                       </div>
                     </div>

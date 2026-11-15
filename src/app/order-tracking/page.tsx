@@ -480,7 +480,7 @@ function OrderTrackingContent() {
     },
     {
       q: "How do I contact customer support or ask about product authenticity?",
-      a: `Every product from ${siteConfig.name} is 100% authentic and lab tested. For any queries or order assistance, connect with our dedicated concierge via WhatsApp at +91 ${siteConfig.whatsappNumber} or email us at ${siteConfig.supportEmail}.`,
+      a: `Every product from ${siteConfig.name} is 100% authentic and lab tested. For any queries or order assistance, connect with our dedicated concierge via WhatsApp at ${siteConfig.supportPhone} or email us at ${siteConfig.supportEmail}.`,
     },
   ];
 
@@ -1255,7 +1255,7 @@ function OrderTrackingContent() {
                         <span>Email {siteConfig.supportEmail}</span>
                       </a>
                       <a
-                        href={`tel:${siteConfig.supportPhone}`}
+                        href={`tel:${siteConfig.supportPhone.replace(/\s+/g, "")}`}
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors border border-white/10 cursor-pointer"
                       >
                         <Phone className="w-4 h-4 text-[#95CF42]" />
@@ -1470,7 +1470,7 @@ function OrderTrackingContent() {
                       <span>Email: {siteConfig.supportEmail}</span>
                     </a>
                     <a
-                      href={`tel:${siteConfig.supportPhone}`}
+                      href={`tel:${siteConfig.supportPhone.replace(/\s+/g, "")}`}
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
                     >
                       <Phone className="w-4 h-4 text-[#95CF42]" />
