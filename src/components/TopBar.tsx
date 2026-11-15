@@ -27,7 +27,7 @@ const ANNOUNCEMENT_ITEMS = [
   },
   {
     icon: Headphones,
-    text: "WhatsApp Order & Inquiries Support",
+    text: "WhatsApp Order & Inquiries: +91 9744 17 5000",
     href: `https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20have%20an%20inquiry`,
   },
 ];

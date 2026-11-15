@@ -90,8 +90,8 @@ export const siteConfig: SiteConfig = {
 
   supportEmail:
     process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@vittaldigital.com",
-  supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE || "+91 73567 65036",
-  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "",
+  supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE || "+91 9744 17 5000",
+  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919744175000",
   whatsappWebhookVerifyToken:
     process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || `${siteSlug}_wa_secret_2026`,
 

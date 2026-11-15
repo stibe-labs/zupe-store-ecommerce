@@ -65,7 +65,7 @@ export async function findUserByPhoneAsync(phone: string): Promise<UserRecord | 
   if (cached) return cached;
 
   try {
-    // Try matching phone column by formatted display (+91 73567 65036), E.164, raw digits, or sanitized digits
+    // Try matching phone column by formatted display (+91 9744 17 5000), E.164, raw digits, or sanitized digits
     const rows = await executeD1Query<UserRecord>(
       `SELECT * FROM users 
        WHERE phone = ? OR phone = ? OR phone = ? 

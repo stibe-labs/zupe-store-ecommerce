@@ -1580,7 +1580,7 @@ let inMemorySettings: ERPIntegrationsSettings = {
   storeProfile: {
     storeName: "Vittal Digital",
     supportEmail: "support@vittaldigital.com",
-    supportPhone: "+91 73567 65036",
+    supportPhone: "+91 9744 17 5000",
     currency: "INR (₹)",
     freeShippingThreshold: 499,
     standardShippingFee: 49,

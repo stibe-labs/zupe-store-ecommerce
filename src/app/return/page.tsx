@@ -226,7 +226,7 @@ export default function ReturnPolicyPage() {
                     rel="noopener noreferrer"
                     className="font-semibold text-[#002D62] underline underline-offset-2"
                   >
-                    WhatsApp
+                    WhatsApp (+91 9744 17 5000)
                   </a>{" "}
                   or to support@vittaldigital.com.
                 </p>
@@ -280,7 +280,7 @@ export default function ReturnPolicyPage() {
               className="inline-flex items-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-[#25D366]/30 transition-colors"
             >
               <MessageCircle className="w-4 h-4 text-[#25D366]" />
-              Chat on WhatsApp
+              WhatsApp: +91 9744 17 5000
             </a>
           </div>
         </div>

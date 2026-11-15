@@ -718,7 +718,7 @@ export function Navbar() {
                       WhatsApp Support
                     </span>
                     <span className="block text-xs font-bold text-slate-900">
-                      Chat with Us
+                      +91 9744 17 5000
                     </span>
                   </div>
                 </a>

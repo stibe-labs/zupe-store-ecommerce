@@ -26,7 +26,7 @@ const DEFAULT_FAQS: FaqItem[] = [
     id: 3,
     question: "What is the return and replacement policy?",
     answer:
-      "For returns and exchanges, please record a continuous unboxing video when opening your package. If you spot any damage or defects, reach out directly to our WhatsApp support with the video attached and your order number. Our team will verify and process your exchange within 3–5 business days.",
+      "For returns and exchanges, please record a continuous unboxing video when opening your package. If you spot any damage or defects, WhatsApp us at +91 9744 17 5000 with the video attached and your order number. Our team will verify and process your exchange within 3–5 business days.",
   },
   {
     id: 4,

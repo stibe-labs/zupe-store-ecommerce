@@ -85,7 +85,7 @@ export default function AdminCRMPage() {
 
   // WhatsApp CRM Integration State
   const [whatsappConfig, setWhatsappConfig] = useState({
-    phoneNumber: "",
+    phoneNumber: "919744175000",
     phoneNumberId: "1477900698733187",
     token: "",
     templateName: "vittaldigital_otp",
@@ -2449,9 +2449,10 @@ export default function AdminCRMPage() {
                           type="text"
                           value={whatsappConfig.phoneNumber}
                           onChange={(e) => setWhatsappConfig({ ...whatsappConfig, phoneNumber: e.target.value })}
-                          placeholder="e.g. 91XXXXXXXXXX"
+                          placeholder="e.g. 919744175000"
                           className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
                         />
+                        <span className="text-[10px] text-slate-500 mt-1 block">Live Store Number: +91 9744 17 5000</span>
                       </div>
 
                       <div>

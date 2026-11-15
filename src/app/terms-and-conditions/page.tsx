@@ -179,7 +179,7 @@ export default function TermsAndConditionsPage() {
                   rel="noopener noreferrer"
                   className="font-semibold text-[#002D62] underline underline-offset-2"
                 >
-                  WhatsApp support
+                  WhatsApp support (+91 9744 17 5000)
                 </a>{" "}
                 or email within 48 hours of doorstep delivery.</span>
             </li>
@@ -268,7 +268,7 @@ export default function TermsAndConditionsPage() {
               className="inline-flex items-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl border border-[#25D366]/30 transition-colors"
             >
               <MessageCircle className="w-4 h-4 text-[#25D366]" />
-              Chat on WhatsApp
+              WhatsApp: +91 9744 17 5000
             </a>
           </div>
         </div>
@@ -349,13 +349,13 @@ export default function TermsAndConditionsPage() {
               support@vittaldigital.com
             </a>
             <a
-              href={`https://wa.me/${siteConfig.whatsappNumber ? `${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Digital%2C%20I%20have%20a%20question` : ""}`}
+              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Digital%2C%20I%20have%20a%20question`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-[#25D366]/30 transition-colors"
             >
               <MessageCircle className="w-4 h-4 text-[#25D366]" />
-              WhatsApp Help
+              WhatsApp: +91 9744 17 5000
             </a>
           </div>
         </div>

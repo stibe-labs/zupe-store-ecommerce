@@ -482,7 +482,7 @@ export default function AboutPage() {
                     rel="noopener noreferrer"
                     className="font-semibold text-emerald-600 hover:text-emerald-700 underline underline-offset-2"
                   >
-                    WhatsApp
+                    WhatsApp (+91 9744 17 5000)
                   </a>
                   . Need live unboxing advice, tracking updates, or setup help? We are just a message away.
                 </p>

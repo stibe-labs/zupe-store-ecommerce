@@ -458,7 +458,7 @@ function OrderTrackingContent() {
     },
     {
       q: "How do I claim the 1-year warranty on my electronics?",
-      a: `Every device purchased from ${siteConfig.name} includes a comprehensive 1-year warranty card with GST invoice. In case of any technical queries or support, simply email us at ${siteConfig.supportEmail} or connect directly with our dedicated concierge via WhatsApp.`,
+      a: `Every device purchased from ${siteConfig.name} includes a comprehensive 1-year warranty card with GST invoice. In case of any technical queries or support, simply email us at ${siteConfig.supportEmail} or connect directly with our dedicated concierge via WhatsApp at +91 9744 17 5000.`,
     },
   ];
 

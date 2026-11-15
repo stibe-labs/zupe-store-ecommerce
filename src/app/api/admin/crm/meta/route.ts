@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 2. Fetch WhatsApp Integration Config from D1 (fallback to env)
-    const envWaPhone = process.env.WHATSAPP_PHONE_NUMBER || "";
+    const envWaPhone = process.env.WHATSAPP_PHONE_NUMBER || "919744175000";
     const envWaPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || "1477900698733187";
     const envWaToken = process.env.WHATSAPP_TOKEN || "";
     const envWaTemplate = process.env.WHATSAPP_TEMPLATE_NAME || "vittaldigital_otp";
@@ -378,7 +378,7 @@ export async function POST(req: NextRequest) {
       }
 
       const waConfigData = JSON.stringify({
-        phoneNumber: cleanPhone || process.env.WHATSAPP_PHONE_NUMBER || "",
+        phoneNumber: cleanPhone || process.env.WHATSAPP_PHONE_NUMBER || "919744175000",
         phoneNumberId: cleanPhoneId || process.env.WHATSAPP_PHONE_NUMBER_ID || "1477900698733187",
         token: effectiveToken,
         templateName: cleanTemplate,
