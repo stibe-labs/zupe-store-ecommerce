@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { siteConfig } from "@/config/siteConfig";
 
 export const metadata = {
   title: "Return & Refund Policy | Vittal Digital — Genuine Flagship Electronics",
@@ -218,7 +219,16 @@ export default function ReturnPolicyPage() {
                 <span className="text-[10px] font-semibold text-[#002D62] uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">Step 1</span>
                 <h4 className="font-semibold text-xs sm:text-sm text-slate-900 mt-2">Submit Claim</h4>
                 <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
-                  Send your Order ID and continuous unboxing video via WhatsApp (+91 916238165935) or to support@vittaldigital.com.
+                  Send your Order ID and continuous unboxing video via{" "}
+                  <a
+                    href={`https://wa.me/${siteConfig.whatsappNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-[#002D62] underline underline-offset-2"
+                  >
+                    WhatsApp
+                  </a>{" "}
+                  or to support@vittaldigital.com.
                 </p>
               </div>
 
@@ -264,13 +274,13 @@ export default function ReturnPolicyPage() {
               support@vittaldigital.com
             </a>
             <a
-              href="https://wa.me/916238165935?text=Hi%20Vittal%20Digital%2C%20I%20need%20assistance%20with%20a%20return"
+              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Digital%2C%20I%20need%20assistance%20with%20a%20return`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-[#25D366]/30 transition-colors"
             >
               <MessageCircle className="w-4 h-4 text-[#25D366]" />
-              WhatsApp: +91 916238165935
+              Chat on WhatsApp
             </a>
           </div>
         </div>

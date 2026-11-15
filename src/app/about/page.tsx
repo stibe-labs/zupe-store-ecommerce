@@ -475,7 +475,16 @@ export default function AboutPage() {
                   Live WhatsApp Care
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  Real human technical care available via WhatsApp (+91 916238165935). Need live unboxing advice, tracking updates, or setup help? We are just a message away.
+                  Real human technical care available via{" "}
+                  <a
+                    href={`https://wa.me/${siteConfig.whatsappNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-emerald-600 hover:text-emerald-700 underline underline-offset-2"
+                  >
+                    WhatsApp
+                  </a>
+                  . Need live unboxing advice, tracking updates, or setup help? We are just a message away.
                 </p>
               </div>
               <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-medium text-[#002D62]">

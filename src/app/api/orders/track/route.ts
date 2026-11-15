@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getERPOrders, ERPOrder } from "@/lib/erpStore";
 import { getOrders, OrderRecord } from "@/lib/orderStore";
+import { siteConfig } from "@/config/siteConfig";
 
 export async function GET(req: NextRequest) {
   try {
@@ -258,10 +259,10 @@ export async function GET(req: NextRequest) {
           "Ensure you entered the 10-digit mobile number used during checkout.",
           "Newly placed orders may take up to 10-15 minutes to reflect in courier tracking systems.",
         ],
-        support_whatsapp: `https://wa.me/916238165935?text=${encodeURIComponent(
+        support_whatsapp: `https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
           `Hi Vittal Digital, I need help tracking my order with query "${query}".`
         )}`,
-        support_phone: "+91 62381 65935",
+        support_phone: siteConfig.supportPhone,
       },
       { status: 404 }
     );

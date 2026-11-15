@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { siteConfig } from "@/config/siteConfig";
 
 export const metadata = {
   title: "Terms and Conditions | Vittal Digital — Genuine Flagship Electronics",
@@ -171,7 +172,16 @@ export default function TermsAndConditionsPage() {
             </li>
             <li className="flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-              <span><strong className="font-semibold text-slate-900">Notification Window:</strong> Issues must be reported to our WhatsApp support (+91 916238165935) or email within 48 hours of doorstep delivery.</span>
+              <span><strong className="font-semibold text-slate-900">Notification Window:</strong> Issues must be reported to our{" "}
+                <a
+                  href={`https://wa.me/${siteConfig.whatsappNumber}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[#002D62] underline underline-offset-2"
+                >
+                  WhatsApp support
+                </a>{" "}
+                or email within 48 hours of doorstep delivery.</span>
             </li>
             <li className="flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -252,13 +262,13 @@ export default function TermsAndConditionsPage() {
               support@vittaldigital.com
             </a>
             <a
-              href="https://wa.me/916238165935?text=Hi%20Vittal%20Digital%2C%20I%20have%20a%20question%20regarding%20terms"
+              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Digital%2C%20I%20have%20a%20question%20regarding%20terms`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl border border-[#25D366]/30 transition-colors"
             >
               <MessageCircle className="w-4 h-4 text-[#25D366]" />
-              WhatsApp: +91 916238165935
+              Chat on WhatsApp
             </a>
           </div>
         </div>

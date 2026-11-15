@@ -150,7 +150,7 @@ export default function ContactPage() {
                 WhatsApp Support
               </span>
               <h3 className="text-lg font-black text-slate-900 mb-1">
-                +91 91623 81659
+                Instant Chat Support
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed mb-4">
                 Chat live with our electronics concierge for dispatch photos, unboxing verification, and rapid help.

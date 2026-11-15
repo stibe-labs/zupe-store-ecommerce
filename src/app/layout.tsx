@@ -8,7 +8,6 @@ import { CartDrawer } from "@/components/CartDrawer";
 import { AuthModal } from "@/components/AuthModal";
 import { SearchModal } from "@/components/SearchModal";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { WhatsAppFloatingButton } from "@/components/WhatsAppFloatingButton";
 import { AbandonedCartAutoChecker } from "@/components/AbandonedCartAutoChecker";
 import { MetaPixelTracker } from "@/components/MetaPixelTracker";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -148,7 +147,6 @@ export default function RootLayout({
                   <CartDrawer />
                   <AuthModal />
                   <SearchModal />
-                  <WhatsAppFloatingButton />
                   <AbandonedCartAutoChecker />
                   <Suspense fallback={null}>
                     <MetaPixelTracker />

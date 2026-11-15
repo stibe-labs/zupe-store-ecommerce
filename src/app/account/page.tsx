@@ -846,7 +846,7 @@ export default function AccountPage() {
 
           <div className="flex flex-wrap sm:flex-nowrap gap-2.5">
             <a
-              href="https://wa.me/919600048000?text=Hi%20Vittal%20Digital%2C%20I%20need%20help%20with%20my%20order%20or%20account"
+              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Digital%2C%20I%20need%20help%20with%20my%20order%20or%20account`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-slate-950 text-xs font-bold transition-colors whitespace-nowrap shadow-xs cursor-pointer"
@@ -855,7 +855,7 @@ export default function AccountPage() {
               <span>WhatsApp</span>
             </a>
             <a
-              href="tel:+919600048000"
+              href={`tel:${siteConfig.supportPhone}`}
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors whitespace-nowrap border border-white/20 cursor-pointer"
             >
               <Phone className="w-3.5 h-3.5" />

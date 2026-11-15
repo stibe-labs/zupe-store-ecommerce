@@ -2,23 +2,24 @@
 
 import React from "react";
 import { Truck, Banknote, Headphones, ShieldCheck, Sparkles, CheckCircle2 } from "lucide-react";
+import { siteConfig } from "@/config/siteConfig";
 
 const ANNOUNCEMENT_ITEMS = [
   {
     icon: Sparkles,
-    text: "🇹🇷 100% Authentic Turkish Import • Themra Herbal Paste",
+    text: "⚡ 100% Authentic Electronics • Brand Warranty Included",
   },
   {
     icon: Truck,
-    text: "⚡ 1–2 Day Superfast Express Delivery (All-India Delivery)",
+    text: "⚡ 1–2 Day Express Dispatch (All-India Delivery)",
   },
   {
     icon: ShieldCheck,
-    text: "📦 100% Discreet & Tamper-Proof Plain Box Packaging",
+    text: "📦 100% Insured & Tamper-Proof Transit Packaging",
   },
   {
     icon: CheckCircle2,
-    text: "🛡️ 100% Money-Back Guarantee on Unused Sachet Strips",
+    text: "🛡️ 7-Day Replacement Guarantee on Defective Units",
   },
   {
     icon: Banknote,
@@ -26,8 +27,8 @@ const ANNOUNCEMENT_ITEMS = [
   },
   {
     icon: Headphones,
-    text: "WhatsApp Order & Inquiries: +91 62381 65935",
-    href: "https://wa.me/916238165935?text=Hi%2C%20I%20want%20to%20order%20Turkiye%20Jam",
+    text: "WhatsApp Order & Inquiries Support",
+    href: `https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20have%20an%20inquiry`,
   },
 ];
 

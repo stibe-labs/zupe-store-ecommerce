@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { siteConfig } from "@/config/siteConfig";
 
 export const metadata = {
   title: "Shipping & Delivery Policy | Vittal Digital — Genuine Flagship Electronics",
@@ -261,13 +262,13 @@ export default function ShippingAndDeliveryPage() {
               support@vittaldigital.com
             </a>
             <a
-              href="https://wa.me/916238165935?text=Hi%20Vittal%20Digital%2C%20I%20have%20a%20query%20about%20shipping"
+              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Digital%2C%20I%20have%20a%20query%20about%20shipping`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-[#25D366]/30 transition-colors"
             >
               <MessageCircle className="w-4 h-4 text-[#25D366]" />
-              WhatsApp: +91 916238165935
+              Chat on WhatsApp
             </a>
           </div>
         </div>
