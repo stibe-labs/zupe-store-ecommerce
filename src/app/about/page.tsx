@@ -339,14 +339,6 @@ export default function AboutPage() {
             </nav>
 
             <div className="text-center max-w-3xl mx-auto">
-              {/* Tagline Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-xs font-semibold text-[#3D6318] mb-5 shadow-xs font-mograph">
-                <Sparkles className="w-3.5 h-3.5 text-[#6B9E3A]" />
-                <span className="tracking-wide text-xs sm:text-[13px] font-semibold">
-                  Pure Nutrition • Performance Apparel • Mindful Living
-                </span>
-              </div>
-
               {/* Title */}
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-neutral-950 tracking-tight leading-tight font-mograph">
                 Live Better. <span className="text-[#6B9E3A]">Feel Stronger.</span>
@@ -357,22 +349,22 @@ export default function AboutPage() {
                 Vittal Lifestyle was built on a simple conviction: you should never have to compromise between physical strength, peak wellness, and premium everyday aesthetics. We craft lab-certified supplements, ergonomic activewear, farm-sourced dates &amp; nuts, and artisan dark chocolates directly for discerning Indian athletes and mindful families.
               </p>
 
-              {/* Action Buttons */}
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 font-mograph">
+              {/* Action Buttons: 1 row in mobile view */}
+              <div className="mt-8 flex flex-row items-center justify-center gap-2.5 sm:gap-3 font-mograph w-full max-w-lg mx-auto">
                 <Link
                   href="/products"
-                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-sm sm:text-base shadow-md hover:shadow-lg hover:shadow-[#95CF42]/25 transition-all cursor-pointer"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-8 py-3.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-xs xs:text-sm sm:text-base shadow-md hover:shadow-lg hover:shadow-[#95CF42]/25 transition-all cursor-pointer whitespace-nowrap"
                 >
                   <span>Explore Catalog</span>
-                  <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                  <ArrowRight className="w-4 h-4 stroke-[2.5] shrink-0" />
                 </Link>
                 <a
                   href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Lifestyle%2C%20I%20would%20like%20to%20know%20more%20about%20your%20products`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white hover:bg-neutral-50 text-neutral-900 border border-neutral-300 text-sm font-semibold transition-all shadow-xs cursor-pointer"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-7 py-3.5 rounded-full bg-white hover:bg-neutral-50 text-neutral-900 border border-neutral-300 text-xs xs:text-sm sm:text-base font-semibold transition-all shadow-xs cursor-pointer whitespace-nowrap"
                 >
-                  <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                  <MessageCircle className="w-4 h-4 text-[#25D366] shrink-0" />
                   <span>Talk to Concierge</span>
                 </a>
               </div>
@@ -383,9 +375,10 @@ export default function AboutPage() {
         {/* ========================================================
             TRUST STRIP (Lab Tested, Outfits, Farm Direct, etc.)
            ======================================================== */}
-        <section className="py-5 sm:py-6 border-b border-neutral-100 bg-[#FAFCF6] shadow-xs">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+        <section className="py-5 sm:py-6 border-b border-neutral-100 bg-[#FAFCF6] shadow-xs overflow-hidden">
+          {/* Desktop View: Clean 5-column grid */}
+          <div className="hidden md:block max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-5 gap-4 lg:gap-6">
               {TRUST_ITEMS.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -406,16 +399,65 @@ export default function AboutPage() {
               })}
             </div>
           </div>
+
+          {/* Mobile View: 1-Row Continuous Slow Moving Marquee to the Right */}
+          <div className="block md:hidden w-full overflow-hidden">
+            <div className="flex w-max animate-marquee-right">
+              {/* Set 1 */}
+              <div className="flex items-center gap-6 pr-6 shrink-0">
+                {TRUST_ITEMS.map((item, idx) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={`m1-${idx}`} className="flex items-center gap-3 shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-[#F4FBE8] border border-[#95CF42]/30 flex items-center justify-center shrink-0 shadow-xs">
+                        <Icon className="w-5 h-5 text-[#3D6318]" />
+                      </div>
+                      <div className="whitespace-nowrap">
+                        <h4 className="text-xs font-bold text-neutral-900 leading-tight">
+                          {item.title}
+                        </h4>
+                        <p className="text-[11px] text-neutral-500 leading-tight mt-0.5">
+                          {item.sub}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Set 2 (Duplicate for seamless loop) */}
+              <div className="flex items-center gap-6 pr-6 shrink-0" aria-hidden="true">
+                {TRUST_ITEMS.map((item, idx) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={`m2-${idx}`} className="flex items-center gap-3 shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-[#F4FBE8] border border-[#95CF42]/30 flex items-center justify-center shrink-0 shadow-xs">
+                        <Icon className="w-5 h-5 text-[#3D6318]" />
+                      </div>
+                      <div className="whitespace-nowrap">
+                        <h4 className="text-xs font-bold text-neutral-900 leading-tight">
+                          {item.title}
+                        </h4>
+                        <p className="text-[11px] text-neutral-500 leading-tight mt-0.5">
+                          {item.sub}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* ========================================================
-            2. COUNTED METRICS BANNER
+            2. COUNTED METRICS BANNER (Directly Placed, No Outline/Card)
            ======================================================== */}
         <section className="py-10 sm:py-14 border-b border-neutral-100 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               {/* Stat 1 */}
-              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md font-mograph">
+              <div className="p-2 sm:p-4 text-center font-mograph">
                 <CountUpNumber target={100} suffix="%" duration={1600} />
                 <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 tracking-tight">
                   Certified Pure Stock
@@ -426,7 +468,7 @@ export default function AboutPage() {
               </div>
 
               {/* Stat 2 */}
-              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md font-mograph">
+              <div className="p-2 sm:p-4 text-center font-mograph">
                 <CountUpNumber target={25000} suffix="+" duration={1800} />
                 <span className="block mt-2 text-xs sm:text-sm font-bold text-neutral-900 tracking-tight">
                   Active Fitness Enthusiasts
@@ -437,7 +479,7 @@ export default function AboutPage() {
               </div>
 
               {/* Stat 3 */}
-              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md font-mograph">
+              <div className="p-2 sm:p-4 text-center font-mograph">
                 <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#6B9E3A] tracking-tight">
                   4.9 <span className="text-xl sm:text-2xl text-neutral-400">/ 5.0</span>
                 </div>
@@ -450,7 +492,7 @@ export default function AboutPage() {
               </div>
 
               {/* Stat 4 */}
-              <div className="bg-[#FAFCF6] rounded-2xl border border-neutral-200/90 p-5 sm:p-6 text-center transition-all hover:border-[#95CF42] hover:shadow-md font-mograph">
+              <div className="p-2 sm:p-4 text-center font-mograph">
                 <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#6B9E3A] tracking-tight">
                   48 Hrs
                 </div>
@@ -470,9 +512,6 @@ export default function AboutPage() {
            ======================================================== */}
         <section className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-            <span className="text-xs font-semibold text-[#3D6318] bg-[#F4FBE8] px-3.5 py-1.5 rounded-full border border-[#95CF42]/40 inline-block mb-3 font-mograph">
-              Our 5 Core Departments
-            </span>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-950 tracking-tight font-mograph">
               Curated for Strength, Style &amp; Sustenance
             </h2>
@@ -533,9 +572,6 @@ export default function AboutPage() {
         <section className="py-12 sm:py-16 bg-[#FAFCF6] border-y border-neutral-100">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-              <span className="text-xs font-semibold text-[#3D6318] bg-[#F4FBE8] px-3.5 py-1.5 rounded-full border border-[#95CF42]/40 inline-block mb-3 font-mograph">
-                The Vittal Standard
-              </span>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-950 tracking-tight font-mograph">
                 From Origin to Your Hands
               </h2>
@@ -592,10 +628,6 @@ export default function AboutPage() {
         <section className="py-14 sm:py-20 bg-gradient-to-b from-white via-[#FAFCF6] to-white overflow-hidden border-b border-neutral-100">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-10 max-w-xl mx-auto">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] text-xs font-semibold mb-3 font-mograph">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#6B9E3A]" />
-                <span>Verified Athletes &amp; Customers</span>
-              </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-950 tracking-tight font-mograph">
                 Voices of Vittal Lifestyle
               </h2>
@@ -734,11 +766,6 @@ export default function AboutPage() {
             <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-black/10 blur-[90px] pointer-events-none" />
 
             <div className="relative z-10 max-w-2xl mx-auto">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/10 text-xs font-semibold text-neutral-950 mb-4 border border-black/15 font-mograph">
-                <Sparkles className="w-3.5 h-3.5 text-neutral-950" />
-                <span>Join The Vittal Lifestyle</span>
-              </div>
-
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-neutral-950 tracking-tight leading-tight font-mograph">
                 Elevate Your Health &amp; Performance Today
               </h2>

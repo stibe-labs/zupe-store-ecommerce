@@ -284,6 +284,24 @@ html.lenis body {
   animation-play-state: paused;
 }
 
+/* ─── Marquee Right (Moving Towards Right Side) ─── */
+@keyframes marquee-right {
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0%, 0, 0); }
+}
+
+.animate-marquee-right {
+  display: flex;
+  width: max-content;
+  animation: marquee-right 32s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-right:hover,
+.animate-marquee-right:active {
+  animation-play-state: paused;
+}
+
 /* ─── TopBar Ticker Marquee (Balanced slow-medium speed) ─── */
 @keyframes topbar-ticker {
   0% { transform: translate3d(0, 0, 0); }
