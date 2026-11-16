@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -41,6 +41,7 @@ import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 import { deduplicateAddresses, normalizeAddressKey } from "@/lib/addressUtils";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { cleanCityName } from "@/lib/pincodeService";
+import { trackInitiateCheckout, trackPurchase } from "@/lib/metaPixel";
 
 // Recommended Bump / Upsell Products
 const BUMP_PRODUCTS = [
@@ -145,6 +146,7 @@ function CheckoutContent() {
   const [confirmedOrderId, setConfirmedOrderId] = useState<string>("");
   const [confirmedPaymentId, setConfirmedPaymentId] = useState<string>("");
   const [confirmedTotal, setConfirmedTotal] = useState<number>(0);
+  const [confirmedItems, setConfirmedItems] = useState<any[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [recoveredBanner, setRecoveredBanner] = useState<string | null>(null);
   const [isRestoringCart, setIsRestoringCart] = useState<boolean>(() => {
@@ -846,6 +848,36 @@ function CheckoutContent() {
     return BUMP_PRODUCTS.filter((b) => !cartIds.has(b.id));
   }, [cart]);
 
+  // Meta Pixel InitiateCheckout Event (fires once per checkout session when items are loaded)
+  const initiateCheckoutTracked = useRef(false);
+  useEffect(() => {
+    if (orderComplete || isCodSwitchMode) return;
+    if (cart.length > 0 && grandTotal > 0 && !initiateCheckoutTracked.current) {
+      initiateCheckoutTracked.current = true;
+      trackInitiateCheckout({
+        value: grandTotal,
+        currency: "INR",
+        num_items: cart.reduce((sum, it) => sum + (it.quantity || 1), 0),
+        content_ids: cart.map((it) => it.id),
+      });
+    }
+  }, [cart, grandTotal, orderComplete, isCodSwitchMode]);
+
+  // Meta Pixel Purchase Event (Client-Side with deduplication protection)
+  useEffect(() => {
+    if (orderComplete && confirmedOrderId) {
+      const orderValue = confirmedTotal || grandTotal;
+      const itemsList = confirmedItems.length > 0 ? confirmedItems : cart;
+      trackPurchase({
+        orderId: confirmedOrderId,
+        value: orderValue,
+        currency: "INR",
+        num_items: itemsList.reduce((sum, it) => sum + (it.quantity || 1), 0) || 1,
+        content_ids: itemsList.map((it) => it.id || it.product_id),
+      });
+    }
+  }, [orderComplete, confirmedOrderId, confirmedTotal, grandTotal, confirmedItems]);
+
   // Auto-track Abandoned Checkout when Phone is 10 digits
   useEffect(() => {
     if (orderComplete || isCodSwitchMode) return;
@@ -1278,6 +1310,7 @@ function CheckoutContent() {
               setConfirmedTotal(grandTotal);
               setConfirmedOrderId(verifyData.order.id);
               setConfirmedPaymentId(response.razorpay_payment_id);
+              setConfirmedItems([...cart]);
               setOrderComplete(true);
               clearCart();
               if (isCod) {

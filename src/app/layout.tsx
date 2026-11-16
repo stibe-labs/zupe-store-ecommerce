@@ -11,6 +11,7 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { WhatsAppFloatingButton } from "@/components/WhatsAppFloatingButton";
 import { AbandonedCartAutoChecker } from "@/components/AbandonedCartAutoChecker";
+import { MetaPixel } from "@/components/analytics/MetaPixel";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getOrganizationSchema, getWebSiteSchema } from "@/lib/seo";
 import "./globals.css";
@@ -59,6 +60,9 @@ export default function RootLayout({
         {/* Core Global Structured Data (Organization & WebSite with SearchAction) */}
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
+
+        {/* Meta (Facebook) Pixel Tracking & Route Change Listener */}
+        <MetaPixel />
 
         <LoadingScreen />
         <AuthProvider>

@@ -279,6 +279,22 @@ export async function POST(req: NextRequest) {
 
     await createOrder(newOrder);
 
+    // Dispatch Meta Conversions API (Server-Side Purchase Event with SHA-256 hashed user data)
+    try {
+      const { sendMetaConversionsPurchase } = await import("@/lib/metaConversionsApi");
+      sendMetaConversionsPurchase({
+        orderId: (newOrder as any).shopify_order_id || newOrder.id,
+        totalAmount: Number(total_amount),
+        customerName: customer_name,
+        customerEmail: customer_email,
+        customerPhone: customer_phone,
+        items: items,
+        sourceUrl: "https://zupestore.in/checkout",
+      }).catch((e) => console.warn("[Meta CAPI] Server dispatch error:", e));
+    } catch (capiErr) {
+      console.warn("[Meta CAPI] Import error:", capiErr);
+    }
+
     // Track coupon usage increment if applicable
     if (promo_code) {
       try {

@@ -51,6 +51,7 @@ import { HowToUseSection } from "@/components/HowToUseSection";
 import { ProductDealTimer } from "@/components/ProductDealTimer";
 import { ProductComparisonTable } from "@/components/ProductComparisonTable";
 import { ProductFaqSection } from "@/components/ProductFaqSection";
+import { trackViewContent } from "@/lib/metaPixel";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -224,6 +225,18 @@ export default function ProductDetailPage() {
       isMounted = false;
     };
   }, [idOrSlug]);
+
+  // Meta Pixel ViewContent Event
+  useEffect(() => {
+    if (product?.id) {
+      trackViewContent({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price) || 0,
+        currency: "INR",
+      });
+    }
+  }, [product?.id]);
 
   // Live stock polling & synchronization (reflects admin stock updates immediately without manual reload)
   useEffect(() => {

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { trackAddToCart } from "@/lib/metaPixel";
 
 export interface CartItem {
   id: string;
@@ -391,6 +392,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         ];
       }
     });
+
+    // Meta Pixel AddToCart Event
+    try {
+      trackAddToCart({
+        id: product.id,
+        name: product.name,
+        price: finalPrice,
+        quantity: quantity,
+        currency: "INR",
+      });
+    } catch {
+      // Safe non-blocking
+    }
 
     return true;
   };

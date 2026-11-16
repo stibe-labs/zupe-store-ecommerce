@@ -24,7 +24,7 @@ export default function PrivacyPolicyPage() {
           <ul className="list-disc list-inside space-y-2 pl-2 text-gray-700">
             <li><strong className="text-gray-900">“Cookies”</strong> – data files stored on your device</li>
             <li><strong className="text-gray-900">“Log files”</strong> – track actions and gather data like IP, browser type, and timestamps</li>
-            <li><strong className="text-gray-900">“Pixels” or “web beacons”</strong> – help monitor site activity and user behavior</li>
+            <li><strong className="text-gray-900">“Pixels” or “web beacons”</strong> – including the Meta (Facebook) Pixel and Meta Conversions API to monitor site activity, route navigation, and measure advertising conversions accurately</li>
           </ul>
           <p>
             Additionally, when you place or attempt to place an order, we collect Order Information including your name, billing address, shipping address, phone number, and email.
@@ -92,7 +92,7 @@ export default function PrivacyPolicyPage() {
               </a>
             </li>
             <li>
-              Facebook Ads:{" "}
+              Meta (Facebook) Pixel &amp; Conversions API: We use Meta Pixel and server-side Conversions API to measure advertising effectiveness, analyze browsing interactions, and optimize sales campaigns. Customer data sent via Conversions API (such as phone number or email) is cryptographically hashed with SHA-256 before transmission. You can manage your Meta ad preferences or opt out at:{" "}
               <a
                 href="https://www.facebook.com/settings/?tab=ads"
                 target="_blank"

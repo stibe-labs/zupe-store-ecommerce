@@ -58,9 +58,9 @@ export default function AdminSettingsPage() {
   const [shiprocketActive, setShiprocketActive] = useState(true);
 
   // Meta
-  const [metaAccountId, setMetaAccountId] = useState("act_109283746552");
+  const [metaAccountId, setMetaAccountId] = useState("1912686219488746");
   const [metaToken, setMetaToken] = useState("EAAK10928374...");
-  const [metaPixelId, setMetaPixelId] = useState("982736451029384");
+  const [metaPixelId, setMetaPixelId] = useState("2452586698455782");
   const [metaActive, setMetaActive] = useState(true);
 
   const fetchSettings = async () => {

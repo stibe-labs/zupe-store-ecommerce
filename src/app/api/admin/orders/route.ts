@@ -771,6 +771,22 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      // Dispatch Meta Conversions API (Server-Side Purchase Event with SHA-256 hashed user data)
+      try {
+        const { sendMetaConversionsPurchase } = await import("@/lib/metaConversionsApi");
+        sendMetaConversionsPurchase({
+          orderId: newOrder.shopify_order_id || newOrder.id,
+          totalAmount: totalNum,
+          customerName: customer_name.trim(),
+          customerEmail: custEmail,
+          customerPhone: cleanPhone,
+          items: formattedItems,
+          sourceUrl: "https://zupestore.in/admin/orders",
+        }).catch((capiErr) => console.warn("[Meta CAPI] Manual order dispatch error:", capiErr));
+      } catch (err) {
+        console.warn("[Meta CAPI] Import error:", err);
+      }
+
       return NextResponse.json({
         success: true,
         order: newOrder,

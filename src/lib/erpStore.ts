@@ -1615,9 +1615,9 @@ let inMemorySettings: ERPIntegrationsSettings = {
     lastSyncedAt: new Date().toISOString(),
   },
   meta: {
-    accountId: "act_109283746552",
+    accountId: "1912686219488746",
     token: "EAAK10928374...",
-    pixelId: "982736451029384",
+    pixelId: "2452586698455782",
     isActive: true,
     lastSyncedAt: new Date().toISOString(),
   },
