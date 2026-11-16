@@ -1829,39 +1829,39 @@ export default function ProductDetailPage() {
                       className="px-4 pb-4 pt-1 text-[13px] text-gray-600 leading-relaxed border-t border-gray-50"
                     >
                       <div className="divide-y divide-gray-100">
-                        <div className="py-2 flex justify-between">
-                          <span className="font-medium text-gray-500">Category</span>
-                          <span className="font-semibold text-gray-900">{product.category}</span>
+                        <div className="py-2.5 flex items-start justify-between gap-3 sm:gap-6">
+                          <span className="font-medium text-gray-500 shrink-0 max-w-[42%] text-left">Category</span>
+                          <span className="font-semibold text-gray-900 text-right flex-1 break-words">{product.category}</span>
                         </div>
                         {product.material && (
-                          <div className="py-2 flex justify-between">
-                            <span className="font-medium text-gray-500">Material</span>
-                            <span className="font-semibold text-gray-900">{product.material}</span>
+                          <div className="py-2.5 flex items-start justify-between gap-3 sm:gap-6">
+                            <span className="font-medium text-gray-500 shrink-0 max-w-[42%] text-left">Material</span>
+                            <span className="font-semibold text-gray-900 text-right flex-1 break-words">{product.material}</span>
                           </div>
                         )}
                         {product.color && product.has_colors !== false && product.color.toLowerCase() !== "standard" && (
-                          <div className="py-2 flex justify-between">
-                            <span className="font-medium text-gray-500">Color</span>
-                            <span className="font-semibold text-gray-900">{product.color}</span>
+                          <div className="py-2.5 flex items-start justify-between gap-3 sm:gap-6">
+                            <span className="font-medium text-gray-500 shrink-0 max-w-[42%] text-left">Color</span>
+                            <span className="font-semibold text-gray-900 text-right flex-1 break-words">{product.color}</span>
                           </div>
                         )}
                         {product.volume && (
-                          <div className="py-2 flex justify-between">
-                            <span className="font-medium text-gray-500">Size / Variant</span>
-                            <span className="font-semibold text-gray-900">{product.volume}</span>
+                          <div className="py-2.5 flex items-start justify-between gap-3 sm:gap-6">
+                            <span className="font-medium text-gray-500 shrink-0 max-w-[42%] text-left">Size / Variant</span>
+                            <span className="font-semibold text-gray-900 text-right flex-1 break-words">{product.volume}</span>
                           </div>
                         )}
                         {product.specifications &&
                           typeof product.specifications === "object" &&
                           Object.entries(product.specifications).map(([key, val]) => (
-                            <div key={key} className="py-2 flex justify-between">
-                              <span className="font-medium text-gray-500">{key}</span>
-                              <span className="font-semibold text-gray-900">{String(val)}</span>
+                            <div key={key} className="py-2.5 flex items-start justify-between gap-3 sm:gap-6">
+                              <span className="font-medium text-gray-500 shrink-0 max-w-[42%] text-left">{key}</span>
+                              <span className="font-semibold text-gray-900 text-right flex-1 break-words">{String(val)}</span>
                             </div>
                           ))}
-                        <div className="py-2 flex justify-between">
-                          <span className="font-medium text-gray-500">Stock Availability</span>
-                          <span className={`font-semibold ${!isOutOfStock ? "text-emerald-600" : "text-rose-600"}`}>
+                        <div className="py-2.5 flex items-start justify-between gap-3 sm:gap-6">
+                          <span className="font-medium text-gray-500 shrink-0 max-w-[42%] text-left">Stock Availability</span>
+                          <span className={`font-semibold text-right flex-1 break-words ${!isOutOfStock ? "text-emerald-600" : "text-rose-600"}`}>
                             {!isOutOfStock ? `In Stock (${product.stock_count} units)` : "Out of Stock"}
                           </span>
                         </div>
