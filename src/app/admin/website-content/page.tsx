@@ -54,6 +54,7 @@ import { StoreCategory } from "@/lib/storeContent";
 import { getSubcategoriesForCategory } from "@/data/zupeProducts";
 import { PromoCardsCustomizer } from "@/components/admin/PromoCardsCustomizer";
 import { HeroBannerCustomizer } from "@/components/admin/HeroBannerCustomizer";
+import { SportswearDropsCustomizer } from "@/components/admin/SportswearDropsCustomizer";
 import { ShowcaseCollectionsCustomizer } from "@/components/admin/ShowcaseCollectionsCustomizer";
 import { siteConfig } from "@/config/siteConfig";
 import {
@@ -93,7 +94,7 @@ const CATEGORY_COLORS = [
 
 export default function WebsiteContentPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"hero_banner" | "categories" | "showcase">("hero_banner");
+  const [activeTab, setActiveTab] = useState<"hero_banner" | "sportswear" | "categories" | "showcase">("hero_banner");
 
   const [categories, setCategories] = useState<StoreCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -579,10 +580,10 @@ export default function WebsiteContentPage() {
           )}
 
           {/* Tabs Selector (Vittal Lifestyle Brand Theme) */}
-          <div className="flex border-b border-slate-200 gap-4 font-mograph">
+          <div className="flex border-b border-slate-200 gap-4 font-mograph overflow-x-auto scrollbar-none">
             <button
               onClick={() => setActiveTab("hero_banner")}
-              className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+              className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                 activeTab === "hero_banner"
                   ? "border-[#6B9E3A] text-neutral-900"
                   : "border-transparent text-slate-500 hover:text-slate-800"
@@ -596,8 +597,23 @@ export default function WebsiteContentPage() {
             </button>
 
             <button
+              onClick={() => setActiveTab("sportswear")}
+              className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                activeTab === "sportswear"
+                  ? "border-[#6B9E3A] text-neutral-900"
+                  : "border-transparent text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <ShoppingBag className="w-4 h-4 text-[#6B9E3A]" />
+              <span>Sportswear Drops Cards</span>
+              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-[#E2F5B4] text-[#3D6318] font-extrabold">
+                Customizable
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveTab("categories")}
-              className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+              className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                 activeTab === "categories"
                   ? "border-[#6B9E3A] text-neutral-900"
                   : "border-transparent text-slate-500 hover:text-slate-800"
@@ -612,7 +628,7 @@ export default function WebsiteContentPage() {
 
             <button
               onClick={() => setActiveTab("showcase")}
-              className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+              className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                 activeTab === "showcase"
                   ? "border-[#6B9E3A] text-neutral-900"
                   : "border-transparent text-slate-500 hover:text-slate-800"
@@ -914,6 +930,16 @@ export default function WebsiteContentPage() {
              ======================================================== */}
           {activeTab === "hero_banner" && (
             <HeroBannerCustomizer
+              categories={categories}
+              showToast={showToast}
+            />
+          )}
+
+          {/* ========================================================
+              TAB 2: SPORTSWEAR DROPS CARDS & BANNER
+             ======================================================== */}
+          {activeTab === "sportswear" && (
+            <SportswearDropsCustomizer
               categories={categories}
               showToast={showToast}
             />

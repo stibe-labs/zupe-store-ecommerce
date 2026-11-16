@@ -613,6 +613,7 @@ export async function getShowcaseCollections(): Promise<ShowcaseCollectionsConfi
   return inMemoryShowcase;
 }
 
+
 export async function saveShowcaseCollections(
   config: ShowcaseCollectionsConfig
 ): Promise<ShowcaseCollectionsConfig> {
@@ -642,3 +643,171 @@ export async function saveShowcaseCollections(
   return inMemoryShowcase;
 }
 
+
+
+// ========================================================
+// SPORTSWEAR DROPS CAMPAIGN CARDS & BANNER (Homepage Showcase)
+// ========================================================
+export interface SportswearCard {
+  id: string;
+  title: string;
+  priceLabel?: string;
+  price: string;
+  image: string;
+  linkUrl: string;
+  desktopScale?: number;
+  desktopOffsetX?: number;
+  desktopOffsetY?: number;
+  mobileScale?: number;
+  mobileOffsetX?: number;
+  mobileOffsetY?: number;
+}
+
+export interface SportswearCampaignConfig {
+  bannerHeadingPrefix?: string;
+  bannerHeadingHighlight?: string;
+  bannerHeadingSuffix?: string;
+  bannerHashtag?: string;
+  cards: SportswearCard[];
+}
+
+export const DEFAULT_SPORTSWEAR_CAMPAIGN: SportswearCampaignConfig = {
+  bannerHeadingPrefix: "Fresh",
+  bannerHeadingHighlight: "Sportswear",
+  bannerHeadingSuffix: "Drops",
+  bannerHashtag: "#EngineeredForEveryMove",
+  cards: [
+    {
+      id: "drop-card-1",
+      title: "Sports Wear",
+      priceLabel: "Starting At",
+      price: "₹999*",
+      image: "/vittal/drop-teveo-run.jpg",
+      linkUrl: "/products?category=Outfits",
+      desktopScale: 100,
+      desktopOffsetX: 0,
+      desktopOffsetY: 0,
+      mobileScale: 100,
+      mobileOffsetX: 0,
+      mobileOffsetY: 0,
+    },
+    {
+      id: "drop-card-2",
+      title: "Jackets & Track Pants",
+      priceLabel: "Starting At",
+      price: "₹899*",
+      image: "/vittal/drop-mountain.jpg",
+      linkUrl: "/products?category=Outfits",
+      desktopScale: 100,
+      desktopOffsetX: 0,
+      desktopOffsetY: 0,
+      mobileScale: 100,
+      mobileOffsetX: 0,
+      mobileOffsetY: 0,
+    },
+    {
+      id: "drop-card-3",
+      title: "Shorts",
+      priceLabel: "Starting At",
+      price: "₹799*",
+      image: "/vittal/drop-run-fitness.jpg",
+      linkUrl: "/products?category=Outfits",
+      desktopScale: 100,
+      desktopOffsetX: 0,
+      desktopOffsetY: 0,
+      mobileScale: 100,
+      mobileOffsetX: 0,
+      mobileOffsetY: 0,
+    },
+  ],
+};
+
+let inMemorySportswear: SportswearCampaignConfig = { ...DEFAULT_SPORTSWEAR_CAMPAIGN };
+let sportswearCachedAt = 0;
+
+export async function getSportswearCampaign(): Promise<SportswearCampaignConfig> {
+  const now = Date.now();
+  if (now - sportswearCachedAt > TTL_MS) {
+    try {
+      const rows = await executeD1Query<{ provider: string; config_data: string; is_active: number }>(
+        "SELECT config_data FROM integrations_config WHERE provider = ?",
+        ["sportswear_campaign"]
+      );
+      if (rows && rows.length > 0 && rows[0].config_data) {
+        const parsed = JSON.parse(rows[0].config_data);
+        if (parsed && typeof parsed === "object" && Array.isArray(parsed.cards) && parsed.cards.length > 0) {
+          inMemorySportswear = {
+            bannerHeadingPrefix: parsed.bannerHeadingPrefix ?? DEFAULT_SPORTSWEAR_CAMPAIGN.bannerHeadingPrefix,
+            bannerHeadingHighlight: parsed.bannerHeadingHighlight ?? DEFAULT_SPORTSWEAR_CAMPAIGN.bannerHeadingHighlight,
+            bannerHeadingSuffix: parsed.bannerHeadingSuffix ?? DEFAULT_SPORTSWEAR_CAMPAIGN.bannerHeadingSuffix,
+            bannerHashtag: parsed.bannerHashtag ?? DEFAULT_SPORTSWEAR_CAMPAIGN.bannerHashtag,
+            cards: parsed.cards.map((c: any, idx: number) => ({
+              id: c.id || `drop-card-${idx + 1}`,
+              title: c.title || DEFAULT_SPORTSWEAR_CAMPAIGN.cards[idx]?.title || "Activewear",
+              priceLabel: c.priceLabel || "Starting At",
+              price: c.price || DEFAULT_SPORTSWEAR_CAMPAIGN.cards[idx]?.price || "₹999*",
+              image: c.image || DEFAULT_SPORTSWEAR_CAMPAIGN.cards[idx]?.image || "/vittal/drop-teveo-run.jpg",
+              linkUrl: c.linkUrl || DEFAULT_SPORTSWEAR_CAMPAIGN.cards[idx]?.linkUrl || "/products?category=Outfits",
+              desktopScale: typeof c.desktopScale === "number" ? c.desktopScale : 100,
+              desktopOffsetX: typeof c.desktopOffsetX === "number" ? c.desktopOffsetX : 0,
+              desktopOffsetY: typeof c.desktopOffsetY === "number" ? c.desktopOffsetY : 0,
+              mobileScale: typeof c.mobileScale === "number" ? c.mobileScale : 100,
+              mobileOffsetX: typeof c.mobileOffsetX === "number" ? c.mobileOffsetX : 0,
+              mobileOffsetY: typeof c.mobileOffsetY === "number" ? c.mobileOffsetY : 0,
+            })),
+          };
+        }
+      }
+      sportswearCachedAt = Date.now();
+    } catch (err) {
+      console.warn("Failed to fetch sportswear_campaign from D1:", err);
+    }
+  }
+
+  return inMemorySportswear;
+}
+
+export async function saveSportswearCampaign(
+  config: SportswearCampaignConfig
+): Promise<SportswearCampaignConfig> {
+  sportswearCachedAt = Date.now();
+  inMemorySportswear = {
+    bannerHeadingPrefix: config.bannerHeadingPrefix?.trim() || "Fresh",
+    bannerHeadingHighlight: config.bannerHeadingHighlight?.trim() || "Sportswear",
+    bannerHeadingSuffix: config.bannerHeadingSuffix?.trim() || "Drops",
+    bannerHashtag: config.bannerHashtag?.trim() || "#EngineeredForEveryMove",
+    cards: Array.isArray(config.cards)
+      ? config.cards.map((c, idx) => ({
+          id: c.id || `drop-card-${idx + 1}`,
+          title: c.title || "Activewear",
+          priceLabel: c.priceLabel || "Starting At",
+          price: c.price || "₹999*",
+          image: c.image || "/vittal/drop-teveo-run.jpg",
+          linkUrl: c.linkUrl || "/products?category=Outfits",
+          desktopScale: typeof c.desktopScale === "number" ? c.desktopScale : 100,
+          desktopOffsetX: typeof c.desktopOffsetX === "number" ? c.desktopOffsetX : 0,
+          desktopOffsetY: typeof c.desktopOffsetY === "number" ? c.desktopOffsetY : 0,
+          mobileScale: typeof c.mobileScale === "number" ? c.mobileScale : 100,
+          mobileOffsetX: typeof c.mobileOffsetX === "number" ? c.mobileOffsetX : 0,
+          mobileOffsetY: typeof c.mobileOffsetY === "number" ? c.mobileOffsetY : 0,
+        }))
+      : DEFAULT_SPORTSWEAR_CAMPAIGN.cards,
+  };
+
+  try {
+    const jsonStr = JSON.stringify(inMemorySportswear);
+    await executeD1Query(
+      `INSERT INTO integrations_config (provider, config_data, is_active, last_synced_at, updated_at)
+       VALUES (?, ?, 1, datetime('now'), datetime('now'))
+       ON CONFLICT(provider) DO UPDATE SET 
+         config_data = excluded.config_data,
+         is_active = excluded.is_active,
+         updated_at = excluded.updated_at`,
+      ["sportswear_campaign", jsonStr]
+    );
+  } catch (err) {
+    console.warn("Failed to persist sportswear_campaign to D1:", err);
+  }
+
+  return inMemorySportswear;
+}

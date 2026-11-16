@@ -5,7 +5,13 @@ import { Footer } from "@/components/Footer";
 import { executeD1Query } from "@/lib/d1";
 import { Product } from "@/types/product";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
-import { getBanners, HeroBannerSlide } from "@/lib/storeContent";
+import {
+  getBanners,
+  HeroBannerSlide,
+  getSportswearCampaign,
+  SportswearCampaignConfig,
+  DEFAULT_SPORTSWEAR_CAMPAIGN,
+} from "@/lib/storeContent";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -25,9 +31,10 @@ async function getInitialProducts(): Promise<Product[]> {
 }
 
 export default async function Home() {
-  const [initialProducts, initialHeroBanners] = await Promise.all([
+  const [initialProducts, initialHeroBanners, initialSportswearCampaign] = await Promise.all([
     getInitialProducts(),
     getBanners().catch(() => [] as HeroBannerSlide[]),
+    getSportswearCampaign().catch(() => DEFAULT_SPORTSWEAR_CAMPAIGN),
   ]);
 
   return (
@@ -39,6 +46,7 @@ export default async function Home() {
       <VittalLifestyleStorefront
         initialProducts={initialProducts}
         initialHeroBanners={initialHeroBanners}
+        initialSportswearCampaign={initialSportswearCampaign}
       />
 
       {/* 3. Brand Footer */}

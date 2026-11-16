@@ -14,7 +14,12 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { Product } from "@/types/product";
-import { HeroBannerSlide, DEFAULT_HERO_BANNERS } from "@/lib/storeContent";
+import {
+  HeroBannerSlide,
+  DEFAULT_HERO_BANNERS,
+  SportswearCampaignConfig,
+  DEFAULT_SPORTSWEAR_CAMPAIGN,
+} from "@/lib/storeContent";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useSearch } from "@/context/SearchContext";
@@ -24,6 +29,7 @@ import { addRecentlyViewed } from "@/lib/recentlyViewed";
 interface VittalLifestyleStorefrontProps {
   initialProducts?: Product[];
   initialHeroBanners?: HeroBannerSlide[];
+  initialSportswearCampaign?: SportswearCampaignConfig;
 }
 
 // ---------------------------------------------------------------------------
@@ -110,6 +116,7 @@ const HOMEPAGE_NEW_ARRIVALS_ORDER = [
 export function VittalLifestyleStorefront({
   initialProducts,
   initialHeroBanners,
+  initialSportswearCampaign,
 }: VittalLifestyleStorefrontProps) {
   const router = useRouter();
   const { addItem, openCart } = useCart();
@@ -122,6 +129,22 @@ export function VittalLifestyleStorefront({
       ? initialHeroBanners
       : DEFAULT_HERO_BANNERS
   );
+
+  // Dynamic Sportswear Campaign from Admin / D1
+  const [sportswearCampaign, setSportswearCampaign] = useState<SportswearCampaignConfig>(
+    initialSportswearCampaign || DEFAULT_SPORTSWEAR_CAMPAIGN
+  );
+
+  // Real-time sync listener for sportswear drops updates
+  useEffect(() => {
+    const handleUpdate = (e: any) => {
+      if (e.detail?.config) {
+        setSportswearCampaign(e.detail.config);
+      }
+    };
+    window.addEventListener("vittal_sportswear_updated" as any, handleUpdate);
+    return () => window.removeEventListener("vittal_sportswear_updated" as any, handleUpdate);
+  }, []);
 
   // Active slides only
   const activeSlides = useMemo(() => {
@@ -583,16 +606,47 @@ export function VittalLifestyleStorefront({
       {/* ===================================================================== */}
       {/* 5. FRESH SPORTSWEAR DROPS (Campaign Showcase)                         */}
       {/* ===================================================================== */}
-      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        {/* Top Header Banner */}
-        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#EBF5DF] via-[#E2F0CE] to-[#D5E9BB] border border-[#D5E9BC]/70 p-5 sm:p-7 md:p-8 text-center mb-3 sm:mb-5 shadow-xs">
-          <h3 className="relative font-movault text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#15230D] tracking-wide mb-1 sm:mb-2">
-            Fresh <span className="font-mograph italic font-bold text-[#6B9E3A]">Sportswear</span> Drops
-          </h3>
-          <p className="relative font-movault text-xs sm:text-sm md:text-base font-bold text-[#415C29] tracking-[0.2em] uppercase">
-            #EngineeredForEveryMove
-          </p>
-        </div>
+      {(() => {
+        const c1 = sportswearCampaign.cards[0] || DEFAULT_SPORTSWEAR_CAMPAIGN.cards[0];
+        const c2 = sportswearCampaign.cards[1] || DEFAULT_SPORTSWEAR_CAMPAIGN.cards[1];
+        const c3 = sportswearCampaign.cards[2] || DEFAULT_SPORTSWEAR_CAMPAIGN.cards[2];
+
+        const c1DeskScale = (c1.desktopScale ?? 100) / 100;
+        const c1DeskX = c1.desktopOffsetX ?? 0;
+        const c1DeskY = c1.desktopOffsetY ?? 0;
+        const c1MobScale = (c1.mobileScale ?? 100) / 100;
+        const c1MobX = c1.mobileOffsetX ?? 0;
+        const c1MobY = c1.mobileOffsetY ?? 0;
+
+        const c2DeskScale = (c2.desktopScale ?? 100) / 100;
+        const c2DeskX = c2.desktopOffsetX ?? 0;
+        const c2DeskY = c2.desktopOffsetY ?? 0;
+        const c2MobScale = (c2.mobileScale ?? 100) / 100;
+        const c2MobX = c2.mobileOffsetX ?? 0;
+        const c2MobY = c2.mobileOffsetY ?? 0;
+
+        const c3DeskScale = (c3.desktopScale ?? 100) / 100;
+        const c3DeskX = c3.desktopOffsetX ?? 0;
+        const c3DeskY = c3.desktopOffsetY ?? 0;
+        const c3MobScale = (c3.mobileScale ?? 100) / 100;
+        const c3MobX = c3.mobileOffsetX ?? 0;
+        const c3MobY = c3.mobileOffsetY ?? 0;
+
+        return (
+          <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+            {/* Top Header Banner */}
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#EBF5DF] via-[#E2F0CE] to-[#D5E9BB] border border-[#D5E9BC]/70 p-5 sm:p-7 md:p-8 text-center mb-3 sm:mb-5 shadow-xs">
+              <h3 className="relative font-movault text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#15230D] tracking-wide mb-1 sm:mb-2">
+                {sportswearCampaign.bannerHeadingPrefix ?? "Fresh"}{" "}
+                <span className="font-mograph italic font-bold text-[#6B9E3A]">
+                  {sportswearCampaign.bannerHeadingHighlight ?? "Sportswear"}
+                </span>{" "}
+                {sportswearCampaign.bannerHeadingSuffix ?? "Drops"}
+              </h3>
+              <p className="relative font-movault text-xs sm:text-sm md:text-base font-bold text-[#415C29] tracking-[0.2em] uppercase">
+                {sportswearCampaign.bannerHashtag ?? "#EngineeredForEveryMove"}
+              </p>
+            </div>
 
         {/* ================================================================= */}
         {/* DESKTOP LAYOUT (>= md): 3 Cards in a Row Matching Reference       */}
@@ -601,63 +655,79 @@ export function VittalLifestyleStorefront({
           
           {/* Card 1: Sports Wear (Wide Horizontal Card) */}
           <Link
-            href="/products?category=Outfits"
+            href={c1.linkUrl || "/products?category=Outfits"}
             className="group md:w-[43%] rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50/80 border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-4 lg:p-5 flex flex-row items-stretch justify-between gap-4 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
           >
             {/* Left: Text Info */}
             <div className="flex flex-col justify-between py-2 pr-2 flex-1 min-w-0">
               <h4 className="font-movault text-xl lg:text-2xl xl:text-3xl font-black uppercase italic tracking-wide text-neutral-950 leading-[1.15] mb-2 group-hover:text-[#6B9E3A] transition-colors">
-                Sports Wear
+                {c1.title}
               </h4>
               <div className="mt-auto">
                 <span className="font-mograph text-[10px] lg:text-xs text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
-                  Starting At
+                  {c1.priceLabel || "Starting At"}
                 </span>
                 <span className="font-movault text-2xl lg:text-3xl xl:text-4xl font-black text-[#6B9E3A] tracking-tight">
-                  ₹999<span className="text-sm font-normal text-neutral-400">*</span>
+                  {c1.price}
                 </span>
               </div>
             </div>
 
-            {/* Right: Inner Image */}
+            {/* Right: Inner Image Frame */}
             <div className="relative w-[48%] self-stretch min-h-[220px] rounded-xl lg:rounded-2xl overflow-hidden bg-neutral-100 shrink-0 border border-neutral-200/60">
-              <Image
-                src="/vittal/drop-teveo-run.jpg"
-                alt="Sports Wear"
-                fill
-                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                sizes="(max-width: 1200px) 25vw, 360px"
-              />
+              <div
+                className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+                style={{
+                  transform: `translate(${c1DeskX}px, ${c1DeskY}px) scale(${c1DeskScale})`,
+                  transformOrigin: "center center",
+                }}
+              >
+                <Image
+                  src={c1.image || "/vittal/drop-teveo-run.jpg"}
+                  alt={c1.title}
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 1200px) 25vw, 360px"
+                />
+              </div>
             </div>
           </Link>
 
           {/* Card 2: Jackets & Track Pants */}
           <Link
-            href="/products?category=Outfits"
+            href={c2.linkUrl || "/products?category=Outfits"}
             className="group md:w-[28.5%] rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50/80 border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-4 lg:p-5 flex flex-col justify-between gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
           >
-            {/* Top: Inner Image */}
+            {/* Top: Inner Image Frame */}
             <div className="relative aspect-[4/3] w-full rounded-xl lg:rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
-              <Image
-                src="/vittal/drop-mountain.jpg"
-                alt="Jackets & Track Pants"
-                fill
-                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                sizes="(max-width: 1200px) 20vw, 300px"
-              />
+              <div
+                className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+                style={{
+                  transform: `translate(${c2DeskX}px, ${c2DeskY}px) scale(${c2DeskScale})`,
+                  transformOrigin: "center center",
+                }}
+              >
+                <Image
+                  src={c2.image || "/vittal/drop-mountain.jpg"}
+                  alt={c2.title}
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 1200px) 20vw, 300px"
+                />
+              </div>
             </div>
 
             {/* Bottom: Text Info & Bare Arrow */}
             <div className="flex items-end justify-between gap-2 mt-auto pt-2">
               <div className="min-w-0 flex-1">
                 <h4 className="font-movault text-sm lg:text-base xl:text-lg font-black uppercase tracking-wide text-neutral-950 leading-tight mb-1 truncate group-hover:text-[#6B9E3A] transition-colors">
-                  Jackets &amp; Track Pants
+                  {c2.title}
                 </h4>
                 <span className="font-mograph text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
-                  Starting At
+                  {c2.priceLabel || "Starting At"}
                 </span>
                 <span className="font-movault text-lg lg:text-xl xl:text-2xl font-black text-[#6B9E3A] tracking-tight">
-                  ₹899<span className="text-xs font-normal text-neutral-400">*</span>
+                  {c2.price}
                 </span>
               </div>
               <ArrowUpRight className="w-5 h-5 lg:w-6 lg:h-6 text-neutral-900 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-1" />
@@ -666,31 +736,39 @@ export function VittalLifestyleStorefront({
 
           {/* Card 3: Shorts */}
           <Link
-            href="/products?category=Outfits"
+            href={c3.linkUrl || "/products?category=Outfits"}
             className="group md:w-[28.5%] rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50/80 border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-4 lg:p-5 flex flex-col justify-between gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
           >
-            {/* Top: Inner Image */}
+            {/* Top: Inner Image Frame */}
             <div className="relative aspect-[4/3] w-full rounded-xl lg:rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
-              <Image
-                src="/vittal/drop-run-fitness.jpg"
-                alt="Shorts"
-                fill
-                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                sizes="(max-width: 1200px) 20vw, 300px"
-              />
+              <div
+                className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+                style={{
+                  transform: `translate(${c3DeskX}px, ${c3DeskY}px) scale(${c3DeskScale})`,
+                  transformOrigin: "center center",
+                }}
+              >
+                <Image
+                  src={c3.image || "/vittal/drop-run-fitness.jpg"}
+                  alt={c3.title}
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 1200px) 20vw, 300px"
+                />
+              </div>
             </div>
 
             {/* Bottom: Text Info & Bare Arrow */}
             <div className="flex items-end justify-between gap-2 mt-auto pt-2">
               <div className="min-w-0 flex-1">
                 <h4 className="font-movault text-sm lg:text-base xl:text-lg font-black uppercase tracking-wide text-neutral-950 leading-tight mb-1 truncate group-hover:text-[#6B9E3A] transition-colors">
-                  Shorts
+                  {c3.title}
                 </h4>
                 <span className="font-mograph text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
-                  Starting At
+                  {c3.priceLabel || "Starting At"}
                 </span>
                 <span className="font-movault text-lg lg:text-xl xl:text-2xl font-black text-[#6B9E3A] tracking-tight">
-                  ₹799<span className="text-xs font-normal text-neutral-400">*</span>
+                  {c3.price}
                 </span>
               </div>
               <ArrowUpRight className="w-5 h-5 lg:w-6 lg:h-6 text-neutral-900 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-1" />
@@ -705,31 +783,39 @@ export function VittalLifestyleStorefront({
           
           {/* Column 1: Card 1 (Tall Card, Tall Image on Top) */}
           <Link
-            href="/products?category=Outfits"
+            href={c1.linkUrl || "/products?category=Outfits"}
             className="group rounded-2xl bg-white border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-2.5 sm:p-3 flex flex-col justify-between h-full transition-all duration-300 shadow-2xs hover:shadow-md cursor-pointer"
           >
             {/* Top: Tall Image Filling Upper Section */}
             <div className="relative aspect-[4/5.6] w-full rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
-              <Image
-                src="/vittal/drop-teveo-run.jpg"
-                alt="Sports Wear"
-                fill
-                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                sizes="50vw"
-              />
+              <div
+                className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+                style={{
+                  transform: `translate(${c1MobX}px, ${c1MobY}px) scale(${c1MobScale})`,
+                  transformOrigin: "center center",
+                }}
+              >
+                <Image
+                  src={c1.image || "/vittal/drop-teveo-run.jpg"}
+                  alt={c1.title}
+                  fill
+                  className="object-cover object-center"
+                  sizes="50vw"
+                />
+              </div>
             </div>
 
             {/* Bottom: Text Info */}
             <div className="flex flex-col justify-end flex-1 min-w-0 pt-2 pb-0.5">
               <h4 className="font-movault text-xs xs:text-sm font-black uppercase italic tracking-wide text-neutral-950 leading-tight mb-1 group-hover:text-[#6B9E3A] transition-colors">
-                Sports Wear
+                {c1.title}
               </h4>
               <div className="mt-auto">
                 <span className="font-mograph text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">
-                  Starting At
+                  {c1.priceLabel || "Starting At"}
                 </span>
                 <span className="font-movault text-base xs:text-lg font-black text-[#6B9E3A] tracking-tight">
-                  ₹999<span className="text-[10px] font-normal text-neutral-400">*</span>
+                  {c1.price}
                 </span>
               </div>
             </div>
@@ -740,31 +826,39 @@ export function VittalLifestyleStorefront({
             
             {/* Card 2: Jackets & Track Pants */}
             <Link
-              href="/products?category=Outfits"
+              href={c2.linkUrl || "/products?category=Outfits"}
               className="group rounded-2xl bg-white border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-2.5 sm:p-3 flex flex-col justify-between flex-1 transition-all duration-300 shadow-2xs hover:shadow-md cursor-pointer"
             >
               {/* Top: Inner Image */}
               <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
-                <Image
-                  src="/vittal/drop-mountain.jpg"
-                  alt="Jackets & Track Pants"
-                  fill
-                  className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                  sizes="50vw"
-                />
+                <div
+                  className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+                  style={{
+                    transform: `translate(${c2MobX}px, ${c2MobY}px) scale(${c2MobScale})`,
+                    transformOrigin: "center center",
+                  }}
+                >
+                  <Image
+                    src={c2.image || "/vittal/drop-mountain.jpg"}
+                    alt={c2.title}
+                    fill
+                    className="object-cover object-center"
+                    sizes="50vw"
+                  />
+                </div>
               </div>
 
               {/* Bottom: Text Info & Bare Arrow */}
               <div className="flex items-end justify-between gap-1 mt-auto pt-1.5">
                 <div className="min-w-0 flex-1">
                   <h4 className="font-movault text-[11px] xs:text-xs font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate group-hover:text-[#6B9E3A] transition-colors">
-                    Jackets &amp; Track Pants
+                    {c2.title}
                   </h4>
                   <span className="font-mograph text-[8.5px] text-neutral-500 font-bold uppercase tracking-wider block">
-                    Starting At
+                    {c2.priceLabel || "Starting At"}
                   </span>
                   <span className="font-movault text-sm xs:text-base font-black text-[#6B9E3A] tracking-tight">
-                    ₹899<span className="text-[9px] font-normal text-neutral-400">*</span>
+                    {c2.price}
                   </span>
                 </div>
                 <ArrowUpRight className="w-4 h-4 xs:w-4.5 xs:h-4.5 text-neutral-900 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-0.5" />
@@ -773,31 +867,39 @@ export function VittalLifestyleStorefront({
 
             {/* Card 3: Shorts */}
             <Link
-              href="/products?category=Outfits"
+              href={c3.linkUrl || "/products?category=Outfits"}
               className="group rounded-2xl bg-white border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-2.5 sm:p-3 flex flex-col justify-between flex-1 transition-all duration-300 shadow-2xs hover:shadow-md cursor-pointer"
             >
               {/* Top: Inner Image */}
               <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
-                <Image
-                  src="/vittal/drop-run-fitness.jpg"
-                  alt="Shorts"
-                  fill
-                  className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                  sizes="50vw"
-                />
+                <div
+                  className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+                  style={{
+                    transform: `translate(${c3MobX}px, ${c3MobY}px) scale(${c3MobScale})`,
+                    transformOrigin: "center center",
+                  }}
+                >
+                  <Image
+                    src={c3.image || "/vittal/drop-run-fitness.jpg"}
+                    alt={c3.title}
+                    fill
+                    className="object-cover object-center"
+                    sizes="50vw"
+                  />
+                </div>
               </div>
 
               {/* Bottom: Text Info & Bare Arrow */}
               <div className="flex items-end justify-between gap-1 mt-auto pt-1.5">
                 <div className="min-w-0 flex-1">
                   <h4 className="font-movault text-[11px] xs:text-xs font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate group-hover:text-[#6B9E3A] transition-colors">
-                    Shorts
+                    {c3.title}
                   </h4>
                   <span className="font-mograph text-[8.5px] text-neutral-500 font-bold uppercase tracking-wider block">
-                    Starting At
+                    {c3.priceLabel || "Starting At"}
                   </span>
                   <span className="font-movault text-sm xs:text-base font-black text-[#6B9E3A] tracking-tight">
-                    ₹799<span className="text-[9px] font-normal text-neutral-400">*</span>
+                    {c3.price}
                   </span>
                 </div>
                 <ArrowUpRight className="w-4 h-4 xs:w-4.5 xs:h-4.5 text-neutral-900 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-0.5" />
@@ -807,6 +909,8 @@ export function VittalLifestyleStorefront({
           </div>
         </div>
       </section>
+    );
+  })()}
     </div>
   );
 }
