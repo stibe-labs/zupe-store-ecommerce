@@ -49,6 +49,7 @@ export interface MetaServerPurchaseOrder {
     quantity?: number;
   }>;
   sourceUrl?: string;
+  testEventCode?: string;
 }
 
 /**
@@ -57,17 +58,32 @@ export interface MetaServerPurchaseOrder {
  */
 export async function sendMetaConversionsPurchase(order: MetaServerPurchaseOrder) {
   try {
-    const pixelId = process.env.META_PIXEL_ID || META_PIXEL_ID;
-    const token =
+    let pixelId = process.env.META_PIXEL_ID || META_PIXEL_ID;
+    let token =
       process.env.META_ACCESS_TOKEN ||
       process.env.META_CONVERSIONS_API_TOKEN ||
       process.env.FACEBOOK_CONVERSIONS_API_TOKEN;
 
     if (!token) {
+      try {
+        const { getSettings } = await import("./erpStore");
+        const settings = await getSettings();
+        if (settings.meta?.token && !settings.meta.token.startsWith("EAAK10928374...")) {
+          token = settings.meta.token;
+        }
+        if (settings.meta?.pixelId) {
+          pixelId = settings.meta.pixelId;
+        }
+      } catch {
+        // fallback
+      }
+    }
+
+    if (!token) {
       // Token not set in environment yet. Log once and gracefully continue without error.
       console.log(
         `[Meta CAPI] Purchase event prepared for Order #${order.orderId} (₹${order.totalAmount}). ` +
-        `To stream live to Meta Conversions API, set META_ACCESS_TOKEN in Cloudflare Worker environment variables.`
+        `To stream live to Meta Conversions API, set META_ACCESS_TOKEN in Cloudflare Worker environment variables or Admin Settings.`
       );
       return { success: true, skipped: true, reason: "NO_ACCESS_TOKEN" };
     }
@@ -88,7 +104,9 @@ export async function sendMetaConversionsPurchase(order: MetaServerPurchaseOrder
       item_price: Number(it.price || it.unit_price) || 0,
     }));
 
-    const eventPayload = {
+    const testCode = order.testEventCode || process.env.META_TEST_EVENT_CODE;
+
+    const eventPayload: Record<string, any> = {
       data: [
         {
           event_name: "Purchase",
@@ -109,6 +127,7 @@ export async function sendMetaConversionsPurchase(order: MetaServerPurchaseOrder
           },
         },
       ],
+      ...(testCode ? { test_event_code: testCode } : {}),
     };
 
     const url = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${encodeURIComponent(token)}`;

@@ -36,18 +36,61 @@ export async function POST(req: NextRequest) {
       }
 
       if (provider === "meta") {
-        const accountId = body.accountId || "";
+        const pixelId = body.pixelId || "2452586698455782";
         const token = body.token || "";
-        if (!accountId || !token) {
+        const testEventCode = body.testEventCode?.trim();
+
+        if (!token || token.startsWith("EAAK10928374...")) {
           return NextResponse.json({
             success: false,
-            message: "Meta Ad Account ID and Access Token are required.",
+            message: "Meta System User Access Token is required. Generate one in Meta Events Manager > Pixel Settings > Conversions API.",
           });
         }
-        return NextResponse.json({
-          success: true,
-          message: `Meta Marketing API handshake verified for ${accountId}. Conversion API active.`,
-        });
+
+        try {
+          // 1. Verify token & pixel with Meta Graph API
+          const verifyUrl = `https://graph.facebook.com/v19.0/${encodeURIComponent(pixelId)}?access_token=${encodeURIComponent(token)}&fields=id,name`;
+          const metaRes = await fetch(verifyUrl);
+          const metaData = (await metaRes.json()) as any;
+
+          if (!metaRes.ok || metaData.error) {
+            return NextResponse.json({
+              success: false,
+              message: metaData?.error?.message || "Meta API authentication failed. Please verify your Access Token.",
+            });
+          }
+
+          // 2. If testEventCode is supplied, dispatch a live test Purchase event!
+          let testEventMsg = "";
+          if (testEventCode) {
+            const { sendMetaConversionsPurchase } = await import("@/lib/metaConversionsApi");
+            const testOrderRes = await sendMetaConversionsPurchase({
+              orderId: `TEST_CAPI_${Date.now().toString().slice(-6)}`,
+              totalAmount: 999,
+              customerName: "Test Customer",
+              customerEmail: "test@zupestore.in",
+              customerPhone: "9876543210",
+              items: [{ id: "test_item", name: "Meta CAPI Test Product", price: 999, quantity: 1 }],
+              testEventCode,
+            });
+
+            if (testOrderRes.success && !testOrderRes.skipped) {
+              testEventMsg = ` Live test Purchase event sent with code "${testEventCode}"! Check your Meta Events Manager "Test Events" tab.`;
+            } else if (testOrderRes.error) {
+              testEventMsg = ` (Test event dispatch error: ${JSON.stringify(testOrderRes.error)})`;
+            }
+          }
+
+          return NextResponse.json({
+            success: true,
+            message: `Meta Pixel verified: "${metaData.name || pixelId}" (ID: ${metaData.id || pixelId}).${testEventMsg}`,
+          });
+        } catch (err: any) {
+          return NextResponse.json({
+            success: false,
+            message: `Meta API connection error: ${err.message}`,
+          });
+        }
       }
 
       if (provider === "email" || provider === "smtp") {

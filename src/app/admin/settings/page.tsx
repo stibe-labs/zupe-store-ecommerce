@@ -62,6 +62,7 @@ export default function AdminSettingsPage() {
   const [metaToken, setMetaToken] = useState("EAAK10928374...");
   const [metaPixelId, setMetaPixelId] = useState("2452586698455782");
   const [metaActive, setMetaActive] = useState(true);
+  const [metaTestEventCode, setMetaTestEventCode] = useState("");
 
   const fetchSettings = async () => {
     try {
@@ -184,7 +185,9 @@ export default function AdminSettingsPage() {
       testPayload.token = shiprocketToken.trim();
     } else if (provider === "meta") {
       testPayload.accountId = metaAccountId;
+      testPayload.pixelId = metaPixelId;
       testPayload.token = metaToken;
+      testPayload.testEventCode = metaTestEventCode;
     } else if (provider === "email") {
       testPayload.to = testEmailAddress;
     }
@@ -688,8 +691,27 @@ export default function AdminSettingsPage() {
                       type="password"
                       value={metaToken}
                       onChange={(e) => setMetaToken(e.target.value)}
+                      placeholder="EAAG..."
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs"
                     />
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex-1 flex items-center gap-2">
+                    <label className="text-slate-600 font-semibold whitespace-nowrap">
+                      Meta Test Event Code:
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. TEST12345 (from Events Manager)"
+                      value={metaTestEventCode}
+                      onChange={(e) => setMetaTestEventCode(e.target.value)}
+                      className="w-56 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono text-xs placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div className="text-slate-500 text-[11px]">
+                    Paste your code from <strong>Events Manager &gt; Test Events</strong> tab, then click <strong>Test Connection</strong> above to stream a live server test event!
                   </div>
                 </div>
               </div>
