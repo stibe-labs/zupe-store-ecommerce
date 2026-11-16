@@ -138,7 +138,23 @@ function AdminOrdersContent() {
     }
   }, [createOrderModalOpen]);
 
-  // Lazy-load catalog products when create order modal opens
+  // Pre-load catalog products on mount and when modal opens
+  useEffect(() => {
+    const loadCatalog = () => {
+      setIsFetchingCatalog(true);
+      fetch("/api/products")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.products && Array.isArray(data.products)) {
+            setCatalogProducts(data.products);
+          }
+        })
+        .catch((err) => console.warn("Failed to fetch catalog products for order creation:", err))
+        .finally(() => setIsFetchingCatalog(false));
+    };
+    loadCatalog();
+  }, []);
+
   useEffect(() => {
     if (createOrderModalOpen && catalogProducts.length === 0) {
       setIsFetchingCatalog(true);
@@ -200,21 +216,6 @@ function AdminOrdersContent() {
     });
   };
 
-  const handleAddCustomItem = () => {
-    const customId = `custom_${Date.now()}`;
-    setSelectedItems((prev) => [
-      ...prev,
-      {
-        productId: customId,
-        productName: "Custom Product Item",
-        posterImage: "/products/ripple-lamp.jpg",
-        unitPrice: 499,
-        quantity: 1,
-        stock: 99,
-      },
-    ]);
-  };
-
   const handleUpdateItemQty = (index: number, newQty: number) => {
     if (newQty <= 0) {
       handleRemoveItem(index);
@@ -231,14 +232,6 @@ function AdminOrdersContent() {
     setSelectedItems((prev) => {
       const next = [...prev];
       next[index] = { ...next[index], unitPrice: Math.max(0, newPrice) };
-      return next;
-    });
-  };
-
-  const handleUpdateItemName = (index: number, newName: string) => {
-    setSelectedItems((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], productName: newName };
       return next;
     });
   };
@@ -2751,70 +2744,105 @@ function AdminOrdersContent() {
                       <ShoppingBag className="w-3.5 h-3.5 text-[#FF7A00]" />
                       <span>2. Order Products ({selectedItems.length})</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleAddCustomItem}
-                      className="text-xs font-semibold text-[#FF7A00] hover:text-[#e66e00] hover:underline cursor-pointer lowercase first-letter:uppercase"
-                    >
-                      + Add Custom Item
-                    </button>
+                    {catalogProducts.length > 0 && (
+                      <span className="text-[11px] font-semibold text-slate-400">
+                        {catalogProducts.length} store products available
+                      </span>
+                    )}
                   </div>
 
-                  {/* Product Search & Quick Add */}
-                  <div className="relative">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <input
-                      type="text"
-                      value={productSearchQuery}
-                      onChange={(e) => setProductSearchQuery(e.target.value)}
-                      placeholder="Search store catalog to add product (e.g. Shoe Dryer, Watch, Lamp...)"
-                      className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF7A00] text-sm text-slate-800"
-                    />
+                  {/* Pick from existing catalog products */}
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {/* Catalog Dropdown Picker */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Select from Store Products:
+                        </label>
+                        <select
+                          value=""
+                          onChange={(e) => {
+                            const prodId = e.target.value;
+                            if (!prodId) return;
+                            const found = catalogProducts.find((p) => p.id === prodId);
+                            if (found) {
+                              handleAddProduct(found);
+                              e.target.value = "";
+                            }
+                          }}
+                          className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF7A00] cursor-pointer"
+                        >
+                          <option value="">-- Choose a product to add --</option>
+                          {catalogProducts.map((prod) => (
+                            <option key={prod.id} value={prod.id}>
+                              {prod.name} — ₹{prod.price} ({prod.in_stock ?? 50} in stock)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                    {/* Catalog Dropdown / Search Results */}
-                    {productSearchQuery.trim().length > 0 && (
-                      <div className="absolute left-0 right-0 top-full mt-1.5 z-20 bg-white rounded-xl border border-slate-200 shadow-xl max-h-60 overflow-y-auto divide-y divide-slate-100">
-                        {filteredCatalogProducts.length === 0 ? (
-                          <div className="p-4 text-center text-xs text-slate-400">
-                            No products found matching &quot;{productSearchQuery}&quot;
-                          </div>
-                        ) : (
-                          filteredCatalogProducts.map((prod) => (
-                            <div
-                              key={prod.id}
-                              onClick={() => {
-                                handleAddProduct(prod);
-                                setProductSearchQuery("");
-                              }}
-                              className="p-2.5 flex items-center justify-between hover:bg-orange-50/50 cursor-pointer transition-colors"
-                            >
-                              <div className="flex items-center gap-3">
-                                <img
-                                  src={prod.poster_image || (prod.images && prod.images[0]) || "/products/ripple-lamp.jpg"}
-                                  alt={prod.name}
-                                  className="w-10 h-10 rounded-lg object-cover bg-slate-100 border border-slate-200"
-                                />
-                                <div>
-                                  <div className="text-xs font-bold text-slate-800 line-clamp-1">{prod.name}</div>
-                                  <div className="text-[11px] text-slate-500">
-                                    Stock: <span className="font-semibold text-slate-700">{prod.in_stock ?? 50}</span> • ₹{prod.price}
-                                  </div>
-                                </div>
+                      {/* Fast Search Input */}
+                      <div className="relative">
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Or Search Products:
+                        </label>
+                        <div className="relative">
+                          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          <input
+                            type="text"
+                            value={productSearchQuery}
+                            onChange={(e) => setProductSearchQuery(e.target.value)}
+                            placeholder="Type product name (e.g. Shoe Dryer, Iron...)"
+                            className="w-full pl-8 pr-3.5 py-2 bg-slate-50 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF7A00] text-xs text-slate-800"
+                          />
+                        </div>
+
+                        {/* Search Results Dropdown */}
+                        {productSearchQuery.trim().length > 0 && (
+                          <div className="absolute left-0 right-0 top-full mt-1.5 z-20 bg-white rounded-xl border border-slate-200 shadow-xl max-h-60 overflow-y-auto divide-y divide-slate-100">
+                            {filteredCatalogProducts.length === 0 ? (
+                              <div className="p-3 text-center text-xs text-slate-400">
+                                No products found matching &quot;{productSearchQuery}&quot;
                               </div>
-                              <span className="text-xs font-bold text-[#FF7A00] bg-orange-100/60 px-2 py-1 rounded-md">
-                                + Add
-                              </span>
-                            </div>
-                          ))
+                            ) : (
+                              filteredCatalogProducts.map((prod) => (
+                                <div
+                                  key={prod.id}
+                                  onClick={() => {
+                                    handleAddProduct(prod);
+                                    setProductSearchQuery("");
+                                  }}
+                                  className="p-2.5 flex items-center justify-between hover:bg-orange-50/50 cursor-pointer transition-colors"
+                                >
+                                  <div className="flex items-center gap-2.5">
+                                    <img
+                                      src={prod.poster_image || (prod.images && prod.images[0]) || "/products/ripple-lamp.jpg"}
+                                      alt={prod.name}
+                                      className="w-9 h-9 rounded-lg object-cover bg-slate-100 border border-slate-200 shrink-0"
+                                    />
+                                    <div>
+                                      <div className="text-xs font-bold text-slate-800 line-clamp-1">{prod.name}</div>
+                                      <div className="text-[11px] text-slate-500">
+                                        Stock: <span className="font-semibold text-slate-700">{prod.in_stock ?? 50}</span> • ₹{prod.price}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <span className="text-xs font-bold text-[#FF7A00] bg-orange-100/60 px-2 py-1 rounded-md">
+                                    + Add
+                                  </span>
+                                </div>
+                              ))
+                            )}
+                          </div>
                         )}
                       </div>
-                    )}
+                    </div>
                   </div>
 
                   {/* Selected Items List */}
                   {selectedItems.length === 0 ? (
-                    <div className="p-6 text-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/60 text-slate-400 text-xs">
-                      No products added yet. Use the search box above to add items from catalog, or click &quot;+ Add Custom Item&quot;.
+                    <div className="p-5 text-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/60 text-slate-400 text-xs">
+                      No products added yet. Select a product from the dropdown above or search your catalog to add items.
                     </div>
                   ) : (
                     <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">
@@ -2827,14 +2855,15 @@ function AdminOrdersContent() {
                               className="w-11 h-11 rounded-lg object-cover bg-slate-100 border border-slate-200 shrink-0"
                             />
                             <div className="flex-1 min-w-0">
-                              <input
-                                type="text"
-                                value={item.productName}
-                                onChange={(e) => handleUpdateItemName(idx, e.target.value)}
-                                className="text-xs font-bold text-slate-900 w-full bg-transparent hover:bg-slate-50 border border-transparent hover:border-slate-200 rounded px-1.5 py-0.5"
-                              />
-                              <div className="text-[11px] text-slate-400 px-1.5 flex items-center gap-2">
-                                <span>Item Total: <span className="font-bold text-slate-700">₹{(item.unitPrice * item.quantity).toLocaleString("en-IN")}</span></span>
+                              <p className="text-xs font-bold text-slate-900 line-clamp-1">
+                                {item.productName}
+                              </p>
+                              <div className="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
+                                <span>Catalog Product</span>
+                                <span>•</span>
+                                <span>Stock: <strong className="text-slate-700">{item.stock ?? 50}</strong></span>
+                                <span>•</span>
+                                <span>Total: <strong className="text-slate-800">₹{(item.unitPrice * item.quantity).toLocaleString("en-IN")}</strong></span>
                               </div>
                             </div>
                           </div>
