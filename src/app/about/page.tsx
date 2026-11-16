@@ -112,6 +112,7 @@ const LIFESTYLE_PILLARS = [
     tag: "Peak Performance",
     icon: Dumbbell,
     link: "/products?category=Gym+Supplementaries",
+    bgImage: "/vittal/bg-about-supplements.jpg",
   },
   {
     category: "Outfits",
@@ -120,6 +121,7 @@ const LIFESTYLE_PILLARS = [
     tag: "Pro Mobility",
     icon: Shirt,
     link: "/products?category=Outfits",
+    bgImage: "/vittal/bg-about-outfits.jpg",
   },
   {
     category: "Apparels",
@@ -128,6 +130,7 @@ const LIFESTYLE_PILLARS = [
     tag: "Modern Fit",
     icon: Layers,
     link: "/products?category=Apparels",
+    bgImage: "/vittal/bg-about-apparels.jpg",
   },
   {
     category: "Dates & Nuts",
@@ -136,6 +139,7 @@ const LIFESTYLE_PILLARS = [
     tag: "Whole Nutrition",
     icon: Sparkles,
     link: "/products?category=Dates+%26+Nuts",
+    bgImage: "/vittal/bg-about-dates.png",
   },
   {
     category: "Candy & Chocolates",
@@ -144,6 +148,7 @@ const LIFESTYLE_PILLARS = [
     tag: "Mindful Treats",
     icon: Heart,
     link: "/products?category=Candy+%26+Chocolates",
+    bgImage: "/vittal/bg-about-chocolates.png",
   },
 ];
 
@@ -508,10 +513,10 @@ export default function AboutPage() {
         </section>
 
         {/* ========================================================
-            3. THE 5 LIFESTYLE PILLARS
+            3. THE 5 LIFESTYLE PILLARS (Low-height horizontal cards with faded backgrounds)
            ======================================================== */}
-        <section className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+        <section className="py-12 sm:py-16 max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-950 tracking-tight font-mograph">
               Curated for Strength, Style &amp; Sustenance
             </h2>
@@ -520,44 +525,60 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 font-mograph">
-            {LIFESTYLE_PILLARS.map((pillar, idx) => {
+          <div className="flex flex-col gap-3 sm:gap-4 font-mograph">
+            {LIFESTYLE_PILLARS.map((pillar) => {
               const Icon = pillar.icon;
               return (
                 <div
                   key={pillar.category}
-                  className={`p-6 rounded-2xl bg-white border border-neutral-200/90 hover:border-[#95CF42] shadow-xs hover:shadow-xl transition-all group flex flex-col justify-between ${
-                    idx === 4 ? "md:col-span-2 lg:col-span-1" : ""
-                  }`}
+                  className="relative overflow-hidden rounded-2xl bg-white border border-neutral-200/90 hover:border-[#95CF42] shadow-xs hover:shadow-md transition-all group p-3.5 sm:px-6 sm:py-4 flex flex-row items-center justify-between gap-3 sm:gap-6"
                 >
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 rounded-xl bg-[#F4FBE8] text-[#3D6318] flex items-center justify-center border border-[#95CF42]/30 group-hover:scale-105 transition-transform">
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      <span className="text-[10px] sm:text-xs font-semibold px-2.5 py-1 rounded-full bg-neutral-100 border border-neutral-200 text-neutral-600">
-                        {pillar.tag}
-                      </span>
-                    </div>
-
-                    <h3 className="text-xs font-bold text-[#6B9E3A] mb-1 font-mograph">
-                      {pillar.category}
-                    </h3>
-                    <h4 className="text-base sm:text-lg font-bold text-neutral-950 mb-2 leading-snug">
-                      {pillar.title}
-                    </h4>
-                    <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal">
-                      {pillar.desc}
-                    </p>
+                  {/* Faded Background Image */}
+                  <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+                    <img
+                      src={pillar.bgImage}
+                      alt={pillar.category}
+                      className="w-full h-full object-cover object-center opacity-20 group-hover:opacity-30 group-hover:scale-105 transition-all duration-700 ease-out"
+                    />
+                    {/* Gradient fade overlay for pristine contrast & readability */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-white/70" />
                   </div>
 
-                  <div className="mt-6 pt-4 border-t border-neutral-100 flex items-center justify-between">
+                  {/* Left & Middle: Icon, Category Badge, Title, and Description */}
+                  <div className="relative z-10 flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#F4FBE8]/90 border border-[#95CF42]/30 text-[#3D6318] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                      <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+                        <span className="text-[10px] sm:text-xs font-bold text-[#6B9E3A] uppercase tracking-wide">
+                          {pillar.category}
+                        </span>
+                        <span className="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100/90 border border-neutral-200/80 text-neutral-600">
+                          {pillar.tag}
+                        </span>
+                      </div>
+
+                      <h4 className="text-xs sm:text-sm md:text-base font-bold text-neutral-950 leading-snug truncate sm:whitespace-normal">
+                        {pillar.title}
+                      </h4>
+
+                      <p className="text-[11px] sm:text-xs text-neutral-600 font-normal leading-relaxed line-clamp-1 mt-0.5 max-w-2xl">
+                        {pillar.desc}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right: Low-Height Explore Button */}
+                  <div className="relative z-10 shrink-0">
                     <Link
                       href={pillar.link}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#3D6318] hover:text-[#6B9E3A] transition-colors font-mograph"
+                      className="inline-flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-[#F4FBE8] hover:bg-[#95CF42] text-[#3D6318] hover:text-black border border-[#95CF42]/30 text-xs font-bold transition-all shadow-xs group/btn whitespace-nowrap"
                     >
-                      <span>Explore {pillar.category}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Explore {pillar.category}</span>
+                      <span className="sm:hidden">Explore</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform shrink-0" />
                     </Link>
                   </div>
                 </div>
