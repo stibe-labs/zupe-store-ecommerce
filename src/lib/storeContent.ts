@@ -470,12 +470,14 @@ export async function getPromoBanners(): Promise<PromoBannerCard[]> {
       if (rows && rows.length > 0 && rows[0].config_data) {
         const parsed = JSON.parse(rows[0].config_data);
         if (Array.isArray(parsed) && parsed.length === 2) {
-          // Strip base64 images to prevent giant payloads burning Worker CPU
-          inMemoryPromoBanners = parsed.map((card: PromoBannerCard) => ({
-            ...card,
-            image1: card.image1?.startsWith("data:") ? DEFAULT_PROMO_BANNERS.find(d => d.id === card.id)?.image1 ?? card.image1 : card.image1,
-            image2: card.image2?.startsWith("data:") ? DEFAULT_PROMO_BANNERS.find(d => d.id === card.id)?.image2 ?? card.image2 : card.image2,
-          }));
+          inMemoryPromoBanners = parsed.map((card: PromoBannerCard) => {
+            const defaultCard = DEFAULT_PROMO_BANNERS.find(d => d.id === card.id);
+            return {
+              ...card,
+              image1: card.image1 || defaultCard?.image1 || "",
+              image2: card.image2 !== undefined ? card.image2 : defaultCard?.image2,
+            };
+          });
         }
       }
       promoBannersCachedAt = Date.now();

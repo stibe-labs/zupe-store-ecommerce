@@ -136,8 +136,10 @@ export async function uploadMedia(
 
   // 3. In local Node development only, store in public/uploads as fallback
   try {
-    const fs = await import("fs");
-    const path = await import("path");
+    const fsMod = "fs";
+    const pathMod = "path";
+    const fs = await import(/* webpackIgnore: true */ fsMod);
+    const path = await import(/* webpackIgnore: true */ pathMod);
     const uploadDir = path.join(process.cwd(), "public", "uploads", folder);
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });

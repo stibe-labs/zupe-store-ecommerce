@@ -92,12 +92,13 @@ export function PromoCardsCustomizer({
   const [saving, setSaving] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
   const [activeCardTab, setActiveCardTab] = useState<"both" | "card-1" | "card-2">("both");
+  const [uploadingState, setUploadingState] = useState<Record<string, boolean>>({});
 
   // Load promo banners from API on mount
   const loadPromoBanners = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/content/promo-banners");
+      const res = await fetch(`/api/content/promo-banners?t=${Date.now()}`, { cache: "no-store" });
       const data = await res.json();
       if (data.success && Array.isArray(data.banners) && data.banners.length === 2) {
         setSavedCards(data.banners);
@@ -128,8 +129,8 @@ export function PromoCardsCustomizer({
     );
   };
 
-  // Image file upload to Base64 Data URL
-  const handleFileUpload = (
+  // Image file upload with instant local preview + cloud upload to R2
+  const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     cardId: "card-1" | "card-2",
     field: "image1" | "image2"
@@ -137,25 +138,57 @@ export function PromoCardsCustomizer({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      showToast("error", "Image size exceeds 2MB limit. Please choose a smaller photo.");
+    if (file.size > 10 * 1024 * 1024) {
+      showToast("error", "Image size exceeds 10MB limit. Please choose a smaller photo.");
       return;
     }
 
+    const uploadKey = `${cardId}_${field}`;
+    setUploadingState((prev) => ({ ...prev, [uploadKey]: true }));
+
+    // 1. Immediately read as dataURL for instant local preview
     const reader = new FileReader();
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
       if (dataUrl) {
         handleUpdateField(cardId, field, dataUrl);
-        showToast("success", `New photo uploaded for ${cardId === "card-1" ? "Card 1" : "Card 2"}!`);
       }
     };
     reader.readAsDataURL(file);
-    e.target.value = "";
+
+    // 2. Upload file to Cloudflare R2 bucket via /api/admin/upload
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "images");
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        handleUpdateField(cardId, field, data.url);
+        showToast("success", `New photo uploaded to cloud storage for ${cardId === "card-1" ? "Card 1" : "Card 2"}!`);
+      } else {
+        console.warn("Direct upload error:", data.error);
+        showToast("error", data.error || "Failed to upload photo to cloud storage");
+      }
+    } catch (err: any) {
+      console.warn("Cloud upload failed, local preview active:", err);
+    } finally {
+      setUploadingState((prev) => ({ ...prev, [uploadKey]: false }));
+      e.target.value = "";
+    }
   };
 
   // Save draft cards to Live Storefront
   const handleSaveToLive = async () => {
+    if (Object.values(uploadingState).some(Boolean)) {
+      showToast("error", "Please wait for photo uploads to finish before saving.");
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await fetch("/api/content/promo-banners", {
@@ -905,13 +938,18 @@ export function PromoCardsCustomizer({
                     <span className="text-xs font-semibold text-slate-700">
                       Primary Product Photo (Front)
                     </span>
-                    <label className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[10px] font-bold text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs">
-                      <Upload className="w-3 h-3 text-[#FF7A00]" />
-                      <span>Upload Photo</span>
+                    <label className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[10px] font-bold text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs ${uploadingState["card-1_image1"] ? "opacity-60 pointer-events-none" : ""}`}>
+                      {uploadingState["card-1_image1"] ? (
+                        <RefreshCw className="w-3 h-3 text-[#FF7A00] animate-spin" />
+                      ) : (
+                        <Upload className="w-3 h-3 text-[#FF7A00]" />
+                      )}
+                      <span>{uploadingState["card-1_image1"] ? "Uploading..." : "Upload Photo"}</span>
                       <input
                         type="file"
                         accept="image/*"
                         className="hidden"
+                        disabled={uploadingState["card-1_image1"]}
                         onChange={(e) => handleFileUpload(e, "card-1", "image1")}
                       />
                     </label>
@@ -970,13 +1008,18 @@ export function PromoCardsCustomizer({
                           <span>Remove</span>
                         </button>
                       )}
-                      <label className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[10px] font-bold text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs">
-                        <Upload className="w-3 h-3 text-[#FF7A00]" />
-                        <span>Upload Photo</span>
+                      <label className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[10px] font-bold text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs ${uploadingState["card-1_image2"] ? "opacity-60 pointer-events-none" : ""}`}>
+                        {uploadingState["card-1_image2"] ? (
+                          <RefreshCw className="w-3 h-3 text-[#FF7A00] animate-spin" />
+                        ) : (
+                          <Upload className="w-3 h-3 text-[#FF7A00]" />
+                        )}
+                        <span>{uploadingState["card-1_image2"] ? "Uploading..." : "Upload Photo"}</span>
                         <input
                           type="file"
                           accept="image/*"
                           className="hidden"
+                          disabled={uploadingState["card-1_image2"]}
                           onChange={(e) => handleFileUpload(e, "card-1", "image2")}
                         />
                       </label>
@@ -1285,13 +1328,18 @@ export function PromoCardsCustomizer({
                     <span className="text-xs font-semibold text-slate-700">
                       Primary Product Photo
                     </span>
-                    <label className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[10px] font-bold text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs">
-                      <Upload className="w-3 h-3 text-[#FF7A00]" />
-                      <span>Upload Photo</span>
+                    <label className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[10px] font-bold text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs ${uploadingState["card-2_image1"] ? "opacity-60 pointer-events-none" : ""}`}>
+                      {uploadingState["card-2_image1"] ? (
+                        <RefreshCw className="w-3 h-3 text-[#FF7A00] animate-spin" />
+                      ) : (
+                        <Upload className="w-3 h-3 text-[#FF7A00]" />
+                      )}
+                      <span>{uploadingState["card-2_image1"] ? "Uploading..." : "Upload Photo"}</span>
                       <input
                         type="file"
                         accept="image/*"
                         className="hidden"
+                        disabled={uploadingState["card-2_image1"]}
                         onChange={(e) => handleFileUpload(e, "card-2", "image1")}
                       />
                     </label>
