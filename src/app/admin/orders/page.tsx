@@ -26,6 +26,13 @@ import {
   MoreVertical,
   Tag,
   Package,
+  Plus,
+  Trash2,
+  User,
+  Mail,
+  CreditCard,
+  Check,
+  Minus,
 } from "lucide-react";
 import { ERPOrder } from "@/lib/erpStore";
 
@@ -80,6 +87,276 @@ function AdminOrdersContent() {
   const [cancelReason, setCancelReason] = useState<string>("Customer requested via phone call");
   const [cancelNotes, setCancelNotes] = useState<string>("");
   const [openMenuOrderId, setOpenMenuOrderId] = useState<string | null>(null);
+
+  // Manual Create Order Modal State
+  const [createOrderModalOpen, setCreateOrderModalOpen] = useState(false);
+  const [custName, setCustName] = useState("");
+  const [custPhone, setCustPhone] = useState("");
+  const [custEmail, setCustEmail] = useState("");
+  const [custAddress, setCustAddress] = useState("");
+  const [custPincode, setCustPincode] = useState("");
+  const [custCity, setCustCity] = useState("");
+  const [custState, setCustState] = useState("");
+  const [isLookingUpPin, setIsLookingUpPin] = useState(false);
+  const [pinVerified, setPinVerified] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [paymentStatus, setPaymentStatus] = useState("Pending");
+  const [deliveryStatus, setDeliveryStatus] = useState("Processing");
+  const [discountAmt, setDiscountAmt] = useState<number | string>(0);
+  const [shippingAmt, setShippingAmt] = useState<number | string>(0);
+  const [sendWhatsApp, setSendWhatsApp] = useState(true);
+  const [sendEmail, setSendEmail] = useState(true);
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+
+  // Products picker state
+  const [selectedItems, setSelectedItems] = useState<
+    Array<{
+      productId: string;
+      productName: string;
+      posterImage: string;
+      unitPrice: number;
+      quantity: number;
+      stock?: number;
+    }>
+  >([]);
+  const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
+  const [isFetchingCatalog, setIsFetchingCatalog] = useState(false);
+  const [productSearchQuery, setProductSearchQuery] = useState("");
+
+  // Lock background scroll when create order modal is open
+  useEffect(() => {
+    if (createOrderModalOpen) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [createOrderModalOpen]);
+
+  // Lazy-load catalog products when create order modal opens
+  useEffect(() => {
+    if (createOrderModalOpen && catalogProducts.length === 0) {
+      setIsFetchingCatalog(true);
+      fetch("/api/products")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.products && Array.isArray(data.products)) {
+            setCatalogProducts(data.products);
+          }
+        })
+        .catch((err) => console.warn("Failed to fetch catalog products for order creation:", err))
+        .finally(() => setIsFetchingCatalog(false));
+    }
+  }, [createOrderModalOpen, catalogProducts.length]);
+
+  // Pincode auto-lookup
+  const lookupPincodeAuto = async (pin: string) => {
+    if (pin.length !== 6) return;
+    setIsLookingUpPin(true);
+    try {
+      const res = await fetch(`/api/location/pincode?pincode=${encodeURIComponent(pin)}`);
+      const data = await res.json();
+      if (data.success && data.valid) {
+        if (data.city || data.district) setCustCity(data.city || data.district);
+        if (data.state) setCustState(data.state);
+        setPinVerified(true);
+      } else {
+        setPinVerified(false);
+      }
+    } catch {
+      setPinVerified(false);
+    } finally {
+      setIsLookingUpPin(false);
+    }
+  };
+
+  const handleAddProduct = (prod: any) => {
+    setSelectedItems((prev) => {
+      const existingIdx = prev.findIndex((it) => it.productId === prod.id);
+      if (existingIdx >= 0) {
+        const next = [...prev];
+        next[existingIdx] = {
+          ...next[existingIdx],
+          quantity: next[existingIdx].quantity + 1,
+        };
+        return next;
+      }
+      return [
+        ...prev,
+        {
+          productId: prod.id,
+          productName: prod.name || "Purchased Product",
+          posterImage: prod.poster_image || (prod.images && prod.images[0]) || "/products/ripple-lamp.jpg",
+          unitPrice: Number(prod.price) || 0,
+          quantity: 1,
+          stock: prod.in_stock ?? 50,
+        },
+      ];
+    });
+  };
+
+  const handleAddCustomItem = () => {
+    const customId = `custom_${Date.now()}`;
+    setSelectedItems((prev) => [
+      ...prev,
+      {
+        productId: customId,
+        productName: "Custom Product Item",
+        posterImage: "/products/ripple-lamp.jpg",
+        unitPrice: 499,
+        quantity: 1,
+        stock: 99,
+      },
+    ]);
+  };
+
+  const handleUpdateItemQty = (index: number, newQty: number) => {
+    if (newQty <= 0) {
+      handleRemoveItem(index);
+      return;
+    }
+    setSelectedItems((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], quantity: newQty };
+      return next;
+    });
+  };
+
+  const handleUpdateItemPrice = (index: number, newPrice: number) => {
+    setSelectedItems((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], unitPrice: Math.max(0, newPrice) };
+      return next;
+    });
+  };
+
+  const handleUpdateItemName = (index: number, newName: string) => {
+    setSelectedItems((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], productName: newName };
+      return next;
+    });
+  };
+
+  const handleRemoveItem = (index: number) => {
+    setSelectedItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const resetCreateOrderForm = () => {
+    setCustName("");
+    setCustPhone("");
+    setCustEmail("");
+    setCustAddress("");
+    setCustPincode("");
+    setCustCity("");
+    setCustState("");
+    setPinVerified(false);
+    setSelectedItems([]);
+    setPaymentMethod("COD");
+    setPaymentStatus("Pending");
+    setDeliveryStatus("Processing");
+    setDiscountAmt(0);
+    setShippingAmt(0);
+    setSendWhatsApp(true);
+    setSendEmail(true);
+    setProductSearchQuery("");
+  };
+
+  const orderSubtotal = selectedItems.reduce(
+    (acc, it) => acc + (Number(it.unitPrice) || 0) * (Number(it.quantity) || 1),
+    0
+  );
+  const orderTotal = Math.max(
+    0,
+    orderSubtotal + (Number(shippingAmt) || 0) - (Number(discountAmt) || 0)
+  );
+
+  const filteredCatalogProducts = catalogProducts
+    .filter((p) => {
+      if (!productSearchQuery.trim()) return true;
+      const q = productSearchQuery.toLowerCase();
+      return (
+        p.name?.toLowerCase().includes(q) ||
+        p.category?.toLowerCase().includes(q) ||
+        p.id?.toLowerCase().includes(q)
+      );
+    })
+    .slice(0, 8);
+
+  const handleCreateManualOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!custName.trim()) {
+      showToast("error", "Customer full name is required");
+      return;
+    }
+    const cleanPhone = custPhone.replace(/\D/g, "");
+    if (!cleanPhone || cleanPhone.length < 10) {
+      showToast("error", "Valid 10-digit customer phone number is required");
+      return;
+    }
+    if (!custAddress.trim()) {
+      showToast("error", "Street / shipping address is required");
+      return;
+    }
+    if (selectedItems.length === 0) {
+      showToast("error", "Please add at least 1 product to the order");
+      return;
+    }
+
+    setIsSubmittingOrder(true);
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create_order",
+          customer_name: custName.trim(),
+          customer_phone: custPhone.trim(),
+          guest_email: custEmail.trim() || `${cleanPhone}@customer.zupestore.com`,
+          address: custAddress.trim(),
+          city: custCity.trim(),
+          state: custState.trim(),
+          pincode: custPincode.trim(),
+          payment_method: paymentMethod,
+          payment_status: paymentStatus,
+          delivery_status: deliveryStatus,
+          subtotal: orderSubtotal,
+          discount_amount: Number(discountAmt) || 0,
+          shipping_cost: Number(shippingAmt) || 0,
+          total_amount: orderTotal,
+          items: selectedItems.map((item) => ({
+            product_id: item.productId,
+            product_name: item.productName,
+            quantity: item.quantity,
+            unit_price: item.unitPrice,
+            total_price: item.quantity * item.unitPrice,
+            poster_image: item.posterImage,
+          })),
+          send_whatsapp: sendWhatsApp,
+          send_email: sendEmail,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.order) {
+        setOrders((prev) => [data.order, ...prev]);
+        showToast("success", data.message || `Order #${data.order.shopify_order_id || data.order.id} created successfully!`);
+        resetCreateOrderForm();
+        setCreateOrderModalOpen(false);
+      } else {
+        showToast("error", data.error || "Failed to create manual order");
+      }
+    } catch (err: any) {
+      showToast("error", err.message || "Network error while creating order");
+    } finally {
+      setIsSubmittingOrder(false);
+    }
+  };
 
   const showToast = (type: "success" | "error", text: string) => {
     setToastMessage({ type, text });
@@ -653,6 +930,14 @@ function AdminOrdersContent() {
 
             <div className="flex items-center gap-2.5">
               <button
+                onClick={() => setCreateOrderModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-sm shadow-orange-500/20 active:scale-95 cursor-pointer"
+                title="Create a new manual order"
+              >
+                <Plus className="w-4 h-4 text-white stroke-[2.5]" />
+                <span>Create Order</span>
+              </button>
+              <button
                 onClick={handleSyncShiprocketAll}
                 disabled={isSyncingShiprocket}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-orange-50 border border-orange-200 hover:bg-orange-100 text-[#FF7A00] text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50"
@@ -781,16 +1066,26 @@ function AdminOrdersContent() {
                           <p className="text-xs text-slate-400">
                             Try changing the delivery status, courier, payment method, or clearing the search box.
                           </p>
-                          {isFiltered && (
+                          <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
                             <button
                               type="button"
-                              onClick={handleResetFilters}
-                              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold rounded-xl shadow-xs transition-all"
+                              onClick={() => setCreateOrderModalOpen(true)}
+                              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                             >
-                              <RotateCcw className="w-3.5 h-3.5" />
-                              <span>Reset Filters</span>
+                              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                              <span>+ Create New Order</span>
                             </button>
-                          )}
+                            {isFiltered && (
+                              <button
+                                type="button"
+                                onClick={handleResetFilters}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold rounded-xl shadow-xs transition-all"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                <span>Reset Filters</span>
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -2267,6 +2562,500 @@ function AdminOrdersContent() {
           </div>
         );
       })()}
+
+      {/* Create Manual Order Modal */}
+      {createOrderModalOpen && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-150"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isSubmittingOrder) {
+              setCreateOrderModalOpen(false);
+            }
+          }}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto animate-in zoom-in-95 duration-150 flex flex-col max-h-[92vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-orange-50 via-white to-amber-50/40 border-b border-orange-100/80 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#FF7A00]/10 text-[#FF7A00] flex items-center justify-center border border-orange-200">
+                  <Package className="w-5 h-5 stroke-[2.2]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base sm:text-lg flex items-center gap-2">
+                    Create Manual Order
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-orange-100 text-[#FF7A00]">
+                      Admin ERP
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Enter customer delivery details, select products, and instantly create order
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCreateOrderModalOpen(false)}
+                disabled={isSubmittingOrder}
+                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body - Scrollable */}
+            <form onSubmit={handleCreateManualOrder} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-5 sm:p-6 space-y-6 overflow-y-auto flex-1">
+                {/* Section 1: Customer Details */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5">
+                    <User className="w-3.5 h-3.5 text-[#FF7A00]" />
+                    <span>1. Customer & Shipping Details</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Full Name <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={custName}
+                        onChange={(e) => setCustName(e.target.value)}
+                        placeholder="e.g. Rahul Sharma"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF7A00] text-sm text-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Phone Number <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          type="tel"
+                          required
+                          value={custPhone}
+                          onChange={(e) => setCustPhone(e.target.value)}
+                          placeholder="10-digit mobile number"
+                          className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF7A00] text-sm text-slate-800"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Email Address <span className="text-slate-400 font-normal">(Optional for order tracking email)</span>
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="email"
+                        value={custEmail}
+                        onChange={(e) => setCustEmail(e.target.value)}
+                        placeholder="e.g. rahul@example.com"
+                        className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF7A00] text-sm text-slate-800"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Street Address / House / Flat / Landmark <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={custAddress}
+                      onChange={(e) => setCustAddress(e.target.value)}
+                      placeholder="e.g. Flat 302, Green Valley Apts, MG Road"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF7A00] text-sm text-slate-800"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Pincode <span className="text-rose-500">*</span>
+                        </label>
+                        {isLookingUpPin && (
+                          <span className="text-[10px] text-orange-600 font-medium animate-pulse">
+                            Checking...
+                          </span>
+                        )}
+                        {pinVerified && !isLookingUpPin && (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-bold">
+                            <Check className="w-3 h-3" /> Auto-filled
+                          </span>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        maxLength={6}
+                        value={custPincode}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+                          setCustPincode(val);
+                          if (val.length === 6) {
+                            lookupPincodeAuto(val);
+                          } else {
+                            setPinVerified(false);
+                          }
+                        }}
+                        placeholder="6-digit PIN"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF7A00] text-sm font-mono text-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        City <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={custCity}
+                        onChange={(e) => setCustCity(e.target.value)}
+                        placeholder="City / District"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF7A00] text-sm text-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        State <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={custState}
+                        onChange={(e) => setCustState(e.target.value)}
+                        placeholder="State"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF7A00] text-sm text-slate-800"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 2: Order Items & Products */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5">
+                    <div className="flex items-center gap-2">
+                      <ShoppingBag className="w-3.5 h-3.5 text-[#FF7A00]" />
+                      <span>2. Order Products ({selectedItems.length})</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddCustomItem}
+                      className="text-xs font-semibold text-[#FF7A00] hover:text-[#e66e00] hover:underline cursor-pointer lowercase first-letter:uppercase"
+                    >
+                      + Add Custom Item
+                    </button>
+                  </div>
+
+                  {/* Product Search & Quick Add */}
+                  <div className="relative">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={productSearchQuery}
+                      onChange={(e) => setProductSearchQuery(e.target.value)}
+                      placeholder="Search store catalog to add product (e.g. Shoe Dryer, Watch, Lamp...)"
+                      className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF7A00] text-sm text-slate-800"
+                    />
+
+                    {/* Catalog Dropdown / Search Results */}
+                    {productSearchQuery.trim().length > 0 && (
+                      <div className="absolute left-0 right-0 top-full mt-1.5 z-20 bg-white rounded-xl border border-slate-200 shadow-xl max-h-60 overflow-y-auto divide-y divide-slate-100">
+                        {filteredCatalogProducts.length === 0 ? (
+                          <div className="p-4 text-center text-xs text-slate-400">
+                            No products found matching &quot;{productSearchQuery}&quot;
+                          </div>
+                        ) : (
+                          filteredCatalogProducts.map((prod) => (
+                            <div
+                              key={prod.id}
+                              onClick={() => {
+                                handleAddProduct(prod);
+                                setProductSearchQuery("");
+                              }}
+                              className="p-2.5 flex items-center justify-between hover:bg-orange-50/50 cursor-pointer transition-colors"
+                            >
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={prod.poster_image || (prod.images && prod.images[0]) || "/products/ripple-lamp.jpg"}
+                                  alt={prod.name}
+                                  className="w-10 h-10 rounded-lg object-cover bg-slate-100 border border-slate-200"
+                                />
+                                <div>
+                                  <div className="text-xs font-bold text-slate-800 line-clamp-1">{prod.name}</div>
+                                  <div className="text-[11px] text-slate-500">
+                                    Stock: <span className="font-semibold text-slate-700">{prod.in_stock ?? 50}</span> • ₹{prod.price}
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="text-xs font-bold text-[#FF7A00] bg-orange-100/60 px-2 py-1 rounded-md">
+                                + Add
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Selected Items List */}
+                  {selectedItems.length === 0 ? (
+                    <div className="p-6 text-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/60 text-slate-400 text-xs">
+                      No products added yet. Use the search box above to add items from catalog, or click &quot;+ Add Custom Item&quot;.
+                    </div>
+                  ) : (
+                    <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">
+                      {selectedItems.map((item, idx) => (
+                        <div key={idx} className="p-3 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <img
+                              src={item.posterImage || "/products/ripple-lamp.jpg"}
+                              alt={item.productName}
+                              className="w-11 h-11 rounded-lg object-cover bg-slate-100 border border-slate-200 shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <input
+                                type="text"
+                                value={item.productName}
+                                onChange={(e) => handleUpdateItemName(idx, e.target.value)}
+                                className="text-xs font-bold text-slate-900 w-full bg-transparent hover:bg-slate-50 border border-transparent hover:border-slate-200 rounded px-1.5 py-0.5"
+                              />
+                              <div className="text-[11px] text-slate-400 px-1.5 flex items-center gap-2">
+                                <span>Item Total: <span className="font-bold text-slate-700">₹{(item.unitPrice * item.quantity).toLocaleString("en-IN")}</span></span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 self-end sm:self-auto">
+                            {/* Unit Price */}
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-slate-400 font-medium">₹</span>
+                              <input
+                                type="number"
+                                min={0}
+                                value={item.unitPrice}
+                                onChange={(e) => handleUpdateItemPrice(idx, Number(e.target.value))}
+                                className="w-20 px-2 py-1 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 text-right focus:outline-none focus:border-[#FF7A00]"
+                                title="Unit Price"
+                              />
+                            </div>
+
+                            {/* Quantity Controls */}
+                            <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateItemQty(idx, item.quantity - 1)}
+                                className="p-1 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </button>
+                              <span className="w-8 text-center text-xs font-bold text-slate-800">
+                                {item.quantity}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateItemQty(idx, item.quantity + 1)}
+                                className="p-1 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
+                            {/* Remove Item */}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveItem(idx)}
+                              className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Remove product"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Section 3: Payment & Fulfillment Settings */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1.5">
+                    <CreditCard className="w-3.5 h-3.5 text-[#FF7A00]" />
+                    <span>3. Payment & Delivery Options</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Payment Method
+                      </label>
+                      <select
+                        value={paymentMethod}
+                        onChange={(e) => {
+                          const method = e.target.value;
+                          setPaymentMethod(method);
+                          if (method === "COD") {
+                            setPaymentStatus("Pending");
+                          } else {
+                            setPaymentStatus("Completed");
+                          }
+                        }}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                      >
+                        <option value="COD">Cash on Delivery (COD)</option>
+                        <option value="Prepaid">Prepaid (UPI / Cards / NetBanking)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Payment Status
+                      </label>
+                      <select
+                        value={paymentStatus}
+                        onChange={(e) => setPaymentStatus(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed (Paid)</option>
+                        <option value="Failed">Failed</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Order Initial Status
+                      </label>
+                      <select
+                        value={deliveryStatus}
+                        onChange={(e) => setDeliveryStatus(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                      >
+                        <option value="Processing">Processing</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="In Transit">In Transit</option>
+                        <option value="Delivered">Delivered</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Financial calculation: Shipping & Discount */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Shipping Charge (₹)
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={shippingAmt}
+                        onChange={(e) => setShippingAmt(Number(e.target.value) || 0)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Discount Amount (₹)
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={discountAmt}
+                        onChange={(e) => setDiscountAmt(Number(e.target.value) || 0)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF7A00]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Notification Checkboxes */}
+                  <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/60 space-y-2 pt-2.5">
+                    <label className="flex items-center gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={sendWhatsApp}
+                        onChange={(e) => setSendWhatsApp(e.target.checked)}
+                        className="w-4 h-4 text-[#FF7A00] rounded border-slate-300 focus:ring-[#FF7A00]"
+                      />
+                      <span className="text-xs font-medium text-slate-700">
+                        Send instant WhatsApp confirmation alert to customer
+                      </span>
+                    </label>
+
+                    <label className="flex items-center gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={sendEmail}
+                        onChange={(e) => setSendEmail(e.target.checked)}
+                        className="w-4 h-4 text-[#FF7A00] rounded border-slate-300 focus:ring-[#FF7A00]"
+                      />
+                      <span className="text-xs font-medium text-slate-700">
+                        Send order confirmation email (if email address provided)
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-4 sm:px-6 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+                <div className="flex items-center gap-4 text-xs">
+                  <div>
+                    <span className="text-slate-400">Subtotal:</span>{" "}
+                    <span className="font-semibold text-slate-700">₹{orderSubtotal.toLocaleString("en-IN")}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">Grand Total:</span>{" "}
+                    <span className="font-bold text-base text-slate-900 font-mono">
+                      ₹{orderTotal.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCreateOrderModalOpen(false)}
+                    disabled={isSubmittingOrder}
+                    className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl font-semibold text-xs transition-all shadow-sm cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingOrder || selectedItems.length === 0}
+                    className="px-5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl font-bold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                  >
+                    {isSubmittingOrder ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Creating Order...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Create & Submit Order</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Floating Toast Notification Alert */}
       {toastMessage && (

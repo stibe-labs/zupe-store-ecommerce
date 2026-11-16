@@ -603,35 +603,180 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Default create ERP order
-    const {
-      customer_name,
-      total_amount,
-      payment_method,
-      shipping_address,
-      customer_phone,
-      guest_email,
-      items,
-    } = body;
+    // ========================================================
+    // ACTION 5: CREATE MANUAL ORDER (ADMIN)
+    // ========================================================
+    if (body.action === "create_order" || (!body.action && body.customer_name)) {
+      const {
+        customer_name,
+        customer_phone,
+        guest_email,
+        address,
+        city,
+        state,
+        pincode,
+        shipping_address,
+        payment_method,
+        payment_status,
+        delivery_status,
+        subtotal,
+        discount_amount,
+        shipping_cost,
+        total_amount,
+        items,
+        send_whatsapp,
+        send_email,
+        notes,
+      } = body;
 
-    if (!customer_name || total_amount === undefined) {
-      return NextResponse.json(
-        { success: false, error: "Missing customer_name or total_amount" },
-        { status: 400 }
-      );
+      if (!customer_name || !customer_name.trim()) {
+        return NextResponse.json(
+          { success: false, error: "Customer name is required" },
+          { status: 400 }
+        );
+      }
+
+      if (!customer_phone || !customer_phone.trim()) {
+        return NextResponse.json(
+          { success: false, error: "Customer phone number is required" },
+          { status: 400 }
+        );
+      }
+
+      const cleanPhone = customer_phone.trim();
+      const rawItems = Array.isArray(items) && items.length > 0 ? items : [];
+
+      if (rawItems.length === 0) {
+        return NextResponse.json(
+          { success: false, error: "At least one product item is required" },
+          { status: 400 }
+        );
+      }
+
+      const fullAddress =
+        shipping_address?.trim() ||
+        [address, city, state, pincode].filter(Boolean).map((s: string) => s.trim()).join(", ") ||
+        "India";
+
+      const finalPaymentMethod = payment_method || "COD";
+      const isCod =
+        finalPaymentMethod.toUpperCase() === "COD" ||
+        finalPaymentMethod.toLowerCase().includes("cash on delivery");
+
+      const finalPaymentStatus =
+        payment_status || (isCod ? "Pending" : "Completed");
+
+      const finalDeliveryStatus = delivery_status || "Processing";
+      const totalNum = Number(total_amount) || 0;
+      const subtotalNum = Number(subtotal) || totalNum;
+      const discountNum = Number(discount_amount) || 0;
+      const shippingNum = Number(shipping_cost) || 0;
+
+      const formattedItems = rawItems.map((it: any) => ({
+        product_id: it.product_id || `prod_${Date.now()}`,
+        product_name: it.product_name || it.name || "Purchased Item",
+        quantity: Math.max(1, Number(it.quantity) || 1),
+        unit_price: Number(it.unit_price || it.price) || 0,
+        total_price: (Math.max(1, Number(it.quantity) || 1)) * (Number(it.unit_price || it.price) || 0),
+        poster_image: it.poster_image || it.image || "/products/ripple-lamp.jpg",
+      }));
+
+      const newOrder = await createERPOrder({
+        customer_name: customer_name.trim(),
+        customer_phone: cleanPhone,
+        guest_email: (guest_email || "").trim(),
+        shipping_address: fullAddress,
+        payment_method: finalPaymentMethod,
+        payment_status: finalPaymentStatus,
+        status: finalDeliveryStatus,
+        delivery_status: finalDeliveryStatus as any,
+        subtotal: subtotalNum,
+        discount_amount: discountNum,
+        shipping_cost: shippingNum,
+        total_amount: totalNum,
+        items: formattedItems,
+        whatsapp_confirm_status: "confirmed",
+        whatsapp_token_used: true,
+      });
+
+      // Insert each item into order_items table for consistency
+      if (newOrder && Array.isArray(newOrder.items)) {
+        for (const it of newOrder.items as any[]) {
+          try {
+            await executeD1Query(
+              `INSERT OR REPLACE INTO order_items (id, order_id, product_id, product_name, poster_image, quantity, unit_price, total_price)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                `oi_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                newOrder.id,
+                it.product_id || "",
+                it.product_name || "",
+                it.poster_image || "",
+                it.quantity || 1,
+                it.unit_price || 0,
+                it.total_price || (it.quantity * it.unit_price),
+              ]
+            );
+          } catch (itemErr) {
+            console.warn("Failed to insert order item into order_items table:", itemErr);
+          }
+        }
+      }
+
+      // If send_whatsapp requested:
+      if (send_whatsapp && cleanPhone) {
+        try {
+          await sendOrderConfirmationWhatsApp({
+            customerName: customer_name.trim(),
+            customerPhone: cleanPhone,
+            orderId: newOrder.shopify_order_id || newOrder.id,
+            totalAmount: totalNum,
+            paymentMethod: isCod ? "cod" : "prepaid",
+            items: formattedItems.map((it) => ({
+              name: it.product_name,
+              quantity: it.quantity,
+              price: it.unit_price,
+            })),
+          });
+        } catch (waErr) {
+          console.warn("WhatsApp notification error on manual order create:", waErr);
+        }
+      }
+
+      // If send_email requested:
+      const custEmail = (guest_email || "").trim();
+      if (send_email && custEmail && custEmail.includes("@") && !custEmail.endsWith("@customer.zupestore.com")) {
+        try {
+          await sendOrderConfirmationEmail({
+            orderId: newOrder.shopify_order_id || newOrder.id,
+            customerName: customer_name.trim(),
+            customerEmail: custEmail,
+            customerPhone: cleanPhone,
+            shippingAddress: fullAddress,
+            city: city || "",
+            postalCode: pincode || "",
+            totalAmount: totalNum,
+            paymentMethod: finalPaymentMethod,
+            paymentStatus: finalPaymentStatus,
+            items: formattedItems.map((it) => ({
+              name: it.product_name,
+              quantity: it.quantity,
+              price: it.unit_price,
+              image: it.poster_image,
+            })),
+            createdAt: newOrder.created_at,
+          });
+        } catch (emailErr) {
+          console.warn("Email confirmation error on manual order create:", emailErr);
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        order: newOrder,
+        message: `Order #${newOrder.shopify_order_id || newOrder.id} created successfully!`,
+      });
     }
-
-    const newOrder = await createERPOrder({
-      customer_name,
-      total_amount: Number(total_amount),
-      payment_method: payment_method || "COD",
-      shipping_address: shipping_address || "",
-      customer_phone: customer_phone || "",
-      guest_email: guest_email || "",
-      items: items || [],
-    });
-
-    return NextResponse.json({ success: true, order: newOrder });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
