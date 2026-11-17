@@ -34,6 +34,47 @@ function normalizePhone(phone: string): string {
   return digits;
 }
 
+/**
+ * Check if the server-side event originates from a permitted customer URL.
+ * Strictly blocks admin.zupestore.in, preview workers.dev, and /admin routes.
+ */
+function isServerTrackingAllowed(sourceUrl?: string): boolean {
+  if (!sourceUrl) return true;
+  const lower = sourceUrl.toLowerCase();
+  if (lower.includes("admin.zupestore.in") || lower.includes("workers.dev") || lower.includes("/admin")) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Helper to fetch active Meta CAPI credentials
+ */
+async function getMetaCredentials() {
+  let pixelId = process.env.META_PIXEL_ID || META_PIXEL_ID;
+  let token =
+    process.env.META_ACCESS_TOKEN ||
+    process.env.META_CONVERSIONS_API_TOKEN ||
+    process.env.FACEBOOK_CONVERSIONS_API_TOKEN;
+
+  if (!token) {
+    try {
+      const { getSettings } = await import("./erpStore");
+      const settings = await getSettings();
+      if (settings.meta?.token && !settings.meta.token.startsWith("EAAK10928374...")) {
+        token = settings.meta.token;
+      }
+      if (settings.meta?.pixelId) {
+        pixelId = settings.meta.pixelId;
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  return { pixelId, token };
+}
+
 export interface MetaServerPurchaseOrder {
   orderId: string;
   totalAmount: number;
@@ -58,26 +99,12 @@ export interface MetaServerPurchaseOrder {
  */
 export async function sendMetaConversionsPurchase(order: MetaServerPurchaseOrder) {
   try {
-    let pixelId = process.env.META_PIXEL_ID || META_PIXEL_ID;
-    let token =
-      process.env.META_ACCESS_TOKEN ||
-      process.env.META_CONVERSIONS_API_TOKEN ||
-      process.env.FACEBOOK_CONVERSIONS_API_TOKEN;
-
-    if (!token) {
-      try {
-        const { getSettings } = await import("./erpStore");
-        const settings = await getSettings();
-        if (settings.meta?.token && !settings.meta.token.startsWith("EAAK10928374...")) {
-          token = settings.meta.token;
-        }
-        if (settings.meta?.pixelId) {
-          pixelId = settings.meta.pixelId;
-        }
-      } catch {
-        // fallback
-      }
+    if (!isServerTrackingAllowed(order.sourceUrl)) {
+      console.log(`[Meta CAPI] Skipping Purchase event from admin/test source: ${order.sourceUrl}`);
+      return { success: true, skipped: true, reason: "ADMIN_OR_TEST_DOMAIN" };
     }
+
+    const { pixelId, token } = await getMetaCredentials();
 
     if (!token) {
       // Token not set in environment yet. Log once and gracefully continue without error.
@@ -152,3 +179,147 @@ export async function sendMetaConversionsPurchase(order: MetaServerPurchaseOrder
   }
 }
 
+/**
+ * Dispatches an InitiateCheckout event to Meta Conversions API (Server-Side)
+ */
+export async function sendMetaConversionsInitiateCheckout(payload: {
+  eventId?: string;
+  totalAmount: number;
+  customerEmail?: string;
+  customerPhone?: string;
+  items?: Array<{ id?: string; product_id?: string; price?: number; quantity?: number }>;
+  sourceUrl?: string;
+  testEventCode?: string;
+}) {
+  try {
+    if (!isServerTrackingAllowed(payload.sourceUrl)) return { success: true, skipped: true };
+
+    const { pixelId, token } = await getMetaCredentials();
+    if (!token) return { success: true, skipped: true, reason: "NO_ACCESS_TOKEN" };
+
+    const cleanEmail = (payload.customerEmail || "").trim();
+    const cleanPhone = normalizePhone(payload.customerPhone || "");
+
+    const [hashedEmail, hashedPhone] = await Promise.all([
+      cleanEmail && !cleanEmail.endsWith("@customer.zupestore.com") ? sha256(cleanEmail) : Promise.resolve(""),
+      cleanPhone ? sha256(cleanPhone) : Promise.resolve(""),
+    ]);
+
+    const formattedContents = (payload.items || []).map((it) => ({
+      id: String(it.id || it.product_id || "zupe_product"),
+      quantity: Math.max(1, Number(it.quantity) || 1),
+      item_price: Number(it.price) || 0,
+    }));
+
+    const eventPayload: Record<string, any> = {
+      data: [
+        {
+          event_name: "InitiateCheckout",
+          event_time: Math.floor(Date.now() / 1000),
+          event_id: payload.eventId || `ic_${Date.now()}`,
+          event_source_url: payload.sourceUrl || "https://zupestore.in/checkout",
+          action_source: "website",
+          user_data: {
+            ...(hashedEmail ? { em: [hashedEmail] } : {}),
+            ...(hashedPhone ? { ph: [hashedPhone] } : {}),
+          },
+          custom_data: {
+            currency: "INR",
+            value: Number(payload.totalAmount) || 0,
+            content_type: "product",
+            contents: formattedContents,
+            num_items: formattedContents.reduce((sum, c) => sum + c.quantity, 0),
+          },
+        },
+      ],
+      ...(payload.testEventCode ? { test_event_code: payload.testEventCode } : {}),
+    };
+
+    const url = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${encodeURIComponent(token)}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(eventPayload),
+    });
+
+    const data = await res.json();
+    return { success: res.ok, data };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Dispatches an AddToCart event to Meta Conversions API (Server-Side)
+ */
+export async function sendMetaConversionsAddToCart(payload: {
+  eventId?: string;
+  productId: string;
+  productName?: string;
+  price: number;
+  quantity?: number;
+  customerEmail?: string;
+  customerPhone?: string;
+  sourceUrl?: string;
+  testEventCode?: string;
+}) {
+  try {
+    if (!isServerTrackingAllowed(payload.sourceUrl)) return { success: true, skipped: true };
+
+    const { pixelId, token } = await getMetaCredentials();
+    if (!token) return { success: true, skipped: true, reason: "NO_ACCESS_TOKEN" };
+
+    const cleanEmail = (payload.customerEmail || "").trim();
+    const cleanPhone = normalizePhone(payload.customerPhone || "");
+
+    const [hashedEmail, hashedPhone] = await Promise.all([
+      cleanEmail && !cleanEmail.endsWith("@customer.zupestore.com") ? sha256(cleanEmail) : Promise.resolve(""),
+      cleanPhone ? sha256(cleanPhone) : Promise.resolve(""),
+    ]);
+
+    const qty = Math.max(1, Number(payload.quantity) || 1);
+    const unitPrice = Number(payload.price) || 0;
+
+    const eventPayload: Record<string, any> = {
+      data: [
+        {
+          event_name: "AddToCart",
+          event_time: Math.floor(Date.now() / 1000),
+          event_id: payload.eventId || `atc_${Date.now()}`,
+          event_source_url: payload.sourceUrl || "https://zupestore.in/products",
+          action_source: "website",
+          user_data: {
+            ...(hashedEmail ? { em: [hashedEmail] } : {}),
+            ...(hashedPhone ? { ph: [hashedPhone] } : {}),
+          },
+          custom_data: {
+            currency: "INR",
+            value: unitPrice * qty,
+            content_type: "product",
+            contents: [
+              {
+                id: String(payload.productId),
+                quantity: qty,
+                item_price: unitPrice,
+              },
+            ],
+            num_items: qty,
+          },
+        },
+      ],
+      ...(payload.testEventCode ? { test_event_code: payload.testEventCode } : {}),
+    };
+
+    const url = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${encodeURIComponent(token)}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(eventPayload),
+    });
+
+    const data = await res.json();
+    return { success: res.ok, data };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}

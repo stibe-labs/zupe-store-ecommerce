@@ -32,6 +32,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/context/AuthContext";
 import { OrderRecord, OrderItem } from "@/lib/orderStore";
+import { trackPurchase } from "@/lib/metaPixel";
 
 function OrdersPageContent() {
   const { user, isAuthenticated, openAuthModal } = useAuth();
@@ -257,6 +258,23 @@ function OrdersPageContent() {
           if (hasOrdersChanged() || prevOrdersRef.current.length === 0) {
             prevOrdersRef.current = data.orders;
             setOrders(data.orders);
+          }
+
+          // Meta Pixel Purchase verification if arrived via order confirmation link
+          if (confirmedOrderId) {
+            const confirmedOrd = data.orders.find(
+              (o: any) => o.id === confirmedOrderId || (o as any).shopify_order_id === confirmedOrderId
+            );
+            if (confirmedOrd && Number(confirmedOrd.total_amount) > 0) {
+              const productIds = (confirmedOrd.items || []).map((it: any) => it.product_id || it.id).filter(Boolean);
+              trackPurchase({
+                orderId: confirmedOrd.id,
+                value: Number(confirmedOrd.total_amount),
+                currency: "INR",
+                num_items: (confirmedOrd.items || []).reduce((sum: number, it: any) => sum + (it.quantity || 1), 0) || 1,
+                content_ids: productIds.length > 0 ? productIds : ["zupe_product"],
+              });
+            }
           }
         }
       } catch (err) {

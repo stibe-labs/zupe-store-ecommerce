@@ -160,6 +160,31 @@ function CheckoutContent() {
   // Urgency Timer (Digital Countdown: Hours, Mins, Secs)
   const [timeLeft, setTimeLeft] = useState(6 * 3600 + 7 * 60 + 24); // 06:07:24
 
+  // Restore order confirmation view if customer refreshes the thank-you screen
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = sessionStorage.getItem("zupe_order_confirmed_snapshot");
+      if (saved) {
+        const snap = JSON.parse(saved);
+        if (snap && snap.orderId && Date.now() - (snap.timestamp || 0) < 30 * 60 * 1000) {
+          setConfirmedOrderId(snap.orderId);
+          setConfirmedTotal(snap.totalAmount || 0);
+          setConfirmedPaymentId(snap.paymentId || "");
+          setConfirmedItems(snap.items || []);
+          if (snap.customerName) setName(snap.customerName);
+          if (snap.customerPhone) setPhone(snap.customerPhone);
+          if (snap.customerEmail) setEmail(snap.customerEmail);
+          if (snap.address) setAddress(snap.address);
+          if (snap.city) setCity(snap.city);
+          if (snap.postalCode) setPostalCode(snap.postalCode);
+          if (snap.paymentMethod) setPaymentMethod(snap.paymentMethod);
+          setOrderComplete(true);
+        }
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 6 * 3600 + 7 * 60 + 24));
@@ -848,32 +873,34 @@ function CheckoutContent() {
     return BUMP_PRODUCTS.filter((b) => !cartIds.has(b.id));
   }, [cart]);
 
-  // Meta Pixel InitiateCheckout Event (fires once per checkout session when items are loaded)
+  // Meta Pixel InitiateCheckout Event (fires every time checkout is opened with cart items)
   const initiateCheckoutTracked = useRef(false);
   useEffect(() => {
     if (orderComplete || isCodSwitchMode) return;
     if (cart.length > 0 && grandTotal > 0 && !initiateCheckoutTracked.current) {
       initiateCheckoutTracked.current = true;
+      const productIds = cart.map((it) => it.id).filter(Boolean);
       trackInitiateCheckout({
         value: grandTotal,
         currency: "INR",
-        num_items: cart.reduce((sum, it) => sum + (it.quantity || 1), 0),
-        content_ids: cart.map((it) => it.id),
+        num_items: cart.reduce((sum, it) => sum + (it.quantity || 1), 0) || 1,
+        content_ids: productIds.length > 0 ? productIds : ["zupe_product"],
       });
     }
   }, [cart, grandTotal, orderComplete, isCodSwitchMode]);
 
-  // Meta Pixel Purchase Event (Client-Side with deduplication protection)
+  // Meta Pixel Purchase Event (Fallback on Order Confirmed View, deduped per orderId via sessionStorage)
   useEffect(() => {
-    if (orderComplete && confirmedOrderId) {
-      const orderValue = confirmedTotal || grandTotal;
+    if (orderComplete && confirmedOrderId && (confirmedTotal > 0 || grandTotal > 0)) {
+      const orderValue = confirmedTotal > 0 ? confirmedTotal : grandTotal;
       const itemsList = confirmedItems.length > 0 ? confirmedItems : cart;
+      const productIds = itemsList.map((it) => it.id || it.product_id).filter(Boolean);
       trackPurchase({
         orderId: confirmedOrderId,
         value: orderValue,
         currency: "INR",
         num_items: itemsList.reduce((sum, it) => sum + (it.quantity || 1), 0) || 1,
-        content_ids: itemsList.map((it) => it.id || it.product_id),
+        content_ids: productIds.length > 0 ? productIds : ["zupe_product"],
       });
     }
   }, [orderComplete, confirmedOrderId, confirmedTotal, grandTotal, confirmedItems]);
@@ -1306,16 +1333,56 @@ function CheckoutContent() {
 
             const verifyData = await verifyRes.json();
             if (verifyData.success && verifyData.order) {
+              const placedOrder = verifyData.order;
+              const finalOrderId = String(placedOrder.id || `ord_${Date.now()}`);
+              const finalAmount = Number(placedOrder.total_amount) || grandTotal;
+              const currentCartItems = [...cart];
+              const productIds = currentCartItems.map((c) => String(c.id)).filter(Boolean);
+              const totalItemsCount = currentCartItems.reduce((sum, it) => sum + (it.quantity || 1), 0) || 1;
+
+              // 1. Immediately track Meta Pixel Purchase event with final order amount (both COD & Prepaid)
+              trackPurchase({
+                orderId: finalOrderId,
+                value: finalAmount,
+                currency: "INR",
+                num_items: totalItemsCount,
+                content_ids: productIds.length > 0 ? productIds : ["zupe_product"],
+              });
+
+              // 2. Persist order confirmation snapshot in sessionStorage for refresh resilience
+              try {
+                sessionStorage.setItem(
+                  "zupe_order_confirmed_snapshot",
+                  JSON.stringify({
+                    orderId: finalOrderId,
+                    totalAmount: finalAmount,
+                    items: currentCartItems,
+                    paymentMethod: isCod ? "cod" : "prepaid",
+                    paymentId: response.razorpay_payment_id,
+                    shippingFee: shippingFee,
+                    customerName: name.trim(),
+                    customerPhone: phone.trim(),
+                    customerEmail: email.trim(),
+                    address: address.trim(),
+                    city: city.trim(),
+                    state: state.trim(),
+                    postalCode: postalCode.trim(),
+                    doorstepBalance: isCod ? doorstepBalance : 0,
+                    timestamp: Date.now(),
+                  })
+                );
+              } catch {}
+
               syncAddressAfterOrder();
-              setConfirmedTotal(grandTotal);
-              setConfirmedOrderId(verifyData.order.id);
+              setConfirmedTotal(finalAmount);
+              setConfirmedOrderId(finalOrderId);
               setConfirmedPaymentId(response.razorpay_payment_id);
-              setConfirmedItems([...cart]);
+              setConfirmedItems(currentCartItems);
               setOrderComplete(true);
               clearCart();
               if (isCod) {
                 try {
-                  localStorage.setItem("zupe_last_cod_order_id", verifyData.order.id);
+                  localStorage.setItem("zupe_last_cod_order_id", finalOrderId);
                   localStorage.setItem("zupe_last_cod_phone", phone.trim());
                 } catch {}
               }
