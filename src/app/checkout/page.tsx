@@ -1554,7 +1554,40 @@ function CheckoutContent() {
         localStorage.setItem("zupe_last_phone", phone.trim());
       } catch {}
 
-      // Route customer securely through settler.pydart.com
+      // 1. Launch Cashfree secure modal directly on checkout page (prevents redirecting to stuck external screen)
+      const sessionId = orderData.paymentSessionId;
+      if (sessionId && typeof window !== "undefined") {
+        try {
+          let CashfreeConstructor = (window as any).Cashfree;
+          if (!CashfreeConstructor) {
+            await new Promise((resolve) => setTimeout(resolve, 800));
+            CashfreeConstructor = (window as any).Cashfree;
+          }
+          if (CashfreeConstructor) {
+            const cashfree = CashfreeConstructor({ mode: "production" });
+            setLoading(false);
+            cashfree.checkout({
+              paymentSessionId: sessionId,
+              redirectTarget: "_modal",
+            }).then((result: any) => {
+              if (result?.error) {
+                setCancelledPaymentOrderId(cfOrderId);
+                setShowPaymentCancelledModal(true);
+              } else if (result?.paymentDetails) {
+                verifyCashfreeOrder(cfOrderId);
+              }
+            }).catch(() => {
+              setCancelledPaymentOrderId(cfOrderId);
+              setShowPaymentCancelledModal(true);
+            });
+            return;
+          }
+        } catch (sdkErr) {
+          console.warn("Cashfree modal launch failed, falling back to hosted form:", sdkErr);
+        }
+      }
+
+      // 2. Fallback to hosted payment URL if SDK modal could not be launched
       const targetPayUrl = orderData.settlerPayUrl || orderData.payUrl;
       if (targetPayUrl) {
         window.location.href = targetPayUrl;
