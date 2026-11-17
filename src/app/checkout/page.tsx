@@ -1554,40 +1554,26 @@ function CheckoutContent() {
         localStorage.setItem("zupe_last_phone", phone.trim());
       } catch {}
 
-      // 1. Launch Cashfree secure modal directly on checkout page (prevents redirecting to stuck external screen)
+      // 1. Submit session directly to Cashfree official hosted checkout endpoint
+      // This bypasses the intermediate Settler screen entirely (preventing the "Confirming payment" trap)
+      // and does not require domain whitelisting like the JS SDK modal.
       const sessionId = orderData.paymentSessionId;
-      if (sessionId && typeof window !== "undefined") {
-        try {
-          let CashfreeConstructor = (window as any).Cashfree;
-          if (!CashfreeConstructor) {
-            await new Promise((resolve) => setTimeout(resolve, 800));
-            CashfreeConstructor = (window as any).Cashfree;
-          }
-          if (CashfreeConstructor) {
-            const cashfree = CashfreeConstructor({ mode: "production" });
-            setLoading(false);
-            cashfree.checkout({
-              paymentSessionId: sessionId,
-              redirectTarget: "_modal",
-            }).then((result: any) => {
-              if (result?.error) {
-                setCancelledPaymentOrderId(cfOrderId);
-                setShowPaymentCancelledModal(true);
-              } else if (result?.paymentDetails) {
-                verifyCashfreeOrder(cfOrderId);
-              }
-            }).catch(() => {
-              setCancelledPaymentOrderId(cfOrderId);
-              setShowPaymentCancelledModal(true);
-            });
-            return;
-          }
-        } catch (sdkErr) {
-          console.warn("Cashfree modal launch failed, falling back to hosted form:", sdkErr);
-        }
+      if (sessionId && typeof document !== "undefined") {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "https://api.cashfree.com/pg/view/sessions/checkout";
+        form.style.display = "none";
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "payment_session_id";
+        input.value = sessionId;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        return;
       }
 
-      // 2. Fallback to hosted payment URL if SDK modal could not be launched
+      // 2. Fallback to hosted payment URL if sessionId is unavailable
       const targetPayUrl = orderData.settlerPayUrl || orderData.payUrl;
       if (targetPayUrl) {
         window.location.href = targetPayUrl;
