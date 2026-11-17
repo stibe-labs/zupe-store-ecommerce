@@ -8,6 +8,16 @@
   ],
   "main": ".open-next/worker.js",
   "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "vittaldigital.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "admin.vittaldigital.com",
+      "custom_domain": true
+    }
+  ],
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"

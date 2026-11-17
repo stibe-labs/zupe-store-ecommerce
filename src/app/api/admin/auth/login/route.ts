@@ -36,6 +36,9 @@ export async function POST(req: NextRequest) {
     });
 
     // Set secure HTTP-only admin cookie
+    const host = req.headers.get("host") || "";
+    const isVittal = host.includes("vittaldigital.com");
+
     response.cookies.set({
       name: ADMIN_COOKIE_NAME,
       value: token,
@@ -44,6 +47,7 @@ export async function POST(req: NextRequest) {
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: "/",
+      ...(isVittal ? { domain: ".vittaldigital.com" } : {}),
     });
 
     // Also set customer session token for seamless preview

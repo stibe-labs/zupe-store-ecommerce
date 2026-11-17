@@ -138,7 +138,7 @@ export default function AdminHeader({
         )}
 
         <Link
-          href="/"
+          href="https://vittaldigital.com"
           target="_blank"
           className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-[#002D62] hover:bg-blue-50 hover:border-blue-200 rounded-xl border border-slate-200/70 transition-all"
         >

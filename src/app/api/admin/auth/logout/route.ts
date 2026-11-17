@@ -8,6 +8,18 @@ export async function POST(req: NextRequest) {
       message: "Admin logged out successfully",
     });
 
+    const host = req.headers.get("host") || "";
+    const isVittal = host.includes("vittaldigital.com");
+
+    response.cookies.set({
+      name: ADMIN_COOKIE_NAME,
+      value: "",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 0,
+      path: "/",
+      ...(isVittal ? { domain: ".vittaldigital.com" } : {}),
+    });
     response.cookies.set({
       name: ADMIN_COOKIE_NAME,
       value: "",
@@ -31,7 +43,19 @@ export async function GET(req: NextRequest) {
   url.pathname = "/admin/login";
   url.search = "";
 
+  const host = req.headers.get("host") || "";
+  const isVittal = host.includes("vittaldigital.com");
+
   const response = NextResponse.redirect(url);
+  response.cookies.set({
+    name: ADMIN_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 0,
+    path: "/",
+    ...(isVittal ? { domain: ".vittaldigital.com" } : {}),
+  });
   response.cookies.set({
     name: ADMIN_COOKIE_NAME,
     value: "",
