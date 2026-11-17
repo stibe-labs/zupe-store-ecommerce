@@ -14,9 +14,10 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const orderId = url.searchParams.get("orderId") || url.searchParams.get("order_id");
     const cashfreeOrderId = url.searchParams.get("cf_order_id") || url.searchParams.get("cashfreeOrderId");
+    const invoiceId = url.searchParams.get("invoice_id") || url.searchParams.get("invoiceId");
     const isPaid = url.searchParams.get("paid") === "true";
 
-    if (!orderId && !cashfreeOrderId) {
+    if (!orderId && !cashfreeOrderId && !invoiceId) {
       return NextResponse.json({ success: false, error: "Missing orderId" }, { status: 400 });
     }
 
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
       new NextRequest(req.url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: orderId || cashfreeOrderId, cashfreeOrderId, paid: isPaid }),
+        body: JSON.stringify({ orderId: orderId || cashfreeOrderId || invoiceId, cashfreeOrderId, invoiceId, paid: isPaid }),
       })
     );
   } catch (err: any) {
@@ -35,9 +36,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { orderId, cashfreeOrderId, paid: isExplicitlyPaid } = body;
+    const { orderId, cashfreeOrderId, invoiceId, settlerInvoiceId, paid: isExplicitlyPaid } = body;
 
-    if (!orderId) {
+    if (!orderId && !cashfreeOrderId && !invoiceId) {
       return NextResponse.json(
         { success: false, error: "Missing required orderId" },
         { status: 400 }
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
     let verificationAmount = 0;
 
     // Check Cashfree direct API first (both IDs if available)
-    const candidateIds = [cashfreeOrderId, orderId].filter(Boolean) as string[];
+    const candidateIds = [cashfreeOrderId, orderId, invoiceId, settlerInvoiceId].filter(Boolean) as string[];
     for (const cid of candidateIds) {
       if (isPaid) break;
       try {
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
           const settlerVerifyRes = await fetch("https://settler.pydart.com/api/v1/orders/verify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId: cid }),
+            body: JSON.stringify({ orderId: cid, invoiceId: cid }),
           });
           const settlerData: any = await settlerVerifyRes.json();
           if (settlerData && settlerData.paid) {

@@ -146,11 +146,15 @@ export async function POST(req: NextRequest) {
 
       const settlerData: any = await settlerRes.json();
       if (settlerData.success && settlerData.invoice) {
-        settlerInvoiceId = settlerData.invoice.id;
-        settlerPayUrl = `https://settler.pydart.com${settlerData.invoice.payUrl}`;
+        settlerInvoiceId = settlerData.invoice.id || settlerData.invoice.invoiceId;
+        // Always construct exact Settler payment URL: https://settler.pydart.com/pay/{invoiceId}
+        settlerPayUrl = settlerInvoiceId
+          ? `https://settler.pydart.com/pay/${settlerInvoiceId}`
+          : (settlerData.invoice.payUrl?.startsWith("http")
+              ? settlerData.invoice.payUrl
+              : `https://settler.pydart.com${settlerData.invoice.payUrl?.startsWith("/") ? "" : "/"}${settlerData.invoice.payUrl}`);
 
-        // Immediately initiate order on Settler server-to-server to fetch the Cashfree paymentSessionId
-        // This allows the customer to bypass the Settler interstitial screen and enter Cashfree directly
+        // Pre-warm payment session on Settler gateway so payment rails load instantly
         try {
           const initRes = await fetch("https://settler.pydart.com/api/v1/orders/initiate", {
             method: "POST",

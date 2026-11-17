@@ -284,17 +284,6 @@ function CheckoutContent() {
     }
   }, []);
 
-  // Load Cashfree JS SDK dynamically
-  useEffect(() => {
-    if (typeof window !== "undefined" && !document.getElementById("cashfree-js")) {
-      const script = document.createElement("script");
-      script.id = "cashfree-js";
-      script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
-
   // Restore confirmed order from sessionStorage ONLY if user is not checking out a new cart
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -636,7 +625,7 @@ function CheckoutContent() {
 
   // Check if returning from Cashfree / Settler redirect with ?cf_order_id= or ?order_id= or ?paid=true
   useEffect(() => {
-    let targetOrder = searchParams.get("cf_order_id") || searchParams.get("order_id");
+    let targetOrder = searchParams.get("cf_order_id") || searchParams.get("order_id") || searchParams.get("invoice_id") || searchParams.get("invoiceId");
     const isPaid = searchParams.get("paid") === "true";
     const statusParam = searchParams.get("status")?.toLowerCase();
     const isExplicitlyCancelled = statusParam === "cancelled" || statusParam === "failed" || searchParams.get("cancelled") === "true";
@@ -1641,46 +1630,7 @@ function CheckoutContent() {
       return;
     }
 
-    // PAYMENT FLOW (Both Online Full & COD Advance route through secure gateway)
-    // Synchronously open secure popup window to prevent mobile/desktop popup blockers
-    let payWin: Window | null = null;
-    try {
-      const width = 520;
-      const height = 750;
-      const left = typeof window !== "undefined" && window.screen.width ? Math.max(0, (window.screen.width - width) / 2) : 100;
-      const top = typeof window !== "undefined" && window.screen.height ? Math.max(0, (window.screen.height - height) / 2) : 100;
-      payWin = window.open(
-        "about:blank",
-        "TurkiyeJamPayment",
-        `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
-      );
-      if (payWin) {
-        payWin.document.write(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <title>Turkiye Jam - Connecting Payment...</title>
-              <style>
-                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #fbf7ee; color: #1c1917; text-align: center; padding: 24px; box-sizing: border-box; }
-                .spinner { width: 44px; height: 44px; border: 4px solid #ebdcc7; border-top-color: #731a26; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 20px; }
-                @keyframes spin { to { transform: rotate(360deg); } }
-                h2 { font-size: 19px; margin: 0 0 8px; font-weight: 800; color: #731a26; }
-                p { font-size: 13px; color: #78716c; margin: 0; line-height: 1.5; }
-              </style>
-            </head>
-            <body>
-              <div class="spinner"></div>
-              <h2>Connecting to Secure Gateway...</h2>
-              <p>Please wait while we establish a bank-grade encrypted payment session.</p>
-            </body>
-          </html>
-        `);
-      }
-    } catch {
-      payWin = null;
-    }
-
+    // PAYMENT FLOW (Both Online Full & COD Advance route through Settler secure gateway)
     try {
       const isCod = paymentMethod === "cod";
       const chargeAmount = isCod ? configuredCodFee : onlineGrandTotal;
@@ -1732,9 +1682,6 @@ function CheckoutContent() {
 
       const orderData = await res.json();
       if (!orderData.success || (!orderData.payUrl && !orderData.settlerPayUrl)) {
-        if (payWin && !payWin.closed) {
-          try { payWin.close(); } catch {}
-        }
         setErrorMessage(orderData.error || "Failed to initialize payment gateway. Please try again.");
         setLoading(false);
         return;
@@ -1748,32 +1695,10 @@ function CheckoutContent() {
         localStorage.setItem("zupe_last_phone", phone.trim());
       } catch {}
 
-      // If popup window is successfully open, redirect it to payment gateway
-      // This keeps the Turkiye Jam checkout tab completely active and prevents being trapped on external screens!
-      if (payWin && !payWin.closed) {
-        try {
-          payWin.location.href = targetPayUrl;
-        } catch {
-          window.location.href = targetPayUrl;
-          return;
-        }
-        paymentWindowRef.current = payWin;
-        setAwaitingPaymentOrder({
-          orderId: cfOrderId,
-          amount: chargeAmount,
-          payUrl: targetPayUrl,
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Fallback if popup was blocked or unavailable
+      // Seamlessly navigate in the same tab directly to the payment gateway
       window.location.href = targetPayUrl;
       return;
     } catch (err: any) {
-      if (payWin && !payWin.closed) {
-        try { payWin.close(); } catch {}
-      }
       console.error("Payment initiation error:", err);
       setErrorMessage("Network error while connecting to payment gateway. Please retry.");
       setLoading(false);
