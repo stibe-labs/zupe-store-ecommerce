@@ -53,6 +53,7 @@ import {
 import { StoreCategory } from "@/lib/storeContent";
 import { getSubcategoriesForCategory } from "@/data/zupeProducts";
 import { PromoCardsCustomizer } from "@/components/admin/PromoCardsCustomizer";
+import { MidPromoCardsCustomizer } from "@/components/admin/MidPromoCardsCustomizer";
 import { ShowcaseCollectionsCustomizer } from "@/components/admin/ShowcaseCollectionsCustomizer";
 import { siteConfig } from "@/config/siteConfig";
 import {
@@ -92,7 +93,7 @@ const CATEGORY_COLORS = [
 
 export default function WebsiteContentPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"promo_cards" | "categories" | "showcase">("promo_cards");
+  const [activeTab, setActiveTab] = useState<"promo_cards" | "mid_promo_cards" | "categories" | "showcase">("promo_cards");
 
   const [categories, setCategories] = useState<StoreCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -595,6 +596,21 @@ export default function WebsiteContentPage() {
             </button>
 
             <button
+              onClick={() => setActiveTab("mid_promo_cards")}
+              className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+                activeTab === "mid_promo_cards"
+                  ? "border-[#FF7A00] text-[#002D62]"
+                  : "border-transparent text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+              <span>Feature Cards</span>
+              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-blue-100 text-[#002D62] font-extrabold">
+                3 Cards
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveTab("categories")}
               className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                 activeTab === "categories"
@@ -913,6 +929,16 @@ export default function WebsiteContentPage() {
              ======================================================== */}
           {activeTab === "promo_cards" && (
             <PromoCardsCustomizer
+              categories={categories}
+              showToast={showToast}
+            />
+          )}
+
+          {/* ========================================================
+              TAB: MIDDLE FEATURE PROMO CARDS (HOMEPAGE SECTION 6)
+             ======================================================== */}
+          {activeTab === "mid_promo_cards" && (
+            <MidPromoCardsCustomizer
               categories={categories}
               showToast={showToast}
             />

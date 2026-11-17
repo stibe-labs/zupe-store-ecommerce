@@ -127,7 +127,35 @@ const PROMO_CARDS: StorefrontPromoCard[] = [
 // ---------------------------------------------------------------------------
 // Middle 3 Promo Banners Data (Section 6) with plain background in round frame
 // ---------------------------------------------------------------------------
-const MID_PROMO_CARDS = [
+export interface StorefrontMidPromoCard {
+  id: string;
+  badge?: string;
+  titleLine1: string;
+  titleLine2?: string;
+  subtitle: string;
+  theme?: "dark" | "light";
+  cardBg?: string;
+  bgColor?: string;
+  bgGradient?: string;
+  textColor?: string;
+  subtitleColor?: string;
+  ctaType: "button" | "price" | "badge";
+  ctaText?: string;
+  ctaLink: string;
+  btnBgColor?: string;
+  btnTextColor?: string;
+  priceText?: string;
+  priceColor?: string;
+  badgeText?: string;
+  badgeBgColor?: string;
+  badgeTextColor?: string;
+  image: string;
+  imageAlt?: string;
+  imageBg?: string;
+  imageScale?: number;
+}
+
+const MID_PROMO_CARDS: StorefrontMidPromoCard[] = [
   {
     id: "speaker",
     badge: "AUDIO DEAL",
@@ -677,14 +705,57 @@ export function VittalDigitalStorefront({
 
   // Middle 3 Promo feature cards auto-slide on mobile every 3 seconds
   const [midPromoSlide, setMidPromoSlide] = useState(0);
+  const [midPromoCards, setMidPromoCards] = useState<StorefrontMidPromoCard[]>(MID_PROMO_CARDS);
+
+  useEffect(() => {
+    async function fetchMidPromoCards() {
+      try {
+        const res = await fetch("/api/content/mid-promo-banners");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.cards) && data.cards.length === 3) {
+          setMidPromoCards(
+            data.cards.map((c: any, idx: number) => ({
+              id: c.id || MID_PROMO_CARDS[idx].id,
+              badge: c.badge || MID_PROMO_CARDS[idx].badge,
+              titleLine1: c.titleLine1 || MID_PROMO_CARDS[idx].titleLine1,
+              titleLine2: c.titleLine2 || MID_PROMO_CARDS[idx].titleLine2,
+              subtitle: c.subtitle || MID_PROMO_CARDS[idx].subtitle,
+              theme: c.theme || MID_PROMO_CARDS[idx].theme || "dark",
+              bgColor: c.bgColor,
+              bgGradient: c.bgGradient || c.bgColor,
+              textColor: c.textColor,
+              subtitleColor: c.subtitleColor,
+              ctaType: c.ctaType || MID_PROMO_CARDS[idx].ctaType || "button",
+              ctaText: c.ctaText || MID_PROMO_CARDS[idx].ctaText || "Shop Now",
+              ctaLink: c.ctaLink || MID_PROMO_CARDS[idx].ctaLink,
+              btnBgColor: c.btnBgColor || "#FFBE00",
+              btnTextColor: c.btnTextColor || "#020617",
+              priceText: c.priceText || MID_PROMO_CARDS[idx].priceText || "₹799",
+              priceColor: c.priceColor,
+              badgeText: c.badgeText || MID_PROMO_CARDS[idx].badgeText || "Up to 30% Off",
+              badgeBgColor: c.badgeBgColor || "#FFBE00",
+              badgeTextColor: c.badgeTextColor || "#020617",
+              image: c.image || MID_PROMO_CARDS[idx].image,
+              imageAlt: c.imageAlt || MID_PROMO_CARDS[idx].imageAlt,
+              imageBg: c.imageBg || "#FFFFFF",
+              imageScale: typeof c.imageScale === "number" ? c.imageScale : 100,
+            }))
+          );
+        }
+      } catch (err) {
+        console.warn("Could not fetch customized middle promo cards, using defaults:", err);
+      }
+    }
+    fetchMidPromoCards();
+  }, []);
 
   // Auto-slide middle 3 promo cards on mobile every 3 seconds
   useEffect(() => {
     const midTimer = setInterval(() => {
-      setMidPromoSlide((prev) => (prev + 1) % MID_PROMO_CARDS.length);
+      setMidPromoSlide((prev) => (prev + 1) % midPromoCards.length);
     }, 3000);
     return () => clearInterval(midTimer);
-  }, []);
+  }, [midPromoCards.length]);
 
   // Countdown timer state matching reference: [06] : [15] : [48]
   const [timeLeft, setTimeLeft] = useState({ hours: 6, minutes: 15, seconds: 48 });
@@ -1260,61 +1331,92 @@ export function VittalDigitalStorefront({
       <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-2 sm:pt-3 sm:pb-3">
         {/* Desktop View: All 3 cards in responsive 3-column grid */}
         <div className="hidden md:grid md:grid-cols-3 gap-6">
-          {MID_PROMO_CARDS.map((card) => (
-            <div
-              key={card.id}
-              className={`relative rounded-2xl overflow-hidden ${card.cardBg} p-6 sm:p-7 flex items-center justify-between gap-4 min-h-[175px] shadow-sm hover:shadow-md transition-all group`}
-            >
-              <div className="z-10 flex-1 max-w-[210px]">
-                <h3 className={`text-lg sm:text-xl font-bold leading-tight ${card.theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                  {card.titleLine1} {card.titleLine2}
-                </h3>
-                <p className={`text-xs mt-1 font-medium ${card.theme === 'dark' ? 'text-blue-200' : 'text-slate-500'}`}>
-                  {card.subtitle}
-                </p>
-
-                {card.ctaType === "button" && (
-                  <Link
-                    href={card.ctaLink}
-                    className="inline-flex items-center gap-1.5 mt-4 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold text-xs px-4 py-2 rounded-md transition-colors shadow-xs w-fit"
-                  >
-                    <span>{card.ctaText}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                )}
-
-                {card.ctaType === "price" && (
-                  <Link href={card.ctaLink} className="block mt-3">
-                    <p className="text-2xl font-bold text-slate-900 hover:text-blue-600 transition-colors">
-                      {card.priceText}
-                    </p>
-                  </Link>
-                )}
-
-                {card.ctaType === "badge" && (
-                  <Link href={card.ctaLink} className="inline-block mt-3.5">
-                    <span className="bg-[#FFBE00] text-slate-950 font-bold text-xs px-3.5 py-1.5 rounded-md inline-block shadow-xs hover:bg-[#E5AA00] transition-colors">
-                      {card.badgeText}
-                    </span>
-                  </Link>
-                )}
-              </div>
-
-              {/* Round-edged white frame containing background-removed product image on plain background */}
-              <Link
-                href={card.ctaLink}
-                className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white shadow-md border border-slate-100 flex items-center justify-center p-2.5 overflow-hidden shrink-0 group-hover:scale-105 transition-transform"
+          {midPromoCards.map((card, idx) => {
+            const hasCustomBg = card.bgGradient?.includes("gradient") || card.bgGradient?.startsWith("#") || card.bgColor;
+            return (
+              <div
+                key={card.id || idx}
+                style={{
+                  background: hasCustomBg ? (card.bgGradient || card.bgColor) : undefined,
+                }}
+                className={`relative rounded-2xl overflow-hidden ${!hasCustomBg ? (card.cardBg || "bg-[#002D62] text-white") : ""} ${
+                  card.theme === 'dark' ? 'text-white' : 'text-slate-900'
+                } p-6 sm:p-7 flex items-center justify-between gap-4 min-h-[175px] shadow-sm hover:shadow-md transition-all group`}
               >
-                <Image
-                  src={card.image}
-                  alt={card.imageAlt}
-                  fill
-                  sizes="(max-width: 640px) 112px, 128px"
-                  className="object-contain p-2 drop-shadow-sm transition-transform duration-300 group-hover:scale-105"
-                />
-              </Link>
-            </div>
-          ))}
+                <div className="z-10 flex-1 max-w-[210px]">
+                  <h3
+                    style={{ color: card.textColor }}
+                    className={`text-lg sm:text-xl font-bold leading-tight ${!card.textColor ? (card.theme === 'dark' ? 'text-white' : 'text-slate-900') : ''}`}
+                  >
+                    {card.titleLine1} {card.titleLine2}
+                  </h3>
+                  <p
+                    style={{ color: card.subtitleColor }}
+                    className={`text-xs mt-1 font-medium ${!card.subtitleColor ? (card.theme === 'dark' ? 'text-blue-200' : 'text-slate-500') : ''}`}
+                  >
+                    {card.subtitle}
+                  </p>
+
+                  {card.ctaType === "button" && (
+                    <Link
+                      href={card.ctaLink}
+                      style={{
+                        backgroundColor: card.btnBgColor || "#FFBE00",
+                        color: card.btnTextColor || "#020617",
+                      }}
+                      className="inline-flex items-center gap-1.5 mt-4 font-bold text-xs px-4 py-2 rounded-md transition-colors shadow-xs w-fit hover:opacity-90 active:scale-95"
+                    >
+                      <span>{card.ctaText || "Shop Now"}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  )}
+
+                  {card.ctaType === "price" && (
+                    <Link href={card.ctaLink} className="block mt-3">
+                      <p
+                        style={{
+                          color: card.priceColor || (card.theme === 'dark' ? '#FFFFFF' : '#0F172A'),
+                        }}
+                        className="text-2xl font-bold hover:text-blue-600 transition-colors"
+                      >
+                        {card.priceText || "₹799"}
+                      </p>
+                    </Link>
+                  )}
+
+                  {card.ctaType === "badge" && (
+                    <Link href={card.ctaLink} className="inline-block mt-3.5">
+                      <span
+                        style={{
+                          backgroundColor: card.badgeBgColor || "#FFBE00",
+                          color: card.badgeTextColor || "#020617",
+                        }}
+                        className="font-bold text-xs px-3.5 py-1.5 rounded-md inline-block shadow-xs hover:opacity-90 transition-colors"
+                      >
+                        {card.badgeText || "Up to 30% Off"}
+                      </span>
+                    </Link>
+                  )}
+                </div>
+
+                {/* Round-edged white frame containing background-removed product image on plain background */}
+                <Link
+                  href={card.ctaLink}
+                  style={{ backgroundColor: card.imageBg || "#FFFFFF" }}
+                  className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-2xl shadow-md border border-slate-100 flex items-center justify-center p-2.5 overflow-hidden shrink-0 group-hover:scale-105 transition-transform"
+                >
+                  <Image
+                    src={card.image}
+                    alt={card.imageAlt || card.titleLine1}
+                    fill
+                    sizes="(max-width: 640px) 112px, 128px"
+                    style={{ transform: card.imageScale ? `scale(${card.imageScale / 100})` : undefined }}
+                    className="object-contain p-2 drop-shadow-sm transition-transform duration-300 group-hover:scale-105"
+                  />
+                </Link>
+              </div>
+            );
+          })}
         </div>
 
         {/* Mobile View: Animated 3-second Auto-Slide Carousel from Right */}
@@ -1324,64 +1426,98 @@ export function VittalDigitalStorefront({
               key={midPromoSlide}
               className="animate-in fade-in slide-in-from-right duration-500"
             >
-              <div
-                className={`relative rounded-2xl overflow-hidden ${MID_PROMO_CARDS[midPromoSlide].cardBg} p-5 sm:p-6 flex items-center justify-between gap-3 min-h-[160px] shadow-sm`}
-              >
-                <div className="z-10 flex-1 max-w-[190px]">
-                  <h3 className={`text-base font-bold leading-tight ${MID_PROMO_CARDS[midPromoSlide].theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                    {MID_PROMO_CARDS[midPromoSlide].titleLine1} {MID_PROMO_CARDS[midPromoSlide].titleLine2}
-                  </h3>
-                  <p className={`text-[11px] mt-1 font-medium ${MID_PROMO_CARDS[midPromoSlide].theme === 'dark' ? 'text-blue-200' : 'text-slate-500'}`}>
-                    {MID_PROMO_CARDS[midPromoSlide].subtitle}
-                  </p>
-
-                  {MID_PROMO_CARDS[midPromoSlide].ctaType === "button" && (
-                    <Link
-                      href={MID_PROMO_CARDS[midPromoSlide].ctaLink}
-                      className="inline-flex items-center gap-1.5 mt-3.5 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold text-xs px-3.5 py-1.5 rounded-md transition-colors shadow-xs w-fit"
-                    >
-                      <span>{MID_PROMO_CARDS[midPromoSlide].ctaText}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  )}
-
-                  {MID_PROMO_CARDS[midPromoSlide].ctaType === "price" && (
-                    <Link href={MID_PROMO_CARDS[midPromoSlide].ctaLink} className="block mt-2.5">
-                      <p className="text-xl font-bold text-slate-900">
-                        {MID_PROMO_CARDS[midPromoSlide].priceText}
+              {(() => {
+                const currentCard = midPromoCards[midPromoSlide] || midPromoCards[0];
+                const hasCustomBg = currentCard.bgGradient?.includes("gradient") || currentCard.bgGradient?.startsWith("#") || currentCard.bgColor;
+                return (
+                  <div
+                    style={{
+                      background: hasCustomBg ? (currentCard.bgGradient || currentCard.bgColor) : undefined,
+                    }}
+                    className={`relative rounded-2xl overflow-hidden ${!hasCustomBg ? (currentCard.cardBg || "bg-[#002D62] text-white") : ""} ${
+                      currentCard.theme === 'dark' ? 'text-white' : 'text-slate-900'
+                    } p-5 sm:p-6 flex items-center justify-between gap-3 min-h-[160px] shadow-sm`}
+                  >
+                    <div className="z-10 flex-1 max-w-[190px]">
+                      <h3
+                        style={{ color: currentCard.textColor }}
+                        className={`text-base font-bold leading-tight ${!currentCard.textColor ? (currentCard.theme === 'dark' ? 'text-white' : 'text-slate-900') : ''}`}
+                      >
+                        {currentCard.titleLine1} {currentCard.titleLine2}
+                      </h3>
+                      <p
+                        style={{ color: currentCard.subtitleColor }}
+                        className={`text-[11px] mt-1 font-medium ${!currentCard.subtitleColor ? (currentCard.theme === 'dark' ? 'text-blue-200' : 'text-slate-500') : ''}`}
+                      >
+                        {currentCard.subtitle}
                       </p>
-                    </Link>
-                  )}
 
-                  {MID_PROMO_CARDS[midPromoSlide].ctaType === "badge" && (
-                    <Link href={MID_PROMO_CARDS[midPromoSlide].ctaLink} className="inline-block mt-3">
-                      <span className="bg-[#FFBE00] text-slate-950 font-bold text-xs px-3 py-1 rounded-md inline-block shadow-xs">
-                        {MID_PROMO_CARDS[midPromoSlide].badgeText}
-                      </span>
-                    </Link>
-                  )}
-                </div>
+                      {currentCard.ctaType === "button" && (
+                        <Link
+                          href={currentCard.ctaLink}
+                          style={{
+                            backgroundColor: currentCard.btnBgColor || "#FFBE00",
+                            color: currentCard.btnTextColor || "#020617",
+                          }}
+                          className="inline-flex items-center gap-1.5 mt-3.5 font-bold text-xs px-3.5 py-1.5 rounded-md transition-colors shadow-xs w-fit"
+                        >
+                          <span>{currentCard.ctaText || "Shop Now"}</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      )}
 
-                {/* Round-edged white frame in mobile view */}
-                <Link
-                  href={MID_PROMO_CARDS[midPromoSlide].ctaLink}
-                  className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white shadow-md border border-slate-100 flex items-center justify-center p-2 overflow-hidden shrink-0"
-                >
-                  <Image
-                    src={MID_PROMO_CARDS[midPromoSlide].image}
-                    alt={MID_PROMO_CARDS[midPromoSlide].imageAlt}
-                    fill
-                    sizes="96px"
-                    className="object-contain p-1.5 drop-shadow-sm"
-                  />
-                </Link>
-              </div>
+                      {currentCard.ctaType === "price" && (
+                        <Link href={currentCard.ctaLink} className="block mt-2.5">
+                          <p
+                            style={{
+                              color: currentCard.priceColor || (currentCard.theme === 'dark' ? '#FFFFFF' : '#0F172A'),
+                            }}
+                            className="text-xl font-bold"
+                          >
+                            {currentCard.priceText || "₹799"}
+                          </p>
+                        </Link>
+                      )}
+
+                      {currentCard.ctaType === "badge" && (
+                        <Link href={currentCard.ctaLink} className="inline-block mt-3">
+                          <span
+                            style={{
+                              backgroundColor: currentCard.badgeBgColor || "#FFBE00",
+                              color: currentCard.badgeTextColor || "#020617",
+                            }}
+                            className="font-bold text-xs px-3 py-1 rounded-md inline-block shadow-xs"
+                          >
+                            {currentCard.badgeText || "Up to 30% Off"}
+                          </span>
+                        </Link>
+                      )}
+                    </div>
+
+                    {/* Round-edged white frame in mobile view */}
+                    <Link
+                      href={currentCard.ctaLink}
+                      style={{ backgroundColor: currentCard.imageBg || "#FFFFFF" }}
+                      className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl shadow-md border border-slate-100 flex items-center justify-center p-2 overflow-hidden shrink-0"
+                    >
+                      <Image
+                        src={currentCard.image}
+                        alt={currentCard.imageAlt || currentCard.titleLine1}
+                        fill
+                        sizes="96px"
+                        style={{ transform: currentCard.imageScale ? `scale(${currentCard.imageScale / 100})` : undefined }}
+                        className="object-contain p-1.5 drop-shadow-sm"
+                      />
+                    </Link>
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
           {/* Mobile Dots Indicator */}
           <div className="flex items-center justify-center gap-2 mt-2">
-            {MID_PROMO_CARDS.map((_, idx) => (
+            {midPromoCards.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setMidPromoSlide(idx)}

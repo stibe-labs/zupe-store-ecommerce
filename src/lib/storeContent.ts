@@ -622,6 +622,187 @@ export async function savePromoBanners(banners: PromoBannerCard[]): Promise<Prom
 }
 
 // ========================================================
+// MIDDLE 3 FEATURE PROMO CARDS (Homepage Section 6)
+// ========================================================
+export interface MidPromoCard {
+  id: string; // "speaker" | "powerbank" | "console"
+  badge?: string; // e.g. "AUDIO DEAL", "COMPACT CHARGER", "GAMING GEAR"
+  titleLine1: string; // e.g. "Super Cheap"
+  titleLine2: string; // e.g. "Price"
+  title?: string;
+  subtitle: string; // e.g. "Earn 20% Back in Rewards"
+  theme?: "dark" | "light";
+  cardBg?: string; // Tailwind class fallback or hex
+  bgColor?: string; // Hex color
+  bgGradient?: string; // CSS linear-gradient string
+  textColor?: string; // Heading text color
+  subtitleColor?: string; // Subtitle text color
+  ctaType: "button" | "price" | "badge"; // Action style
+  ctaText?: string; // Button text e.g. "Shop Now"
+  ctaLink: string; // Target URL e.g. "/products?category=Speakers"
+  btnBgColor?: string; // Button background color e.g. "#FFBE00"
+  btnTextColor?: string; // Button text color e.g. "#020617"
+  priceText?: string; // Price display e.g. "₹799"
+  priceColor?: string; // Price text color
+  badgeText?: string; // Badge text e.g. "Up to 30% Off"
+  badgeBgColor?: string; // Badge background color e.g. "#FFBE00"
+  badgeTextColor?: string; // Badge text color e.g. "#020617"
+  image: string; // Product photo URL e.g. "/vittal/promo-speaker-nobg.png"
+  imageAlt?: string; // Alt text
+  imageBg?: string; // Squircle background color e.g. "#FFFFFF"
+  imageScale?: number; // Zoom level in % (50 - 150)
+}
+
+export const DEFAULT_MID_PROMO_CARDS: MidPromoCard[] = [
+  {
+    id: "speaker",
+    badge: "AUDIO DEAL",
+    titleLine1: "Super",
+    titleLine2: "Cheap Price",
+    title: "Super Cheap Price",
+    subtitle: "Earn 20% Back in Rewards",
+    theme: "dark",
+    bgColor: "#002D62",
+    bgGradient: "linear-gradient(135deg, #002D62 0%, #001f44 100%)",
+    textColor: "#FFFFFF",
+    subtitleColor: "#BFDBFE",
+    ctaType: "button",
+    ctaText: "Shop Now",
+    ctaLink: "/products?category=Speakers",
+    btnBgColor: "#FFBE00",
+    btnTextColor: "#020617",
+    image: "/vittal/promo-speaker-nobg.png",
+    imageAlt: "Wireless Bluetooth Speaker",
+    imageBg: "#FFFFFF",
+    imageScale: 100,
+  },
+  {
+    id: "powerbank",
+    badge: "COMPACT CHARGER",
+    titleLine1: "Power Bank",
+    titleLine2: "10000mAh",
+    title: "Power Bank 10000mAh",
+    subtitle: "Compact, Fast & Reliable",
+    theme: "light",
+    bgColor: "#FFFFFF",
+    bgGradient: "linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 50%, #EFF6FF 100%)",
+    textColor: "#0F172A",
+    subtitleColor: "#64748B",
+    ctaType: "price",
+    priceText: "₹799",
+    priceColor: "#0F172A",
+    ctaLink: "/products?category=Accessories",
+    btnBgColor: "#FFBE00",
+    btnTextColor: "#020617",
+    image: "/vittal/promo-powerbank-nobg.png",
+    imageAlt: "Power Bank 10000mAh",
+    imageBg: "#FFFFFF",
+    imageScale: 100,
+  },
+  {
+    id: "console",
+    badge: "GAMING GEAR",
+    titleLine1: "Console",
+    titleLine2: "Accessories",
+    title: "Console Accessories",
+    subtitle: "for PS5 & Xbox",
+    theme: "dark",
+    bgColor: "#002D62",
+    bgGradient: "linear-gradient(135deg, #002D62 0%, #001f44 100%)",
+    textColor: "#FFFFFF",
+    subtitleColor: "#BFDBFE",
+    ctaType: "badge",
+    badgeText: "Up to 30% Off",
+    badgeBgColor: "#FFBE00",
+    badgeTextColor: "#020617",
+    ctaLink: "/products?category=Gaming+%26+Accessories",
+    btnBgColor: "#FFBE00",
+    btnTextColor: "#020617",
+    image: "/vittal/promo-console-nobg.png",
+    imageAlt: "DualSense Wireless Controller",
+    imageBg: "#FFFFFF",
+    imageScale: 100,
+  },
+];
+
+let midPromoCachedAt = 0;
+let inMemoryMidPromoCards: MidPromoCard[] = [...DEFAULT_MID_PROMO_CARDS];
+
+export async function getMidPromoCards(): Promise<MidPromoCard[]> {
+  const now = Date.now();
+  if (now - midPromoCachedAt > TTL_MS) {
+    try {
+      const rows = await executeD1Query<{ provider: string; config_data: string; is_active: number }>(
+        "SELECT config_data FROM integrations_config WHERE provider = ?",
+        ["mid_promo_banners"]
+      );
+      if (rows && rows.length > 0 && rows[0].config_data) {
+        const parsed = JSON.parse(rows[0].config_data);
+        if (Array.isArray(parsed) && parsed.length === 3) {
+          inMemoryMidPromoCards = parsed.map((card: any, idx: number) => {
+            const fallback = DEFAULT_MID_PROMO_CARDS[idx] || DEFAULT_MID_PROMO_CARDS[0];
+            return {
+              id: card.id || fallback.id,
+              badge: card.badge || fallback.badge,
+              titleLine1: card.titleLine1 || fallback.titleLine1,
+              titleLine2: card.titleLine2 || fallback.titleLine2,
+              title: card.title || `${card.titleLine1 || ''} ${card.titleLine2 || ''}`.trim(),
+              subtitle: card.subtitle || fallback.subtitle,
+              theme: card.theme || fallback.theme,
+              bgColor: card.bgColor || fallback.bgColor,
+              bgGradient: card.bgGradient || fallback.bgGradient,
+              textColor: card.textColor || fallback.textColor,
+              subtitleColor: card.subtitleColor || fallback.subtitleColor,
+              ctaType: card.ctaType || fallback.ctaType || "button",
+              ctaText: card.ctaText || fallback.ctaText,
+              ctaLink: card.ctaLink || fallback.ctaLink,
+              btnBgColor: card.btnBgColor || fallback.btnBgColor,
+              btnTextColor: card.btnTextColor || fallback.btnTextColor,
+              priceText: card.priceText || fallback.priceText,
+              priceColor: card.priceColor || fallback.priceColor,
+              badgeText: card.badgeText || fallback.badgeText,
+              badgeBgColor: card.badgeBgColor || fallback.badgeBgColor,
+              badgeTextColor: card.badgeTextColor || fallback.badgeTextColor,
+              image: card.image || fallback.image,
+              imageAlt: card.imageAlt || fallback.imageAlt,
+              imageBg: card.imageBg || fallback.imageBg || "#FFFFFF",
+              imageScale: typeof card.imageScale === "number" ? card.imageScale : 100,
+            };
+          });
+        }
+      }
+      midPromoCachedAt = Date.now();
+    } catch (err) {
+      console.warn("Failed to fetch mid_promo_banners from D1:", err);
+    }
+  }
+
+  return inMemoryMidPromoCards;
+}
+
+export async function saveMidPromoCards(cards: MidPromoCard[]): Promise<MidPromoCard[]> {
+  inMemoryMidPromoCards = cards;
+  midPromoCachedAt = Date.now();
+
+  try {
+    const jsonStr = JSON.stringify(cards);
+    await executeD1Query(
+      `INSERT INTO integrations_config (provider, config_data, is_active, last_synced_at, updated_at)
+       VALUES (?, ?, 1, datetime('now'), datetime('now'))
+       ON CONFLICT(provider) DO UPDATE SET 
+         config_data = excluded.config_data,
+         is_active = excluded.is_active,
+         updated_at = excluded.updated_at`,
+      ["mid_promo_banners", jsonStr]
+    );
+  } catch (err) {
+    console.warn("Failed to persist mid_promo_banners to D1:", err);
+  }
+
+  return inMemoryMidPromoCards;
+}
+
+// ========================================================
 // SHOWCASE COLLECTIONS (Top Pickz, New Arrivals, Best Sellers, Today's Deals)
 // ========================================================
 export interface ShowcaseCollectionsConfig {
