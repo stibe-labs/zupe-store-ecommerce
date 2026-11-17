@@ -1779,7 +1779,6 @@ function CheckoutContent() {
       setLoading(false);
     }
   };
-  };
 
   // ========================================================
   // COD TO PREPAID SWITCH VIEW (TRIGGERED FROM WHATSAPP / TRACKING)
