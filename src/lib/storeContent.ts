@@ -452,49 +452,100 @@ export async function saveCategories(categories: StoreCategory[]): Promise<Store
 }
 
 // ========================================================
-// PROMO DUAL BANNER CARDS (Homepage 2-Card Promo Grid)
+// THREE-COLUMN PROMO BANNERS (Homepage 3-Card Section)
 // ========================================================
 export interface PromoBannerCard {
-  id: "card-1" | "card-2";
-  title: string;
-  subtitle: string;
-  bgColor: string; // Hex color or CSS linear-gradient string
-  textColor: string; // Heading text color
-  subtitleColor: string; // Subtitle text color
-  ctaText: string; // Button text
-  ctaLink: string; // Redirect path or category URL
-  btnBgColor: string; // Button background color
-  btnTextColor: string; // Button text color
-  image1: string; // Main image URL or base64 Data URL
-  image2?: string; // Optional secondary collage image (Card 1)
+  id: string; // "card-1" | "card-2" | "card-3" (or "smartphones" | "earbuds" | "smartwatches")
+  badge: string; // e.g. "BEST DEALS", "NEW ARRIVAL", "TOP SELLER"
+  badgeBg?: string; // e.g. "#002D62"
+  badgeText?: string; // e.g. "#FFFFFF"
+  titleLine1: string; // e.g. "Save Up To"
+  titleLine2: string; // e.g. "50% Off"
+  title?: string; // optional fallback title
+  subtitle: string; // e.g. "On Smartphones"
+  bgColor?: string; // e.g. "#EAEBFF"
+  bgGradient?: string; // CSS gradient string or tailwind gradient classes
+  textColor: string; // Heading text color, e.g. "#002D62"
+  subtitleColor: string; // Subtitle text color, e.g. "#475569"
+  ctaText: string; // Button text, e.g. "Shop Now"
+  ctaLink: string; // Destination URL e.g. "/products?category=Smartphones"
+  btnBgColor: string; // Button background e.g. "#FFBE00"
+  btnTextColor: string; // Button text e.g. "#020617"
+  image: string; // Product photo e.g. "/vittal/products/iphone-15-transparent.png"
+  imageAlt?: string; // Alt text
+  imageClass?: string; // CSS classes for sizing
+  imageScale?: number; // Zoom level in % (50 - 150)
+  // For backwards compatibility:
+  image1?: string;
+  image2?: string;
 }
 
 export const DEFAULT_PROMO_BANNERS: PromoBannerCard[] = [
   {
     id: "card-1",
-    title: "Power Your Work",
-    subtitle: "Built for your next big idea.",
-    bgColor: "#F0F4F8",
-    textColor: "#003055",
+    badge: "BEST DEALS",
+    badgeBg: "#002D62",
+    badgeText: "#FFFFFF",
+    titleLine1: "Save Up To",
+    titleLine2: "50% Off",
+    title: "Save Up To 50% Off",
+    subtitle: "On Smartphones",
+    bgColor: "#EAEBFF",
+    bgGradient: "linear-gradient(135deg, #EAEBFF 0%, #E2E6FF 50%, #D5DCFF 100%)",
+    textColor: "#002D62",
     subtitleColor: "#475569",
-    ctaText: "Shop Laptops",
-    ctaLink: "/products?category=Laptops",
-    btnBgColor: "#003055",
-    btnTextColor: "#FFFFFF",
-    image1: "/vittal/banner-laptops.png",
+    ctaText: "Shop Now",
+    ctaLink: "/products?category=Smartphones",
+    btnBgColor: "#FFBE00",
+    btnTextColor: "#020617",
+    image: "/vittal/products/iphone-15-transparent.png",
+    imageAlt: "Smartphone Sale",
+    imageClass: "w-40 sm:w-44 h-44 sm:h-48",
+    imageScale: 100,
   },
   {
     id: "card-2",
-    title: "Feel Every Beat",
-    subtitle: "Your world. Better sound.",
-    bgColor: "#002B4D",
-    textColor: "#FFFFFF",
-    subtitleColor: "#94A3B8",
-    ctaText: "Explore Audio",
+    badge: "NEW ARRIVAL",
+    badgeBg: "#002D62",
+    badgeText: "#FFFFFF",
+    titleLine1: "B&O Beoplay E8",
+    titleLine2: "3.0 Wireless",
+    title: "B&O Beoplay E8 3.0 Wireless",
+    subtitle: "True Wireless Earbuds with Rich Sound",
+    bgColor: "#FFF4EB",
+    bgGradient: "linear-gradient(135deg, #FFF4EB 0%, #FCEAE0 50%, #F5D8CA 100%)",
+    textColor: "#002D62",
+    subtitleColor: "#475569",
+    ctaText: "Shop Now",
     ctaLink: "/products?category=Headphones+%26+Earbuds",
-    btnBgColor: "#FFFFFF",
-    btnTextColor: "#003055",
-    image1: "/vittal/banner-audio.png",
+    btnBgColor: "#FFBE00",
+    btnTextColor: "#020617",
+    image: "/vittal/products/airpods-pro-transparent.png",
+    imageAlt: "B&O Beoplay E8 3.0",
+    imageClass: "w-40 sm:w-44 h-40 sm:h-44",
+    imageScale: 100,
+  },
+  {
+    id: "card-3",
+    badge: "TOP SELLER",
+    badgeBg: "#002D62",
+    badgeText: "#FFFFFF",
+    titleLine1: "Beauty on",
+    titleLine2: "Your Wrist",
+    title: "Beauty on Your Wrist",
+    subtitle: "Shop Smartwatches for Every Lifestyle",
+    bgColor: "#E6F3FA",
+    bgGradient: "linear-gradient(135deg, #E6F3FA 0%, #D8ECF7 50%, #C9E4F4 100%)",
+    textColor: "#002D62",
+    subtitleColor: "#475569",
+    ctaText: "Shop Now",
+    ctaLink: "/products?category=Smartwatches",
+    btnBgColor: "#FFBE00",
+    btnTextColor: "#020617",
+    image: "/vittal/products/smart-watch-1-transparent.png",
+    imageAlt: "Smartwatches",
+    imageClass: "w-36 sm:w-40 h-44 sm:h-48",
+    imageScale: 100,
   },
 ];
 
@@ -510,13 +561,33 @@ export async function getPromoBanners(): Promise<PromoBannerCard[]> {
       );
       if (rows && rows.length > 0 && rows[0].config_data) {
         const parsed = JSON.parse(rows[0].config_data);
-        if (Array.isArray(parsed) && parsed.length === 2) {
-          // Strip base64 images to prevent giant payloads burning Worker CPU
-          inMemoryPromoBanners = parsed.map((card: PromoBannerCard) => ({
-            ...card,
-            image1: card.image1?.startsWith("data:") ? DEFAULT_PROMO_BANNERS.find(d => d.id === card.id)?.image1 ?? card.image1 : card.image1,
-            image2: card.image2?.startsWith("data:") ? DEFAULT_PROMO_BANNERS.find(d => d.id === card.id)?.image2 ?? card.image2 : card.image2,
-          }));
+        if (Array.isArray(parsed) && parsed.length === 3) {
+          // Normalize and validate 3 cards
+          inMemoryPromoBanners = parsed.map((card: any, idx: number) => {
+            const fallback = DEFAULT_PROMO_BANNERS[idx] || DEFAULT_PROMO_BANNERS[0];
+            return {
+              id: card.id || fallback.id,
+              badge: card.badge || fallback.badge,
+              badgeBg: card.badgeBg || fallback.badgeBg || "#002D62",
+              badgeText: card.badgeText || fallback.badgeText || "#FFFFFF",
+              titleLine1: card.titleLine1 || card.title || fallback.titleLine1,
+              titleLine2: card.titleLine2 || fallback.titleLine2,
+              title: card.title || `${card.titleLine1 || ''} ${card.titleLine2 || ''}`.trim(),
+              subtitle: card.subtitle || fallback.subtitle,
+              bgColor: card.bgColor || fallback.bgColor,
+              bgGradient: card.bgGradient || fallback.bgGradient,
+              textColor: card.textColor || fallback.textColor,
+              subtitleColor: card.subtitleColor || fallback.subtitleColor,
+              ctaText: card.ctaText || fallback.ctaText,
+              ctaLink: card.ctaLink || fallback.ctaLink,
+              btnBgColor: card.btnBgColor || fallback.btnBgColor,
+              btnTextColor: card.btnTextColor || fallback.btnTextColor,
+              image: card.image || card.image1 || fallback.image,
+              imageAlt: card.imageAlt || fallback.imageAlt,
+              imageClass: card.imageClass || fallback.imageClass,
+              imageScale: typeof card.imageScale === "number" ? card.imageScale : 100,
+            };
+          });
         }
       }
       promoBannersCachedAt = Date.now();

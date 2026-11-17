@@ -588,9 +588,9 @@ export default function WebsiteContentPage() {
               }`}
             >
               <Layers className="w-4 h-4" />
-              <span>Promo Dual Cards</span>
+              <span>Promo Banners</span>
               <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-orange-100 text-[#002D62] font-extrabold">
-                2 Cards
+                3 Cards
               </span>
             </button>
 

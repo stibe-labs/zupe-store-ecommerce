@@ -44,9 +44,9 @@ export async function POST(req: NextRequest) {
     }
 
     const { banners } = body;
-    if (!banners || !Array.isArray(banners) || banners.length !== 2) {
+    if (!banners || !Array.isArray(banners) || banners.length !== 3) {
       return NextResponse.json(
-        { success: false, error: "Exactly 2 promo banner cards are required." },
+        { success: false, error: "Exactly 3 promo banner cards are required." },
         { status: 400 }
       );
     }

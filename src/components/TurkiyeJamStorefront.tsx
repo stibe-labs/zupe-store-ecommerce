@@ -59,7 +59,29 @@ const CATEGORIES = [
 // ---------------------------------------------------------------------------
 // Three Promo Banners Data (All background-removed transparent PNGs)
 // ---------------------------------------------------------------------------
-const PROMO_CARDS = [
+export interface StorefrontPromoCard {
+  id: string;
+  badge: string;
+  badgeBg?: string;
+  badgeText?: string;
+  titleLine1: string;
+  titleLine2?: string;
+  subtitle: string;
+  link: string;
+  ctaText?: string;
+  btnBgColor?: string;
+  btnTextColor?: string;
+  image: string;
+  imageAlt?: string;
+  imageClass?: string;
+  imageScale?: number;
+  bgGradient?: string;
+  bgColor?: string;
+  textColor?: string;
+  subtitleColor?: string;
+}
+
+const PROMO_CARDS: StorefrontPromoCard[] = [
   {
     id: "smartphones",
     badge: "BEST DEALS",
@@ -613,6 +635,46 @@ export function VittalDigitalStorefront({
 
   // Mobile 3-Card Promo Carousel auto-slides every 3 seconds (came from right side)
   const [promoSlide, setPromoSlide] = useState(0);
+  // Promo 3-Cards Dynamic State (customizable via Admin Website Content)
+  const [promoCards, setPromoCards] = useState<StorefrontPromoCard[]>(PROMO_CARDS);
+
+  useEffect(() => {
+    async function fetchPromoBanners() {
+      try {
+        const res = await fetch("/api/content/promo-banners");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.banners) && data.banners.length === 3) {
+          setPromoCards(
+            data.banners.map((b: any, idx: number) => ({
+              id: b.id || `card-${idx + 1}`,
+              badge: b.badge || PROMO_CARDS[idx].badge,
+              badgeBg: b.badgeBg || "#002D62",
+              badgeText: b.badgeText || "#FFFFFF",
+              titleLine1: b.titleLine1 || PROMO_CARDS[idx].titleLine1,
+              titleLine2: b.titleLine2 || PROMO_CARDS[idx].titleLine2,
+              subtitle: b.subtitle || PROMO_CARDS[idx].subtitle,
+              link: b.ctaLink || b.link || PROMO_CARDS[idx].link,
+              ctaText: b.ctaText || "Shop Now",
+              btnBgColor: b.btnBgColor || "#FFBE00",
+              btnTextColor: b.btnTextColor || "#020617",
+              image: b.image || b.image1 || PROMO_CARDS[idx].image,
+              imageAlt: b.imageAlt || PROMO_CARDS[idx].imageAlt,
+              imageClass: b.imageClass || PROMO_CARDS[idx].imageClass,
+              imageScale: typeof b.imageScale === "number" ? b.imageScale : 100,
+              bgGradient:
+                b.bgGradient || b.bgColor || PROMO_CARDS[idx].bgGradient,
+              textColor: b.textColor || "#002D62",
+              subtitleColor: b.subtitleColor || "#475569",
+            }))
+          );
+        }
+      } catch (err) {
+        console.warn("Could not fetch customized promo banners, using defaults:", err);
+      }
+    }
+    fetchPromoBanners();
+  }, []);
+
   // Middle 3 Promo feature cards auto-slide on mobile every 3 seconds
   const [midPromoSlide, setMidPromoSlide] = useState(0);
 
@@ -640,10 +702,10 @@ export function VittalDigitalStorefront({
   // Auto-slide mobile promo cards every 3 seconds
   useEffect(() => {
     const promoTimer = setInterval(() => {
-      setPromoSlide((prev) => (prev + 1) % PROMO_CARDS.length);
+      setPromoSlide((prev) => (prev + 1) % promoCards.length);
     }, 3000);
     return () => clearInterval(promoTimer);
-  }, []);
+  }, [promoCards.length]);
 
   // Auto-slide center AirPods Max spotlight colors every 3 seconds
   useEffect(() => {
@@ -806,41 +868,68 @@ export function VittalDigitalStorefront({
       <section className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-1.5 pb-2 sm:pb-3">
         {/* Desktop View: All 3 cards side-by-side in 3-column grid */}
         <div className="hidden md:grid md:grid-cols-3 gap-6">
-          {PROMO_CARDS.map((card) => (
-            <div
-              key={card.id}
-              className={`relative rounded-2xl overflow-hidden ${card.bgGradient} border p-6 sm:p-7 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-shadow`}
-            >
-              <div className="z-10 max-w-[210px]">
-                <span className="text-[10px] font-bold tracking-wider uppercase bg-[#002D62] text-white px-2.5 py-1 rounded shadow-xs inline-block mb-2">
-                  {card.badge}
-                </span>
-                <h3 className="text-xl sm:text-2xl font-bold text-[#002D62] leading-tight mt-1">
-                  {card.titleLine1}
-                  <br />
-                  {card.titleLine2}
-                </h3>
-                <p className="text-xs text-slate-600 font-medium mt-1">
-                  {card.subtitle}
-                </p>
-                <Link
-                  href={card.link}
-                  className="inline-flex items-center gap-1.5 mt-5 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold text-xs px-4 py-2.5 rounded-md transition-colors shadow-sm"
-                >
-                  <span>Shop Now</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+          {promoCards.map((card) => {
+            const hasCustomBg = card.bgGradient?.includes("gradient") || card.bgGradient?.startsWith("#") || card.bgColor;
+            return (
+              <div
+                key={card.id}
+                style={{
+                  background: hasCustomBg ? (card.bgGradient || card.bgColor) : undefined,
+                }}
+                className={`relative rounded-2xl overflow-hidden ${!hasCustomBg ? card.bgGradient : ""} border border-slate-200/70 p-6 sm:p-7 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-shadow`}
+              >
+                <div className="z-10 max-w-[210px]">
+                  <span
+                    style={{
+                      backgroundColor: card.badgeBg || "#002D62",
+                      color: card.badgeText || "#FFFFFF",
+                    }}
+                    className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded shadow-xs inline-block mb-2"
+                  >
+                    {card.badge}
+                  </span>
+                  <h3
+                    style={{ color: card.textColor || "#002D62" }}
+                    className="text-xl sm:text-2xl font-bold leading-tight mt-1"
+                  >
+                    {card.titleLine1}
+                    {card.titleLine2 ? (
+                      <>
+                        <br />
+                        {card.titleLine2}
+                      </>
+                    ) : null}
+                  </h3>
+                  <p
+                    style={{ color: card.subtitleColor || "#475569" }}
+                    className="text-xs font-medium mt-1"
+                  >
+                    {card.subtitle}
+                  </p>
+                  <Link
+                    href={card.link}
+                    style={{
+                      backgroundColor: card.btnBgColor || "#FFBE00",
+                      color: card.btnTextColor || "#020617",
+                    }}
+                    className="inline-flex items-center gap-1.5 mt-5 font-bold text-xs px-4 py-2.5 rounded-md transition-colors shadow-sm hover:opacity-90 active:scale-95"
+                  >
+                    <span>{card.ctaText || "Shop Now"}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+                <div className={`absolute right-3 bottom-2 ${card.imageClass} z-0`}>
+                  <Image
+                    src={card.image}
+                    alt={card.imageAlt || card.titleLine1 || "Promo product"}
+                    fill
+                    style={{ transform: card.imageScale ? `scale(${card.imageScale / 100})` : undefined }}
+                    className="object-contain object-bottom-right drop-shadow-md"
+                  />
+                </div>
               </div>
-              <div className={`absolute right-3 bottom-2 ${card.imageClass} z-0`}>
-                <Image
-                  src={card.image}
-                  alt={card.imageAlt}
-                  fill
-                  className="object-contain object-bottom-right drop-shadow-md"
-                />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Mobile View: Single card position with 3-second auto-slide animation from the right */}
@@ -855,48 +944,78 @@ export function VittalDigitalStorefront({
                 transition={{ duration: 0.55, ease: [0.25, 1, 0.5, 1] }}
                 className="w-full"
               >
-                <div
-                  className={`relative rounded-2xl overflow-hidden ${PROMO_CARDS[promoSlide].bgGradient} border p-6 flex flex-col justify-between min-h-[220px] shadow-sm`}
-                >
-                  <div className="z-10 max-w-[200px]">
-                    <span className="text-[10px] font-bold tracking-wider uppercase bg-[#002D62] text-white px-2.5 py-1 rounded shadow-xs inline-block mb-2">
-                      {PROMO_CARDS[promoSlide].badge}
-                    </span>
-                    <h3 className="text-xl font-bold text-[#002D62] leading-tight mt-1">
-                      {PROMO_CARDS[promoSlide].titleLine1}
-                      <br />
-                      {PROMO_CARDS[promoSlide].titleLine2}
-                    </h3>
-                    <p className="text-xs text-slate-600 font-medium mt-1">
-                      {PROMO_CARDS[promoSlide].subtitle}
-                    </p>
-                    <Link
-                      href={PROMO_CARDS[promoSlide].link}
-                      className="inline-flex items-center gap-1.5 mt-4 bg-[#FFBE00] hover:bg-[#E5AA00] text-slate-950 font-bold text-xs px-4 py-2 rounded-md transition-colors shadow-sm"
+                {(() => {
+                  const currentCard = promoCards[promoSlide] || promoCards[0];
+                  const hasCustomBg = currentCard.bgGradient?.includes("gradient") || currentCard.bgGradient?.startsWith("#") || currentCard.bgColor;
+                  return (
+                    <div
+                      style={{
+                        background: hasCustomBg ? (currentCard.bgGradient || currentCard.bgColor) : undefined,
+                      }}
+                      className={`relative rounded-2xl overflow-hidden ${!hasCustomBg ? currentCard.bgGradient : ""} border border-slate-200/70 p-6 flex flex-col justify-between min-h-[220px] shadow-sm`}
                     >
-                      <span>Shop Now</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                  <div
-                    className={`absolute right-3 bottom-2 ${PROMO_CARDS[promoSlide].imageClass} z-0`}
-                  >
-                    <Image
-                      src={PROMO_CARDS[promoSlide].image}
-                      alt={PROMO_CARDS[promoSlide].imageAlt}
-                      fill
-                      priority
-                      className="object-contain object-bottom-right drop-shadow-md"
-                    />
-                  </div>
-                </div>
+                      <div className="z-10 max-w-[200px]">
+                        <span
+                          style={{
+                            backgroundColor: currentCard.badgeBg || "#002D62",
+                            color: currentCard.badgeText || "#FFFFFF",
+                          }}
+                          className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded shadow-xs inline-block mb-2"
+                        >
+                          {currentCard.badge}
+                        </span>
+                        <h3
+                          style={{ color: currentCard.textColor || "#002D62" }}
+                          className="text-xl font-bold leading-tight mt-1"
+                        >
+                          {currentCard.titleLine1}
+                          {currentCard.titleLine2 ? (
+                            <>
+                              <br />
+                              {currentCard.titleLine2}
+                            </>
+                          ) : null}
+                        </h3>
+                        <p
+                          style={{ color: currentCard.subtitleColor || "#475569" }}
+                          className="text-xs font-medium mt-1"
+                        >
+                          {currentCard.subtitle}
+                        </p>
+                        <Link
+                          href={currentCard.link}
+                          style={{
+                            backgroundColor: currentCard.btnBgColor || "#FFBE00",
+                            color: currentCard.btnTextColor || "#020617",
+                          }}
+                          className="inline-flex items-center gap-1.5 mt-4 font-bold text-xs px-4 py-2 rounded-md transition-colors shadow-sm hover:opacity-90 active:scale-95"
+                        >
+                          <span>{currentCard.ctaText || "Shop Now"}</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                      <div
+                        className={`absolute right-3 bottom-2 ${currentCard.imageClass} z-0`}
+                      >
+                        <Image
+                          src={currentCard.image}
+                          alt={currentCard.imageAlt || currentCard.titleLine1 || "Promo product"}
+                          fill
+                          priority
+                          style={{ transform: currentCard.imageScale ? `scale(${currentCard.imageScale / 100})` : undefined }}
+                          className="object-contain object-bottom-right drop-shadow-md"
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
               </motion.div>
             </AnimatePresence>
           </div>
 
           {/* Mobile Dots Indicator (3 dots for 3 cards) */}
           <div className="flex items-center justify-center gap-2 mt-2">
-            {PROMO_CARDS.map((_, idx) => (
+            {promoCards.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setPromoSlide(idx)}
