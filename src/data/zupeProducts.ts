@@ -1320,8 +1320,30 @@ export function getSubcategoriesForCategory(categoryName: string, dynamicCategor
 }
 
 export function doesCategoryMatch(productCategory: string, selectedCategory: string, dynamicCategories?: any[]): boolean {
-  if (!selectedCategory || selectedCategory === "All Categories" || selectedCategory === "all" || selectedCategory === "All Products") return true;
-  return productCategory.toLowerCase() === selectedCategory.toLowerCase();
+  if (!selectedCategory || selectedCategory === "All Categories" || selectedCategory === "all" || selectedCategory === "All Products" || selectedCategory === "All") return true;
+  const p = productCategory.toLowerCase().trim();
+  const s = selectedCategory.toLowerCase().trim();
+  if (p === s) return true;
+  // Audio & Sound aliases
+  if ((p.includes("audio") || p.includes("headphone") || p.includes("earbud") || p.includes("speaker")) &&
+      (s.includes("audio") || s.includes("headphone") || s.includes("earbud") || s.includes("speaker"))) {
+    return true;
+  }
+  // Computers / Laptops aliases
+  if ((p.includes("laptop") || p.includes("computer") || p.includes("pc")) &&
+      (s.includes("laptop") || s.includes("computer") || s.includes("pc"))) {
+    return true;
+  }
+  // Gaming gear aliases
+  if (p.includes("gaming") && s.includes("gaming")) {
+    return true;
+  }
+  // Accessories / Smart gadgets aliases
+  if ((p.includes("gadget") || p.includes("accessori")) &&
+      (s.includes("gadget") || s.includes("accessori"))) {
+    return true;
+  }
+  return false;
 }
 
 export function doesSubcategoryMatch(product: Product, selectedSubcategory: string): boolean {

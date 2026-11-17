@@ -28,6 +28,8 @@ import {
   Plug,
   Camera,
   Layers,
+  LayoutGrid,
+  ChevronLeft,
   Check,
   RotateCcw,
   ShieldCheck,
@@ -46,14 +48,15 @@ import { useWishlist } from "@/context/WishlistContext";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
 
 const EXPLORE_CATEGORIES = [
-  { id: "All", name: "All Products", icon: Layers, query: "All" },
-  { id: "Smartphones", name: "Smartphones", icon: Smartphone, query: "Smartphones" },
-  { id: "Laptops", name: "Laptops & PCs", icon: Laptop, query: "Laptops" },
-  { id: "Headphones & Earbuds", name: "Audio & Sound", icon: Headphones, query: "Headphones & Earbuds" },
-  { id: "Smartwatches", name: "Smartwatches", icon: Watch, query: "Smartwatches" },
-  { id: "Gaming & Accessories", name: "Gaming Gear", icon: Gamepad2, query: "Gaming & Accessories" },
+  { id: "All", name: "All Products", icon: LayoutGrid, query: "All" },
+  { id: "Laptops", name: "Computers & Laptops", icon: Laptop, query: "Laptops" },
+  { id: "Cameras", name: "Cameras & Video", icon: Camera, query: "Cameras" },
   { id: "Tablets", name: "Tablets", icon: Tablet, query: "Tablets" },
-  { id: "Smart Gadgets", name: "Accessories", icon: Plug, query: "Smart Gadgets" },
+  { id: "Smartphones", name: "Smartphones", icon: Smartphone, query: "Smartphones" },
+  { id: "Smartwatches", name: "Smartwatches", icon: Watch, query: "Smartwatches" },
+  { id: "Gaming", name: "Gaming", icon: Gamepad2, query: "Gaming & Accessories" },
+  { id: "Audio", name: "Audio & Headphones", icon: Headphones, query: "Headphones & Earbuds" },
+  { id: "Accessories", name: "Accessories", icon: Plug, query: "Smart Gadgets" },
 ];
 
 const SORT_OPTIONS: {
@@ -100,6 +103,7 @@ function ProductsContent() {
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
   const sortDropdownRef = useRef<HTMLDivElement>(null);
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
   const { addItem, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
@@ -299,11 +303,14 @@ function ProductsContent() {
       </div>
 
       {/* ===================================================================== */}
-      {/* HORIZONTAL CATEGORY CAPSULE BAR                                       */}
+      {/* HORIZONTAL CATEGORY ICONS BAR (Left-aligned, Compact Spacing)         */}
       {/* ===================================================================== */}
       <div className="bg-white border-b border-slate-200/90 sticky top-16 sm:top-20 z-20 shadow-xs">
-        <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
+        <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+          <div
+            ref={categoryScrollRef}
+            className="flex items-start justify-start gap-2.5 sm:gap-3.5 lg:gap-4 overflow-x-auto no-scrollbar scroll-smooth py-0.5"
+          >
             {EXPLORE_CATEGORIES.map((cat) => {
               const Icon = cat.icon;
               const isSelected =
@@ -314,14 +321,36 @@ function ProductsContent() {
                 <button
                   key={cat.id}
                   onClick={() => handleCategorySelect(cat.query)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-                    isSelected
-                      ? "bg-[#0A2540] text-white shadow-sm scale-[1.02]"
-                      : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-                  }`}
+                  className="flex flex-col items-center gap-1.5 group min-w-[62px] sm:min-w-[72px] max-w-[78px] sm:max-w-[86px] shrink-0 text-center cursor-pointer transition-all focus:outline-none"
+                  title={cat.name}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isSelected ? "text-[#FFBE00]" : "text-slate-500"}`} />
-                  <span>{cat.name}</span>
+                  <div
+                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all shadow-xs ${
+                      isSelected
+                        ? "bg-[#002D62] border-2 border-[#002D62] text-[#FFBE00] ring-2 ring-[#002D62]/20 scale-105 shadow-sm"
+                        : "bg-slate-50 border border-slate-200/90 text-[#002D62] group-hover:border-[#002D62] group-hover:bg-blue-50/60 group-hover:scale-105"
+                    }`}
+                  >
+                    <Icon
+                      className={`w-4 h-4 sm:w-4.5 sm:h-4.5 transition-colors ${
+                        isSelected ? "text-[#FFBE00]" : "text-[#002D62]"
+                      }`}
+                    />
+                  </div>
+                  <span
+                    className={`text-[10px] sm:text-[11px] leading-tight text-center line-clamp-2 transition-colors ${
+                      isSelected
+                        ? "font-bold text-[#002D62]"
+                        : "font-semibold text-slate-600 group-hover:text-[#002D62]"
+                    }`}
+                  >
+                    {cat.name}
+                  </span>
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full transition-all mt-0.5 ${
+                      isSelected ? "bg-[#002D62] opacity-100 scale-100" : "bg-transparent opacity-0 scale-0"
+                    }`}
+                  />
                 </button>
               );
             })}
