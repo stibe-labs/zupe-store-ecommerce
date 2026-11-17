@@ -9,6 +9,29 @@ import { sendOrderConfirmationEmail } from "@/lib/orderEmailService";
 
 export const dynamic = "force-dynamic";
 
+export async function GET(req: NextRequest) {
+  try {
+    const url = new URL(req.url);
+    const orderId = url.searchParams.get("orderId") || url.searchParams.get("order_id");
+    const cashfreeOrderId = url.searchParams.get("cf_order_id") || url.searchParams.get("cashfreeOrderId");
+    const isPaid = url.searchParams.get("paid") === "true";
+
+    if (!orderId && !cashfreeOrderId) {
+      return NextResponse.json({ success: false, error: "Missing orderId" }, { status: 400 });
+    }
+
+    return POST(
+      new NextRequest(req.url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: orderId || cashfreeOrderId, cashfreeOrderId, paid: isPaid }),
+      })
+    );
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();

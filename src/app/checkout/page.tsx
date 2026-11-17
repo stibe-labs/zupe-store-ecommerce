@@ -271,6 +271,8 @@ function CheckoutContent() {
   const [recoveredBanner, setRecoveredBanner] = useState<string | null>(null);
   const [showPaymentCancelledModal, setShowPaymentCancelledModal] = useState(false);
   const [cancelledPaymentOrderId, setCancelledPaymentOrderId] = useState<string>("");
+  const [awaitingPaymentOrder, setAwaitingPaymentOrder] = useState<{ orderId: string; amount: number; payUrl: string } | null>(null);
+  const paymentWindowRef = useRef<Window | null>(null);
 
   // Ensure scroll is unlocked and modals/drawers are dismissed on checkout mount
   useEffect(() => {
@@ -482,6 +484,155 @@ function CheckoutContent() {
       }
     }, 150);
   };
+
+  // User cancelled or exited payment window
+  const handleCancelAwaitingPayment = () => {
+    if (paymentWindowRef.current && !paymentWindowRef.current.closed) {
+      try {
+        paymentWindowRef.current.close();
+      } catch {}
+      paymentWindowRef.current = null;
+    }
+    const cancelledId = awaitingPaymentOrder?.orderId || "";
+    setAwaitingPaymentOrder(null);
+    setCancelledPaymentOrderId(cancelledId);
+    setShowPaymentCancelledModal(true);
+    if (cancelledId) {
+      fetch("/api/cashfree/cancel-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: cancelledId, reason: "Customer cancelled payment from awaiting modal" }),
+      }).catch(() => {});
+    }
+  };
+
+  // User switches to COD directly from the awaiting payment dialog
+  const handleSwitchToCodFromAwaiting = () => {
+    if (paymentWindowRef.current && !paymentWindowRef.current.closed) {
+      try {
+        paymentWindowRef.current.close();
+      } catch {}
+      paymentWindowRef.current = null;
+    }
+    const cancelledId = awaitingPaymentOrder?.orderId || "";
+    setAwaitingPaymentOrder(null);
+    setPaymentMethod("cod");
+    if (cancelledId) {
+      fetch("/api/cashfree/cancel-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: cancelledId, reason: "Customer switched to COD from awaiting modal" }),
+      }).catch(() => {});
+    }
+    setTimeout(() => {
+      const codCard = document.getElementById("payment-cod-card");
+      if (codCard) {
+        codCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 150);
+  };
+
+  // Immediate check if payment was completed
+  const handleVerifyAwaitingPaymentNow = () => {
+    if (awaitingPaymentOrder?.orderId) {
+      verifyCashfreeOrder(awaitingPaymentOrder.orderId);
+    }
+  };
+
+  // Detect returning to checkout tab via browser back button (bfcache)
+  useEffect(() => {
+    const handlePageShow = (e: PageTransitionEvent) => {
+      const lastOrder = typeof window !== "undefined" ? localStorage.getItem("zupe_last_order_id") : null;
+      if (lastOrder && !orderComplete && !verifyingPayment) {
+        verifyCashfreeOrder(lastOrder);
+      }
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("pageshow", handlePageShow);
+      return () => window.removeEventListener("pageshow", handlePageShow);
+    }
+  }, [orderComplete, verifyingPayment]);
+
+  // Polling and popup window monitoring while customer is completing online payment
+  useEffect(() => {
+    if (!awaitingPaymentOrder) return;
+    const targetOrderId = awaitingPaymentOrder.orderId;
+
+    // Check if popup was closed or if payment finished
+    const checkInterval = setInterval(async () => {
+      // 1. If customer explicitly closed the payment popup window
+      if (paymentWindowRef.current && paymentWindowRef.current.closed) {
+        clearInterval(checkInterval);
+        paymentWindowRef.current = null;
+        try {
+          const res = await fetch(`/api/cashfree/verify-payment?orderId=${encodeURIComponent(targetOrderId)}`);
+          const data = await res.json();
+          if (data.success && (data.paid || data.status === "PAID" || data.status === "SUCCESS")) {
+            setAwaitingPaymentOrder(null);
+            verifyCashfreeOrder(targetOrderId);
+          } else {
+            // Customer exited payment window without paying!
+            setAwaitingPaymentOrder(null);
+            setCancelledPaymentOrderId(targetOrderId);
+            setShowPaymentCancelledModal(true);
+            setErrorMessage("Payment was not completed. You can retry online payment or switch to Cash on Delivery.");
+            fetch("/api/cashfree/cancel-order", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ orderId: targetOrderId, reason: "Customer closed payment window without paying" }),
+            }).catch(() => {});
+          }
+        } catch {
+          setAwaitingPaymentOrder(null);
+          setCancelledPaymentOrderId(targetOrderId);
+          setShowPaymentCancelledModal(true);
+        }
+        return;
+      }
+
+      // 2. Poll server to detect when payment rails confirm the payment
+      try {
+        const res = await fetch(`/api/cashfree/verify-payment?orderId=${encodeURIComponent(targetOrderId)}`);
+        const data = await res.json();
+        if (data.success && (data.paid || data.status === "PAID" || data.status === "SUCCESS")) {
+          clearInterval(checkInterval);
+          if (paymentWindowRef.current && !paymentWindowRef.current.closed) {
+            try {
+              paymentWindowRef.current.close();
+            } catch {}
+            paymentWindowRef.current = null;
+          }
+          setAwaitingPaymentOrder(null);
+          verifyCashfreeOrder(targetOrderId);
+        }
+      } catch {}
+    }, 2000);
+
+    // On mobile / desktop window tab switch back to Turkiye Jam
+    const handleFocus = async () => {
+      try {
+        const res = await fetch(`/api/cashfree/verify-payment?orderId=${encodeURIComponent(targetOrderId)}`);
+        const data = await res.json();
+        if (data.success && (data.paid || data.status === "PAID" || data.status === "SUCCESS")) {
+          clearInterval(checkInterval);
+          if (paymentWindowRef.current && !paymentWindowRef.current.closed) {
+            try {
+              paymentWindowRef.current.close();
+            } catch {}
+            paymentWindowRef.current = null;
+          }
+          setAwaitingPaymentOrder(null);
+          verifyCashfreeOrder(targetOrderId);
+        }
+      } catch {}
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      clearInterval(checkInterval);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [awaitingPaymentOrder]);
 
   // Check if returning from Cashfree / Settler redirect with ?cf_order_id= or ?order_id= or ?paid=true
   useEffect(() => {
@@ -1490,7 +1641,46 @@ function CheckoutContent() {
       return;
     }
 
-    // PAYMENT FLOW (Both Online Full & COD Advance route through secure Cashfree gateway)
+    // PAYMENT FLOW (Both Online Full & COD Advance route through secure gateway)
+    // Synchronously open secure popup window to prevent mobile/desktop popup blockers
+    let payWin: Window | null = null;
+    try {
+      const width = 520;
+      const height = 750;
+      const left = typeof window !== "undefined" && window.screen.width ? Math.max(0, (window.screen.width - width) / 2) : 100;
+      const top = typeof window !== "undefined" && window.screen.height ? Math.max(0, (window.screen.height - height) / 2) : 100;
+      payWin = window.open(
+        "about:blank",
+        "TurkiyeJamPayment",
+        `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
+      );
+      if (payWin) {
+        payWin.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>Turkiye Jam - Connecting Payment...</title>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #fbf7ee; color: #1c1917; text-align: center; padding: 24px; box-sizing: border-box; }
+                .spinner { width: 44px; height: 44px; border: 4px solid #ebdcc7; border-top-color: #731a26; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 20px; }
+                @keyframes spin { to { transform: rotate(360deg); } }
+                h2 { font-size: 19px; margin: 0 0 8px; font-weight: 800; color: #731a26; }
+                p { font-size: 13px; color: #78716c; margin: 0; line-height: 1.5; }
+              </style>
+            </head>
+            <body>
+              <div class="spinner"></div>
+              <h2>Connecting to Secure Gateway...</h2>
+              <p>Please wait while we establish a bank-grade encrypted payment session.</p>
+            </body>
+          </html>
+        `);
+      }
+    } catch {
+      payWin = null;
+    }
+
     try {
       const isCod = paymentMethod === "cod";
       const chargeAmount = isCod ? configuredCodFee : onlineGrandTotal;
@@ -1541,49 +1731,54 @@ function CheckoutContent() {
       });
 
       const orderData = await res.json();
-      if (!orderData.success || (!orderData.payUrl && !orderData.paymentSessionId)) {
+      if (!orderData.success || (!orderData.payUrl && !orderData.settlerPayUrl)) {
+        if (payWin && !payWin.closed) {
+          try { payWin.close(); } catch {}
+        }
         setErrorMessage(orderData.error || "Failed to initialize payment gateway. Please try again.");
         setLoading(false);
         return;
       }
 
       const cfOrderId = orderData.orderId;
+      const targetPayUrl = orderData.settlerPayUrl || orderData.payUrl;
 
       try {
         localStorage.setItem("zupe_last_order_id", cfOrderId);
         localStorage.setItem("zupe_last_phone", phone.trim());
       } catch {}
 
-      // 1. Submit session directly to Cashfree official hosted checkout endpoint
-      // This bypasses the intermediate Settler screen entirely (preventing the "Confirming payment" trap)
-      // and does not require domain whitelisting like the JS SDK modal.
-      const sessionId = orderData.paymentSessionId;
-      if (sessionId && typeof document !== "undefined") {
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = "https://api.cashfree.com/pg/view/sessions/checkout";
-        form.style.display = "none";
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "payment_session_id";
-        input.value = sessionId;
-        form.appendChild(input);
-        document.body.appendChild(form);
-        form.submit();
+      // If popup window is successfully open, redirect it to payment gateway
+      // This keeps the Turkiye Jam checkout tab completely active and prevents being trapped on external screens!
+      if (payWin && !payWin.closed) {
+        try {
+          payWin.location.href = targetPayUrl;
+        } catch {
+          window.location.href = targetPayUrl;
+          return;
+        }
+        paymentWindowRef.current = payWin;
+        setAwaitingPaymentOrder({
+          orderId: cfOrderId,
+          amount: chargeAmount,
+          payUrl: targetPayUrl,
+        });
+        setLoading(false);
         return;
       }
 
-      // 2. Fallback to hosted payment URL if sessionId is unavailable
-      const targetPayUrl = orderData.settlerPayUrl || orderData.payUrl;
-      if (targetPayUrl) {
-        window.location.href = targetPayUrl;
-        return;
-      }
+      // Fallback if popup was blocked or unavailable
+      window.location.href = targetPayUrl;
+      return;
     } catch (err: any) {
+      if (payWin && !payWin.closed) {
+        try { payWin.close(); } catch {}
+      }
       console.error("Payment initiation error:", err);
       setErrorMessage("Network error while connecting to payment gateway. Please retry.");
       setLoading(false);
     }
+  };
   };
 
   // ========================================================
@@ -4147,6 +4342,87 @@ function CheckoutContent() {
           </div>
         </form>
       </main>
+
+      {/* Online Payment In-Progress Modal (Keeps Checkout Active and Never Traps User) */}
+      <AnimatePresence>
+        {awaitingPaymentOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden text-slate-900"
+            >
+              <div className="p-6 pb-4 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-[#731a26]/10 border border-[#731a26]/20 flex items-center justify-center text-[#731a26] mx-auto mb-3.5 shadow-xs">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#731a26]" />
+                </div>
+                <h3 className="font-tj-serif text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+                  Complete Your Payment
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-600 mt-2 leading-relaxed">
+                  A secure payment window has been opened for{" "}
+                  <strong className="text-gray-900 font-extrabold">₹{awaitingPaymentOrder.amount.toLocaleString()}</strong>.
+                  Please complete payment via UPI, GPay, PhonePe, Card, or NetBanking.
+                </p>
+
+                <div className="mt-4 p-3 rounded-xl bg-stone-50 border border-stone-200/80 text-left flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 text-stone-700 font-medium">
+                    <Lock className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>256-bit Bank Grade Rails</span>
+                  </div>
+                  <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
+                    Waiting for rails...
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-6 pt-2 space-y-2.5">
+                <button
+                  type="button"
+                  onClick={handleVerifyAwaitingPaymentNow}
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-emerald-700/20 flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                  <span>I Have Completed Payment</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCancelAwaitingPayment}
+                  className="w-full py-3 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4 text-rose-600" />
+                  <span>Cancel Payment &amp; Return to Checkout</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSwitchToCodFromAwaiting}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                >
+                  <Truck className="w-4 h-4 text-gray-700" />
+                  <span>Switch to Cash on Delivery (COD)</span>
+                </button>
+
+                {/* If popup was accidentally closed, allow re-opening */}
+                <div className="pt-1 text-center">
+                  <a
+                    href={awaitingPaymentOrder.payUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-[#731a26] hover:underline font-semibold"
+                  >
+                    Didn&apos;t see the window? Click here to reopen payment
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Payment Cancelled / Incomplete Modal Dialog */}
       <AnimatePresence>
