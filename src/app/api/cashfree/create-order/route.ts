@@ -118,6 +118,7 @@ export async function POST(req: NextRequest) {
     // Settler is fully whitelisted with Cashfree production rails and handles UPI QR, Cards & NetBanking
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://turkiyejam.com";
     const redirectUrl = `${siteUrl}/checkout?cf_order_id=${encodeURIComponent(orderId)}`;
+    const cancelUrl = `${siteUrl}/checkout?cf_order_id=${encodeURIComponent(orderId)}&status=cancelled`;
 
     let settlerPayUrl = "";
     let settlerInvoiceId = "";
@@ -139,6 +140,7 @@ export async function POST(req: NextRequest) {
             : "Turkiye Jam - 100% Authentic Paste Order",
           amountRupees: chargeAmount,
           redirectUrl,
+          cancelUrl,
         }),
       });
 
@@ -156,6 +158,7 @@ export async function POST(req: NextRequest) {
             body: JSON.stringify({
               invoiceId: settlerInvoiceId,
               redirectUrl,
+              cancelUrl,
             }),
           });
           const initData: any = await initRes.json();
@@ -180,6 +183,7 @@ export async function POST(req: NextRequest) {
           customerEmail: customer_email || "support@turkiyejam.com",
           customerPhone: cleanPhone || "9876543210",
           returnUrl: redirectUrl,
+          cancelUrl,
         });
         paymentSessionId = cfOrder.payment_session_id;
       } catch (cfErr) {

@@ -20,6 +20,7 @@ export interface CreateCashfreeOrderParams {
   customerEmail: string;
   customerPhone: string;
   returnUrl?: string;
+  cancelUrl?: string;
   notifyUrl?: string;
 }
 
