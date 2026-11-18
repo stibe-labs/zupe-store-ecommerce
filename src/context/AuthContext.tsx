@@ -108,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        return { success: false, error: data.error || "Failed to send SMS code" };
+        return { success: false, error: data.error || "Failed to send WhatsApp verification code" };
       }
       return {
         success: true,

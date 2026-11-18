@@ -203,8 +203,8 @@ export function AuthCard({
           </h2>
           <p className="text-xs sm:text-sm text-gray-500 mt-1.5">
             {step === "phone"
-              ? "Enter your 10-digit mobile number to receive an SMS verification code"
-              : `Enter the 6-digit code sent via SMS to +91 ${phone.length === 10 ? phone.slice(0, 5) + " " + phone.slice(5) : phone}`}
+              ? "Enter your 10-digit mobile number to receive a WhatsApp verification code"
+              : `Enter the 6-digit code sent via WhatsApp to +91 ${phone.length === 10 ? phone.slice(0, 5) + " " + phone.slice(5) : phone}`}
           </p>
         </div>
 
@@ -388,9 +388,9 @@ export function AuthCard({
               )}
             </button>
 
-            {/* SMS helper note */}
+            {/* WhatsApp helper note */}
             <div className="pt-2 text-center text-xs text-gray-400">
-              Didn&apos;t receive SMS? Ensure network connectivity or tap Resend code.
+              Didn&apos;t receive code on WhatsApp? Check your WhatsApp app or tap Resend code.
             </div>
           </form>
         )}

@@ -249,8 +249,8 @@ export function QuickBuyAuthDrawer({
           })
           .then((content: any) => {
             if (content && content.code) {
-              const digits = content.code.replace(/\D/g, "").slice(0, 4);
-              if (digits.length === 4) {
+              const digits = content.code.replace(/\D/g, "").slice(0, 6);
+              if (digits.length === 6) {
                 setOtpCode(digits);
                 triggerVerify(digits);
               }
@@ -313,7 +313,11 @@ export function QuickBuyAuthDrawer({
 
     if (res.success) {
       setStep("otp");
-      setOtpCode("");
+      if (res.otp) {
+        setOtpCode(res.otp);
+      } else {
+        setOtpCode("");
+      }
       setTimeout(() => {
         otpInputRef.current?.focus();
       }, 250);

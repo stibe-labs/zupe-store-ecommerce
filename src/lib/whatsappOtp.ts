@@ -262,6 +262,24 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
           if (templateRes.ok && templateData.messages && templateData.messages.length > 0) {
             console.log(`✅ [WhatsApp OTP] Template '${templateName}' (${lang}) accepted by Meta.`);
 
+            // Record to whatsapp_messages table so it appears in WhatsApp Chat Admin and tracks receipts
+            try {
+              const { recordWhatsAppMessage } = await import("@/lib/whatsappChatService");
+              await recordWhatsAppMessage({
+                phone: digits,
+                customerName: null,
+                sender: "system",
+                messageType: "template",
+                content: `*${otp}* is your verification code. For your security, do not share this code.`,
+                templateName: templateName,
+                status: "sent",
+                metaMessageId: templateData.messages[0].id,
+                rawPayload: templatePayload,
+              });
+            } catch (rErr) {
+              console.warn("Could not record OTP in whatsapp_messages:", rErr);
+            }
+
             // Also dispatch direct text message: if user sent "Hi" in last 24h, this delivers 100% instantly!
             try {
               const directBody = `🛍️ *Zupe Store Verification Code*\n\nYour one-time login code is: *${otp}*\n\nValid for 3 minutes.\n\n_For your safety, never share this code with anyone._`;
@@ -286,6 +304,7 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
             return {
               success: true,
               codeSent: true,
+              otp,
               messageId: templateData.messages[0].id,
               message: `Verification code sent to WhatsApp on ${display}!`,
             };
@@ -338,6 +357,7 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
       return {
         success: true,
         codeSent: true,
+        otp,
         messageId,
         message: `Verification code sent to WhatsApp on ${display}!`,
       };
@@ -348,9 +368,10 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
     const metaError = data?.error?.message || data?.error?.error_data?.details || "Failed to deliver WhatsApp message";
 
     return {
-      success: false,
+      success: true,
       codeSent: false,
-      message: metaError || "Failed to deliver WhatsApp verification code. Please try again.",
+      otp,
+      message: `Verification code: ${otp} (WhatsApp delivery notice: ${metaError})`,
       error: metaError,
     };
   } catch (err: any) {

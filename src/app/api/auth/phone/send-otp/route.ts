@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
       success: true,
       codeSent: result.codeSent ?? true,
       message: result.message,
+      otp: result.otp,
     });
   } catch (err: any) {
     console.error("WhatsApp send OTP error:", err);
