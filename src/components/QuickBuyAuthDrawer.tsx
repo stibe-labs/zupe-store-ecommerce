@@ -55,36 +55,58 @@ export function QuickBuyAuthDrawer({
 
   // Step 1: "phone", Step 2: "otp"
   const [step, setStep] = useState<"phone" | "otp">("phone");
-  const [phone, setPhone] = useState("");
-  const [otpDigits, setOtpDigits] = useState<string[]>(["", "", "", ""]);
-  const [timer, setTimer] = useState(30);
-  const [canResend, setCanResend] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [phone, setPhone] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored =
+          localStorage.getItem("zupe_checkout_phone") ||
+          sessionStorage.getItem("checkout_prefill_phone") ||
+          "";
+        const clean = stored.replace(/\D/g, "");
+        if (clean.length === 10) return clean;
+      } catch {}
+    }
+    return "";
+  });
+
+  const [otpCode, setOtpCode] = useState<string>("");
+  const [isOtpFocused, setIsOtpFocused] = useState<boolean>(false);
+  const [timer, setTimer] = useState<number>(30);
+  const [canResend, setCanResend] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [isVerified, setIsVerified] = useState(false);
+  const [isVerified, setIsVerified] = useState<boolean>(false);
 
-  // Refs for 4 OTP inputs
-  const otpRefs = [
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-  ];
   const phoneInputRef = useRef<HTMLInputElement>(null);
+  const otpInputRef = useRef<HTMLInputElement>(null);
 
-  // Reset state when drawer opens
+  // Initialize and check prefilled phone on drawer open
   useEffect(() => {
     if (isOpen) {
       setStep("phone");
       setError(null);
       setIsVerified(false);
-      setOtpDigits(["", "", "", ""]);
+      setOtpCode("");
       setTimer(30);
       setCanResend(false);
+
+      if (typeof window !== "undefined") {
+        try {
+          const stored =
+            localStorage.getItem("zupe_checkout_phone") ||
+            sessionStorage.getItem("checkout_prefill_phone") ||
+            "";
+          const clean = stored.replace(/\D/g, "");
+          if (clean.length === 10) {
+            setPhone(clean);
+          }
+        } catch {}
+      }
+
       // Auto focus phone input
       setTimeout(() => {
         if (phoneInputRef.current) phoneInputRef.current.focus();
-      }, 300);
+      }, 250);
     }
   }, [isOpen]);
 
@@ -108,7 +130,7 @@ export function QuickBuyAuthDrawer({
     return () => clearInterval(interval);
   }, [step]);
 
-  // WebOTP API: Auto-read incoming SMS OTP on mobile browsers (Android Chrome, etc.)
+  // WebOTP API: Auto-read incoming carrier SMS OTP on mobile browsers (Android Chrome, etc.)
   useEffect(() => {
     if (step !== "otp") return;
 
@@ -123,10 +145,10 @@ export function QuickBuyAuthDrawer({
           })
           .then((content: any) => {
             if (content && content.code) {
-              const digits = content.code.replace(/\D/g, "").slice(0, 4).split("");
+              const digits = content.code.replace(/\D/g, "").slice(0, 4);
               if (digits.length === 4) {
-                setOtpDigits(digits);
-                triggerVerify(digits.join(""));
+                setOtpCode(digits);
+                triggerVerify(digits);
               }
             }
           })
@@ -151,7 +173,7 @@ export function QuickBuyAuthDrawer({
     };
   }, [isOpen]);
 
-  // Clean and format phone number input
+  // Clean and format phone number input with support for Chrome Autofill (+91 / spaces / 0)
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value.replace(/\D/g, "");
     if (val.startsWith("91") && val.length > 10) val = val.slice(2);
@@ -176,19 +198,21 @@ export function QuickBuyAuthDrawer({
       return;
     }
 
+    // Persist phone for convenience
+    try {
+      localStorage.setItem("zupe_checkout_phone", raw);
+      sessionStorage.setItem("checkout_prefill_phone", raw);
+    } catch {}
+
     setLoading(true);
     const res = await sendPhoneOtp(raw);
     setLoading(false);
 
     if (res.success) {
       setStep("otp");
-      setOtpDigits(["", "", "", ""]);
-      // If dev mode returns OTP for convenience
-      if (res.otp && res.otp.length === 4) {
-        // Optional prefill for dev fallback
-      }
+      setOtpCode("");
       setTimeout(() => {
-        otpRefs[0]?.current?.focus();
+        otpInputRef.current?.focus();
       }, 250);
     } else {
       setError(res.error || "Failed to send verification code. Please try again.");
@@ -205,71 +229,22 @@ export function QuickBuyAuthDrawer({
     if (res.success) {
       setTimer(30);
       setCanResend(false);
-      setOtpDigits(["", "", "", ""]);
-      setTimeout(() => otpRefs[0]?.current?.focus(), 100);
+      setOtpCode("");
+      setTimeout(() => otpInputRef.current?.focus(), 150);
     } else {
       setError(res.error || "Could not resend verification code. Please try again.");
     }
   };
 
-  // Handle single digit input
-  const handleDigitChange = (index: number, val: string) => {
-    const clean = val.replace(/\D/g, "");
-    if (!clean) {
-      const next = [...otpDigits];
-      next[index] = "";
-      setOtpDigits(next);
-      return;
-    }
-
-    // Single digit input
-    const char = clean.slice(-1);
-    const next = [...otpDigits];
-    next[index] = char;
-    setOtpDigits(next);
+  // Handle OTP master input change (supports typing, paste, Gboard chip, and iOS QuickType)
+  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const clean = e.target.value.replace(/\D/g, "").slice(0, 4);
+    setOtpCode(clean);
     if (error) setError(null);
 
-    // Auto advance to next input
-    if (index < 3) {
-      otpRefs[index + 1]?.current?.focus();
-    }
-
-    // Auto submit if 4th digit entered
-    if (index === 3 || next.every((d) => d.length === 1)) {
-      const fullCode = next.join("");
-      if (fullCode.length === 4) {
-        triggerVerify(fullCode);
-      }
-    }
-  };
-
-  // Handle Key Down (Backspace navigation)
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace") {
-      if (!otpDigits[index] && index > 0) {
-        otpRefs[index - 1]?.current?.focus();
-      }
-    }
-  };
-
-  // Handle Paste of OTP (e.g. 4 digits copied from SMS)
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 4);
-    if (!pasted) return;
-
-    const chars = pasted.split("");
-    const next = ["", "", "", ""];
-    chars.forEach((c, i) => {
-      if (i < 4) next[i] = c;
-    });
-    setOtpDigits(next);
-
-    const focusIdx = Math.min(chars.length, 3);
-    otpRefs[focusIdx]?.current?.focus();
-
-    if (chars.length === 4) {
-      triggerVerify(pasted);
+    // Auto submit immediately upon 4th digit entered
+    if (clean.length === 4) {
+      triggerVerify(clean);
     }
   };
 
@@ -291,7 +266,7 @@ export function QuickBuyAuthDrawer({
       setIsVerified(true);
       setLoading(false);
 
-      // Brief delay to show green "✓ Verified" pill, then complete
+      // Brief delay to display green "✓ Verified" pill, then complete
       setTimeout(() => {
         onSuccess(phone);
       }, 450);
@@ -397,7 +372,12 @@ export function QuickBuyAuthDrawer({
             <div className="px-5 pb-6 overflow-y-auto space-y-4">
               {step === "phone" ? (
                 /* ================= STEP 1: PHONE & ORDER SUMMARY ================= */
-                <form onSubmit={handleSendOtp} className="space-y-4 pt-1">
+                <form
+                  onSubmit={handleSendOtp}
+                  name="quick-buy-auth-form"
+                  autoComplete="on"
+                  className="space-y-4 pt-1"
+                >
                   {/* ORDER SUMMARY CARD (Matches Mockup Reference 2) */}
                   <div className="p-3.5 rounded-2xl bg-white border border-gray-200/90 shadow-2xs space-y-2.5">
                     <div className="flex items-center gap-3">
@@ -452,6 +432,9 @@ export function QuickBuyAuthDrawer({
 
                   {/* Mobile input container */}
                   <div className="space-y-1.5">
+                    <label htmlFor="phone-number" className="sr-only">
+                      Mobile Number
+                    </label>
                     <div className="flex rounded-2xl border-2 border-gray-200 focus-within:border-[#FF7A00] focus-within:ring-2 focus-within:ring-[#FF7A00]/20 transition-all bg-white overflow-hidden shadow-2xs">
                       {/* IN +91 Pill */}
                       <div className="px-3.5 py-3.5 bg-gray-50 border-r border-gray-200 text-gray-900 font-bold text-sm flex items-center gap-1.5 select-none shrink-0">
@@ -465,18 +448,21 @@ export function QuickBuyAuthDrawer({
                         <span>IN +91</span>
                       </div>
 
-                      {/* Phone input with autofill */}
+                      {/* Phone input with full autofill support (tel & tel-national) */}
                       <input
                         ref={phoneInputRef}
+                        id="phone-number"
+                        name="phone"
                         type="tel"
-                        autoComplete="tel"
-                        inputMode="numeric"
-                        maxLength={10}
+                        autoComplete="tel tel-national"
+                        inputMode="tel"
+                        maxLength={16}
                         required
                         value={phone}
                         onChange={handlePhoneChange}
                         placeholder="9876543210"
                         className="w-full px-3.5 py-3.5 text-base sm:text-lg font-bold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none tracking-wide"
+                        aria-label="10-digit mobile number"
                       />
                     </div>
 
@@ -564,29 +550,59 @@ export function QuickBuyAuthDrawer({
                     </div>
                   </div>
 
-                  {/* 4 Digit OTP Input Boxes */}
+                  {/* 4 Digit OTP Container: Real Master Input for Autofill + 4 Visual Boxes */}
                   <div className="py-2">
-                    <div className="grid grid-cols-4 gap-3 max-w-[280px] mx-auto" onPaste={handlePaste}>
-                      {otpDigits.map((digit, idx) => (
-                        <input
-                          key={idx}
-                          ref={otpRefs[idx]}
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={1}
-                          autoComplete={idx === 0 ? "one-time-code" : "off"}
-                          value={digit}
-                          onChange={(e) => handleDigitChange(idx, e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(idx, e)}
-                          className={`w-14 h-16 sm:w-16 sm:h-18 rounded-2xl border-2 text-2xl sm:text-3xl font-black text-center text-gray-900 focus:outline-none transition-all ${
-                            isVerified
-                              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                              : digit
-                              ? "border-[#FF7A00] bg-orange-50/20"
-                              : "border-gray-200 bg-white focus:border-[#FF7A00] focus:ring-4 focus:ring-orange-500/15"
-                          }`}
-                        />
-                      ))}
+                    <div className="relative max-w-[280px] mx-auto">
+                      {/* Master input receiving Android Gboard, iOS QuickType, and WebOTP auto-fill */}
+                      <input
+                        ref={otpInputRef}
+                        id="otp-code-input"
+                        name="one-time-code"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        pattern="[0-9]*"
+                        maxLength={4}
+                        value={otpCode}
+                        onChange={handleOtpChange}
+                        onFocus={() => setIsOtpFocused(true)}
+                        onBlur={() => setIsOtpFocused(false)}
+                        autoFocus
+                        className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer caret-transparent text-center select-none"
+                        aria-label="4-digit verification code"
+                      />
+
+                      {/* 4 Visual Digit Boxes (Matches Mockup 1:1) */}
+                      <div className="grid grid-cols-4 gap-3 pointer-events-none">
+                        {[0, 1, 2, 3].map((idx) => {
+                          const digit = otpCode[idx] || "";
+                          const isCurrent = otpCode.length === idx;
+                          return (
+                            <div
+                              key={idx}
+                              className={`w-14 h-16 sm:w-16 sm:h-18 rounded-2xl border-2 text-2xl sm:text-3xl font-black flex items-center justify-center transition-all ${
+                                isVerified
+                                  ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm"
+                                  : error
+                                  ? "border-rose-400 bg-rose-50/20 text-gray-900"
+                                  : isCurrent && isOtpFocused
+                                  ? "border-[#FF7A00] bg-orange-50/25 ring-4 ring-orange-500/15 text-gray-900"
+                                  : digit
+                                  ? "border-[#FF7A00] bg-orange-50/10 text-gray-900"
+                                  : "border-gray-200 bg-white text-gray-900"
+                              }`}
+                            >
+                              {digit ? (
+                                <span>{digit}</span>
+                              ) : isCurrent && isOtpFocused ? (
+                                <span className="w-0.5 h-7 bg-[#FF7A00] animate-pulse rounded-full" />
+                              ) : (
+                                <span className="opacity-0">0</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     {/* Verified Pill Animation */}

@@ -148,7 +148,7 @@ export function generatePhoneOTP(phoneDigits: string): string {
 /**
  * Send SMS OTP to a user's phone number using Fast2SMS API.
  */
-export async function sendSmsOTP(rawPhone: string): Promise<SmsOTPResult> {
+export async function sendSmsOTP(rawPhone: string, host?: string): Promise<SmsOTPResult> {
   const { digits, raw10, display, isValid } = normalizePhoneNumber(rawPhone);
 
   if (!isValid) {
@@ -191,6 +191,14 @@ export async function sendSmsOTP(rawPhone: string): Promise<SmsOTPResult> {
     const route = process.env.FAST2SMS_ROUTE || "q";
     const url = "https://www.fast2sms.com/dev/bulkV2";
 
+    // Clean domain for WebOTP API standard format (@<domain> #<otp>)
+    const cleanHost = (host || process.env.NEXT_PUBLIC_BASE_URL || "zupestore.in")
+      .replace(/^https?:\/\//, "")
+      .split("/")[0]
+      .split(":")[0]
+      .replace(/^www\./, "");
+    const webOtpDomain = cleanHost || "zupestore.in";
+
     let payload: Record<string, any>;
 
     if (route === "dlt" && process.env.FAST2SMS_SENDER_ID && process.env.FAST2SMS_TEMPLATE_ID) {
@@ -203,10 +211,12 @@ export async function sendSmsOTP(rawPhone: string): Promise<SmsOTPResult> {
         numbers: raw10,
       };
     } else if (route === "q") {
-      // Quick SMS route (if configured or enabled)
+      // Quick SMS route with WebOTP standard origin binding
+      // Android Chrome & iOS Safari WebOTP format:
+      // <Human readable text>\n\n@<domain> #<otp>
       payload = {
         route: "q",
-        message: `Your Zupe Store verification code is: ${otp}. Valid for 3 minutes. Do not share this code.`,
+        message: `Your Zupe Store verification code is: ${otp}. Valid for 3 minutes. Do not share this code.\n\n@${webOtpDomain} #${otp}`,
         numbers: raw10,
       };
     } else {

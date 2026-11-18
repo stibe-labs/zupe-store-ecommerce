@@ -13,7 +13,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = await sendSmsOTP(phone);
+    const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "zupestore.in";
+    const result = await sendSmsOTP(phone, host);
 
     if (!result.success) {
       return NextResponse.json(
