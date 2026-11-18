@@ -341,18 +341,18 @@ export function QuickBuyAuthDrawer({
 
   // Handle OTP master input change
   const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const clean = e.target.value.replace(/\D/g, "").slice(0, 4);
+    const clean = e.target.value.replace(/\D/g, "").slice(0, 6);
     setOtpCode(clean);
     if (error) setError(null);
 
-    if (clean.length === 4) {
+    if (clean.length === 6) {
       triggerVerify(clean);
     }
   };
 
   // Step 2: Trigger Verify OTP -> Move to Step 3 (Delivery & Payment inside Drawer!)
   const triggerVerify = async (code: string) => {
-    if (code.length !== 4) return;
+    if (code.length !== 6) return;
     setError(null);
     setLoading(true);
 
@@ -941,7 +941,7 @@ export function QuickBuyAuthDrawer({
                   <div className="flex items-start gap-2 text-[11.5px] text-gray-500 leading-snug pl-0.5">
                     <MessageCircle className="w-3.5 h-3.5 text-[#25D366] shrink-0 mt-0.5" />
                     <p>
-                      Order confirmation &amp; delivery updates on WhatsApp. No spam. Only order updates.
+                      6-digit verification code will be sent to your WhatsApp number.
                     </p>
                   </div>
 
@@ -981,21 +981,21 @@ export function QuickBuyAuthDrawer({
                 </form>
               )}
 
-              {/* ================= STEP 2: 4-DIGIT OTP VERIFICATION ================= */}
+              {/* ================= STEP 2: 6-DIGIT WHATSAPP OTP VERIFICATION ================= */}
               {step === "otp" && (
                 <div className="space-y-4 pt-1 text-center">
-                  {/* WhatsApp speech bubble icon */}
-                  <div className="w-14 h-14 rounded-full bg-orange-50 border border-orange-100 text-[#FF7A00] flex items-center justify-center mx-auto shadow-inner">
-                    <MessageCircle className="w-7 h-7 text-[#FF7A00]" />
+                  {/* WhatsApp green icon */}
+                  <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-100 text-[#25D366] flex items-center justify-center mx-auto shadow-inner">
+                    <MessageCircle className="w-7 h-7 text-[#25D366]" />
                   </div>
 
                   {/* Heading & Subtitle */}
                   <div>
                     <h3 className="text-xl sm:text-2xl font-bold font-display text-gray-900">
-                      Enter the 4-digit code
+                      Enter the 6-digit code
                     </h3>
                     <p className="text-xs text-gray-500 mt-1">
-                      We&apos;ve sent a code to
+                      We&apos;ve sent a code on WhatsApp to
                     </p>
 
                     {/* Phone Pill with Change button */}
@@ -1015,9 +1015,9 @@ export function QuickBuyAuthDrawer({
                     </div>
                   </div>
 
-                  {/* 4 Digit OTP Container */}
+                  {/* 6 Digit OTP Container */}
                   <div className="py-2">
-                    <div className="relative max-w-[280px] mx-auto">
+                    <div className="relative max-w-[340px] mx-auto">
                       <input
                         ref={otpInputRef}
                         id="otp-code-input"
@@ -1026,40 +1026,40 @@ export function QuickBuyAuthDrawer({
                         inputMode="numeric"
                         autoComplete="one-time-code"
                         pattern="[0-9]*"
-                        maxLength={4}
+                        maxLength={6}
                         value={otpCode}
                         onChange={handleOtpChange}
                         onFocus={() => setIsOtpFocused(true)}
                         onBlur={() => setIsOtpFocused(false)}
                         autoFocus
                         className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer caret-transparent text-center select-none"
-                        aria-label="4-digit verification code"
+                        aria-label="6-digit verification code"
                       />
 
-                      {/* 4 Visual Digit Boxes */}
-                      <div className="grid grid-cols-4 gap-3 pointer-events-none">
-                        {[0, 1, 2, 3].map((idx) => {
+                      {/* 6 Visual Digit Boxes */}
+                      <div className="grid grid-cols-6 gap-1.5 sm:gap-2.5 pointer-events-none">
+                        {[0, 1, 2, 3, 4, 5].map((idx) => {
                           const digit = otpCode[idx] || "";
                           const isCurrent = otpCode.length === idx;
                           return (
                             <div
                               key={idx}
-                              className={`w-14 h-16 sm:w-16 sm:h-18 rounded-2xl border-2 text-2xl sm:text-3xl font-black flex items-center justify-center transition-all ${
+                              className={`h-14 sm:h-16 rounded-xl sm:rounded-2xl border-2 text-xl sm:text-2xl font-black flex items-center justify-center transition-all ${
                                 isVerified
                                   ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm"
                                   : error
                                   ? "border-rose-400 bg-rose-50/20 text-gray-900"
                                   : isCurrent && isOtpFocused
-                                  ? "border-[#FF7A00] bg-orange-50/25 ring-4 ring-orange-500/15 text-gray-900"
+                                  ? "border-[#25D366] bg-emerald-50/30 ring-4 ring-emerald-500/15 text-gray-900"
                                   : digit
-                                  ? "border-[#FF7A00] bg-orange-50/10 text-gray-900"
+                                  ? "border-[#25D366] bg-emerald-50/15 text-gray-900"
                                   : "border-gray-200 bg-white text-gray-900"
                               }`}
                             >
                               {digit ? (
                                 <span>{digit}</span>
                               ) : isCurrent && isOtpFocused ? (
-                                <span className="w-0.5 h-7 bg-[#FF7A00] animate-pulse rounded-full" />
+                                <span className="w-0.5 h-6 bg-[#25D366] animate-pulse rounded-full" />
                               ) : (
                                 <span className="opacity-0">0</span>
                               )}
@@ -1079,7 +1079,7 @@ export function QuickBuyAuthDrawer({
 
                     {loading && !isVerified && (
                       <div className="flex items-center justify-center gap-2 text-xs text-gray-500 mt-3 font-semibold">
-                        <Loader2 className="w-4 h-4 animate-spin text-[#FF7A00]" />
+                        <Loader2 className="w-4 h-4 animate-spin text-[#25D366]" />
                         <span>Verifying code...</span>
                       </div>
                     )}
@@ -1099,9 +1099,10 @@ export function QuickBuyAuthDrawer({
                         type="button"
                         onClick={handleResend}
                         disabled={loading}
-                        className="font-bold text-[#FF7A00] hover:underline cursor-pointer disabled:opacity-50"
+                        className="font-bold text-[#25D366] hover:underline cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 mx-auto"
                       >
-                        Resend code
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>Resend WhatsApp code</span>
                       </button>
                     ) : (
                       <span>Resend code in 0:{timer.toString().padStart(2, "0")}</span>

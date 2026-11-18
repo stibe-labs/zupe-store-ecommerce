@@ -111,7 +111,7 @@ export function AuthCard({
       if (res.otp) {
         setOtp(res.otp);
       }
-      setSuccess("SMS verification code sent successfully!");
+      setSuccess("WhatsApp verification code sent successfully!");
     } else {
       setError(res.error || "Failed to send verification code. Please try again.");
     }

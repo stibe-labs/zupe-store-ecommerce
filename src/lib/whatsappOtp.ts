@@ -178,8 +178,21 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
   const otp = await generatePhoneOTPAsync(digits);
   console.log(`\n📱 [WhatsApp OTP] Generated for ${display} (${digits}): ${otp}\n`);
 
-  const token = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  let token = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
+  let phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  let templateName = process.env.WHATSAPP_TEMPLATE_NAME || "zupe_login_otp";
+  let configuredLang = process.env.WHATSAPP_TEMPLATE_LANG || "en";
+
+  try {
+    const { getCloudflareContext } = require("@opennextjs/cloudflare");
+    const ctx = getCloudflareContext();
+    if (ctx?.env) {
+      token = ctx.env.WHATSAPP_TOKEN || token;
+      phoneId = ctx.env.WHATSAPP_PHONE_NUMBER_ID || phoneId;
+      templateName = ctx.env.WHATSAPP_TEMPLATE_NAME || templateName;
+      configuredLang = ctx.env.WHATSAPP_TEMPLATE_LANG || configuredLang;
+    }
+  } catch {}
 
   if (!token || !phoneId) {
     return {
@@ -192,8 +205,6 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
 
   try {
     const url = `https://graph.facebook.com/v21.0/${phoneId}/messages`;
-    const templateName = process.env.WHATSAPP_TEMPLATE_NAME || "zupe_login_otp";
-    const configuredLang = process.env.WHATSAPP_TEMPLATE_LANG || "en";
     const languageCandidates = [configuredLang, configuredLang === "en" ? "en_US" : "en"];
 
     // 1. Try sending via official WhatsApp Approved Message Template (Authentication or Utility)
