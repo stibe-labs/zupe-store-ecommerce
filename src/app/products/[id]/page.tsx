@@ -1416,97 +1416,12 @@ export default function ProductDetailPage() {
               </p>
             </div>
 
-            {/* Action Buttons: ADD TO CART & BUY NOW (matching reference design) */}
-            <div className="mt-4 space-y-2.5">
-              {/* Out of Stock Prominent Alert Banner */}
-              {isOutOfStock && (
-                <div className="p-3.5 rounded-2xl bg-red-50 border-2 border-red-200 text-red-900 text-xs flex items-start gap-2.5 shadow-xs mb-2">
-                  <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-black text-red-700 uppercase tracking-wide text-[11px]">Currently Out of Stock</p>
-                    <p className="text-red-700 mt-0.5 font-medium leading-relaxed">
-                      This product is currently out of stock and cannot be purchased at this time.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* 1. ADD TO CART Button */}
-              <button
-                onClick={handleAddToCart}
-                disabled={isOutOfStock}
-                className={`w-full py-3.5 sm:py-4 px-4 rounded-xl font-black text-[15px] sm:text-[16px] uppercase tracking-wider flex items-center justify-center transition-all ${
-                  isOutOfStock
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed opacity-60"
-                    : "bg-[#282736] hover:bg-[#1E1D2B] active:scale-[0.99] text-white shadow-sm"
-                }`}
-              >
-                <span>{isOutOfStock ? "Out of Stock" : "ADD TO CART"}</span>
-              </button>
-
-              {/* 2. BUY NOW Button with Payment Badges & Chevron (Orange Theme) */}
-              <button
-                onClick={handleBuyWithUpi}
-                disabled={isOutOfStock}
-                className={`w-full py-3.5 sm:py-4 px-4 rounded-xl font-black text-[15px] sm:text-[16px] uppercase tracking-wider flex items-center justify-center gap-2.5 transition-all ${
-                  isOutOfStock
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-70"
-                    : "bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] hover:brightness-105 active:scale-[0.99] text-white shadow-md shadow-[#FF7A00]/25"
-                }`}
-              >
-                {isOutOfStock ? (
-                  <span>CURRENTLY OUT OF STOCK</span>
-                ) : (
-                  <>
-                    <span className="tracking-wider">BUY NOW</span>
-                    <div className="flex items-center -space-x-1 ml-0.5">
-                      {/* Google Pay */}
-                      <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-xs shrink-0 p-0.5 z-30">
-                        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5">
-                          <path
-                            fill="#4285F4"
-                            d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"
-                          />
-                          <path
-                            fill="#34A853"
-                            d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24Z"
-                          />
-                          <path
-                            fill="#FBBC05"
-                            d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15Z"
-                          />
-                          <path
-                            fill="#EA4335"
-                            d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98Z"
-                          />
-                        </svg>
-                      </span>
-                      {/* PhonePe */}
-                      <span className="w-5 h-5 rounded-full bg-[#5F259F] border border-white/60 flex items-center justify-center shadow-xs shrink-0 z-20">
-                        <span className="text-white font-bold text-[9px] leading-none">पे</span>
-                      </span>
-                      {/* Paytm */}
-                      <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-xs shrink-0 overflow-hidden px-0.5 z-10">
-                        <span className="text-[7px] font-black leading-none tracking-tighter">
-                          <span className="text-[#002E6E]">Pay</span>
-                          <span className="text-[#00BAF2]">tm</span>
-                        </span>
-                      </span>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-white stroke-[2.8]" />
-                  </>
-                )}
-              </button>
-
-              {/* Accepted Payment Trust Badges (VISA, Apple Pay, G Pay, UPI, Mastercard) */}
-              <PaymentTrustBadges />
-            </div>
-
             {/* ========================================================
                 BUY MORE SAVE MORE - BUNDLE TIERS (DYNAMICALLY CONFIGURED BY ADMIN)
+                Positioned upper of ADD TO CART button
                ======================================================== */}
             {isBundleEnabled && computedBundleTiers.length > 0 && (
-              <div className="mt-5 mb-2 select-none">
+              <div className="mt-4 mb-2 select-none">
                 <div className="flex items-center justify-center gap-3 mb-3">
                   <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-gray-300 flex-1" />
                   <h3 className="font-display font-extrabold text-[15px] sm:text-base text-gray-900 tracking-tight flex items-center gap-1.5 select-none">
@@ -1612,6 +1527,94 @@ export default function ProductDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Action Buttons: ADD TO CART & BUY NOW (matching reference design) */}
+            <div className="mt-4 space-y-2.5">
+              {/* Out of Stock Prominent Alert Banner */}
+              {isOutOfStock && (
+                <div className="p-3.5 rounded-2xl bg-red-50 border-2 border-red-200 text-red-900 text-xs flex items-start gap-2.5 shadow-xs mb-2">
+                  <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-black text-red-700 uppercase tracking-wide text-[11px]">Currently Out of Stock</p>
+                    <p className="text-red-700 mt-0.5 font-medium leading-relaxed">
+                      This product is currently out of stock and cannot be purchased at this time.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* 1. ADD TO CART Button */}
+              <button
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                className={`w-full py-3.5 sm:py-4 px-4 rounded-xl font-black text-[15px] sm:text-[16px] uppercase tracking-wider flex items-center justify-center transition-all ${
+                  isOutOfStock
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed opacity-60"
+                    : "bg-[#282736] hover:bg-[#1E1D2B] active:scale-[0.99] text-white shadow-sm"
+                }`}
+              >
+                <span>{isOutOfStock ? "Out of Stock" : "ADD TO CART"}</span>
+              </button>
+
+              {/* 2. BUY NOW Button with Payment Badges & Chevron (Orange Theme + Continuous Animation) */}
+              <button
+                onClick={handleBuyWithUpi}
+                disabled={isOutOfStock}
+                className={`w-full py-3.5 sm:py-4 px-4 rounded-xl font-black text-[15px] sm:text-[16px] uppercase tracking-wider flex items-center justify-center gap-2.5 transition-all ${
+                  isOutOfStock
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-70"
+                    : "btn-buy-animated hover:brightness-105 active:scale-[0.99] text-white"
+                }`}
+              >
+                {isOutOfStock ? (
+                  <span>CURRENTLY OUT OF STOCK</span>
+                ) : (
+                  <>
+                    <span className="tracking-wider">BUY NOW</span>
+                    <div className="flex items-center -space-x-1 ml-0.5">
+                      {/* Google Pay */}
+                      <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-xs shrink-0 p-0.5 z-30">
+                        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5">
+                          <path
+                            fill="#4285F4"
+                            d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"
+                          />
+                          <path
+                            fill="#34A853"
+                            d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24Z"
+                          />
+                          <path
+                            fill="#FBBC05"
+                            d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15Z"
+                          />
+                          <path
+                            fill="#EA4335"
+                            d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98Z"
+                          />
+                        </svg>
+                      </span>
+                      {/* PhonePe */}
+                      <span className="w-5 h-5 rounded-full bg-[#5F259F] border border-white/60 flex items-center justify-center shadow-xs shrink-0 z-20">
+                        <span className="text-white font-bold text-[9px] leading-none">पे</span>
+                      </span>
+                      {/* Paytm */}
+                      <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-xs shrink-0 overflow-hidden px-0.5 z-10">
+                        <span className="text-[7px] font-black leading-none tracking-tighter">
+                          <span className="text-[#002E6E]">Pay</span>
+                          <span className="text-[#00BAF2]">tm</span>
+                        </span>
+                      </span>
+                    </div>
+                    <span className="btn-buy-arr">
+                      <ChevronRight className="w-5 h-5 text-white stroke-[2.8]" />
+                    </span>
+                  </>
+                )}
+              </button>
+
+              {/* Accepted Payment Trust Badges (VISA, Apple Pay, G Pay, UPI, Mastercard) */}
+              <PaymentTrustBadges />
+            </div>
 
             {/* Quantity Selector & Real-Time Stock Status */}
             <div className="mt-4">
@@ -2182,7 +2185,7 @@ export default function ProductDetailPage() {
             className={`py-3 px-3 rounded-xl font-black text-[13px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${
               isOutOfStock
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-70"
-                : "bg-gradient-to-r from-[#FF4D15] via-[#FF451A] to-[#FA3B00] text-white shadow-md shadow-[#FF7A00]/25 active:scale-95"
+                : "btn-buy-animated text-white active:scale-95"
             }`}
           >
             {isOutOfStock ? (
@@ -2190,7 +2193,9 @@ export default function ProductDetailPage() {
             ) : (
               <>
                 <span className="tracking-wide">BUY NOW</span>
-                <ChevronRight className="w-4 h-4 stroke-[3]" />
+                <span className="btn-buy-arr">
+                  <ChevronRight className="w-4 h-4 stroke-[3]" />
+                </span>
               </>
             )}
           </button>

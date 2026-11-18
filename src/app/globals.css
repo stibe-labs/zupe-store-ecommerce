@@ -383,6 +383,72 @@ button[aria-disabled="true"],
   animation: shopNowColorFlow 3s ease infinite;
 }
 
+/* ─── Continuous BUY NOW Button Animation (Gradient Shift + Glow Pulse + Shine Sweep + Arrow Nudge) ─── */
+@keyframes buyGrad {
+  0%, 100% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 0%;
+  }
+}
+
+@keyframes buyGlow {
+  0%, 100% {
+    box-shadow: 0 8px 22px rgba(232, 70, 28, 0.40);
+  }
+  50% {
+    box-shadow: 0 10px 30px rgba(232, 70, 28, 0.70);
+  }
+}
+
+@keyframes buyShine {
+  0% {
+    left: -60%;
+  }
+  55%, 100% {
+    left: 130%;
+  }
+}
+
+@keyframes buyNudge {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+
+.btn-buy-animated {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(110deg, #ff6a3d, #e8461c 45%, #ff7a45 70%, #e8461c);
+  background-size: 220% 100%;
+  animation: buyGrad 3.2s ease infinite, buyGlow 2s ease-in-out infinite;
+  box-shadow: 0 8px 22px rgba(232, 70, 28, 0.45);
+}
+
+.btn-buy-animated::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-20deg);
+  animation: buyShine 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.btn-buy-arr {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: buyNudge 1.1s ease-in-out infinite;
+}
+
 /* ─── Universal Modal Scroll Containment & Background Freeze ─── */
 html.modal-open,
 body.modal-open,
