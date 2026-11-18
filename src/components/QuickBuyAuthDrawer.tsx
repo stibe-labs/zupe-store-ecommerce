@@ -71,6 +71,8 @@ export function QuickBuyAuthDrawer({
 
   const [otpCode, setOtpCode] = useState<string>("");
   const [isOtpFocused, setIsOtpFocused] = useState<boolean>(false);
+  const [testOtp, setTestOtp] = useState<string | null>(null);
+  const [codeSent, setCodeSent] = useState<boolean>(true);
   const [timer, setTimer] = useState<number>(30);
   const [canResend, setCanResend] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -211,6 +213,8 @@ export function QuickBuyAuthDrawer({
     if (res.success) {
       setStep("otp");
       setOtpCode("");
+      setCodeSent(res.codeSent ?? true);
+      setTestOtp(!res.codeSent && res.otp ? res.otp : null);
       setTimeout(() => {
         otpInputRef.current?.focus();
       }, 250);
@@ -230,6 +234,8 @@ export function QuickBuyAuthDrawer({
       setTimer(30);
       setCanResend(false);
       setOtpCode("");
+      setCodeSent(res.codeSent ?? true);
+      setTestOtp(!res.codeSent && res.otp ? res.otp : null);
       setTimeout(() => otpInputRef.current?.focus(), 150);
     } else {
       setError(res.error || "Could not resend verification code. Please try again.");
@@ -548,6 +554,14 @@ export function QuickBuyAuthDrawer({
                         <span>Change</span>
                       </button>
                     </div>
+
+                    {/* Gateway Notice / Fallback if Fast2SMS has low funds */}
+                    {!codeSent && testOtp && (
+                      <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium text-center mt-2.5 max-w-[280px] mx-auto animate-in fade-in">
+                        <span className="text-amber-800">SMS wallet balance low. Use code: </span>
+                        <strong className="font-mono font-black text-amber-950 text-sm tracking-wider underline">{testOtp}</strong>
+                      </div>
+                    )}
                   </div>
 
                   {/* 4 Digit OTP Container: Real Master Input for Autofill + 4 Visual Boxes */}
