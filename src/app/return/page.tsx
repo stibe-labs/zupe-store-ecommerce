@@ -199,13 +199,13 @@ export default function ReturnPolicyPage() {
             <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 sm:p-5 space-y-2.5 text-amber-950">
               <h4 className="font-bold text-sm sm:text-base flex items-center gap-2 text-amber-900">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                Cash on Delivery (COD) Orders &amp; ₹10 Advance Fee (100% Refundable)
+                Cash on Delivery (COD) Orders &amp; COD Handling Fee Policy
               </h4>
               <p className="text-xs sm:text-sm text-amber-800 leading-relaxed">
                 When you cancel a Cash on Delivery order before dispatch, the remaining balance due at doorstep is completely canceled, and our logistics partner will not deliver the parcel.
               </p>
               <div className="bg-white/80 rounded-xl p-3 border border-amber-200 text-xs sm:text-sm text-amber-900 leading-relaxed">
-                <strong>Refund Guarantee:</strong> The <strong>₹10 advance confirmation fee</strong> paid during checkout is <strong>100% refundable</strong> upon order cancellation before courier dispatch. Our billing desk verifies your cancellation and coordinates the ₹10 refund directly back to your original UPI account or payment method via WhatsApp (<strong className="text-amber-950">+91 97441 22853</strong>).
+                <strong>Refund Guarantee:</strong> The <strong>COD handling fee (₹19 or ₹49)</strong> paid online during checkout is <strong>100% refundable</strong> upon order cancellation before courier dispatch. COD fee is not refundable if the parcel is refused at delivery. Our billing desk verifies your cancellation and coordinates the refund directly back to your original UPI account or payment method via WhatsApp (<strong className="text-amber-950">+91 97441 22853</strong>).
               </div>
             </div>
           </section>

@@ -226,11 +226,12 @@ export async function dispatchShiprocketOrder(
     // 2. Live Shiprocket API ad-hoc order creation
     try {
       const createOrderUrl = "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc";
-      const advancePaid = Number((order as any).advance_paid) || (Boolean((order as any).is_cod_partial) ? 10 : 0);
+      const defaultFee = Number(order.total_amount) < 500 ? 19 : 49;
+      const advancePaid = Number((order as any).advance_paid) || (Boolean((order as any).is_cod_partial) ? defaultFee : 0);
       const isCodPartial = Boolean((order as any).is_cod_partial || advancePaid > 0);
       const codCollectableAmount = (order as any).balance_due !== undefined
         ? Number((order as any).balance_due)
-        : (isCodPartial ? Math.max(0, Number(order.total_amount) - (advancePaid || 10)) : Number(order.total_amount));
+        : (isCodPartial ? Math.max(0, Number(order.total_amount) - advancePaid) : Number(order.total_amount));
 
       const effectiveShiprocketTotal = isCod ? codCollectableAmount : Number(order.total_amount);
 
@@ -831,8 +832,11 @@ export async function processShiprocketWebhook(payload: any): Promise<Shiprocket
       try {
         const { sendOutForDeliveryWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
         const isCod = (targetOrder.payment_method || "").toUpperCase() === "COD";
-        const advancePaid = Number((targetOrder as any).advance_paid) || (isCod ? 10 : 0);
-        const amountToPay = isCod ? Math.max(0, targetOrder.total_amount - advancePaid) : 0;
+        const defaultFee = Number(targetOrder.total_amount) < 500 ? 19 : 49;
+        const advancePaid = Number((targetOrder as any).advance_paid) || (isCod ? defaultFee : 0);
+        const amountToPay = (targetOrder as any).balance_due !== undefined
+          ? Number((targetOrder as any).balance_due)
+          : (isCod ? Math.max(0, targetOrder.total_amount - advancePaid) : 0);
         sendOutForDeliveryWhatsApp({
           customerName: targetOrder.customer_name,
           customerPhone: targetOrder.customer_phone,

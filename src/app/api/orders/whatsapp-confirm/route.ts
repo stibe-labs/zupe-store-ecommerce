@@ -71,12 +71,17 @@ export async function GET(req: NextRequest) {
 
           const displayOrderId = ord.shopify_order_id || (ord as any).shopify_order_id || ord.id || resolvedOrderId;
 
+          const codAdvanceFee = Number((ord as any).advance_paid) || (Number(ord.total_amount) < 500 ? 19 : 49);
+          const codBalance = (ord as any).balance_due !== undefined ? Number((ord as any).balance_due) : Math.max(0, Number(ord.total_amount) - codAdvanceFee);
+
           const waSent = await sendOrderConfirmationWhatsApp({
             customerName: ord.customer_name || "Valued Customer",
             customerPhone: ord.customer_phone || "",
             orderId: displayOrderId,
             totalAmount: Number(ord.total_amount) || 0,
             paymentMethod: "cod",
+            advancePaid: codAdvanceFee,
+            balanceDue: codBalance,
             trackingId: ord.tracking_number || ord.shiprocket_awb || (ord as any).tracking_number,
             courierPartner: ord.courier_partner || (ord as any).courier_partner,
             items: rawItems.map((it: any) => ({

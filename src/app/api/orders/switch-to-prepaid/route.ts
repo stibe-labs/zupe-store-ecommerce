@@ -88,12 +88,15 @@ export async function GET(req: NextRequest) {
       );
 
       let originalTotal = Number(sfMatched.total_amount) || 0;
+      const codFee = (productSubtotal || originalTotal) < 500 ? 19 : 49;
       if (productSubtotal > 0 && originalTotal <= productSubtotal) {
-        originalTotal = productSubtotal + 49;
+        originalTotal = productSubtotal + codFee;
       }
-      const advancePaid = Number((sfMatched as any).advance_paid) || 10;
-      const doorstepBalance = Math.max(0, originalTotal - advancePaid);
-      const discountedAmount = Math.max(1, doorstepBalance - 49);
+      const advancePaid = Number((sfMatched as any).advance_paid) || codFee;
+      const doorstepBalance = (sfMatched as any).balance_due !== undefined
+        ? Number((sfMatched as any).balance_due)
+        : Math.max(0, originalTotal - advancePaid);
+      const discountedAmount = Math.max(1, doorstepBalance - advancePaid);
 
       return NextResponse.json({
         success: true,
@@ -113,7 +116,7 @@ export async function GET(req: NextRequest) {
           discounted_amount: discountedAmount,
           items: sfMatched.items,
         },
-        discount: 49,
+        discount: advancePaid,
         doorstep_balance: doorstepBalance,
         discounted_amount: discountedAmount,
       });
@@ -147,12 +150,15 @@ export async function GET(req: NextRequest) {
     );
 
     let originalTotal = Number(matched.total_amount) || 0;
+    const codFee = (productSubtotal || originalTotal) < 500 ? 19 : 49;
     if (productSubtotal > 0 && originalTotal <= productSubtotal) {
-      originalTotal = productSubtotal + 49;
+      originalTotal = productSubtotal + codFee;
     }
-    const advancePaid = Number((matched as any).advance_paid) || 10;
-    const doorstepBalance = Math.max(0, originalTotal - advancePaid);
-    const discountedAmount = Math.max(1, doorstepBalance - 49);
+    const advancePaid = Number((matched as any).advance_paid) || codFee;
+    const doorstepBalance = (matched as any).balance_due !== undefined
+      ? Number((matched as any).balance_due)
+      : Math.max(0, originalTotal - advancePaid);
+    const discountedAmount = Math.max(1, doorstepBalance - advancePaid);
 
     return NextResponse.json({
       success: true,
@@ -171,7 +177,7 @@ export async function GET(req: NextRequest) {
         discounted_amount: discountedAmount,
         items: matched.items || [],
       },
-      discount: 49,
+      discount: advancePaid,
       doorstep_balance: doorstepBalance,
       discounted_amount: discountedAmount,
     });

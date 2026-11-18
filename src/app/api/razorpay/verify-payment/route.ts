@@ -64,11 +64,14 @@ export async function POST(req: NextRequest) {
       const { updateERPOrder, getOrderById } = await import("@/lib/erpStore");
       const existingOrder = await getOrderById(existingOrderId);
 
-      const advancePaid = Number(order_payload.advance_paid || (existingOrder as any)?.advance_paid) || 10;
-      const doorstepDue = Math.max(0, Number(existingOrder?.total_amount || 0) - advancePaid);
+      const defaultFee = Number(existingOrder?.total_amount || 0) < 500 ? 19 : 49;
+      const advancePaid = Number(order_payload.advance_paid || (existingOrder as any)?.advance_paid) || defaultFee;
+      const doorstepDue = (existingOrder as any)?.balance_due !== undefined
+        ? Number((existingOrder as any).balance_due)
+        : Math.max(0, Number(existingOrder?.total_amount || 0) - advancePaid);
       const discountedAmount = Number(
         order_payload.discounted_amount ||
-          (existingOrder ? Math.max(1, doorstepDue - 49) : 0)
+          (existingOrder ? Math.max(1, doorstepDue - advancePaid) : 0)
       );
 
       const prodCost = Number(existingOrder?.product_cost || 0);
@@ -239,7 +242,7 @@ export async function POST(req: NextRequest) {
 
     const isCodPartial = Boolean(order_payload?.is_cod_partial);
     const orderPaymentMethod = isCodPartial
-      ? "Cash on Delivery (Partial Payment)"
+      ? "Cash on Delivery"
       : (payment_method || "Online Payment");
     const orderPaymentStatus = isCodPartial ? "pending" : "paid";
 
@@ -271,10 +274,12 @@ export async function POST(req: NextRequest) {
     (newOrder as any).razorpay_order_id = razorpay_order_id;
     (newOrder as any).razorpay_payment_id = razorpay_payment_id;
     if (isCodPartial) {
-      const advance = Number(order_payload?.advance_amount) || 10;
-      (newOrder as any).advance_paid = advance;
-      (newOrder as any).shipping_fee = 49;
-      (newOrder as any).balance_due = Math.max(0, Number(total_amount) - advance);
+      const fee = Number(order_payload?.advance_amount) || Number(order_payload?.shipping_fee) || (Number(total_amount) < 500 ? 19 : 49);
+      (newOrder as any).advance_paid = fee;
+      (newOrder as any).shipping_fee = fee;
+      (newOrder as any).balance_due = order_payload?.balance_amount !== undefined
+        ? Number(order_payload.balance_amount)
+        : Math.max(0, Number(total_amount) - fee);
     }
 
     await createOrder(newOrder);
@@ -397,6 +402,8 @@ export async function POST(req: NextRequest) {
         totalAmount: Number(total_amount),
         paymentMethod: isCodPartial ? "cod" : "prepaid",
         token: confirmToken,
+        advancePaid: isCodPartial ? Number((newOrder as any).advance_paid) : Number(total_amount),
+        balanceDue: isCodPartial ? Number((newOrder as any).balance_due) : 0,
         items: (items || []).map((it: any) => ({
           name: it.name,
           quantity: Number(it.quantity || 1),
@@ -425,7 +432,7 @@ export async function POST(req: NextRequest) {
           totalAmount: Number(total_amount),
           discountAmount: Number(discount_amount || 0),
           paymentMethod: isCodPartial
-            ? `Cash on Delivery (₹${(newOrder as any).advance_paid || 10} Advance Paid)`
+            ? `Cash on Delivery (₹${(newOrder as any).advance_paid || 49} COD Fee Paid)`
             : (payment_method || "Prepaid (Online Payment)"),
           paymentStatus: orderPaymentStatus,
           items: items || [],

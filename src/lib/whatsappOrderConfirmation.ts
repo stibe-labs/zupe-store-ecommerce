@@ -53,6 +53,8 @@ export interface OrderConfirmationParams {
   items: Array<{ name: string; quantity: number; price: number }>;
   trackingId?: string;
   courierPartner?: string;
+  advancePaid?: number;
+  balanceDue?: number;
 }
 
 export interface OrderPreConfirmationParams {
@@ -63,6 +65,8 @@ export interface OrderPreConfirmationParams {
   paymentMethod: "cod" | "prepaid";
   items: Array<{ name: string; quantity: number; price: number }>;
   token: string;
+  advancePaid?: number;
+  balanceDue?: number;
 }
 
 /**
@@ -132,8 +136,13 @@ export async function sendOrderPreConfirmationWhatsApp(
   const cancelUrl = `${STORE_BASE_URL}/api/orders/whatsapp-cancel?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
-  const amountPayable = paymentMethod === "cod" ? Math.max(0, totalAmount - 10) : 0;
-  const amountPaid = paymentMethod === "cod" ? 10 : totalAmount;
+  const defaultFee = totalAmount < 500 ? 19 : 49;
+  const amountPaid = params.advancePaid !== undefined
+    ? params.advancePaid
+    : (paymentMethod === "cod" ? defaultFee : totalAmount);
+  const amountPayable = params.balanceDue !== undefined
+    ? params.balanceDue
+    : (paymentMethod === "cod" ? Math.max(0, totalAmount - amountPaid) : 0);
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
   const firstProductName = items && items[0]?.name ? items[0].name : "Zupe Store Selection";
 
@@ -161,14 +170,17 @@ export async function sendOrderPreConfirmationWhatsApp(
   }
 
   // 2. Fallback to direct message formatted exactly as requested
+  const priceNotice = paymentMethod === "cod"
+    ? `💰 ₹${amountPaid} paid · Pay ₹${amountPayable.toLocaleString("en-IN")} at delivery\n\n`
+    : `💰 Amount Paid: ₹${amountPaid.toLocaleString("en-IN")}\n\n`;
+
   const message =
     `Hi ${firstName}! 👋🏻\n\n` +
     `😊Thank you for ordering from ZupeStore🛒\n\n` +
     `⁉️Please confirm your order📦\n\n` +
     `📦 Order ID: ${displayOrderId}\n` +
     `🛍️ Product: ${firstProductName}\n` +
-    `💰 Amount Payable: ₹${amountPayable.toLocaleString("en-IN")}\n` +
-    `💰 Amount Paid: ₹${amountPaid.toLocaleString("en-IN")}\n\n` +
+    priceNotice +
     `📣Please confirm whether you would like to proceed with your order.💬\n\n` +
     `✅ Confirm Order:\n${confirmUrl}\n\n` +
     `❌ Cancel Order:\n${cancelUrl}\n\n` +
@@ -297,10 +309,15 @@ export async function sendOrderConfirmationWhatsApp(
 
   const { token, apiUrl } = getWhatsAppConfig();
 
-  const advancePaid = 10;
-  const doorstepBalance = Math.max(0, totalAmount - advancePaid); // e.g. 699 - 10 = 689
-  const switchPrepaidAmount = Math.max(1, doorstepBalance - 49);  // Flat Rs 49 OFF switch to prepaid
-  const productSubtotal = totalAmount >= 49 ? totalAmount - 49 : totalAmount;
+  const defaultFee = totalAmount < 500 ? 19 : 49;
+  const advancePaid = params.advancePaid !== undefined
+    ? params.advancePaid
+    : (paymentMethod === "cod" ? defaultFee : totalAmount);
+  const doorstepBalance = params.balanceDue !== undefined
+    ? params.balanceDue
+    : (paymentMethod === "cod" ? Math.max(0, totalAmount - advancePaid) : 0);
+  const switchPrepaidAmount = Math.max(1, doorstepBalance - advancePaid);
+  const productSubtotal = doorstepBalance > 0 ? doorstepBalance : totalAmount;
   const firstName = customerName.split(" ")[0] || customerName;
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
   const cleanUrlOrderId = orderId.replace(/^#/, "");
@@ -321,14 +338,12 @@ export async function sendOrderConfirmationWhatsApp(
       "📦 *Order ID:* " + displayOrderId + "\n" +
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
       "💰 *Price Breakdown:*\n" +
-      "  • Product Amount: Rs " + productSubtotal.toLocaleString("en-IN") + "\n" +
-      "  • COD Handling Charge: Rs 49\n" +
-      "  • Total Amount: Rs " + totalAmount.toLocaleString("en-IN") + "\n" +
-      "  • Advance Paid Online: Rs 10 (Received)\n" +
-      "  • *Balance Due at Doorstep: Rs " + doorstepBalance.toLocaleString("en-IN") + "*\n\n" +
+      "  • Product Amount: ₹" + productSubtotal.toLocaleString("en-IN") + "\n" +
+      "  • COD Handling Fee: ₹" + advancePaid + " (Paid Online)\n" +
+      "  • *₹" + advancePaid + " paid · Pay ₹" + doorstepBalance.toLocaleString("en-IN") + " at delivery*\n\n" +
       "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
-      "⚡ *Special Offer: Switch to Prepaid & Save Rs 49!*\n" +
-      "Pay online now — pay only *Rs " + switchPrepaidAmount.toLocaleString("en-IN") + "* instead of Rs " + doorstepBalance.toLocaleString("en-IN") + " at delivery:\n" +
+      "⚡ *Special Offer: Switch to Prepaid & Save ₹" + advancePaid + "!*\n" +
+      "Pay online now — pay only *₹" + switchPrepaidAmount.toLocaleString("en-IN") + "* instead of ₹" + doorstepBalance.toLocaleString("en-IN") + " at delivery:\n" +
       payNowUrl + "\n\n" +
       "📦 *Track Your Order:*\n" +
       trackUrl + "\n\n" +

@@ -791,9 +791,9 @@ function OrdersPageContent() {
                 Boolean(ord.payment_method?.toUpperCase() === "COD") ||
                 Boolean(ord.payment_method?.toLowerCase().includes("partial"));
 
-              const codAdvancePaid = Number((ord as any).advance_paid) || 10;
+              const codAdvancePaid = Number((ord as any).advance_paid) || (Number(ord.total_amount) < 500 ? 19 : 49);
               const refundAmountLabel = isCodOrder
-                ? `₹${codAdvancePaid} (COD Advance Fee)`
+                ? `₹${codAdvancePaid} (COD Handling Fee)`
                 : `₹${displayedTotal.toLocaleString()}`;
 
               return (
@@ -1073,7 +1073,7 @@ function OrdersPageContent() {
                                 <span className="font-bold text-rose-950">Cancel Order? </span>
                                 {isCod ? (
                                   <span className="text-amber-800 font-medium">
-                                    Doorstep balance cancelled. The ₹10 advance confirmation fee is 100% refundable to your original payment account.
+                                    Doorstep balance cancelled. The ₹{codAdvancePaid} COD handling fee is 100% refundable to your original payment account.
                                   </span>
                                 ) : (
                                   <span className="text-emerald-800 font-medium">
@@ -1134,7 +1134,7 @@ function OrdersPageContent() {
                               <span className="font-bold text-rose-950">Are you sure you want to cancel this order? </span>
                               {isCod ? (
                                 <span className="block text-emerald-900 font-medium text-[11px] mt-0.5">
-                                  ✓ Doorstep parcel delivery will be cancelled. The <strong>₹10 advance confirmation fee</strong> paid during checkout is <strong>100% refundable</strong> and will be processed back to your original payment account.
+                                  ✓ Doorstep parcel delivery will be cancelled. The <strong>₹{codAdvancePaid} COD handling fee</strong> paid during checkout is <strong>100% refundable</strong> and will be processed back to your original payment account.
                                 </span>
                               ) : (
                                 <span className="block text-emerald-900 font-medium text-[11px] mt-0.5">
@@ -1658,7 +1658,7 @@ function OrdersPageContent() {
             <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 space-y-2 text-emerald-950">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-emerald-800">
-                  {cancellationModalData.isCodPartial ? "Refund Amount (COD Advance Fee):" : "Refund Amount:"}
+                  {cancellationModalData.isCodPartial ? "Refund Amount (COD Handling Fee):" : "Refund Amount:"}
                 </span>
                 <span className="text-sm font-extrabold text-emerald-950">₹{cancellationModalData.amount}</span>
               </div>

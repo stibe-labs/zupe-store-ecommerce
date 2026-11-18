@@ -1726,7 +1726,7 @@ function AdminOrdersContent() {
                             Customer Refund Management
                           </h4>
                           <p className="text-[11px] text-slate-500">
-                            {isCod ? "COD ₹10 Advance Fee (100% Refundable)" : "Prepaid Online Order Refund"}
+                            {isCod ? "COD Handling Fee (100% Refundable before dispatch)" : "Prepaid Online Order Refund"}
                           </p>
                         </div>
                       </div>
