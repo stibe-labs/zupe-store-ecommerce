@@ -852,12 +852,8 @@ export default function ProductDetailPage() {
       showToast("Sorry, this item is currently out of stock!");
       return;
     }
-    if (!user) {
-      setQuickBuyMethod("cod");
-      setIsQuickBuyDrawerOpen(true);
-      return;
-    }
-    router.push("/checkout?method=cod");
+    setQuickBuyMethod("cod");
+    setIsQuickBuyDrawerOpen(true);
   };
 
   const handleBuyWithUpi = async () => {
@@ -902,20 +898,17 @@ export default function ProductDetailPage() {
       showToast("Sorry, this item is currently out of stock!");
       return;
     }
-    if (!user) {
-      setQuickBuyMethod("cod");
-      setIsQuickBuyDrawerOpen(true);
-      return;
-    }
-    router.push("/checkout?method=cod");
+    setQuickBuyMethod("upi");
+    setIsQuickBuyDrawerOpen(true);
   };
 
-  const handleQuickBuySuccess = (verifiedPhone: string) => {
-    setIsQuickBuyDrawerOpen(false);
+  const handleQuickBuySuccess = (verifiedPhone: string, orderId?: string) => {
     try {
       sessionStorage.setItem("checkout_prefill_phone", verifiedPhone);
     } catch {}
-    router.push(`/checkout?method=${quickBuyMethod}&step=delivery&phone=${encodeURIComponent(verifiedPhone)}`);
+    if (orderId) {
+      return;
+    }
   };
 
   const scrollToReviews = (e?: React.MouseEvent) => {
@@ -2250,6 +2243,7 @@ export default function ProductDetailPage() {
           }}
           bundle={getBundleDetails(quantity)}
           quantity={quantity}
+          initialMethod={quickBuyMethod === "cod" ? "cod" : "upi"}
           onSuccess={handleQuickBuySuccess}
         />
       )}
