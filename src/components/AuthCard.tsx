@@ -107,10 +107,8 @@ export function AuthCard({
 
     if (res.success) {
       setStep("otp");
+      setOtp("");
       setExpiryCountdown(180); // 3 minutes = 180s live countdown
-      if (res.otp) {
-        setOtp(res.otp);
-      }
       setSuccess("WhatsApp verification code sent successfully!");
     } else {
       setError(res.error || "Failed to send verification code. Please try again.");

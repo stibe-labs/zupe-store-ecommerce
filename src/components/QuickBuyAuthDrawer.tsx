@@ -313,11 +313,7 @@ export function QuickBuyAuthDrawer({
 
     if (res.success) {
       setStep("otp");
-      if (res.otp) {
-        setOtpCode(res.otp);
-      } else {
-        setOtpCode("");
-      }
+      setOtpCode("");
       setTimeout(() => {
         otpInputRef.current?.focus();
       }, 250);
