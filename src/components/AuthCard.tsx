@@ -128,8 +128,8 @@ export function AuthCard({
       return;
     }
 
-    if (!otp.trim() || otp.trim().length < 6) {
-      setError("Please enter the complete 6-digit verification code.");
+    if (!otp.trim() || otp.trim().length < 4) {
+      setError("Please enter the complete verification code.");
       return;
     }
 

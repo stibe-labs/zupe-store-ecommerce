@@ -51,6 +51,7 @@ import { HowToUseSection } from "@/components/HowToUseSection";
 import { ProductDealTimer } from "@/components/ProductDealTimer";
 import { ProductComparisonTable } from "@/components/ProductComparisonTable";
 import { ProductFaqSection } from "@/components/ProductFaqSection";
+import { QuickBuyAuthDrawer } from "@/components/QuickBuyAuthDrawer";
 import { trackViewContent } from "@/lib/metaPixel";
 
 export default function ProductDetailPage() {
@@ -67,6 +68,8 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedBundleTier, setSelectedBundleTier] = useState<number>(1);
   const [showStickyBar, setShowStickyBar] = useState<boolean>(false);
+  const [isQuickBuyDrawerOpen, setIsQuickBuyDrawerOpen] = useState<boolean>(false);
+  const [quickBuyMethod, setQuickBuyMethod] = useState<"cod" | "upi">("cod");
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
     details: true,
     specs: false,
@@ -850,7 +853,8 @@ export default function ProductDetailPage() {
       return;
     }
     if (!user) {
-      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
+      setQuickBuyMethod("cod");
+      setIsQuickBuyDrawerOpen(true);
       return;
     }
     router.push("/checkout?method=cod");
@@ -899,10 +903,19 @@ export default function ProductDetailPage() {
       return;
     }
     if (!user) {
-      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
+      setQuickBuyMethod("cod");
+      setIsQuickBuyDrawerOpen(true);
       return;
     }
-    router.push("/checkout?method=upi");
+    router.push("/checkout?method=cod");
+  };
+
+  const handleQuickBuySuccess = (verifiedPhone: string) => {
+    setIsQuickBuyDrawerOpen(false);
+    try {
+      sessionStorage.setItem("checkout_prefill_phone", verifiedPhone);
+    } catch {}
+    router.push(`/checkout?method=${quickBuyMethod}&step=delivery&phone=${encodeURIComponent(verifiedPhone)}`);
   };
 
   const scrollToReviews = (e?: React.MouseEvent) => {
@@ -2220,6 +2233,26 @@ export default function ProductDetailPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Quick Buy Bottom Sheet Drawer for Unauthenticated Users */}
+      {product && (
+        <QuickBuyAuthDrawer
+          isOpen={isQuickBuyDrawerOpen}
+          onClose={() => setIsQuickBuyDrawerOpen(false)}
+          product={{
+            id: product.id,
+            name: product.name,
+            poster_image: product.poster_image,
+            price: product.price,
+            mrp: product.mrp,
+            original_price: product.original_price,
+            selectedColor: availableColors.length > 0 && product.has_colors !== false ? selectedColor : undefined,
+            selectedImage: selectedImage || product.poster_image,
+          }}
+          bundle={getBundleDetails(quantity)}
+          quantity={quantity}
+          onSuccess={handleQuickBuySuccess}
+        />
+      )}
     </div>
   );
 }

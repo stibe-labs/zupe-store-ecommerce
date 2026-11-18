@@ -109,7 +109,18 @@ function CheckoutContent() {
   const { user, isLoading: authLoading, updateUserProfile } = useAuth();
 
   // Contact & Delivery state
-  const [phone, setPhone] = useState(() => cleanPhoneDigits(user?.phone || ""));
+  const [phone, setPhone] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pParam = urlParams.get("phone");
+        if (pParam) return cleanPhoneDigits(pParam);
+        const stored = sessionStorage.getItem("checkout_prefill_phone");
+        if (stored) return cleanPhoneDigits(stored);
+      } catch {}
+    }
+    return cleanPhoneDigits(user?.phone || "");
+  });
   const [name, setName] = useState(() => (user?.name && !user.name.startsWith("Customer ") ? user.name : ""));
   // Customer must type their real email address manually
   const [email, setEmail] = useState("");
@@ -184,6 +195,33 @@ function CheckoutContent() {
       }
     } catch {}
   }, []);
+
+  // Auto-scroll to Section 2 (Delivery details) if arriving from Quick Buy Drawer with verified phone
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const p = new URLSearchParams(window.location.search);
+      const urlPhone = p.get("phone");
+      const storedPhone = sessionStorage.getItem("checkout_prefill_phone");
+      const targetPhone = urlPhone || storedPhone;
+      if (targetPhone) {
+        const cleaned = cleanPhoneDigits(targetPhone);
+        if (cleaned && cleaned.length === 10) {
+          setPhone(cleaned);
+        }
+      }
+      if (p.get("step") === "delivery" || searchParams.get("step") === "delivery") {
+        setTimeout(() => {
+          const el = document.getElementById("delivery-details-section");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+            const nameInput = document.getElementById("name-input");
+            if (nameInput) nameInput.focus();
+          }
+        }, 400);
+      }
+    } catch {}
+  }, [searchParams]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -2290,13 +2328,21 @@ function CheckoutContent() {
 
             {/* STEP 1: CONTACT DETAILS (Matches Reference Photo 3) */}
             <div className="space-y-3.5">
-              <div className="flex items-center gap-2.5">
-                <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center shrink-0">
-                  1
-                </span>
-                <h2 className="text-lg sm:text-xl font-bold font-display text-gray-900">
-                  Contact details
-                </h2>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                    1
+                  </span>
+                  <h2 className="text-lg sm:text-xl font-bold font-display text-gray-900">
+                    Contact details
+                  </h2>
+                </div>
+                {phone.length === 10 && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold shadow-2xs animate-in fade-in duration-200">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Verified</span>
+                  </span>
+                )}
               </div>
 
               <p className="text-xs text-gray-500 flex items-center gap-1.5 pl-8.5 -mt-1.5 font-medium">
@@ -2355,7 +2401,7 @@ function CheckoutContent() {
             <hr className="border-gray-100" />
 
             {/* STEP 2: DELIVERY DETAILS (Matches Reference Photo 3) */}
-            <div className="space-y-4">
+            <div className="space-y-4 scroll-mt-20" id="delivery-details-section">
               <div className="flex items-center justify-between flex-wrap gap-2.5">
                 <div className="flex items-center gap-2.5">
                   <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center shrink-0">

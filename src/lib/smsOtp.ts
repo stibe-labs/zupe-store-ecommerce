@@ -103,7 +103,7 @@ export function normalizePhoneNumber(rawPhone: string): {
  * Generate a 6-digit OTP and store it in both memory and Cloudflare D1.
  */
 export async function generatePhoneOTPAsync(phoneDigits: string): Promise<string> {
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const code = Math.floor(1000 + Math.random() * 9000).toString();
   const now = Date.now();
   const expiresAt = now + 3 * 60 * 1000; // 3 minutes (180 seconds)
 
@@ -131,7 +131,7 @@ export async function generatePhoneOTPAsync(phoneDigits: string): Promise<string
 }
 
 export function generatePhoneOTP(phoneDigits: string): string {
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const code = Math.floor(1000 + Math.random() * 9000).toString();
   const now = Date.now();
   const expiresAt = now + 3 * 60 * 1000; // 3 minutes
 
