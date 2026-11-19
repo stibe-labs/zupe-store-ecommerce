@@ -26,60 +26,28 @@ import {
   RotateCcw,
   RefreshCw,
   Check,
+  Search,
+  SlidersHorizontal,
+  Plus,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/context/AuthContext";
 import { OrderRecord, OrderItem } from "@/lib/orderStore";
 
-type OrderFilterTab = "all" | "in_progress" | "in_transit" | "delivered" | "cancelled";
-
-const FILTER_TABS = [
-  { id: "all" as const, label: "All Orders", icon: Package, iconColor: "text-stone-700" },
-  { id: "in_progress" as const, label: "In Progress", icon: Clock, iconColor: "text-amber-600" },
-  { id: "in_transit" as const, label: "In Transit", icon: Truck, iconColor: "text-blue-600" },
-  { id: "delivered" as const, label: "Delivered", icon: CheckCircle2, iconColor: "text-emerald-600" },
-  { id: "cancelled" as const, label: "Cancelled", icon: XCircle, iconColor: "text-rose-600" },
+const STATUS_OPTIONS = [
+  { id: "on_the_way", label: "On the way" },
+  { id: "delivered", label: "Delivered" },
+  { id: "cancelled", label: "Cancelled" },
+  { id: "returned", label: "Returned" },
 ];
 
-function getOrderCategory(ord: OrderRecord): "in_progress" | "in_transit" | "delivered" | "cancelled" {
-  const ordStatus = (ord.order_status || "").toLowerCase();
-  const waStatus = (ord.whatsapp_confirm_status || "").toLowerCase();
-  const deliveryStatus = ((ord as any).delivery_status || "").toLowerCase();
-  const generalStatus = ((ord as any).status || "").toLowerCase();
-
-  // 1. Cancelled check first (takes precedence)
-  if (
-    ordStatus === "cancelled" ||
-    waStatus === "cancelled" ||
-    deliveryStatus === "cancelled" ||
-    generalStatus === "cancelled"
-  ) {
-    return "cancelled";
-  }
-
-  // 2. Delivered check
-  if (
-    ordStatus === "delivered" ||
-    deliveryStatus === "delivered" ||
-    generalStatus === "delivered"
-  ) {
-    return "delivered";
-  }
-
-  // 3. In Transit / Shipped check
-  const inTransitStatuses = ["shipped", "in transit", "out for delivery"];
-  if (
-    inTransitStatuses.includes(ordStatus) ||
-    inTransitStatuses.includes(deliveryStatus) ||
-    inTransitStatuses.includes(generalStatus)
-  ) {
-    return "in_transit";
-  }
-
-  // 4. Default: In Progress (processing, pending WhatsApp confirmation, payment pending, etc.)
-  return "in_progress";
-}
+const TIME_OPTIONS = [
+  { id: "last_30_days", label: "Last 30 days" },
+  { id: "2026", label: "2026" },
+  { id: "2025", label: "2025" },
+  { id: "older", label: "Older" },
+];
 
 function OrdersPageContent() {
   const { user, isAuthenticated, openAuthModal } = useAuth();
@@ -96,39 +64,148 @@ function OrdersPageContent() {
   const [cancelSuccessMsg, setCancelSuccessMsg] = useState<string | null>(null);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState<OrderFilterTab>(() => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+
+  // Applied filters
+  const [appliedStatusFilters, setAppliedStatusFilters] = useState<string[]>(() => {
     const urlFilter = searchParams.get("filter") || searchParams.get("status");
-    if (
-      urlFilter &&
-      ["all", "in_progress", "in_transit", "delivered", "cancelled"].includes(urlFilter)
-    ) {
-      return urlFilter as OrderFilterTab;
+    if (urlFilter) {
+      if (urlFilter === "cancelled") return ["cancelled"];
+      if (urlFilter === "delivered") return ["delivered"];
+      if (["shipped", "on_the_way", "in_transit"].includes(urlFilter)) return ["on_the_way"];
+      if (["returned", "rto"].includes(urlFilter)) return ["returned"];
     }
-    if (cancelledOrderId) return "cancelled";
-    return "all";
+    if (cancelledOrderId) return ["cancelled"];
+    return [];
   });
+  const [appliedTimeFilter, setAppliedTimeFilter] = useState<string>("");
 
-  const filterCounts = useMemo(() => {
-    const counts: Record<OrderFilterTab, number> = {
-      all: orders.length,
-      in_progress: 0,
-      in_transit: 0,
-      delivered: 0,
-      cancelled: 0,
-    };
+  // Draft filters (inside bottom sheet modal)
+  const [draftStatusFilters, setDraftStatusFilters] = useState<string[]>(appliedStatusFilters);
+  const [draftTimeFilter, setDraftTimeFilter] = useState<string>(appliedTimeFilter);
 
-    orders.forEach((ord) => {
-      const cat = getOrderCategory(ord);
-      counts[cat]++;
-    });
+  const toggleDraftStatus = (statusId: string) => {
+    setDraftStatusFilters((prev) =>
+      prev.includes(statusId) ? prev.filter((s) => s !== statusId) : [...prev, statusId]
+    );
+  };
 
-    return counts;
-  }, [orders]);
+  const applyFilters = () => {
+    setAppliedStatusFilters(draftStatusFilters);
+    setAppliedTimeFilter(draftTimeFilter);
+    setIsFilterSheetOpen(false);
+  };
+
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setAppliedStatusFilters([]);
+    setAppliedTimeFilter("");
+    setDraftStatusFilters([]);
+    setDraftTimeFilter("");
+  };
+
+  const removeStatusFilter = (statusId: string) => {
+    setAppliedStatusFilters((prev) => prev.filter((s) => s !== statusId));
+  };
+
+  const totalActiveFilters = appliedStatusFilters.length + (appliedTimeFilter ? 1 : 0);
 
   const filteredOrders = useMemo(() => {
-    if (selectedFilter === "all") return orders;
-    return orders.filter((ord) => getOrderCategory(ord) === selectedFilter);
-  }, [orders, selectedFilter]);
+    return orders.filter((ord) => {
+      // 1. Search Query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const orderId = (ord.id || "").toLowerCase();
+        const cleanOrderId = orderId.replace(/^ord_/, "");
+        const shopifyId = ((ord as any).shopify_order_id || "").toLowerCase();
+        const awb = ((ord as any).shiprocket_awb || "").toLowerCase();
+        const courier = ((ord as any).courier_partner || "").toLowerCase();
+
+        let itemsText = "";
+        if (Array.isArray(ord.items)) {
+          itemsText = ord.items.map((i: any) => i.name || i.product_name || "").join(" ");
+        } else if (typeof ord.items === "string") {
+          try {
+            const parsed = JSON.parse(ord.items);
+            itemsText = parsed.map((i: any) => i.name || i.product_name || "").join(" ");
+          } catch {
+            itemsText = ord.items;
+          }
+        }
+
+        const matchesSearch =
+          orderId.includes(q) ||
+          cleanOrderId.includes(q) ||
+          shopifyId.includes(q) ||
+          awb.includes(q) ||
+          courier.includes(q) ||
+          itemsText.toLowerCase().includes(q);
+
+        if (!matchesSearch) return false;
+      }
+
+      // 2. Status Filters
+      if (appliedStatusFilters.length > 0) {
+        const ordStatus = (ord.order_status || "").toLowerCase();
+        const waStatus = (ord.whatsapp_confirm_status || "").toLowerCase();
+        const deliveryStatus = ((ord as any).delivery_status || "").toLowerCase();
+        const generalStatus = ((ord as any).status || "").toLowerCase();
+
+        const isCancelled =
+          ordStatus === "cancelled" ||
+          waStatus === "cancelled" ||
+          deliveryStatus === "cancelled" ||
+          generalStatus === "cancelled";
+
+        const isDelivered =
+          ordStatus === "delivered" ||
+          deliveryStatus === "delivered" ||
+          generalStatus === "delivered";
+
+        const inTransitStatuses = ["shipped", "in transit", "out for delivery"];
+        const isOnTheWay =
+          inTransitStatuses.includes(ordStatus) ||
+          inTransitStatuses.includes(deliveryStatus) ||
+          inTransitStatuses.includes(generalStatus);
+
+        const isReturned =
+          deliveryStatus.includes("rto") ||
+          deliveryStatus.includes("return") ||
+          generalStatus.includes("return");
+
+        let matchesStatus = false;
+        for (const st of appliedStatusFilters) {
+          if (st === "cancelled" && isCancelled) matchesStatus = true;
+          if (st === "delivered" && isDelivered && !isCancelled) matchesStatus = true;
+          if (st === "on_the_way" && isOnTheWay && !isCancelled) matchesStatus = true;
+          if (st === "returned" && isReturned) matchesStatus = true;
+        }
+
+        if (!matchesStatus) return false;
+      }
+
+      // 3. Time Filter
+      if (appliedTimeFilter) {
+        const orderDate = new Date(ord.created_at);
+        const now = new Date();
+        if (!isNaN(orderDate.getTime())) {
+          if (appliedTimeFilter === "last_30_days") {
+            const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            if (orderDate < thirtyDaysAgo) return false;
+          } else if (appliedTimeFilter === "2026") {
+            if (orderDate.getFullYear() !== 2026) return false;
+          } else if (appliedTimeFilter === "2025") {
+            if (orderDate.getFullYear() !== 2025) return false;
+          } else if (appliedTimeFilter === "older") {
+            if (orderDate.getFullYear() >= 2025) return false;
+          }
+        }
+      }
+
+      return true;
+    });
+  }, [orders, searchQuery, appliedStatusFilters, appliedTimeFilter]);
   const [autoConfirmedOrderId, setAutoConfirmedOrderId] = useState<string | null>(null);
   const [isSilentSyncing, setIsSilentSyncing] = useState<boolean>(false);
   const prevOrdersRef = useRef<OrderRecord[]>([]);
@@ -722,37 +799,92 @@ function OrdersPageContent() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Order Status Filter Tabs */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none sm:flex-wrap">
-              {FILTER_TABS.map((tab) => {
-                const isActive = selectedFilter === tab.id;
-                const count = filterCounts[tab.id];
-                const Icon = tab.icon;
-
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setSelectedFilter(tab.id)}
-                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap select-none ${
-                      isActive
-                        ? "bg-[#5b1420] text-white border-2 border-stone-800 shadow-[0_3px_0_0_#2b2b2b] -translate-y-0.5"
-                        : "bg-white text-stone-700 border-2 border-stone-800/40 hover:border-stone-800 hover:bg-stone-50 shadow-xs"
-                    }`}
-                  >
-                    <Icon className={`w-3.5 h-3.5 ${isActive ? "text-amber-300" : tab.iconColor}`} />
-                    <span>{tab.label}</span>
-                    <span
-                      className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
-                        isActive
-                          ? "bg-[#fed000] text-stone-900"
-                          : "bg-stone-100 text-stone-600 border border-stone-200"
-                      }`}
+            {/* Search & Filter Bar (Flipkart Style) */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 sm:gap-3">
+                {/* Search Input */}
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search your order here"
+                    className="w-full pl-10 pr-9 py-2.5 text-xs sm:text-sm bg-white border-2 border-stone-800 rounded-2xl text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#5b1420]/20 shadow-[0_2px_0_0_#2b2b2b] transition-all"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 p-0.5 cursor-pointer"
                     >
-                      {count}
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Filters Trigger Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDraftStatusFilters([...appliedStatusFilters]);
+                    setDraftTimeFilter(appliedTimeFilter);
+                    setIsFilterSheetOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2.5 rounded-2xl bg-white border-2 border-stone-800 text-xs sm:text-sm font-bold text-stone-800 shadow-[0_2px_0_0_#2b2b2b] hover:bg-stone-50 active:translate-y-0.5 transition-all cursor-pointer whitespace-nowrap"
+                >
+                  <SlidersHorizontal className="w-4 h-4 text-stone-700" />
+                  <span>Filters</span>
+                  {totalActiveFilters > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-[#fed000] text-stone-900 border border-stone-800 text-[10px] font-black flex items-center justify-center">
+                      {totalActiveFilters}
                     </span>
+                  )}
+                </button>
+              </div>
+
+              {/* Active Filter Badges */}
+              {(totalActiveFilters > 0 || searchQuery.trim()) && (
+                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                  <span className="text-[11px] font-bold text-stone-500 mr-1">Applied:</span>
+                  {searchQuery.trim() && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-rose-50 text-stone-800 hover:text-rose-700 border border-stone-300 text-[11px] font-bold transition-colors cursor-pointer"
+                    >
+                      <span>&ldquo;{searchQuery}&rdquo;</span>
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                  {appliedStatusFilters.map((st) => {
+                    const label = STATUS_OPTIONS.find((o) => o.id === st)?.label || st;
+                    return (
+                      <button
+                        key={st}
+                        onClick={() => removeStatusFilter(st)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-rose-50 text-stone-800 hover:text-rose-700 border border-stone-300 text-[11px] font-bold transition-colors cursor-pointer"
+                      >
+                        <span>{label}</span>
+                        <X className="w-3 h-3" />
+                      </button>
+                    );
+                  })}
+                  {appliedTimeFilter && (
+                    <button
+                      onClick={() => setAppliedTimeFilter("")}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-rose-50 text-stone-800 hover:text-rose-700 border border-stone-300 text-[11px] font-bold transition-colors cursor-pointer"
+                    >
+                      <span>{TIME_OPTIONS.find((t) => t.id === appliedTimeFilter)?.label || appliedTimeFilter}</span>
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                  <button
+                    onClick={clearAllFilters}
+                    className="text-[11px] font-bold text-[#5b1420] hover:underline ml-1 cursor-pointer"
+                  >
+                    Clear All
                   </button>
-                );
-              })}
+                </div>
+              )}
             </div>
 
             {filteredOrders.length === 0 ? (
@@ -762,16 +894,16 @@ function OrdersPageContent() {
                     <Package className="w-7 h-7" />
                   </div>
                   <h3 className="text-lg font-bold font-tj-serif text-stone-900 mb-1">
-                    No {FILTER_TABS.find((t) => t.id === selectedFilter)?.label.toLowerCase()} orders found
+                    No matching orders found
                   </h3>
                   <p className="text-xs text-stone-600 mb-5 leading-relaxed">
-                    You do not have any orders matching the &ldquo;{FILTER_TABS.find((t) => t.id === selectedFilter)?.label}&rdquo; filter.
+                    Try adjusting or clearing your search query and filters.
                   </p>
                   <button
-                    onClick={() => setSelectedFilter("all")}
+                    onClick={clearAllFilters}
                     className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-[#fed000] hover:bg-[#fab005] text-stone-900 text-xs font-black border-2 border-stone-800 shadow-[0_3px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
                   >
-                    View All Orders ({orders.length})
+                    Clear All Filters ({orders.length} orders total)
                   </button>
                 </div>
               </div>
@@ -1569,6 +1701,122 @@ function OrdersPageContent() {
                   )}
                 </form>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================
+          FLIPKART-STYLE FILTERS BOTTOM SHEET / MODAL
+         ======================================================== */}
+      {isFilterSheetOpen && (
+        <div
+          data-lenis-prevent
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-stone-900/60 backdrop-blur-xs animate-in fade-in duration-200"
+          onClick={() => setIsFilterSheetOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl border-t-2 sm:border-2 border-stone-800 shadow-[0_-8px_30px_rgba(0,0,0,0.18)] sm:shadow-[0_8px_0_0_#2b2b2b] p-5 sm:p-6 animate-in slide-in-from-bottom duration-200 max-h-[85vh] flex flex-col"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3.5 border-b border-stone-200">
+              <h3 className="text-lg font-bold font-tj-serif text-stone-900">Filters</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setDraftStatusFilters([]);
+                  setDraftTimeFilter("");
+                }}
+                className="text-xs font-bold text-stone-500 hover:text-stone-900 transition-colors cursor-pointer"
+              >
+                Clear Filter
+              </button>
+            </div>
+
+            {/* Scrollable Body */}
+            <div className="overflow-y-auto py-4 space-y-5 flex-1">
+              {/* 1. Order Status */}
+              <div>
+                <h4 className="text-xs font-bold text-stone-900 mb-2.5">
+                  Order Status
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {STATUS_OPTIONS.map((opt) => {
+                    const isSelected = draftStatusFilters.includes(opt.id);
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => toggleDraftStatus(opt.id)}
+                        className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-[#5b1420] text-white border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b]"
+                            : "bg-white text-stone-700 border border-stone-300 hover:border-stone-800"
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {isSelected ? (
+                          <Check className="w-3.5 h-3.5 text-amber-300" />
+                        ) : (
+                          <Plus className="w-3.5 h-3.5 text-stone-400" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 2. Order Time */}
+              <div>
+                <h4 className="text-xs font-bold text-stone-900 mb-2.5">
+                  Order Time
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {TIME_OPTIONS.map((opt) => {
+                    const isSelected = draftTimeFilter === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() =>
+                          setDraftTimeFilter(isSelected ? "" : opt.id)
+                        }
+                        className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-[#5b1420] text-white border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b]"
+                            : "bg-white text-stone-700 border border-stone-300 hover:border-stone-800"
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {isSelected ? (
+                          <Check className="w-3.5 h-3.5 text-amber-300" />
+                        ) : (
+                          <Plus className="w-3.5 h-3.5 text-stone-400" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="pt-3.5 border-t border-stone-200 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsFilterSheetOpen(false)}
+                className="flex-1 py-3 px-4 rounded-xl border-2 border-stone-800 bg-white hover:bg-stone-50 text-stone-800 font-bold text-xs transition cursor-pointer text-center"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={applyFilters}
+                className="flex-1 py-3 px-4 rounded-xl border-2 border-stone-800 bg-[#fed000] hover:bg-[#fab005] text-stone-900 font-black text-xs shadow-[0_3px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer text-center"
+              >
+                Apply
+              </button>
             </div>
           </div>
         </div>
