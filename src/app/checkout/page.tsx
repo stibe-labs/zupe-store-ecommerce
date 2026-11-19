@@ -2707,30 +2707,50 @@ function CheckoutContent() {
               </div>
             </div>
 
-            {/* Nudge card when COD is active */}
+            {/* Nudge card when COD is active (Matches Exact Reference Image 2) */}
             {paymentMethod === "cod" && (
-              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-800 to-emerald-950 text-white space-y-2 animate-in fade-in duration-200 shadow-md shadow-emerald-950/20">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
-                    SMART CHOICE
-                  </span>
-                  <span
-                    className="text-[11px] font-black bg-amber-300 text-emerald-950 px-2.5 py-0.5 rounded-full animate-tiny-glow-yellow"
-                    style={{ animation: "tinyGlowYellowBadge 2.4s infinite ease-in-out" }}
+              <div
+                className="p-4 sm:p-5 rounded-3xl text-white mt-3 shadow-md relative overflow-hidden animate-in fade-in duration-200"
+                style={{
+                  background: "linear-gradient(135deg, #086646 0%, #0C7A48 45%, #14994A 100%)",
+                }}
+              >
+                {/* Decorative Top-Right Circle Shape Texture */}
+                <div
+                  className="absolute -top-6 -right-6 w-32 h-32 rounded-full pointer-events-none z-0"
+                  style={{ backgroundColor: "#2E9A5F" }}
+                />
+
+                <div className="relative z-10 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0B6135]/60 border border-emerald-400/20 text-[11px] font-black text-white tracking-wide">
+                      💡 SMART CHOICE
+                    </span>
+                    <span
+                      className="px-3.5 py-1 rounded-full bg-[#FACC15] text-[#1B3820] font-black text-xs shadow-xs tracking-wide inline-flex items-center justify-center animate-tiny-glow-yellow"
+                      style={{ animation: "tinyGlowYellowBadge 2.4s infinite ease-in-out" }}
+                    >
+                      SAVE ₹{codFee}
+                    </span>
+                  </div>
+
+                  <h4 className="text-base font-extrabold text-white leading-snug">
+                    Pay online &amp; save ₹{codFee} on this order
+                  </h4>
+
+                  <p className="text-xs text-emerald-50/95 leading-relaxed">
+                    Pay <strong className="text-white font-bold">₹{grandTotal.toLocaleString()}</strong> online instead of <span className="line-through text-emerald-200/80">₹{(grandTotal + codFee).toLocaleString()}</span>. Faster dispatch, no cash needed at delivery.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("prepaid")}
+                    className="w-full py-3 px-4 rounded-2xl bg-white hover:bg-gray-50 text-[#086646] font-extrabold text-sm flex items-center justify-center gap-2 shadow-sm transition cursor-pointer active:scale-[0.99]"
                   >
-                    SAVE ₹{codFee}
-                  </span>
+                    <span>Switch to Pay Online · Save ₹{codFee}</span>
+                    <ArrowRight className="w-4 h-4 text-[#086646] stroke-[2.5]" />
+                  </button>
                 </div>
-                <p className="text-xs text-white/90 leading-relaxed">
-                  Pay <strong>₹{grandTotal.toLocaleString()}</strong> online instead of <span className="line-through text-white/60">₹{(grandTotal + codFee).toLocaleString()}</span>. Faster dispatch, no cash needed at delivery.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("prepaid")}
-                  className="w-full py-2.5 rounded-xl bg-white text-emerald-950 font-black text-xs hover:bg-gray-100 transition cursor-pointer"
-                >
-                  Switch to Pay Online · Save ₹{codFee}
-                </button>
               </div>
             )}
           </div>

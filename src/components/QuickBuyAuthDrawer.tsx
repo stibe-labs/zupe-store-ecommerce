@@ -1420,52 +1420,64 @@ export function QuickBuyAuthDrawer({
                       </AnimatePresence>
                     </div>
 
-                    {/* SMART CHOICE NUDGE CARD (Matches Reference Image 4) */}
+                    {/* SMART CHOICE NUDGE CARD (Matches Exact Reference Image 2) */}
                     {paymentMethod === "cod" && (
                       <motion.div
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#064E3B] to-[#033628] text-white space-y-2 mt-3 shadow-lg relative overflow-hidden"
+                        className="p-4 sm:p-5 rounded-3xl text-white mt-3 shadow-md relative overflow-hidden"
+                        style={{
+                          background: "linear-gradient(135deg, #086646 0%, #0C7A48 45%, #14994A 100%)",
+                        }}
                       >
-                        {/* Header Badges */}
-                        <div className="flex items-center justify-between">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-xs text-[11px] font-bold text-white tracking-wide border border-white/20">
-                            💡 SMART CHOICE
-                          </span>
-                          <span
-                            className="px-3 py-1 rounded-full bg-[#FACC15] text-[#1E3A1F] font-black text-xs shadow-xs tracking-wide inline-flex items-center justify-center animate-tiny-glow-yellow"
-                            style={{
-                              animation: "tinyGlowYellowBadge 2.4s infinite ease-in-out",
+                        {/* Decorative Top-Right Circle Shape Texture (Exact match to Reference) */}
+                        <div
+                          className="absolute -top-6 -right-6 w-32 h-32 rounded-full pointer-events-none z-0"
+                          style={{ backgroundColor: "#2E9A5F" }}
+                        />
+
+                        {/* Content Container (relative z-10) */}
+                        <div className="relative z-10 space-y-2.5">
+                          {/* Header Badges */}
+                          <div className="flex items-center justify-between">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0B6135]/60 border border-emerald-400/20 text-[11px] font-black text-white tracking-wide">
+                              💡 SMART CHOICE
+                            </span>
+                            <span
+                              className="px-3.5 py-1 rounded-full bg-[#FACC15] text-[#1B3820] font-black text-xs shadow-xs tracking-wide inline-flex items-center justify-center animate-tiny-glow-yellow"
+                              style={{
+                                animation: "tinyGlowYellowBadge 2.4s infinite ease-in-out",
+                              }}
+                            >
+                              SAVE ₹{codFee}
+                            </span>
+                          </div>
+
+                          {/* Title */}
+                          <h4 className="text-base sm:text-[17px] font-extrabold text-white mt-2 leading-snug">
+                            Pay online &amp; save ₹{codFee} on this order
+                          </h4>
+
+                          {/* Description */}
+                          <p className="text-xs sm:text-[13px] text-emerald-50/95 leading-relaxed">
+                            Pay <strong className="text-white font-bold">₹{cartTotal.toLocaleString()}</strong> online instead of <span className="line-through text-emerald-200/80">₹{grandTotal.toLocaleString()}</span>. Faster dispatch, no cash needed at the door.
+                          </p>
+
+                          {/* Switch Button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPaymentMethod("online");
+                              const el = document.getElementById("payment-prepaid-card");
+                              if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
                             }}
+                            className="w-full mt-3 py-3 px-4 rounded-2xl bg-white hover:bg-gray-50 text-[#086646] font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] cursor-pointer"
                           >
-                            SAVE ₹{codFee}
-                          </span>
+                            <span>Switch to Pay Online · ₹{cartTotal.toLocaleString()}</span>
+                            <ArrowRight className="w-4 h-4 text-[#086646] stroke-[2.5]" />
+                          </button>
                         </div>
-
-                        {/* Title */}
-                        <h4 className="text-base sm:text-lg font-extrabold text-white mt-2.5 leading-snug">
-                          Pay online &amp; save ₹{codFee} on this order
-                        </h4>
-
-                        {/* Description */}
-                        <p className="text-xs text-emerald-100/90 leading-relaxed">
-                          Pay <strong className="text-white font-bold">₹{cartTotal.toLocaleString()}</strong> online instead of <span className="line-through text-emerald-200/70">₹{grandTotal.toLocaleString()}</span>. Faster dispatch, no cash needed at the door.
-                        </p>
-
-                        {/* Switch Button */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPaymentMethod("online");
-                            const el = document.getElementById("payment-prepaid-card");
-                            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-                          }}
-                          className="w-full mt-3 py-3 px-4 rounded-xl bg-white hover:bg-gray-50 text-[#064E3B] font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99] cursor-pointer"
-                        >
-                          <span>Switch to Pay Online · ₹{cartTotal.toLocaleString()}</span>
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
                       </motion.div>
                     )}
                   </div>
