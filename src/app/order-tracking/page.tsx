@@ -464,7 +464,7 @@ function OrderTrackingContent() {
     },
     {
       q: "How fast is express delivery across India?",
-      a: "Orders are verified and packaged within 24 business hours. Express air logistics delivery typically takes 3 to 5 business days across metro, tier-1, and regional destinations in India.",
+      a: "Orders are verified and packaged within 24 business hours. Express air logistics delivery typically takes 5 to 7 business days across metro, tier-1, and regional destinations in India.",
     },
     {
       q: "How are supplements, dates & nuts, and activewear protected during shipping?",

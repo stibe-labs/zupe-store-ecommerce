@@ -296,7 +296,7 @@ export async function sendOrderConfirmationWhatsApp(
       "💰 *Price Breakdown:*\n" +
       "  • Total Amount: Rs " + totalAmount.toLocaleString("en-IN") + "\n" +
       "  • *Payable on Delivery: Rs " + totalAmount.toLocaleString("en-IN") + " (Cash / UPI)*\n\n" +
-      "🚚 *Estimated Delivery:* 3-5 Business Days\n\n" +
+      "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
       "📦 *Track Your Order:*\n" +
       trackUrl + "\n\n" +
       "Thank you for shopping with " + siteConfig.name + "!";
@@ -307,7 +307,7 @@ export async function sendOrderConfirmationWhatsApp(
       "📦 *Order ID:* " + displayOrderId + "\n" +
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
       "💰 *Amount Paid:* Rs " + totalAmount.toLocaleString("en-IN") + " (Online Prepaid)\n" +
-      "🚚 *Estimated Delivery:* 3-5 Business Days\n\n" +
+      "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
       "📦 *Track Your Order:*\n" +
       trackUrl + "\n\n" +
       "Thank you for shopping with " + siteConfig.name + "!";

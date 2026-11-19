@@ -39,6 +39,7 @@ import {
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ProductReviewsSection } from "@/components/ProductReviewsSection";
+import { Animated3DTruck } from "@/components/Animated3DTruck";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -220,18 +221,88 @@ export default function ProductDetailPage() {
   const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>({
     details: true,
     nutrition: false,
-    reviews: false,
   });
 
   const toggleAccordion = (key: string) => {
     setOpenAccordions((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Delivery estimation
+  // Delivery estimation & Location auto-detection
   const [pincode, setPincode] = useState<string>("680001");
   const [deliveryLocation, setDeliveryLocation] = useState<string>("Thrissur, Kerala - 680001");
   const [editingPincode, setEditingPincode] = useState<boolean>(false);
   const [tempPincode, setTempPincode] = useState<string>("680001");
+  const [detectedPlaceLive, setDetectedPlaceLive] = useState<string | null>(null);
+  const [pincodeDetectingLive, setPincodeDetectingLive] = useState<boolean>(false);
+  const [pincodeErrorLive, setPincodeErrorLive] = useState<string | null>(null);
+  const [isDetectingLocation, setIsDetectingLocation] = useState<boolean>(false);
+
+  // 1. Initial Auto-Detection of user's place & pincode
+  useEffect(() => {
+    try {
+      const savedLoc = localStorage.getItem("vittal_delivery_location");
+      const savedPin = localStorage.getItem("vittal_delivery_pincode");
+      if (savedLoc && savedPin) {
+        setDeliveryLocation(savedLoc);
+        setPincode(savedPin);
+        setTempPincode(savedPin);
+        return;
+      }
+    } catch (e) {}
+
+    setIsDetectingLocation(true);
+
+    const applyDetectedLocation = (place: string, pin: string) => {
+      const formatted = `${place} - ${pin}`;
+      setDeliveryLocation(formatted);
+      setPincode(pin);
+      setTempPincode(pin);
+      try {
+        localStorage.setItem("vittal_delivery_location", formatted);
+        localStorage.setItem("vittal_delivery_pincode", pin);
+      } catch (e) {}
+    };
+
+    const fallbackAutoDetect = async () => {
+      try {
+        const res = await fetch("/api/location/auto-detect");
+        const data = await res.json();
+        if (data.success && data.pincode) {
+          applyDetectedLocation(data.place || `${data.city}, ${data.state}`, data.pincode);
+        }
+      } catch (e) {}
+      setIsDetectingLocation(false);
+    };
+
+    if (typeof navigator !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          try {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            const res = await fetch(
+              `/api/location/reverse-geocode?lat=${lat}&lng=${lng}&accuracy=${pos.coords.accuracy || 0}`
+            );
+            const data = await res.json();
+            if (data.success && data.pincode) {
+              const place = data.district || data.city || data.area || "India";
+              const state = data.state ? `, ${data.state}` : "";
+              applyDetectedLocation(`${place}${state}`, data.pincode);
+              setIsDetectingLocation(false);
+              return;
+            }
+          } catch (e) {}
+          fallbackAutoDetect();
+        },
+        () => {
+          fallbackAutoDetect();
+        },
+        { timeout: 3500, maximumAge: 600000, enableHighAccuracy: false }
+      );
+    } else {
+      fallbackAutoDetect();
+    }
+  }, []);
 
   // Fetch live product from API
   useEffect(() => {
@@ -427,13 +498,54 @@ export default function ProductDetailPage() {
     }
   };
 
+  // Real-time Government India Post directory lookup as user types
+  const handlePincodeInputChange = (val: string) => {
+    const clean = val.replace(/\D/g, "").slice(0, 6);
+    setTempPincode(clean);
+    setPincodeErrorLive(null);
+
+    if (clean.length === 6) {
+      setPincodeDetectingLive(true);
+      fetch(`/api/location/pincode?pincode=${clean}`)
+        .then((r) => r.json())
+        .then((data) => {
+          setPincodeDetectingLive(false);
+          if (data.success && (data.city || data.state || data.place)) {
+            setDetectedPlaceLive(data.place || `${data.city}, ${data.state}`);
+            setPincodeErrorLive(null);
+          } else {
+            setDetectedPlaceLive(null);
+            setPincodeErrorLive(data.error || "Pincode not found in India Post directory");
+          }
+        })
+        .catch(() => {
+          setPincodeDetectingLive(false);
+          setPincodeErrorLive("Unable to verify pincode. Please try again.");
+        });
+    } else {
+      setDetectedPlaceLive(null);
+      if (clean.length > 0 && clean.length < 6) {
+        setPincodeErrorLive(null);
+      }
+    }
+  };
+
   const handlePincodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (tempPincode.trim().length === 6) {
-      setPincode(tempPincode);
-      setDeliveryLocation(`Pincode: ${tempPincode} (Verified)`);
+    const clean = tempPincode.replace(/\D/g, "").slice(0, 6);
+    if (clean.length === 6) {
+      const place = detectedPlaceLive || "India";
+      const fullDisplay = `${place} - ${clean}`;
+      setPincode(clean);
+      setDeliveryLocation(fullDisplay);
       setEditingPincode(false);
-      setShowToast("Delivery location updated!");
+      try {
+        localStorage.setItem("vittal_delivery_location", fullDisplay);
+        localStorage.setItem("vittal_delivery_pincode", clean);
+      } catch (e) {}
+      setShowToast(`Delivery location set to ${place} (${clean})`);
+    } else {
+      setPincodeErrorLive("Please enter a valid 6-digit Indian pincode");
     }
   };
 
@@ -585,9 +697,16 @@ export default function ProductDetailPage() {
                   <Star key={i} className="w-4 h-4 fill-current stroke-current" />
                 ))}
               </div>
-              <span className="text-xs sm:text-sm text-neutral-500 font-medium">
+              <button
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById("reviews-section");
+                  el?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="text-xs sm:text-sm text-neutral-500 hover:text-[#6B9E3A] font-medium transition-colors cursor-pointer"
+              >
                 {activeProduct.rating || 4.6} ({activeProduct.review_count ? activeProduct.review_count.toLocaleString() : "12,548"} Reviews)
-              </span>
+              </button>
             </div>
 
             {/* Price & Discount Row */}
@@ -723,20 +842,40 @@ export default function ProductDetailPage() {
             {/* Delivery Pincode Card */}
             <div className="rounded-2xl bg-[#F7F8FA] border border-neutral-200/80 p-3.5 my-2">
               <div className="flex items-center justify-between text-xs mb-1">
-                <div className="flex items-center gap-1.5 text-neutral-500 font-medium">
+                <div className="flex items-center gap-1.5 text-neutral-600 font-medium">
                   <MapPin className="w-3.5 h-3.5 text-[#6B9E3A]" />
-                  <span>Deliver to</span>
+                  <span className="font-semibold text-neutral-800">Deliver to</span>
                 </div>
                 {editingPincode ? (
                   <button
-                    onClick={() => setEditingPincode(false)}
+                    type="button"
+                    onClick={() => {
+                      setEditingPincode(false);
+                      setTempPincode(pincode);
+                      setDetectedPlaceLive(null);
+                      setPincodeErrorLive(null);
+                    }}
                     className="text-neutral-500 hover:text-neutral-900 text-xs cursor-pointer font-medium"
                   >
                     Cancel
                   </button>
                 ) : (
                   <button
-                    onClick={() => setEditingPincode(true)}
+                    type="button"
+                    onClick={() => {
+                      setEditingPincode(true);
+                      setTempPincode(pincode);
+                      if (pincode && pincode.length === 6) {
+                        fetch(`/api/location/pincode?pincode=${pincode}`)
+                          .then((r) => r.json())
+                          .then((data) => {
+                            if (data.success && (data.place || data.city)) {
+                              setDetectedPlaceLive(data.place || `${data.city}, ${data.state}`);
+                            }
+                          })
+                          .catch(() => {});
+                      }
+                    }}
                     className="text-[#6B9E3A] hover:underline font-bold text-xs cursor-pointer"
                   >
                     Change
@@ -745,30 +884,65 @@ export default function ProductDetailPage() {
               </div>
 
               {editingPincode ? (
-                <form onSubmit={handlePincodeSubmit} className="flex gap-2 mt-2">
-                  <input
-                    type="text"
-                    value={tempPincode}
-                    maxLength={6}
-                    onChange={(e) => setTempPincode(e.target.value.replace(/\D/g, ""))}
-                    className="w-full px-3 py-1.5 text-xs bg-white border border-neutral-300 rounded-lg text-neutral-900 focus:outline-[#6B9E3A]"
-                    placeholder="Enter 6-digit Pincode"
-                  />
-                  <button
-                    type="submit"
-                    className="bg-[#111111] text-white px-3 py-1.5 text-xs font-bold rounded-lg hover:bg-black shrink-0 cursor-pointer"
-                  >
-                    Apply
-                  </button>
-                </form>
+                <div className="mt-2">
+                  <form onSubmit={handlePincodeSubmit} className="flex gap-2">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={tempPincode}
+                      maxLength={6}
+                      autoFocus
+                      onChange={(e) => handlePincodeInputChange(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs bg-white border border-neutral-300 rounded-lg text-neutral-900 focus:outline-[#6B9E3A] font-semibold tracking-wider placeholder:font-normal placeholder:tracking-normal"
+                      placeholder="Enter 6-digit Pincode"
+                    />
+                    <button
+                      type="submit"
+                      disabled={tempPincode.length !== 6 || pincodeDetectingLive}
+                      className="bg-[#111111] disabled:bg-neutral-400 text-white px-3.5 py-1.5 text-xs font-bold rounded-lg hover:bg-black shrink-0 cursor-pointer transition-colors"
+                    >
+                      Apply
+                    </button>
+                  </form>
+
+                  {/* Real-time place detection feedback from India Post Government directory */}
+                  {pincodeDetectingLive && (
+                    <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-neutral-500 font-medium animate-pulse">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#6B9E3A] animate-ping" />
+                      <span>Detecting place from India Post directory...</span>
+                    </div>
+                  )}
+
+                  {!pincodeDetectingLive && detectedPlaceLive && (
+                    <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-[#3B581C] font-semibold">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#6B9E3A] shrink-0" />
+                      <span>Detected: {detectedPlaceLive}</span>
+                    </div>
+                  )}
+
+                  {!pincodeDetectingLive && pincodeErrorLive && (
+                    <div className="flex items-center gap-1 mt-1.5 text-[11px] text-rose-600 font-medium">
+                      <span>{pincodeErrorLive}</span>
+                    </div>
+                  )}
+                </div>
               ) : (
-                <div className="text-xs sm:text-sm font-semibold text-neutral-900">{deliveryLocation}</div>
+                <div className="text-xs sm:text-sm font-semibold text-neutral-900 mt-0.5 flex items-center gap-2">
+                  <span>{deliveryLocation}</span>
+                  {isDetectingLocation && (
+                    <span className="text-[10px] text-neutral-400 font-normal animate-pulse">
+                      (Detecting...)
+                    </span>
+                  )}
+                </div>
               )}
 
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-neutral-200/70 text-xs">
-                <div className="flex items-center gap-1.5 text-neutral-600">
-                  <Truck className="w-3.5 h-3.5 text-neutral-400" />
-                  <span>Express Doorstep Delivery in 2–4 Business Days</span>
+                <div className="flex items-center gap-2 text-neutral-700">
+                  <Animated3DTruck className="w-6 h-4 sm:w-7 sm:h-4.5" />
+                  <span className="font-semibold text-neutral-800">
+                    Express Doorstep Delivery in 5–7 Days
+                  </span>
                 </div>
                 <span className="bg-[#E5F2D0] text-[#3B581C] font-bold px-2 py-0.5 rounded text-[10px]">
                   FREE
@@ -840,32 +1014,6 @@ export default function ProductDetailPage() {
                         100% genuine formulation, tested for purity and quality assurance.
                       </p>
                     )}
-                  </div>
-                )}
-              </div>
-
-              {/* Accordion 3: Reviews */}
-              <div className="py-3">
-                <button
-                  type="button"
-                  onClick={() => toggleAccordion("reviews")}
-                  className="w-full flex items-center justify-between text-left font-mograph text-sm sm:text-base font-bold text-neutral-950 hover:text-[#6B9E3A] transition-colors cursor-pointer py-1"
-                >
-                  <span>
-                    Reviews ({activeProduct.review_count ? activeProduct.review_count.toLocaleString() : "12,548"})
-                  </span>
-                  <span className="text-lg font-light text-neutral-400">
-                    {openAccordions.reviews ? "−" : "+"}
-                  </span>
-                </button>
-                {openAccordions.reviews && (
-                  <div className="pt-3 pb-1 bg-white text-neutral-900 rounded-2xl p-4 sm:p-6 my-2 border border-neutral-200/80">
-                    <ProductReviewsSection
-                      productId={activeProduct.id}
-                      productName={activeProduct.name}
-                      fallbackRating={activeProduct.rating || 4.6}
-                      fallbackReviewCount={activeProduct.review_count || 12548}
-                    />
                   </div>
                 )}
               </div>
@@ -1008,6 +1156,20 @@ export default function ProductDetailPage() {
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        {/* ================================================================= */}
+        {/* CUSTOMER REVIEWS & RATINGS SECTION (Positioned under You May Also Like) */}
+        {/* ================================================================= */}
+        <section id="reviews-section" className="mt-12 sm:mt-16 pt-8 border-t border-neutral-200 scroll-mt-24">
+          <div className="bg-white rounded-3xl border border-neutral-200/80 p-4 sm:p-8 shadow-[0_2px_16px_rgba(0,0,0,0.03)]">
+            <ProductReviewsSection
+              productId={activeProduct.id}
+              productName={activeProduct.name}
+              fallbackRating={activeProduct.rating || 4.6}
+              fallbackReviewCount={activeProduct.review_count || 12548}
+            />
           </div>
         </section>
       </main>
