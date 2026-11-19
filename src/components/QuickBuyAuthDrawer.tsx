@@ -26,6 +26,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 import { cleanCityName } from "@/lib/pincodeService";
 import { trackInitiateCheckout } from "@/lib/metaPixel";
@@ -33,7 +34,7 @@ import { trackInitiateCheckout } from "@/lib/metaPixel";
 export interface QuickBuyAuthDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  product: {
+  product?: {
     id: string;
     name: string;
     poster_image: string;
@@ -43,14 +44,15 @@ export interface QuickBuyAuthDrawerProps {
     selectedColor?: string;
     selectedImage?: string;
   };
-  bundle: {
-    tier: number;
-    label: string;
-    unitPrice: number;
-    totalPrice: number;
-    savings: number;
+  bundle?: {
+    tier?: number;
+    label?: string;
+    unitPrice?: number;
+    totalPrice?: number;
+    savings?: number;
   };
-  quantity: number;
+  quantity?: number;
+  items?: any[];
   initialMethod?: "cod" | "upi" | "prepaid";
   onSuccess?: (verifiedPhone: string, orderId?: string) => void;
 }
@@ -60,11 +62,13 @@ export function QuickBuyAuthDrawer({
   onClose,
   product,
   bundle,
-  quantity,
+  quantity = 1,
+  items,
   initialMethod = "upi",
   onSuccess,
 }: QuickBuyAuthDrawerProps) {
   const { user, sendPhoneOtp, loginWithPhoneOtp } = useAuth();
+  const { clearCart } = useCart();
 
   // Steps: "checkout" (Single scrolling checkout form) | "confirmed" (Thank you screen)
   const [step, setStep] = useState<"checkout" | "confirmed">("checkout");
@@ -345,10 +349,70 @@ export function QuickBuyAuthDrawer({
     );
   };
 
-  // Pricing calculations
-  const regularUnitPrice = product.original_price || product.mrp || product.price;
-  const effectiveTotal = bundle.totalPrice || bundle.unitPrice * quantity || product.price * quantity;
-  const regularTotal = regularUnitPrice * quantity;
+  // Unified Order Items Calculation (supports single product or multi-item cart)
+  const orderItems = useMemo(() => {
+    if (items && items.length > 0) {
+      return items.map((it: any) => {
+        const itemBaseUnit = it.original_price || it.mrp || it.price;
+        const isBundle = Boolean(it.bundle_tier && it.bundle_tier > 1);
+        const itemTotal = (isBundle && it.bundle_total) ? it.bundle_total : it.price * (it.quantity || 1);
+        const itemRegular = itemBaseUnit * (it.quantity || 1);
+        return {
+          id: it.id,
+          name: it.name,
+          poster_image: it.poster_image || it.image || (it.images && it.images[0]) || "/placeholder.png",
+          price: it.price,
+          unitPrice: it.price,
+          original_price: itemBaseUnit,
+          mrp: it.mrp || Math.round(itemBaseUnit * 1.3),
+          quantity: it.quantity || 1,
+          totalPrice: itemTotal,
+          regularTotal: itemRegular,
+          bundle_tier: it.bundle_tier || 1,
+          bundle_savings: it.bundle_savings || 0,
+          bundle_total: it.bundle_total || itemTotal,
+          offer_label: it.offer_label || (isBundle ? `Pack of ${it.quantity}` : undefined),
+          selectedColor: it.color,
+          selectedImage: it.poster_image || it.image,
+        };
+      });
+    }
+
+    if (product) {
+      const q = quantity || 1;
+      const bTier = bundle?.tier || 1;
+      const bUnit = bundle?.unitPrice || product.price;
+      const bTotal = bundle?.totalPrice || bUnit * q;
+      const regUnit = product.original_price || product.mrp || product.price;
+      const regTotal = regUnit * q;
+      return [
+        {
+          id: product.id,
+          name: product.name,
+          poster_image: product.selectedImage || product.poster_image,
+          price: bUnit,
+          unitPrice: bUnit,
+          original_price: regUnit,
+          mrp: product.mrp || Math.round(regUnit * 1.3),
+          quantity: q,
+          totalPrice: bTotal,
+          regularTotal: regTotal,
+          bundle_tier: bTier,
+          bundle_savings: bundle?.savings || 0,
+          bundle_total: bTotal,
+          offer_label: bundle?.label || (q > 1 ? `Pack of ${q}` : undefined),
+          selectedColor: product.selectedColor,
+          selectedImage: product.selectedImage,
+        },
+      ];
+    }
+
+    return [];
+  }, [items, product, bundle, quantity]);
+
+  const effectiveTotal = orderItems.reduce((acc, it) => acc + it.totalPrice, 0);
+  const regularTotal = orderItems.reduce((acc, it) => acc + it.regularTotal, 0);
+  const totalItemCount = orderItems.reduce((acc, it) => acc + it.quantity, 0);
   const mrpSavings = Math.max(0, regularTotal - effectiveTotal);
   const couponDiscount = promoDiscount;
   const cartTotal = Math.max(1, effectiveTotal - couponDiscount);
@@ -359,7 +423,7 @@ export function QuickBuyAuthDrawer({
   const payableNow = isCod ? codFee : cartTotal;
   const doorstepBalance = isCod ? cartTotal : 0;
   const totalSavings = mrpSavings + couponDiscount + (!isCod ? codFee : 0);
-  const displayImage = product.selectedImage || product.poster_image;
+  const displayImage = orderItems[0]?.poster_image || "/placeholder.png";
 
   // Promo Code Handlers
   const handleApplyPromo = async () => {
@@ -379,7 +443,7 @@ export function QuickBuyAuthDrawer({
         body: JSON.stringify({
           code,
           subtotal: effectiveTotal,
-          items: [{ id: product.id, name: product.name, price: bundle.unitPrice || product.price, quantity }],
+          items: orderItems.map((it) => ({ id: it.id, name: it.name, price: it.price, quantity: it.quantity })),
         }),
       });
       const data = await res.json();
@@ -572,8 +636,8 @@ export function QuickBuyAuthDrawer({
       trackInitiateCheckout({
         value: grandTotal,
         currency: "INR",
-        num_items: quantity,
-        content_ids: [product.id],
+        num_items: totalItemCount,
+        content_ids: orderItems.map((it) => it.id),
       });
 
       const isScriptLoaded = await loadRazorpayScript();
@@ -588,20 +652,18 @@ export function QuickBuyAuthDrawer({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: payableNow,
-          items: [
-            {
-              product_id: product.id,
-              name: product.name,
-              price: bundle.unitPrice || product.price,
-              unit_price: bundle.unitPrice || product.price,
-              quantity: quantity,
-              original_price: regularUnitPrice,
-              bundle_tier: bundle.tier,
-              bundle_savings: bundle.savings,
-              bundle_total: bundle.totalPrice,
-              offer_label: bundle.label,
-            },
-          ],
+          items: orderItems.map((it) => ({
+            product_id: it.id,
+            name: it.name,
+            price: it.price,
+            unit_price: it.unitPrice,
+            quantity: it.quantity,
+            original_price: it.original_price,
+            bundle_tier: it.bundle_tier,
+            bundle_savings: it.bundle_savings,
+            bundle_total: it.bundle_total,
+            offer_label: it.offer_label,
+          })),
           notes: {
             customer_name: name.trim(),
             customer_phone: cleanPhone,
@@ -680,21 +742,19 @@ export function QuickBuyAuthDrawer({
                   balance_amount: isCod ? doorstepBalance : 0,
                   shipping_fee: 0,
                   user_id: user?.id,
-                  items: [
-                    {
-                      product_id: product.id,
-                      name: product.name,
-                      price: bundle.unitPrice || product.price,
-                      unit_price: bundle.unitPrice || product.price,
-                      quantity: quantity,
-                      image: displayImage,
-                      original_price: regularUnitPrice,
-                      bundle_tier: bundle.tier,
-                      bundle_savings: bundle.savings,
-                      bundle_total: bundle.totalPrice,
-                      offer_label: bundle.label,
-                    },
-                  ],
+                  items: orderItems.map((it) => ({
+                    product_id: it.id,
+                    name: it.name,
+                    price: it.price,
+                    unit_price: it.unitPrice,
+                    quantity: it.quantity,
+                    image: it.poster_image,
+                    original_price: it.original_price,
+                    bundle_tier: it.bundle_tier,
+                    bundle_savings: it.bundle_savings,
+                    bundle_total: it.bundle_total,
+                    offer_label: it.offer_label,
+                  })),
                 },
               }),
             });
@@ -709,6 +769,9 @@ export function QuickBuyAuthDrawer({
               setConfirmedDoorstepDue(doorstepBalance);
               setConfirmedPaymentMethod(paymentMethod);
               setStep("confirmed");
+              if (items && items.length > 0) {
+                clearCart();
+              }
               onSuccess?.(cleanPhone, assignedOrderId);
             } else {
               setOrderError(verifyData.error || "Payment verification incomplete. Please contact support.");
@@ -791,33 +854,37 @@ export function QuickBuyAuthDrawer({
                 <>
                   {/* 1. ORDER SUMMARY CARD + PROMO CODE */}
                   <div className="rounded-2xl border border-gray-200 overflow-hidden bg-white shadow-2xs">
-                    <div className="p-3.5 flex items-center gap-3">
-                      <div className="relative w-14 h-14 rounded-xl border border-gray-100 overflow-hidden shrink-0 bg-gray-50">
-                        <Image
-                          src={displayImage}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-xs sm:text-sm font-bold text-gray-900 truncate leading-snug">
-                          {product.name}
-                        </h4>
-                        <p className="text-[11px] text-gray-500 font-medium">
-                          {bundle.label || `Pack of ${quantity}`} · Qty {quantity} · Free delivery
-                        </p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className="block text-sm font-black text-gray-950">
-                          ₹{effectiveTotal.toLocaleString()}
-                        </span>
-                        {regularTotal > effectiveTotal && (
-                          <span className="block text-xs text-gray-400 line-through">
-                            ₹{regularTotal.toLocaleString()}
-                          </span>
-                        )}
-                      </div>
+                    <div className="divide-y divide-gray-100">
+                      {orderItems.map((item) => (
+                        <div key={item.id} className="p-3.5 flex items-center gap-3">
+                          <div className="relative w-14 h-14 rounded-xl border border-gray-100 overflow-hidden shrink-0 bg-gray-50">
+                            <Image
+                              src={item.poster_image}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-xs sm:text-sm font-bold text-gray-900 truncate leading-snug">
+                              {item.name}
+                            </h4>
+                            <p className="text-[11px] text-gray-500 font-medium">
+                              {item.offer_label || `Qty ${item.quantity}`} · Free delivery
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="block text-sm font-black text-gray-950">
+                              ₹{item.totalPrice.toLocaleString()}
+                            </span>
+                            {item.regularTotal > item.totalPrice && (
+                              <span className="block text-xs text-gray-400 line-through">
+                                ₹{item.regularTotal.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
                     {/* Savings banner */}
@@ -1255,7 +1322,7 @@ export function QuickBuyAuthDrawer({
                       onClick={() => setIsPriceDetailsOpen((prev) => !prev)}
                       className="w-full px-4 py-3 flex items-center justify-between text-xs font-bold text-gray-900 cursor-pointer select-none"
                     >
-                      <span>Price Details ({quantity} item{quantity > 1 ? "s" : ""})</span>
+                      <span>Price Details ({totalItemCount} item{totalItemCount > 1 ? "s" : ""})</span>
                       <div className="flex items-center gap-2">
                         <span className="font-extrabold text-gray-950">₹{grandTotal.toLocaleString()}</span>
                         {isPriceDetailsOpen ? (
@@ -1340,28 +1407,32 @@ export function QuickBuyAuthDrawer({
 
                   {/* Order summary card */}
                   <div className="p-3.5 rounded-2xl bg-white border border-gray-200 text-left space-y-2.5 shadow-2xs">
-                    <div className="flex items-center gap-3">
-                      <div className="relative w-14 h-14 rounded-xl border border-gray-100 overflow-hidden shrink-0 bg-gray-50">
-                        <Image
-                          src={displayImage}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-xs sm:text-sm font-bold text-gray-900 truncate leading-snug">
-                          {product.name}
-                        </h4>
-                        <p className="text-[11px] text-gray-500 font-medium">
-                          Qty {quantity} · {confirmedPaymentMethod === "cod" ? `₹${codFee} paid (COD)` : `₹${confirmedAmount.toLocaleString()} paid online`}
-                        </p>
-                        <p className="text-[11.5px] text-emerald-700 font-extrabold mt-0.5 flex items-center gap-1">
-                          <Truck className="w-3.5 h-3.5" />
-                          <span>Delivery by {deliveryDateRange}</span>
-                        </p>
-                      </div>
+                    <div className="divide-y divide-gray-100">
+                      {orderItems.map((item) => (
+                        <div key={item.id} className="py-2 first:pt-0 last:pb-0 flex items-center gap-3">
+                          <div className="relative w-12 h-12 rounded-xl border border-gray-100 overflow-hidden shrink-0 bg-gray-50">
+                            <Image
+                              src={item.poster_image}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-xs sm:text-sm font-bold text-gray-900 truncate leading-snug">
+                              {item.name}
+                            </h4>
+                            <p className="text-[11px] text-gray-500 font-medium">
+                              Qty {item.quantity} · ₹{item.totalPrice.toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
+                    <p className="text-[11.5px] text-emerald-700 font-extrabold mt-1 flex items-center gap-1">
+                      <Truck className="w-3.5 h-3.5" />
+                      <span>Delivery by {deliveryDateRange}</span>
+                    </p>
 
                     {confirmedPaymentMethod === "cod" && (
                       <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950 font-medium">
@@ -1611,21 +1682,7 @@ export function QuickBuyAuthDrawer({
                         </div>
                       </div>
 
-                      {/* SMS Backup button */}
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          setOtpLoading(true);
-                          const cleanPhone = phone.replace(/\D/g, "");
-                          await sendPhoneOtp(cleanPhone);
-                          setOtpLoading(false);
-                          setTimer(30);
-                          setCanResend(false);
-                        }}
-                        className="w-full py-2.5 px-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 text-xs font-bold text-gray-700 transition cursor-pointer"
-                      >
-                        Get code by SMS
-                      </button>
+
                     </div>
                   ) : (
                     /* Verified Success state -> opening gateway */

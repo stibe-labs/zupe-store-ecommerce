@@ -106,8 +106,19 @@ function CheckoutContent() {
     outOfStockItemIds,
     hasOutOfStockItems,
     checkCartStock,
+    openQuickBuy,
   } = useCart();
   const { user, isLoading: authLoading, updateUserProfile, sendPhoneOtp, loginWithPhoneOtp } = useAuth();
+
+  // Redirect old checkout page to root with GlobalQuickBuyDrawer
+  useEffect(() => {
+    if (cart.length > 0) {
+      openQuickBuy({ items: cart });
+      router.replace("/");
+    } else {
+      router.replace("/products");
+    }
+  }, [cart, openQuickBuy, router]);
 
   // Contact & Delivery state
   const [phone, setPhone] = useState(() => {

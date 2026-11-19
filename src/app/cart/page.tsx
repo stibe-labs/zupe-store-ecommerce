@@ -34,6 +34,7 @@ export default function CartPage() {
     freeShippingThreshold,
     freeShippingRemaining,
     openCart,
+    openQuickBuy,
   } = useCart();
 
   React.useEffect(() => {
@@ -177,7 +178,7 @@ export default function CartPage() {
                   {item.offer_label && (
                     <div className="mt-1 flex justify-center sm:justify-start">
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-orange-50 text-[#FF5722] border border-orange-200">
-                        ✨ {item.offer_label}
+                        {item.offer_label}
                       </span>
                     </div>
                   )}
@@ -311,7 +312,7 @@ export default function CartPage() {
               {/* Checkout CTA */}
               <button
                 onClick={() => {
-                  router.push("/checkout");
+                  openQuickBuy({ items: cart });
                 }}
                 className="w-full py-4 px-6 rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-sm shadow-xl shadow-[#FF7A00]/30 transition-all flex items-center justify-center gap-2 transform active:scale-95 cursor-pointer"
               >

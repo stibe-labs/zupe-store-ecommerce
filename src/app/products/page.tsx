@@ -96,7 +96,7 @@ function ProductsContent() {
     todayDealsProductIds?: string[];
   } | null>(null);
 
-  const { addToCart, openCart } = useCart();
+  const { addToCart, openCart, openQuickBuy } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   // Close custom sort dropdown when clicking outside or pressing Escape
@@ -382,8 +382,17 @@ function ProductsContent() {
     if (product.in_stock === 0 || (product.stock_count !== undefined && product.stock_count <= 0)) {
       return;
     }
-    addToCart(product, 1);
-    router.push("/checkout");
+    openQuickBuy({
+      product: {
+        id: product.id,
+        name: product.name,
+        poster_image: product.poster_image,
+        price: product.price,
+        mrp: product.mrp || (product as any).original_price || Math.round(product.price * 1.3),
+        original_price: (product as any).original_price || product.mrp,
+      },
+      quantity: 1,
+    });
   };
 
   const handleToggleWishlist = (e: React.MouseEvent, product: Product) => {

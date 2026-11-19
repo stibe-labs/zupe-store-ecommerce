@@ -19,7 +19,7 @@ interface YouMayAlsoLikeProps {
 export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps) {
   const router = useRouter();
   const { user, openAuthModal } = useAuth();
-  const { addToCart, addItem } = useCart();
+  const { addToCart, addItem, openQuickBuy } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [catalog, setCatalog] = useState<Product[]>(DEFAULT_PRODUCTS);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -121,17 +121,17 @@ export function YouMayAlsoLike({ currentProduct, onToast }: YouMayAlsoLikeProps)
       return;
     }
 
-    if (!user) {
-      openAuthModal("login", "Sign in required: Please log in or create an account to proceed with purchase 🛍️");
-      return;
-    }
-
-    const addFn = addToCart || addItem;
-    if (typeof addFn === "function") {
-      const added = addFn(prod, 1);
-      if (!added) return;
-    }
-    router.push("/checkout");
+    openQuickBuy({
+      product: {
+        id: prod.id,
+        name: prod.name,
+        poster_image: prod.poster_image,
+        price: prod.price,
+        mrp: prod.mrp || (prod as any).original_price || Math.round(prod.price * 1.3),
+        original_price: (prod as any).original_price || prod.mrp,
+      },
+      quantity: 1,
+    });
   };
 
   const handleWishlist = (e: React.MouseEvent, prod: Product) => {

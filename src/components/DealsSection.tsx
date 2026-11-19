@@ -17,7 +17,7 @@ interface DealsSectionProps {
 export function DealsSection({ initialProductIds }: DealsSectionProps = {}) {
   const router = useRouter();
   const { user, openAuthModal } = useAuth();
-  const { addToCart, addItem } = useCart();
+  const { addToCart, addItem, openQuickBuy } = useCart();
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
   const [curatedIds, setCuratedIds] = useState<string[]>(initialProductIds || []);
 
@@ -71,11 +71,17 @@ export function DealsSection({ initialProductIds }: DealsSectionProps = {}) {
     e.stopPropagation();
     const isOutOfStock = product.in_stock === 0 || (product.stock_count !== undefined && product.stock_count <= 0);
     if (isOutOfStock) return;
-    const addFn = addToCart || addItem;
-    if (typeof addFn === "function") {
-      addFn(product, 1);
-    }
-    router.push("/checkout");
+    openQuickBuy({
+      product: {
+        id: product.id,
+        name: product.name,
+        poster_image: product.poster_image,
+        price: product.price,
+        mrp: product.mrp || (product as any).original_price || Math.round(product.price * 1.3),
+        original_price: (product as any).original_price || product.mrp,
+      },
+      quantity: 1,
+    });
   };
 
   if (dealProducts.length === 0) return null;

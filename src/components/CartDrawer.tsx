@@ -16,6 +16,7 @@ export function CartDrawer() {
     cart,
     isOpen,
     closeCart,
+    openQuickBuy,
     updateQuantity,
     removeFromCart,
     totalItems,
@@ -96,7 +97,7 @@ export function CartDrawer() {
                   <span className="text-xs font-medium text-[#636E72]">
                     {freeShippingRemaining > 0
                       ? `Add ₹${freeShippingRemaining.toLocaleString()} more for free shipping`
-                      : "🎉 You've unlocked free shipping!"}
+                      : "You've unlocked free shipping!"}
                   </span>
                 </div>
                 <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -179,11 +180,11 @@ export function CartDrawer() {
                         <p className="text-xs text-[#636E72] mt-0.5">{item.category}</p>
                         {isOutOfStock ? (
                           <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-600 border border-red-200">
-                            ⚠️ Out of Stock
+                            Out of Stock
                           </span>
                         ) : item.offer_label ? (
                           <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-[#FF5722] border border-orange-200">
-                            ✨ {item.offer_label}
+                            {item.offer_label}
                           </span>
                         ) : null}
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -265,7 +266,7 @@ export function CartDrawer() {
                     onClick={() => {
                       if (hasOutOfStockItems) return;
                       closeCart();
-                      router.push("/checkout");
+                      openQuickBuy({ items: cart });
                     }}
                     className={`w-full flex items-center justify-center gap-2 py-3.5 text-white font-semibold rounded-xl transition-colors text-sm ${
                       hasOutOfStockItems
@@ -273,7 +274,7 @@ export function CartDrawer() {
                         : "bg-[#FF7A00] hover:bg-[#E66E00] shadow-lg shadow-[#FF7A00]/25 cursor-pointer"
                     }`}
                   >
-                    {hasOutOfStockItems ? "⚠️ Remove Out of Stock Items" : "Proceed to Checkout"}
+                    {hasOutOfStockItems ? "Remove Out of Stock Items" : "Proceed to Checkout"}
                     {!hasOutOfStockItems && <ArrowRight className="w-4 h-4" />}
                   </button>
                 </div>

@@ -23,12 +23,39 @@ export interface CartItem {
   bundle_tiers?: any;
 }
 
+export interface QuickBuyModalOptions {
+  product?: {
+    id: string;
+    name: string;
+    poster_image: string;
+    price: number;
+    mrp: number;
+    original_price?: number;
+    selectedColor?: string;
+    selectedImage?: string;
+  };
+  bundle?: {
+    tier: number;
+    label: string;
+    unitPrice: number;
+    totalPrice: number;
+    savings: number;
+  };
+  quantity?: number;
+  items?: CartItem[];
+  initialMethod?: "cod" | "upi" | "prepaid";
+}
+
 interface CartContextType {
   cart: CartItem[];
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
+  isQuickBuyOpen: boolean;
+  quickBuyOptions: QuickBuyModalOptions | null;
+  openQuickBuy: (options: QuickBuyModalOptions) => void;
+  closeQuickBuy: () => void;
   addToCart: (
     product: {
       id: string;
@@ -74,6 +101,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isQuickBuyOpen, setIsQuickBuyOpen] = useState(false);
+  const [quickBuyOptions, setQuickBuyOptions] = useState<QuickBuyModalOptions | null>(null);
+
+  const openQuickBuy = (options: QuickBuyModalOptions) => {
+    setQuickBuyOptions(options);
+    setIsQuickBuyOpen(true);
+  };
+
+  const closeQuickBuy = () => {
+    setIsQuickBuyOpen(false);
+    setQuickBuyOptions(null);
+  };
   const [isInitialized, setIsInitialized] = useState(false);
   const [outOfStockItemIds, setOutOfStockItemIds] = useState<string[]>([]);
   const FREE_SHIPPING_THRESHOLD = 1499;
@@ -504,6 +543,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         openCart,
         closeCart,
         toggleCart,
+        isQuickBuyOpen,
+        quickBuyOptions,
+        openQuickBuy,
+        closeQuickBuy,
         addToCart,
         addItem: addToCart,
         updateQuantity,

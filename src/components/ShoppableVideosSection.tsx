@@ -48,7 +48,7 @@ export function ShoppableVideosSection({
 }: ShoppableVideosSectionProps) {
   const router = useRouter();
   const { user, openAuthModal } = useAuth();
-  const { addToCart, addItem } = useCart();
+  const { addToCart, addItem, openQuickBuy } = useCart();
 
   const [videos, setVideos] = useState<ProductVideo[]>([]);
   const [catalog, setCatalog] = useState<Product[]>([]);
@@ -594,24 +594,12 @@ export function ShoppableVideosSection({
 
   const handleBuyNowFromVideo = (vid: ProductVideo) => {
     if (isCurrentReelOutOfStock) return;
-    if (!user) {
-      openAuthModal(
-        "login",
-        "Sign in required: Please log in or create an account to proceed with purchase 🛍️"
-      );
-      return;
-    }
 
     const attachedItem = {
       id:
         vid.productSlug ||
         vid.productId ||
         currentProduct?.id ||
-        "featured-product",
-      slug:
-        vid.productSlug ||
-        vid.productId ||
-        currentProduct?.slug ||
         "featured-product",
       name:
         vid.productName ||
@@ -630,20 +618,20 @@ export function ShoppableVideosSection({
         vid.productImage ||
         currentProduct?.poster_image ||
         vid.posterUrl ||
-        "/images/placeholder.png",
-      images: [
-        vid.productImage ||
-          currentProduct?.poster_image ||
-          vid.posterUrl ||
-          "/images/placeholder.png",
-      ],
+        "/placeholder.png",
     };
 
-    const addFn = addToCart || addItem;
-    if (typeof addFn === "function") {
-      addFn(attachedItem, 1);
-    }
-    router.push("/checkout");
+    openQuickBuy({
+      product: {
+        id: attachedItem.id,
+        name: attachedItem.name,
+        poster_image: attachedItem.poster_image,
+        price: attachedItem.price,
+        mrp: attachedItem.mrp,
+        original_price: attachedItem.mrp,
+      },
+      quantity: 1,
+    });
   };
 
   const handleAddToCartFromVideo = (vid: ProductVideo) => {

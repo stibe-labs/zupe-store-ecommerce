@@ -108,7 +108,7 @@ const SEED_CREATOR_VIDEOS: ProductVideo[] = [
 export function CreatorsReelsSection() {
   const router = useRouter();
   const { user, openAuthModal } = useAuth();
-  const { addToCart, addItem } = useCart();
+  const { addToCart, addItem, openQuickBuy } = useCart();
 
   const [videos, setVideos] = useState<ProductVideo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -344,16 +344,18 @@ export function CreatorsReelsSection() {
 
   const handleBuyNowFromModal = (e: React.MouseEvent, video: ProductVideo) => {
     e.stopPropagation();
-    if (!user) {
-      openAuthModal("login", "Sign in required: Please log in to complete your order 🛍️");
-      return;
-    }
     const targetSlug = video.productSlug || video.productId;
-    if (targetSlug && targetSlug !== "none" && targetSlug !== "all") {
-      router.push(`/checkout?productId=${encodeURIComponent(targetSlug)}&qty=1`);
-    } else {
-      router.push("/checkout");
-    }
+    openQuickBuy({
+      product: {
+        id: targetSlug || video.id || "featured-product",
+        name: video.productName || video.title || "Featured Product",
+        poster_image: video.productImage || video.posterUrl || "/placeholder.png",
+        price: video.productPrice || 799,
+        mrp: video.productMrp || 1199,
+        original_price: video.productMrp || 1199,
+      },
+      quantity: 1,
+    });
   };
 
   if (totalItems === 0) return null;

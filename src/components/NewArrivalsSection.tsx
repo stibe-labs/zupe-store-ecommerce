@@ -18,7 +18,7 @@ interface NewArrivalsSectionProps {
 export function NewArrivalsSection({ initialProductIds }: NewArrivalsSectionProps = {}) {
   const router = useRouter();
   const { user, openAuthModal } = useAuth();
-  const { addToCart, addItem } = useCart();
+  const { addToCart, addItem, openQuickBuy } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
   const [curatedIds, setCuratedIds] = useState<string[]>(initialProductIds || []);
@@ -176,12 +176,17 @@ export function NewArrivalsSection({ initialProductIds }: NewArrivalsSectionProp
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      const addFn = addToCart || addItem;
-                      if (typeof addFn === "function") {
-                        const added = addFn(product, 1);
-                        if (!added) return;
-                      }
-                      router.push("/checkout");
+                      openQuickBuy({
+                        product: {
+                          id: product.id,
+                          name: product.name,
+                          poster_image: product.poster_image,
+                          price: product.price,
+                          mrp: product.mrp || (product as any).original_price || Math.round(product.price * 1.3),
+                          original_price: (product as any).original_price || product.mrp,
+                        },
+                        quantity: 1,
+                      });
                     }}
                     className="w-full py-2 px-1.5 sm:px-2 rounded-xl border border-gray-900 bg-white hover:bg-gray-900 hover:text-white active:scale-95 text-gray-900 text-xs sm:text-[13px] font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
                   >

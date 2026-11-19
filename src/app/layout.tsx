@@ -5,6 +5,7 @@ import { WishlistProvider } from "@/context/WishlistContext";
 import { SearchProvider } from "@/context/SearchContext";
 import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 import { CartDrawer } from "@/components/CartDrawer";
+import { GlobalQuickBuyDrawer } from "@/components/GlobalQuickBuyDrawer";
 import { AuthModal } from "@/components/AuthModal";
 import { SearchModal } from "@/components/SearchModal";
 import { LoadingScreen } from "@/components/LoadingScreen";
@@ -72,6 +73,7 @@ export default function RootLayout({
                 <SmoothScrollProvider>
                   {children}
                   <CartDrawer />
+                  <GlobalQuickBuyDrawer />
                   <AuthModal />
                   <SearchModal />
                   <MobileBottomNav />
