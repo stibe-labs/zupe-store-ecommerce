@@ -54,8 +54,8 @@ export async function ensureAddressTable(): Promise<void> {
   }
 }
 
-export { normalizeAddressKey, deduplicateAddresses } from "@/lib/addressUtils";
-import { normalizeAddressKey } from "@/lib/addressUtils";
+export { normalizeAddressKey, deduplicateAddresses, cleanStreetAddress } from "@/lib/addressUtils";
+import { normalizeAddressKey, cleanStreetAddress } from "@/lib/addressUtils";
 
 export async function getUserAddresses(
   email?: string,
@@ -101,8 +101,13 @@ export async function getUserAddresses(
       let defaultFound = false;
 
       for (const r of rows) {
-        const key = normalizeAddressKey(r.street, r.postal_code);
+        const sanitizedStreet = cleanStreetAddress(r.street, r.city, r.state, r.postal_code);
+        const key = normalizeAddressKey(sanitizedStreet, r.postal_code);
         const isDef = Number(r.is_default) === 1;
+
+        if (sanitizedStreet !== r.street && r.id) {
+          executeD1Query(`UPDATE addresses SET street = ? WHERE id = ?`, [sanitizedStreet, r.id]).catch(() => {});
+        }
 
         if (seenKeys.has(key)) {
           // This row is an exact physical duplicate of an already processed address
@@ -121,7 +126,7 @@ export async function getUserAddresses(
             user_email: r.user_email || normEmail,
             recipient_name: r.recipient_name,
             phone: r.phone || "",
-            street: r.street,
+            street: sanitizedStreet,
             city: r.city,
             state: r.state || "",
             postal_code: r.postal_code,
@@ -217,13 +222,15 @@ export async function getUserAddresses(
             const addrParts = rawAddr.split(",").map((s: string) => s.trim());
             const city = addrParts.length >= 2 ? addrParts[addrParts.length - 2] : "Local";
 
+            const cleanedStreet = cleanStreetAddress(rawAddr, city, "Kerala", postal);
+
             const autoAddress: UserAddress = {
               id: `addr_auto_${Date.now()}`,
               user_id: resolvedUserId || ord.user_id,
               user_email: normEmail || ord.guest_email || `${last10Digits}@turkiyejam.customer`,
               recipient_name: recipientName !== "Valued Customer" ? recipientName : (addrParts[0] || "Valued Customer"),
               phone: userPhone,
-              street: rawAddr,
+              street: cleanedStreet,
               city,
               state: "Kerala",
               postal_code: postal || "682021",
@@ -242,13 +249,20 @@ export async function getUserAddresses(
       if (pastOrders && pastOrders.length > 0) {
         const latestOrder = pastOrders[0];
         if (latestOrder.shipping_address) {
+          const cleanedPastStreet = cleanStreetAddress(
+            latestOrder.shipping_address,
+            latestOrder.city || "",
+            "",
+            latestOrder.postal_code || ""
+          );
+
           const autoAddress: UserAddress = {
             id: `addr_auto_${Date.now()}`,
             user_id: userId || latestOrder.user_id,
             user_email: normEmail || `${last10Digits}@turkiyejam.customer`,
             recipient_name: latestOrder.customer_name || "Valued Customer",
             phone: latestOrder.customer_phone || "",
-            street: latestOrder.shipping_address,
+            street: cleanedPastStreet,
             city: latestOrder.city || "",
             state: "",
             postal_code: latestOrder.postal_code || "",
@@ -270,6 +284,7 @@ export async function getUserAddresses(
 }
 
 export async function saveUserAddress(address: UserAddress): Promise<UserAddress> {
+  address.street = cleanStreetAddress(address.street, address.city, address.state, address.postal_code);
   const normEmail = address.user_email.toLowerCase().trim();
   await ensureAddressTable();
 
@@ -452,7 +467,7 @@ export async function syncAddressFromOrder(orderData: {
     user_email: email,
     recipient_name: orderData.customer_name || "Valued Customer",
     phone: orderData.customer_phone || "",
-    street: orderData.shipping_address,
+    street: cleanStreetAddress(orderData.shipping_address, cleanCity, cleanState, orderData.postal_code),
     city: cleanCity,
     state: cleanState,
     postal_code: orderData.postal_code || "",

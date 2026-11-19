@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getShiprocketToken } from "@/lib/shiprocketService";
 import { getFastrrOrderDetails } from "@/lib/fastrr";
 import { executeD1Query } from "@/lib/d1";
+import { cleanStreetAddress } from "@/lib/addressUtils";
 
 export const dynamic = "force-dynamic";
 
@@ -61,10 +62,12 @@ export async function GET(req: NextRequest) {
                   .join(" ")
                   .trim() || order.customer_name?.trim() || "";
 
-                const streetAddr = [shipping.line1, shipping.line2]
-                  .filter(Boolean)
-                  .join(", ")
-                  .trim();
+                const streetAddr = cleanStreetAddress(
+                  [shipping.line1, shipping.line2].filter(Boolean).join(", "),
+                  shipping.city,
+                  shipping.state,
+                  shipping.pincode
+                );
 
                 return NextResponse.json({
                   success: true,
@@ -74,7 +77,7 @@ export async function GET(req: NextRequest) {
                     name: fullName,
                     email: shipping.email || fastrrDetails.email || order.customer_email || "",
                     phone: phone10,
-                    address: streetAddr || order.customer_address || "",
+                    address: streetAddr || cleanStreetAddress(order.customer_address, shipping.city, shipping.state, shipping.pincode),
                     city: shipping.city || order.customer_city || "",
                     state: shipping.state || order.customer_state || "",
                     pincode: shipping.pincode || order.customer_pincode || "",
@@ -89,6 +92,10 @@ export async function GET(req: NextRequest) {
               .slice(-10);
 
             if (corePhone === phone10 && (order.customer_address || order.customer_city)) {
+              const cCity = (order.customer_city || "").trim();
+              const cState = (order.customer_state || "").trim();
+              const cPin = (order.customer_pincode || "").trim();
+
               return NextResponse.json({
                 success: true,
                 found: true,
@@ -97,10 +104,10 @@ export async function GET(req: NextRequest) {
                   name: (order.customer_name || "").trim(),
                   email: (order.customer_email || "").trim(),
                   phone: phone10,
-                  address: (order.customer_address || "").trim(),
-                  city: (order.customer_city || "").trim(),
-                  state: (order.customer_state || "").trim(),
-                  pincode: (order.customer_pincode || "").trim(),
+                  address: cleanStreetAddress(order.customer_address, cCity, cState, cPin),
+                  city: cCity,
+                  state: cState,
+                  pincode: cPin,
                 },
               });
             }
@@ -127,7 +134,6 @@ export async function GET(req: NextRequest) {
         let pincode = "";
         let state = "";
         let city = "";
-        let street = d1Order.shipping_address;
 
         const pinMatch = d1Order.shipping_address.match(/\b\d{6}\b/);
         if (pinMatch) pincode = pinMatch[0];
@@ -136,9 +142,10 @@ export async function GET(req: NextRequest) {
           if (/india/i.test(parts[parts.length - 1]) && parts.length >= 4) {
             state = parts[parts.length - 3] || "";
             city = parts[parts.length - 4] || "";
-            street = parts.slice(0, parts.length - 4).join(", ");
           }
         }
+
+        const cleanedStreet = cleanStreetAddress(d1Order.shipping_address, city, state, pincode);
 
         return NextResponse.json({
           success: true,
@@ -148,7 +155,7 @@ export async function GET(req: NextRequest) {
             name: d1Order.customer_name || "",
             email: d1Order.guest_email || "",
             phone: phone10,
-            address: street || d1Order.shipping_address,
+            address: cleanedStreet,
             city: city,
             state: state,
             pincode: pincode,
@@ -165,7 +172,7 @@ export async function GET(req: NextRequest) {
         `SELECT recipient_name, phone, street, city, state, postal_code 
          FROM addresses 
          WHERE phone LIKE ? 
-         ORDER BY updated_at DESC LIMIT 1;`,
+         ORDER BY created_at DESC LIMIT 1;`,
         [`%${phone10}%`]
       );
 
@@ -179,7 +186,7 @@ export async function GET(req: NextRequest) {
             name: addr.recipient_name || "",
             email: "",
             phone: phone10,
-            address: addr.street || "",
+            address: cleanStreetAddress(addr.street, addr.city, addr.state, addr.postal_code),
             city: addr.city || "",
             state: addr.state || "",
             pincode: addr.postal_code || "",

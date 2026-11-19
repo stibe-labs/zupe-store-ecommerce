@@ -45,7 +45,7 @@ import { useAuth } from "@/context/AuthContext";
 import { AuthCard } from "@/components/AuthCard";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
 import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
-import { deduplicateAddresses, normalizeAddressKey } from "@/lib/addressUtils";
+import { deduplicateAddresses, normalizeAddressKey, cleanStreetAddress } from "@/lib/addressUtils";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 // Recommended Bump / Upsell Products (Official Catalog Variants & Authentic Pricing)
@@ -196,8 +196,9 @@ function CheckoutContent() {
           setEmail(c.email);
         }
         // Auto-fill Address if empty
-        if (!address && c.address) {
-          setAddress(c.address);
+        const cleanCustomerStreet = cleanStreetAddress(c.address, c.city, c.state, c.pincode);
+        if (!address && cleanCustomerStreet) {
+          setAddress(cleanCustomerStreet);
         }
         if (!city && c.city) {
           setCity(c.city);
@@ -211,12 +212,12 @@ function CheckoutContent() {
         }
 
         // Add to saved addresses card list so user can see their Shiprocket address card
-        if (c.address) {
+        if (cleanCustomerStreet) {
           const autoAddr = {
             id: `sr-${clean}`,
             recipient_name: c.name || name || "Customer",
             phone: clean,
-            street: c.address,
+            street: cleanCustomerStreet,
             city: c.city || city || "",
             state: c.state || state || "",
             postal_code: c.pincode || postalCode || "",
@@ -1041,7 +1042,7 @@ function CheckoutContent() {
               setName(defaultAddr.recipient_name);
             }
             if (defaultAddr.phone) setPhone(cleanPhoneDigits(defaultAddr.phone));
-            setAddress(defaultAddr.street || "");
+            setAddress(cleanStreetAddress(defaultAddr.street, defaultAddr.city, defaultAddr.state, defaultAddr.postal_code));
             setCity(defaultAddr.city || "");
             setState(defaultAddr.state || "");
             setPostalCode(defaultAddr.postal_code || "");
@@ -1072,7 +1073,7 @@ function CheckoutContent() {
               setName(defaultAddr.recipient_name);
             }
             if (defaultAddr.phone) setPhone(cleanPhoneDigits(defaultAddr.phone));
-            setAddress(defaultAddr.street || "");
+            setAddress(cleanStreetAddress(defaultAddr.street, defaultAddr.city, defaultAddr.state, defaultAddr.postal_code));
             setCity(defaultAddr.city || "");
             setState(defaultAddr.state || "");
             setPostalCode(defaultAddr.postal_code || "");
@@ -1113,6 +1114,16 @@ function CheckoutContent() {
     }
   }, [postalCode]);
 
+  // Auto-clean contaminated or repeating address strings from previous sessions/cache
+  useEffect(() => {
+    if (address && address.length > 40) {
+      const sanitized = cleanStreetAddress(address, city, state, postalCode);
+      if (sanitized !== address) {
+        setAddress(sanitized);
+      }
+    }
+  }, [address, city, state, postalCode]);
+
   const handleSelectSavedAddress = (addr: any) => {
     setSelectedAddressId(addr.id);
     setIsUsingNewAddress(false);
@@ -1120,7 +1131,7 @@ function CheckoutContent() {
       setName(addr.recipient_name);
     }
     if (addr.phone) setPhone(cleanPhoneDigits(addr.phone));
-    setAddress(addr.street || "");
+    setAddress(cleanStreetAddress(addr.street, addr.city, addr.state, addr.postal_code));
     setCity(addr.city || "");
     setState(addr.state || "");
     setPostalCode(addr.postal_code || "");
@@ -1426,13 +1437,14 @@ function CheckoutContent() {
           return;
         }
 
+        const sanitizedStreet = cleanStreetAddress(address, city, state, postalCode);
         const newAddr = {
           id: existingMatch ? existingMatch.id : `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           user_email: userEmailNorm,
           user_id: user?.id,
           recipient_name: name.trim(),
           phone: phone.trim(),
-          street: address.trim(),
+          street: sanitizedStreet,
           city: city.trim(),
           state: state.trim(),
           postal_code: postalCode.trim(),

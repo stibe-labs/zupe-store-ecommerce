@@ -1,6 +1,7 @@
 import { executeD1Query } from "@/lib/d1";
 import { createERPOrder, updateERPOrder, getERPOrders, getOrderById } from "@/lib/erpStore";
 import { decrementInventory, restockInventory } from "@/lib/inventoryService";
+import { cleanStreetAddress } from "@/lib/addressUtils";
 
 export interface OrderItem {
   product_id: string;
@@ -78,7 +79,7 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
       total_amount: order.total_amount,
       discount_amount: order.discount_amount,
       promo_code: order.promo_code,
-      shipping_address: `${order.shipping_address}, ${order.city} ${order.postal_code}`,
+      shipping_address: `${cleanStreetAddress(order.shipping_address, order.city, undefined, order.postal_code)}, ${order.city} ${order.postal_code}`,
       payment_method: order.payment_method === "Credit Card" ? "Prepaid" : order.payment_method,
       payment_status: order.payment_status === "paid" ? "Completed" : "Pending",
       status: order.order_status === "shipped" ? "In Transit" : (order.order_status === "payment_pending" ? "Payment Pending" : (order.order_status === "cancelled" ? "Cancelled" : "Processing")),

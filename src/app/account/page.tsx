@@ -42,7 +42,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
 import { UserAddress } from "@/lib/addressStore";
-import { deduplicateAddresses } from "@/lib/addressUtils";
+import { deduplicateAddresses, cleanStreetAddress } from "@/lib/addressUtils";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -234,7 +234,7 @@ export default function AccountPage() {
     setEditingAddressId(addr.id);
     setRecipientName(addr.recipient_name);
     setAddressPhone(addr.phone || "");
-    setStreet(addr.street);
+    setStreet(cleanStreetAddress(addr.street, addr.city, addr.state, addr.postal_code));
     setCity(addr.city);
     setState(addr.state || "");
     setPostalCode(addr.postal_code);
@@ -268,7 +268,7 @@ export default function AccountPage() {
       user_email: user.email,
       recipient_name: recipientName.trim(),
       phone: addressPhone.trim(),
-      street: street.trim(),
+      street: cleanStreetAddress(street, city, state, postalCode),
       city: city.trim(),
       state: state.trim(),
       postal_code: postalCode.trim(),
