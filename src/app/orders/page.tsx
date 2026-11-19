@@ -32,6 +32,55 @@ import { Footer } from "@/components/Footer";
 import { useAuth } from "@/context/AuthContext";
 import { OrderRecord, OrderItem } from "@/lib/orderStore";
 
+type OrderFilterTab = "all" | "in_progress" | "in_transit" | "delivered" | "cancelled";
+
+const FILTER_TABS = [
+  { id: "all" as const, label: "All Orders", icon: Package, iconColor: "text-stone-700" },
+  { id: "in_progress" as const, label: "In Progress", icon: Clock, iconColor: "text-amber-600" },
+  { id: "in_transit" as const, label: "In Transit", icon: Truck, iconColor: "text-blue-600" },
+  { id: "delivered" as const, label: "Delivered", icon: CheckCircle2, iconColor: "text-emerald-600" },
+  { id: "cancelled" as const, label: "Cancelled", icon: XCircle, iconColor: "text-rose-600" },
+];
+
+function getOrderCategory(ord: OrderRecord): "in_progress" | "in_transit" | "delivered" | "cancelled" {
+  const ordStatus = (ord.order_status || "").toLowerCase();
+  const waStatus = (ord.whatsapp_confirm_status || "").toLowerCase();
+  const deliveryStatus = ((ord as any).delivery_status || "").toLowerCase();
+  const generalStatus = ((ord as any).status || "").toLowerCase();
+
+  // 1. Cancelled check first (takes precedence)
+  if (
+    ordStatus === "cancelled" ||
+    waStatus === "cancelled" ||
+    deliveryStatus === "cancelled" ||
+    generalStatus === "cancelled"
+  ) {
+    return "cancelled";
+  }
+
+  // 2. Delivered check
+  if (
+    ordStatus === "delivered" ||
+    deliveryStatus === "delivered" ||
+    generalStatus === "delivered"
+  ) {
+    return "delivered";
+  }
+
+  // 3. In Transit / Shipped check
+  const inTransitStatuses = ["shipped", "in transit", "out for delivery"];
+  if (
+    inTransitStatuses.includes(ordStatus) ||
+    inTransitStatuses.includes(deliveryStatus) ||
+    inTransitStatuses.includes(generalStatus)
+  ) {
+    return "in_transit";
+  }
+
+  // 4. Default: In Progress (processing, pending WhatsApp confirmation, payment pending, etc.)
+  return "in_progress";
+}
+
 function OrdersPageContent() {
   const { user, isAuthenticated, openAuthModal } = useAuth();
   const searchParams = useSearchParams();
@@ -47,6 +96,39 @@ function OrdersPageContent() {
   const [cancelSuccessMsg, setCancelSuccessMsg] = useState<string | null>(null);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedFilter, setSelectedFilter] = useState<OrderFilterTab>(() => {
+    const urlFilter = searchParams.get("filter") || searchParams.get("status");
+    if (
+      urlFilter &&
+      ["all", "in_progress", "in_transit", "delivered", "cancelled"].includes(urlFilter)
+    ) {
+      return urlFilter as OrderFilterTab;
+    }
+    if (cancelledOrderId) return "cancelled";
+    return "all";
+  });
+
+  const filterCounts = useMemo(() => {
+    const counts: Record<OrderFilterTab, number> = {
+      all: orders.length,
+      in_progress: 0,
+      in_transit: 0,
+      delivered: 0,
+      cancelled: 0,
+    };
+
+    orders.forEach((ord) => {
+      const cat = getOrderCategory(ord);
+      counts[cat]++;
+    });
+
+    return counts;
+  }, [orders]);
+
+  const filteredOrders = useMemo(() => {
+    if (selectedFilter === "all") return orders;
+    return orders.filter((ord) => getOrderCategory(ord) === selectedFilter);
+  }, [orders, selectedFilter]);
   const [autoConfirmedOrderId, setAutoConfirmedOrderId] = useState<string | null>(null);
   const [isSilentSyncing, setIsSilentSyncing] = useState<boolean>(false);
   const prevOrdersRef = useRef<OrderRecord[]>([]);
@@ -640,7 +722,62 @@ function OrdersPageContent() {
           </div>
         ) : (
           <div className="space-y-6">
-            {orders.map((ord) => {
+            {/* Order Status Filter Tabs */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none sm:flex-wrap">
+              {FILTER_TABS.map((tab) => {
+                const isActive = selectedFilter === tab.id;
+                const count = filterCounts[tab.id];
+                const Icon = tab.icon;
+
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSelectedFilter(tab.id)}
+                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap select-none ${
+                      isActive
+                        ? "bg-[#5b1420] text-white border-2 border-stone-800 shadow-[0_3px_0_0_#2b2b2b] -translate-y-0.5"
+                        : "bg-white text-stone-700 border-2 border-stone-800/40 hover:border-stone-800 hover:bg-stone-50 shadow-xs"
+                    }`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? "text-amber-300" : tab.iconColor}`} />
+                    <span>{tab.label}</span>
+                    <span
+                      className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                        isActive
+                          ? "bg-[#fed000] text-stone-900"
+                          : "bg-stone-100 text-stone-600 border border-stone-200"
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {filteredOrders.length === 0 ? (
+              <div className="max-w-md mx-auto py-12 text-center">
+                <div className="bg-white rounded-3xl p-8 border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b]">
+                  <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-stone-100 border-2 border-stone-800 flex items-center justify-center text-stone-600 shadow-[0_2px_0_0_#2b2b2b]">
+                    <Package className="w-7 h-7" />
+                  </div>
+                  <h3 className="text-lg font-bold font-tj-serif text-stone-900 mb-1">
+                    No {FILTER_TABS.find((t) => t.id === selectedFilter)?.label.toLowerCase()} orders found
+                  </h3>
+                  <p className="text-xs text-stone-600 mb-5 leading-relaxed">
+                    You do not have any orders matching the &ldquo;{FILTER_TABS.find((t) => t.id === selectedFilter)?.label}&rdquo; filter.
+                  </p>
+                  <button
+                    onClick={() => setSelectedFilter("all")}
+                    className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-[#fed000] hover:bg-[#fab005] text-stone-900 text-xs font-black border-2 border-stone-800 shadow-[0_3px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                  >
+                    View All Orders ({orders.length})
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {filteredOrders.map((ord) => {
               const isDelivered =
                 (ord.order_status || "").toLowerCase() === "delivered" ||
                 ((ord as any).delivery_status || "").toLowerCase() === "delivered";
@@ -1125,6 +1262,8 @@ function OrdersPageContent() {
                 </div>
               );
             })}
+              </div>
+            )}
           </div>
         )}
       </div>
