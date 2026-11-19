@@ -208,8 +208,22 @@ export async function POST(req: NextRequest) {
       const orderDisplayId = ord.shopify_order_id || ord.id || order_id;
 
       // Keep existing AWB and courier partner without generating fake placeholders
-      const finalAwb = (ord.shiprocket_awb || "").trim();
-      const finalCourier = ord.courier_partner || "";
+      let finalAwb = (ord.shiprocket_awb || "").trim();
+      let finalCourier = ord.courier_partner || "";
+
+      // Automatically push to Shiprocket if not yet assigned or synced
+      if (!finalAwb || finalAwb.startsWith("SR-AWB-")) {
+        try {
+          const { dispatchShiprocketOrder } = await import("@/lib/shiprocketService");
+          const srRes = await dispatchShiprocketOrder(ord);
+          if (srRes && srRes.success && srRes.awb && !srRes.isSimulated) {
+            finalAwb = srRes.awb;
+            finalCourier = srRes.courier || finalCourier;
+          }
+        } catch (srErr) {
+          console.warn("Manual confirm Shiprocket dispatch error:", srErr);
+        }
+      }
 
       // 1. Update ERP Store
       const updatedERP = await updateERPOrder(targetId, {
@@ -723,6 +737,56 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      // Automatically push admin manual order to Shiprocket
+      let liveAwb: string | undefined;
+      let liveCourier: string | undefined;
+      let shiprocketSynced = false;
+      let shiprocketError = "";
+      const custEmail = (guest_email || "").trim();
+
+      try {
+        const { dispatchShiprocketOrder } = await import("@/lib/shiprocketService");
+        const srPayload = {
+          ...newOrder,
+          id: newOrder.id,
+          shopify_order_id: newOrder.shopify_order_id,
+          customer_name: customer_name.trim(),
+          customer_phone: cleanPhone,
+          guest_email: custEmail,
+          shipping_address: fullAddress,
+          city: (city || "").trim(),
+          state: (state || "").trim(),
+          postal_code: (pincode || "").trim(),
+          pincode: (pincode || "").trim(),
+          payment_method: finalPaymentMethod,
+          total_amount: totalNum,
+          items: formattedItems,
+        };
+
+        const shiprocketResult = await dispatchShiprocketOrder(srPayload);
+        if (shiprocketResult && shiprocketResult.success) {
+          shiprocketSynced = true;
+          if (shiprocketResult.awb && !shiprocketResult.isSimulated) {
+            liveAwb = shiprocketResult.awb;
+            liveCourier = shiprocketResult.courier;
+            newOrder.shiprocket_awb = liveAwb;
+            newOrder.tracking_number = liveAwb;
+            newOrder.courier_partner = liveCourier;
+
+            await executeD1Query(
+              `UPDATE orders SET shiprocket_awb = ?, tracking_number = ?, courier_partner = ? WHERE id = ? OR shopify_order_id = ?`,
+              [liveAwb, liveAwb, liveCourier || "", newOrder.id, newOrder.shopify_order_id]
+            ).catch(() => {});
+          }
+        } else if (shiprocketResult && !shiprocketResult.success) {
+          shiprocketError = shiprocketResult.error || "Shiprocket sync rejected";
+          console.warn("[Admin Manual Order] Shiprocket push warning:", shiprocketError);
+        }
+      } catch (srErr: any) {
+        shiprocketError = srErr.message || "Shiprocket sync error";
+        console.warn("[Admin Manual Order] Shiprocket push exception:", srErr);
+      }
+
       // If send_whatsapp requested:
       if (send_whatsapp && cleanPhone) {
         try {
@@ -744,7 +808,6 @@ export async function POST(req: NextRequest) {
       }
 
       // If send_email requested:
-      const custEmail = (guest_email || "").trim();
       if (send_email && custEmail && custEmail.includes("@") && !custEmail.endsWith("@customer.zupestore.com")) {
         try {
           await sendOrderConfirmationEmail({
@@ -773,10 +836,16 @@ export async function POST(req: NextRequest) {
 
       // Note: Admin manual orders are strictly excluded from Meta analytics to prevent internal testing pollution.
 
+      const successMsg = shiprocketSynced
+        ? `Order #${newOrder.shopify_order_id || newOrder.id} created and synced to Shiprocket successfully!`
+        : `Order #${newOrder.shopify_order_id || newOrder.id} created successfully!`;
+
       return NextResponse.json({
         success: true,
         order: newOrder,
-        message: `Order #${newOrder.shopify_order_id || newOrder.id} created successfully!`,
+        shiprocket_synced: shiprocketSynced,
+        shiprocket_error: shiprocketError || undefined,
+        message: successMsg,
       });
     }
   } catch (err: any) {

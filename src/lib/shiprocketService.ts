@@ -205,11 +205,62 @@ export async function dispatchShiprocketOrder(
 
     const rawPhone = (order as any).customer_phone || "";
     const cleanPhone = rawPhone.replace(/\D/g, "").slice(-10) || "9876543210";
-    const recipientName = (order as any).customer_name || "Valued Customer";
-    const shippingAddress = (order as any).shipping_address || "Customer Address";
-    const city = (order as any).city || "Bengaluru";
-    const rawPostal = ((order as any).postal_code || "").toString().replace(/\D/g, "");
+    const rawName = ((order as any).customer_name || "Valued Customer").trim();
+    const recipientName = rawName.length >= 2 ? rawName : "Valued Customer";
+
+    let shippingAddress = ((order as any).shipping_address || "Customer Address").trim();
+    let city = (
+      (order as any).city ||
+      (order as any).billing_city ||
+      (order as any).customer_city ||
+      ""
+    ).trim();
+    let state = (
+      (order as any).state ||
+      (order as any).billing_state ||
+      (order as any).customer_state ||
+      ""
+    ).trim();
+    let rawPostal = (
+      (order as any).postal_code ||
+      (order as any).pincode ||
+      (order as any).billing_pincode ||
+      (order as any).zip ||
+      ""
+    ).toString().replace(/\D/g, "");
+
+    // Fallbacks from shippingAddress if postal code missing
+    if (rawPostal.length !== 6) {
+      const pinMatch = shippingAddress.match(/\b([1-9][0-9]{5})\b/);
+      if (pinMatch) {
+        rawPostal = pinMatch[1];
+      }
+    }
     const postalCode = rawPostal.length === 6 ? rawPostal : "560001";
+
+    if (!city) {
+      const parts = shippingAddress.split(",").map((s: string) => s.trim()).filter(Boolean);
+      if (parts.length >= 2) {
+        const candidate = parts[parts.length - 2]?.replace(/\d+/g, "").trim();
+        if (candidate && candidate.length > 2) city = candidate;
+      }
+      if (!city) city = "Bengaluru";
+    }
+
+    if (!state) {
+      const parts = shippingAddress.split(",").map((s: string) => s.trim()).filter(Boolean);
+      if (parts.length >= 3) {
+        const candidate = parts[parts.length - 1]?.replace(/\d+/g, "").trim();
+        if (candidate && candidate.length > 2) state = candidate;
+      }
+      if (!state) state = "Karnataka";
+    }
+
+    // Shiprocket API requires billing_address to have at least 10 characters
+    if (shippingAddress.length < 10) {
+      shippingAddress = `${shippingAddress}, ${city}, ${state} - ${postalCode}`;
+    }
+
     const isCod = ((order as any).payment_method || "").toLowerCase().includes("cod") ||
                   ((order as any).payment_method || "").toLowerCase().includes("cash on delivery");
 
@@ -269,7 +320,7 @@ export async function dispatchShiprocketOrder(
           billing_address: shippingAddress,
           billing_city: city,
           billing_pincode: postalCode,
-          billing_state: (order as any).state || "Karnataka",
+          billing_state: state,
           billing_country: "India",
           billing_email: (order as any).customer_email || (order as any).guest_email || "customer@zupestore.in",
           billing_phone: cleanPhone,
@@ -286,7 +337,40 @@ export async function dispatchShiprocketOrder(
       });
 
       const orderData = (await orderRes.json()) as any;
+      if (!orderRes.ok || (orderData.status_code && orderData.status_code >= 400)) {
+        if (orderData.message && orderData.message.toLowerCase().includes("already exist")) {
+          // Order already exists in Shiprocket, fetch current status
+          const syncRes = await syncShiprocketOrderById(order.id);
+          return {
+            success: true,
+            shipmentId: syncRes.awb ? undefined : (orderData.shipment_id || orderData.order_id),
+            awb: syncRes.awb,
+            courier: syncRes.courier,
+            delivery_status: "Processing",
+            isSimulated: false,
+            message: `Order #${order.id} already exists in Shiprocket. Synced status.`,
+          };
+        }
+
+        console.warn("[Shiprocket Live API] Order creation error:", orderData);
+        return {
+          success: false,
+          delivery_status: "Processing",
+          error:
+            orderData.message ||
+            (typeof orderData.errors === "object"
+              ? JSON.stringify(orderData.errors)
+              : "Shiprocket API rejected order creation"),
+        };
+      }
+
       const shipmentId = orderData.shipment_id || orderData.order_id;
+      if (shipmentId) {
+        await executeD1Query(
+          `UPDATE orders SET shiprocket_shipment_id = ? WHERE id = ? OR shopify_order_id = ?`,
+          [String(shipmentId), order.id, (order as any).shopify_order_id || order.id]
+        ).catch(() => {});
+      }
 
       // Only assign AWB immediately if explicitly requested by Admin action
       if (options?.assignAwb && shipmentId) {
