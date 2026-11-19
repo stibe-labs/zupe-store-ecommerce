@@ -13,12 +13,13 @@ if (STORE_BASE_URL.includes("workers.dev") || !STORE_BASE_URL.startsWith("http")
 }
 
 // Template names - must match exactly what you created in Meta Business Manager
-const TEMPLATE_PREPAID = "vittallifestyle_order_update";
-const TEMPLATE_COD = "vittallifestyle_order_update";
+const TEMPLATE_PREPAID = "vittallifestyle_order_confirmed";
+const TEMPLATE_COD = "vittallifestyle_order_confirmed";
 const TEMPLATE_VERIFY = "vittallifestyle_order_verify";
-const TEMPLATE_UPDATE = "vittallifestyle_order_update";
-const TEMPLATE_CANCEL_PREPAID = "vittallifestyle_order_update";
-const TEMPLATE_CANCEL_COD = "vittallifestyle_order_update";
+const TEMPLATE_UPDATE = "vittallifestyle_order_confirmed";
+const TEMPLATE_CANCEL_PREPAID = "vittallifestyle_order_cancelled";
+const TEMPLATE_CANCEL_COD = "vittallifestyle_order_cancelled";
+const TEMPLATE_COD_TO_PREPAID = "vittallifestyle_cod_to_prepaid";
 const TEMPLATE_LANG = "en";
 
 export interface OrderConfirmationParams {
@@ -28,6 +29,7 @@ export interface OrderConfirmationParams {
   totalAmount: number;
   paymentMethod: "cod" | "prepaid";
   items: Array<{ name: string; quantity: number; price: number }>;
+  isCodSwitch?: boolean;
 }
 
 export interface OrderPreConfirmationParams {
@@ -237,7 +239,7 @@ export const sendWhatsAppOrderConfirmation = sendOrderConfirmationWhatsApp;
 export async function sendOrderConfirmationWhatsApp(
   params: OrderConfirmationParams
 ): Promise<void> {
-  const { customerName, customerPhone, orderId, totalAmount, paymentMethod, items } = params;
+  const { customerName, customerPhone, orderId, totalAmount, paymentMethod, items, isCodSwitch } = params;
 
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) {
@@ -361,7 +363,8 @@ export async function sendOrderConfirmationWhatsApp(
         firstName,
         displayOrderId,
         totalAmount,
-        switchPrepaidAmount
+        switchPrepaidAmount,
+        Boolean(isCodSwitch)
       );
     } catch (err) {
       console.warn("[WA Order Confirm] Prepaid template attempt:", err);
@@ -518,37 +521,34 @@ async function sendViaTemplate(
   firstName: string,
   orderId: string,
   totalAmount: number,
-  discountedAmount: number
+  discountedAmount: number,
+  isCodSwitch: boolean = false
 ): Promise<boolean> {
-  const templateName = paymentMethod === "cod" ? TEMPLATE_COD : TEMPLATE_PREPAID;
+  const templateName = isCodSwitch
+    ? TEMPLATE_COD_TO_PREPAID
+    : paymentMethod === "cod"
+    ? TEMPLATE_COD
+    : TEMPLATE_PREPAID;
 
-  const bodyParams =
-    paymentMethod === "cod"
-      ? [
-          { type: "text", text: firstName },
-          { type: "text", text: orderId },
-          { type: "text", text: "Rs " + totalAmount.toLocaleString("en-IN") },
-          { type: "text", text: "Rs " + discountedAmount.toLocaleString("en-IN") },
-        ]
-      : [
-          { type: "text", text: firstName },
-          { type: "text", text: orderId },
-          { type: "text", text: "Rs " + totalAmount.toLocaleString("en-IN") },
-        ];
+  const bodyParams = isCodSwitch
+    ? [
+        { type: "text", text: firstName },
+        { type: "text", text: "Rs " + totalAmount.toLocaleString("en-IN") },
+        { type: "text", text: orderId },
+      ]
+    : [
+        { type: "text", text: firstName },
+        { type: "text", text: orderId },
+        { type: "text", text: "Rs " + totalAmount.toLocaleString("en-IN") },
+      ];
 
   const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
   const trackButtonParam = { type: "text", text: cleanButtonOrderId };
 
-  const components: any[] =
-    paymentMethod === "cod"
-      ? [
-          { type: "body", parameters: bodyParams },
-          { type: "button", sub_type: "url", index: "1", parameters: [trackButtonParam] },
-        ]
-      : [
-          { type: "body", parameters: bodyParams },
-          { type: "button", sub_type: "url", index: "0", parameters: [trackButtonParam] },
-        ];
+  const components: any[] = [
+    { type: "body", parameters: bodyParams },
+    { type: "button", sub_type: "url", index: "0", parameters: [trackButtonParam] },
+  ];
 
   try {
     const res = await fetch(apiUrl, {

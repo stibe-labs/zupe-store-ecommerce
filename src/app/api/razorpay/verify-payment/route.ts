@@ -109,6 +109,7 @@ export async function POST(req: NextRequest) {
           orderId: existingOrder?.shopify_order_id || existingOrderId,
           totalAmount: discountedAmount,
           paymentMethod: "prepaid",
+          isCodSwitch: true,
           items: orderItems.map((it: any) => ({
             name: it.product_name || it.name,
             quantity: Number(it.quantity || 1),
