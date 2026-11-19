@@ -264,11 +264,6 @@ export function CartDrawer() {
                     disabled={hasOutOfStockItems}
                     onClick={() => {
                       if (hasOutOfStockItems) return;
-                      if (!user) {
-                        closeCart();
-                        openAuthModal("login", "Sign in required: Please log in or create an account to proceed to checkout 🔒");
-                        return;
-                      }
                       closeCart();
                       router.push("/checkout");
                     }}

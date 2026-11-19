@@ -311,10 +311,6 @@ export default function CartPage() {
               {/* Checkout CTA */}
               <button
                 onClick={() => {
-                  if (!user) {
-                    openAuthModal("login", "Sign in required: Please log in or create an account to proceed to checkout 🔒");
-                    return;
-                  }
                   router.push("/checkout");
                 }}
                 className="w-full py-4 px-6 rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-semibold text-sm shadow-xl shadow-[#FF7A00]/30 transition-all flex items-center justify-center gap-2 transform active:scale-95 cursor-pointer"

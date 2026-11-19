@@ -71,10 +71,6 @@ export function DealsSection({ initialProductIds }: DealsSectionProps = {}) {
     e.stopPropagation();
     const isOutOfStock = product.in_stock === 0 || (product.stock_count !== undefined && product.stock_count <= 0);
     if (isOutOfStock) return;
-    if (!user) {
-      openAuthModal("login", "Sign in required: Please log in or create an account to proceed with purchase 🛍️");
-      return;
-    }
     const addFn = addToCart || addItem;
     if (typeof addFn === "function") {
       addFn(product, 1);

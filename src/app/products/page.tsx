@@ -383,10 +383,6 @@ function ProductsContent() {
       return;
     }
     addToCart(product, 1);
-    if (!user) {
-      openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
-      return;
-    }
     router.push("/checkout");
   };
 

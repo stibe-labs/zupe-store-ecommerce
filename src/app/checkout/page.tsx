@@ -130,6 +130,7 @@ function CheckoutContent() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [postalCode, setPostalCode] = useState("");
+  const [landmark, setLandmark] = useState("");
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [pincodeDetected, setPincodeDetected] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
@@ -144,6 +145,7 @@ function CheckoutContent() {
   // Step progression state ("details" = contact & delivery, "payment" = choose how to pay)
   const [checkoutStep, setCheckoutStep] = useState<"details" | "payment">("details");
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
+  const [isPriceDetailsOpen, setIsPriceDetailsOpen] = useState(false);
 
 
   // Saved Addresses
@@ -938,6 +940,9 @@ function CheckoutContent() {
     return sum + itemMrp * it.quantity;
   }, 0);
   const totalMrpSavings = Math.max(0, totalMrp - grandTotal);
+  const totalSavings = totalMrpSavings;
+  const pincodeValid = pincodeDetected;
+  const pincodeMessage = postalCode.length === 6 ? (pincodeDetected ? `${city}, ${state}` : null) : null;
 
   // Upsell bump offer candidates (excluding what is already in cart)
   const availableUpsells = useMemo(() => {
@@ -1504,11 +1509,6 @@ function CheckoutContent() {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (checkoutStep !== "payment") {
-      handleContinueToPayment(e);
-      return;
-    }
 
     const cleanP = cleanPhoneDigits(phone);
     if (!cleanP || cleanP.length !== 10 || !/^[6-9]\d{9}$/.test(cleanP)) {
@@ -2163,73 +2163,51 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 antialiased">
-      {/* 1. TOP TRUST HEADER (Matches Reference Photo 3) */}
-      <header className="relative border-b border-orange-100/70 bg-gradient-to-b from-[#FFF5EC]/90 via-[#FFF9F5]/60 to-white pt-4 pb-4 sm:pt-5 sm:pb-5 overflow-hidden">
-        {/* Soft glowing ambient arc in background */}
-        <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-32 bg-[#FF7A00]/10 blur-3xl rounded-full" />
-
-        <div className="relative max-w-5xl mx-auto px-4 flex flex-col items-center text-center space-y-2">
-          {/* Centered Logo */}
-          <Link href="/" className="inline-block transition-transform active:scale-95">
+    <div className="min-h-screen bg-gray-50/60 text-gray-900 antialiased pb-28">
+      {/* 1. TOP HEADER */}
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-2xs">
+        <div className="max-w-xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 group">
             <Image
               src="/zupe-logo.webp"
               alt="Zupe Store"
-              width={120}
-              height={38}
-              className="h-8 sm:h-9 w-auto object-contain mx-auto drop-shadow-2xs"
+              width={100}
+              height={32}
+              className="h-7 w-auto object-contain"
               priority
             />
           </Link>
-
-          {/* Secure Checkout Heading */}
-          <div>
-            <div className="flex items-center justify-center gap-1.5 text-gray-900 font-extrabold text-base sm:text-lg">
-              <Lock className="w-4 h-4 text-[#FF7A00]" />
-              <span>Secure Checkout</span>
-            </div>
-            <p className="text-[11px] sm:text-xs text-gray-400 font-medium mt-0.5">
-              Your order is almost ready
-            </p>
+          <div className="flex items-center gap-1.5 text-xs font-bold text-gray-800 bg-gray-50 border border-gray-200/80 px-2.5 py-1 rounded-full">
+            <Lock className="w-3.5 h-3.5 text-[#FF7A00]" />
+            <span>Secure checkout</span>
           </div>
-
-          {/* 3 Genuine Trust Badges in Reference Pill Design */}
-          <div className="flex items-center justify-center gap-1 sm:gap-2 flex-nowrap overflow-x-auto max-w-full px-1 pt-1 text-xs font-semibold scrollbar-none">
-            <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-[#FFF3E8] border border-[#FFE2CC] text-gray-800 text-[10px] sm:text-xs shadow-2xs whitespace-nowrap shrink-0">
-              <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#FF7A00]" />
-              <span>Premium Quality</span>
-            </span>
-            <span className="text-gray-300 hidden sm:inline">•</span>
-            <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-[#FFF3E8] border border-[#FFE2CC] text-gray-800 text-[10px] sm:text-xs shadow-2xs whitespace-nowrap shrink-0">
-              <Truck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#FF7A00]" />
-              <span>Fast Shipping</span>
-            </span>
-            <span className="text-gray-300 hidden sm:inline">•</span>
-            <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-[#FFF3E8] border border-[#FFE2CC] text-gray-800 text-[10px] sm:text-xs shadow-2xs whitespace-nowrap shrink-0">
-              <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#FF7A00]" />
-              <span>Secure Payments</span>
-            </span>
-          </div>
+          <Link
+            href="/"
+            className="text-xs font-semibold text-gray-500 hover:text-gray-900 transition flex items-center gap-1"
+          >
+            <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+            <span>Store</span>
+          </Link>
         </div>
       </header>
 
-      {/* 3. MAIN CHECKOUT GRID */}
-      <main className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
+      {/* 2. MAIN CONTENT (SINGLE CLEAN COLUMN - MATCHING IMAGE 2 / QUICKBUY) */}
+      <main className="max-w-xl mx-auto px-4 pt-4 space-y-4">
         {recoveredBanner && (
-          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm flex items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-              <div>
-                <p className="font-bold text-emerald-950">{recoveredBanner}</p>
-                <p className="text-[11px] text-emerald-700 mt-0.5">
-                  Your cart items and saved delivery information are ready. Complete your order below.
+          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-900 text-xs flex items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="min-w-0">
+                <p className="font-bold text-emerald-950 truncate">{recoveredBanner}</p>
+                <p className="text-[11px] text-emerald-700 truncate mt-0.5">
+                  Your cart items and saved delivery info are restored.
                 </p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setRecoveredBanner(null)}
-              className="text-emerald-700 hover:text-emerald-900 font-bold text-xs p-1"
+              className="text-emerald-700 hover:text-emerald-900 font-bold p-1 cursor-pointer shrink-0"
             >
               <X className="w-4 h-4" />
             </button>
@@ -2237,1595 +2215,651 @@ function CheckoutContent() {
         )}
 
         {errorMessage && (
-          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-center gap-2.5">
-            <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
-            <p className="font-medium">{errorMessage}</p>
+          <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+            <p>{errorMessage}</p>
           </div>
         )}
 
-        <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-          {/* LEFT COLUMN: URGENCY BANNER + STEP 1 + STEP 2 */}
-          <div className="lg:col-span-7 space-y-6 sm:space-y-7">
-            {/* Urgency Countdown Banner (Matches Reference Photo 3) */}
-            <div className="p-3 sm:p-4 rounded-2xl bg-[#FFF9F3] border border-[#FFE7D1] flex items-center justify-between gap-2 sm:gap-3 shadow-2xs">
-              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FFE5CC] text-[#FF7A00] flex items-center justify-center shrink-0">
-                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FF7A00]" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-extrabold text-[11px] sm:text-sm text-gray-900 leading-tight truncate">
-                    Limited-Time Offer
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-gray-500 truncate mt-0.5">
-                    Your special deal ends in
-                  </p>
-                </div>
-              </div>
+        <form onSubmit={handlePlaceOrder} className="space-y-4">
+          {/* CARD 1: ORDER SUMMARY CARD + PROMO CODE */}
+          <div className="rounded-2xl border border-gray-200 overflow-hidden bg-white shadow-2xs">
+            {/* Items list */}
+            <div className="divide-y divide-gray-100">
+              {cart.map((item) => {
+                const itemTotal = (item.bundle_tier && item.bundle_tier > 1 && item.bundle_total)
+                  ? item.bundle_total
+                  : item.price * item.quantity;
+                const itemBaseUnit = item.original_price || item.price;
+                const itemRegularTotal = itemBaseUnit * item.quantity;
+                const isBundle = Boolean(item.bundle_tier && item.bundle_tier > 1);
+                const displayImage = item.poster_image || (item as any).image || (item as any).images?.[0] || "/placeholder.png";
 
-              {/* 3 Dark Digital Countdown Blocks */}
-              <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                <div className="flex flex-col items-center">
-                  <div className="bg-[#111827] text-white font-mono font-black text-xs sm:text-sm px-1.5 sm:px-2 py-1 rounded-md min-w-[26px] sm:min-w-[34px] text-center shadow-xs">
-                    {Math.floor(timeLeft / 3600).toString().padStart(2, "0")}
-                  </div>
-                  <span className="text-[8.5px] sm:text-[9px] text-gray-400 font-semibold mt-0.5">Hours</span>
-                </div>
-                <span className="font-extrabold text-gray-900 pb-2.5 text-xs sm:text-sm">:</span>
-                <div className="flex flex-col items-center">
-                  <div className="bg-[#111827] text-white font-mono font-black text-xs sm:text-sm px-1.5 sm:px-2 py-1 rounded-md min-w-[26px] sm:min-w-[34px] text-center shadow-xs">
-                    {Math.floor((timeLeft % 3600) / 60).toString().padStart(2, "0")}
-                  </div>
-                  <span className="text-[8.5px] sm:text-[9px] text-gray-400 font-semibold mt-0.5">Mins</span>
-                </div>
-                <span className="font-extrabold text-gray-900 pb-2.5 text-xs sm:text-sm">:</span>
-                <div className="flex flex-col items-center">
-                  <div className="bg-[#111827] text-white font-mono font-black text-xs sm:text-sm px-1.5 sm:px-2 py-1 rounded-md min-w-[26px] sm:min-w-[34px] text-center shadow-xs">
-                    {(timeLeft % 60).toString().padStart(2, "0")}
-                  </div>
-                  <span className="text-[8.5px] sm:text-[9px] text-gray-400 font-semibold mt-0.5">Secs</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Collapsible Mobile Order Summary Bar (Matches Reference Design) */}
-            <div className="block lg:hidden rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}
-                className="w-full p-3.5 flex items-center justify-between gap-3 text-left bg-gray-50/70 hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-orange-100/70 border border-orange-200/50 flex items-center justify-center text-[#FF7A00] shrink-0">
-                    <ShoppingBag className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5 font-bold text-xs sm:text-sm text-gray-900">
-                      <span>Order summary</span>
-                      {isMobileSummaryOpen ? (
-                        <ChevronUp className="w-3.5 h-3.5 text-gray-500" />
-                      ) : (
-                        <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
-                      )}
+                return (
+                  <div key={item.id} className="p-3.5 flex items-center gap-3">
+                    <div className="relative w-14 h-14 rounded-xl border border-gray-100 overflow-hidden shrink-0 bg-gray-50">
+                      <Image
+                        src={displayImage}
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                      />
                     </div>
-                    <p className="text-[11px] text-gray-500">
-                      {totalItemCount} {totalItemCount === 1 ? "item" : "items"} in your order
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  {totalMrp > grandTotal && (
-                    <span className="line-through text-xs text-gray-400 block">
-                      ₹{totalMrp.toLocaleString()}
-                    </span>
-                  )}
-                  <span className="text-sm font-extrabold text-gray-950">
-                    ₹{grandTotal.toLocaleString()}
-                  </span>
-                </div>
-              </button>
-
-              <AnimatePresence>
-                {isMobileSummaryOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="border-t border-gray-100 p-4 space-y-3.5 bg-white"
-                  >
-                    {cart.map((item) => {
-                      const itemTotal = (item.bundle_tier && item.bundle_tier > 1 && item.bundle_total)
-                        ? item.bundle_total
-                        : item.price * item.quantity;
-                      const itemBaseUnit = item.original_price || item.price;
-                      const itemRegularTotal = itemBaseUnit * item.quantity;
-                      const isBundle = Boolean(item.bundle_tier && item.bundle_tier > 1);
-                      const itemMrp = item.mrp || Math.round(itemBaseUnit * 1.25);
-                      const itemSaving = isBundle
-                        ? Math.max(0, itemRegularTotal - itemTotal)
-                        : Math.max(0, (itemMrp - item.price) * item.quantity);
-
-                      return (
-                        <div key={item.id} className="flex items-center gap-3">
-                          <div className="relative w-14 h-14 rounded-xl bg-gray-50 border border-gray-200 shrink-0 overflow-hidden">
-                            <Image src={item.poster_image} alt={item.name} fill className="object-cover" />
-                            <div className="absolute top-0 right-0 w-4 h-4 rounded-bl-lg bg-gray-900 text-white text-[9px] font-bold flex items-center justify-center">
-                              {item.quantity}
-                            </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-gray-900 truncate">{item.name}</p>
-                            <div className="flex items-center gap-2 mt-1 flex-wrap">
-                              <span className="text-[11px] text-gray-500">Qty: {item.quantity} × ₹{item.price.toLocaleString()}</span>
-                              {isBundle ? (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-orange-50 border border-orange-200 text-[#FF5722] text-[10px] font-bold">
-                                  <Sparkles className="w-2.5 h-2.5" />
-                                  <span>{item.offer_label || `Saved ₹${itemSaving.toLocaleString()}`}</span>
-                                </span>
-                              ) : itemSaving > 0 ? (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-orange-50 border border-orange-200 text-[#FF7A00] text-[10px] font-bold">
-                                  <Tag className="w-2.5 h-2.5" />
-                                  <span>You&apos;re saving ₹{itemSaving.toLocaleString()}</span>
-                                </span>
-                              ) : null}
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0">
-                            {isBundle && itemRegularTotal > itemTotal && (
-                              <span className="text-[10px] text-gray-400 line-through block">
-                                ₹{itemRegularTotal.toLocaleString()}
-                              </span>
-                            )}
-                            <span className="text-xs font-extrabold text-gray-900 block">
-                              ₹{itemTotal.toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Promo Code Input Row (Matches Reference Photo 3) */}
-                    <div className="pt-2 border-t border-gray-100 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="relative flex-1">
-                          <Tag className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                          <input
-                            type="text"
-                            value={promoCode}
-                            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                            placeholder="Promo code"
-                            className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold uppercase tracking-wider text-gray-900 placeholder:normal-case placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:border-[#FF7A00] bg-white"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleApplyPromo}
-                          disabled={promoLoading}
-                          className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-xs shadow-2xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60"
-                        >
-                          {promoLoading ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <>
-                              <span>Apply</span>
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </>
-                          )}
-                        </button>
-                      </div>
-
-                      {promoSuccess && (
-                        <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center justify-between">
-                          <span>{promoSuccess}</span>
-                          <button
-                            type="button"
-                            onClick={handleRemovePromo}
-                            className="text-emerald-700 hover:text-emerald-900 font-bold ml-2 cursor-pointer p-0.5"
-                            aria-label="Remove promo code"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      )}
-
-                      {promoError && (
-                        <p className="text-xs text-red-600 font-medium pl-1">
-                          {promoError}
-                        </p>
-                      )}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs sm:text-sm font-bold text-gray-900 truncate leading-snug">
+                        {item.name}
+                      </h4>
+                      <p className="text-[11px] text-gray-500 font-medium">
+                        {item.offer_label || (isBundle ? `Pack of ${item.quantity}` : `Qty ${item.quantity}`)} · Free delivery
+                      </p>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* STEP 1: CONTACT DETAILS (Matches Reference Photo 3) */}
-            <div className="space-y-3.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center shrink-0">
-                    1
-                  </span>
-                  <h2 className="text-lg sm:text-xl font-bold font-display text-gray-900">
-                    Contact details
-                  </h2>
-                </div>
-                {phone.length === 10 && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold shadow-2xs animate-in fade-in duration-200">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Verified</span>
-                  </span>
-                )}
-              </div>
-
-              <p className="text-xs text-gray-500 flex items-center gap-1.5 pl-8.5 -mt-1.5 font-medium">
-                <Lock className="w-3 h-3 text-gray-400" />
-                <span>Secure checkout · Track your order anytime</span>
-              </p>
-
-              <div className="space-y-2.5 pt-1">
-                <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                  MOBILE NUMBER *
-                </label>
-                <div className="flex rounded-xl border border-gray-200 overflow-hidden focus-within:border-[#FF7A00] focus-within:ring-1 focus-within:ring-[#FF7A00] transition-all bg-white shadow-2xs">
-                  {/* Flag & Country Code Selector Pill */}
-                  <div className="px-3 bg-gray-50 border-r border-gray-200 text-gray-800 font-semibold text-xs flex items-center gap-1.5 select-none shrink-0">
-                    <svg className="w-4 h-3 rounded-xs shrink-0 shadow-2xs border border-gray-200/50" viewBox="0 0 640 480">
-                      <path fill="#FF9933" d="M0 0h640v160H0z"/>
-                      <path fill="#FFFFFF" d="M0 160h640v160H0z"/>
-                      <path fill="#128807" d="M0 320h640v160H0z"/>
-                      <circle cx="320" cy="240" r="38" fill="none" stroke="#000088" strokeWidth="6"/>
-                      <circle cx="320" cy="240" r="8" fill="#000088"/>
-                    </svg>
-                    <span>+91</span>
-                    <ChevronDown className="w-3 h-3 text-gray-400" />
-                  </div>
-                  <input
-                    id="phone-input"
-                    type="tel"
-                    required
-                    maxLength={10}
-                    value={phone}
-                    onChange={(e) => setPhone(cleanPhoneDigits(e.target.value))}
-                    placeholder="97412 28540"
-                    className="w-full px-4 py-3 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none tracking-wide"
-                  />
-                </div>
-
-                {/* WhatsApp Notification Card (Matches Reference Photo 3) */}
-                <div className="p-3 rounded-xl bg-[#FFF8F0] border border-[#FFE7D1] flex items-start gap-2.5 shadow-2xs">
-                  <div className="w-5 h-5 rounded-full bg-[#25D366]/15 text-[#25D366] flex items-center justify-center shrink-0 mt-0.5">
-                    <svg className="w-3.5 h-3.5 fill-[#25D366]" viewBox="0 0 24 24">
-                      <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.299.144.347.491 1.2.534 1.287.043.087.072.188.014.303-.058.116-.087.188-.173.289l-.26.302c-.087.087-.179.18-.077.355.101.174.449.741.964 1.201.662.591 1.221.774 1.394.861.174.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.144.39-.086s1.011.477 1.184.564.289.13.332.202c.044.073.044.419-.1.824z" />
-                    </svg>
-                  </div>
-                  <p className="text-xs text-gray-700 leading-relaxed">
-                    We&apos;ll send your <span className="font-bold text-[#FF7A00]">order confirmation</span> and <span className="font-bold text-[#FF7A00]">delivery updates</span> to this number.
-                  </p>
-                </div>
-
-                <p className="text-[11px] text-gray-400 flex items-center gap-1.5 pl-1">
-                  <Lock className="w-3 h-3 text-gray-400 shrink-0" />
-                  <span>Your number is used only for your order updates.</span>
-                </p>
-              </div>
-            </div>
-
-            <hr className="border-gray-100" />
-
-            {/* STEP 2: DELIVERY DETAILS (Matches Reference Photo 3) */}
-            <div className="space-y-4 scroll-mt-20" id="delivery-details-section">
-              <div className="flex items-center justify-between flex-wrap gap-2.5">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center shrink-0">
-                    2
-                  </span>
-                  <div>
-                    <h2 className="text-lg sm:text-xl font-bold font-display text-gray-900 leading-tight">
-                      Delivery details
-                    </h2>
-                    <p className="text-[11px] text-gray-400 font-medium">
-                      Enter your delivery address
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 flex-wrap">
-                  {/* Auto-Fetch Current Location Button (Pill Design) */}
-                  <button
-                    type="button"
-                    onClick={handleFetchCurrentLocation}
-                    disabled={locationLoading}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-[#FF7A00] bg-orange-50/90 hover:bg-orange-100 border border-[#FF7A00]/30 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
-                    title="Auto-fetch address using GPS current location"
-                  >
-                    {locationLoading ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FF7A00]" />
-                        <span>Detecting Location...</span>
-                      </>
-                    ) : (
-                      <>
-                        <LocateFixed className="w-3.5 h-3.5 text-[#FF7A00]" />
-                        <span>Use current location</span>
-                      </>
-                    )}
-                  </button>
-
-                  {savedAddresses.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleUseNewAddress}
-                      className="text-xs font-bold text-[#FF7A00] hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>{isUsingNewAddress ? "Entering New Address" : "Use New Address"}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Location Status Feedback Banner */}
-              {locationSuccessMsg && (
-                <div className="flex items-center justify-between gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold animate-in fade-in duration-200">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>{locationSuccessMsg}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setLocationSuccessMsg(null)}
-                    className="text-xs text-emerald-700 hover:text-emerald-900 font-bold p-0.5 cursor-pointer"
-                    aria-label="Dismiss notice"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
-
-              {/* Approximate Location Notice (Laptop / Wi-Fi Alert) */}
-              {locationAccuracyNotice && (
-                <div className="flex items-start justify-between gap-2.5 p-3.5 bg-amber-50 border border-amber-200/80 rounded-xl text-amber-900 text-xs leading-relaxed animate-in fade-in duration-200">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-bold text-amber-900">Approximate Network Location</p>
-                      <p className="text-amber-800 text-[11px] mt-0.5">{locationAccuracyNotice}</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setLocationAccuracyNotice(null)}
-                    className="text-amber-700 hover:text-amber-900 text-xs font-bold p-0.5 cursor-pointer"
-                    aria-label="Dismiss notice"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
-
-              {locationError && (
-                <div className="flex items-center justify-between gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-medium animate-in fade-in duration-200">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
-                    <span>{locationError}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setLocationError(null)}
-                    className="text-xs text-rose-700 hover:text-rose-900 font-bold p-0.5 cursor-pointer"
-                    aria-label="Dismiss notice"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
-
-              {/* India Post Detected Localities Chips */}
-              {detectedPostOffices.length > 0 && (
-                <div className="p-3 bg-orange-50/70 border border-orange-200/80 rounded-xl space-y-1.5 animate-in fade-in duration-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-gray-800 flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-[#FF7A00]" />
-                      Select your locality / post office in {postalCode || city}:
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setDetectedPostOffices([])}
-                      className="text-[10px] text-gray-400 hover:text-gray-600 font-semibold cursor-pointer"
-                    >
-                      Dismiss
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 pt-0.5">
-                    {detectedPostOffices.slice(0, 6).map((poName) => (
-                      <button
-                        key={poName}
-                        type="button"
-                        onClick={() => {
-                          if (!address.toLowerCase().includes(poName.toLowerCase())) {
-                            setAddress((prev) => (prev ? `${prev}, ${poName}` : poName));
-                          }
-                        }}
-                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-orange-200 text-gray-800 hover:border-[#FF7A00] hover:text-[#FF7A00] transition-colors shadow-2xs cursor-pointer flex items-center gap-1"
-                      >
-                        <span>+ {poName}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Saved Delivery Addresses Selection Cards */}
-              {savedAddresses.length > 0 && !isUsingNewAddress && (
-                <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-200/80 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-[#FF7A00]" />
-                      Saved Addresses ({savedAddresses.length})
-                    </p>
-                    {savedAddresses.length > 3 && (
-                      <span className="text-[10px] font-medium text-gray-500">
-                        {isAddressesExpanded ? (
-                          `All ${savedAddresses.length} shown`
-                        ) : (
-                          <>
-                            <span className="sm:hidden">Showing 3 of {savedAddresses.length}</span>
-                            <span className="hidden sm:inline">
-                              {savedAddresses.length > 4 ? `Showing 4 of ${savedAddresses.length}` : `All 4 shown`}
-                            </span>
-                          </>
-                        )}
+                    <div className="text-right shrink-0">
+                      <span className="block text-sm font-black text-gray-950">
+                        ₹{itemTotal.toLocaleString()}
                       </span>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {savedAddresses.map((addr, idx) => {
-                      const isSelected = selectedAddressId === addr.id;
-                      const isFirst = idx === 0;
-
-                      // Display logic:
-                      // - Mobile (< sm): show first 3 addresses.
-                      // - Desktop (>= sm): show first 4 addresses.
-                      // If not expanded:
-                      //   - idx 3 is hidden on mobile, visible on desktop (hidden sm:block)
-                      //   - idx >= 4 is hidden on both (unless currently selected)
-                      let visibilityClass = "block";
-                      if (!isAddressesExpanded) {
-                        if (idx === 3) {
-                          visibilityClass = "hidden sm:block";
-                        } else if (idx >= 4) {
-                          visibilityClass = isSelected ? "block" : "hidden";
-                        }
-                      }
-
-                      return (
-                        <div
-                          key={addr.id}
-                          onClick={() => handleSelectSavedAddress(addr)}
-                          className={`${visibilityClass} p-3 rounded-xl border text-left cursor-pointer transition-all ${
-                            isSelected
-                              ? "border-[#FF7A00] bg-orange-50/50 ring-1 ring-[#FF7A00]"
-                              : "border-gray-200 bg-white hover:border-gray-300"
-                          }`}
-                        >
-                          <div className="flex items-start justify-between gap-1 mb-1">
-                            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                              <span className="font-bold text-xs text-gray-900 truncate">
-                                {addr.recipient_name || "Delivery Address"}
-                              </span>
-                              {isFirst && (
-                                <span className="text-[9px] font-bold uppercase tracking-wider text-[#FF7A00] bg-orange-100/90 px-1.5 py-0.5 rounded-md leading-none shrink-0">
-                                  Latest Used
-                                </span>
-                              )}
-                            </div>
-                            <button
-                              type="button"
-                              onClick={(e) => handleDeleteSavedAddress(e, addr.id)}
-                              className="text-gray-400 hover:text-red-500 p-0.5 cursor-pointer transition-colors shrink-0"
-                              title="Delete address"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                          <p className="text-[11px] text-gray-600 line-clamp-2">
-                            {addr.street}, {addr.city} - {addr.postal_code}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Expand / Collapse "Show More" Button */}
-                  {savedAddresses.length > 3 && (
-                    <button
-                      type="button"
-                      onClick={() => setIsAddressesExpanded((prev) => !prev)}
-                      className={`w-full py-2 px-3 rounded-xl border border-gray-200 bg-white hover:bg-orange-50/40 hover:border-orange-200 text-xs font-semibold text-gray-700 hover:text-[#FF7A00] transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
-                        savedAddresses.length === 4 && !isAddressesExpanded ? "sm:hidden" : ""
-                      }`}
-                    >
-                      {isAddressesExpanded ? (
-                        <>
-                          <span>Show less</span>
-                          <ChevronUp className="w-3.5 h-3.5 text-[#FF7A00]" />
-                        </>
-                      ) : (
-                        <>
-                          <span className="sm:hidden">
-                            Show more ({savedAddresses.length - 3})
-                          </span>
-                          <span className="hidden sm:inline">
-                            {savedAddresses.length > 4 ? `Show more (${savedAddresses.length - 4})` : "Show more"}
-                          </span>
-                          <ChevronDown className="w-3.5 h-3.5 text-[#FF7A00]" />
-                        </>
+                      {itemRegularTotal > itemTotal && (
+                        <span className="block text-xs text-gray-400 line-through">
+                          ₹{itemRegularTotal.toLocaleString()}
+                        </span>
                       )}
-                    </button>
-                  )}
-                </div>
-              )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
-              {/* Full Name */}
-              <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                  Full name *
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    id="name-input"
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Rahul Sharma"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white shadow-2xs"
-                  />
-                </div>
-                {name.trim().length >= 2 && (
-                  <p className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1 pl-1 pt-0.5">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                    <span>Looks good!</span>
-                  </p>
-                )}
+            {/* Savings highlight bar */}
+            {totalSavings > 0 && (
+              <div className="flex items-center justify-between px-3.5 py-2 bg-emerald-50 text-emerald-800 text-xs font-bold border-t border-emerald-100">
+                <span>You save</span>
+                <span>₹{totalSavings.toLocaleString()}</span>
               </div>
+            )}
 
-              {/* Email Address */}
-              <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                  Email address <span className="text-gray-400 font-normal lowercase">(optional)</span>
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    id="email-input"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email address"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white shadow-2xs"
-                  />
-                </div>
-                <p className="text-[11px] text-gray-400 pl-1">
-                  Get order updates, offers and deals.
-                </p>
-              </div>
-
-              {/* WhatsApp & Email Marketing Consent Checkbox */}
-              <label className="flex items-start gap-2.5 cursor-pointer text-xs text-gray-600 leading-snug select-none pt-0.5">
+            {/* Interactive Promo Code Input */}
+            <div className="p-3 border-t border-gray-100 bg-gray-50/50 space-y-2">
+              <div className="flex gap-2">
                 <input
-                  type="checkbox"
-                  checked={marketingConsent}
-                  onChange={(e) => setMarketingConsent(e.target.checked)}
-                  className="mt-0.5 rounded border-gray-300 text-[#FF7A00] focus:ring-[#FF7A00] w-4 h-4 cursor-pointer"
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleApplyPromo();
+                    }
+                  }}
+                  placeholder="PROMO CODE"
+                  className="flex-1 min-w-0 px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs font-bold uppercase tracking-wider focus:outline-none focus:border-[#FF7A00]"
                 />
-                <span>
-                  Keep me in the loop — shipping updates on WhatsApp and the occasional deal by email. You can opt out anytime.
-                </span>
-              </label>
-
-              {/* Complete Address */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                    Complete address *
-                  </label>
-                  <span className="text-[11px] text-gray-400">
-                    {address.length} / 200
-                  </span>
-                </div>
-                <div className="relative">
-                  <MapPin className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
-                  <textarea
-                    id="address-input"
-                    required
-                    maxLength={200}
-                    rows={3}
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="House number, street, area, landmark (e.g. Near bus stand)"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white resize-none shadow-2xs leading-relaxed"
-                  />
-                </div>
+                <button
+                  type="button"
+                  onClick={handleApplyPromo}
+                  disabled={promoLoading}
+                  className="px-4 py-2 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-bold transition cursor-pointer disabled:opacity-50"
+                >
+                  {promoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Apply"}
+                </button>
               </div>
 
-              {/* 2-Column: Pincode (Auto-detects area) & City */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                      Pincode *
-                    </label>
-                    {pincodeLoading && (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FF7A00]" />
-                    )}
-                    {pincodeDetected && (
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold flex items-center gap-1 shrink-0">
-                        <Check className="w-3 h-3" /> Serviceable
-                      </span>
-                    )}
-                  </div>
-                  <div className="relative">
-                    <MapPin className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <input
-                      id="pincode-input"
-                      type="text"
-                      inputMode="numeric"
-                      required
-                      maxLength={6}
-                      value={postalCode}
-                      onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                      placeholder="682001"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white shadow-2xs"
-                    />
-                  </div>
-                  <p className="text-[11px] text-gray-400 pl-1">
-                    We&apos;ll check delivery availability for this area.
-                  </p>
-                </div>
+              {promoError && (
+                <p className="text-[11px] text-rose-600 font-semibold">{promoError}</p>
+              )}
+              {promoSuccess && (
+                <p className="text-[11px] text-emerald-700 font-semibold">{promoSuccess}</p>
+              )}
 
-                <div className="space-y-1">
-                  <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                    City *
-                  </label>
-                  <div className="relative">
-                    <Building2 className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <input
-                      id="city-input"
-                      type="text"
-                      required
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      onBlur={(e) => setCity(cleanCityName(e.target.value, state))}
-                      placeholder="Kochi"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white shadow-2xs"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* State */}
-              <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                  State *
-                </label>
-                <div className="relative">
-                  <Building2 className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    id="state-input"
-                    type="text"
-                    required
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                    placeholder="Kerala"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#FF7A00] focus:ring-1 focus:ring-[#FF7A00] transition-all bg-white shadow-2xs"
-                  />
-                </div>
-              </div>
-
-              {/* 3 Mini Trust Badges (Matches Reference Photo 3) */}
-              <div className="grid grid-cols-3 gap-2 pt-2 text-center text-xs text-gray-500 font-medium">
-                <div className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span className="text-[11px] font-bold text-gray-800">Easy Return</span>
-                  <span className="text-[10px] text-gray-400">Hassle-free</span>
-                </div>
-                <div className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                  <Truck className="w-4 h-4 text-[#FF7A00]" />
-                  <span className="text-[11px] font-bold text-gray-800">Fast Delivery</span>
-                  <span className="text-[10px] text-gray-400">Across India</span>
-                </div>
-                <div className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                  <Phone className="w-4 h-4 text-blue-600" />
-                  <span className="text-[11px] font-bold text-gray-800">24/7 Support</span>
-                  <span className="text-[10px] text-gray-400">We&apos;re here</span>
-                </div>
-              </div>
-
-              {/* STEP 2 BOTTOM: CONTINUE TO PAYMENT BUTTON (Visible before payment step) */}
-              {checkoutStep === "details" && (
-                <div className="pt-2 space-y-3">
+              {appliedPromo && (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100/90 border border-emerald-300 text-emerald-800 text-[11px] font-bold">
+                  <Tag className="w-3 h-3 text-emerald-700" />
+                  <span>{appliedPromo} applied: −₹{promoDiscount}</span>
                   <button
                     type="button"
-                    onClick={handleContinueToPayment}
-                    className="w-full py-4 px-6 rounded-2xl bg-[#097939] hover:bg-[#076630] text-white font-bold text-base shadow-lg shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+                    onClick={handleRemovePromo}
+                    className="w-4 h-4 rounded-full bg-white text-gray-500 hover:text-gray-800 flex items-center justify-center ml-1 cursor-pointer"
+                    aria-label="Remove coupon"
                   >
-                    <span>Continue to Payment</span>
-                    <ArrowRight className="w-5 h-5" />
+                    <X className="w-3 h-3" />
                   </button>
-                  <p className="text-center text-xs text-gray-500 font-medium">
-                    Pick how you want to pay on the next step
-                  </p>
-
-                  {/* Trust Badges below Continue button (Matches Reference Photo 3) */}
-                  <div className="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-1">
-                      <ShieldCheck className="w-4 h-4 text-gray-600" />
-                      <span className="text-[10px] font-bold text-gray-700">PCI DSS Certified</span>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-1">
-                      <Lock className="w-4 h-4 text-gray-600" />
-                      <span className="text-[10px] font-bold text-gray-700">Secure Payments</span>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-1">
-                      <Truck className="w-4 h-4 text-gray-600" />
-                      <span className="text-[10px] font-bold text-gray-700">Assured Delivery</span>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-1">
-                      <CheckCircle2 className="w-4 h-4 text-gray-600" />
-                      <span className="text-[10px] font-bold text-gray-700">Verified Seller</span>
-                    </div>
-                  </div>
                 </div>
               )}
-
-              {/* STEP 3: PAYMENT METHOD (Revealed when Continue to Payment is clicked) */}
-              {checkoutStep === "payment" && (
-                <div id="payment-method-section" className="pt-3 space-y-4 animate-in fade-in duration-300">
-                  {/* Confirmed Delivery Details Summary Strip with Edit Button */}
-                  <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center justify-between text-xs">
-                    <div className="min-w-0 pr-2">
-                      <p className="font-bold text-gray-900 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        <span className="truncate">Deliver to: {name} ({phone})</span>
-                      </p>
-                      <p className="text-gray-500 text-[11px] mt-0.5 truncate">
-                        {address}, {city}, {state} - {postalCode}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCheckoutStep("details");
-                        const el = document.getElementById("name-input");
-                        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-                      }}
-                      className="text-[#FF7A00] hover:text-[#E66E00] font-bold text-xs hover:underline cursor-pointer shrink-0 ml-2"
-                    >
-                      Edit Address
-                    </button>
-                  </div>
-
-                  {/* Section 3 Header (Matches Reference Photos 2 & 4) */}
-                  <div className="flex items-center justify-between pb-1">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center shrink-0">
-                        3
-                      </span>
-                      <div>
-                        <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
-                          Choose how to pay
-                        </h3>
-                        <p className="text-xs text-emerald-600 font-semibold mt-0.5">
-                          Pay online &amp; save ₹{codFee}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-right text-gray-500">
-                      <Lock className="w-4 h-4 text-gray-600 shrink-0" />
-                      <div>
-                        <p className="text-[11px] font-bold text-gray-800 leading-tight">100% Secure Payments</p>
-                        <p className="text-[10px] text-gray-400 leading-tight">Powered by Razorpay</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Payment Method Cards */}
-                  <div className="space-y-3">
-                    {/* CARD 1: Pay Online (Prepaid) */}
-                    <div
-                      id="payment-prepaid-card"
-                      onClick={() => setPaymentMethod("prepaid")}
-                      className={`relative p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all ${
-                        paymentMethod === "prepaid"
-                          ? "border-[#FF7A00] bg-[#FFFBF8] shadow-sm ring-1 ring-[#FF7A00]/20"
-                          : "border-gray-200 bg-white hover:border-[#FF7A00]/40"
-                      }`}
-                    >
-                      {/* Top Row: Radio + Icon + Title + (Recommended Badge) + Chevron */}
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white transition-colors ${
-                              paymentMethod === "prepaid" ? "border-[#FF7A00]" : "border-gray-300"
-                            }`}
-                          >
-                            {paymentMethod === "prepaid" && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-[#FF7A00]" />
-                            )}
-                          </div>
-
-                          <div className="w-10 h-10 rounded-xl bg-orange-100/60 border border-orange-200/50 flex items-center justify-center text-[#FF7A00] shrink-0">
-                            <CreditCard className="w-5 h-5" />
-                          </div>
-
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
-                                PAY ONLINE (PREPAID)
-                              </h4>
-                              {paymentMethod === "prepaid" && (
-                                <span className="px-2 py-0.5 rounded-full bg-[#FF7A00] text-white text-[10px] font-extrabold uppercase tracking-wider shadow-2xs">
-                                  RECOMMENDED
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-xs text-gray-500 mt-0.5 truncate">UPI, Cards or Net Banking</p>
-                          </div>
-                        </div>
-
-                        <ChevronDown
-                          className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${
-                            paymentMethod === "prepaid" ? "rotate-180" : ""
-                          }`}
-                        />
-                      </div>
-
-                      {/* Expandable Content for Prepaid */}
-                      <AnimatePresence initial={false}>
-                        {paymentMethod === "prepaid" && (
-                          <motion.div
-                            key="prepaid-expanded"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.22, ease: "easeInOut" }}
-                            className="overflow-hidden"
-                          >
-                            {/* Pay Now Amount + Free Express Shipping Row */}
-                            <div className="flex items-center justify-between pt-3.5 mt-3.5 border-t border-gray-100">
-                              <div>
-                                <p className="text-[11px] text-gray-500 font-medium">Pay now</p>
-                                <p className="text-lg sm:text-xl font-black text-gray-950">₹{payablePrepaid.toLocaleString()}</p>
-                              </div>
-                              <div className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-1.5">
-                                <Truck className="w-3.5 h-3.5 text-emerald-600" />
-                                <span>FREE Express Shipping</span>
-                              </div>
-                            </div>
-
-                            {/* Payment Logos Row */}
-                            <div className="flex flex-wrap items-center gap-2.5 pt-3 mt-3 border-t border-gray-100">
-                              {/* UPI */}
-                              <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
-                                <span className="font-black italic text-xs tracking-tighter text-[#2E3192]">UPI</span>
-                                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                                  <path d="M14 4L7 12H13L10 20L17 12H11L14 4Z" fill="#097939" />
-                                </svg>
-                              </div>
-
-                              {/* VISA */}
-                              <span className="font-black italic text-xs tracking-wider text-[#1A1F71] font-sans px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
-                                VISA
-                              </span>
-
-                              {/* Mastercard */}
-                              <div className="flex items-center px-2 py-1 rounded bg-white border border-gray-200 shadow-2xs">
-                                <div className="w-3.5 h-3.5 rounded-full bg-[#EB001B] opacity-90" />
-                                <div className="w-3.5 h-3.5 rounded-full bg-[#F79E1B] -ml-1.5 mix-blend-multiply opacity-90" />
-                              </div>
-
-                              {/* RuPay */}
-                              <div className="flex items-center px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
-                                <span className="font-black text-xs tracking-tight text-[#002D62]">Ru</span>
-                                <span className="font-black text-xs tracking-tight text-[#00A4E4]">Pay</span>
-                                <span className="w-1 h-3 bg-gradient-to-b from-[#00A4E4] to-[#F15A24] -skew-x-12 ml-0.5" />
-                              </div>
-
-                              {/* Net Banking */}
-                              <div className="flex items-center gap-1 text-[11px] font-semibold text-gray-700 px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
-                                <Building2 className="w-3.5 h-3.5 text-gray-600" />
-                                <span>Net Banking</span>
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* CARD 2: Cash on Delivery */}
-                    <div
-                      id="payment-cod-card"
-                      onClick={() => setPaymentMethod("cod")}
-                      className={`relative p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all ${
-                        paymentMethod === "cod"
-                          ? "border-[#FF7A00] bg-[#FFFBF8] shadow-sm ring-1 ring-[#FF7A00]/20"
-                          : "border-gray-200 bg-white hover:border-gray-300"
-                      }`}
-                    >
-                      {/* Top Row: Radio + Icon + Title + Chevron */}
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white transition-colors ${
-                              paymentMethod === "cod" ? "border-[#FF7A00]" : "border-gray-300"
-                            }`}
-                          >
-                            {paymentMethod === "cod" && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-[#FF7A00]" />
-                            )}
-                          </div>
-
-                          <div className="w-10 h-10 rounded-xl bg-orange-100/60 border border-orange-200/50 flex items-center justify-center text-[#FF7A00] shrink-0">
-                            <Package className="w-5 h-5" />
-                          </div>
-
-                          <div className="min-w-0">
-                            <h4 className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
-                              Cash on Delivery
-                            </h4>
-                            <p className="text-xs font-semibold text-gray-700 mt-0.5">
-                              Pay ₹{codFee} COD fee now · ₹{cartTotal.toLocaleString()} at delivery
-                            </p>
-                            <p className="text-[11px] text-gray-400 mt-0.5 leading-snug">
-                              COD fee refunded if you cancel before dispatch. Not refundable if the parcel is refused at delivery.
-                            </p>
-                          </div>
-                        </div>
-
-                        <ChevronDown
-                          className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${
-                            paymentMethod === "cod" ? "rotate-180" : ""
-                          }`}
-                        />
-                      </div>
-
-                      {/* Expandable Content for COD */}
-                      <AnimatePresence initial={false}>
-                        {paymentMethod === "cod" && (
-                          <motion.div
-                            key="cod-expanded"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.22, ease: "easeInOut" }}
-                            className="overflow-hidden"
-                          >
-                            {/* Inner White Breakdown Card */}
-                            <div className="mt-3.5 p-3.5 sm:p-4 rounded-xl bg-white border border-gray-100 space-y-2.5">
-                              {/* Row 1: Item total */}
-                              <div className="flex items-center justify-between text-sm">
-                                <div className="flex items-center gap-2.5 text-gray-700">
-                                  <CreditCard className="w-4 h-4 text-gray-400 shrink-0" />
-                                  <span className="font-medium text-gray-800">Item total</span>
-                                </div>
-                                <span className="font-bold text-gray-900">₹{cartTotal.toLocaleString()}</span>
-                              </div>
-
-                              {/* Row 2: COD fee (pay now) */}
-                              <div className="flex items-center justify-between text-sm">
-                                <div className="flex items-center gap-2.5 text-gray-700">
-                                  <Truck className="w-4 h-4 text-gray-400 shrink-0" />
-                                  <span className="font-medium text-gray-800">COD fee (pay now)</span>
-                                </div>
-                                <span className="font-bold text-[#FF7A00]">
-                                  ₹{codFee}
-                                </span>
-                              </div>
-
-                              {/* Divider + Pay at delivery */}
-                              <div className="pt-2.5 border-t border-gray-100 flex items-center justify-between">
-                                <span className="font-bold text-gray-900 text-sm sm:text-base">Pay at delivery</span>
-                                <span className="font-black text-base sm:text-lg text-[#FF7A00]">₹{cartTotal.toLocaleString()}</span>
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* OFFER NUDGE: SWITCH TO UPI & SAVE */}
-                    {paymentMethod === "cod" && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="p-4 sm:p-5 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] space-y-3.5 mt-3 shadow-xs"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center shrink-0">
-                            <Sparkles className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <h4 className="text-sm sm:text-base font-extrabold text-emerald-950 leading-tight">
-                              Save ₹{codFee} with online payment
-                            </h4>
-                            <p className="text-[11px] text-emerald-800">
-                              Get free shipping &amp; express dispatch
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1.5 text-xs text-emerald-900 font-semibold pl-1">
-                          <div className="flex items-center gap-2">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                            <span>Free Express Shipping</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                            <span>No COD handling fee <span className="text-emerald-700 font-bold">(-₹{codFee})</span></span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                            <span>Instant order confirmation &amp; faster dispatch</span>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPaymentMethod("prepaid");
-                            const el = document.getElementById("payment-prepaid-card");
-                            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-                          }}
-                          className="w-full py-3.5 px-4 rounded-xl bg-[#111111] hover:bg-black text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] cursor-pointer"
-                        >
-                          <Smartphone className="w-4 h-4 text-white" />
-                          <span>Switch to UPI &amp; Save ₹{codFee}</span>
-                          <ArrowRight className="w-4 h-4 text-white" />
-                        </button>
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* MOBILE ORDER SUMMARY (Placed right before Pay Button) */}
-                  <div className="block lg:hidden rounded-2xl border border-gray-200 bg-white p-4 space-y-4 shadow-xs mt-4">
-                    {/* Header */}
-                    <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                      <h3 className="text-base font-bold text-gray-900">Order Summary</h3>
-                      <span className="text-xs text-gray-500 font-medium">
-                        {totalItemCount} {totalItemCount === 1 ? "item" : "items"} in your cart
-                      </span>
-                    </div>
-
-                    {/* Cart Products List */}
-                    <div className="space-y-3">
-                      {cart.map((item) => {
-                        const itemTotal = (item.bundle_tier && item.bundle_tier > 1 && item.bundle_total)
-                          ? item.bundle_total
-                          : item.price * item.quantity;
-                        const itemBaseUnit = item.original_price || item.price;
-                        const itemRegularTotal = itemBaseUnit * item.quantity;
-                        const isBundle = Boolean(item.bundle_tier && item.bundle_tier > 1);
-
-                        return (
-                          <div key={item.id} className="flex items-center gap-3">
-                            <div className="relative w-14 h-14 rounded-xl bg-gray-50 border border-gray-200 shrink-0 overflow-hidden">
-                              <Image src={item.poster_image} alt={item.name} fill className="object-cover" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-semibold text-gray-900 truncate">{item.name}</p>
-                              <p className="text-xs text-gray-500 mt-0.5">
-                                Qty: {item.quantity} × ₹{item.price.toLocaleString()}
-                              </p>
-                              {isBundle && (
-                                <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-orange-50 text-[#FF5722] border border-orange-200">
-                                  <Sparkles className="w-2.5 h-2.5 text-[#FF5722]" />
-                                  <span>{item.offer_label || `Buy ${item.quantity} Save More`}</span>
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-right shrink-0">
-                              {isBundle && itemRegularTotal > itemTotal && (
-                                <span className="text-[10px] text-gray-400 line-through block">
-                                  ₹{itemRegularTotal.toLocaleString()}
-                                </span>
-                              )}
-                              <span className="text-sm font-bold text-gray-900 block">
-                                ₹{itemTotal.toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Breakdown Rows */}
-                    <div className="pt-2 border-t border-gray-100 space-y-2 text-xs">
-                      <div className="flex justify-between text-gray-600">
-                        <span>Item Total</span>
-                        <span className="font-semibold text-gray-900">
-                          ₹{(bundleSavings > 0 ? regularSubtotal : subtotal).toLocaleString()}
-                        </span>
-                      </div>
-                      {bundleSavings > 0 && (
-                        <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
-                          <span className="flex items-center gap-1 font-bold">
-                            <Sparkles className="w-3 h-3 text-emerald-600" />
-                            <span>Buy More Save More Savings</span>
-                          </span>
-                          <span className="font-extrabold">-₹{bundleSavings.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {promoDiscount > 0 && (
-                        <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
-                          <span className="flex items-center gap-1 font-bold">
-                            <Tag className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Promo Discount ({appliedPromo})</span>
-                          </span>
-                          <span className="font-extrabold">-₹{promoDiscount.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {paymentMethod === "cod" ? (
-                        <>
-                          <div className="flex justify-between text-gray-600">
-                            <span className="flex items-center gap-1.5">
-                              COD fee (pay now) <Truck className="w-3.5 h-3.5 text-gray-400" />
-                            </span>
-                            <span className="font-bold text-[#FF7A00]">₹{codFee}</span>
-                          </div>
-                          <div className="flex justify-between text-gray-900 font-bold border-t border-dashed border-gray-200 pt-2 text-sm">
-                            <span>Pay at delivery:</span>
-                            <span className="font-extrabold text-[#FF7A00]">₹{doorstepBalance.toLocaleString()}</span>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="flex justify-between text-gray-600">
-                          <span className="flex items-center gap-1.5">
-                            Shipping Fee <Truck className="w-3.5 h-3.5 text-gray-400" />
-                          </span>
-                          <span className="font-bold text-emerald-600">FREE</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Total Payable Box */}
-                    <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100/90 flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-bold text-gray-900">
-                          {paymentMethod === "cod" ? "Pay Online Now (COD Fee)" : "Total Payable (Prepaid)"}
-                        </p>
-                        {paymentMethod === "cod" && (
-                          <p className="text-[11px] text-amber-700 font-medium">
-                            ₹{doorstepBalance.toLocaleString()} to pay in cash/UPI on delivery
-                          </p>
-                        )}
-                      </div>
-                      <span className="text-xl font-black text-gray-950">
-                        ₹{payableNow.toLocaleString()}
-                      </span>
-                    </div>
-
-                    {/* Savings Pill */}
-                    {paymentMethod === "prepaid" ? (
-                      <div className="p-2.5 rounded-xl bg-emerald-50/90 text-emerald-700 text-xs font-semibold flex items-center gap-2">
-                        <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">
-                          ₹
-                        </div>
-                        <span>You save ₹{codFee} by paying online!</span>
-                      </div>
-                    ) : (
-                      <div className="p-2.5 rounded-xl bg-amber-50/90 text-amber-800 text-xs font-semibold flex items-center gap-2">
-                        <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0 text-xs font-bold">
-                          ₹
-                        </div>
-                        <span>Pay ₹{codFee} COD fee now &amp; remaining ₹{doorstepBalance.toLocaleString()} at delivery!</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* ACTION BUTTON (Matches Reference) */}
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      disabled={loading || hasOutOfStockItems}
-                      className={`w-full py-4 px-6 rounded-2xl text-white font-bold text-base shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                        loading || hasOutOfStockItems
-                          ? "bg-gray-400 cursor-not-allowed opacity-80"
-                          : paymentMethod === "cod"
-                          ? "bg-[#097939] hover:bg-[#076630] shadow-emerald-700/25 active:scale-[0.99]"
-                          : "bg-[#FF7A00] hover:bg-[#E66E00] shadow-[#FF7A00]/25 active:scale-[0.99]"
-                      }`}
-                    >
-                      {loading ? (
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          <span>Processing Order...</span>
-                        </div>
-                      ) : hasOutOfStockItems ? (
-                        <span className="flex items-center gap-1.5 justify-center">
-                          <AlertCircle className="w-4 h-4 text-amber-300" />
-                          <span>Remove Out of Stock Items to Continue</span>
-                        </span>
-                      ) : paymentMethod === "cod" ? (
-                        <>
-                          <Lock className="w-5 h-5" />
-                          <span>Pay ₹{codFee} &amp; Place COD Order</span>
-                          <ArrowRight className="w-5 h-5" />
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="w-5 h-5" />
-                          <span>Pay ₹{payableNow.toLocaleString()} Securely &amp; Place Order</span>
-                          <ArrowRight className="w-5 h-5" />
-                        </>
-                      )}
-                    </button>
-                    {paymentMethod === "cod" && (
-                      <p className="text-center text-[11px] text-gray-500 mt-2">
-                        Pay ₹{codFee} online now · Pay remaining ₹{doorstepBalance.toLocaleString()} in cash or UPI at delivery
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Trust Badges below Pay Button (Optimized: 3 in 1 row on Mobile!) */}
-                  <div className="pt-3 grid grid-cols-3 gap-1.5 sm:gap-3 text-center">
-                    <div className="flex flex-col items-center p-2 rounded-xl bg-gray-50/70 border border-gray-100 shadow-2xs">
-                      <div className="w-7 h-7 rounded-full bg-white shadow-2xs border border-gray-100 flex items-center justify-center text-[#FF7A00] shrink-0 mb-1 mx-auto">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                      </div>
-                      <p className="text-[10px] sm:text-xs font-bold text-gray-900 leading-tight">256-Bit SSL</p>
-                      <p className="text-[8.5px] sm:text-[10px] text-gray-400 leading-tight mt-0.5">Encrypted</p>
-                    </div>
-
-                    <div className="flex flex-col items-center p-2 rounded-xl bg-gray-50/70 border border-gray-100 shadow-2xs">
-                      <div className="w-7 h-7 rounded-full bg-white shadow-2xs border border-gray-100 flex items-center justify-center text-emerald-600 shrink-0 mb-1 mx-auto">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                      </div>
-                      <p className="text-[10px] sm:text-xs font-bold text-gray-900 leading-tight">Razorpay</p>
-                      <p className="text-[8.5px] sm:text-[10px] text-gray-400 leading-tight mt-0.5">Secure Pay</p>
-                    </div>
-
-                    <div className="flex flex-col items-center p-2 rounded-xl bg-gray-50/70 border border-gray-100 shadow-2xs">
-                      <div className="w-7 h-7 rounded-full bg-white shadow-2xs border border-gray-100 flex items-center justify-center text-blue-600 shrink-0 mb-1 mx-auto">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                      </div>
-                      <p className="text-[10px] sm:text-xs font-bold text-gray-900 leading-tight">100% Protected</p>
-                      <p className="text-[8.5px] sm:text-[10px] text-gray-400 leading-tight mt-0.5">Purchase Safe</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Policy Redirection Links & Copyright (Matches Reference) */}
-              <div className="pt-4 border-t border-gray-100 mt-2 space-y-2 text-center">
-                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-gray-500 font-medium">
-                  <Link
-                    href="/return"
-                    target="_blank"
-                    className="hover:text-gray-900 transition-colors underline-offset-2 hover:underline"
-                  >
-                    Return &amp; Refund Policy
-                  </Link>
-                  <span className="text-gray-300">|</span>
-                  <Link
-                    href="/shipping-and-delivery"
-                    target="_blank"
-                    className="hover:text-gray-900 transition-colors underline-offset-2 hover:underline"
-                  >
-                    Shipping &amp; Delivery
-                  </Link>
-                  <span className="text-gray-300">|</span>
-                  <Link
-                    href="/privacy"
-                    target="_blank"
-                    className="hover:text-gray-900 transition-colors underline-offset-2 hover:underline"
-                  >
-                    Privacy Policy
-                  </Link>
-                  <span className="text-gray-300">|</span>
-                  <Link
-                    href="/terms-and-conditions"
-                    target="_blank"
-                    className="hover:text-gray-900 transition-colors underline-offset-2 hover:underline"
-                  >
-                    Terms &amp; Conditions
-                  </Link>
-                </div>
-                <p className="text-xs text-gray-400">© 2026 Zupe Store</p>
-              </div>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: DESKTOP ORDER SUMMARY */}
-          <div className="hidden lg:block lg:col-span-5">
-            <div className="sticky top-6 p-6 rounded-2xl bg-white border border-gray-100 shadow-xs space-y-5">
-              <h3 className="font-bold font-display text-lg text-gray-900">
-                Order Summary
-              </h3>
+          {/* CARD 2: DELIVERY DETAILS */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 space-y-3.5 shadow-2xs">
+            <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-wider text-gray-700">
+              <span className="flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-[#FF7A00]" />
+                <span>Delivery details</span>
+              </span>
+            </div>
 
-              {/* Cart Items List */}
-              <div className="space-y-3.5">
-                {cart.map((item) => {
-                  const itemTotal = (item.bundle_tier && item.bundle_tier > 1 && item.bundle_total)
-                    ? item.bundle_total
-                    : item.price * item.quantity;
-                  const itemBaseUnit = item.original_price || item.price;
-                  const itemRegularTotal = itemBaseUnit * item.quantity;
-                  const isBundle = Boolean(item.bundle_tier && item.bundle_tier > 1);
-                  const itemMrp = item.mrp || Math.round(itemBaseUnit * 1.25);
+            {/* GPS Location button */}
+            <button
+              type="button"
+              onClick={handleFetchCurrentLocation}
+              disabled={locationLoading}
+              className="w-full py-2.5 px-3 rounded-xl border border-orange-200 bg-orange-50/70 hover:bg-orange-100/60 text-[#FF7A00] font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer disabled:opacity-50"
+            >
+              {locationLoading ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Detecting GPS location...</span>
+                </>
+              ) : (
+                <>
+                  <LocateFixed className="w-3.5 h-3.5" />
+                  <span>Use my current location</span>
+                </>
+              )}
+            </button>
 
-                  return (
-                    <div key={item.id} className="flex items-center gap-3">
-                      <div className="relative w-16 h-16 rounded-xl bg-gray-50 border border-gray-200 shrink-0">
-                        <Image
-                          src={item.poster_image}
-                          alt={item.name}
-                          fill
-                          className="object-cover rounded-xl"
-                        />
-                        {/* Black circle quantity badge on top-right */}
-                        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#111111] text-white text-[10px] font-bold flex items-center justify-center">
-                          {item.quantity}
-                        </div>
-                      </div>
+            {locationSuccessMsg && (
+              <p className="text-xs text-emerald-700 font-semibold bg-emerald-50 border border-emerald-200 p-2 rounded-lg">
+                {locationSuccessMsg}
+              </p>
+            )}
+            {locationError && (
+              <p className="text-xs text-rose-600 font-medium flex items-center gap-1 bg-rose-50 border border-rose-200 p-2 rounded-lg">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{locationError}</span>
+              </p>
+            )}
 
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-xs text-gray-900 truncate">
-                          {item.name}
-                        </p>
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5 flex-wrap">
-                          {isBundle ? (
-                            <>
-                              <span className="line-through text-gray-400">
-                                ₹{itemBaseUnit.toLocaleString()}
-                              </span>
-                              <span className="font-bold text-gray-900">
-                                ₹{item.price.toLocaleString()} × {item.quantity}
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              {itemMrp > item.price && (
-                                <span className="line-through text-gray-400">
-                                  ₹{itemMrp.toLocaleString()}
-                                </span>
-                              )}
-                              <span>₹{item.price.toLocaleString()} × {item.quantity}</span>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Buy More Save More Badge */}
-                        {isBundle && (
-                          <div className="mt-1">
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-extrabold bg-gradient-to-r from-orange-50 to-amber-50 text-[#FF5722] border border-orange-200 shadow-2xs">
-                              <Sparkles className="w-2.5 h-2.5 text-[#FF5722]" />
-                              <span>{item.offer_label || `Buy ${item.quantity} Save More`}</span>
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2.5 shrink-0">
-                        <div className="text-right">
-                          {isBundle && itemRegularTotal > itemTotal && (
-                            <span className="text-[11px] text-gray-400 line-through block">
-                              ₹{itemRegularTotal.toLocaleString()}
-                            </span>
-                          )}
-                          <span className="font-bold text-sm text-gray-900 block">
-                            ₹{itemTotal.toLocaleString()}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeFromCart(item.id)}
-                          title="Remove item"
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                          aria-label={`Remove ${item.name} from cart`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Promo Code Input Row (Desktop Sidebar) */}
-              <div className="pt-2 border-t border-gray-100 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <Tag className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                      placeholder="Promo code"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold uppercase tracking-wider text-gray-900 placeholder:normal-case placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:border-[#FF7A00] bg-white"
-                    />
-                  </div>
+            {/* Saved Addresses Selector (if logged in and has addresses) */}
+            {savedAddresses.length > 0 && (
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-extrabold text-gray-600 tracking-wide uppercase">
+                  Saved Addresses
+                </label>
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                  {savedAddresses.map((addr) => {
+                    const isSelected = selectedAddressId === addr.id && !isUsingNewAddress;
+                    return (
+                      <button
+                        key={addr.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedAddressId(addr.id);
+                          setIsUsingNewAddress(false);
+                          setName(addr.name || name);
+                          setPhone(cleanPhoneDigits(addr.phone || phone));
+                          setAddress(addr.street || "");
+                          setPostalCode(addr.postal_code || addr.postalCode || "");
+                          setCity(addr.city || "");
+                          setState(addr.state || "");
+                          setLandmark(addr.landmark || "");
+                        }}
+                        className={`p-2.5 rounded-xl border text-left text-xs shrink-0 max-w-[200px] transition cursor-pointer ${
+                          isSelected
+                            ? "border-[#FF7A00] bg-orange-50/40 text-gray-900 font-bold"
+                            : "border-gray-200 bg-gray-50/60 text-gray-600 hover:border-gray-300"
+                        }`}
+                      >
+                        <p className="font-bold truncate">{addr.name || "Address"}</p>
+                        <p className="text-[10px] text-gray-500 truncate mt-0.5">{addr.street}</p>
+                        <p className="text-[10px] text-gray-400">{addr.city} {addr.postal_code || addr.postalCode}</p>
+                      </button>
+                    );
+                  })}
                   <button
                     type="button"
-                    onClick={handleApplyPromo}
-                    disabled={promoLoading}
-                    className="px-4 py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-bold text-xs shadow-2xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60"
+                    onClick={() => {
+                      setIsUsingNewAddress(true);
+                      setSelectedAddressId(null);
+                      setAddress("");
+                      setPostalCode("");
+                      setCity("");
+                      setState("");
+                      setLandmark("");
+                    }}
+                    className={`p-2.5 rounded-xl border text-xs shrink-0 font-bold transition flex items-center justify-center cursor-pointer ${
+                      isUsingNewAddress
+                        ? "border-[#FF7A00] bg-orange-50/40 text-[#FF7A00]"
+                        : "border-dashed border-gray-300 text-gray-500 hover:border-gray-400"
+                    }`}
                   >
-                    {promoLoading ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <>
-                        <span>Apply</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </>
-                    )}
+                    + New Address
                   </button>
                 </div>
+              </div>
+            )}
 
-                {promoSuccess && (
-                  <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center justify-between">
-                    <span>{promoSuccess}</span>
-                    <button
-                      type="button"
-                      onClick={handleRemovePromo}
-                      className="text-emerald-700 hover:text-emerald-900 font-bold ml-2 cursor-pointer p-0.5 rounded hover:bg-emerald-100"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
+            {/* Full Name */}
+            <div className="space-y-1">
+              <label className="block text-[11px] font-extrabold text-gray-700 tracking-wide uppercase">
+                Full Name <span className="text-rose-500">*</span>
+              </label>
+              <input
+                id="name-input"
+                type="text"
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your full name"
+                className="w-full px-3.5 py-3 rounded-xl border-2 border-gray-200 bg-white text-sm font-semibold transition focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-orange-500/15"
+              />
+            </div>
 
-                {promoError && (
-                  <p className="text-xs text-red-600 font-medium pl-1">
-                    {promoError}
-                  </p>
+            {/* Mobile Number */}
+            <div className="space-y-1">
+              <label className="block text-[11px] font-extrabold text-gray-700 tracking-wide uppercase">
+                Mobile number <span className="text-rose-500">*</span>
+              </label>
+              <div className="flex border-2 border-gray-200 rounded-xl overflow-hidden bg-white focus-within:border-[#FF7A00] focus-within:ring-2 focus-within:ring-orange-500/15">
+                <span className="px-3.5 py-3 bg-gray-50 border-r border-gray-200 text-sm font-bold text-gray-700 select-none">
+                  +91
+                </span>
+                <input
+                  id="phone-input"
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={10}
+                  autoComplete="tel-national"
+                  value={phone}
+                  onChange={(e) => setPhone(cleanPhoneDigits(e.target.value))}
+                  placeholder="10-digit mobile number"
+                  className="flex-1 px-3.5 py-3 text-sm font-semibold tracking-wider focus:outline-none"
+                />
+              </div>
+              <p className="text-[11px] text-gray-500 pt-0.5">
+                We will send a code on WhatsApp to confirm your order.
+              </p>
+            </div>
+
+            {/* House No, Street, Area */}
+            <div className="space-y-1">
+              <label className="block text-[11px] font-extrabold text-gray-700 tracking-wide uppercase">
+                House No, Street, Area <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                rows={2}
+                autoComplete="street-address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="House / Flat No., Apartment, Street, Area"
+                className="w-full px-3.5 py-2.5 rounded-xl border-2 border-gray-200 bg-white text-sm font-semibold transition focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-orange-500/15 resize-none"
+              />
+            </div>
+
+            {/* Pincode */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <label className="block text-[11px] font-extrabold text-gray-700 tracking-wide uppercase">
+                  Pincode <span className="text-rose-500">*</span>
+                </label>
+                {pincodeLoading && (
+                  <span className="text-[11px] text-gray-500 flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin text-[#FF7A00]" /> Checking...
+                  </span>
                 )}
               </div>
+              <input
+                type="tel"
+                inputMode="numeric"
+                maxLength={6}
+                autoComplete="postal-code"
+                value={postalCode}
+                onChange={(e) => {
+                  const clean = e.target.value.replace(/\D/g, "").slice(0, 6);
+                  setPostalCode(clean);
+                }}
+                placeholder="e.g. 682001"
+                className="w-full px-3.5 py-3 rounded-xl border-2 border-gray-200 bg-white text-sm font-semibold tracking-wider transition focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-orange-500/15"
+              />
+              {pincodeMessage && (
+                <p
+                  className={`text-xs font-semibold pt-0.5 ${
+                    pincodeValid ? "text-emerald-700" : "text-rose-600"
+                  }`}
+                >
+                  {pincodeMessage}
+                </p>
+              )}
+            </div>
 
-              <hr className="border-gray-100" />
+            {/* Auto-filled City & State */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <label className="block text-[11px] font-extrabold text-gray-500 tracking-wide uppercase">
+                  City
+                </label>
+                <input
+                  type="text"
+                  readOnly
+                  value={city}
+                  placeholder="Auto-filled"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-xs font-semibold text-gray-700 cursor-not-allowed select-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-[11px] font-extrabold text-gray-500 tracking-wide uppercase">
+                  State
+                </label>
+                <input
+                  type="text"
+                  readOnly
+                  value={state}
+                  placeholder="Auto-filled"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-xs font-semibold text-gray-700 cursor-not-allowed select-none"
+                />
+              </div>
+            </div>
 
-              {/* Breakdown: Subtotal, Shipping, Promo, COD Fee */}
-              <div className="space-y-2.5 text-xs">
-                <div className="flex justify-between text-gray-600">
-                  <span>Item Total ({totalItemCount} {totalItemCount === 1 ? "item" : "items"})</span>
-                  <span className="font-semibold text-gray-900">
-                    ₹{(bundleSavings > 0 ? regularSubtotal : subtotal).toLocaleString()}
+            {/* Landmark (Optional) */}
+            <div className="space-y-1">
+              <label className="block text-[11px] font-extrabold text-gray-700 tracking-wide uppercase">
+                Landmark <span className="text-gray-400 font-normal lowercase">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={landmark}
+                onChange={(e) => setLandmark(e.target.value)}
+                placeholder="e.g. Near bus stand, Opposite bank"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-white text-xs font-semibold transition focus:outline-none focus:border-[#FF7A00]"
+              />
+            </div>
+
+            {/* Email (Optional) */}
+            <div className="space-y-1">
+              <label className="block text-[11px] font-extrabold text-gray-700 tracking-wide uppercase">
+                Email address <span className="text-gray-400 font-normal lowercase">(optional, for invoice)</span>
+              </label>
+              <input
+                id="email-input"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="yourname@gmail.com"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-white text-xs font-semibold transition focus:outline-none focus:border-[#FF7A00]"
+              />
+            </div>
+          </div>
+
+          {/* CARD 3: CHOOSE HOW TO PAY */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 space-y-3 shadow-2xs">
+            <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-wider text-gray-700">
+              <span className="flex items-center gap-1.5">
+                <CreditCard className="w-4 h-4 text-[#FF7A00]" />
+                <span>Choose how to pay</span>
+              </span>
+            </div>
+
+            {/* Option 1: Pay Online */}
+            <div
+              onClick={() => setPaymentMethod("prepaid")}
+              className={`relative p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
+                paymentMethod === "prepaid"
+                  ? "border-[#FF7A00] bg-orange-50/25 shadow-xs"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
+            >
+              <span className="absolute -top-2.5 left-3 px-2 py-0.5 rounded-full bg-gradient-to-r from-orange-600 to-amber-500 text-white font-black text-[9.5px] tracking-wide shadow-xs">
+                RECOMMENDED
+              </span>
+
+              <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-emerald-600 text-white font-black text-[10px] tracking-wide shadow-xs">
+                SAVE ₹{codFee}
+              </span>
+
+              <div className="flex items-start gap-3 mt-1">
+                <div
+                  className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 transition-all ${
+                    paymentMethod === "prepaid"
+                      ? "border-[#FF7A00] bg-[#FF7A00]"
+                      : "border-gray-300 bg-white"
+                  }`}
+                >
+                  {paymentMethod === "prepaid" && <div className="w-2 h-2 rounded-full bg-white" />}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-gray-900 leading-snug">
+                      Pay Online
+                    </h4>
+                    <span className="text-sm font-black text-gray-950">
+                      ₹{grandTotal.toLocaleString()}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-500 mt-0.5">
+                    UPI · Cards · Net banking
+                  </p>
+
+                  <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                    <span className="px-1.5 py-0.5 rounded bg-white border border-gray-200 text-[10px] font-extrabold text-gray-700">
+                      UPI
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-white border border-gray-200 text-[10px] font-extrabold text-[#5f259f]">
+                      PhonePe
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-white border border-gray-200 text-[10px] font-extrabold text-[#4285F4]">
+                      GPay
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-white border border-gray-200 text-[10px] font-extrabold text-[#1A1F71]">
+                      Cards
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mt-2 font-medium">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>100% secure · Powered by Razorpay</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Option 2: Cash on Delivery */}
+            <div
+              onClick={() => setPaymentMethod("cod")}
+              className={`relative p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
+                paymentMethod === "cod"
+                  ? "border-gray-800 bg-gray-50/50 shadow-xs"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 transition-all ${
+                    paymentMethod === "cod"
+                      ? "border-gray-800 bg-gray-800"
+                      : "border-gray-300 bg-white"
+                  }`}
+                >
+                  {paymentMethod === "cod" && <div className="w-2 h-2 rounded-full bg-white" />}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-gray-900 leading-snug">
+                      Cash on Delivery
+                    </h4>
+                    <span className="text-sm font-black text-gray-950">
+                      ₹{(grandTotal + codFee).toLocaleString()}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-500 mt-0.5">
+                    Product price + ₹{codFee} COD handling fee
+                  </p>
+
+                  {/* COD Breakdown row */}
+                  <div className="grid grid-cols-3 gap-1.5 mt-2.5 text-center text-xs">
+                    <div className="p-2 rounded-lg bg-gray-100/80 border border-gray-200">
+                      <span className="block text-[10px] text-gray-500 font-semibold">Pay at delivery</span>
+                      <strong className="block text-xs font-black text-gray-900">₹{doorstepBalance.toLocaleString()}</strong>
+                    </div>
+                    <div className="p-2 rounded-lg bg-amber-50 border border-amber-200">
+                      <span className="block text-[10px] text-amber-800 font-semibold">Pay now online</span>
+                      <strong className="block text-xs font-black text-amber-950">₹{codFee}</strong>
+                    </div>
+                    <div className="p-2 rounded-lg bg-gray-900 text-white border border-gray-900">
+                      <span className="block text-[10px] text-gray-300 font-semibold">Total</span>
+                      <strong className="block text-xs font-black">₹{(doorstepBalance + codFee).toLocaleString()}</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Nudge card when COD is active */}
+            {paymentMethod === "cod" && (
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-800 to-emerald-950 text-white space-y-2 animate-in fade-in duration-200 shadow-md shadow-emerald-950/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+                    SMART CHOICE
+                  </span>
+                  <span className="text-[11px] font-black bg-amber-300 text-emerald-950 px-2.5 py-0.5 rounded-full">
+                    SAVE ₹{codFee}
                   </span>
                 </div>
+                <p className="text-xs text-white/90 leading-relaxed">
+                  Pay <strong>₹{grandTotal.toLocaleString()}</strong> online instead of <span className="line-through text-white/60">₹{(grandTotal + codFee).toLocaleString()}</span>. Faster dispatch, no cash needed at delivery.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("prepaid")}
+                  className="w-full py-2.5 rounded-xl bg-white text-emerald-950 font-black text-xs hover:bg-gray-100 transition cursor-pointer"
+                >
+                  Switch to Pay Online · Save ₹{codFee}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* CARD 4: PRICE DETAILS SUMMARY */}
+          <div className="rounded-2xl border border-gray-200 bg-gray-50/70 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setIsPriceDetailsOpen((prev) => !prev)}
+              className="w-full px-4 py-3 flex items-center justify-between text-xs font-bold text-gray-900 cursor-pointer select-none"
+            >
+              <span>Price Details ({totalItemCount} item{totalItemCount > 1 ? "s" : ""})</span>
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-gray-950">₹{payableNow.toLocaleString()}</span>
+                {isPriceDetailsOpen ? (
+                  <ChevronUp className="w-4 h-4 text-gray-500" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                )}
+              </div>
+            </button>
+
+            {isPriceDetailsOpen && (
+              <div className="px-4 pb-3.5 pt-1 space-y-2 text-xs border-t border-gray-200/60 text-gray-600">
+                <div className="flex justify-between">
+                  <span>Item MRP</span>
+                  <span className="line-through text-gray-400">₹{totalMrp.toLocaleString()}</span>
+                </div>
                 {bundleSavings > 0 && (
-                  <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
-                    <span className="flex items-center gap-1 font-bold">
-                      <Sparkles className="w-3 h-3 text-emerald-600" />
-                      <span>Buy More Save More Savings</span>
-                    </span>
-                    <span className="font-extrabold">-₹{bundleSavings.toLocaleString()}</span>
+                  <div className="flex justify-between text-emerald-700 font-semibold">
+                    <span>Bundle Savings</span>
+                    <span>−₹{bundleSavings.toLocaleString()}</span>
                   </div>
                 )}
                 {promoDiscount > 0 && (
                   <div className="flex justify-between text-emerald-700 font-semibold">
-                    <span className="flex items-center gap-1">
-                      <Tag className="w-3 h-3 text-emerald-600" />
-                      Promo Discount ({appliedPromo})
-                    </span>
-                    <span>-₹{promoDiscount.toLocaleString()}</span>
+                    <span>Coupon ({appliedPromo})</span>
+                    <span>−₹{promoDiscount.toLocaleString()}</span>
                   </div>
                 )}
-                {paymentMethod === "cod" ? (
-                  <>
-                    <div className="flex justify-between text-gray-600">
-                      <span className="flex items-center gap-1.5">
-                        COD fee (pay now) <Truck className="w-3.5 h-3.5 text-gray-400" />
-                      </span>
-                      <span className="font-bold text-[#FF7A00]">₹{codFee}</span>
-                    </div>
-                    <div className="flex justify-between text-gray-900 font-bold border-t border-dashed border-gray-200 pt-2 text-sm">
-                      <span>Pay at delivery:</span>
-                      <span className="font-extrabold text-[#FF7A00]">₹{doorstepBalance.toLocaleString()}</span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex justify-between text-gray-600">
-                    <span className="flex items-center gap-1.5">
-                      Shipping Fee <Truck className="w-3.5 h-3.5 text-gray-400" />
-                    </span>
-                    <span className="font-bold text-emerald-600">FREE</span>
+                <div className="flex justify-between">
+                  <span>Delivery</span>
+                  <span className="font-bold text-emerald-700">FREE</span>
+                </div>
+                {paymentMethod === "cod" && (
+                  <div className="flex justify-between">
+                    <span>COD Handling Fee</span>
+                    <span className="font-bold text-gray-900">₹{codFee}</span>
+                  </div>
+                )}
+                <div className="pt-2 border-t border-gray-200 flex justify-between font-extrabold text-sm text-gray-950">
+                  <span>Total Amount</span>
+                  <span>₹{payableNow.toLocaleString()}</span>
+                </div>
+                {totalSavings > 0 && (
+                  <div className="p-2 rounded-lg bg-emerald-50 text-emerald-800 font-bold text-center text-[11.5px] mt-2">
+                    You save ₹{totalSavings.toLocaleString()} on this order
                   </div>
                 )}
               </div>
-
-              {/* Total Payable Box */}
-              <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100/90 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-bold text-gray-900">
-                    {paymentMethod === "cod" ? "Pay Online Now (COD Fee)" : "Total Payable (Prepaid)"}
-                  </p>
-                  {paymentMethod === "cod" && (
-                    <p className="text-[11px] text-amber-700 font-medium">
-                      ₹{doorstepBalance.toLocaleString()} to pay in cash/UPI on delivery
-                    </p>
-                  )}
-                </div>
-                <span className="text-xl font-black text-gray-950">
-                  ₹{payableNow.toLocaleString()}
-                </span>
-              </div>
-
-              {/* Savings Pill */}
-              {paymentMethod === "prepaid" ? (
-                <div className="p-2.5 rounded-xl bg-emerald-50/90 text-emerald-700 text-xs font-semibold flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">
-                    ₹
-                  </div>
-                  <span>You save ₹{codFee} by paying online!</span>
-                </div>
-              ) : (
-                <div className="p-2.5 rounded-xl bg-amber-50/90 text-amber-800 text-xs font-semibold flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0 text-xs font-bold">
-                    ₹
-                  </div>
-                  <span>Pay ₹{codFee} COD fee now &amp; remaining ₹{doorstepBalance.toLocaleString()} at delivery!</span>
-                </div>
-              )}
-
-              {/* YOU MIGHT ALSO LIKE (Bump Offers) */}
-              {availableUpsells.length > 0 && (
-                <div className="pt-4 border-t border-gray-100 space-y-3">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-700 uppercase tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5 text-[#FF7A00]" />
-                    <span>You Might Also Like</span>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    {availableUpsells.slice(0, 2).map((item) => (
-                      <div
-                        key={item.id}
-                        className="p-2.5 rounded-xl border border-gray-100 bg-gray-50/70 flex items-center justify-between gap-2.5 hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="relative w-12 h-12 rounded-lg bg-white border border-gray-200 shrink-0 overflow-hidden">
-                            <Image
-                              src={item.poster_image}
-                              alt={item.name}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold text-gray-900 truncate max-w-[150px]">
-                              {item.name}
-                            </p>
-                            <div className="flex items-center gap-1 text-[11px] mt-0.5">
-                              <span className="font-bold text-gray-900">₹{item.price}</span>
-                              <span className="line-through text-gray-400 text-[10px]">
-                                ₹{item.mrp}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => addToCart(item, 1)}
-                          className="px-3 py-1.5 rounded-lg bg-black text-white text-xs font-bold hover:bg-[#FF7A00] transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>Add</span>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </div>
+
+          {/* Store support notice */}
+          <p className="text-center text-[11px] text-gray-400 pt-1">
+            Zupe Store · Support +91 97441 22853 · 7-day replacement
+          </p>
         </form>
 
-        {/* WhatsApp OTP Verification Modal Popup */}
+        {/* STICKY BOTTOM FOOTER (Place Order CTA) */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 shadow-xl">
+          <div className="max-w-xl mx-auto space-y-2">
+            <div className="flex items-center justify-between text-xs text-gray-600 pb-0.5">
+              <div>
+                <span className="text-base font-black text-gray-950">
+                  ₹{payableNow.toLocaleString()}
+                </span>
+                <span className="text-[11px] text-gray-500 ml-1.5 font-medium">
+                  {paymentMethod === "cod" ? `now · ₹${doorstepBalance.toLocaleString()} at delivery` : "total"}
+                </span>
+              </div>
+              {totalSavings > 0 && (
+                <span className="text-emerald-700 font-bold text-xs">
+                  Save ₹{totalSavings.toLocaleString()}
+                </span>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handlePlaceOrder}
+              disabled={loading || otpLoading}
+              className="w-full py-4 px-6 rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-black text-base shadow-lg shadow-orange-500/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Connecting to gateway...</span>
+                </>
+              ) : otpLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Sending WhatsApp code...</span>
+                </>
+              ) : paymentMethod === "cod" ? (
+                <span className="flex items-center gap-1.5">
+                  <span>Pay ₹{codFee} &amp; Place COD Order</span>
+                  <ArrowRight className="w-4 h-4" />
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  <span>Pay ₹{payableNow.toLocaleString()} &amp; Place Order</span>
+                  <ArrowRight className="w-4 h-4" />
+                </span>
+              )}
+            </button>
+
+            <p className="text-center text-xs text-gray-500 font-medium">
+              <span className="inline-flex items-center gap-1">
+                <Phone className="w-3.5 h-3.5 text-emerald-600 inline" />
+                <span>Questions?</span>
+              </span>{" "}
+              <a
+                href="https://wa.me/919744122853"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-700 font-bold hover:underline"
+              >
+                WhatsApp us
+              </a>
+            </p>
+          </div>
+        </div>
+
+{/* WhatsApp OTP Verification Modal Popup */}
         <AnimatePresence>
           {showOtpModal && (
             <div className="fixed inset-0 z-60 flex items-center justify-center p-4">

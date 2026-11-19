@@ -181,10 +181,6 @@ export function NewArrivalsSection({ initialProductIds }: NewArrivalsSectionProp
                         const added = addFn(product, 1);
                         if (!added) return;
                       }
-                      if (!user) {
-                        openAuthModal("login", "Sign in required: Please log in to complete your purchase ⚡");
-                        return;
-                      }
                       router.push("/checkout");
                     }}
                     className="w-full py-2 px-1.5 sm:px-2 rounded-xl border border-gray-900 bg-white hover:bg-gray-900 hover:text-white active:scale-95 text-gray-900 text-xs sm:text-[13px] font-bold transition-all shadow-2xs flex items-center justify-center text-center cursor-pointer"
