@@ -26,12 +26,6 @@ export async function middleware(req: NextRequest) {
   const isAdminSubdomain =
     host.startsWith("admin.") || host.startsWith("admin.localhost");
 
-  // Redirect main store /admin requests to the dedicated admin subdomain in production
-  if (!isAdminSubdomain && host.includes("vittallifestyle.com") && pathname.startsWith("/admin")) {
-    const adminUrl = new URL(pathname + url.search, "https://admin.vittallifestyle.com");
-    return NextResponse.redirect(adminUrl, 307);
-  }
-
   // Handle Admin Subdomain (e.g. admin.vittallifestyle.com or admin.localhost)
   if (isAdminSubdomain) {
     // If accessing root "/" on admin subdomain
