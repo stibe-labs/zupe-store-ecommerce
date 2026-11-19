@@ -25,6 +25,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useSearch } from "@/context/SearchContext";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
 import { addRecentlyViewed } from "@/lib/recentlyViewed";
+import { SupplementCategoryShowcase } from "@/components/SupplementCategoryShowcase";
 
 interface VittalLifestyleStorefrontProps {
   initialProducts?: Product[];
@@ -911,6 +912,11 @@ export function VittalLifestyleStorefront({
       </section>
     );
   })()}
+
+      {/* ===================================================================== */}
+      {/* 6. FUEL EVERY WORKOUT — GYM SUPPLEMENTS CATEGORY SHOWCASE             */}
+      {/* ===================================================================== */}
+      <SupplementCategoryShowcase allProducts={products} />
     </div>
   );
 }
