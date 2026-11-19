@@ -34,6 +34,7 @@ import {
   User,
   Mail,
   Clock,
+  X,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -106,7 +107,7 @@ function CheckoutContent() {
     hasOutOfStockItems,
     checkCartStock,
   } = useCart();
-  const { user, isLoading: authLoading, updateUserProfile } = useAuth();
+  const { user, isLoading: authLoading, updateUserProfile, sendPhoneOtp, loginWithPhoneOtp } = useAuth();
 
   // Contact & Delivery state
   const [phone, setPhone] = useState(() => {
@@ -170,6 +171,37 @@ function CheckoutContent() {
 
   // Urgency Timer (Digital Countdown: Hours, Mins, Secs)
   const [timeLeft, setTimeLeft] = useState(6 * 3600 + 7 * 60 + 24); // 06:07:24
+
+  // WhatsApp OTP Verification Modal State
+  const [showOtpModal, setShowOtpModal] = useState<boolean>(false);
+  const [otpCode, setOtpCode] = useState<string>("");
+  const [otpTimer, setOtpTimer] = useState<number>(30);
+  const [canResendOtp, setCanResendOtp] = useState<boolean>(false);
+  const [otpLoading, setOtpLoading] = useState<boolean>(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [isOtpVerifiedSuccess, setIsOtpVerifiedSuccess] = useState<boolean>(false);
+  const [isPhoneVerified, setIsPhoneVerified] = useState<boolean>(false);
+  const otpInputRef = useRef<HTMLInputElement>(null);
+
+  // OTP Timer countdown
+  useEffect(() => {
+    if (!showOtpModal) return;
+    setCanResendOtp(false);
+    setOtpTimer(30);
+
+    const interval = setInterval(() => {
+      setOtpTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setCanResendOtp(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [showOtpModal]);
 
   // Restore order confirmation view if customer refreshes the thank-you screen
   useEffect(() => {
@@ -277,7 +309,7 @@ function CheckoutContent() {
       if (data.valid && data.discount > 0) {
         setPromoDiscount(data.discount);
         setAppliedPromo(data.code || code);
-        setPromoSuccess(data.message || `🎉 Code ${data.code || code} applied! ₹${data.discount} discount added.`);
+        setPromoSuccess(data.message || `Code ${data.code || code} applied: ₹${data.discount} discount added.`);
         setPromoError(null);
       } else {
         setPromoDiscount(0);
@@ -291,12 +323,12 @@ function CheckoutContent() {
         const disc = Math.min(100, Math.round(subtotal * 0.1));
         setPromoDiscount(disc);
         setAppliedPromo(code);
-        setPromoSuccess(`🎉 Code ${code} applied! ₹${disc} discount added.`);
+        setPromoSuccess(`Code ${code} applied: ₹${disc} discount added.`);
       } else if (code === "SAVE50") {
         const disc = subtotal >= 399 ? 50 : 25;
         setPromoDiscount(disc);
         setAppliedPromo(code);
-        setPromoSuccess(`🎉 Code ${code} applied! ₹${disc} discount added.`);
+        setPromoSuccess(`Code ${code} applied: ₹${disc} discount added.`);
       } else {
         setPromoError("Unable to validate promo code. Please check your connection and try again.");
       }
@@ -425,7 +457,7 @@ function CheckoutContent() {
           }
 
           setRecoveredBanner(
-            `🎉 Welcome back${chk.customer_name ? `, ${chk.customer_name.split(" ")[0]}` : ""}! Your cart and shipping details have been restored.`
+            `Welcome back${chk.customer_name ? `, ${chk.customer_name.split(" ")[0]}` : ""}! Your cart and shipping details have been restored.`
           );
         }
       } catch (err) {
@@ -782,12 +814,12 @@ function CheckoutContent() {
 
           // Accuracy Feedback
           if (accuracy > 0 && accuracy <= 150) {
-            setLocationSuccessMsg(`🎯 High-Precision GPS (~${Math.round(accuracy)}m): ${data.area || cleanCity || "Location detected"}`);
+            setLocationSuccessMsg(`High-Precision GPS (~${Math.round(accuracy)}m): ${data.area || cleanCity || "Location detected"}`);
           } else if (accuracy > 0 && accuracy <= 500) {
-            setLocationSuccessMsg(`📍 Area Location (~${Math.round(accuracy)}m): ${data.area || cleanCity || "Location detected"}`);
+            setLocationSuccessMsg(`Area Location (~${Math.round(accuracy)}m): ${data.area || cleanCity || "Location detected"}`);
           } else if (accuracy > 500) {
             setLocationAccuracyNotice(
-              `📶 Approximate Network Location (~${(accuracy / 1000).toFixed(1)} km) detected via Wi-Fi/ISP routing. Please verify your House No and Pincode.`
+              `Approximate Network Location (~${(accuracy / 1000).toFixed(1)} km) detected via Wi-Fi/ISP routing. Please verify your House No and Pincode.`
             );
           } else {
             setLocationSuccessMsg(`Location detected: ${data.area || cleanCity || "Address filled"}`);
@@ -1190,43 +1222,7 @@ function CheckoutContent() {
     }, 120);
   };
 
-  const handlePlaceOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (checkoutStep !== "payment") {
-      handleContinueToPayment(e);
-      return;
-    }
-
-    if (!phone.trim() || phone.replace(/\D/g, "").length < 10) {
-      setErrorMessage("Please enter a valid 10-digit mobile number.");
-      return;
-    }
-    if (!name.trim()) {
-      setErrorMessage("Please enter your full name.");
-      return;
-    }
-    if (email.trim() && !email.includes("@")) {
-      setErrorMessage("Please enter a valid email address.");
-      return;
-    }
-    if (!address.trim()) {
-      setErrorMessage("Please enter your complete delivery address.");
-      return;
-    }
-    if (!postalCode.trim() || postalCode.replace(/\D/g, "").length < 6) {
-      setErrorMessage("Please enter a valid 6-digit PIN code.");
-      return;
-    }
-    if (!city.trim()) {
-      setErrorMessage("Please enter your city.");
-      return;
-    }
-    if (!state.trim()) {
-      setErrorMessage("Please enter your state.");
-      return;
-    }
-
+  const executePaymentFlow = async () => {
     setErrorMessage("");
     setLoading(true);
 
@@ -1454,6 +1450,123 @@ function CheckoutContent() {
     }
   };
 
+  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const clean = e.target.value.replace(/\D/g, "").slice(0, 6);
+    setOtpCode(clean);
+    if (otpError) setOtpError(null);
+    if (clean.length === 6) {
+      handleVerifyOtpAndProceed(clean);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!canResendOtp || otpLoading) return;
+    setOtpError(null);
+    setOtpLoading(true);
+    const cleanP = cleanPhoneDigits(phone);
+    const res = await sendPhoneOtp(cleanP);
+    setOtpLoading(false);
+    if (res.success) {
+      setOtpTimer(30);
+      setCanResendOtp(false);
+      setOtpCode("");
+      setTimeout(() => otpInputRef.current?.focus(), 150);
+    } else {
+      setOtpError(res.error || "Could not resend code. Please try again.");
+    }
+  };
+
+  const handleVerifyOtpAndProceed = async (code: string) => {
+    if (code.length !== 6) return;
+    setOtpError(null);
+    setOtpLoading(true);
+    const cleanP = cleanPhoneDigits(phone);
+    try {
+      const res = await loginWithPhoneOtp(cleanP, code, name.trim());
+      if (!res.success) {
+        setOtpLoading(false);
+        setOtpError(res.error || "Invalid verification code. Please check and retry.");
+        return;
+      }
+      setIsPhoneVerified(true);
+      setOtpLoading(false);
+      setIsOtpVerifiedSuccess(true);
+      setTimeout(() => {
+        setShowOtpModal(false);
+        setIsOtpVerifiedSuccess(false);
+        executePaymentFlow();
+      }, 450);
+    } catch (err: any) {
+      setOtpLoading(false);
+      setOtpError(err.message || "Verification failed. Please retry.");
+    }
+  };
+
+  const handlePlaceOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (checkoutStep !== "payment") {
+      handleContinueToPayment(e);
+      return;
+    }
+
+    const cleanP = cleanPhoneDigits(phone);
+    if (!cleanP || cleanP.length !== 10 || !/^[6-9]\d{9}$/.test(cleanP)) {
+      setErrorMessage("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+    if (!name.trim()) {
+      setErrorMessage("Please enter your full name.");
+      return;
+    }
+    if (email.trim() && !email.includes("@")) {
+      setErrorMessage("Please enter a valid email address.");
+      return;
+    }
+    if (!address.trim()) {
+      setErrorMessage("Please enter your complete delivery address.");
+      return;
+    }
+    if (!postalCode.trim() || postalCode.replace(/\D/g, "").length < 6) {
+      setErrorMessage("Please enter a valid 6-digit PIN code.");
+      return;
+    }
+    if (!city.trim()) {
+      setErrorMessage("Please enter your city.");
+      return;
+    }
+    if (!state.trim()) {
+      setErrorMessage("Please enter your state.");
+      return;
+    }
+
+    setErrorMessage("");
+
+    // If phone is already verified in this session or user account, proceed directly to payment flow
+    if (isPhoneVerified || (user?.phone && cleanPhoneDigits(user.phone) === cleanP)) {
+      executePaymentFlow();
+      return;
+    }
+
+    // Otherwise, dispatch WhatsApp OTP and trigger OTP Popup Modal
+    setLoading(true);
+    setOtpLoading(true);
+    setOtpError(null);
+    setOtpCode("");
+    setIsOtpVerifiedSuccess(false);
+
+    const otpRes = await sendPhoneOtp(cleanP);
+    setLoading(false);
+    setOtpLoading(false);
+
+    if (otpRes.success) {
+      setShowOtpModal(true);
+      setTimeout(() => otpInputRef.current?.focus(), 250);
+    } else {
+      setErrorMessage(otpRes.error || "Failed to dispatch verification code. Please check your phone number.");
+    }
+  };
+
   // ========================================================
   // COD TO PREPAID SWITCH VIEW (TRIGGERED FROM WHATSAPP / TRACKING)
   // ========================================================
@@ -1486,7 +1599,7 @@ function CheckoutContent() {
               <CheckCircle2 className="w-10 h-10" />
             </motion.div>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 mb-2 border border-emerald-200">
-              ✓ Switched to Prepaid &amp; Saved ₹49
+              Switched to Prepaid &amp; Saved ₹49
             </span>
             <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
               Payment Successful!
@@ -1570,7 +1683,7 @@ function CheckoutContent() {
           <div className="bg-gradient-to-r from-orange-500 via-[#FF7A00] to-amber-500 rounded-3xl p-6 text-white text-center shadow-lg shadow-[#FF7A00]/20 mb-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 translate-x-4 -translate-y-4 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none" />
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-white text-[#FF7A00] uppercase tracking-wide mb-3 shadow-xs">
-              ⚡ Instant ₹49 Discount Offer
+              Instant ₹49 Discount Offer
             </span>
             <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight">
               Switch to Prepaid &amp; Save ₹49!
@@ -1702,7 +1815,7 @@ function CheckoutContent() {
 
               {/* Security info */}
               <div className="pt-2 text-center text-[11px] text-gray-400 space-y-1">
-                <p>🔒 256-bit Bank Grade SSL Encrypted • Powered by Razorpay</p>
+                <p>256-bit Bank Grade SSL Encrypted • Powered by Razorpay</p>
                 <p>Supports UPI (GPay, PhonePe, Paytm), All Major Debit &amp; Credit Cards, Net Banking</p>
               </div>
 
@@ -1820,7 +1933,7 @@ function CheckoutContent() {
           ) : (
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 mb-2 border border-amber-200">
               <Clock className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-              ✓ Payment Received • Awaiting WhatsApp Confirmation
+              Payment Received • Awaiting WhatsApp Confirmation
             </span>
           )}
 
@@ -1836,14 +1949,14 @@ function CheckoutContent() {
               : `Your online payment has been verified! We've sent an interactive confirmation message to your WhatsApp (+91 ${(phone || "").replace(/^\+91\s*/, "")}). Please tap "Confirm Order" on WhatsApp to finalize packing & priority dispatch.`}
             {email.trim() && (
               <span className="block mt-2 font-medium text-emerald-700 bg-emerald-50 py-1.5 px-3 rounded-lg border border-emerald-200/70 text-xs">
-                📧 Order receipt &amp; live tracking link sent to <strong>{email.trim()}</strong>
+                <Mail className="w-3.5 h-3.5 text-emerald-600 inline mr-1" /> Order receipt &amp; live tracking link sent to <strong>{email.trim()}</strong>
               </span>
             )}
           </p>
 
           {/* Action Prompt Box for WhatsApp */}
           <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-left flex items-start gap-3 shadow-xs max-w-md mx-auto">
-            <span className="text-xl">📲</span>
+            <Phone className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
             <div className="text-xs">
               <p className="font-bold text-amber-900 text-sm">Action Required: Confirm on WhatsApp</p>
               <p className="text-amber-800 mt-0.5 leading-relaxed">
@@ -1918,7 +2031,7 @@ function CheckoutContent() {
                     ₹{(confirmedTotal || grandTotal).toLocaleString()}
                   </span>
                   <span className="text-[10px] font-bold block text-emerald-600">
-                    ✓ Paid Online
+                    Paid Online
                   </span>
                 </div>
               </div>
@@ -1929,7 +2042,7 @@ function CheckoutContent() {
             <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border border-orange-200 text-left mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
               <div>
                 <span className="text-[10px] uppercase font-bold text-[#FF7A00] tracking-wider block">
-                  ⚡ Special Prepaid Switch Offer
+                  Special Prepaid Switch Offer
                 </span>
                 <p className="text-sm font-bold text-gray-900 mt-0.5">
                   Switch to Prepaid &amp; Save ₹{shippingFee || codFee}!
@@ -2118,7 +2231,7 @@ function CheckoutContent() {
               onClick={() => setRecoveredBanner(null)}
               className="text-emerald-700 hover:text-emerald-900 font-bold text-xs p-1"
             >
-              ✕
+              <X className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -2246,8 +2359,8 @@ function CheckoutContent() {
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
                               <span className="text-[11px] text-gray-500">Qty: {item.quantity} × ₹{item.price.toLocaleString()}</span>
                               {isBundle ? (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-orange-50 border border-orange-200 text-[#FF5722] text-[10px] font-bold">
-                                  <span>✨</span>
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-orange-50 border border-orange-200 text-[#FF5722] text-[10px] font-bold">
+                                  <Sparkles className="w-2.5 h-2.5" />
                                   <span>{item.offer_label || `Saved ₹${itemSaving.toLocaleString()}`}</span>
                                 </span>
                               ) : itemSaving > 0 ? (
@@ -2308,9 +2421,10 @@ function CheckoutContent() {
                           <button
                             type="button"
                             onClick={handleRemovePromo}
-                            className="text-emerald-700 hover:text-emerald-900 font-bold ml-2 cursor-pointer"
+                            className="text-emerald-700 hover:text-emerald-900 font-bold ml-2 cursor-pointer p-0.5"
+                            aria-label="Remove promo code"
                           >
-                            ✕
+                            <X className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       )}
@@ -2463,8 +2577,9 @@ function CheckoutContent() {
                     type="button"
                     onClick={() => setLocationSuccessMsg(null)}
                     className="text-xs text-emerald-700 hover:text-emerald-900 font-bold p-0.5 cursor-pointer"
+                    aria-label="Dismiss notice"
                   >
-                    ✕
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
               )}
@@ -2483,8 +2598,9 @@ function CheckoutContent() {
                     type="button"
                     onClick={() => setLocationAccuracyNotice(null)}
                     className="text-amber-700 hover:text-amber-900 text-xs font-bold p-0.5 cursor-pointer"
+                    aria-label="Dismiss notice"
                   >
-                    ✕
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
               )}
@@ -2499,8 +2615,9 @@ function CheckoutContent() {
                     type="button"
                     onClick={() => setLocationError(null)}
                     className="text-xs text-rose-700 hover:text-rose-900 font-bold p-0.5 cursor-pointer"
+                    aria-label="Dismiss notice"
                   >
-                    ✕
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
               )}
@@ -3207,7 +3324,7 @@ function CheckoutContent() {
                               </p>
                               {isBundle && (
                                 <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-orange-50 text-[#FF5722] border border-orange-200">
-                                  <span>✨</span>
+                                  <Sparkles className="w-2.5 h-2.5 text-[#FF5722]" />
                                   <span>{item.offer_label || `Buy ${item.quantity} Save More`}</span>
                                 </span>
                               )}
@@ -3238,7 +3355,7 @@ function CheckoutContent() {
                       {bundleSavings > 0 && (
                         <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
                           <span className="flex items-center gap-1 font-bold">
-                            <span>✨</span>
+                            <Sparkles className="w-3 h-3 text-emerald-600" />
                             <span>Buy More Save More Savings</span>
                           </span>
                           <span className="font-extrabold">-₹{bundleSavings.toLocaleString()}</span>
@@ -3330,7 +3447,10 @@ function CheckoutContent() {
                           <span>Processing Order...</span>
                         </div>
                       ) : hasOutOfStockItems ? (
-                        <span>⚠️ Remove Out of Stock Items to Continue</span>
+                        <span className="flex items-center gap-1.5 justify-center">
+                          <AlertCircle className="w-4 h-4 text-amber-300" />
+                          <span>Remove Out of Stock Items to Continue</span>
+                        </span>
                       ) : paymentMethod === "cod" ? (
                         <>
                           <Lock className="w-5 h-5" />
@@ -3484,7 +3604,7 @@ function CheckoutContent() {
                         {isBundle && (
                           <div className="mt-1">
                             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-extrabold bg-gradient-to-r from-orange-50 to-amber-50 text-[#FF5722] border border-orange-200 shadow-2xs">
-                              <span>✨</span>
+                              <Sparkles className="w-2.5 h-2.5 text-[#FF5722]" />
                               <span>{item.offer_label || `Buy ${item.quantity} Save More`}</span>
                             </span>
                           </div>
@@ -3553,9 +3673,9 @@ function CheckoutContent() {
                     <button
                       type="button"
                       onClick={handleRemovePromo}
-                      className="text-emerald-700 hover:text-emerald-900 font-bold ml-2 cursor-pointer"
+                      className="text-emerald-700 hover:text-emerald-900 font-bold ml-2 cursor-pointer p-0.5 rounded hover:bg-emerald-100"
                     >
-                      ✕
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 )}
@@ -3580,7 +3700,7 @@ function CheckoutContent() {
                 {bundleSavings > 0 && (
                   <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
                     <span className="flex items-center gap-1 font-bold">
-                      <span>✨</span>
+                      <Sparkles className="w-3 h-3 text-emerald-600" />
                       <span>Buy More Save More Savings</span>
                     </span>
                     <span className="font-extrabold">-₹{bundleSavings.toLocaleString()}</span>
@@ -3704,6 +3824,156 @@ function CheckoutContent() {
             </div>
           </div>
         </form>
+
+        {/* WhatsApp OTP Verification Modal Popup */}
+        <AnimatePresence>
+          {showOtpModal && (
+            <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowOtpModal(false)}
+                className="fixed inset-0 bg-black/65 backdrop-blur-xs transition-opacity"
+              />
+
+              <motion.div
+                initial={{ scale: 0.94, opacity: 0, y: 15 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.94, opacity: 0, y: 15 }}
+                transition={{ type: "spring", damping: 25, stiffness: 350 }}
+                className="relative z-10 w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-gray-100"
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowOtpModal(false)}
+                  className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-700 transition cursor-pointer"
+                  aria-label="Close verification modal"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                {!isOtpVerifiedSuccess ? (
+                  <div className="space-y-4 text-center">
+                    <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-100 shadow-xs">
+                      <Phone className="w-7 h-7 text-emerald-600" />
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">Verify your mobile number</h3>
+                      <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                        We sent a 6-digit verification code on WhatsApp to <br />
+                        <strong className="text-gray-900">
+                          +91 {cleanPhoneDigits(phone).slice(0, 5)} {cleanPhoneDigits(phone).slice(5)}
+                        </strong>
+                      </p>
+                    </div>
+
+                    <div className="relative flex justify-center gap-2 py-2">
+                      {[0, 1, 2, 3, 4, 5].map((idx) => {
+                        const digit = otpCode[idx] || "";
+                        const isActive = idx === otpCode.length && otpCode.length < 6;
+                        const isFilled = Boolean(digit);
+                        return (
+                          <div
+                            key={idx}
+                            onClick={() => otpInputRef.current?.focus()}
+                            className={`w-11 h-13 rounded-xl border-2 flex items-center justify-center text-xl font-bold font-mono transition-all cursor-text ${
+                              isActive
+                                ? "border-[#FF7A00] ring-3 ring-orange-500/20 bg-white"
+                                : isFilled
+                                ? "border-gray-400 text-gray-900 bg-white"
+                                : "border-gray-200 text-gray-300 bg-gray-50/50"
+                            }`}
+                          >
+                            {digit}
+                          </div>
+                        );
+                      })}
+                      <input
+                        ref={otpInputRef}
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={6}
+                        autoComplete="one-time-code"
+                        value={otpCode}
+                        onChange={handleOtpChange}
+                        className="absolute inset-0 opacity-0 cursor-default"
+                      />
+                    </div>
+
+                    {otpError && (
+                      <p className="text-xs text-rose-600 font-semibold bg-rose-50 border border-rose-200 p-2 rounded-xl">
+                        {otpError}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between text-xs text-gray-500 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowOtpModal(false);
+                          setTimeout(() => {
+                            const el = document.getElementById("phone-input");
+                            if (el) {
+                              el.scrollIntoView({ behavior: "smooth", block: "center" });
+                              el.focus();
+                            }
+                          }, 200);
+                        }}
+                        className="text-[#FF7A00] font-bold hover:underline cursor-pointer"
+                      >
+                        Change number
+                      </button>
+
+                      <div>
+                        {canResendOtp ? (
+                          <button
+                            type="button"
+                            onClick={handleResendOtp}
+                            disabled={otpLoading}
+                            className="font-bold text-emerald-600 hover:underline cursor-pointer disabled:opacity-50"
+                          >
+                            Resend code
+                          </button>
+                        ) : (
+                          <span className="text-gray-400 font-medium">
+                            Resend in {otpTimer}s
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setOtpLoading(true);
+                        const cleanP = cleanPhoneDigits(phone);
+                        await sendPhoneOtp(cleanP);
+                        setOtpLoading(false);
+                        setOtpTimer(30);
+                        setCanResendOtp(false);
+                      }}
+                      className="w-full py-2.5 px-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 text-xs font-bold text-gray-700 transition cursor-pointer"
+                    >
+                      Get code by SMS
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3 py-4 text-center animate-in zoom-in-95 duration-200">
+                    <div className="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/25">
+                      <Check className="w-8 h-8 stroke-[3]" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900">Number verified</h3>
+                    <p className="text-xs text-gray-500">
+                      Opening Razorpay to pay ₹{payableNow.toLocaleString()}...
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Clean Bottom Footer */}

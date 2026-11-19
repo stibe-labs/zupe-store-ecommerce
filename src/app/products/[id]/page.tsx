@@ -2237,7 +2237,7 @@ export default function ProductDetailPage() {
             poster_image: product.poster_image,
             price: product.price,
             mrp: product.mrp,
-            original_price: product.original_price,
+            original_price: (product as any).original_price || product.mrp,
             selectedColor: availableColors.length > 0 && product.has_colors !== false ? selectedColor : undefined,
             selectedImage: selectedImage || product.poster_image,
           }}
