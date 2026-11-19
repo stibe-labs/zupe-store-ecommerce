@@ -331,20 +331,9 @@ function CheckoutContent() {
         setPromoSuccess(null);
       }
     } catch {
-      // Fallback
-      if (code === "ZUPE10" || code === "WELCOME10" || code === "OFFER10") {
-        const disc = Math.min(100, Math.round(subtotal * 0.1));
-        setPromoDiscount(disc);
-        setAppliedPromo(code);
-        setPromoSuccess(`Code ${code} applied: ₹${disc} discount added.`);
-      } else if (code === "SAVE50") {
-        const disc = subtotal >= 399 ? 50 : 25;
-        setPromoDiscount(disc);
-        setAppliedPromo(code);
-        setPromoSuccess(`Code ${code} applied: ₹${disc} discount added.`);
-      } else {
-        setPromoError("Unable to validate promo code. Please check your connection and try again.");
-      }
+      setPromoDiscount(0);
+      setAppliedPromo(null);
+      setPromoError("Unable to validate promo code. Please check your connection and try again.");
     } finally {
       setPromoLoading(false);
     }

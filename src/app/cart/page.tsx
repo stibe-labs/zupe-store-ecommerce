@@ -47,21 +47,44 @@ export default function CartPage() {
   const [couponApplied, setCouponApplied] = useState(false);
   const [couponError, setCouponError] = useState("");
 
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     setCouponError("");
     const code = couponCode.trim().toUpperCase();
+    if (!code) {
+      setCouponError("Please enter a promo code");
+      return;
+    }
 
-    if (code === "ZUPE10" || code === "WELCOME10") {
-      const disc = Math.round(subtotal * 0.1);
-      setDiscount(disc);
-      setCouponApplied(true);
-    } else if (code === "ZUPE15") {
-      const disc = Math.round(subtotal * 0.15);
-      setDiscount(disc);
-      setCouponApplied(true);
-    } else {
-      setCouponError("Invalid promo code. Try ZUPE10 for 10% off.");
+    try {
+      const res = await fetch("/api/promo-codes/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code,
+          subtotal,
+          items: cart.map((c) => ({
+            id: c.id,
+            name: c.name,
+            price: c.price,
+            quantity: c.quantity,
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (data.valid && data.discount > 0) {
+        setDiscount(data.discount);
+        setCouponApplied(true);
+        setCouponError("");
+      } else {
+        setDiscount(0);
+        setCouponApplied(false);
+        setCouponError(data.error || "Invalid promo code.");
+      }
+    } catch {
+      setDiscount(0);
+      setCouponApplied(false);
+      setCouponError("Unable to validate promo code. Please check your connection and try again.");
     }
   };
 
@@ -251,7 +274,7 @@ export default function CartPage() {
                     <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
-                      placeholder="Promo Code (e.g. ZUPE10)"
+                      placeholder="Promo Code"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
                       className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-medium uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00]"

@@ -125,8 +125,8 @@ export function QuickBuyAuthDrawer({
 
   // Promo Code State
   const [promoCodeInput, setPromoCodeInput] = useState<string>("");
-  const [appliedPromo, setAppliedPromo] = useState<string>("WELCOME50");
-  const [promoDiscount, setPromoDiscount] = useState<number>(50);
+  const [appliedPromo, setAppliedPromo] = useState<string>("");
+  const [promoDiscount, setPromoDiscount] = useState<number>(0);
   const [promoError, setPromoError] = useState<string | null>(null);
   const [promoSuccessMsg, setPromoSuccessMsg] = useState<string | null>(null);
   const [promoLoading, setPromoLoading] = useState<boolean>(false);
@@ -458,35 +458,15 @@ export function QuickBuyAuthDrawer({
         setPromoSuccessMsg(`Coupon ${data.code || code} applied: -₹${data.discount}`);
         setPromoCodeInput("");
       } else {
-        if (code === "ZUPE100" || code === "SAVE100") {
-          setAppliedPromo(code);
-          setPromoDiscount(100);
-          setPromoSuccessMsg(`Coupon ${code} applied: -₹100`);
-          setPromoCodeInput("");
-        } else if (code === "WELCOME50" || code === "SAVE50") {
-          setAppliedPromo(code);
-          setPromoDiscount(50);
-          setPromoSuccessMsg(`Coupon ${code} applied: -₹50`);
-          setPromoCodeInput("");
-        } else {
-          setPromoError(data.error || "This code is not valid");
-        }
+        setAppliedPromo("");
+        setPromoDiscount(0);
+        setPromoError(data.error || "This promo code is invalid or not active");
       }
     } catch {
       setPromoLoading(false);
-      if (code === "ZUPE100" || code === "SAVE100") {
-        setAppliedPromo(code);
-        setPromoDiscount(100);
-        setPromoSuccessMsg(`Coupon ${code} applied: -₹100`);
-        setPromoCodeInput("");
-      } else if (code === "WELCOME50" || code === "SAVE50") {
-        setAppliedPromo(code);
-        setPromoDiscount(50);
-        setPromoSuccessMsg(`Coupon ${code} applied: -₹50`);
-        setPromoCodeInput("");
-      } else {
-        setPromoError("This code is not valid");
-      }
+      setAppliedPromo("");
+      setPromoDiscount(0);
+      setPromoError("Failed to validate promo code. Please try again.");
     }
   };
 

@@ -36,79 +36,10 @@ export interface ValidationResult {
   coupon?: Coupon;
 }
 
-// Initial baseline coupons
-export const SEED_COUPONS: Coupon[] = [
-  {
-    id: "promo_zupe10",
-    code: "ZUPE10",
-    description: "Flat 10% OFF on all store products (up to ₹100)",
-    discount_type: "PERCENTAGE",
-    discount_value: 10,
-    min_order_amount: 0,
-    max_discount_amount: 100,
-    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ahead
-    usage_limit: 500,
-    usage_count: 24,
-    is_active: true,
-    applicable_type: "ALL",
-    applicable_products: [],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "promo_save50",
-    code: "SAVE50",
-    description: "Flat ₹50 OFF on orders above ₹399",
-    discount_type: "FLAT",
-    discount_value: 50,
-    min_order_amount: 399,
-    max_discount_amount: null,
-    expires_at: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-    usage_limit: 300,
-    usage_count: 58,
-    is_active: true,
-    applicable_type: "ALL",
-    applicable_products: [],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "promo_welcome10",
-    code: "WELCOME10",
-    description: "New customer special: 10% OFF your entire purchase",
-    discount_type: "PERCENTAGE",
-    discount_value: 10,
-    min_order_amount: 0,
-    max_discount_amount: 150,
-    expires_at: null, // Never expires
-    usage_limit: 1000,
-    usage_count: 112,
-    is_active: true,
-    applicable_type: "ALL",
-    applicable_products: [],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "promo_heatingpad20",
-    code: "HEAT20",
-    description: "Special 20% OFF on Portable Menstrual Heating Pad",
-    discount_type: "PERCENTAGE",
-    discount_value: 20,
-    min_order_amount: 0,
-    max_discount_amount: 250,
-    expires_at: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
-    usage_limit: 200,
-    usage_count: 31,
-    is_active: true,
-    applicable_type: "SPECIFIC",
-    applicable_products: ["portable-menstrual-heating-pad", "menstrual-heating-pad"],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
+// Initial baseline coupons (empty by default - only promo codes configured in the Admin Dashboard are active)
+export const SEED_COUPONS: Coupon[] = [];
 
-let inMemoryCoupons: Coupon[] = [...SEED_COUPONS];
+let inMemoryCoupons: Coupon[] = [];
 let tableInitialized = false;
 
 export async function ensureCouponsTable(): Promise<void> {
@@ -185,44 +116,16 @@ export async function getAllCoupons(): Promise<Coupon[]> {
 
   try {
     const rows = await executeD1Query<any>(`SELECT * FROM coupons ORDER BY created_at DESC`);
-    if (rows && rows.length > 0) {
+    if (Array.isArray(rows)) {
       const dbCoupons = rows.map(parseDbCoupon);
-      // Synchronize in-memory store
       inMemoryCoupons = dbCoupons;
       return dbCoupons;
-    } else {
-      // Seed default coupons into D1 if table is completely empty
-      for (const sc of SEED_COUPONS) {
-        try {
-          await executeD1Query(
-            `INSERT OR IGNORE INTO coupons (id, code, description, discount_type, discount_value, min_order_amount, max_discount_amount, expires_at, usage_limit, usage_count, is_active, applicable_type, applicable_products, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              sc.id,
-              sc.code,
-              sc.description,
-              sc.discount_type,
-              sc.discount_value,
-              sc.min_order_amount,
-              sc.max_discount_amount ?? null,
-              sc.expires_at ?? null,
-              sc.usage_limit ?? null,
-              sc.usage_count,
-              sc.is_active ? 1 : 0,
-              sc.applicable_type,
-              JSON.stringify(sc.applicable_products),
-              sc.created_at,
-              sc.updated_at,
-            ]
-          );
-        } catch {}
-      }
-      return [...inMemoryCoupons];
     }
   } catch (err) {
     console.warn("Failed to fetch coupons from D1, using memory store:", err);
     return [...inMemoryCoupons];
   }
+  return [...inMemoryCoupons];
 }
 
 export async function getCouponByCode(rawCode: string): Promise<Coupon | null> {
@@ -233,14 +136,18 @@ export async function getCouponByCode(rawCode: string): Promise<Coupon | null> {
 
   try {
     const rows = await executeD1Query<any>(`SELECT * FROM coupons WHERE UPPER(code) = ? LIMIT 1`, [code]);
-    if (rows && rows.length > 0) {
-      return parseDbCoupon(rows[0]);
+    if (Array.isArray(rows)) {
+      if (rows.length > 0) {
+        return parseDbCoupon(rows[0]);
+      }
+      // D1 was queried and this coupon does not exist in the database!
+      return null;
     }
   } catch (err) {
     console.warn("Failed to query coupon by code from D1:", err);
   }
 
-  // Memory fallback
+  // Memory fallback ONLY if D1 query threw an error (e.g. offline dev without D1)
   const mem = inMemoryCoupons.find((c) => c.code.toUpperCase() === code);
   return mem ? { ...mem } : null;
 }
