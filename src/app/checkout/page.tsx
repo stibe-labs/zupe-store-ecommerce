@@ -2573,7 +2573,7 @@ function CheckoutContent() {
           </div>
         )}
 
-        <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        <form onSubmit={handlePlaceOrder} className={`grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 ${checkoutStep === "payment" && paymentMethod === "online" ? "pb-28 sm:pb-0" : ""}`}>
           {/* LEFT COLUMN: URGENCY BANNER + STEP 1 + STEP 2 */}
           <div className="lg:col-span-7 space-y-6 sm:space-y-7">
             {/* Verified WhatsApp Customer Status Banner */}
@@ -3820,8 +3820,8 @@ function CheckoutContent() {
                     </div>
                   </div>
 
-                  {/* ACTION BUTTON */}
-                  <div className="pt-2">
+                  {/* ACTION BUTTON — hidden on mobile when online payment selected (shown in sticky footer instead) */}
+                  <div className={`pt-2 ${paymentMethod === "online" ? "hidden sm:block" : ""}`}>
                     <button
                       id="checkout-submit-btn"
                       type="submit"
@@ -4427,6 +4427,43 @@ function CheckoutContent() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* ── MOBILE STICKY PAY BUTTON (online payment step only) ── */}
+      {checkoutStep === "payment" && paymentMethod === "online" && (
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-t border-emerald-100 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+          <button
+            type="button"
+            disabled={loading || hasOutOfStockItems}
+            onClick={() => {
+              const btn = document.getElementById("checkout-submit-btn") as HTMLButtonElement | null;
+              if (btn) btn.click();
+            }}
+            className={`w-full py-4 px-6 rounded-2xl text-white font-bold text-base shadow-lg flex items-center justify-center gap-2 transition-all ${
+              loading || hasOutOfStockItems
+                ? "bg-gray-400 cursor-not-allowed opacity-80"
+                : "bg-emerald-600 active:scale-[0.99] shadow-emerald-600/25 cursor-pointer"
+            }`}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Opening Secure Payment...</span>
+              </>
+            ) : hasOutOfStockItems ? (
+              <span>⚠️ Remove Out of Stock Items</span>
+            ) : (
+              <>
+                <Lock className="w-5 h-5" />
+                <span>Pay Online Now • ₹{onlineGrandTotal.toLocaleString()}</span>
+                <ArrowRight className="w-5 h-5" />
+              </>
+            )}
+          </button>
+          <p className="text-center text-[10px] text-gray-500 mt-1.5">
+            100% Secure • 256-bit Bank Grade Escrow by Cashfree
+          </p>
+        </div>
+      )}
 
       {/* Clean Bottom Footer */}
       <footer className="py-8 text-center text-xs text-gray-400 border-t border-gray-100 bg-white mt-12">
