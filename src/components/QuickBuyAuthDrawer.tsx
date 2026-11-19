@@ -32,7 +32,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 import { cleanCityName } from "@/lib/pincodeService";
-import { trackInitiateCheckout } from "@/lib/metaPixel";
+import { trackInitiateCheckout, trackPurchase } from "@/lib/metaPixel";
 
 export interface QuickBuyAuthDrawerProps {
   isOpen: boolean;
@@ -775,6 +775,14 @@ export function QuickBuyAuthDrawer({
               if (items && items.length > 0) {
                 clearCart();
               }
+              // Meta Pixel Purchase Event with full order total
+              trackPurchase({
+                orderId: assignedOrderId,
+                value: grandTotal,
+                currency: "INR",
+                content_ids: orderItems.map((it) => it.id),
+                num_items: totalItemCount,
+              });
               onSuccess?.(cleanPhone, assignedOrderId);
             } else {
               setOrderError(verifyData.error || "Payment verification incomplete. Please contact support.");
