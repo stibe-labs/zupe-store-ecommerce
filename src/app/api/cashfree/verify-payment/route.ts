@@ -145,13 +145,13 @@ export async function POST(req: NextRequest) {
       Boolean(order?.is_cod_partial) ||
       (Number(order?.advance_paid) > 0 && Number(order?.advance_paid) < Number(order?.total_amount));
 
+    const effectiveTotal = Number(order?.total_amount) || (isCodOrder ? (Number(order?.advance_paid || 1) + Number(order?.balance_due || 0)) : (verificationAmount || 899));
     const advancePaid = isCodOrder
-      ? (verificationAmount || (Number(order?.advance_paid) > 0 ? Number(order?.advance_paid) : 49))
-      : (Number(order?.total_amount) || verificationAmount || 899);
+      ? (verificationAmount || (Number(order?.advance_paid) > 0 ? Number(order?.advance_paid) : 1))
+      : (effectiveTotal || verificationAmount || 899);
     const balanceDue = isCodOrder
-      ? (order?.balance_due !== undefined ? Number(order.balance_due) : Math.max(0, Number(order?.total_amount || 0) - advancePaid))
+      ? Math.max(0, effectiveTotal - advancePaid)
       : 0;
-    const effectiveTotal = Number(order?.total_amount) || (isCodOrder ? (advancePaid + balanceDue) : (verificationAmount || 899));
 
     // 3. Update in ERP Store (handles memory + D1 update)
     await updateERPOrder(effectiveOrderId, {

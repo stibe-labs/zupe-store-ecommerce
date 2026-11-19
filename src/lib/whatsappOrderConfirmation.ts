@@ -253,13 +253,18 @@ export async function sendOrderConfirmationWhatsApp(
   const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
   const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
 
+  const advanceAmount = Number(params.advancePaid) || 0;
+  const isPartialCod = params.paymentMethod === "cod" && advanceAmount > 0;
+
   // For COD: doorstep balance = what customer pays at delivery (total minus advance already paid online)
-  const doorstepBalance = params.paymentMethod === "cod" && params.balanceDue !== undefined
-    ? params.balanceDue
-    : (params.paymentMethod === "cod" && params.advancePaid
-      ? Math.max(0, totalAmount - params.advancePaid)
-      : totalAmount);
-  const switchPrepaidAmount = doorstepBalance;
+  // Ensure that if advance was paid, it is ALWAYS subtracted from total
+  const doorstepAmount = params.paymentMethod === "cod"
+    ? (isPartialCod
+        ? Math.max(0, totalAmount - advanceAmount)
+        : (params.balanceDue !== undefined && params.balanceDue < totalAmount ? params.balanceDue : totalAmount))
+    : 0;
+  const doorstepBalance = doorstepAmount;
+  const switchPrepaidAmount = doorstepAmount;
   const productSubtotal = totalAmount >= 49 ? totalAmount - 49 : totalAmount;
   const firstName = customerName.split(" ")[0] || customerName;
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
@@ -296,9 +301,6 @@ export async function sendOrderConfirmationWhatsApp(
 
   let message: string;
   if (paymentMethod === "cod") {
-    const isPartialCod = Boolean(params.advancePaid && params.advancePaid > 0);
-    const doorstepAmount = params.balanceDue !== undefined ? params.balanceDue : (isPartialCod ? Math.max(0, totalAmount - (params.advancePaid || 49)) : totalAmount);
-
     message =
       "✅ *Order Confirmed — Turkiye Jam!* 🛍️\n\n" +
       "Hi " + firstName + "! Your Cash on Delivery order is confirmed.\n\n" +
@@ -306,7 +308,7 @@ export async function sendOrderConfirmationWhatsApp(
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
       "💰 *Price Breakdown:*\n" +
       "  • Total Amount: Rs " + totalAmount.toLocaleString("en-IN") + "\n" +
-      (isPartialCod ? "  • Online Advance Paid: Rs " + (params.advancePaid || 49).toLocaleString("en-IN") + " (via Cashfree)\n" : "") +
+      (isPartialCod ? "  • Online Advance Paid: Rs " + advanceAmount.toLocaleString("en-IN") + " (via Cashfree)\n" : "") +
       "  • *Payable on Delivery: Rs " + doorstepAmount.toLocaleString("en-IN") + " (Cash / UPI)*\n\n" +
       "🚚 *Estimated Delivery:* 3-5 Business Days\n\n" +
       "📦 *Track Your Order:*\n" +
@@ -328,38 +330,20 @@ export async function sendOrderConfirmationWhatsApp(
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
   if (paymentMethod === "cod") {
-    // 1. For COD: Send approved Utility template 'zupe_order_cod_v2' which includes BOTH buttons:
-    // [Pay Online (Save Rs 30)] and [Track Order]
-    let codV2Sent = false;
+    // 1. For COD: Send the approved Meta utility template 'turkiyejam_order_update'
+    // ("Hello {name}, your Turkiye Jam order {orderId} has been received. Total amount is Rs {amount}...")
     try {
-      codV2Sent = await sendViaCodV2Template(
+      await sendViaConfirmedUtilityTemplate(
         apiUrl,
         token,
         digits,
         firstName,
         displayOrderId,
-        doorstepBalance,
-        switchPrepaidAmount
+        doorstepAmount,
+        paymentMethodLabel
       );
     } catch (err) {
-      console.warn("[WA Order Confirm] COD V2 template attempt:", err);
-    }
-
-    // 2. If V2 template failed, fallback to generic confirmed utility template
-    if (!codV2Sent) {
-      try {
-        await sendViaConfirmedUtilityTemplate(
-          apiUrl,
-          token,
-          digits,
-          firstName,
-          displayOrderId,
-          doorstepBalance,  // show doorstep balance (after advance deduction), not total
-          paymentMethodLabel
-        );
-      } catch (err) {
-        console.warn("[WA Order Confirm] Fallback utility template attempt:", err);
-      }
+      console.warn("[WA Order Confirm] Utility template attempt error:", err);
     }
   } else {
     // Prepaid orders: Send prepaid template or confirmed template

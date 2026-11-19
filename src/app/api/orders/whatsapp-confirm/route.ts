@@ -82,13 +82,18 @@ export async function GET(req: NextRequest) {
         }
 
         const displayOrderId = ord.shopify_order_id || (ord as any).shopify_order_id || ord.id || resolvedOrderId;
+        const ordTotal = Number(ord.total_amount) || 0;
+        const ordAdvance = isCod ? (Number(ord.advance_paid) || (ord.is_cod_partial ? 1 : 0)) : 0;
+        const ordBalance = isCod ? Math.max(0, ordTotal - ordAdvance) : 0;
 
         await sendOrderConfirmationWhatsApp({
           customerName: ord.customer_name || "Valued Customer",
           customerPhone: ord.customer_phone || "",
           orderId: displayOrderId,
-          totalAmount: Number(ord.total_amount) || 0,
+          totalAmount: ordTotal,
           paymentMethod: isCod ? "cod" : "prepaid",
+          advancePaid: isCod && ordAdvance > 0 ? ordAdvance : undefined,
+          balanceDue: isCod ? ordBalance : undefined,
           items: rawItems.map((it: any) => ({
             name: it.product_name || it.name || "Turkiye Jam",
             quantity: Number(it.quantity || 1),

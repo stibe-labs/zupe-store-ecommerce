@@ -344,7 +344,7 @@ function CheckoutContent() {
         const total = data.totalAmount || data.amount || grandTotal;
         const paymentLabel = data.isCodPartial ? "Cash on Delivery" : (data.paymentId || "Online Payment (Cashfree / Settler)");
         const advance = data.advancePaid || (data.isCodPartial ? configuredCodFee : 0);
-        const due = data.balanceDue || (data.isCodPartial ? Math.max(0, total - configuredCodFee) : 0);
+        const due = data.isCodPartial ? (data.balanceDue !== undefined && data.balanceDue < total ? data.balanceDue : Math.max(0, total - advance)) : 0;
         const itemsToSave = (data.order?.items && Array.isArray(data.order.items) && data.order.items.length > 0)
           ? data.order.items
           : (cart && cart.length > 0 ? cart : []);
@@ -2094,7 +2094,7 @@ function CheckoutContent() {
     const isCod = confirmedPaymentId === "Cash on Delivery" || confirmedPaymentId?.includes("Cash on Delivery");
     const displayTotal = confirmedTotal || grandTotal;
     const advancePaid = confirmedAdvancePaid || (isCod ? configuredCodFee : displayTotal);
-    const balanceDue = isCod ? (confirmedBalanceDue || Math.max(0, displayTotal - advancePaid)) : 0;
+    const balanceDue = isCod ? (confirmedBalanceDue && confirmedBalanceDue < displayTotal ? confirmedBalanceDue : Math.max(0, displayTotal - advancePaid)) : 0;
 
     return (
       <div className="min-h-screen tj-diamonds-cream text-stone-900 antialiased selection:bg-[#fed000] selection:text-stone-900 flex flex-col justify-between">
