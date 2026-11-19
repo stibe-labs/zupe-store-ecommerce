@@ -22,6 +22,74 @@ export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const { pathname } = url;
 
+  // Check if this request is on the admin subdomain (e.g. admin.vittallifestyle.com or admin.localhost)
+  const isAdminSubdomain =
+    host.startsWith("admin.") || host.startsWith("admin.localhost");
+
+  // Redirect main store /admin requests to the dedicated admin subdomain in production
+  if (!isAdminSubdomain && host.includes("vittallifestyle.com") && pathname.startsWith("/admin")) {
+    const adminUrl = new URL(pathname + url.search, "https://admin.vittallifestyle.com");
+    return NextResponse.redirect(adminUrl, 307);
+  }
+
+  // Handle Admin Subdomain (e.g. admin.vittallifestyle.com or admin.localhost)
+  if (isAdminSubdomain) {
+    // If accessing root "/" on admin subdomain
+    if (pathname === "/" || pathname === "") {
+      const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+      if (!adminToken) {
+        url.pathname = "/admin/login";
+        return applySecurityHeaders(NextResponse.redirect(url));
+      }
+
+      const session = await verifyAdminSessionToken(adminToken);
+      if (!session.valid) {
+        url.pathname = "/admin/login";
+        url.searchParams.set("notice", "Admin session expired. Please sign in again.");
+        const res = NextResponse.redirect(url);
+        res.cookies.delete(ADMIN_COOKIE_NAME);
+        return applySecurityHeaders(res);
+      }
+
+      url.pathname = "/admin";
+      return applySecurityHeaders(NextResponse.rewrite(url));
+    }
+
+    // Direct /login alias to /admin/login
+    if (pathname === "/login") {
+      url.pathname = "/admin/login";
+      return applySecurityHeaders(NextResponse.rewrite(url));
+    }
+
+    // If accessing clean paths like /orders, /products, /whatsapp on admin subdomain
+    // rewrite them internally to /admin/orders, /admin/products, etc.
+    const adminSections = [
+      "orders",
+      "whatsapp",
+      "crm",
+      "abandoned-carts",
+      "shipments",
+      "products",
+      "promo-codes",
+      "reviews",
+      "website-content",
+      "suppliers",
+      "expenses",
+      "payments",
+      "rto-refund-balance",
+      "reports",
+      "calculator",
+      "customers",
+      "settings",
+    ];
+
+    const firstSegment = pathname.split("/")[1];
+    if (adminSections.includes(firstSegment)) {
+      url.pathname = `/admin${pathname}`;
+      return applySecurityHeaders(NextResponse.rewrite(url));
+    }
+  }
+
   // -- 1. Protect Admin Portal Pages (/admin, /admin/*) --
   if (pathname.startsWith("/admin")) {
     // Dedicated Admin Login Page
@@ -30,7 +98,7 @@ export async function middleware(req: NextRequest) {
       if (adminToken) {
         const session = await verifyAdminSessionToken(adminToken);
         if (session.valid) {
-          url.pathname = "/admin";
+          url.pathname = isAdminSubdomain ? "/" : "/admin";
           url.search = "";
           return applySecurityHeaders(NextResponse.redirect(url));
         }
@@ -92,8 +160,8 @@ export async function middleware(req: NextRequest) {
     return applySecurityHeaders(NextResponse.next());
   }
 
-  // -- 3. Protect Customer Account Pages (/account, /orders) --
-  if (pathname === "/account" || pathname === "/orders") {
+  // -- 3. Protect Customer Account Pages (/account, /orders) on main site --
+  if (!isAdminSubdomain && (pathname === "/account" || pathname === "/orders")) {
     const userToken = req.cookies.get(USER_COOKIE_NAME)?.value;
     const adminToken = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
 
@@ -120,17 +188,6 @@ export async function middleware(req: NextRequest) {
     }
 
     return applySecurityHeaders(NextResponse.next());
-  }
-
-  // -- 4. Admin Subdomain Routing (e.g. admin.zupestore.com) --
-  const isAdminSubdomain =
-    host.startsWith("admin.") || host.startsWith("admin.localhost");
-
-  if (isAdminSubdomain) {
-    if (pathname === "/" || pathname === "") {
-      url.pathname = "/admin";
-      return applySecurityHeaders(NextResponse.rewrite(url));
-    }
   }
 
   return applySecurityHeaders(NextResponse.next());
