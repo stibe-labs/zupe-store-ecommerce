@@ -23,6 +23,9 @@ import {
   Phone,
   Package,
   Mail,
+  Building2,
+  Sparkles,
+  Smartphone,
   ArrowRight,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -1165,153 +1168,285 @@ export function QuickBuyAuthDrawer({
                     </div>
                   </div>
 
-                  {/* 3. CHOOSE HOW TO PAY SECTION */}
-                  <div className="space-y-2.5 pt-2">
-                    <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-wider text-gray-700">
-                      <span className="flex items-center gap-1.5">
-                        <CreditCard className="w-4 h-4 text-[#FF7A00]" />
-                        <span>Choose how to pay</span>
-                      </span>
-                    </div>
-
-                    {/* Option 1: Pay Online */}
-                    <div
-                      onClick={() => setPaymentMethod("online")}
-                      className={`relative p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
-                        paymentMethod === "online"
-                          ? "border-[#FF7A00] bg-orange-50/25 shadow-xs"
-                          : "border-gray-200 bg-white hover:border-gray-300"
-                      }`}
-                    >
-                      <span className="absolute -top-2.5 left-3 px-2 py-0.5 rounded-full bg-gradient-to-r from-orange-600 to-amber-500 text-white font-black text-[9.5px] tracking-wide shadow-xs">
-                        RECOMMENDED
-                      </span>
-
-                      <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-emerald-600 text-white font-black text-[10px] tracking-wide shadow-xs">
-                        SAVE ₹{codFee}
-                      </span>
-
-                      <div className="flex items-start gap-3 mt-1">
-                        <div
-                          className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 transition-all ${
-                            paymentMethod === "online"
-                              ? "border-[#FF7A00] bg-[#FF7A00]"
-                              : "border-gray-300 bg-white"
-                          }`}
-                        >
-                          {paymentMethod === "online" && <div className="w-2 h-2 rounded-full bg-white" />}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-sm font-bold text-gray-900 leading-snug">
-                              Pay Online
-                            </h4>
-                            <span className="text-sm font-black text-gray-950">
-                              ₹{cartTotal.toLocaleString()}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-gray-500 mt-0.5">
-                            UPI · Cards · Net banking
+                  {/* 3. CHOOSE HOW TO PAY SECTION (Exact match to Reference Images 3 & 4) */}
+                  <div className="space-y-3 pt-2">
+                    {/* Section 3 Header */}
+                    <div className="flex items-center justify-between pb-1">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                          3
+                        </span>
+                        <div>
+                          <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
+                            Choose how to pay
+                          </h3>
+                          <p className="text-xs text-emerald-600 font-semibold mt-0.5">
+                            Pay online &amp; save ₹{codFee}
                           </p>
-
-                          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                            <span className="px-1.5 py-0.5 rounded bg-white border border-gray-200 text-[10px] font-extrabold text-gray-700">
-                              UPI
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded bg-white border border-gray-200 text-[10px] font-extrabold text-[#5f259f]">
-                              PhonePe
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded bg-white border border-gray-200 text-[10px] font-extrabold text-[#4285F4]">
-                              GPay
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded bg-white border border-gray-200 text-[10px] font-extrabold text-[#1A1F71]">
-                              Cards
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mt-2 font-medium">
-                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            <span>100% secure · Powered by Razorpay</span>
-                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-right text-gray-500">
+                        <Lock className="w-4 h-4 text-gray-600 shrink-0" />
+                        <div>
+                          <p className="text-[11px] font-bold text-gray-800 leading-tight">100% Secure Payments</p>
+                          <p className="text-[10px] text-gray-400 leading-tight">Powered by Razorpay</p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Option 2: Cash on Delivery */}
+                    {/* CARD 1: Pay Online (Prepaid) */}
                     <div
+                      id="payment-prepaid-card"
+                      onClick={() => setPaymentMethod("online")}
+                      className={`relative p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all ${
+                        paymentMethod === "online"
+                          ? "border-[#FF7A00] bg-[#FFFBF8] shadow-sm ring-1 ring-[#FF7A00]/20"
+                          : "border-gray-200 bg-white hover:border-[#FF7A00]/40"
+                      }`}
+                    >
+                      {/* Top Row: Radio + Icon + Title + (Recommended Badge) + Chevron */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white transition-colors ${
+                              paymentMethod === "online" ? "border-[#FF7A00]" : "border-gray-300"
+                            }`}
+                          >
+                            {paymentMethod === "online" && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-[#FF7A00]" />
+                            )}
+                          </div>
+
+                          <div className="w-10 h-10 rounded-xl bg-orange-100/60 border border-orange-200/50 flex items-center justify-center text-[#FF7A00] shrink-0">
+                            <CreditCard className="w-5 h-5" />
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
+                                PAY ONLINE (PREPAID)
+                              </h4>
+                              {paymentMethod === "online" && (
+                                <span className="px-2 py-0.5 rounded-full bg-[#FF7A00] text-white text-[10px] font-extrabold uppercase tracking-wider shadow-2xs">
+                                  RECOMMENDED
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-0.5 truncate">UPI, Cards or Net Banking</p>
+                          </div>
+                        </div>
+
+                        <ChevronDown
+                          className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${
+                            paymentMethod === "online" ? "rotate-180" : ""
+                          }`}
+                        />
+                      </div>
+
+                      {/* Expandable Content for Prepaid */}
+                      <AnimatePresence initial={false}>
+                        {paymentMethod === "online" && (
+                          <motion.div
+                            key="prepaid-expanded"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.22, ease: "easeInOut" }}
+                            className="overflow-hidden"
+                          >
+                            {/* Pay Now Amount + Free Express Shipping Row */}
+                            <div className="mt-3.5 pt-3.5 border-t border-gray-100 flex items-center justify-between gap-3 flex-wrap">
+                              <div>
+                                <p className="text-[11px] text-gray-500 font-medium">Pay now</p>
+                                <p className="text-lg sm:text-xl font-black text-gray-950">₹{cartTotal.toLocaleString()}</p>
+                              </div>
+                              <div className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-1.5">
+                                <Truck className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>FREE Express Shipping</span>
+                              </div>
+                            </div>
+
+                            {/* Payment Logos Row */}
+                            <div className="flex flex-wrap items-center gap-2 pt-3 mt-3 border-t border-gray-100">
+                              {/* UPI */}
+                              <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
+                                <span className="font-black italic text-xs tracking-tighter text-[#2E3192]">UPI</span>
+                                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                                  <path d="M14 4L7 12H13L10 20L17 12H11L14 4Z" fill="#097939" />
+                                </svg>
+                              </div>
+
+                              {/* VISA */}
+                              <span className="font-black italic text-xs tracking-wider text-[#1A1F71] font-sans px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
+                                VISA
+                              </span>
+
+                              {/* Mastercard */}
+                              <div className="flex items-center px-2 py-1 rounded bg-white border border-gray-200 shadow-2xs">
+                                <div className="w-3.5 h-3.5 rounded-full bg-[#EB001B] opacity-90" />
+                                <div className="w-3.5 h-3.5 rounded-full bg-[#F79E1B] -ml-1.5 mix-blend-multiply opacity-90" />
+                              </div>
+
+                              {/* RuPay */}
+                              <div className="flex items-center px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
+                                <span className="font-black text-xs tracking-tight text-[#002D62]">Ru</span>
+                                <span className="font-black text-xs tracking-tight text-[#00A4E4]">Pay</span>
+                                <span className="w-1 h-3 bg-gradient-to-b from-[#00A4E4] to-[#F15A24] -skew-x-12 ml-0.5" />
+                              </div>
+
+                              {/* Net Banking */}
+                              <div className="flex items-center gap-1 text-[11px] font-semibold text-gray-700 px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
+                                <Building2 className="w-3.5 h-3.5 text-gray-600" />
+                                <span>Net Banking</span>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* CARD 2: Cash on Delivery */}
+                    <div
+                      id="payment-cod-card"
                       onClick={() => setPaymentMethod("cod")}
-                      className={`relative p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
+                      className={`relative p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all ${
                         paymentMethod === "cod"
-                          ? "border-gray-800 bg-gray-50/50 shadow-xs"
+                          ? "border-[#FF7A00] bg-[#FFFBF8] shadow-sm ring-1 ring-[#FF7A00]/20"
                           : "border-gray-200 bg-white hover:border-gray-300"
                       }`}
                     >
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 transition-all ${
-                            paymentMethod === "cod"
-                              ? "border-gray-800 bg-gray-800"
-                              : "border-gray-300 bg-white"
-                          }`}
-                        >
-                          {paymentMethod === "cod" && <div className="w-2 h-2 rounded-full bg-white" />}
-                        </div>
+                      {/* Top Row: Radio + Icon + Title + Chevron */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white transition-colors ${
+                              paymentMethod === "cod" ? "border-[#FF7A00]" : "border-gray-300"
+                            }`}
+                          >
+                            {paymentMethod === "cod" && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-[#FF7A00]" />
+                            )}
+                          </div>
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-sm font-bold text-gray-900 leading-snug">
+                          <div className="w-10 h-10 rounded-xl bg-orange-100/60 border border-orange-200/50 flex items-center justify-center text-[#FF7A00] shrink-0">
+                            <Package className="w-5 h-5" />
+                          </div>
+
+                          <div className="min-w-0">
+                            <h4 className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
                               Cash on Delivery
                             </h4>
-                            <span className="text-sm font-black text-gray-950">
-                              ₹{(cartTotal + codFee).toLocaleString()}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-gray-500 mt-0.5">
-                            Product price + ₹{codFee} COD handling fee
-                          </p>
-
-                          {/* COD Breakdown row */}
-                          <div className="grid grid-cols-3 gap-1.5 mt-2.5 text-center text-xs">
-                            <div className="p-2 rounded-lg bg-gray-100/80 border border-gray-200">
-                              <span className="block text-[10px] text-gray-500 font-semibold">Pay at delivery</span>
-                              <strong className="block text-xs font-black text-gray-900">₹{cartTotal.toLocaleString()}</strong>
-                            </div>
-                            <div className="p-2 rounded-lg bg-amber-50 border border-amber-200">
-                              <span className="block text-[10px] text-amber-800 font-semibold">Pay now online</span>
-                              <strong className="block text-xs font-black text-amber-950">₹{codFee}</strong>
-                            </div>
-                            <div className="p-2 rounded-lg bg-gray-900 text-white border border-gray-900">
-                              <span className="block text-[10px] text-gray-300 font-semibold">Total</span>
-                              <strong className="block text-xs font-black">₹{(cartTotal + codFee).toLocaleString()}</strong>
-                            </div>
+                            <p className="text-xs font-semibold text-gray-700 mt-0.5">
+                              Pay ₹{codFee} COD fee now · ₹{cartTotal.toLocaleString()} at delivery
+                            </p>
+                            <p className="text-[11px] text-gray-400 mt-0.5 leading-snug">
+                              COD fee refunded if you cancel before dispatch. Not refundable if the parcel is refused at delivery.
+                            </p>
                           </div>
                         </div>
+
+                        <ChevronDown
+                          className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${
+                            paymentMethod === "cod" ? "rotate-180" : ""
+                          }`}
+                        />
                       </div>
+
+                      {/* Expandable Content for COD */}
+                      <AnimatePresence initial={false}>
+                        {paymentMethod === "cod" && (
+                          <motion.div
+                            key="cod-expanded"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.22, ease: "easeInOut" }}
+                            className="overflow-hidden"
+                          >
+                            {/* Inner White Breakdown Card */}
+                            <div className="mt-3.5 p-3.5 sm:p-4 rounded-xl bg-white border border-gray-100 space-y-2.5">
+                              {/* Row 1: Item total */}
+                              <div className="flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-2.5 text-gray-700">
+                                  <CreditCard className="w-4 h-4 text-gray-400 shrink-0" />
+                                  <span className="font-medium text-gray-800">Item total</span>
+                                </div>
+                                <span className="font-bold text-gray-900">₹{cartTotal.toLocaleString()}</span>
+                              </div>
+
+                              {/* Row 2: COD fee (pay now) */}
+                              <div className="flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-2.5 text-gray-700">
+                                  <Truck className="w-4 h-4 text-gray-400 shrink-0" />
+                                  <span className="font-medium text-gray-800">COD fee (pay now)</span>
+                                </div>
+                                <span className="font-bold text-[#FF7A00]">
+                                  ₹{codFee}
+                                </span>
+                              </div>
+
+                              {/* Divider + Pay at delivery */}
+                              <div className="pt-2.5 border-t border-gray-100 flex items-center justify-between">
+                                <span className="font-bold text-gray-900 text-sm sm:text-base">Pay at delivery</span>
+                                <span className="font-black text-base sm:text-lg text-[#FF7A00]">₹{cartTotal.toLocaleString()}</span>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
 
-                    {/* Nudge card when COD is active */}
-                    {isCod && (
-                      <div className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-800 to-emerald-950 text-white space-y-2 animate-in fade-in duration-200 shadow-md shadow-emerald-950/20">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
-                            SMART CHOICE
-                          </span>
-                          <span className="text-[11px] font-black bg-amber-300 text-emerald-950 px-2.5 py-0.5 rounded-full">
-                            SAVE ₹{codFee}
-                          </span>
+                    {/* OFFER NUDGE: SWITCH TO UPI & SAVE (Matches Image 3) */}
+                    {paymentMethod === "cod" && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="p-4 sm:p-5 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] space-y-3.5 mt-3 shadow-xs"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center shrink-0">
+                            <Sparkles className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm sm:text-base font-extrabold text-emerald-950 leading-tight">
+                              Save ₹{codFee} with online payment
+                            </h4>
+                            <p className="text-[11px] text-emerald-800">
+                              Get free shipping &amp; express dispatch
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-xs text-white/90 leading-relaxed">
-                          Pay <strong>₹{cartTotal.toLocaleString()}</strong> online instead of <span className="line-through text-white/60">₹{(cartTotal + codFee).toLocaleString()}</span>. Faster dispatch, no cash needed at delivery.
-                        </p>
+
+                        <div className="space-y-1.5 text-xs text-emerald-900 font-semibold pl-1">
+                          <div className="flex items-center gap-2">
+                            <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                            <span>Free Express Shipping</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                            <span>No COD handling fee <span className="text-emerald-700 font-bold">(-₹{codFee})</span></span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                            <span>Instant order confirmation &amp; faster dispatch</span>
+                          </div>
+                        </div>
+
                         <button
                           type="button"
-                          onClick={() => setPaymentMethod("online")}
-                          className="w-full py-2.5 rounded-xl bg-white text-emerald-950 font-black text-xs hover:bg-gray-100 transition cursor-pointer"
+                          onClick={() => {
+                            setPaymentMethod("online");
+                            const el = document.getElementById("payment-prepaid-card");
+                            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+                          }}
+                          className="w-full py-3.5 px-4 rounded-xl bg-[#111111] hover:bg-black text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] cursor-pointer"
                         >
-                          Switch to Pay Online · Save ₹{codFee}
+                          <Smartphone className="w-4 h-4 text-white" />
+                          <span>Switch to UPI &amp; Save ₹{codFee}</span>
+                          <ArrowRight className="w-4 h-4 text-white" />
                         </button>
-                      </div>
+                      </motion.div>
                     )}
                   </div>
 
@@ -1516,7 +1651,11 @@ export function QuickBuyAuthDrawer({
                   type="button"
                   onClick={handlePlaceOrderClick}
                   disabled={isPlacingOrder || otpLoading}
-                  className="w-full py-4 px-6 rounded-2xl bg-[#FF7A00] hover:bg-[#E66E00] text-white font-black text-base shadow-lg shadow-orange-500/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                  className={`w-full py-4 px-6 rounded-2xl font-black text-base shadow-lg active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
+                    isCod
+                      ? "bg-[#056839] hover:bg-[#04562e] text-white shadow-emerald-700/25"
+                      : "bg-[#FF7A00] hover:bg-[#E66E00] text-white shadow-orange-500/25"
+                  }`}
                 >
                   {isPlacingOrder ? (
                     <>
@@ -1529,19 +1668,48 @@ export function QuickBuyAuthDrawer({
                       <span>Sending WhatsApp code...</span>
                     </>
                   ) : isCod ? (
-                    <span className="flex items-center gap-1.5">
+                    <span className="flex items-center gap-2">
+                      <Lock className="w-5 h-5" />
                       <span>Pay ₹{codFee} &amp; Place COD Order</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-5 h-5" />
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1.5">
-                      <span>Pay ₹{grandTotal.toLocaleString()} &amp; Place Order</span>
-                      <ArrowRight className="w-4 h-4" />
+                    <span className="flex items-center gap-2">
+                      <Lock className="w-5 h-5" />
+                      <span>Pay ₹{grandTotal.toLocaleString()} Securely &amp; Place Order</span>
+                      <ArrowRight className="w-5 h-5" />
                     </span>
                   )}
                 </button>
 
-                <p className="text-center text-xs text-gray-500 font-medium">
+                {/* Trust Badges below Pay Button (Matches Reference Image 4) */}
+                <div className="pt-1.5 grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
+                  <div className="flex flex-col items-center p-2 rounded-xl bg-gray-50/70 border border-gray-100 shadow-2xs">
+                    <div className="w-7 h-7 rounded-full bg-white shadow-2xs border border-gray-100 flex items-center justify-center text-[#FF7A00] shrink-0 mb-1 mx-auto">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                    </div>
+                    <p className="text-[10px] sm:text-xs font-bold text-gray-900 leading-tight">256-Bit SSL</p>
+                    <p className="text-[8.5px] sm:text-[10px] text-gray-400 leading-tight mt-0.5">Encrypted</p>
+                  </div>
+
+                  <div className="flex flex-col items-center p-2 rounded-xl bg-gray-50/70 border border-gray-100 shadow-2xs">
+                    <div className="w-7 h-7 rounded-full bg-white shadow-2xs border border-gray-100 flex items-center justify-center text-emerald-600 shrink-0 mb-1 mx-auto">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    </div>
+                    <p className="text-[10px] sm:text-xs font-bold text-gray-900 leading-tight">Razorpay</p>
+                    <p className="text-[8.5px] sm:text-[10px] text-gray-400 leading-tight mt-0.5">Secure Pay</p>
+                  </div>
+
+                  <div className="flex flex-col items-center p-2 rounded-xl bg-gray-50/70 border border-gray-100 shadow-2xs">
+                    <div className="w-7 h-7 rounded-full bg-white shadow-2xs border border-gray-100 flex items-center justify-center text-blue-600 shrink-0 mb-1 mx-auto">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                    </div>
+                    <p className="text-[10px] sm:text-xs font-bold text-gray-900 leading-tight">100% Protected</p>
+                    <p className="text-[8.5px] sm:text-[10px] text-gray-400 leading-tight mt-0.5">Purchase Safe</p>
+                  </div>
+                </div>
+
+                <p className="text-center text-xs text-gray-500 font-medium pt-0.5">
                   <span className="inline-flex items-center gap-1">
                     <MessageCircle className="w-3.5 h-3.5 text-emerald-600 inline" />
                     <span>Questions?</span>
