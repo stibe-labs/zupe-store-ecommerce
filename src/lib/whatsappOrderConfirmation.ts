@@ -253,8 +253,13 @@ export async function sendOrderConfirmationWhatsApp(
   const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
   const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
 
-  const doorstepBalance = totalAmount;
-  const switchPrepaidAmount = totalAmount;
+  // For COD: doorstep balance = what customer pays at delivery (total minus advance already paid online)
+  const doorstepBalance = params.paymentMethod === "cod" && params.balanceDue !== undefined
+    ? params.balanceDue
+    : (params.paymentMethod === "cod" && params.advancePaid
+      ? Math.max(0, totalAmount - params.advancePaid)
+      : totalAmount);
+  const switchPrepaidAmount = doorstepBalance;
   const productSubtotal = totalAmount >= 49 ? totalAmount - 49 : totalAmount;
   const firstName = customerName.split(" ")[0] || customerName;
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
@@ -349,7 +354,7 @@ export async function sendOrderConfirmationWhatsApp(
           digits,
           firstName,
           displayOrderId,
-          totalAmount,
+          doorstepBalance,  // show doorstep balance (after advance deduction), not total
           paymentMethodLabel
         );
       } catch (err) {

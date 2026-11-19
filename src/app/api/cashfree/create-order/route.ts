@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
       payment_status: "pending",
       order_status: "payment_pending",
       advance_paid: 0,
-      balance_due: orderTotalAmount,
+      balance_due: orderBalanceDue > 0 ? orderBalanceDue : orderTotalAmount,
       is_cod_partial: isCod ? 1 : 0,
       whatsapp_confirm_status: "pending_payment",
       whatsapp_confirm_token: confirmToken,
