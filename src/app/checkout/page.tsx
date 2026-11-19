@@ -2601,7 +2601,10 @@ function CheckoutContent() {
                 RECOMMENDED
               </span>
 
-              <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-emerald-600 text-white font-black text-[10px] tracking-wide shadow-xs">
+              <span
+                className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-emerald-600 text-white font-black text-[10px] tracking-wide shadow-xs animate-tiny-glow"
+                style={{ animation: "tinyGlowBadge 2.4s infinite ease-in-out" }}
+              >
                 SAVE ₹{codFee}
               </span>
 
@@ -2711,7 +2714,10 @@ function CheckoutContent() {
                   <span className="text-[10px] font-black tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
                     SMART CHOICE
                   </span>
-                  <span className="text-[11px] font-black bg-amber-300 text-emerald-950 px-2.5 py-0.5 rounded-full">
+                  <span
+                    className="text-[11px] font-black bg-amber-300 text-emerald-950 px-2.5 py-0.5 rounded-full animate-tiny-glow-yellow"
+                    style={{ animation: "tinyGlowYellowBadge 2.4s infinite ease-in-out" }}
+                  >
                     SAVE ₹{codFee}
                   </span>
                 </div>

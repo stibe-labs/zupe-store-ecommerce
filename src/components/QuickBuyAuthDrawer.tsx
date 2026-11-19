@@ -27,6 +27,7 @@ import {
   Sparkles,
   Smartphone,
   ArrowRight,
+  Zap,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
@@ -1182,19 +1183,26 @@ export function QuickBuyAuthDrawer({
                       </div>
                     </div>
 
-                    {/* CARD 1: Pay Online (Prepaid) */}
+                    {/* CARD 1: Pay Online */}
                     <div
                       id="payment-prepaid-card"
                       onClick={() => setPaymentMethod("online")}
                       className={`relative p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all ${
                         paymentMethod === "online"
-                          ? "border-[#FF7A00] bg-[#FFFBF8] shadow-sm ring-1 ring-[#FF7A00]/20"
-                          : "border-gray-200 bg-white hover:border-[#FF7A00]/40"
+                          ? "border-[#FF7A00] bg-white shadow-sm ring-1 ring-[#FF7A00]/20"
+                          : "border-gray-200 bg-white hover:border-gray-300"
                       }`}
                     >
-                      {/* Top Row: Radio + Icon + Title + (Recommended Badge) + Chevron */}
+                      {/* Pinned RECOMMENDED Badge */}
+                      <span className="absolute -top-3 left-4 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#FF5722] to-[#FF7A00] text-white text-[10px] sm:text-[11px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1 z-10">
+                        <span className="text-[11px]">⭐</span>
+                        <span>RECOMMENDED</span>
+                      </span>
+
+                      {/* Header Row: Radio + Icon + Title + (Price + SAVE 49 Badge) */}
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
+                          {/* Radio */}
                           <div
                             className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white transition-colors ${
                               paymentMethod === "online" ? "border-[#FF7A00]" : "border-gray-300"
@@ -1205,30 +1213,34 @@ export function QuickBuyAuthDrawer({
                             )}
                           </div>
 
-                          <div className="w-10 h-10 rounded-xl bg-orange-100/60 border border-orange-200/50 flex items-center justify-center text-[#FF7A00] shrink-0">
-                            <CreditCard className="w-5 h-5" />
+                          {/* Bolt Icon Box */}
+                          <div className="w-11 h-11 rounded-2xl bg-[#FFF3E8] border border-[#FFE2CC] flex items-center justify-center text-[#FF7A00] shrink-0">
+                            <Zap className="w-5 h-5 fill-[#FF7A00] text-[#FF7A00]" />
                           </div>
 
+                          {/* Title & subtitle */}
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
-                                PAY ONLINE (PREPAID)
-                              </h4>
-                              {paymentMethod === "online" && (
-                                <span className="px-2 py-0.5 rounded-full bg-[#FF7A00] text-white text-[10px] font-extrabold uppercase tracking-wider shadow-2xs">
-                                  RECOMMENDED
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-xs text-gray-500 mt-0.5 truncate">UPI, Cards or Net Banking</p>
+                            <h4 className="text-base font-bold text-gray-950 leading-tight">
+                              Pay Online
+                            </h4>
+                            <p className="text-xs text-gray-500 font-medium mt-0.5">UPI · Cards · Net banking</p>
                           </div>
                         </div>
 
-                        <ChevronDown
-                          className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${
-                            paymentMethod === "online" ? "rotate-180" : ""
-                          }`}
-                        />
+                        {/* Right: Price + Glowing SAVE 49 Badge */}
+                        <div className="text-right shrink-0">
+                          <span className="text-lg sm:text-xl font-black text-gray-950 block leading-tight">
+                            ₹{cartTotal.toLocaleString()}
+                          </span>
+                          <span
+                            className="mt-1 px-2.5 py-0.5 rounded-md bg-[#15803D] text-white text-[10px] sm:text-[10.5px] font-black tracking-wider uppercase inline-flex items-center justify-center shadow-xs animate-tiny-glow"
+                            style={{
+                              animation: "tinyGlowBadge 2.4s infinite ease-in-out",
+                            }}
+                          >
+                            SAVE ₹{codFee}
+                          </span>
+                        </div>
                       </div>
 
                       {/* Expandable Content for Prepaid */}
@@ -1242,51 +1254,48 @@ export function QuickBuyAuthDrawer({
                             transition={{ duration: 0.22, ease: "easeInOut" }}
                             className="overflow-hidden"
                           >
-                            {/* Pay Now Amount + Free Express Shipping Row */}
-                            <div className="mt-3.5 pt-3.5 border-t border-gray-100 flex items-center justify-between gap-3 flex-wrap">
-                              <div>
-                                <p className="text-[11px] text-gray-500 font-medium">Pay now</p>
-                                <p className="text-lg sm:text-xl font-black text-gray-950">₹{cartTotal.toLocaleString()}</p>
+                            <div className="my-3.5 border-t border-dashed border-gray-200" />
+
+                            {/* 2 Feature Pills: Faster dispatch & Instant confirmation */}
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="py-2 px-3 rounded-xl bg-gray-50/90 border border-gray-100 flex items-center justify-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-700">
+                                <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
+                                <span>Faster dispatch</span>
                               </div>
-                              <div className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-1.5">
-                                <Truck className="w-3.5 h-3.5 text-emerald-600" />
-                                <span>FREE Express Shipping</span>
+                              <div className="py-2 px-3 rounded-xl bg-gray-50/90 border border-gray-100 flex items-center justify-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-700">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                <span>Instant confirmation</span>
                               </div>
                             </div>
 
                             {/* Payment Logos Row */}
-                            <div className="flex flex-wrap items-center gap-2 pt-3 mt-3 border-t border-gray-100">
-                              {/* UPI */}
-                              <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
-                                <span className="font-black italic text-xs tracking-tighter text-[#2E3192]">UPI</span>
-                                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                                  <path d="M14 4L7 12H13L10 20L17 12H11L14 4Z" fill="#097939" />
-                                </svg>
-                              </div>
-
-                              {/* VISA */}
-                              <span className="font-black italic text-xs tracking-wider text-[#1A1F71] font-sans px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
+                            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mt-3 pt-1">
+                              <span className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 shadow-2xs text-[11px] font-black tracking-tight text-[#2E3192]">
+                                UPI
+                              </span>
+                              <span className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 shadow-2xs text-[11px] font-bold text-[#4285F4]">
+                                GPay
+                              </span>
+                              <span className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 shadow-2xs text-[11px] font-bold text-[#5f259f]">
+                                PhonePe
+                              </span>
+                              <span className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 shadow-2xs text-[11px] font-bold text-[#00baf2]">
+                                Paytm
+                              </span>
+                              <span className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 shadow-2xs text-[11px] font-black italic tracking-wider text-[#1A1F71]">
                                 VISA
                               </span>
+                              <span className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 shadow-2xs text-[11px] font-bold text-gray-800 flex items-center gap-1">
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#EB001B] inline-block" />
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#F79E1B] -ml-2 inline-block opacity-90" />
+                                <span>Mastercard</span>
+                              </span>
+                            </div>
 
-                              {/* Mastercard */}
-                              <div className="flex items-center px-2 py-1 rounded bg-white border border-gray-200 shadow-2xs">
-                                <div className="w-3.5 h-3.5 rounded-full bg-[#EB001B] opacity-90" />
-                                <div className="w-3.5 h-3.5 rounded-full bg-[#F79E1B] -ml-1.5 mix-blend-multiply opacity-90" />
-                              </div>
-
-                              {/* RuPay */}
-                              <div className="flex items-center px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
-                                <span className="font-black text-xs tracking-tight text-[#002D62]">Ru</span>
-                                <span className="font-black text-xs tracking-tight text-[#00A4E4]">Pay</span>
-                                <span className="w-1 h-3 bg-gradient-to-b from-[#00A4E4] to-[#F15A24] -skew-x-12 ml-0.5" />
-                              </div>
-
-                              {/* Net Banking */}
-                              <div className="flex items-center gap-1 text-[11px] font-semibold text-gray-700 px-2 py-0.5 rounded bg-white border border-gray-200 shadow-2xs">
-                                <Building2 className="w-3.5 h-3.5 text-gray-600" />
-                                <span>Net Banking</span>
-                              </div>
+                            {/* Security footer */}
+                            <div className="mt-3 pt-2 text-center flex items-center justify-center gap-1.5 text-[11px] text-gray-500 font-medium">
+                              <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                              <span>100% secure · Secured by <strong className="text-[#0c2340] font-bold">Razorpay</strong></span>
                             </div>
                           </motion.div>
                         )}
@@ -1299,48 +1308,49 @@ export function QuickBuyAuthDrawer({
                       onClick={() => setPaymentMethod("cod")}
                       className={`relative p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all ${
                         paymentMethod === "cod"
-                          ? "border-[#FF7A00] bg-[#FFFBF8] shadow-sm ring-1 ring-[#FF7A00]/20"
+                          ? "border-slate-900 bg-white shadow-sm ring-1 ring-slate-900/10"
                           : "border-gray-200 bg-white hover:border-gray-300"
                       }`}
                     >
-                      {/* Top Row: Radio + Icon + Title + Chevron */}
+                      {/* Top Row: Radio + Icon + Title + Price */}
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
+                          {/* Radio */}
                           <div
                             className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white transition-colors ${
-                              paymentMethod === "cod" ? "border-[#FF7A00]" : "border-gray-300"
+                              paymentMethod === "cod" ? "border-slate-900" : "border-gray-300"
                             }`}
                           >
                             {paymentMethod === "cod" && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-[#FF7A00]" />
+                              <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />
                             )}
                           </div>
 
-                          <div className="w-10 h-10 rounded-xl bg-orange-100/60 border border-orange-200/50 flex items-center justify-center text-[#FF7A00] shrink-0">
-                            <Package className="w-5 h-5" />
+                          {/* Banknote icon */}
+                          <div className="w-11 h-11 rounded-2xl bg-emerald-50/80 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 text-xl">
+                            💵
                           </div>
 
+                          {/* Title & subtitle */}
                           <div className="min-w-0">
-                            <h4 className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
+                            <h4 className="text-base font-bold text-gray-950 leading-tight">
                               Cash on Delivery
                             </h4>
-                            <p className="text-xs font-semibold text-gray-700 mt-0.5">
-                              Pay ₹{codFee} COD fee now · ₹{cartTotal.toLocaleString()} at delivery
-                            </p>
-                            <p className="text-[11px] text-gray-400 mt-0.5 leading-snug">
-                              COD fee refunded if you cancel before dispatch. Not refundable if the parcel is refused at delivery.
+                            <p className="text-xs text-gray-500 font-medium mt-0.5">
+                              Product price + ₹{codFee} COD fee
                             </p>
                           </div>
                         </div>
 
-                        <ChevronDown
-                          className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${
-                            paymentMethod === "cod" ? "rotate-180" : ""
-                          }`}
-                        />
+                        {/* Right: Total Price */}
+                        <div className="text-right shrink-0">
+                          <span className="text-lg sm:text-xl font-black text-gray-950 block leading-tight">
+                            ₹{grandTotal.toLocaleString()}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Expandable Content for COD */}
+                      {/* Expandable Calculation Breakdown for COD (Matches Reference Image 3) */}
                       <AnimatePresence initial={false}>
                         {paymentMethod === "cod" && (
                           <motion.div
@@ -1351,76 +1361,99 @@ export function QuickBuyAuthDrawer({
                             transition={{ duration: 0.22, ease: "easeInOut" }}
                             className="overflow-hidden"
                           >
-                            {/* Inner White Breakdown Card */}
-                            <div className="mt-3.5 p-3.5 sm:p-4 rounded-xl bg-white border border-gray-100 space-y-2.5">
-                              {/* Row 1: Item total */}
-                              <div className="flex items-center justify-between text-sm">
-                                <div className="flex items-center gap-2.5 text-gray-700">
-                                  <CreditCard className="w-4 h-4 text-gray-400 shrink-0" />
-                                  <span className="font-medium text-gray-800">Item total</span>
-                                </div>
-                                <span className="font-bold text-gray-900">₹{cartTotal.toLocaleString()}</span>
-                              </div>
+                            <div className="my-3.5 border-t border-dashed border-gray-200" />
 
-                              {/* Row 2: COD fee (pay now) */}
-                              <div className="flex items-center justify-between text-sm">
-                                <div className="flex items-center gap-2.5 text-gray-700">
-                                  <Truck className="w-4 h-4 text-gray-400 shrink-0" />
-                                  <span className="font-medium text-gray-800">COD fee (pay now)</span>
-                                </div>
-                                <span className="font-bold text-[#FF7A00]">
-                                  ₹{codFee}
+                            {/* 3 Formula Boxes: Product price + COD fee = Total */}
+                            <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+                              {/* Box 1: Product price */}
+                              <div className="flex-1 py-2 px-1.5 sm:px-2 rounded-xl bg-gray-50 border border-gray-200/80 text-center">
+                                <span className="block text-[10px] text-gray-500 font-semibold leading-tight">
+                                  Product price
+                                </span>
+                                <strong className="block text-sm sm:text-base font-extrabold text-gray-950 my-0.5">
+                                  ₹{cartTotal.toLocaleString()}
+                                </strong>
+                                <span className="block text-[9px] sm:text-[10px] text-gray-400 font-medium leading-tight">
+                                  Pay at delivery<br className="hidden sm:inline" /> (cash / UPI)
                                 </span>
                               </div>
 
-                              {/* Divider + Pay at delivery */}
-                              <div className="pt-2.5 border-t border-gray-100 flex items-center justify-between">
-                                <span className="font-bold text-gray-900 text-sm sm:text-base">Pay at delivery</span>
-                                <span className="font-black text-base sm:text-lg text-[#FF7A00]">₹{cartTotal.toLocaleString()}</span>
+                              {/* Plus operator */}
+                              <span className="text-sm font-bold text-gray-400 shrink-0">+</span>
+
+                              {/* Box 2: COD fee */}
+                              <div className="flex-1 py-2 px-1.5 sm:px-2 rounded-xl bg-[#FFFBEB] border border-[#FDE68A] text-center">
+                                <span className="block text-[10px] text-amber-800 font-semibold leading-tight">
+                                  COD fee
+                                </span>
+                                <strong className="block text-sm sm:text-base font-extrabold text-amber-950 my-0.5">
+                                  ₹{codFee}
+                                </strong>
+                                <span className="block text-[9px] sm:text-[10px] text-amber-700 font-medium leading-tight">
+                                  Pay now<br className="hidden sm:inline" /> (online)
+                                </span>
+                              </div>
+
+                              {/* Equals operator */}
+                              <span className="text-sm font-bold text-gray-400 shrink-0">=</span>
+
+                              {/* Box 3: Total */}
+                              <div className="flex-1 py-2 px-1.5 sm:px-2 rounded-xl bg-[#1A1F2C] border border-[#1A1F2C] text-center text-white">
+                                <span className="block text-[10px] text-gray-300 font-semibold leading-tight">
+                                  Total
+                                </span>
+                                <strong className="block text-sm sm:text-base font-extrabold text-white my-0.5">
+                                  ₹{grandTotal.toLocaleString()}
+                                </strong>
+                                <span className="block text-[9px] sm:text-[10px] text-gray-400 font-medium leading-tight">
+                                  You pay<br className="hidden sm:inline" /> in all
+                                </span>
                               </div>
                             </div>
+
+                            {/* Refund policy note */}
+                            <p className="text-[11px] text-gray-500 mt-2.5 leading-relaxed text-left">
+                              The COD fee is refunded if you cancel before dispatch. It&apos;s not refunded if the parcel is refused at delivery.
+                            </p>
                           </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
 
-                    {/* OFFER NUDGE: SWITCH TO UPI & SAVE (Matches Image 3) */}
+                    {/* SMART CHOICE NUDGE CARD (Matches Reference Image 4) */}
                     {paymentMethod === "cod" && (
                       <motion.div
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="p-4 sm:p-5 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] space-y-3.5 mt-3 shadow-xs"
+                        className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#064E3B] to-[#033628] text-white space-y-2 mt-3 shadow-lg relative overflow-hidden"
                       >
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center shrink-0">
-                            <Sparkles className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <h4 className="text-sm sm:text-base font-extrabold text-emerald-950 leading-tight">
-                              Save ₹{codFee} with online payment
-                            </h4>
-                            <p className="text-[11px] text-emerald-800">
-                              Get free shipping &amp; express dispatch
-                            </p>
-                          </div>
+                        {/* Header Badges */}
+                        <div className="flex items-center justify-between">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-xs text-[11px] font-bold text-white tracking-wide border border-white/20">
+                            💡 SMART CHOICE
+                          </span>
+                          <span
+                            className="px-3 py-1 rounded-full bg-[#FACC15] text-[#1E3A1F] font-black text-xs shadow-xs tracking-wide inline-flex items-center justify-center animate-tiny-glow-yellow"
+                            style={{
+                              animation: "tinyGlowYellowBadge 2.4s infinite ease-in-out",
+                            }}
+                          >
+                            SAVE ₹{codFee}
+                          </span>
                         </div>
 
-                        <div className="space-y-1.5 text-xs text-emerald-900 font-semibold pl-1">
-                          <div className="flex items-center gap-2">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                            <span>Free Express Shipping</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                            <span>No COD handling fee <span className="text-emerald-700 font-bold">(-₹{codFee})</span></span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                            <span>Instant order confirmation &amp; faster dispatch</span>
-                          </div>
-                        </div>
+                        {/* Title */}
+                        <h4 className="text-base sm:text-lg font-extrabold text-white mt-2.5 leading-snug">
+                          Pay online &amp; save ₹{codFee} on this order
+                        </h4>
 
+                        {/* Description */}
+                        <p className="text-xs text-emerald-100/90 leading-relaxed">
+                          Pay <strong className="text-white font-bold">₹{cartTotal.toLocaleString()}</strong> online instead of <span className="line-through text-emerald-200/70">₹{grandTotal.toLocaleString()}</span>. Faster dispatch, no cash needed at the door.
+                        </p>
+
+                        {/* Switch Button */}
                         <button
                           type="button"
                           onClick={() => {
@@ -1428,11 +1461,10 @@ export function QuickBuyAuthDrawer({
                             const el = document.getElementById("payment-prepaid-card");
                             if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
                           }}
-                          className="w-full py-3.5 px-4 rounded-xl bg-[#111111] hover:bg-black text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] cursor-pointer"
+                          className="w-full mt-3 py-3 px-4 rounded-xl bg-white hover:bg-gray-50 text-[#064E3B] font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99] cursor-pointer"
                         >
-                          <Smartphone className="w-4 h-4 text-white" />
-                          <span>Switch to UPI &amp; Save ₹{codFee}</span>
-                          <ArrowRight className="w-4 h-4 text-white" />
+                          <span>Switch to Pay Online · ₹{cartTotal.toLocaleString()}</span>
+                          <ArrowRight className="w-4 h-4" />
                         </button>
                       </motion.div>
                     )}
@@ -1628,11 +1660,19 @@ export function QuickBuyAuthDrawer({
                       {isCod ? `now · ₹${cartTotal.toLocaleString()} at delivery` : "total"}
                     </span>
                   </div>
-                  {totalSavings > 0 && (
+                  {isCod ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsPriceDetailsOpen(!isPriceDetailsOpen)}
+                      className="text-xs font-bold text-[#FF5722] hover:underline cursor-pointer"
+                    >
+                      View details
+                    </button>
+                  ) : totalSavings > 0 ? (
                     <span className="text-emerald-700 font-bold text-xs">
                       Save ₹{totalSavings.toLocaleString()}
                     </span>
-                  )}
+                  ) : null}
                 </div>
 
                 <button
@@ -1641,7 +1681,7 @@ export function QuickBuyAuthDrawer({
                   disabled={isPlacingOrder || otpLoading}
                   className={`w-full py-4 px-6 rounded-2xl font-black text-base shadow-lg active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
                     isCod
-                      ? "bg-[#056839] hover:bg-[#04562e] text-white shadow-emerald-700/25"
+                      ? "bg-gradient-to-r from-[#FF5722] to-[#FF7A00] hover:from-[#F4511E] hover:to-[#E66E00] text-white shadow-orange-500/25"
                       : "bg-[#FF7A00] hover:bg-[#E66E00] text-white shadow-orange-500/25"
                   }`}
                 >
