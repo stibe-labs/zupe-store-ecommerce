@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getERPOrders, ERPOrder } from "@/lib/erpStore";
 import { getOrders, OrderRecord } from "@/lib/orderStore";
+import { siteConfig } from "@/config/siteConfig";
 
 export async function GET(req: NextRequest) {
   try {

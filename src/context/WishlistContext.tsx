@@ -5,9 +5,9 @@ import { Product } from "@/types/product";
 import { useAuth } from "@/context/AuthContext";
 
 interface WishlistContextType {
-  wishlist: Product[];
+  wishlist: (Product | any)[];
   isInWishlist: (productId: string) => boolean;
-  toggleWishlist: (product: Product) => boolean;
+  toggleWishlist: (product: any) => boolean;
   removeFromWishlist: (productId: string) => void;
   clearWishlist: () => void;
   totalWishlistItems: number;
@@ -74,7 +74,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     return wishlist.some((item) => item.id === productId);
   };
 
-  const toggleWishlist = (product: Product): boolean => {
+  const toggleWishlist = (product: any): boolean => {
     if (!user) {
       if (typeof window !== "undefined") {
         try {

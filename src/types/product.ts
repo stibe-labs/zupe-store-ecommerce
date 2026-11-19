@@ -72,6 +72,7 @@ export interface Product {
   volume?: string;
   poster_image: string;
   images?: string[];
+  image?: string;
   color?: string;
   material?: string;
   in_stock: number;
@@ -127,6 +128,7 @@ export interface AdminProductFormData {
   in_stock: number;
   poster_image: string;
   images?: string[];
+  image?: string;
   color?: string;
   has_colors?: boolean;
   colors?: ProductColorVariant[];

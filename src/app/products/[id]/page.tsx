@@ -613,22 +613,17 @@ export default function ProductDetailPage() {
             </p>
 
             {/* ============================================================= */}
-            {/* 4 FEATURE HIGHLIGHTS GRID (Matching reference mockup)         */}
+            {/* 4 FEATURE HIGHLIGHTS (2 rows, 2 points each)                  */}
             {/* ============================================================= */}
-            <div className="grid grid-cols-4 gap-2 sm:gap-3 py-4 my-2 border-y border-neutral-200/80">
-              {categoryHighlights.map((hl, idx) => {
-                const IconComponent = hl.icon;
-                return (
-                  <div key={idx} className="flex flex-col items-center text-center">
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#E5F2D0] border border-[#D5EBBF] flex items-center justify-center text-[#3B581C] mb-1.5 shadow-2xs">
-                      <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
-                    </div>
-                    <span className="font-mograph text-[10px] sm:text-xs text-neutral-800 font-bold leading-tight line-clamp-2">
-                      {hl.label}
-                    </span>
-                  </div>
-                );
-              })}
+            <div className="grid grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-2.5 py-3.5 my-2 border-y border-neutral-200/80">
+              {categoryHighlights.slice(0, 4).map((hl, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3B581C] shrink-0" />
+                  <span className="font-mograph text-xs sm:text-sm text-neutral-800 font-semibold">
+                    {hl.label}
+                  </span>
+                </div>
+              ))}
             </div>
 
             {/* ============================================================= */}

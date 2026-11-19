@@ -1,5 +1,6 @@
 // WhatsApp Cloud API OTP Service for Zupe Store
 // Edge & Node.js compatible (Cloudflare Workers, Next.js)
+import { siteConfig } from "@/config/siteConfig";
 
 export interface WhatsAppOTPResult {
   success: boolean;
