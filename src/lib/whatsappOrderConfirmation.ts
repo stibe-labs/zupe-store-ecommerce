@@ -472,43 +472,51 @@ async function sendViaConfirmedUtilityTemplate(
   totalAmount: number,
   paymentMethodLabel: string
 ): Promise<boolean> {
-  const payload = {
-    messaging_product: "whatsapp",
-    recipient_type: "individual",
-    to,
-    type: "template",
-    template: {
-      name: TEMPLATE_UPDATE,
-      language: { code: TEMPLATE_LANG },
-      components: [
-        {
-          type: "body",
-          parameters: [
-            { type: "text", text: firstName },
-            { type: "text", text: orderId },
-            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
-          ],
-        },
-      ],
-    },
-  };
+  const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
+  const bodyParams = [
+    { type: "text", text: firstName },
+    { type: "text", text: orderId },
+    { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
+  ];
 
-  try {
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-    const data = (await res.json()) as any;
-    if (res.ok && data.messages?.length > 0) {
-      console.log(`✅ [WA Order Confirm] Utility template '${TEMPLATE_UPDATE}' sent to ${to}`);
-      return true;
+  const componentVariations = [
+    [
+      { type: "body", parameters: bodyParams },
+      { type: "button", sub_type: "url", index: "0", parameters: [{ type: "text", text: cleanButtonOrderId }] },
+    ],
+    [
+      { type: "body", parameters: bodyParams },
+    ],
+  ];
+
+  for (const components of componentVariations) {
+    try {
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to,
+          type: "template",
+          template: {
+            name: TEMPLATE_UPDATE,
+            language: { code: TEMPLATE_LANG },
+            components,
+          },
+        }),
+      });
+      const data = (await res.json()) as any;
+      if (res.ok && data.messages?.length > 0) {
+        console.log(`✅ [WA Order Confirm] Utility template '${TEMPLATE_UPDATE}' sent to ${to}`);
+        return true;
+      }
+    } catch (err) {
+      console.warn("[WA Order Confirm] Utility template variation error:", err);
     }
-  } catch (err) {
-    console.warn("[WA Order Confirm] Utility template error:", err);
   }
   return false;
 }
@@ -545,41 +553,47 @@ async function sendViaTemplate(
   const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
   const trackButtonParam = { type: "text", text: cleanButtonOrderId };
 
-  const components: any[] = [
-    { type: "body", parameters: bodyParams },
-    { type: "button", sub_type: "url", index: "0", parameters: [trackButtonParam] },
+  // Try both: 1) With dynamic URL button, 2) Body only (if template uses a static URL button or no buttons)
+  const componentVariations = [
+    [
+      { type: "body", parameters: bodyParams },
+      { type: "button", sub_type: "url", index: "0", parameters: [trackButtonParam] },
+    ],
+    [
+      { type: "body", parameters: bodyParams },
+    ],
   ];
 
-  try {
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer " + token,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to,
-        type: "template",
-        template: {
-          name: templateName,
-          language: { code: TEMPLATE_LANG },
-          components,
+  for (const components of componentVariations) {
+    try {
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + token,
+          "Content-Type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to,
+          type: "template",
+          template: {
+            name: templateName,
+            language: { code: TEMPLATE_LANG },
+            components,
+          },
+        }),
+      });
 
-    const data = (await res.json()) as any;
-    if (res.ok && data.messages?.length > 0) {
-      return true;
+      const data = (await res.json()) as any;
+      if (res.ok && data.messages?.length > 0) {
+        return true;
+      }
+    } catch (err) {
+      console.warn(`[WA Order Confirm] Template '${templateName}' error:`, err);
     }
-    console.warn("[WA Order Confirm] Template rejected:", data?.error?.message || data);
-    return false;
-  } catch (err) {
-    console.warn("[WA Order Confirm] Template error:", err);
-    return false;
   }
+  return false;
 }
 
 async function sendWhatsAppTextMessage(

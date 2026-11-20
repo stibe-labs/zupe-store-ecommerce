@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       { source: '/product/:id', destination: '/products/:id' },
+      { source: '/account/:id', destination: '/order-tracking?query=:id' },
       { source: "/Privacy", destination: "/privacy" },
       { source: "/Return", destination: "/return" },
       { source: "/Terms-and-Conditions", destination: "/terms-and-conditions" },
