@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, ShoppingBag, Trash2, ArrowRight, Star, ShoppingCart, Sparkles } from "lucide-react";
+import { Heart, ShoppingBag, Trash2, ArrowRight, Star, ShoppingCart } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useWishlist } from "@/context/WishlistContext";
@@ -30,32 +30,30 @@ export default function WishlistPage() {
     return (
       <div className="min-h-screen bg-white text-neutral-900 flex flex-col justify-between selection:bg-[#E5F2D0] selection:text-[#1E300E] font-mograph">
         <Navbar />
-        <div className="max-w-md mx-auto pt-28 sm:pt-36 pb-24 px-4 text-center">
-          <div className="bg-[#F7F8FA] rounded-3xl p-8 border border-neutral-200/80 shadow-xs">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-5 rounded-2xl bg-[#E5F2D0] border border-[#95CF42]/30 flex items-center justify-center text-[#3B581C] shadow-xs">
-              <Heart className="w-8 h-8 sm:w-10 sm:h-10 fill-rose-500/20 stroke-rose-500 stroke-[1.75]" />
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-neutral-950 mb-2 tracking-tight">
-              Sign In to View Wishlist
-            </h1>
-            <p className="text-xs sm:text-sm text-neutral-600 mb-6 sm:mb-8 leading-relaxed font-normal">
-              Sign in to your Vittal Lifestyle account to access your saved supplements, activewear, dates and artisan treats across all your devices.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center">
-              <Link
-                href="/signin?redirect=/wishlist&notice=Please sign in to access your saved wishlist"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#111111] hover:bg-black text-white font-bold text-xs sm:text-sm shadow-md transition-all font-movault uppercase tracking-wider"
-              >
-                <span>Sign In to Account</span>
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-              </Link>
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-white border border-neutral-200 text-neutral-900 font-semibold text-xs sm:text-sm hover:bg-neutral-50 transition-all"
-              >
-                <span>Explore Products</span>
-              </Link>
-            </div>
+        <div className="max-w-md mx-auto pt-24 sm:pt-32 pb-20 px-4 text-center">
+          <div className="mb-4 flex items-center justify-center">
+            <Heart className="w-12 h-12 sm:w-14 sm:h-14 text-rose-500 fill-rose-500/15 stroke-[1.75]" />
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-neutral-950 mb-2 tracking-tight">
+            Sign In to View Wishlist
+          </h1>
+          <p className="text-xs sm:text-sm text-neutral-600 mb-6 sm:mb-8 leading-relaxed font-normal max-w-sm mx-auto">
+            Sign in to your Vittal Lifestyle account to access your saved supplements, activewear, dates and artisan treats across all your devices.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center">
+            <Link
+              href="/signin?redirect=/wishlist&notice=Please sign in to access your saved wishlist"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#111111] hover:bg-black text-white font-bold text-xs sm:text-sm shadow-md transition-all font-movault uppercase tracking-wider"
+            >
+              <span>Sign In to Account</span>
+              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+            </Link>
+            <Link
+              href="/products"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-white border border-neutral-200 text-neutral-900 font-semibold text-xs sm:text-sm hover:bg-neutral-50 transition-all"
+            >
+              <span>Explore Products</span>
+            </Link>
           </div>
         </div>
         <Footer />
@@ -70,10 +68,6 @@ export default function WishlistPage() {
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-16 flex-1 w-full">
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-neutral-200/80">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5F2D0] border border-[#95CF42]/30 text-[#3B581C] text-xs font-bold uppercase tracking-wider mb-2 font-movault">
-              <Sparkles className="w-3.5 h-3.5 text-[#3B581C]" />
-              <span>Saved Items</span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-neutral-950 tracking-tight">
               My Wishlist
             </h1>
@@ -93,25 +87,23 @@ export default function WishlistPage() {
         </div>
 
         {wishlist.length === 0 ? (
-          <div className="max-w-md mx-auto py-16 text-center">
-            <div className="bg-[#F7F8FA] rounded-3xl p-8 border border-neutral-200/80 shadow-xs">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#E5F2D0] border border-[#95CF42]/30 flex items-center justify-center text-[#3B581C] shadow-xs">
-                <Heart className="w-8 h-8 fill-rose-500/20 stroke-rose-500 stroke-[1.75]" />
-              </div>
-              <h2 className="text-xl font-bold text-neutral-950 mb-2 tracking-tight">
-                Your Wishlist is Empty
-              </h2>
-              <p className="text-xs sm:text-sm text-neutral-600 mb-6 leading-relaxed font-normal">
-                Explore our lab-certified gym supplements, activewear, dates &amp; nuts, and chocolates, and tap the heart icon on any product to save it for later.
-              </p>
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-[#111111] hover:bg-black text-white font-bold text-xs sm:text-sm shadow-md transition-all font-movault uppercase tracking-wider"
-              >
-                <span>Explore Catalog</span>
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-              </Link>
+          <div className="max-w-md mx-auto py-12 sm:py-16 text-center">
+            <div className="mb-4 flex items-center justify-center">
+              <Heart className="w-12 h-12 sm:w-14 sm:h-14 text-rose-500 fill-rose-500/15 stroke-[1.75]" />
             </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-neutral-950 mb-2 tracking-tight">
+              Your Wishlist is Empty
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-600 mb-6 sm:mb-8 leading-relaxed font-normal max-w-sm mx-auto">
+              Explore our lab-certified gym supplements, activewear, dates &amp; nuts, and chocolates, and tap the heart icon on any product to save it for later.
+            </p>
+            <Link
+              href="/products"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-[#111111] hover:bg-black text-white font-bold text-xs sm:text-sm shadow-md transition-all font-movault uppercase tracking-wider"
+            >
+              <span>Explore Catalog</span>
+              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
