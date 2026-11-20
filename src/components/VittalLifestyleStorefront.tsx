@@ -19,6 +19,8 @@ import {
   DEFAULT_HERO_BANNERS,
   SportswearCampaignConfig,
   DEFAULT_SPORTSWEAR_CAMPAIGN,
+  SupplementShowcaseConfig,
+  DEFAULT_SUPPLEMENT_SHOWCASE,
 } from "@/lib/storeContent";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -31,6 +33,7 @@ interface VittalLifestyleStorefrontProps {
   initialProducts?: Product[];
   initialHeroBanners?: HeroBannerSlide[];
   initialSportswearCampaign?: SportswearCampaignConfig;
+  initialSupplementShowcase?: SupplementShowcaseConfig;
 }
 
 // ---------------------------------------------------------------------------
@@ -118,6 +121,7 @@ export function VittalLifestyleStorefront({
   initialProducts,
   initialHeroBanners,
   initialSportswearCampaign,
+  initialSupplementShowcase,
 }: VittalLifestyleStorefrontProps) {
   const router = useRouter();
   const { addItem, openCart } = useCart();
@@ -916,7 +920,7 @@ export function VittalLifestyleStorefront({
       {/* ===================================================================== */}
       {/* 6. FUEL EVERY WORKOUT — GYM SUPPLEMENTS CATEGORY SHOWCASE             */}
       {/* ===================================================================== */}
-      <SupplementCategoryShowcase allProducts={products} />
+      <SupplementCategoryShowcase allProducts={products} config={initialSupplementShowcase} />
     </div>
   );
 }
