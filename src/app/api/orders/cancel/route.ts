@@ -198,6 +198,7 @@ export async function POST(req: NextRequest) {
             refundAmount: totalAmount,
             refundId,
             isPrepaid: true,
+            totalAmount,
           }).catch((e) => console.warn("WhatsApp refund notification error:", e));
         } catch (waErr) {
           console.warn("Failed to dispatch WhatsApp refund alert:", waErr);
@@ -205,13 +206,14 @@ export async function POST(req: NextRequest) {
       }
     } else {
       // Cash on Delivery cancellation
+      const totalAmount = Number((ord as any)?.total_amount || 0);
       if (custEmail) {
         try {
           await sendOrderCancellationEmail({
             orderId,
             customerName: custName,
             customerEmail: custEmail,
-            totalAmount: Number((ord as any)?.total_amount || 0),
+            totalAmount,
             isPrepaid: false,
             reason,
           });
@@ -227,6 +229,7 @@ export async function POST(req: NextRequest) {
             customerPhone: custPhone,
             orderId,
             isPrepaid: false,
+            totalAmount,
           }).catch((e) => console.warn("WhatsApp COD cancel alert error:", e));
         } catch (waErr) {
           console.warn("Failed to dispatch WhatsApp cancel alert:", waErr);

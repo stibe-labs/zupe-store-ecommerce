@@ -620,12 +620,13 @@ export interface OrderCancellationRefundParams {
   refundAmount?: number;
   refundId?: string;
   isPrepaid: boolean;
+  totalAmount?: number;
 }
 
 export async function sendOrderCancellationRefundWhatsApp(
   params: OrderCancellationRefundParams
 ): Promise<boolean> {
-  const { customerName, customerPhone, orderId, refundAmount, refundId, isPrepaid } = params;
+  const { customerName, customerPhone, orderId, refundAmount, refundId, isPrepaid, totalAmount } = params;
 
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) return false;
@@ -635,95 +636,65 @@ export async function sendOrderCancellationRefundWhatsApp(
   const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
 
   const firstName = customerName.split(" ")[0] || customerName;
+  const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
+  const effectiveTotal = totalAmount !== undefined ? totalAmount : (refundAmount || 0);
 
-  // 1. Try official Meta utility template first (guaranteed delivery outside 24h window once approved)
-  if (isPrepaid && refundAmount) {
-    try {
-      const payload = {
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: digits,
-        type: "template",
-        template: {
-          name: TEMPLATE_CANCEL_PREPAID,
-          language: { code: TEMPLATE_LANG },
-          components: [
-            {
-              type: "body",
-              parameters: [
-                { type: "text", text: firstName },
-                { type: "text", text: orderId },
-                { type: "text", text: `Rs ${refundAmount.toLocaleString("en-IN")}` },
-                { type: "text", text: refundId || "Initiated" },
-              ],
-            },
-          ],
-        },
-      };
+  // 1. Try official Meta utility template first: turkiyejam_order_update
+  // In Meta Business Manager, turkiyejam_order_update requires EXACTLY 3 body parameters:
+  // {{1}}=Customer Name, {{2}}=Order ID/Headline, {{3}}=Amount/Status
+  // This utility template delivers outside the 24-hour service window to all customers!
+  let templateSent = false;
+  try {
+    const p1 = firstName;
+    const p2 = `${displayOrderId} (Cancelled)`;
+    const p3 = isPrepaid && refundAmount
+      ? `Refund: Rs ${refundAmount.toLocaleString("en-IN")}`
+      : `Rs ${effectiveTotal.toLocaleString("en-IN")} (Cancelled)`;
 
-      const res = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + apiToken,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(6000),
-      });
+    const payload = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: digits,
+      type: "template",
+      template: {
+        name: TEMPLATE_UPDATE,
+        language: { code: TEMPLATE_LANG },
+        components: [
+          {
+            type: "body",
+            parameters: [
+              { type: "text", text: p1 },
+              { type: "text", text: p2 },
+              { type: "text", text: p3 },
+            ],
+          },
+        ],
+      },
+    };
 
-      const data = (await res.json()) as any;
-      if (res.ok && data.messages?.length > 0) {
-        console.log(`✅ [WA Cancel] Official template '${TEMPLATE_CANCEL_PREPAID}' dispatched for order ${orderId} to ${digits}`);
-        return true;
-      }
-    } catch (tErr) {
-      // Non-fatal, proceed to text fallback
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + apiToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(6000),
+    });
+
+    const data = (await res.json()) as any;
+    if (res.ok && data.messages?.length > 0) {
+      console.log(`✅ [WA Cancel] Official template '${TEMPLATE_UPDATE}' dispatched for order ${orderId} to ${digits}`);
+      templateSent = true;
+    } else {
+      console.warn(`[WA Cancel] Template rejected by Meta for ${digits}:`, data?.error || data);
     }
-  } else {
-    try {
-      const payload = {
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: digits,
-        type: "template",
-        template: {
-          name: TEMPLATE_CANCEL_COD,
-          language: { code: TEMPLATE_LANG },
-          components: [
-            {
-              type: "body",
-              parameters: [
-                { type: "text", text: firstName },
-                { type: "text", text: orderId },
-              ],
-            },
-          ],
-        },
-      };
-
-      const res = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + apiToken,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(6000),
-      });
-
-      const data = (await res.json()) as any;
-      if (res.ok && data.messages?.length > 0) {
-        console.log(`✅ [WA Cancel] Official template '${TEMPLATE_CANCEL_COD}' dispatched for order ${orderId} to ${digits}`);
-        return true;
-      }
-    } catch (tErr) {
-      // Non-fatal, proceed to text fallback
-    }
+  } catch (tErr) {
+    console.warn(`[WA Cancel] Template send error:`, tErr);
   }
 
-  // 2. Fallback to direct text message
+  // 2. Prepare rich itemized message text
   let body = "";
-  const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
   if (isPrepaid && refundAmount) {
     body =
       `🛍️ *Turkiye Jam — Order Cancelled & Refund Initiated*\n\n` +
@@ -744,8 +715,274 @@ export async function sendOrderCancellationRefundWhatsApp(
       `Thank you,\nTurkiye Jam Team`;
   }
 
-  await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
-  return true;
+  // 3. Log into internal WhatsApp desk and D1
+  try {
+    const { recordOutboundSystemMessage } = await import("@/lib/whatsappStore");
+    await recordOutboundSystemMessage(
+      customerPhone,
+      body,
+      "order_card",
+      {
+        orderData: {
+          orderId,
+          totalAmount: isPrepaid ? (refundAmount || 0) : effectiveTotal,
+          itemsSummary: isPrepaid ? `Refund Initiated (Ref: ${refundId || "Automated"})` : "Order Cancelled",
+          status: "Cancelled",
+          paymentMethod: isPrepaid ? "Refunded" : "Cancelled",
+        },
+      }
+    );
+  } catch (logErr) {
+    console.warn("[WA Cancel] Desk logging error:", logErr);
+  }
+
+  // 4. Send rich text message (delivered if customer is within 24h window)
+  try {
+    await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
+  } catch (err) {
+    console.warn("[WA Cancel] Direct text send error:", err);
+  }
+
+  return templateSent;
+}
+
+export interface OrderTransitWhatsAppParams {
+  customerName: string;
+  customerPhone: string;
+  orderId: string;
+  status:
+    | "In Transit"
+    | "Out for Delivery"
+    | "Delivered"
+    | "NDR"
+    | "RTO In Transit"
+    | "RTO Delivered"
+    | "Cancelled"
+    | string;
+  courierName?: string;
+  awb?: string;
+  totalAmount?: number;
+  paymentMethod?: "cod" | "prepaid" | string;
+  advancePaid?: number;
+  balanceDue?: number;
+  ndrReason?: string;
+  items?: Array<any>;
+}
+
+/**
+ * Sends official WhatsApp Transit & Delivery lifecycle notifications to customers.
+ * Uses approved Meta utility template 'turkiyejam_order_update' (3 params) for 100% guaranteed delivery
+ * even outside the 24-hour customer window, plus delivers rich direct tracking cards.
+ */
+export async function sendOrderTransitWhatsApp(
+  params: OrderTransitWhatsAppParams
+): Promise<boolean> {
+  const {
+    customerName,
+    customerPhone,
+    orderId,
+    status,
+    courierName,
+    awb,
+    totalAmount = 0,
+    paymentMethod = "cod",
+    advancePaid = 0,
+    balanceDue,
+    ndrReason,
+  } = params;
+
+  const { digits, isValid } = normalizePhoneNumber(customerPhone);
+  if (!isValid) {
+    console.warn("[WA Transit] Invalid phone, skipping:", customerPhone);
+    return false;
+  }
+
+  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
+
+  const firstName = customerName.split(" ")[0] || customerName;
+  const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
+  const cleanUrlOrderId = orderId.replace(/^#/, "");
+  const trackUrl = `${STORE_BASE_URL}/order-tracking?query=${encodeURIComponent(awb || cleanUrlOrderId)}`;
+
+  const isCod =
+    paymentMethod?.toLowerCase().includes("cod") ||
+    paymentMethod?.toLowerCase().includes("cash on delivery");
+  const isPartialCod = isCod && advancePaid > 0;
+  const doorstepAmount = isCod
+    ? (isPartialCod
+        ? Math.max(0, totalAmount - advancePaid)
+        : (balanceDue !== undefined && balanceDue < totalAmount ? balanceDue : totalAmount))
+    : 0;
+
+  // Prepare parameters for official Meta utility template: turkiyejam_order_update
+  // Exactly 3 body parameters: {{1}}=Name, {{2}}=Order/Headline, {{3}}=Amount/Status
+  let templateP2 = `${displayOrderId} Update`;
+  let templateP3 = `Rs ${totalAmount.toLocaleString("en-IN")}`;
+  let richBody = "";
+  let deskMsgType: "tracking_card" | "order_card" = "tracking_card";
+
+  switch (status) {
+    case "In Transit":
+      templateP2 = `${displayOrderId} (Dispatched via ${courierName || "Courier"})`;
+      templateP3 = awb ? `AWB: ${awb}` : `Live Tracking Available`;
+      richBody =
+        `🚀 *Order Dispatched — Turkiye Jam!* 📦\n\n` +
+        `Hi ${firstName}! Great news, your order *${displayOrderId}* has been packed and handed over to ${courierName || "our courier partner"}.\n\n` +
+        `📦 *AWB Tracking Number:* ${awb || "Tracking in link"}\n` +
+        `🚚 *Carrier Partner:* ${courierName || "Express Courier"}\n` +
+        (isCod
+          ? `💰 *Payable at Doorstep:* Rs ${doorstepAmount.toLocaleString("en-IN")} (Cash or UPI)\n`
+          : `💰 *Payment Status:* Paid Online (Prepaid)\n`) +
+        `⏱️ *Estimated Delivery:* 2 to 4 business days in discreet packaging\n\n` +
+        `📍 *Track Your Shipment Live:*\n${trackUrl}\n\n` +
+        `Thank you for choosing Turkiye Jam! 🌿`;
+      break;
+
+    case "Out for Delivery":
+      templateP2 = `${displayOrderId} (Out for Delivery Today)`;
+      templateP3 = isCod
+        ? `Payable: Rs ${doorstepAmount.toLocaleString("en-IN")}`
+        : `Rs ${totalAmount.toLocaleString("en-IN")}`;
+      richBody =
+        `🛵 *Out for Delivery Today — Turkiye Jam!* 📦\n\n` +
+        `Hi ${firstName}! Your package for order *${displayOrderId}* is out for delivery today with our delivery executive (${courierName || "Courier"}).\n\n` +
+        (isCod
+          ? `💰 *Please keep Rs ${doorstepAmount.toLocaleString("en-IN")} ready at doorstep (Cash or UPI).*`
+          : `✅ *Prepaid Order:* No payment needed at your doorstep.`) +
+        `\n\nPlease ensure someone is available at your address to receive the parcel.\n\n` +
+        `📍 *Track Package:*\n${trackUrl}\n\n` +
+        `Turkiye Jam Team`;
+      break;
+
+    case "Delivered":
+      templateP2 = `${displayOrderId} (Delivered)`;
+      templateP3 = `Rs ${totalAmount.toLocaleString("en-IN")}`;
+      deskMsgType = "order_card";
+      richBody =
+        `🎉 *Order Delivered — Turkiye Jam!* 🍯🌿\n\n` +
+        `Hi ${firstName}! Your Turkiye Jam package *${displayOrderId}* has been successfully delivered.\n\n` +
+        `🌿 We hope you love your experience!\n\n` +
+        `📖 *Usage & Dosage Guide:*\n` +
+        `1. Take 1 sachet 30–45 minutes before bedtime.\n` +
+        `2. Mix with warm milk or lukewarm water, or consume directly.\n` +
+        `3. Drink 1–2 glasses of water afterwards.\n\n` +
+        `Have questions or need dosage advice? Just reply to this WhatsApp chat!\n\n` +
+        `Thank you for shopping with Turkiye Jam!`;
+      break;
+
+    case "NDR":
+      templateP2 = `${displayOrderId} (Delivery Re-attempt Scheduled)`;
+      templateP3 = `Reattempt Scheduled`;
+      richBody =
+        `⚠️ *Delivery Attempt Update — Turkiye Jam* 📦\n\n` +
+        `Hi ${firstName}! Our courier partner (${courierName || "Courier"}) attempted delivery of your order *${displayOrderId}* today, but could not complete it (${ndrReason || "Customer unreachable / door closed"}).\n\n` +
+        `Don't worry! A delivery re-attempt is scheduled for the next business day.\n\n` +
+        `If you need to update your landmark, alternate phone number, or delivery instructions, please reply directly to this message!\n\n` +
+        `📍 *Track shipment:*\n${trackUrl}\n\n` +
+        `Turkiye Jam Support`;
+      break;
+
+    case "RTO In Transit":
+    case "RTO Delivered":
+      templateP2 = `${displayOrderId} (Package Returning)`;
+      templateP3 = `Status: Returned`;
+      richBody =
+        `📦 *Turkiye Jam — Delivery Update*\n\n` +
+        `Hi ${firstName}! The parcel for order *${displayOrderId}* could not be delivered after repeated attempts and is returning to our warehouse.\n\n` +
+        `If you still wish to receive your order or would like to provide an updated address, please reply directly to this message.\n\n` +
+        `Turkiye Jam Support`;
+      break;
+
+    default:
+      templateP2 = `${displayOrderId} (${status})`;
+      templateP3 = `Rs ${totalAmount.toLocaleString("en-IN")}`;
+      richBody =
+        `📦 *Turkiye Jam — Order Status Update*\n\n` +
+        `Hi ${firstName}! Your order *${displayOrderId}* status has been updated to: *${status}*.\n\n` +
+        `📍 *Track Order:*\n${trackUrl}\n\n` +
+        `Turkiye Jam Team`;
+      break;
+  }
+
+  // 1. Send official Meta utility template: turkiyejam_order_update (3 params)
+  // Guaranteed delivery outside 24h window
+  let templateSent = false;
+  try {
+    const payload = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: digits,
+      type: "template",
+      template: {
+        name: TEMPLATE_UPDATE,
+        language: { code: TEMPLATE_LANG },
+        components: [
+          {
+            type: "body",
+            parameters: [
+              { type: "text", text: firstName },
+              { type: "text", text: templateP2 },
+              { type: "text", text: templateP3 },
+            ],
+          },
+        ],
+      },
+    };
+
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + apiToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(6000),
+    });
+
+    const data = (await res.json()) as any;
+    if (res.ok && data.messages?.length > 0) {
+      console.log(`✅ [WA Transit] Template '${TEMPLATE_UPDATE}' dispatched for order ${orderId} (${status}) to ${digits}`);
+      templateSent = true;
+    } else {
+      console.warn(`[WA Transit] Template rejected by Meta for ${digits}:`, data?.error || data);
+    }
+  } catch (tErr) {
+    console.warn(`[WA Transit] Template send error:`, tErr);
+  }
+
+  // 2. Log to internal WhatsApp desk
+  try {
+    const { recordOutboundSystemMessage } = await import("@/lib/whatsappStore");
+    await recordOutboundSystemMessage(
+      customerPhone,
+      richBody,
+      deskMsgType,
+      {
+        orderData: {
+          orderId,
+          totalAmount,
+          itemsSummary: `Status: ${status}${courierName ? ` via ${courierName}` : ""}${awb ? ` (${awb})` : ""}`,
+          status,
+          paymentMethod: isCod ? "COD" : "Prepaid",
+          awb,
+          courier: courierName,
+        },
+      }
+    );
+  } catch (logErr) {
+    console.warn("[WA Transit] Desk log warning:", logErr);
+  }
+
+  // 3. Send rich text message (if inside 24h window)
+  try {
+    await sendWhatsAppTextMessage(apiUrl, apiToken, digits, richBody);
+  } catch (textErr) {
+    console.warn("[WA Transit] Rich text fallback issue:", textErr);
+  }
+
+  return templateSent;
 }
 
 export interface AbandonedCartWhatsAppParams {

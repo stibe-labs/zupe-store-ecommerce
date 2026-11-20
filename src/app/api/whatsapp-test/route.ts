@@ -103,39 +103,25 @@ export async function GET(req: NextRequest) {
     results.tests.waba_info = { error: err.message };
   }
 
-  // ========== TEST 4: Try zupe_order_verify template (with button params) ==========
+  // ========== TEST 4: Try turkiyejam_order_update template (Order Confirmation, Transit & Cancel) ==========
   try {
-    const testToken = "tok_test_abc123";
-    const testOrderId = "ord_test_123";
-    const templatePayload = {
+    const testOrderId = "#ORD-TEST-1001";
+    const updatePayload = {
       messaging_product: "whatsapp",
       recipient_type: "individual",
       to: digits,
       type: "template",
       template: {
-        name: "zupe_order_verify",
+        name: "turkiyejam_order_update",
         language: { code: "en" },
         components: [
           {
             type: "body",
             parameters: [
-              { type: "text", text: "Test User" },
-              { type: "text", text: testOrderId },
-              { type: "text", text: "Rs 749" },
-              { type: "text", text: "Cash on Delivery" },
+              { type: "text", text: "Customer" },
+              { type: "text", text: `${testOrderId} (Order Update)` },
+              { type: "text", text: "Rs 1,099" },
             ],
-          },
-          {
-            type: "button",
-            sub_type: "url",
-            index: "0",
-            parameters: [{ type: "text", text: testToken }],
-          },
-          {
-            type: "button",
-            sub_type: "url",
-            index: "1",
-            parameters: [{ type: "text", text: testOrderId }],
           },
         ],
       },
@@ -147,18 +133,69 @@ export async function GET(req: NextRequest) {
         Authorization: `Bearer ${waToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(templatePayload),
+      body: JSON.stringify(updatePayload),
     });
 
     const tplData = await tplRes.json();
-    results.tests.template_zupe_order_verify = {
+    results.tests.template_turkiyejam_order_update = {
       status: tplRes.status,
       ok: tplRes.ok,
       response: tplData,
-      payload_sent: templatePayload,
+      payload_sent: updatePayload,
     };
   } catch (err: any) {
-    results.tests.template_zupe_order_verify = { error: err.message };
+    results.tests.template_turkiyejam_order_update = { error: err.message };
+  }
+
+  // ========== TEST 5: Try turkiyejam_order_verify template (Interactive Buttons) ==========
+  try {
+    const testToken = "tok_test_123";
+    const verifyPayload = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: digits,
+      type: "template",
+      template: {
+        name: "turkiyejam_order_verify",
+        language: { code: "en" },
+        components: [
+          {
+            type: "body",
+            parameters: [
+              { type: "text", text: "Customer" },
+              { type: "text", text: "#ORD-TEST-1001" },
+              { type: "text", text: "Rs 1,099" },
+              { type: "text", text: "Cash on Delivery" },
+            ],
+          },
+          {
+            type: "button",
+            sub_type: "url",
+            index: "0",
+            parameters: [{ type: "text", text: testToken }],
+          },
+        ],
+      },
+    };
+
+    const vRes = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${waToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(verifyPayload),
+    });
+
+    const vData = await vRes.json();
+    results.tests.template_turkiyejam_order_verify = {
+      status: vRes.status,
+      ok: vRes.ok,
+      response: vData,
+      payload_sent: verifyPayload,
+    };
+  } catch (err: any) {
+    results.tests.template_turkiyejam_order_verify = { error: err.message };
   }
 
   // ========== TEST 5: Try hello_world template (Meta's default, always exists) ==========

@@ -13,7 +13,14 @@ export async function POST(req: NextRequest) {
     } catch {}
 
     const orderId = payload.order_id || payload.id;
-    console.log("[Fastrr Order Webhook] Received event:", orderId, payload);
+    console.log("[Shiprocket / Fastrr Order Webhook] Received event:", orderId, payload);
+
+    // 1. If this is a Shiprocket tracking / transit status webhook (contains AWB or shipment status)
+    if (payload.awb || payload.awb_code || payload.current_status || payload.shipment_status) {
+      const { processShiprocketWebhook } = await import("@/lib/shiprocketService");
+      const webhookResult = await processShiprocketWebhook(payload);
+      return NextResponse.json({ success: true, acknowledged: true, ...webhookResult });
+    }
 
     if (orderId) {
       try {

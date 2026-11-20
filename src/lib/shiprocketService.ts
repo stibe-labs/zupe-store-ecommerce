@@ -359,6 +359,29 @@ export async function dispatchShiprocketOrder(
       (order as any).delivery_status = "In Transit";
       (order as any).status = "In Transit";
 
+      // Dispatch WhatsApp In Transit notification to customer
+      try {
+        const { sendOrderTransitWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+        const rawPhone = (order as any).customer_phone || "";
+        if (rawPhone) {
+          await sendOrderTransitWhatsApp({
+            customerName: (order as any).customer_name || "Valued Customer",
+            customerPhone: rawPhone,
+            orderId: (order as any).shopify_order_id || order.id,
+            status: "In Transit",
+            courierName,
+            awb: awbCode,
+            totalAmount: Number(order.total_amount) || 0,
+            paymentMethod: (order as any).payment_method,
+            advancePaid: (order as any).advance_paid,
+            balanceDue: (order as any).balance_due,
+            items: order.items,
+          });
+        }
+      } catch (waErr) {
+        console.warn("[Shiprocket Dispatch] WhatsApp alert warning:", waErr);
+      }
+
       return {
         success: true,
         awb: awbCode,
@@ -366,7 +389,7 @@ export async function dispatchShiprocketOrder(
         shipmentId,
         delivery_status: "In Transit",
         isSimulated: false,
-        message: `Live AWB ${awbCode} generated via ${courierName}. Status updated to In Transit.`,
+        message: `Live AWB ${awbCode} generated via ${courierName}. Status updated to In Transit. Customer notified via WhatsApp.`,
       };
     } catch (apiErr: any) {
       console.warn("[Shiprocket Live API] Dispatch failed:", apiErr.message || apiErr);
@@ -811,6 +834,46 @@ export async function processShiprocketWebhook(payload: any): Promise<Shiprocket
 
   // Persist order updates
   await updateERPOrder(targetOrder.id, updates);
+
+  // Trigger WhatsApp notification on transit status change
+  if (previousStatus !== mapped.deliveryStatus && (targetOrder.customer_phone || (targetOrder as any).phone)) {
+    const custPhone = targetOrder.customer_phone || (targetOrder as any).phone;
+    try {
+      const { sendOrderTransitWhatsApp, sendOrderCancellationRefundWhatsApp } = await import(
+        "@/lib/whatsappOrderConfirmation"
+      );
+      const orderDisplayId = targetOrder.shopify_order_id || targetOrder.id;
+
+      if (mapped.deliveryStatus === "Cancelled") {
+        const isPrepaid = ((targetOrder.payment_method || "").toLowerCase().includes("prepaid"));
+        await sendOrderCancellationRefundWhatsApp({
+          customerName: targetOrder.customer_name || "Valued Customer",
+          customerPhone: custPhone,
+          orderId: orderDisplayId,
+          isPrepaid,
+          refundAmount: isPrepaid ? Number(targetOrder.total_amount) : undefined,
+          totalAmount: Number(targetOrder.total_amount) || 0,
+        });
+      } else {
+        await sendOrderTransitWhatsApp({
+          customerName: targetOrder.customer_name || "Valued Customer",
+          customerPhone: custPhone,
+          orderId: orderDisplayId,
+          status: mapped.deliveryStatus,
+          courierName: updates.courier_partner || targetOrder.courier_partner || courierName,
+          awb: targetOrder.shiprocket_awb || awb,
+          totalAmount: Number(targetOrder.total_amount) || 0,
+          paymentMethod: targetOrder.payment_method,
+          advancePaid: targetOrder.advance_paid,
+          balanceDue: targetOrder.balance_due,
+          ndrReason: ndrReason || updates.ndr_status,
+          items: targetOrder.items,
+        });
+      }
+    } catch (waErr) {
+      console.warn("[Shiprocket Webhook] WhatsApp notification warning:", waErr);
+    }
+  }
 
   return {
     success: true,

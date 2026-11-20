@@ -7,6 +7,7 @@ import {
   sendOrderPreConfirmationWhatsApp,
   sendOrderConfirmationWhatsApp,
   sendOrderCancellationRefundWhatsApp,
+  sendOrderTransitWhatsApp,
 } from "@/lib/whatsappOrderConfirmation";
 import { restockInventory } from "@/lib/inventoryService";
 import { refundRazorpayPayment, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } from "@/lib/razorpay";
@@ -50,12 +51,53 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    const previousOrder = await getOrderById(order_id);
     const updated = await updateERPOrder(order_id, updates);
     if (!updated) {
       return NextResponse.json(
         { success: false, error: `Order ${order_id} not found` },
         { status: 404 }
       );
+    }
+
+    // Trigger WhatsApp notification if delivery status changed
+    const prevStatus = previousOrder?.delivery_status;
+    const newStatus = updates.delivery_status;
+    const customerPhone = updated.customer_phone || previousOrder?.customer_phone;
+
+    if (newStatus && prevStatus !== newStatus && customerPhone) {
+      try {
+        const isPrepaid = ((updated.payment_method || "").toLowerCase().includes("prepaid"));
+        const orderDisplayId = updated.shopify_order_id || updated.id || order_id;
+
+        if (newStatus === "Cancelled") {
+          await sendOrderCancellationRefundWhatsApp({
+            customerName: updated.customer_name || "Valued Customer",
+            customerPhone,
+            orderId: orderDisplayId,
+            isPrepaid,
+            refundAmount: isPrepaid ? Number(updated.total_amount) : undefined,
+            totalAmount: Number(updated.total_amount) || 0,
+          });
+        } else {
+          await sendOrderTransitWhatsApp({
+            customerName: updated.customer_name || "Valued Customer",
+            customerPhone,
+            orderId: orderDisplayId,
+            status: newStatus,
+            courierName: updates.courier_partner || updated.courier_partner,
+            awb: updates.shiprocket_awb || updated.shiprocket_awb,
+            totalAmount: Number(updated.total_amount) || 0,
+            paymentMethod: updated.payment_method,
+            advancePaid: updated.advance_paid,
+            balanceDue: updated.balance_due,
+            ndrReason: updates.ndr_status || updated.ndr_status,
+            items: updated.items,
+          });
+        }
+      } catch (waErr) {
+        console.warn("WhatsApp transit notification warning on PATCH:", waErr);
+      }
     }
 
     return NextResponse.json({ success: true, order: updated });
@@ -610,6 +652,7 @@ export async function POST(req: NextRequest) {
             refundAmount: isPrepaid ? totalAmount : undefined,
             refundId,
             isPrepaid,
+            totalAmount,
           });
         } catch (waErr) {
           console.warn("WhatsApp cancellation notification warning:", waErr);
