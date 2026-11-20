@@ -26,6 +26,7 @@ import {
   X,
   RotateCcw,
   Sparkles,
+  FileText,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -688,6 +689,16 @@ function OrderTrackingContent() {
                             <span>{badge.label}</span>
                           </span>
 
+                          <Link
+                            href={`/invoice?query=${encodeURIComponent(selectedOrder.shopify_order_id || selectedOrder.id)}`}
+                            target="_blank"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold bg-[#780016] hover:bg-[#600012] text-white transition shadow-xs cursor-pointer"
+                            title="Download / Print Official Tax Invoice & Bill"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>Tax Invoice</span>
+                          </Link>
+
                           <button
                             onClick={() =>
                               fetchTracking(
@@ -1089,6 +1100,19 @@ function OrderTrackingContent() {
                             </span>
                           </div>
                         )}
+
+                        {/* Tax Invoice Direct Link */}
+                        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                          <span className="text-xs text-gray-500">Official GST Tax Invoice & Bill</span>
+                          <Link
+                            href={`/invoice?query=${encodeURIComponent(selectedOrder.shopify_order_id || selectedOrder.id)}`}
+                            target="_blank"
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#780016] hover:text-[#50000e] hover:underline"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>Download Tax Invoice (PDF)</span>
+                          </Link>
+                        </div>
                       </div>
                     );
                   })()}

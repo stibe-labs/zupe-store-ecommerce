@@ -51,6 +51,13 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    // Keep shiprocket_awb and tracking_number synchronized
+    if (updates.shiprocket_awb && !updates.tracking_number) {
+      updates.tracking_number = updates.shiprocket_awb;
+    } else if (updates.tracking_number && !updates.shiprocket_awb) {
+      updates.shiprocket_awb = updates.tracking_number;
+    }
+
     const previousOrder = await getOrderById(order_id);
     const updated = await updateERPOrder(order_id, updates);
     if (!updated) {
@@ -60,12 +67,40 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    // Trigger WhatsApp notification if delivery status changed
+    // Also update D1 orders table with the new tracking and delivery details if present
+    try {
+      if (updates.shiprocket_awb || updates.courier_partner || updates.delivery_status) {
+        await executeD1Query(
+          `UPDATE orders SET
+            shiprocket_awb = COALESCE(?, shiprocket_awb),
+            tracking_number = COALESCE(?, tracking_number),
+            courier_partner = COALESCE(?, courier_partner),
+            delivery_status = COALESCE(?, delivery_status)
+           WHERE id = ? OR shopify_order_id = ?`,
+          [
+            updates.shiprocket_awb || null,
+            updates.tracking_number || updates.shiprocket_awb || null,
+            updates.courier_partner || null,
+            updates.delivery_status || null,
+            order_id,
+            order_id,
+          ]
+        );
+      }
+    } catch (d1Err) {
+      console.warn("D1 sync tracking warning:", d1Err);
+    }
+
+    // Trigger WhatsApp notification if delivery status changed OR if AWB / Tracking ID was added/updated
     const prevStatus = previousOrder?.delivery_status;
-    const newStatus = updates.delivery_status;
+    const newStatus = updates.delivery_status || previousOrder?.delivery_status;
+    const prevAwb = (previousOrder?.shiprocket_awb || (previousOrder as any)?.tracking_number || "").trim();
+    const newAwb = (updates.shiprocket_awb || updates.tracking_number || updated.shiprocket_awb || (updated as any).tracking_number || "").trim();
+    const awbChanged = Boolean(newAwb && newAwb !== prevAwb);
+    const statusChanged = Boolean(updates.delivery_status && prevStatus !== updates.delivery_status);
     const customerPhone = updated.customer_phone || previousOrder?.customer_phone;
 
-    if (newStatus && prevStatus !== newStatus && customerPhone) {
+    if ((statusChanged || awbChanged) && customerPhone) {
       try {
         const isPrepaid = ((updated.payment_method || "").toLowerCase().includes("prepaid"));
         const orderDisplayId = updated.shopify_order_id || updated.id || order_id;
@@ -84,9 +119,9 @@ export async function PATCH(req: NextRequest) {
             customerName: updated.customer_name || "Valued Customer",
             customerPhone,
             orderId: orderDisplayId,
-            status: newStatus,
+            status: newStatus || "In Transit",
             courierName: updates.courier_partner || updated.courier_partner,
-            awb: updates.shiprocket_awb || updated.shiprocket_awb,
+            awb: newAwb || updates.shiprocket_awb || updated.shiprocket_awb,
             totalAmount: Number(updated.total_amount) || 0,
             paymentMethod: updated.payment_method,
             advancePaid: updated.advance_paid,
@@ -109,6 +144,71 @@ export async function PATCH(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+
+    // ========================================================
+    // ACTION: SEND WHATSAPP TRANSIT / TRACKING / INVOICE UPDATE
+    // ========================================================
+    if (body.action === "send_transit_wa") {
+      const { order_id } = body;
+      if (!order_id) {
+        return NextResponse.json(
+          { success: false, error: "Missing required field: order_id" },
+          { status: 400 }
+        );
+      }
+
+      let ord: any = await getOrderById(order_id);
+      if (!ord) {
+        try {
+          const rows = await executeD1Query<any>(
+            "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
+            [order_id, order_id]
+          );
+          if (rows && rows.length > 0) ord = rows[0];
+        } catch {}
+      }
+
+      if (!ord) {
+        return NextResponse.json(
+          { success: false, error: `Order ${order_id} not found` },
+          { status: 404 }
+        );
+      }
+
+      const customerPhone = ord.customer_phone;
+      if (!customerPhone) {
+        return NextResponse.json(
+          { success: false, error: "Customer phone number is missing from this order" },
+          { status: 400 }
+        );
+      }
+
+      const orderDisplayId = ord.shopify_order_id || ord.id || order_id;
+      const awb = ord.shiprocket_awb || ord.tracking_number || "";
+      const status = ord.delivery_status || "In Transit";
+      const courier = ord.courier_partner || "Courier";
+
+      const sent = await sendOrderTransitWhatsApp({
+        customerName: ord.customer_name || "Valued Customer",
+        customerPhone,
+        orderId: orderDisplayId,
+        status,
+        courierName: courier,
+        awb,
+        totalAmount: Number(ord.total_amount) || 0,
+        paymentMethod: ord.payment_method,
+        advancePaid: ord.advance_paid,
+        balanceDue: ord.balance_due,
+        ndrReason: ord.ndr_status,
+        items: ord.items,
+      });
+
+      return NextResponse.json({
+        success: true,
+        sent,
+        message: `Official WhatsApp notification with Tracking ID & Tax Invoice link delivered to ${customerPhone}`,
+      });
+    }
 
     // ========================================================
     // ACTION: GENERATE SHIPROCKET AWB ON-DEMAND

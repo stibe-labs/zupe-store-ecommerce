@@ -29,6 +29,7 @@ import {
   Search,
   SlidersHorizontal,
   Plus,
+  FileText,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -1046,6 +1047,17 @@ function OrdersPageContent() {
                           <span>Track Package</span>
                         </Link>
                       )}
+
+                      {/* Tax Invoice Button */}
+                      <Link
+                        href={`/invoice?query=${encodeURIComponent((ord as any).shopify_order_id || ord.id)}`}
+                        target="_blank"
+                        className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 min-h-[40px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-bold tracking-tight bg-white hover:bg-stone-50 text-stone-900 border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b] transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none whitespace-nowrap"
+                        title="Download / Print Tax Invoice"
+                      >
+                        <FileText className="w-3.5 h-3.5 shrink-0 text-[#780016]" />
+                        <span>Tax Invoice</span>
+                      </Link>
 
                       {/* Rate & Review Button (Delivered) */}
                       {isDelivered && (

@@ -26,6 +26,8 @@ import {
   XCircle,
   MoreVertical,
   Tag,
+  FileText,
+  MessageSquare,
 } from "lucide-react";
 import { ERPOrder } from "@/lib/erpStore";
 
@@ -282,6 +284,33 @@ function AdminOrdersContent() {
     } finally {
       setActionLoadingId(null);
       setActionType(null);
+    }
+  };
+
+  const [isSendingTransitWA, setIsSendingTransitWA] = useState(false);
+  const handleSendTransitWA = async (ord?: ERPOrder) => {
+    const target = ord || selectedOrder;
+    if (!target) return;
+    setIsSendingTransitWA(true);
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "send_transit_wa",
+          order_id: target.id,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast("success", data.message || `WhatsApp tracking & invoice sent to ${target.customer_phone}!`);
+      } else {
+        showToast("error", data.error || "Failed to send WhatsApp tracking message");
+      }
+    } catch (err: any) {
+      showToast("error", err.message || "Network error while sending WhatsApp");
+    } finally {
+      setIsSendingTransitWA(false);
     }
   };
 
@@ -973,6 +1002,37 @@ function AdminOrdersContent() {
                                       <p className="text-[10px] text-slate-400 font-normal">View items & logistics</p>
                                     </div>
                                   </button>
+
+                                  {/* 5. View Tax Invoice */}
+                                  <a
+                                    href={`/invoice?query=${encodeURIComponent(ord.shopify_order_id || ord.id)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => setOpenMenuOrderId(null)}
+                                    className="w-full px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer text-left"
+                                  >
+                                    <FileText className="w-4 h-4 text-[#780016] shrink-0" />
+                                    <div>
+                                      <p className="font-bold text-slate-800">Tax Invoice & Bill</p>
+                                      <p className="text-[10px] text-slate-400 font-normal">Print / Save PDF</p>
+                                    </div>
+                                  </a>
+
+                                  {/* 6. Send Tracking & Invoice WhatsApp */}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setOpenMenuOrderId(null);
+                                      handleSendTransitWA(ord);
+                                    }}
+                                    className="w-full px-3.5 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2.5 transition-colors cursor-pointer text-left"
+                                  >
+                                    <MessageSquare className="w-4 h-4 text-emerald-600 shrink-0" />
+                                    <div>
+                                      <p className="font-bold text-slate-800">Send Tracking WA</p>
+                                      <p className="text-[10px] text-slate-400 font-normal">AWB & invoice link</p>
+                                    </div>
+                                  </button>
                                 </div>
                               );
                             })()}
@@ -1464,8 +1524,13 @@ function AdminOrdersContent() {
                       placeholder="e.g. D12345678 or DTDC Consignment No"
                       className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                     />
-                    <p className="mt-1 text-[10px] text-slate-500">
+                    <p className="mt-1 text-[10px] text-slate-500 leading-relaxed">
                       💡 Type the tracking / consignment number from your DTDC receipt slip here.
+                      {editDeliveryStatus === "In Transit" && !editAWB.trim() && (
+                        <span className="block text-amber-700 font-bold mt-0.5">
+                          ⚠️ AWB is empty. If left blank, customer receives Order ID (#{selectedOrder.shopify_order_id || selectedOrder.id}) as tracking reference. Enter DTDC number to give customer live courier tracking!
+                        </span>
+                      )}
                     </p>
                   </div>
 
@@ -1583,33 +1648,59 @@ function AdminOrdersContent() {
             </div>
 
             {/* Modal Footer (fixed at bottom) */}
-            <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50/80 shrink-0 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setSelectedOrder(null)}
-                className="px-4 py-2 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl font-semibold text-xs transition-all shadow-sm"
-              >
-                Close
-              </button>
+            <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50/80 shrink-0 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedOrder(null)}
+                  className="px-3.5 py-2 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl font-semibold text-xs transition-all shadow-sm cursor-pointer"
+                >
+                  Close
+                </button>
 
-              <button
-                type="button"
-                onClick={handleSaveOrderUpdates}
-                disabled={isSavingOrder}
-                className="px-5 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 disabled:opacity-50"
-              >
-                {isSavingOrder ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Saving Changes...</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Save Order Changes</span>
-                  </>
-                )}
-              </button>
+                <a
+                  href={`/invoice?query=${encodeURIComponent(selectedOrder.shopify_order_id || selectedOrder.id)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-xl font-bold text-xs transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                  title="View and print customer's GST Tax Invoice"
+                >
+                  <FileText className="w-3.5 h-3.5 text-[#780016]" />
+                  <span>Tax Invoice</span>
+                </a>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleSendTransitWA(selectedOrder)}
+                  disabled={isSendingTransitWA}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                  title="Send official WhatsApp message with Tracking ID and Tax Invoice link"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>{isSendingTransitWA ? "Sending WA..." : "Send Tracking WA"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSaveOrderUpdates}
+                  disabled={isSavingOrder}
+                  className="px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white rounded-xl font-semibold text-xs transition-all shadow-sm shadow-orange-500/25 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                >
+                  {isSavingOrder ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Saving Changes...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Save Order Changes</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

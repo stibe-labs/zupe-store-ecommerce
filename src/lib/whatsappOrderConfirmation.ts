@@ -465,6 +465,10 @@ async function sendViaConfirmedUtilityTemplate(
   totalAmount: number,
   paymentMethodLabel: string
 ): Promise<boolean> {
+  const cleanUrlOrderId = (orderId || "").replace(/^#/, "");
+  const trackInvoiceUrl = `${STORE_BASE_URL}/order-tracking?query=${encodeURIComponent(cleanUrlOrderId)}`;
+  const p3Text = `Rs ${totalAmount.toLocaleString("en-IN")}. Track package & view invoice: ${trackInvoiceUrl}`;
+
   const payload = {
     messaging_product: "whatsapp",
     recipient_type: "individual",
@@ -478,8 +482,8 @@ async function sendViaConfirmedUtilityTemplate(
           type: "body",
           parameters: [
             { type: "text", text: firstName },
-            { type: "text", text: orderId },
-            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
+            { type: "text", text: `${orderId} (Confirmed)` },
+            { type: "text", text: p3Text },
           ],
         },
       ],
@@ -645,11 +649,13 @@ export async function sendOrderCancellationRefundWhatsApp(
   // This utility template delivers outside the 24-hour service window to all customers!
   let templateSent = false;
   try {
+    const cleanUrlOrderId = orderId.replace(/^#/, "");
+    const trackUrl = `${STORE_BASE_URL}/order-tracking?query=${encodeURIComponent(cleanUrlOrderId)}`;
     const p1 = firstName;
     const p2 = `${displayOrderId} (Cancelled)`;
     const p3 = isPrepaid && refundAmount
-      ? `Refund: Rs ${refundAmount.toLocaleString("en-IN")}`
-      : `Rs ${effectiveTotal.toLocaleString("en-IN")} (Cancelled)`;
+      ? `Refund: Rs ${refundAmount.toLocaleString("en-IN")}. View details: ${trackUrl}`
+      : `Rs ${effectiveTotal.toLocaleString("en-IN")} (Cancelled). View details: ${trackUrl}`;
 
     const payload = {
       messaging_product: "whatsapp",
@@ -804,7 +810,18 @@ export async function sendOrderTransitWhatsApp(
   const firstName = customerName.split(" ")[0] || customerName;
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
   const cleanUrlOrderId = orderId.replace(/^#/, "");
-  const trackUrl = `${STORE_BASE_URL}/order-tracking?query=${encodeURIComponent(awb || cleanUrlOrderId)}`;
+
+  const cleanAwb = (awb || "").trim();
+  const hasRealAwb = Boolean(
+    cleanAwb &&
+      !cleanAwb.startsWith("SR-AWB-") &&
+      !cleanAwb.startsWith("TEMP-") &&
+      !cleanAwb.toUpperCase().includes("PENDING")
+  );
+  const trackingRef = hasRealAwb ? cleanAwb : displayOrderId;
+  const trackQueryParam = encodeURIComponent(hasRealAwb ? cleanAwb : cleanUrlOrderId);
+  const trackUrl = `${STORE_BASE_URL}/order-tracking?query=${trackQueryParam}`;
+  const invoiceUrl = `${STORE_BASE_URL}/invoice?query=${trackQueryParam}`;
 
   const isCod =
     paymentMethod?.toLowerCase().includes("cod") ||
@@ -819,50 +836,60 @@ export async function sendOrderTransitWhatsApp(
   // Prepare parameters for official Meta utility template: turkiyejam_order_update
   // Exactly 3 body parameters: {{1}}=Name, {{2}}=Order/Headline, {{3}}=Amount/Status
   let templateP2 = `${displayOrderId} Update`;
-  let templateP3 = `Rs ${totalAmount.toLocaleString("en-IN")}`;
+  let templateP3 = `Rs ${totalAmount.toLocaleString("en-IN")}. Track package & view invoice: ${trackUrl}`;
   let richBody = "";
   let deskMsgType: "tracking_card" | "order_card" = "tracking_card";
 
   switch (status) {
     case "In Transit":
-      templateP2 = `${displayOrderId} (Dispatched via ${courierName || "Courier"})`;
-      templateP3 = awb ? `AWB: ${awb}` : `Live Tracking Available`;
+      templateP2 = hasRealAwb
+        ? `${displayOrderId} (Dispatched via ${courierName || "Courier"}, Tracking ID: ${cleanAwb})`
+        : `${displayOrderId} (Dispatched via ${courierName || "Courier"})`;
+      templateP3 = hasRealAwb
+        ? `Rs ${totalAmount.toLocaleString("en-IN")}. Track package & view invoice: ${trackUrl}`
+        : `Rs ${totalAmount.toLocaleString("en-IN")} (Tracking Ref: ${displayOrderId}). Track package & view invoice: ${trackUrl}`;
       richBody =
         `🚀 *Order Dispatched — Turkiye Jam!* 📦\n\n` +
         `Hi ${firstName}! Great news, your order *${displayOrderId}* has been packed and handed over to ${courierName || "our courier partner"}.\n\n` +
-        `📦 *AWB Tracking Number:* ${awb || "Tracking in link"}\n` +
+        `📦 *Tracking ID / AWB:* ${hasRealAwb ? cleanAwb : displayOrderId}\n` +
         `🚚 *Carrier Partner:* ${courierName || "Express Courier"}\n` +
         (isCod
           ? `💰 *Payable at Doorstep:* Rs ${doorstepAmount.toLocaleString("en-IN")} (Cash or UPI)\n`
           : `💰 *Payment Status:* Paid Online (Prepaid)\n`) +
         `⏱️ *Estimated Delivery:* 2 to 4 business days in discreet packaging\n\n` +
         `📍 *Track Your Shipment Live:*\n${trackUrl}\n\n` +
+        `📄 *Download Tax Invoice:*\n${invoiceUrl}\n\n` +
         `Thank you for choosing Turkiye Jam! 🌿`;
       break;
 
     case "Out for Delivery":
-      templateP2 = `${displayOrderId} (Out for Delivery Today)`;
+      templateP2 = hasRealAwb
+        ? `${displayOrderId} (Out for Delivery Today via ${courierName || "Courier"}, Tracking ID: ${cleanAwb})`
+        : `${displayOrderId} (Out for Delivery Today via ${courierName || "Courier"})`;
       templateP3 = isCod
-        ? `Payable: Rs ${doorstepAmount.toLocaleString("en-IN")}`
-        : `Rs ${totalAmount.toLocaleString("en-IN")}`;
+        ? `Rs ${totalAmount.toLocaleString("en-IN")} (Payable at doorstep: Rs ${doorstepAmount.toLocaleString("en-IN")}). Track delivery & view invoice: ${trackUrl}`
+        : `Rs ${totalAmount.toLocaleString("en-IN")} (Prepaid Online). Track delivery & view invoice: ${trackUrl}`;
       richBody =
         `🛵 *Out for Delivery Today — Turkiye Jam!* 📦\n\n` +
         `Hi ${firstName}! Your package for order *${displayOrderId}* is out for delivery today with our delivery executive (${courierName || "Courier"}).\n\n` +
+        `📦 *Tracking ID / AWB:* ${hasRealAwb ? cleanAwb : displayOrderId}\n` +
         (isCod
           ? `💰 *Please keep Rs ${doorstepAmount.toLocaleString("en-IN")} ready at doorstep (Cash or UPI).*`
           : `✅ *Prepaid Order:* No payment needed at your doorstep.`) +
         `\n\nPlease ensure someone is available at your address to receive the parcel.\n\n` +
         `📍 *Track Package:*\n${trackUrl}\n\n` +
+        `📄 *Download Tax Invoice:*\n${invoiceUrl}\n\n` +
         `Turkiye Jam Team`;
       break;
 
     case "Delivered":
-      templateP2 = `${displayOrderId} (Delivered)`;
-      templateP3 = `Rs ${totalAmount.toLocaleString("en-IN")}`;
+      templateP2 = `${displayOrderId} (Successfully Delivered)`;
+      templateP3 = `Rs ${totalAmount.toLocaleString("en-IN")}. View & download your tax invoice: ${trackUrl}`;
       deskMsgType = "order_card";
       richBody =
         `🎉 *Order Delivered — Turkiye Jam!* 🍯🌿\n\n` +
         `Hi ${firstName}! Your Turkiye Jam package *${displayOrderId}* has been successfully delivered.\n\n` +
+        `📄 *Download Tax Invoice:*\n${invoiceUrl}\n\n` +
         `🌿 We hope you love your experience!\n\n` +
         `📖 *Usage & Dosage Guide:*\n` +
         `1. Take 1 sachet 30–45 minutes before bedtime.\n` +
@@ -874,20 +901,21 @@ export async function sendOrderTransitWhatsApp(
 
     case "NDR":
       templateP2 = `${displayOrderId} (Delivery Re-attempt Scheduled)`;
-      templateP3 = `Reattempt Scheduled`;
+      templateP3 = `Rs ${totalAmount.toLocaleString("en-IN")}. Track shipment: ${trackUrl}`;
       richBody =
         `⚠️ *Delivery Attempt Update — Turkiye Jam* 📦\n\n` +
         `Hi ${firstName}! Our courier partner (${courierName || "Courier"}) attempted delivery of your order *${displayOrderId}* today, but could not complete it (${ndrReason || "Customer unreachable / door closed"}).\n\n` +
         `Don't worry! A delivery re-attempt is scheduled for the next business day.\n\n` +
         `If you need to update your landmark, alternate phone number, or delivery instructions, please reply directly to this message!\n\n` +
         `📍 *Track shipment:*\n${trackUrl}\n\n` +
+        `📄 *Download Tax Invoice:*\n${invoiceUrl}\n\n` +
         `Turkiye Jam Support`;
       break;
 
     case "RTO In Transit":
     case "RTO Delivered":
       templateP2 = `${displayOrderId} (Package Returning)`;
-      templateP3 = `Status: Returned`;
+      templateP3 = `Rs ${totalAmount.toLocaleString("en-IN")} (Status: Returned). Track: ${trackUrl}`;
       richBody =
         `📦 *Turkiye Jam — Delivery Update*\n\n` +
         `Hi ${firstName}! The parcel for order *${displayOrderId}* could not be delivered after repeated attempts and is returning to our warehouse.\n\n` +
@@ -896,12 +924,15 @@ export async function sendOrderTransitWhatsApp(
       break;
 
     default:
-      templateP2 = `${displayOrderId} (${status})`;
-      templateP3 = `Rs ${totalAmount.toLocaleString("en-IN")}`;
+      templateP2 = hasRealAwb
+        ? `${displayOrderId} (${status}, Tracking ID: ${cleanAwb})`
+        : `${displayOrderId} (${status})`;
+      templateP3 = `Rs ${totalAmount.toLocaleString("en-IN")}. Track package & view invoice: ${trackUrl}`;
       richBody =
         `📦 *Turkiye Jam — Order Status Update*\n\n` +
         `Hi ${firstName}! Your order *${displayOrderId}* status has been updated to: *${status}*.\n\n` +
         `📍 *Track Order:*\n${trackUrl}\n\n` +
+        `📄 *Download Tax Invoice:*\n${invoiceUrl}\n\n` +
         `Turkiye Jam Team`;
       break;
   }
