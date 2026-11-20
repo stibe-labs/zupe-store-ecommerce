@@ -14,7 +14,6 @@ import {
   ChevronDown,
   Upload,
   ArrowRight,
-  ShieldCheck,
   Loader2,
   ImageIcon,
 } from "lucide-react";
@@ -288,65 +287,61 @@ export function ProductReviewsSection({
 
   // Live recommend percentage (synced with reviews rating >= 4)
   return (
-    <section id="reviews" className="w-full pt-6 pb-12 sm:pt-10 sm:pb-16 border-t border-gray-100 mt-2 sm:mt-6 bg-white/60">
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
+    <div id="reviews" className="w-full">
+      <div className="w-full">
         {/* Section Header */}
-        <div className="mb-6">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-2 border border-emerald-200/80">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>100% Verified Buyer Feedback</span>
-          </div>
+        <div className="mb-4 sm:mb-6">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111111] tracking-tight">
             Customer Reviews &amp; Ratings
           </h2>
         </div>
 
-        {/* Rating Breakdown Summary Card */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-neutral-200/80 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-8 items-center mb-6">
-          {/* Big Score Column */}
-          <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left justify-center md:border-r md:border-neutral-200/80 md:pr-8">
-            <div className="flex items-baseline gap-2">
-              <span className="text-5xl sm:text-6xl font-extrabold text-gray-900 tracking-tight">
+        {/* Rating Breakdown Summary (Clean borderless side-by-side layout) */}
+        <div className="flex flex-row items-center gap-4 sm:gap-8 md:gap-12 mb-6 sm:mb-8 py-1">
+          {/* Compact Score Column (Left side beside stars lines) */}
+          <div className="shrink-0 flex flex-col items-center sm:items-start text-center sm:text-left justify-center pr-2 sm:pr-8 sm:border-r sm:border-neutral-200">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-3xl sm:text-4xl md:text-5xl font-black text-neutral-950 tracking-tight">
                 {displayTotal > 0 ? displayAverage.toFixed(1) : "0.0"}
               </span>
-              <span className="text-lg font-bold text-gray-400">/ 5.0</span>
+              <span className="text-xs sm:text-sm font-bold text-neutral-400">/ 5.0</span>
             </div>
-            <div className="flex items-center gap-1 my-2 text-amber-400">
+            <div className="flex items-center gap-0.5 sm:gap-1 my-1.5 text-amber-400">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  className={`w-5 h-5 fill-current ${
-                    displayTotal > 0 && star <= Math.round(displayAverage) ? "text-amber-400" : "text-gray-200"
+                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current ${
+                    displayTotal > 0 && star <= Math.round(displayAverage) ? "text-amber-400" : "text-neutral-200"
                   }`}
                 />
               ))}
             </div>
-            <span className="text-xs font-semibold text-gray-600">
+            <span className="text-[10px] sm:text-xs font-medium text-neutral-500 whitespace-nowrap">
               {displayTotal > 0
-                ? `Based on ${displayTotal.toLocaleString()} verified customer ${displayTotal === 1 ? "review" : "reviews"}`
-                : "Based on 0 verified customer reviews"}
+                ? `Based on ${displayTotal.toLocaleString()} ${displayTotal === 1 ? "review" : "reviews"}`
+                : "Based on 0 reviews"}
             </span>
           </div>
 
-          {/* Progress Bars Column */}
-          <div className="md:col-span-8 space-y-2.5">
+          {/* Compact Progress Bars Column (Beside score on right) */}
+          <div className="flex-1 min-w-0 space-y-1.5 sm:space-y-2">
             {[5, 4, 3, 2, 1].map((star) => {
               const pct = stats.ratingPercentages[star] || 0;
               const count = stats.ratingCounts[star] || 0;
               return (
-                <div key={star} className="flex items-center gap-3 text-xs">
-                  <div className="flex items-center gap-1 w-12 text-gray-700 font-bold justify-end">
+                <div key={star} className="flex items-center gap-2 sm:gap-3 text-xs">
+                  <div className="flex items-center gap-0.5 w-6 sm:w-8 text-neutral-700 font-bold justify-end text-[11px] sm:text-xs shrink-0">
                     <span>{star}</span>
-                    <Star className="w-3.5 h-3.5 fill-current text-amber-400" />
+                    <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current text-amber-400 shrink-0" />
                   </div>
-                  <div className="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden relative">
+                  <div className="flex-1 h-2 sm:h-2.5 rounded-full bg-neutral-100 overflow-hidden relative">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-[#9CD33B] to-[#6B9E3A] transition-all duration-500"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <div className="w-16 text-right font-mono font-bold text-gray-500 text-[11px]">
-                    {pct}% <span className="text-gray-400 font-normal">({count})</span>
+                  <div className="w-10 sm:w-16 text-right font-mono font-bold text-neutral-500 text-[10px] sm:text-[11px] shrink-0">
+                    {pct}% <span className="text-neutral-400 font-normal hidden sm:inline">({count})</span>
                   </div>
                 </div>
               );
@@ -854,6 +849,6 @@ export function ProductReviewsSection({
           </div>
         </div>
       )}
-    </section>
+    </div>
   );
 }

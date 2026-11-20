@@ -1163,14 +1163,12 @@ export default function ProductDetailPage() {
         {/* CUSTOMER REVIEWS & RATINGS SECTION (Positioned under You May Also Like) */}
         {/* ================================================================= */}
         <section id="reviews-section" className="mt-12 sm:mt-16 pt-8 border-t border-neutral-200 scroll-mt-24">
-          <div className="bg-white rounded-3xl border border-neutral-200/80 p-4 sm:p-8 shadow-[0_2px_16px_rgba(0,0,0,0.03)]">
-            <ProductReviewsSection
-              productId={activeProduct.id}
-              productName={activeProduct.name}
-              fallbackRating={activeProduct.rating || 4.6}
-              fallbackReviewCount={activeProduct.review_count || 12548}
-            />
-          </div>
+          <ProductReviewsSection
+            productId={activeProduct.id}
+            productName={activeProduct.name}
+            fallbackRating={activeProduct.rating || 4.6}
+            fallbackReviewCount={activeProduct.review_count || 12548}
+          />
         </section>
       </main>
 
