@@ -227,13 +227,13 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
   const { token, phoneId, templateName, lang: configuredLang } = await getEffectiveWhatsAppCredentials();
 
   if (!token || !phoneId) {
-    console.warn("⚠️ [WhatsApp OTP] Missing WhatsApp credentials (WHATSAPP_TOKEN / WHATSAPP_PHONE_NUMBER_ID).");
+    console.warn("⚠️ [WhatsApp OTP] Missing WhatsApp credentials (WHATSAPP_TOKEN / WHATSAPP_PHONE_NUMBER_ID). Please configure them in wrangler.json or Admin CRM.");
     return {
       success: false,
       codeSent: false,
       otp,
       error: "MISSING_CREDENTIALS",
-      message: "WhatsApp messaging is not yet configured with Meta credentials (Token & Phone Number ID). Please configure them in wrangler.json or Admin CRM.",
+      message: "Unable to send verification code. WhatsApp messaging service is being configured. Please try again shortly or contact support.",
     };
   }
 
@@ -251,15 +251,15 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
       const variations = [
         [
           { type: "body", parameters: [{ type: "text", text: otp }] },
+          { type: "button", sub_type: "url", index: "0", parameters: [{ type: "text", text: otp }] },
+        ],
+        [
+          { type: "body", parameters: [{ type: "text", text: otp }] },
           { type: "button", sub_type: "copy_code", index: "0", parameters: [{ type: "coupon_code", coupon_code: otp }] },
         ],
         [
           { type: "body", parameters: [{ type: "text", text: otp }] },
           { type: "button", sub_type: "copy_code", index: "0", parameters: [{ type: "text", text: otp }] },
-        ],
-        [
-          { type: "body", parameters: [{ type: "text", text: otp }] },
-          { type: "button", sub_type: "url", index: "0", parameters: [{ type: "text", text: otp }] },
         ],
         [
           { type: "body", parameters: [{ type: "text", text: otp }] },

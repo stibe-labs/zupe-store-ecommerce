@@ -14,9 +14,6 @@ import {
   X,
   RotateCcw,
   Clock,
-  ShieldCheck,
-  Sparkles,
-  Truck,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { siteConfig } from "@/config/siteConfig";
@@ -316,19 +313,6 @@ export function AuthCard({
                   </>
                 )}
               </button>
-
-              {/* Trust badges footer */}
-              <div className="mt-6 pt-4 border-t border-neutral-100 flex items-center justify-center gap-2 flex-wrap">
-                <span className="px-3 py-1 rounded-full bg-[#F4FBE8] border border-[#95CF42]/30 text-[#3D6318] font-bold text-[11px] flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#6B9E3A]" /> 100% Lab Tested
-                </span>
-                <span className="px-3 py-1 rounded-full bg-[#F4FBE8] border border-[#95CF42]/30 text-[#3D6318] font-bold text-[11px] flex items-center gap-1.5">
-                  <Truck className="w-3.5 h-3.5 text-[#6B9E3A]" /> Pan-India Air Logistics
-                </span>
-                <span className="px-3 py-1 rounded-full bg-[#F4FBE8] border border-[#95CF42]/30 text-[#3D6318] font-bold text-[11px] flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#6B9E3A]" /> Direct Farm Fresh
-                </span>
-              </div>
             </form>
           )}
 
