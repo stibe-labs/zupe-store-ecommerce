@@ -1504,30 +1504,30 @@ export const STORE_CATEGORIES_DATA: StoreCategory[] = [
       {
         id: "cashews",
         name: "Cashews",
-        query: "Cashews & Pistachios",
+        query: "Cashews",
         image: "/vittal/catalog/glass-jar-cashews.png",
-        matchSubcategories: ["Cashews & Pistachios", "Cashews"],
+        matchSubcategories: ["Cashews", "Cashews & Pistachios"],
       },
       {
         id: "almonds",
         name: "Almonds",
-        query: "California Almonds",
+        query: "Almonds",
         image: "/vittal/catalog/clear-almond-snack-pouch.png",
-        matchSubcategories: ["California Almonds", "Almonds"],
+        matchSubcategories: ["Almonds", "California Almonds"],
       },
       {
         id: "pistachios",
         name: "Pistachios",
-        query: "Cashews & Pistachios",
+        query: "Pistachios",
         image: "/vittal/catalog/glossy-pistachio-snack-bag.png",
-        matchSubcategories: ["Cashews & Pistachios", "Pistachios"],
+        matchSubcategories: ["Pistachios", "Cashews & Pistachios"],
       },
       {
         id: "chia-seeds",
         name: "Chia & Seeds",
-        query: "Trail Mixes",
+        query: "Chia & Seeds",
         image: "/vittal/catalog/glass-chia-seeds-jar.png",
-        matchSubcategories: ["Trail Mixes", "Superfood"],
+        matchSubcategories: ["Chia & Seeds", "Trail Mixes", "Superfood"],
       },
     ],
   },
@@ -1629,31 +1629,93 @@ export function doesSubcategoryMatch(product: Product, selectedSubcategory: stri
   if (!selectedSubcategory || selectedSubcategory === "All" || selectedSubcategory === "All Subcategories") return true;
   const pSub = (product.subcategory || "").toLowerCase().trim();
   const sSub = selectedSubcategory.toLowerCase().trim();
-  if (!pSub) return false;
+  const pName = (product.name || "").toLowerCase().trim();
+  if (!pSub && !pName) return false;
+
+  // Exact match
   if (pSub === sSub) return true;
 
-  // Keyword & alias matching
-  if (sSub.includes("creatine") && pSub.includes("creatine")) return true;
-  if ((sSub.includes("whey") || sSub.includes("protein")) && (pSub.includes("whey") || pSub.includes("protein"))) return true;
-  if ((sSub.includes("omega") || sSub.includes("vitamin") || sSub.includes("multivitamin")) && (pSub.includes("omega") || pSub.includes("vitamin") || pSub.includes("multivitamin"))) return true;
-  if (sSub.includes("pre-workout") && pSub.includes("pre-workout")) return true;
-  if (sSub.includes("mass") && (pSub.includes("mass") || pSub.includes("gainer") || pSub.includes("whey"))) return true;
-  if ((sSub.includes("date") || sSub.includes("medjool") || sSub.includes("ajwa")) && (pSub.includes("date") || pSub.includes("medjool") || pSub.includes("ajwa"))) return true;
-  if ((sSub.includes("cashew") || sSub.includes("pistachio")) && (pSub.includes("cashew") || pSub.includes("pistachio"))) return true;
-  if (sSub.includes("almond") && pSub.includes("almond")) return true;
-  if ((sSub.includes("trail") || sSub.includes("seed") || sSub.includes("chia")) && (pSub.includes("trail") || pSub.includes("seed") || pSub.includes("chia"))) return true;
-  if ((sSub.includes("truffle") || sSub.includes("ferrer")) && (pSub.includes("truffle") || pSub.includes("ferrer"))) return true;
-  if (sSub.includes("dark") && pSub.includes("dark")) return true;
-  if ((sSub.includes("candy") || sSub.includes("gourmet") || sSub.includes("silk") || sSub.includes("bounty")) && (pSub.includes("candy") || pSub.includes("gourmet") || pSub.includes("chocolate"))) return true;
-  if ((sSub.includes("tee") || sSub.includes("shirt")) && (pSub.includes("tee") || pSub.includes("shirt"))) return true;
-  if ((sSub.includes("set") || sSub.includes("athleisure") || sSub.includes("matching")) && (pSub.includes("set") || pSub.includes("athleisure") || pSub.includes("matching"))) return true;
-  if ((sSub.includes("jacket") || sSub.includes("hoodie")) && (pSub.includes("jacket") || pSub.includes("hoodie"))) return true;
-  if (sSub.includes("short") && pSub.includes("short")) return true;
-  if ((sSub.includes("jogger") || sSub.includes("pant") || sSub.includes("track")) && (pSub.includes("jogger") || pSub.includes("pant") || pSub.includes("track"))) return true;
-  if (sSub.includes("compression") && pSub.includes("compression")) return true;
-  if ((sSub.includes("footwear") || sSub.includes("sneaker") || sSub.includes("shoe")) && (pSub.includes("footwear") || pSub.includes("sneaker") || pSub.includes("shoe"))) return true;
-  if ((sSub.includes("fragrance") || sSub.includes("perfume") || sSub.includes("parfum")) && (pSub.includes("fragrance") || pSub.includes("perfume") || pSub.includes("parfum"))) return true;
-  if ((sSub.includes("cosmetic") || sSub.includes("beauty") || sSub.includes("makeup") || sSub.includes("lipstick")) && (pSub.includes("cosmetic") || pSub.includes("beauty") || pSub.includes("makeup") || pSub.includes("lipstick"))) return true;
+  // Dates & Nuts specifics:
+  if (sSub === "cashews" || sSub === "cashew") {
+    return pName.includes("cashew") || (pSub.includes("cashew") && !pName.includes("pistachio"));
+  }
+  if (sSub === "pistachios" || sSub === "pistachio") {
+    return pName.includes("pistachio") || (pSub.includes("pistachio") && !pName.includes("cashew"));
+  }
+  if (sSub === "cashews & pistachios" || sSub === "cashews and pistachios") {
+    return pSub.includes("cashew") || pSub.includes("pistachio") || pName.includes("cashew") || pName.includes("pistachio");
+  }
+  if (sSub.includes("almond")) {
+    return (pName.includes("almond") || pSub.includes("almond")) && !pName.includes("silk") && !pName.includes("dairy milk");
+  }
+  if (sSub.includes("date") || sSub.includes("medjool") || sSub.includes("ajwa")) {
+    return (pSub.includes("date") || pName.includes("date")) && !pName.includes("cashew") && !pName.includes("almond") && !pName.includes("pistachio");
+  }
+  if (sSub.includes("chia") || sSub.includes("seed") || sSub.includes("trail")) {
+    return pSub.includes("trail") || pName.includes("chia") || pName.includes("seed");
+  }
+
+  // Chocolates specifics:
+  if (sSub.includes("truffle")) {
+    return pSub.includes("truffle") || pName.includes("rocher") || pName.includes("truffle");
+  }
+  if (sSub.includes("dark")) {
+    return (pSub.includes("dark") || pName.includes("dark") || pName.includes("black")) && !pName.includes("sneaker");
+  }
+  if (sSub.includes("silk") || sSub.includes("dairy milk")) {
+    return pName.includes("silk") || pName.includes("dairy milk");
+  }
+  if (sSub.includes("coconut") || sSub.includes("bounty")) {
+    return pName.includes("bounty") || pName.includes("coconut");
+  }
+
+  // Gym Supplements specifics:
+  if (sSub.includes("creatine")) {
+    return pSub.includes("creatine") || pName.includes("creatine");
+  }
+  if (sSub.includes("pre-workout") || sSub.includes("preworkout")) {
+    return pSub.includes("pre-workout") || pName.includes("pre-workout") || pName.includes("fruit punch");
+  }
+  if (sSub.includes("omega") || sSub.includes("vit") || sSub.includes("fish oil")) {
+    return pSub.includes("omega") || pSub.includes("vitamin") || pName.includes("omega") || pName.includes("fish oil");
+  }
+  if (sSub.includes("mass") || sSub.includes("gainer")) {
+    return pSub.includes("mass") || pSub.includes("gainer") || pName.includes("bucket");
+  }
+  if (sSub.includes("whey") || sSub.includes("protein")) {
+    return pSub.includes("whey") || pName.includes("whey");
+  }
+
+  // Outfits specifics:
+  if (sSub.includes("set") || sSub.includes("athleisure")) {
+    return pSub.includes("set") || pName.includes("set") || pSub.includes("athleisure");
+  }
+  if (sSub.includes("tee") || sSub.includes("t-shirt")) {
+    return pSub.includes("t-shirt") || pName.includes("t-shirt") || pName.includes("tee");
+  }
+  if (sSub.includes("jacket") || sSub.includes("hoodie")) {
+    return pSub.includes("jacket") || pName.includes("jacket") || pSub.includes("hoodie");
+  }
+  if (sSub.includes("short")) {
+    return pSub.includes("short") || pName.includes("short");
+  }
+  if (sSub.includes("jogger") || sSub.includes("pant")) {
+    return pSub.includes("jogger") || pName.includes("jogger") || pSub.includes("track");
+  }
+  if (sSub.includes("compression")) {
+    return pSub.includes("compression") || pName.includes("compression") || pName.includes("long-sleeve");
+  }
+
+  // Apparels specifics:
+  if (sSub.includes("footwear") || sSub.includes("sneaker") || sSub.includes("shoe")) {
+    return pSub.includes("footwear") || pSub.includes("sneaker") || pName.includes("sneaker");
+  }
+  if (sSub.includes("perfume") || sSub.includes("fragrance") || sSub.includes("parfum")) {
+    return pSub.includes("fragrance") || pSub.includes("perfume") || pName.includes("parfum") || pName.includes("perfume");
+  }
+  if (sSub.includes("cosmetic") || sSub.includes("beauty") || sSub.includes("makeup") || sSub.includes("lipstick")) {
+    return pSub.includes("cosmetic") || pSub.includes("beauty") || pName.includes("makeup") || pName.includes("lipstick");
+  }
 
   return false;
 }

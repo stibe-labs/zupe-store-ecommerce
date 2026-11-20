@@ -257,7 +257,11 @@ export async function GET(req: NextRequest) {
     // Full catalog query
     const d1Results = await executeD1Query<Product>("SELECT * FROM products ORDER BY created_at DESC;");
     if (d1Results && Array.isArray(d1Results) && d1Results.length > 0) {
-      const formatted = d1Results.map((p: any) => formatDbProduct(p, reviewStatsMap));
+      // Merge with default products if any are missing from D1 (e.g. newly added defaults)
+      const d1Ids = new Set(d1Results.map((p: any) => String(p.id).toLowerCase()));
+      const missingDefaults = DEFAULT_PRODUCTS.filter((dp) => !d1Ids.has(String(dp.id).toLowerCase()));
+      const combined = [...d1Results, ...missingDefaults];
+      const formatted = combined.map((p: any) => formatDbProduct(p, reviewStatsMap));
 
       // Sync memory cache
       serverProductsCache = formatted;

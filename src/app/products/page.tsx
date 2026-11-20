@@ -783,7 +783,7 @@ function ProductsContent() {
       }
       return true;
     });
-  }, [products, selectedCategory]);
+  }, [products, selectedCategory, selectedSubcategory]);
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
