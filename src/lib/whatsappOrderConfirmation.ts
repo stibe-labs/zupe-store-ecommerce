@@ -327,11 +327,23 @@ export async function sendOrderConfirmationWhatsApp(
       "Thank you for shopping with Turkiye Jam!";
   }
 
+  // 1. ALWAYS send the complete itemized direct WhatsApp confirmation message FIRST!
+  // This delivers the well-explained, structured message with order ID, items, pricing, delivery days, and tracking link.
+  let directSent = false;
+  try {
+    directSent = await sendWhatsAppTextMessage(apiUrl, token, digits, message);
+    if (directSent) {
+      console.log(`✅ [WA Order Confirm] Structured confirmation delivered to ${digits} for order ${displayOrderId}`);
+      return;
+    }
+  } catch (err) {
+    console.warn("[WA Order Confirm] Direct message dispatch error, attempting template fallback:", err);
+  }
+
+  // 2. ONLY fallback to official Meta utility template if direct message delivery failed
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
   if (paymentMethod === "cod") {
-    // 1. For COD: Send the approved Meta utility template 'turkiyejam_order_update'
-    // ("Hello {name}, your Turkiye Jam order {orderId} has been received. Total amount is Rs {amount}...")
     try {
       await sendViaConfirmedUtilityTemplate(
         apiUrl,
@@ -343,50 +355,22 @@ export async function sendOrderConfirmationWhatsApp(
         paymentMethodLabel
       );
     } catch (err) {
-      console.warn("[WA Order Confirm] Utility template attempt error:", err);
+      console.warn("[WA Order Confirm] Utility template fallback attempt error:", err);
     }
   } else {
-    // Prepaid orders: Send prepaid template or confirmed template
-    let prepaidSent = false;
     try {
-      prepaidSent = await sendViaTemplate(
+      await sendViaConfirmedUtilityTemplate(
         apiUrl,
         token,
         digits,
-        paymentMethod,
         firstName,
         displayOrderId,
         totalAmount,
-        switchPrepaidAmount
+        paymentMethodLabel
       );
     } catch (err) {
-      console.warn("[WA Order Confirm] Prepaid template attempt:", err);
+      console.warn("[WA Order Confirm] Fallback utility template attempt:", err);
     }
-
-    if (!prepaidSent) {
-      try {
-        await sendViaConfirmedUtilityTemplate(
-          apiUrl,
-          token,
-          digits,
-          firstName,
-          displayOrderId,
-          totalAmount,
-          paymentMethodLabel
-        );
-      } catch (err) {
-        console.warn("[WA Order Confirm] Fallback utility template attempt:", err);
-      }
-    }
-  }
-
-  // 3. ALWAYS send the complete itemized direct WhatsApp confirmation message!
-  // This guarantees immediate delivery with full items list, delivery estimate, tracking link, and switch offer
-  try {
-    await sendWhatsAppTextMessage(apiUrl, token, digits, message);
-    console.log(`✅ [WA Order Confirm] Itemized confirmation delivered to ${digits} for order ${displayOrderId}`);
-  } catch (err) {
-    console.warn("[WA Order Confirm] Direct message dispatch error:", err);
   }
 }
 
@@ -643,10 +627,62 @@ export async function sendOrderCancellationRefundWhatsApp(
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
   const effectiveTotal = totalAmount !== undefined ? totalAmount : (refundAmount || 0);
 
-  // 1. Try official Meta utility template first: turkiyejam_order_update
-  // In Meta Business Manager, turkiyejam_order_update requires EXACTLY 3 body parameters:
-  // {{1}}=Customer Name, {{2}}=Order ID/Headline, {{3}}=Amount/Status
-  // This utility template delivers outside the 24-hour service window to all customers!
+  // 1. Prepare rich structured message text
+  let body = "";
+  if (isPrepaid && refundAmount) {
+    body =
+      `🛍️ *Turkiye Jam — Order Cancelled & Refund Initiated*\n\n` +
+      `Hi ${firstName}! Your order *${displayOrderId}* has been successfully cancelled.\n\n` +
+      `💰 *Refund Amount:* Rs ${refundAmount.toLocaleString("en-IN")}\n` +
+      `💳 *Refund Reference:* ${refundId || "Initiated via Razorpay / Instant Refund"}\n` +
+      `⚡ *Payment Source:* Released back to your original payment method (UPI / Card / Netbanking)\n\n` +
+      `⏱️ *Expected Credit Timeline:*\n` +
+      `• UPI (GPay, PhonePe, Paytm): Usually credited within 2 to 4 hours\n` +
+      `• Debit / Credit Cards / Netbanking: Credited within 2 to 4 business days\n\n` +
+      `Thank you for shopping with Turkiye Jam!`;
+  } else {
+    body =
+      `🛍️ *Turkiye Jam — Order Cancelled*\n\n` +
+      `Hi ${firstName}! Your Cash on Delivery order *${displayOrderId}* has been successfully cancelled.\n\n` +
+      `📦 *Status:* Shipment cancelled. No payment will be collected at your doorstep.\n\n` +
+      `If you need any assistance or wish to re-order, we are always here to help.\n\n` +
+      `Thank you,\nTurkiye Jam Team`;
+  }
+
+  // 2. Log into internal WhatsApp desk and D1
+  try {
+    const { recordOutboundSystemMessage } = await import("@/lib/whatsappStore");
+    await recordOutboundSystemMessage(
+      customerPhone,
+      body,
+      "order_card",
+      {
+        orderData: {
+          orderId,
+          totalAmount: isPrepaid ? (refundAmount || 0) : effectiveTotal,
+          itemsSummary: isPrepaid ? `Refund Initiated (Ref: ${refundId || "Automated"})` : "Order Cancelled",
+          status: "Cancelled",
+          paymentMethod: isPrepaid ? "Refunded" : "Cancelled",
+        },
+      }
+    );
+  } catch (logErr) {
+    console.warn("[WA Cancel] Desk logging error:", logErr);
+  }
+
+  // 3. Send structured rich cancellation message FIRST
+  let directSent = false;
+  try {
+    directSent = await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
+    if (directSent) {
+      console.log(`✅ [WA Cancel] Structured cancellation message delivered to ${digits} for order ${orderId}`);
+      return true;
+    }
+  } catch (err) {
+    console.warn("[WA Cancel] Direct text send error, attempting template fallback:", err);
+  }
+
+  // 4. Fallback to Meta utility template ONLY IF direct rich text failed
   let templateSent = false;
   try {
     const cleanUrlOrderId = orderId.replace(/^#/, "");
@@ -690,7 +726,7 @@ export async function sendOrderCancellationRefundWhatsApp(
 
     const data = (await res.json()) as any;
     if (res.ok && data.messages?.length > 0) {
-      console.log(`✅ [WA Cancel] Official template '${TEMPLATE_UPDATE}' dispatched for order ${orderId} to ${digits}`);
+      console.log(`✅ [WA Cancel] Fallback template '${TEMPLATE_UPDATE}' dispatched for order ${orderId} to ${digits}`);
       templateSent = true;
     } else {
       console.warn(`[WA Cancel] Template rejected by Meta for ${digits}:`, data?.error || data);
@@ -699,57 +735,7 @@ export async function sendOrderCancellationRefundWhatsApp(
     console.warn(`[WA Cancel] Template send error:`, tErr);
   }
 
-  // 2. Prepare rich itemized message text
-  let body = "";
-  if (isPrepaid && refundAmount) {
-    body =
-      `🛍️ *Turkiye Jam — Order Cancelled & Refund Initiated*\n\n` +
-      `Hi ${firstName}! Your order *${displayOrderId}* has been successfully cancelled.\n\n` +
-      `💰 *Refund Amount:* Rs ${refundAmount.toLocaleString("en-IN")}\n` +
-      `💳 *Refund Reference:* ${refundId || "Initiated via Razorpay"}\n` +
-      `⚡ *Payment Source:* Released back to your original payment method (UPI / Card / Netbanking)\n\n` +
-      `⏱️ *Expected Credit Timeline:*\n` +
-      `• UPI (GPay, PhonePe, Paytm): Usually credited within 2 to 4 hours (or up to 24 hours depending on the issuing bank)\n` +
-      `• Debit / Credit Cards / Netbanking: Credited within 2 to 4 business days\n\n` +
-      `Thank you for shopping with Turkiye Jam!`;
-  } else {
-    body =
-      `🛍️ *Turkiye Jam — Order Cancelled*\n\n` +
-      `Hi ${firstName}! Your Cash on Delivery order *${displayOrderId}* has been successfully cancelled.\n\n` +
-      `📦 *Status:* Shipment cancelled. No payment will be collected at your doorstep.\n\n` +
-      `If you need any assistance or wish to re-order, we are always here to help.\n\n` +
-      `Thank you,\nTurkiye Jam Team`;
-  }
-
-  // 3. Log into internal WhatsApp desk and D1
-  try {
-    const { recordOutboundSystemMessage } = await import("@/lib/whatsappStore");
-    await recordOutboundSystemMessage(
-      customerPhone,
-      body,
-      "order_card",
-      {
-        orderData: {
-          orderId,
-          totalAmount: isPrepaid ? (refundAmount || 0) : effectiveTotal,
-          itemsSummary: isPrepaid ? `Refund Initiated (Ref: ${refundId || "Automated"})` : "Order Cancelled",
-          status: "Cancelled",
-          paymentMethod: isPrepaid ? "Refunded" : "Cancelled",
-        },
-      }
-    );
-  } catch (logErr) {
-    console.warn("[WA Cancel] Desk logging error:", logErr);
-  }
-
-  // 4. Send rich text message (delivered if customer is within 24h window)
-  try {
-    await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
-  } catch (err) {
-    console.warn("[WA Cancel] Direct text send error:", err);
-  }
-
-  return templateSent;
+  return directSent || templateSent;
 }
 
 export interface OrderTransitWhatsAppParams {
@@ -937,8 +923,42 @@ export async function sendOrderTransitWhatsApp(
       break;
   }
 
-  // 1. Send official Meta utility template: turkiyejam_order_update (3 params)
-  // Guaranteed delivery outside 24h window
+  // 1. Log to internal WhatsApp desk
+  try {
+    const { recordOutboundSystemMessage } = await import("@/lib/whatsappStore");
+    await recordOutboundSystemMessage(
+      customerPhone,
+      richBody,
+      deskMsgType,
+      {
+        orderData: {
+          orderId,
+          totalAmount,
+          itemsSummary: `Status: ${status}${courierName ? ` via ${courierName}` : ""}${awb ? ` (${awb})` : ""}`,
+          status,
+          paymentMethod: isCod ? "COD" : "Prepaid",
+          awb,
+          courier: courierName,
+        },
+      }
+    );
+  } catch (logErr) {
+    console.warn("[WA Transit] Desk log warning:", logErr);
+  }
+
+  // 2. ALWAYS send the structured rich transit card message FIRST!
+  let directSent = false;
+  try {
+    directSent = await sendWhatsAppTextMessage(apiUrl, apiToken, digits, richBody);
+    if (directSent) {
+      console.log(`✅ [WA Transit] Structured transit message delivered to ${digits} for order ${orderId} (${status})`);
+      return true;
+    }
+  } catch (textErr) {
+    console.warn("[WA Transit] Direct text error, attempting utility template fallback:", textErr);
+  }
+
+  // 3. ONLY fallback to official Meta utility template if direct message delivery failed
   let templateSent = false;
   try {
     const payload = {
@@ -974,7 +994,7 @@ export async function sendOrderTransitWhatsApp(
 
     const data = (await res.json()) as any;
     if (res.ok && data.messages?.length > 0) {
-      console.log(`✅ [WA Transit] Template '${TEMPLATE_UPDATE}' dispatched for order ${orderId} (${status}) to ${digits}`);
+      console.log(`✅ [WA Transit] Fallback template '${TEMPLATE_UPDATE}' dispatched for order ${orderId} (${status}) to ${digits}`);
       templateSent = true;
     } else {
       console.warn(`[WA Transit] Template rejected by Meta for ${digits}:`, data?.error || data);
@@ -983,37 +1003,7 @@ export async function sendOrderTransitWhatsApp(
     console.warn(`[WA Transit] Template send error:`, tErr);
   }
 
-  // 2. Log to internal WhatsApp desk
-  try {
-    const { recordOutboundSystemMessage } = await import("@/lib/whatsappStore");
-    await recordOutboundSystemMessage(
-      customerPhone,
-      richBody,
-      deskMsgType,
-      {
-        orderData: {
-          orderId,
-          totalAmount,
-          itemsSummary: `Status: ${status}${courierName ? ` via ${courierName}` : ""}${awb ? ` (${awb})` : ""}`,
-          status,
-          paymentMethod: isCod ? "COD" : "Prepaid",
-          awb,
-          courier: courierName,
-        },
-      }
-    );
-  } catch (logErr) {
-    console.warn("[WA Transit] Desk log warning:", logErr);
-  }
-
-  // 3. Send rich text message (if inside 24h window)
-  try {
-    await sendWhatsAppTextMessage(apiUrl, apiToken, digits, richBody);
-  } catch (textErr) {
-    console.warn("[WA Transit] Rich text fallback issue:", textErr);
-  }
-
-  return templateSent;
+  return directSent || templateSent;
 }
 
 export interface AbandonedCartWhatsAppParams {
