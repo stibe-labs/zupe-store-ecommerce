@@ -13,7 +13,6 @@ import {
   Loader2,
   X,
   RotateCcw,
-  MessageCircle,
   Clock,
   ShieldCheck,
   Sparkles,
@@ -199,16 +198,16 @@ export function AuthCard({
       )}
 
       {/* Main Form Card - Vittal Lifestyle luxury aesthetic */}
-      <div className="bg-white rounded-2xl border border-neutral-200/90 shadow-xl relative overflow-hidden transition-all duration-300 font-mograph">
-        {/* Brand Top Header Banner */}
-        <div className="bg-gradient-to-r from-[#111111] via-[#1a1c17] to-[#111111] px-6 py-4 border-b border-neutral-800 relative flex items-center justify-center">
-          <div className="flex items-center justify-center py-1">
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-neutral-200/90 shadow-2xl relative overflow-hidden transition-all duration-300 font-mograph">
+        {/* Top Header with Logo & Close Button (clean white background, no black bar) */}
+        <div className="pt-6 sm:pt-7 pb-2 px-6 relative flex items-center justify-center">
+          <div className="flex items-center justify-center">
             <Image
               src={siteConfig.logoUrl}
               alt={siteConfig.name}
               width={140}
               height={42}
-              className="h-8 w-auto object-contain brightness-105"
+              className="h-8 sm:h-9 w-auto object-contain"
               priority
             />
           </div>
@@ -218,7 +217,7 @@ export function AuthCard({
             <button
               type="button"
               onClick={onClose}
-              className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute top-4 right-4 sm:top-5 sm:right-5 w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-600 hover:text-neutral-900 border border-neutral-200/70 flex items-center justify-center transition-colors cursor-pointer"
               aria-label="Close"
             >
               <X className="w-4 h-4 stroke-[2.5]" />
@@ -227,12 +226,9 @@ export function AuthCard({
         </div>
 
         {/* Card Body */}
-        <div className="p-6 sm:p-7 relative font-mograph">
+        <div className="px-6 pb-6 pt-2 sm:px-7 sm:pb-7 relative font-mograph">
           {/* Header */}
           <div className="text-center mb-6">
-            <span className="inline-block px-3 py-1 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] font-semibold text-[11px] mb-2 font-mograph">
-              {step === "phone" ? "100% Authentic Vittal Lifestyle" : "Quick Verification"}
-            </span>
             <h2 className="text-xl sm:text-2xl font-bold text-neutral-950 tracking-tight font-mograph">
               {step === "phone" ? (
                 <>Welcome to {siteConfig.name}</>
@@ -240,7 +236,7 @@ export function AuthCard({
                 "Enter Verification Code"
               )}
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-500 mt-1 font-normal leading-relaxed max-w-sm mx-auto">
+            <p className="text-xs sm:text-sm text-neutral-500 mt-1.5 font-normal leading-relaxed max-w-sm mx-auto">
               {step === "phone"
                 ? "Enter your 10-digit mobile number to sign in or create an account"
                 : `Enter the 6-digit code sent to +91 ${phone.length === 10 ? phone.slice(0, 5) + " " + phone.slice(5) : phone}`}
@@ -449,22 +445,6 @@ export function AuthCard({
                   </>
                 )}
               </button>
-
-              {/* WhatsApp helper */}
-              <div className="pt-2 text-center">
-                <a
-                  href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => {
-                    setExpiryCountdown(0);
-                  }}
-                  className="inline-flex items-center gap-1.5 text-xs text-[#3D6318] font-bold bg-[#F4FBE8] hover:bg-[#E2F5B4] border border-[#95CF42]/40 px-4 py-1.5 rounded-full transition-colors cursor-pointer"
-                >
-                  <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
-                  <span>Didn&apos;t get code? Tap to send &ldquo;Hi&rdquo; on WhatsApp</span>
-                </a>
-              </div>
             </form>
           )}
         </div>

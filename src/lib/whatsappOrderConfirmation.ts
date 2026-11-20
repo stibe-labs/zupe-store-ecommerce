@@ -2,7 +2,7 @@
 // Uses approved Utility Templates for guaranteed delivery to ALL customers (no 24h restriction)
 // Falls back to direct text message if template not yet approved or within 24h window
 
-import { normalizePhoneNumber } from "@/lib/whatsappOtp";
+import { normalizePhoneNumber, getEffectiveWhatsAppCredentials } from "@/lib/whatsappOtp";
 import { siteConfig } from "@/config/siteConfig";
 
 const DEFAULT_WA_TOKEN = process.env.WHATSAPP_TOKEN || "";
@@ -63,8 +63,11 @@ export async function sendOrderPreConfirmationWhatsApp(
     console.warn("⚠️ [WA Pre-Confirm] Recipient phone is the business's own WhatsApp number. Meta requires testing with an external customer mobile number.");
   }
 
-  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const { token: apiToken, phoneId } = await getEffectiveWhatsAppCredentials();
+  if (!apiToken || !phoneId) {
+    console.warn("⚠️ [WA Pre-Confirm] Missing WhatsApp credentials, skipping.");
+    return false;
+  }
   const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
 
   const firstName = customerName.split(" ")[0] || customerName;
@@ -247,8 +250,11 @@ export async function sendOrderConfirmationWhatsApp(
     return;
   }
 
-  const token = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const { token, phoneId } = await getEffectiveWhatsAppCredentials();
+  if (!token || !phoneId) {
+    console.warn("⚠️ [WA Order Confirm] Missing WhatsApp credentials, skipping.");
+    return;
+  }
   const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
 
   const doorstepBalance = totalAmount;
@@ -648,8 +654,11 @@ export async function sendOrderCancellationRefundWhatsApp(
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) return false;
 
-  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const { token: apiToken, phoneId } = await getEffectiveWhatsAppCredentials();
+  if (!apiToken || !phoneId) {
+    console.warn("⚠️ [WA Pre-Confirm] Missing WhatsApp credentials, skipping.");
+    return false;
+  }
   const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
 
   const firstName = customerName.split(" ")[0] || customerName;
@@ -786,8 +795,11 @@ export async function sendAbandonedCartWhatsApp(
     return false;
   }
 
-  const apiToken = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const { token: apiToken, phoneId } = await getEffectiveWhatsAppCredentials();
+  if (!apiToken || !phoneId) {
+    console.warn("⚠️ [WA Pre-Confirm] Missing WhatsApp credentials, skipping.");
+    return false;
+  }
   const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
 
   const firstName = customerName?.trim() ? customerName.split(" ")[0] : "there";

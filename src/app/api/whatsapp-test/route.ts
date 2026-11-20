@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getEffectiveWhatsAppCredentials } from "@/lib/whatsappOtp";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +8,7 @@ export const dynamic = "force-dynamic";
  * 
  * Usage: GET /api/whatsapp-test?phone=919876543210
  * 
- * This sends a simple text message AND tries the template to your phone
+ * This sends a simple text message AND tries the OTP template to your phone
  * and returns the EXACT response from Meta's API so we can see what's wrong.
  */
 export async function GET(req: NextRequest) {
@@ -23,17 +24,17 @@ export async function GET(req: NextRequest) {
   // Normalize: if 10 digits, prepend 91 (India)
   const digits = phone.length === 10 ? `91${phone}` : phone;
 
-  const waToken = process.env.WHATSAPP_TOKEN || "";
-  const waPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || "";
+  const { token: waToken, phoneId: waPhoneId, templateName, lang: configuredLang } = await getEffectiveWhatsAppCredentials();
   const apiUrl = `https://graph.facebook.com/v21.0/${waPhoneId}/messages`;
 
   const results: Record<string, any> = {
     timestamp: new Date().toISOString(),
     recipient: digits,
-    phone_id_used: waPhoneId,
-    token_first_20_chars: waToken.substring(0, 20) + "...",
-    token_length: waToken.length,
+    phone_id_used: waPhoneId || "(EMPTY)",
+    token_configured: Boolean(waToken && waToken.length > 10),
+    token_preview: waToken ? `${waToken.substring(0, 15)}...${waToken.slice(-6)}` : "(EMPTY)",
     api_url: apiUrl,
+    template_name: templateName,
     tests: {},
   };
 
@@ -103,39 +104,27 @@ export async function GET(req: NextRequest) {
     results.tests.waba_info = { error: err.message };
   }
 
-  // ========== TEST 4: Try zupe_order_verify template (with button params) ==========
+  // ========== TEST 4: Try vittallifestyle_otp template ==========
   try {
-    const testToken = "tok_test_abc123";
-    const testOrderId = "ord_test_123";
+    const testOtp = "123456";
     const templatePayload = {
       messaging_product: "whatsapp",
       recipient_type: "individual",
       to: digits,
       type: "template",
       template: {
-        name: "zupe_order_verify",
-        language: { code: "en" },
+        name: templateName,
+        language: { code: configuredLang || "en" },
         components: [
           {
             type: "body",
-            parameters: [
-              { type: "text", text: "Test User" },
-              { type: "text", text: testOrderId },
-              { type: "text", text: "Rs 749" },
-              { type: "text", text: "Cash on Delivery" },
-            ],
+            parameters: [{ type: "text", text: testOtp }],
           },
           {
             type: "button",
-            sub_type: "url",
+            sub_type: "copy_code",
             index: "0",
-            parameters: [{ type: "text", text: testToken }],
-          },
-          {
-            type: "button",
-            sub_type: "url",
-            index: "1",
-            parameters: [{ type: "text", text: testOrderId }],
+            parameters: [{ type: "coupon_code", coupon_code: testOtp }],
           },
         ],
       },
@@ -151,14 +140,14 @@ export async function GET(req: NextRequest) {
     });
 
     const tplData = await tplRes.json();
-    results.tests.template_zupe_order_verify = {
+    results.tests.template_otp = {
       status: tplRes.status,
       ok: tplRes.ok,
       response: tplData,
       payload_sent: templatePayload,
     };
   } catch (err: any) {
-    results.tests.template_zupe_order_verify = { error: err.message };
+    results.tests.template_otp = { error: err.message };
   }
 
   // ========== TEST 5: Try hello_world template (Meta's default, always exists) ==========
@@ -223,13 +212,13 @@ export async function GET(req: NextRequest) {
     diagnosis.push(`❌ hello_world template failed: ${results.tests.template_hello_world.response.error.message}`);
   }
 
-  // Check zupe_order_verify template
-  if (results.tests.template_zupe_order_verify?.ok) {
-    diagnosis.push("✅ zupe_order_verify template sent successfully.");
-  } else if (results.tests.template_zupe_order_verify?.response?.error?.code === 132001) {
-    diagnosis.push("❌ zupe_order_verify template DOES NOT EXIST or is not approved yet in Meta Business Manager.");
-  } else if (results.tests.template_zupe_order_verify?.response?.error) {
-    diagnosis.push(`⚠️ zupe_order_verify template issue: ${results.tests.template_zupe_order_verify.response.error.message}`);
+  // Check template_otp
+  if (results.tests.template_otp?.ok) {
+    diagnosis.push(`✅ ${templateName} template sent successfully.`);
+  } else if (results.tests.template_otp?.response?.error?.code === 132001) {
+    diagnosis.push(`❌ ${templateName} template DOES NOT EXIST or is not approved yet in Meta Business Manager.`);
+  } else if (results.tests.template_otp?.response?.error) {
+    diagnosis.push(`⚠️ ${templateName} template issue: ${results.tests.template_otp.response.error.message} (code: ${results.tests.template_otp.response.error.code})`);
   }
 
   // Self-send check

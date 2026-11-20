@@ -45,6 +45,43 @@ async function ensureVerificationTable(): Promise<void> {
 const DEFAULT_WA_TOKEN = process.env.WHATSAPP_TOKEN || "";
 const DEFAULT_WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || "";
 
+export async function getEffectiveWhatsAppCredentials(): Promise<{
+  token: string;
+  phoneId: string;
+  templateName: string;
+  lang: string;
+}> {
+  let token = (process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN || "").trim();
+  let phoneId = (process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID || "").trim();
+  let templateName = (process.env.WHATSAPP_TEMPLATE_NAME || "vittallifestyle_otp").trim();
+  let lang = (process.env.WHATSAPP_TEMPLATE_LANG || "en").trim();
+
+  if (!token || !phoneId) {
+    try {
+      const { executeD1Query } = await import("@/lib/d1");
+      const waRows = await executeD1Query<any>(
+        "SELECT config_data FROM integrations_config WHERE provider = 'whatsapp' LIMIT 1"
+      );
+      if (waRows && waRows.length > 0 && waRows[0].config_data) {
+        const parsed = JSON.parse(waRows[0].config_data);
+        if (!token && parsed.token && !parsed.token.includes("...")) {
+          token = parsed.token.trim();
+        }
+        if (!phoneId && parsed.phoneNumberId) {
+          phoneId = String(parsed.phoneNumberId).trim();
+        }
+        if (parsed.templateName) {
+          templateName = String(parsed.templateName).trim();
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return { token, phoneId, templateName, lang };
+}
+
 /**
  * Normalizes phone numbers into clean digits suitable for WhatsApp API (E.164 without '+').
  * Default country code: India (91)
@@ -187,22 +224,21 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
     console.warn("Could not record OTP in whatsappStore:", logErr);
   }
 
-  const token = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_WA_PHONE_ID;
+  const { token, phoneId, templateName, lang: configuredLang } = await getEffectiveWhatsAppCredentials();
 
   if (!token || !phoneId) {
+    console.warn("⚠️ [WhatsApp OTP] Missing WhatsApp credentials (WHATSAPP_TOKEN / WHATSAPP_PHONE_NUMBER_ID).");
     return {
-      success: true,
+      success: false,
       codeSent: false,
       otp,
-      message: `Verification code generated.`,
+      error: "MISSING_CREDENTIALS",
+      message: "WhatsApp messaging is not yet configured with Meta credentials (Token & Phone Number ID). Please configure them in wrangler.json or Admin CRM.",
     };
   }
 
   try {
     const url = `https://graph.facebook.com/v21.0/${phoneId}/messages`;
-    const templateName = process.env.WHATSAPP_TEMPLATE_NAME || "vittallifestyle_otp";
-    const configuredLang = process.env.WHATSAPP_TEMPLATE_LANG || "en";
     const languageCandidates = [configuredLang, configuredLang === "en" ? "en_US" : "en"];
 
     // 1. Try sending via official WhatsApp Approved Message Template (Authentication or Utility)
@@ -215,15 +251,15 @@ export async function sendWhatsAppOTP(rawPhone: string): Promise<WhatsAppOTPResu
       const variations = [
         [
           { type: "body", parameters: [{ type: "text", text: otp }] },
-          { type: "button", sub_type: "url", index: "0", parameters: [{ type: "text", text: otp }] },
-        ],
-        [
-          { type: "body", parameters: [{ type: "text", text: otp }] },
           { type: "button", sub_type: "copy_code", index: "0", parameters: [{ type: "coupon_code", coupon_code: otp }] },
         ],
         [
           { type: "body", parameters: [{ type: "text", text: otp }] },
           { type: "button", sub_type: "copy_code", index: "0", parameters: [{ type: "text", text: otp }] },
+        ],
+        [
+          { type: "body", parameters: [{ type: "text", text: otp }] },
+          { type: "button", sub_type: "url", index: "0", parameters: [{ type: "text", text: otp }] },
         ],
         [
           { type: "body", parameters: [{ type: "text", text: otp }] },
