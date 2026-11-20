@@ -13,6 +13,7 @@ import {
   SlidersHorizontal,
   ArrowUp,
   ArrowDown,
+  ArrowLeft,
   ChevronRight,
   ChevronDown,
   Sparkles,
@@ -28,7 +29,14 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { DEFAULT_PRODUCTS, doesCategoryMatch } from "@/data/zupeProducts";
+import {
+  DEFAULT_PRODUCTS,
+  doesCategoryMatch,
+  doesSubcategoryMatch,
+  STORE_CATEGORIES_DATA,
+  StoreCategory,
+  StoreSubcategory,
+} from "@/data/zupeProducts";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { getClientProducts } from "@/lib/productsClientCache";
@@ -44,49 +52,6 @@ const EXPLORE_CATEGORIES = [
   { id: "Apparels", name: "Apparels", icon: Shirt, query: "Apparels" },
   { id: "Dates & Nuts", name: "Dates & Nuts", icon: Apple, query: "Dates & Nuts" },
   { id: "Candy & Chocolates", name: "Candy & Chocolates", icon: Cookie, query: "Candy & Chocolates" },
-];
-
-// ---------------------------------------------------------------------------
-// Shop Page Category Cards (Homepage visual style with green wave & icons)
-// "All Categories" placed first on the left corner
-// ---------------------------------------------------------------------------
-const SHOP_CATEGORY_CARDS = [
-  {
-    id: "All",
-    name: "All Categories",
-    query: "All",
-    image: "/vittal/cat-icon-all-categories-trans.png",
-  },
-  {
-    id: "Gym Supplementaries",
-    name: "Gym Supplements",
-    query: "Gym Supplementaries",
-    image: "/vittal/cat-icon-gym-supplements-trans.png",
-  },
-  {
-    id: "Outfits",
-    name: "Outfits",
-    query: "Outfits",
-    image: "/vittal/cat-icon-outfits-trans.png",
-  },
-  {
-    id: "Apparels",
-    name: "Apparels",
-    query: "Apparels",
-    image: "/vittal/cat-icon-apparels-trans.png",
-  },
-  {
-    id: "Dates & Nuts",
-    name: "Dates & Nuts",
-    query: "Dates & Nuts",
-    image: "/vittal/cat-icon-dates-trans.png",
-  },
-  {
-    id: "Candy & Chocolates",
-    name: "Candy & Chocolates",
-    query: "Candy & Chocolates",
-    image: "/vittal/cat-icon-chocolates-trans.png",
-  },
 ];
 
 const SORT_OPTIONS: {
@@ -642,10 +607,12 @@ function ProductsContent() {
   const searchParams = useSearchParams();
 
   const initialCat = searchParams.get("category") || "All";
+  const initialSubcat = searchParams.get("subcategory") || "All";
   const initialSearch = searchParams.get("search") || searchParams.get("q") || "";
 
   const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCat);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(initialSubcat);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "rating">("featured");
   const [maxPrice, setMaxPrice] = useState<number>(10000);
@@ -656,8 +623,33 @@ function ProductsContent() {
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
   const sortDropdownRef = useRef<HTMLDivElement>(null);
+  const categorySwiperRef = useRef<HTMLDivElement>(null);
   const { addItem, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
+
+  // Active main category object when drilled down (null when root / All Categories)
+  const activeMainCat = useMemo(() => {
+    if (!selectedCategory || selectedCategory === "All" || selectedCategory === "All Categories") {
+      return null;
+    }
+    return (
+      STORE_CATEGORIES_DATA.find((c) => {
+        const s = selectedCategory.toLowerCase().trim();
+        const cq = c.query.toLowerCase().trim();
+        const cn = c.name.toLowerCase().trim();
+        return (
+          s === cq ||
+          s === cn ||
+          ((s === "gym supplements" || s === "gym supplementaries") &&
+            (cq === "gym supplements" || cq === "gym supplementaries")) ||
+          ((s === "candy & chocolates" || s === "candy and chocolates") &&
+            (cq === "candy & chocolates" || cq === "candy and chocolates")) ||
+          ((s === "dates & nuts" || s === "dates and nuts") &&
+            (cq === "dates & nuts" || cq === "dates and nuts"))
+        );
+      }) || null
+    );
+  }, [selectedCategory]);
 
   // Fetch updated catalog on mount
   useEffect(() => {
@@ -677,7 +669,17 @@ function ProductsContent() {
   // Sync state if URL query params change
   useEffect(() => {
     const cat = searchParams.get("category");
-    if (cat) setSelectedCategory(cat);
+    if (cat) {
+      setSelectedCategory(cat);
+    } else {
+      setSelectedCategory("All");
+    }
+    const subcat = searchParams.get("subcategory");
+    if (subcat) {
+      setSelectedSubcategory(subcat);
+    } else {
+      setSelectedSubcategory("All");
+    }
     const q = searchParams.get("search") || searchParams.get("q");
     if (q) setSearchQuery(q);
   }, [searchParams]);
@@ -705,12 +707,30 @@ function ProductsContent() {
 
   const handleCategorySelect = (catQuery: string) => {
     setSelectedCategory(catQuery);
+    setSelectedSubcategory("All");
     setSelectedFacets({}); // Reset facets on category change for clean context
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("subcategory");
     if (catQuery === "All") {
       params.delete("category");
     } else {
       params.set("category", catQuery);
+    }
+    router.push(`/products?${params.toString()}`, { scroll: false });
+    if (categorySwiperRef.current) {
+      categorySwiperRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleSubcategorySelect = (subcatQuery: string) => {
+    const nextSub =
+      selectedSubcategory.toLowerCase() === subcatQuery.toLowerCase() ? "All" : subcatQuery;
+    setSelectedSubcategory(nextSub);
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextSub === "All") {
+      params.delete("subcategory");
+    } else {
+      params.set("subcategory", nextSub);
     }
     router.push(`/products?${params.toString()}`, { scroll: false });
   };
@@ -738,11 +758,15 @@ function ProductsContent() {
 
   const handleResetAllFilters = () => {
     setSelectedCategory("All");
+    setSelectedSubcategory("All");
     setSearchQuery("");
     setMaxPrice(10000);
     setOnlyInStock(false);
     setSelectedFacets({});
     router.push("/products", { scroll: false });
+    if (categorySwiperRef.current) {
+      categorySwiperRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    }
   };
 
   // Base products matching category, search, price & stock
@@ -752,6 +776,10 @@ function ProductsContent() {
         const match = doesCategoryMatch(product.category || "", selectedCategory);
         const subMatch = product.subcategory ? doesCategoryMatch(product.subcategory, selectedCategory) : false;
         if (!match && !subMatch) return false;
+      }
+      if (selectedSubcategory && selectedSubcategory !== "All") {
+        const subMatch = doesSubcategoryMatch(product, selectedSubcategory);
+        if (!subMatch) return false;
       }
       return true;
     });
@@ -810,6 +838,7 @@ function ProductsContent() {
   const totalAppliedFiltersCount = useMemo(() => {
     let count = 0;
     if (selectedCategory !== "All") count++;
+    if (selectedSubcategory !== "All") count++;
     if (searchQuery.trim().length > 0) count++;
     if (maxPrice < 10000) count++;
     if (onlyInStock) count++;
@@ -817,7 +846,7 @@ function ProductsContent() {
       count += arr.length;
     });
     return count;
-  }, [selectedCategory, searchQuery, maxPrice, onlyInStock, selectedFacets]);
+  }, [selectedCategory, selectedSubcategory, searchQuery, maxPrice, onlyInStock, selectedFacets]);
 
   const handleAddToCart = (product: Product) => {
     addItem(product, 1);
@@ -895,30 +924,52 @@ function ProductsContent() {
       {/* ===================================================================== */}
       <div className="bg-white/95 backdrop-blur-md border-b border-neutral-200/70 sticky md:static top-16 md:top-auto z-20 md:z-auto shadow-2xs md:shadow-none">
         <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
-          <div className="flex items-start gap-2.5 sm:gap-3 md:gap-4 lg:gap-5 overflow-x-auto no-scrollbar scroll-smooth touch-pan-x py-1">
-            {SHOP_CATEGORY_CARDS.map((cat) => {
-              const isSelected =
-                (cat.query === "All" && (!selectedCategory || selectedCategory === "All" || selectedCategory === "All Categories")) ||
-                selectedCategory.toLowerCase() === cat.query.toLowerCase() ||
-                ((selectedCategory.toLowerCase() === "gym supplements" || selectedCategory.toLowerCase() === "gym supplementaries") &&
-                 (cat.query.toLowerCase() === "gym supplements" || cat.query.toLowerCase() === "gym supplementaries"));
+          {/* Breadcrumb row when drilled down into a category */}
+          {activeMainCat && (
+            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-neutral-500 mb-2 overflow-x-auto no-scrollbar whitespace-nowrap">
+              <button
+                type="button"
+                onClick={() => handleCategorySelect("All")}
+                className="hover:text-neutral-950 font-medium flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <ArrowLeft className="w-3 h-3 text-[#6B9E3A]" />
+                <span>All Categories</span>
+              </button>
+              <ChevronRight className="w-3 h-3 text-neutral-400 shrink-0" />
+              <button
+                type="button"
+                onClick={() => handleSubcategorySelect("All")}
+                className={`transition-colors cursor-pointer ${
+                  selectedSubcategory === "All"
+                    ? "text-[#6B9E3A] font-bold"
+                    : "font-medium hover:text-neutral-950"
+                }`}
+              >
+                {activeMainCat.name}
+              </button>
+              {selectedSubcategory !== "All" && (
+                <>
+                  <ChevronRight className="w-3 h-3 text-neutral-400 shrink-0" />
+                  <span className="text-[#6B9E3A] font-bold">{selectedSubcategory}</span>
+                </>
+              )}
+            </div>
+          )}
 
-              return (
+          <div
+            ref={categorySwiperRef}
+            className="flex items-start gap-2.5 sm:gap-3 md:gap-4 lg:gap-5 overflow-x-auto no-scrollbar scroll-smooth touch-pan-x py-1"
+          >
+            {/* If no main category selected: Root view showing [All Categories] + 5 Main Categories */}
+            {!activeMainCat ? (
+              <>
+                {/* 1. All Categories Tile (Selected) */}
                 <button
-                  key={cat.id}
                   type="button"
-                  onClick={() => handleCategorySelect(cat.query)}
+                  onClick={() => handleCategorySelect("All")}
                   className="group flex flex-col items-center shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none w-[74px] xs:w-[82px] sm:w-[90px] md:w-[100px] lg:w-[110px]"
                 >
-                  {/* Card Tile matching Home Page */}
-                  <div
-                    className={`w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white transition-all duration-300 flex items-end justify-center ${
-                      isSelected
-                        ? "border-2 border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md scale-[1.03]"
-                        : "border border-neutral-200/80 group-hover:border-[#6B9E3A]/60 shadow-2xs group-hover:shadow-md"
-                    }`}
-                  >
-                    {/* Banner's Matching Green Wave Texture */}
+                  <div className="w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white transition-all duration-300 flex items-end justify-center border-2 border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md scale-[1.03]">
                     <Image
                       src="/vittal/banner-hero-green-texture.jpg"
                       alt=""
@@ -926,39 +977,177 @@ function ProductsContent() {
                       sizes="(max-width: 768px) 85px, 110px"
                       className="object-cover object-top pointer-events-none select-none opacity-90"
                     />
-
-                    {/* Top-to-lower fade */}
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
-
-                    {/* Inside Category Product Image */}
                     <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1.5 xs:px-2">
                       <Image
-                        src={cat.image}
-                        alt={cat.name}
+                        src="/vittal/cat-icon-all-categories-trans.png"
+                        alt="All Categories"
+                        width={110}
+                        height={110}
+                        className="w-full h-full object-contain object-bottom pointer-events-none select-none transition-transform duration-300 scale-100 drop-shadow-[0_4px_8px_rgba(107,158,58,0.25)]"
+                      />
+                    </div>
+                  </div>
+                  <span className="mt-1.5 text-[10px] xs:text-[11px] sm:text-xs text-center line-clamp-1 text-[#6B9E3A] font-bold">
+                    All Categories
+                  </span>
+                </button>
+
+                {/* 2..N Main Categories */}
+                {STORE_CATEGORIES_DATA.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => handleCategorySelect(cat.query)}
+                    className="group flex flex-col items-center shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none w-[74px] xs:w-[82px] sm:w-[90px] md:w-[100px] lg:w-[110px]"
+                  >
+                    <div className="w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white transition-all duration-300 flex items-end justify-center border border-neutral-200/80 group-hover:border-[#6B9E3A]/60 shadow-2xs group-hover:shadow-md">
+                      <Image
+                        src="/vittal/banner-hero-green-texture.jpg"
+                        alt=""
+                        fill
+                        sizes="(max-width: 768px) 85px, 110px"
+                        className="object-cover object-top pointer-events-none select-none opacity-90"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
+                      <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1.5 xs:px-2">
+                        <Image
+                          src={cat.image}
+                          alt={cat.name}
+                          width={110}
+                          height={110}
+                          className="w-full h-full object-contain object-bottom pointer-events-none select-none transition-transform duration-300 drop-shadow-[0_4px_8px_rgba(0,0,0,0.12)] group-hover:scale-[1.02]"
+                        />
+                      </div>
+                    </div>
+                    <span className="mt-1.5 text-[10px] xs:text-[11px] sm:text-xs text-center line-clamp-1 font-semibold text-neutral-800 group-hover:text-[#6B9E3A] transition-colors">
+                      {cat.name}
+                    </span>
+                  </button>
+                ))}
+              </>
+            ) : (
+              <>
+                {/* ============================================================= */}
+                {/* DRILL-DOWN MODE: Active Category in Slot 1 + Subcategories    */}
+                {/* ============================================================= */}
+
+                {/* 1. Active Main Category Tile in Slot 1 (clicking toggles subcategory/back to root) */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedSubcategory !== "All") {
+                      handleSubcategorySelect("All");
+                    } else {
+                      handleCategorySelect("All");
+                    }
+                  }}
+                  className="group relative flex flex-col items-center shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none w-[74px] xs:w-[82px] sm:w-[90px] md:w-[100px] lg:w-[110px]"
+                  title={selectedSubcategory !== "All" ? `Show all ${activeMainCat.name}` : "Back to All Categories"}
+                >
+                  <div
+                    className={`w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white transition-all duration-300 flex items-end justify-center ${
+                      selectedSubcategory === "All"
+                        ? "border-2 border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md scale-[1.03]"
+                        : "border border-neutral-200/80 group-hover:border-[#6B9E3A]/60 shadow-2xs group-hover:shadow-md"
+                    }`}
+                  >
+                    <Image
+                      src="/vittal/banner-hero-green-texture.jpg"
+                      alt=""
+                      fill
+                      sizes="(max-width: 768px) 85px, 110px"
+                      className="object-cover object-top pointer-events-none select-none opacity-90"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
+
+                    {/* Subtle Back Badge on top-left of Card 1 */}
+                    <div className="absolute top-1 left-1 z-20 px-1 xs:px-1.5 py-0.5 rounded-full bg-black/75 hover:bg-black text-[8px] xs:text-[9px] text-white font-bold backdrop-blur-xs flex items-center gap-0.5 shadow-xs transition-colors">
+                      <ArrowLeft className="w-2.5 h-2.5 text-[#9CD33B]" />
+                      <span>All</span>
+                    </div>
+
+                    <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1.5 xs:px-2">
+                      <Image
+                        src={activeMainCat.image}
+                        alt={activeMainCat.name}
                         width={110}
                         height={110}
                         className={`w-full h-full object-contain object-bottom pointer-events-none select-none transition-transform duration-300 ${
-                          isSelected
+                          selectedSubcategory === "All"
                             ? "scale-100 drop-shadow-[0_4px_8px_rgba(107,158,58,0.25)]"
                             : "drop-shadow-[0_4px_8px_rgba(0,0,0,0.12)] group-hover:scale-[1.02]"
                         }`}
                       />
                     </div>
                   </div>
-
-                  {/* Category Name Label */}
                   <span
                     className={`mt-1.5 text-[10px] xs:text-[11px] sm:text-xs text-center line-clamp-1 transition-colors ${
-                      isSelected
+                      selectedSubcategory === "All"
                         ? "text-[#6B9E3A] font-bold"
                         : "font-semibold text-neutral-800 group-hover:text-[#6B9E3A]"
                     }`}
                   >
-                    {cat.name}
+                    All {activeMainCat.shortName || activeMainCat.name}
                   </span>
                 </button>
-              );
-            })}
+
+                {/* 2..N Subcategories of the active Main Category */}
+                {activeMainCat.subcategories.map((subcat) => {
+                  const isSubSelected =
+                    selectedSubcategory.toLowerCase() === subcat.query.toLowerCase() ||
+                    selectedSubcategory.toLowerCase() === subcat.name.toLowerCase();
+
+                  return (
+                    <button
+                      key={subcat.id}
+                      type="button"
+                      onClick={() => handleSubcategorySelect(subcat.query)}
+                      className="group flex flex-col items-center shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none w-[74px] xs:w-[82px] sm:w-[90px] md:w-[100px] lg:w-[110px]"
+                    >
+                      <div
+                        className={`w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white transition-all duration-300 flex items-end justify-center ${
+                          isSubSelected
+                            ? "border-2 border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md scale-[1.03]"
+                            : "border border-neutral-200/80 group-hover:border-[#6B9E3A]/60 shadow-2xs group-hover:shadow-md"
+                        }`}
+                      >
+                        <Image
+                          src="/vittal/banner-hero-green-texture.jpg"
+                          alt=""
+                          fill
+                          sizes="(max-width: 768px) 85px, 110px"
+                          className="object-cover object-top pointer-events-none select-none opacity-90"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
+                        <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1.5 xs:px-2">
+                          <Image
+                            src={subcat.image}
+                            alt={subcat.name}
+                            width={110}
+                            height={110}
+                            className={`w-full h-full object-contain object-bottom pointer-events-none select-none transition-transform duration-300 ${
+                              isSubSelected
+                                ? "scale-100 drop-shadow-[0_4px_8px_rgba(107,158,58,0.25)]"
+                                : "drop-shadow-[0_4px_8px_rgba(0,0,0,0.12)] group-hover:scale-[1.02]"
+                            }`}
+                          />
+                        </div>
+                      </div>
+                      <span
+                        className={`mt-1.5 text-[10px] xs:text-[11px] sm:text-xs text-center line-clamp-1 transition-colors ${
+                          isSubSelected
+                            ? "text-[#6B9E3A] font-bold"
+                            : "font-semibold text-neutral-800 group-hover:text-[#6B9E3A]"
+                        }`}
+                      >
+                        {subcat.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -973,7 +1162,15 @@ function ProductsContent() {
             Showing <span className="text-neutral-950 font-bold">{filteredProducts.length}</span>{" "}
             {filteredProducts.length === 1 ? "product" : "products"}
             {selectedCategory !== "All" && (
-              <span className="ml-1 text-[#6B9E3A] font-bold">in &ldquo;{selectedCategory}&rdquo;</span>
+              <span className="ml-1 text-[#6B9E3A] font-bold">
+                in &ldquo;
+                {selectedSubcategory !== "All"
+                  ? `${activeMainCat ? activeMainCat.name : selectedCategory} › ${selectedSubcategory}`
+                  : activeMainCat
+                  ? activeMainCat.name
+                  : selectedCategory}
+                &rdquo;
+              </span>
             )}
           </div>
 
@@ -1055,11 +1252,25 @@ function ProductsContent() {
             {/* Category Chip */}
             {selectedCategory !== "All" && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-neutral-200 text-neutral-800 text-xs font-medium shadow-2xs">
-                <span>{selectedCategory}</span>
+                <span>{activeMainCat ? activeMainCat.name : selectedCategory}</span>
                 <button
                   onClick={() => handleCategorySelect("All")}
-                  className="hover:text-rose-500 transition-colors ml-0.5"
+                  className="hover:text-rose-500 transition-colors ml-0.5 cursor-pointer"
                   aria-label="Remove category filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {/* Subcategory Chip */}
+            {selectedSubcategory && selectedSubcategory !== "All" && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E5F2D0] border border-[#6B9E3A]/40 text-[#2C4815] text-xs font-bold shadow-2xs">
+                <span>{selectedSubcategory}</span>
+                <button
+                  onClick={() => handleSubcategorySelect("All")}
+                  className="hover:text-rose-500 transition-colors ml-0.5 cursor-pointer"
+                  aria-label="Remove subcategory filter"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -1207,22 +1418,64 @@ function ProductsContent() {
               </label>
               <div className="space-y-1">
                 {EXPLORE_CATEGORIES.map((cat) => {
-                  const isSelected =
-                    selectedCategory === cat.query ||
-                    (cat.query === "All" && (!selectedCategory || selectedCategory === "All"));
+                  const isCatSelected =
+                    (cat.query === "All" && (!selectedCategory || selectedCategory === "All")) ||
+                    selectedCategory.toLowerCase() === cat.query.toLowerCase() ||
+                    ((selectedCategory.toLowerCase() === "gym supplements" || selectedCategory.toLowerCase() === "gym supplementaries") &&
+                     (cat.query.toLowerCase() === "gym supplements" || cat.query.toLowerCase() === "gym supplementaries"));
+
+                  const matchingStoreCat = STORE_CATEGORIES_DATA.find(
+                    (sc) =>
+                      sc.query.toLowerCase() === cat.query.toLowerCase() ||
+                      sc.name.toLowerCase() === cat.name.toLowerCase() ||
+                      ((sc.name.toLowerCase() === "gym supplements" || sc.query.toLowerCase() === "gym supplementaries") &&
+                       (cat.name.toLowerCase() === "gym supplements" || cat.query.toLowerCase() === "gym supplementaries"))
+                  );
+
                   return (
-                    <button
-                      key={cat.id}
-                      onClick={() => handleCategorySelect(cat.query)}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer text-left ${
-                        isSelected
-                          ? "bg-[#E5F2D0] text-[#3B581C] font-bold shadow-2xs"
-                          : "text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 font-medium"
-                      }`}
-                    >
-                      <span>{cat.name}</span>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-[#3B581C]" />}
-                    </button>
+                    <div key={cat.id} className="space-y-1">
+                      <button
+                        onClick={() => handleCategorySelect(cat.query)}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer text-left ${
+                          isCatSelected && selectedSubcategory === "All"
+                            ? "bg-[#E5F2D0] text-[#3B581C] font-bold shadow-2xs"
+                            : isCatSelected
+                            ? "bg-neutral-100 text-neutral-900 font-semibold"
+                            : "text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 font-medium"
+                        }`}
+                      >
+                        <span>{cat.name}</span>
+                        {isCatSelected && selectedSubcategory === "All" && (
+                          <Check className="w-3.5 h-3.5 text-[#3B581C]" />
+                        )}
+                      </button>
+
+                      {/* Indented Subcategories when Department is Active */}
+                      {isCatSelected && matchingStoreCat && matchingStoreCat.subcategories.length > 0 && (
+                        <div className="pl-3 space-y-1 border-l-2 border-[#6B9E3A]/30 ml-2.5 pt-1 pb-1">
+                          {matchingStoreCat.subcategories.map((sub) => {
+                            const isSubSelected =
+                              selectedSubcategory.toLowerCase() === sub.query.toLowerCase() ||
+                              selectedSubcategory.toLowerCase() === sub.name.toLowerCase();
+
+                            return (
+                              <button
+                                key={sub.id}
+                                onClick={() => handleSubcategorySelect(sub.query)}
+                                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer text-left ${
+                                  isSubSelected
+                                    ? "bg-[#6B9E3A] text-white font-bold shadow-2xs"
+                                    : "text-neutral-600 hover:text-neutral-950 hover:bg-neutral-100 font-medium"
+                                }`}
+                              >
+                                <span>{sub.name}</span>
+                                {isSubSelected && <Check className="w-3 h-3 text-white" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -1534,8 +1787,10 @@ function ProductsContent() {
                 <div className="grid grid-cols-2 gap-2">
                   {EXPLORE_CATEGORIES.map((cat) => {
                     const isSelected =
-                      selectedCategory === cat.query ||
-                      (cat.query === "All" && (!selectedCategory || selectedCategory === "All"));
+                      (cat.query === "All" && (!selectedCategory || selectedCategory === "All")) ||
+                      selectedCategory.toLowerCase() === cat.query.toLowerCase() ||
+                      ((selectedCategory.toLowerCase() === "gym supplements" || selectedCategory.toLowerCase() === "gym supplementaries") &&
+                       (cat.query.toLowerCase() === "gym supplements" || cat.query.toLowerCase() === "gym supplementaries"));
                     return (
                       <button
                         key={cat.id}
@@ -1551,6 +1806,47 @@ function ProductsContent() {
                     );
                   })}
                 </div>
+
+                {/* Subcategories in Mobile Drawer when Category is Active */}
+                {activeMainCat && activeMainCat.subcategories.length > 0 && (
+                  <div className="mt-3 pt-2.5 border-t border-neutral-100">
+                    <div className="text-[11px] font-bold text-neutral-500 mb-1.5 uppercase">
+                      {activeMainCat.name} Subcategories
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleSubcategorySelect("All")}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                          selectedSubcategory === "All"
+                            ? "bg-[#6B9E3A] text-white font-bold"
+                            : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200/70"
+                        }`}
+                      >
+                        All {activeMainCat.shortName || activeMainCat.name}
+                      </button>
+                      {activeMainCat.subcategories.map((sub) => {
+                        const isSubSelected =
+                          selectedSubcategory.toLowerCase() === sub.query.toLowerCase() ||
+                          selectedSubcategory.toLowerCase() === sub.name.toLowerCase();
+                        return (
+                          <button
+                            key={sub.id}
+                            type="button"
+                            onClick={() => handleSubcategorySelect(sub.query)}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                              isSubSelected
+                                ? "bg-[#6B9E3A] text-white font-bold"
+                                : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200/70"
+                            }`}
+                          >
+                            {sub.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Dynamic Facets in Mobile Drawer */}

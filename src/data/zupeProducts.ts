@@ -1329,6 +1329,247 @@ export interface SubcategoryGroup {
   subcategories: string[];
 }
 
+export interface StoreSubcategory {
+  id: string;
+  name: string;
+  shortName?: string;
+  query: string;
+  image: string;
+  matchSubcategories?: string[];
+}
+
+export interface StoreCategory {
+  id: string;
+  name: string;
+  shortName?: string;
+  query: string;
+  image: string;
+  subcategories: StoreSubcategory[];
+}
+
+export const STORE_CATEGORIES_DATA: StoreCategory[] = [
+  {
+    id: "Gym Supplementaries",
+    name: "Gym Supplements",
+    shortName: "Gym Supps",
+    query: "Gym Supplementaries",
+    image: "/vittal/cat-icon-gym-supplements-trans.png",
+    subcategories: [
+      {
+        id: "whey-protein",
+        name: "Whey Protein",
+        query: "Whey Protein",
+        image: "/vittal/catalog/on-gold-standard-whey.png",
+        matchSubcategories: ["Whey Protein", "Performance Whey", "Whey"],
+      },
+      {
+        id: "creatine",
+        name: "Creatine",
+        query: "Creatine Monohydrate",
+        image: "/vittal/catalog/on-creatine-container.png",
+        matchSubcategories: ["Creatine Monohydrate", "Creatine"],
+      },
+      {
+        id: "pre-workout",
+        name: "Pre-Workout",
+        query: "Pre-Workout",
+        image: "/products/muscletech-nitrotech-fruit-punch.png",
+        matchSubcategories: ["Pre-Workout"],
+      },
+      {
+        id: "omega-3",
+        name: "Omega 3 & Vit",
+        query: "Multivitamins",
+        image: "/vittal/catalog/sports-research-omega3.png",
+        matchSubcategories: ["Multivitamins", "Omega 3", "Fish Oil"],
+      },
+      {
+        id: "mass-gainers",
+        name: "Mass Gainers",
+        query: "Mass Gainers",
+        image: "/vittal/catalog/nitro-tech-protein-bucket.png",
+        matchSubcategories: ["Mass Gainers", "Performance Whey", "Whey Gold"],
+      },
+    ],
+  },
+  {
+    id: "Outfits",
+    name: "Outfits",
+    shortName: "Outfits",
+    query: "Outfits",
+    image: "/vittal/cat-icon-outfits-trans.png",
+    subcategories: [
+      {
+        id: "gym-sets",
+        name: "Gym Sets",
+        query: "Athleisure Sets",
+        image: "/vittal/catalog/charcoal-seamless-activewear.png",
+        matchSubcategories: ["Athleisure Sets", "Gym Matching Sets"],
+      },
+      {
+        id: "athletic-tees",
+        name: "Athletic Tees",
+        query: "Performance T-Shirts",
+        image: "/vittal/catalog/red-vl-athletic-tee.png",
+        matchSubcategories: ["Performance T-Shirts", "T-Shirts"],
+      },
+      {
+        id: "jackets",
+        name: "Jackets",
+        query: "Hoodies & Jackets",
+        image: "/vittal/catalog/nike-pro-charcoal-jacket.png",
+        matchSubcategories: ["Hoodies & Jackets", "Jackets"],
+      },
+      {
+        id: "gym-shorts",
+        name: "Gym Shorts",
+        query: "Gym Shorts",
+        image: "/vittal/catalog/white-adidas-athletic-shorts.png",
+        matchSubcategories: ["Gym Shorts"],
+      },
+      {
+        id: "joggers",
+        name: "Joggers",
+        query: "Joggers & Track Pants",
+        image: "/vittal/catalog/modern-gray-jogger-pants.png",
+        matchSubcategories: ["Joggers & Track Pants", "Joggers"],
+      },
+      {
+        id: "compression",
+        name: "Compression",
+        query: "Compression Tops",
+        image: "/vittal/catalog/white-adidas-long-sleeve-top.png",
+        matchSubcategories: ["Compression Tops"],
+      },
+    ],
+  },
+  {
+    id: "Apparels",
+    name: "Apparels",
+    shortName: "Apparels",
+    query: "Apparels",
+    image: "/vittal/cat-icon-apparels-trans.png",
+    subcategories: [
+      {
+        id: "footwear",
+        name: "Footwear",
+        query: "Footwear & Sneakers",
+        image: "/vittal/catalog/nike-air-zoom-sneaker.png",
+        matchSubcategories: ["Footwear & Sneakers", "Sneakers"],
+      },
+      {
+        id: "perfumes",
+        name: "Perfumes",
+        query: "Fragrance & Perfume",
+        image: "/vittal/catalog/elie-saab-le-parfum.png",
+        matchSubcategories: ["Fragrance & Perfume", "Perfume"],
+      },
+      {
+        id: "cosmetics",
+        name: "Cosmetics",
+        query: "Cosmetics & Beauty",
+        image: "/vittal/catalog/luxury-makeup-collection.png",
+        matchSubcategories: ["Cosmetics & Beauty", "Makeup"],
+      },
+      {
+        id: "active-tees",
+        name: "Active Tees",
+        query: "Performance T-Shirts",
+        image: "/vittal/catalog/red-vl-athletic-tee.png",
+        matchSubcategories: ["Performance T-Shirts"],
+      },
+      {
+        id: "white-sneakers",
+        name: "Sneakers",
+        query: "Footwear & Sneakers",
+        image: "/vittal/catalog/white-adidas-cloudfoam-sneaker.png",
+        matchSubcategories: ["Footwear & Sneakers"],
+      },
+    ],
+  },
+  {
+    id: "Dates & Nuts",
+    name: "Dates & Nuts",
+    shortName: "Dates & Nuts",
+    query: "Dates & Nuts",
+    image: "/vittal/cat-icon-dates-trans.png",
+    subcategories: [
+      {
+        id: "medjool-dates",
+        name: "Medjool Dates",
+        query: "Medjool Dates",
+        image: "/vittal/catalog/golden-jar-glossy-dates.png",
+        matchSubcategories: ["Medjool Dates", "Ajwa Dates"],
+      },
+      {
+        id: "cashews",
+        name: "Cashews",
+        query: "Cashews & Pistachios",
+        image: "/vittal/catalog/glass-jar-cashews.png",
+        matchSubcategories: ["Cashews & Pistachios", "Cashews"],
+      },
+      {
+        id: "almonds",
+        name: "Almonds",
+        query: "California Almonds",
+        image: "/vittal/catalog/clear-almond-snack-pouch.png",
+        matchSubcategories: ["California Almonds", "Almonds"],
+      },
+      {
+        id: "pistachios",
+        name: "Pistachios",
+        query: "Cashews & Pistachios",
+        image: "/vittal/catalog/glossy-pistachio-snack-bag.png",
+        matchSubcategories: ["Cashews & Pistachios", "Pistachios"],
+      },
+      {
+        id: "chia-seeds",
+        name: "Chia & Seeds",
+        query: "Trail Mixes",
+        image: "/vittal/catalog/glass-chia-seeds-jar.png",
+        matchSubcategories: ["Trail Mixes", "Superfood"],
+      },
+    ],
+  },
+  {
+    id: "Candy & Chocolates",
+    name: "Candy & Chocolates",
+    shortName: "Chocolates",
+    query: "Candy & Chocolates",
+    image: "/vittal/cat-icon-chocolates-trans.png",
+    subcategories: [
+      {
+        id: "truffles",
+        name: "Truffles",
+        query: "Artisanal Truffles",
+        image: "/vittal/catalog/golden-ferrero-rocher-box.png",
+        matchSubcategories: ["Artisanal Truffles"],
+      },
+      {
+        id: "dark-choco",
+        name: "Dark Choco",
+        query: "Dark Chocolates",
+        image: "/vittal/catalog/lindt-lindor-truffles.png",
+        matchSubcategories: ["Dark Chocolates"],
+      },
+      {
+        id: "silk-candies",
+        name: "Silk Bars",
+        query: "Gourmet Candies",
+        image: "/vittal/catalog/cadbury-dairy-milk-pack.png",
+        matchSubcategories: ["Gourmet Candies", "Silk"],
+      },
+      {
+        id: "coconut-bars",
+        name: "Coconut Bars",
+        query: "Gourmet Candies",
+        image: "/vittal/catalog/bounty-coconut-chocolate.png",
+        matchSubcategories: ["Gourmet Candies", "Coconut"],
+      },
+    ],
+  },
+];
+
 export const CATEGORY_SUBCATEGORIES_CONFIG: SubcategoryGroup[] = [
   {
     mainCategory: "Gym Supplementaries",
@@ -1385,6 +1626,34 @@ export function doesCategoryMatch(productCategory: string, selectedCategory: str
 }
 
 export function doesSubcategoryMatch(product: Product, selectedSubcategory: string): boolean {
-  if (!selectedSubcategory || selectedSubcategory === "All") return true;
-  return product.subcategory?.toLowerCase() === selectedSubcategory.toLowerCase();
+  if (!selectedSubcategory || selectedSubcategory === "All" || selectedSubcategory === "All Subcategories") return true;
+  const pSub = (product.subcategory || "").toLowerCase().trim();
+  const sSub = selectedSubcategory.toLowerCase().trim();
+  if (!pSub) return false;
+  if (pSub === sSub) return true;
+
+  // Keyword & alias matching
+  if (sSub.includes("creatine") && pSub.includes("creatine")) return true;
+  if ((sSub.includes("whey") || sSub.includes("protein")) && (pSub.includes("whey") || pSub.includes("protein"))) return true;
+  if ((sSub.includes("omega") || sSub.includes("vitamin") || sSub.includes("multivitamin")) && (pSub.includes("omega") || pSub.includes("vitamin") || pSub.includes("multivitamin"))) return true;
+  if (sSub.includes("pre-workout") && pSub.includes("pre-workout")) return true;
+  if (sSub.includes("mass") && (pSub.includes("mass") || pSub.includes("gainer") || pSub.includes("whey"))) return true;
+  if ((sSub.includes("date") || sSub.includes("medjool") || sSub.includes("ajwa")) && (pSub.includes("date") || pSub.includes("medjool") || pSub.includes("ajwa"))) return true;
+  if ((sSub.includes("cashew") || sSub.includes("pistachio")) && (pSub.includes("cashew") || pSub.includes("pistachio"))) return true;
+  if (sSub.includes("almond") && pSub.includes("almond")) return true;
+  if ((sSub.includes("trail") || sSub.includes("seed") || sSub.includes("chia")) && (pSub.includes("trail") || pSub.includes("seed") || pSub.includes("chia"))) return true;
+  if ((sSub.includes("truffle") || sSub.includes("ferrer")) && (pSub.includes("truffle") || pSub.includes("ferrer"))) return true;
+  if (sSub.includes("dark") && pSub.includes("dark")) return true;
+  if ((sSub.includes("candy") || sSub.includes("gourmet") || sSub.includes("silk") || sSub.includes("bounty")) && (pSub.includes("candy") || pSub.includes("gourmet") || pSub.includes("chocolate"))) return true;
+  if ((sSub.includes("tee") || sSub.includes("shirt")) && (pSub.includes("tee") || pSub.includes("shirt"))) return true;
+  if ((sSub.includes("set") || sSub.includes("athleisure") || sSub.includes("matching")) && (pSub.includes("set") || pSub.includes("athleisure") || pSub.includes("matching"))) return true;
+  if ((sSub.includes("jacket") || sSub.includes("hoodie")) && (pSub.includes("jacket") || pSub.includes("hoodie"))) return true;
+  if (sSub.includes("short") && pSub.includes("short")) return true;
+  if ((sSub.includes("jogger") || sSub.includes("pant") || sSub.includes("track")) && (pSub.includes("jogger") || pSub.includes("pant") || pSub.includes("track"))) return true;
+  if (sSub.includes("compression") && pSub.includes("compression")) return true;
+  if ((sSub.includes("footwear") || sSub.includes("sneaker") || sSub.includes("shoe")) && (pSub.includes("footwear") || pSub.includes("sneaker") || pSub.includes("shoe"))) return true;
+  if ((sSub.includes("fragrance") || sSub.includes("perfume") || sSub.includes("parfum")) && (pSub.includes("fragrance") || pSub.includes("perfume") || pSub.includes("parfum"))) return true;
+  if ((sSub.includes("cosmetic") || sSub.includes("beauty") || sSub.includes("makeup") || sSub.includes("lipstick")) && (pSub.includes("cosmetic") || pSub.includes("beauty") || pSub.includes("makeup") || pSub.includes("lipstick"))) return true;
+
+  return false;
 }
