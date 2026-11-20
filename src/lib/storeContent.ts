@@ -129,38 +129,41 @@ export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
     name: "All Categories",
     slug: "all",
     icon: "LayoutGrid",
-    bgColor: "bg-slate-100",
-    iconColor: "text-slate-800",
+    customIcon: "/vittal/cat-icon-all-categories-trans.png",
+    bgColor: "bg-[#F4FBE8]",
+    iconColor: "text-[#3D6318]",
     showInNavbar: true,
     showInPills: true,
     showInCollections: false,
     order: 0,
     active: true,
-    iconShape: "round",
+    iconShape: "square",
     iconSize: 85,
     subcategories: [],
     subcategoryIcons: {},
   },
   {
     id: "gym-supplements",
-    name: "Gym Supplementaries",
-    slug: "Gym Supplementaries",
+    name: "Gym Supplements",
+    slug: "Gym Supplements",
     icon: "Dumbbell",
-    bgColor: "bg-amber-50",
-    iconColor: "text-amber-700",
+    customIcon: "/vittal/cat-icon-gym-supplements-trans.png",
+    bgColor: "bg-[#F4FBE8]",
+    iconColor: "text-[#3D6318]",
     showInNavbar: true,
     showInPills: true,
     showInCollections: true,
     order: 1,
     active: true,
-    subcategories: ["Whey Protein", "Creatine Monohydrate", "Pre-Workout", "BCAA & EAAs", "Mass Gainers", "Multivitamins"],
+    iconShape: "square",
+    iconSize: 85,
+    subcategories: ["Whey Protein", "Creatine", "Pre-Workout", "Omega 3 & Vit", "Mass Gainers"],
     subcategoryIcons: {
-      "Whey Protein": "Sparkles",
-      "Creatine Monohydrate": "Zap",
-      "Pre-Workout": "Zap",
-      "BCAA & EAAs": "Sparkles",
-      "Mass Gainers": "Dumbbell",
-      "Multivitamins": "Heart",
+      "Whey Protein": "/vittal/catalog/on-gold-standard-whey.png",
+      "Creatine": "/vittal/catalog/on-creatine-container.png",
+      "Pre-Workout": "/products/muscletech-nitrotech-fruit-punch.png",
+      "Omega 3 & Vit": "/vittal/catalog/sports-research-omega3.png",
+      "Mass Gainers": "/vittal/catalog/nitro-tech-protein-bucket.png",
     },
   },
   {
@@ -168,19 +171,24 @@ export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
     name: "Outfits",
     slug: "Outfits",
     icon: "Sparkles",
-    bgColor: "bg-blue-50",
-    iconColor: "text-blue-700",
+    customIcon: "/vittal/cat-icon-outfits-trans.png",
+    bgColor: "bg-[#F4FBE8]",
+    iconColor: "text-[#3D6318]",
     showInNavbar: true,
     showInPills: true,
     showInCollections: true,
     order: 2,
     active: true,
-    subcategories: ["Gym Matching Sets", "Athleisure Sets", "Activewear Tracksuits", "Casual Outfits"],
+    iconShape: "square",
+    iconSize: 85,
+    subcategories: ["Gym Sets", "Athletic Tees", "Jackets", "Gym Shorts", "Joggers", "Compression"],
     subcategoryIcons: {
-      "Gym Matching Sets": "Sparkles",
-      "Athleisure Sets": "Sparkles",
-      "Activewear Tracksuits": "Shirt",
-      "Casual Outfits": "ShoppingBag",
+      "Gym Sets": "/vittal/catalog/charcoal-seamless-activewear.png",
+      "Athletic Tees": "/vittal/catalog/red-vl-athletic-tee.png",
+      "Jackets": "/vittal/catalog/nike-pro-charcoal-jacket.png",
+      "Gym Shorts": "/vittal/catalog/white-adidas-athletic-shorts.png",
+      "Joggers": "/vittal/catalog/modern-gray-jogger-pants.png",
+      "Compression": "/vittal/catalog/white-adidas-long-sleeve-top.png",
     },
   },
   {
@@ -188,20 +196,23 @@ export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
     name: "Apparels",
     slug: "Apparels",
     icon: "Shirt",
-    bgColor: "bg-indigo-50",
-    iconColor: "text-indigo-700",
+    customIcon: "/vittal/cat-icon-apparels-trans.png",
+    bgColor: "bg-[#F4FBE8]",
+    iconColor: "text-[#3D6318]",
     showInNavbar: true,
     showInPills: true,
     showInCollections: true,
     order: 3,
     active: true,
-    subcategories: ["Performance T-Shirts", "Compression Tops", "Gym Shorts", "Joggers & Track Pants", "Hoodies & Jackets"],
+    iconShape: "square",
+    iconSize: 85,
+    subcategories: ["Footwear", "Perfumes", "Cosmetics", "Active Tees", "Sneakers"],
     subcategoryIcons: {
-      "Performance T-Shirts": "Shirt",
-      "Compression Tops": "Shirt",
-      "Gym Shorts": "Layers",
-      "Joggers & Track Pants": "Layers",
-      "Hoodies & Jackets": "Shirt",
+      "Footwear": "/vittal/catalog/nike-air-zoom-sneaker.png",
+      "Perfumes": "/vittal/catalog/elie-saab-le-parfum.png",
+      "Cosmetics": "/vittal/catalog/luxury-makeup-collection.png",
+      "Active Tees": "/vittal/catalog/red-vl-athletic-tee.png",
+      "Sneakers": "/vittal/catalog/white-adidas-cloudfoam-sneaker.png",
     },
   },
   {
@@ -209,42 +220,46 @@ export const DEFAULT_STORE_CATEGORIES: StoreCategory[] = [
     name: "Dates & Nuts",
     slug: "Dates & Nuts",
     icon: "Apple",
-    bgColor: "bg-emerald-50",
-    iconColor: "text-emerald-700",
+    customIcon: "/vittal/cat-icon-dates-trans.png",
+    bgColor: "bg-[#F4FBE8]",
+    iconColor: "text-[#3D6318]",
     showInNavbar: true,
     showInPills: true,
     showInCollections: true,
     order: 4,
     active: true,
-    subcategories: ["Ajwa Dates", "Medjool Dates", "California Almonds", "Cashews & Pistachios", "Walnuts & Berries", "Trail Mixes"],
+    iconShape: "square",
+    iconSize: 85,
+    subcategories: ["Medjool Dates", "Cashews", "Almonds", "Pistachios", "Chia & Seeds"],
     subcategoryIcons: {
-      "Ajwa Dates": "Apple",
-      "Medjool Dates": "Apple",
-      "California Almonds": "Apple",
-      "Cashews & Pistachios": "Apple",
-      "Walnuts & Berries": "Apple",
-      "Trail Mixes": "Package",
+      "Medjool Dates": "/vittal/catalog/golden-jar-glossy-dates.png",
+      "Cashews": "/vittal/catalog/glass-jar-cashews.png",
+      "Almonds": "/vittal/catalog/clear-almond-snack-pouch.png",
+      "Pistachios": "/vittal/catalog/glossy-pistachio-snack-bag.png",
+      "Chia & Seeds": "/vittal/catalog/glass-chia-seeds-jar.png",
     },
   },
   {
     id: "candy-chocolates",
-    name: "Candy and Chocolates",
+    name: "Candy & Chocolates",
     slug: "Candy & Chocolates",
     icon: "Cookie",
-    bgColor: "bg-rose-50",
-    iconColor: "text-rose-700",
+    customIcon: "/vittal/cat-icon-chocolates-trans.png",
+    bgColor: "bg-[#F4FBE8]",
+    iconColor: "text-[#3D6318]",
     showInNavbar: true,
     showInPills: true,
     showInCollections: true,
     order: 5,
     active: true,
-    subcategories: ["Dark Chocolates", "Protein Chocolate Bars", "Artisanal Truffles", "Gourmet Candies", "Gift Hampers"],
+    iconShape: "square",
+    iconSize: 85,
+    subcategories: ["Truffles", "Dark Choco", "Silk Bars", "Coconut Bars"],
     subcategoryIcons: {
-      "Dark Chocolates": "Cookie",
-      "Protein Chocolate Bars": "Cookie",
-      "Artisanal Truffles": "Heart",
-      "Gourmet Candies": "Cookie",
-      "Gift Hampers": "Gift",
+      "Truffles": "/vittal/catalog/golden-ferrero-rocher-box.png",
+      "Dark Choco": "/vittal/catalog/lindt-lindor-truffles.png",
+      "Silk Bars": "/vittal/catalog/cadbury-dairy-milk-pack.png",
+      "Coconut Bars": "/vittal/catalog/bounty-coconut-chocolate.png",
     },
   },
 ];
@@ -348,48 +363,65 @@ export async function getCategories(includeInactive = false): Promise<StoreCateg
       if (rows && rows.length > 0 && rows[0].config_data) {
         const parsed = JSON.parse(rows[0].config_data);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Ensure "All Categories" category exists so it is customizable in admin
-          const hasAll = parsed.some(
-            (c: any) => c.id === "all" || (c.name && c.name.toLowerCase() === "all categories")
+          // Detect legacy Zupe store categories (e.g. tech-gadgets, home-essentials, personal-care)
+          const isLegacy = parsed.some(
+            (c: any) =>
+              c.id === "tech-gadgets" ||
+              c.id === "home-essentials" ||
+              c.id === "personal-care" ||
+              c.id === "auto-essentials" ||
+              c.name === "Tech & Gadgets"
           );
-          if (!hasAll) {
-            const allCat: StoreCategory = {
-              id: "all",
-              name: "All Categories",
-              slug: "all",
-              icon: "LayoutGrid",
-              bgColor: "bg-[#EEF2FF]",
-              iconColor: "text-[#3B82F6]",
-              showInNavbar: false,
-              showInPills: true,
-              showInCollections: false,
-              order: 0,
-              active: true,
-              iconShape: "round",
-              iconSize: 85,
-              subcategories: [],
-              subcategoryIcons: {},
-            };
-            parsed.unshift(allCat);
-          }
-          // Strip giant base64 data URLs to prevent burning Worker CPU time (Cloudflare 10ms limit)
-          const sanitized = parsed.map((c: any) => {
-            const defaultCat = DEFAULT_STORE_CATEGORIES.find(
-              (dc) => dc.id === c.id || (dc.name && c.name && dc.name.toLowerCase() === c.name.toLowerCase())
+
+          if (isLegacy) {
+            inMemoryCategories = [...DEFAULT_STORE_CATEGORIES];
+            await saveCategories(DEFAULT_STORE_CATEGORIES);
+          } else {
+            // Ensure "All Categories" exists
+            const hasAll = parsed.some(
+              (c: any) => c.id === "all" || (c.name && c.name.toLowerCase() === "all categories")
             );
-            return {
-              ...c,
-              subcategoryIcons: {
-                ...(defaultCat?.subcategoryIcons || {}),
-                ...(c.subcategoryIcons || {}),
-              },
-              customIcon: typeof c.customIcon === "string" && c.customIcon.startsWith("data:")
-                ? undefined
-                : c.customIcon,
-            };
-          });
-          inMemoryCategories = sanitized;
+            if (!hasAll) {
+              const allCat = DEFAULT_STORE_CATEGORIES[0];
+              parsed.unshift(allCat);
+            }
+
+            const sanitized = parsed.map((c: any) => {
+              const defaultCat = DEFAULT_STORE_CATEGORIES.find(
+                (dc) =>
+                  dc.id === c.id ||
+                  (dc.name && c.name && dc.name.toLowerCase() === c.name.toLowerCase()) ||
+                  (dc.slug && c.slug && dc.slug.toLowerCase() === c.slug.toLowerCase())
+              );
+
+              // Auto-fill subcategories from default if empty
+              const subcategories =
+                Array.isArray(c.subcategories) && c.subcategories.length > 0
+                  ? c.subcategories
+                  : defaultCat?.subcategories || [];
+
+              return {
+                ...c,
+                customIcon:
+                  typeof c.customIcon === "string" && !c.customIcon.startsWith("data:")
+                    ? c.customIcon
+                    : defaultCat?.customIcon || c.customIcon,
+                iconShape: c.iconShape || "square",
+                iconSize: typeof c.iconSize === "number" ? c.iconSize : 85,
+                subcategories,
+                subcategoryIcons: {
+                  ...(defaultCat?.subcategoryIcons || {}),
+                  ...(c.subcategoryIcons || {}),
+                },
+              };
+            });
+            inMemoryCategories = sanitized;
+          }
         }
+      } else {
+        // D1 has no row yet -> seed with DEFAULT_STORE_CATEGORIES
+        inMemoryCategories = [...DEFAULT_STORE_CATEGORIES];
+        await saveCategories(DEFAULT_STORE_CATEGORIES);
       }
       categoriesCachedAt = Date.now();
     } catch (err) {

@@ -50,9 +50,17 @@ import {
   ZoomIn,
   ZoomOut,
   Dumbbell,
+  ArrowUp,
+  ArrowDown,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { StoreCategory } from "@/lib/storeContent";
-import { getSubcategoriesForCategory } from "@/data/zupeProducts";
+import {
+  getSubcategoriesForCategory,
+  getSubcategoryCutoutImage,
+  BRAND_SUBCATEGORY_CUTOUTS,
+} from "@/data/zupeProducts";
 import { PromoCardsCustomizer } from "@/components/admin/PromoCardsCustomizer";
 import { HeroBannerCustomizer } from "@/components/admin/HeroBannerCustomizer";
 import { SportswearDropsCustomizer } from "@/components/admin/SportswearDropsCustomizer";
@@ -94,6 +102,42 @@ const CATEGORY_COLORS = [
   { bg: "bg-[#E0E7FF]", text: "text-[#4F46E5]", label: "Indigo" },
 ];
 
+const BRAND_CATEGORY_ICONS = [
+  { name: "All Categories", image: "/vittal/cat-icon-all-categories-trans.png" },
+  { name: "Gym Supplements", image: "/vittal/cat-icon-gym-supplements-trans.png" },
+  { name: "Outfits", image: "/vittal/cat-icon-outfits-trans.png" },
+  { name: "Apparels", image: "/vittal/cat-icon-apparels-trans.png" },
+  { name: "Dates & Nuts", image: "/vittal/cat-icon-dates-trans.png" },
+  { name: "Candy & Chocolates", image: "/vittal/cat-icon-chocolates-trans.png" },
+];
+
+const BRAND_CATALOG_CUTOUTS = [
+  { name: "Whey Protein", image: "/vittal/catalog/on-gold-standard-whey.png" },
+  { name: "Creatine", image: "/vittal/catalog/on-creatine-container.png" },
+  { name: "Pre-Workout", image: "/products/muscletech-nitrotech-fruit-punch.png" },
+  { name: "Omega 3 & Vit", image: "/vittal/catalog/sports-research-omega3.png" },
+  { name: "Mass Gainers", image: "/vittal/catalog/nitro-tech-protein-bucket.png" },
+  { name: "Gym Sets", image: "/vittal/catalog/charcoal-seamless-activewear.png" },
+  { name: "Athletic Tees", image: "/vittal/catalog/red-vl-athletic-tee.png" },
+  { name: "Jackets", image: "/vittal/catalog/nike-pro-charcoal-jacket.png" },
+  { name: "Gym Shorts", image: "/vittal/catalog/white-adidas-athletic-shorts.png" },
+  { name: "Joggers", image: "/vittal/catalog/modern-gray-jogger-pants.png" },
+  { name: "Compression", image: "/vittal/catalog/white-adidas-long-sleeve-top.png" },
+  { name: "Footwear", image: "/vittal/catalog/nike-air-zoom-sneaker.png" },
+  { name: "Sneakers", image: "/vittal/catalog/white-adidas-cloudfoam-sneaker.png" },
+  { name: "Perfumes", image: "/vittal/catalog/elie-saab-le-parfum.png" },
+  { name: "Cosmetics", image: "/vittal/catalog/luxury-makeup-collection.png" },
+  { name: "Medjool Dates", image: "/vittal/catalog/golden-jar-glossy-dates.png" },
+  { name: "Cashews", image: "/vittal/catalog/glass-jar-cashews.png" },
+  { name: "Almonds", image: "/vittal/catalog/clear-almond-snack-pouch.png" },
+  { name: "Pistachios", image: "/vittal/catalog/glossy-pistachio-snack-bag.png" },
+  { name: "Chia & Seeds", image: "/vittal/catalog/glass-chia-seeds-jar.png" },
+  { name: "Truffles", image: "/vittal/catalog/golden-ferrero-rocher-box.png" },
+  { name: "Dark Choco", image: "/vittal/catalog/lindt-lindor-truffles.png" },
+  { name: "Silk Bars", image: "/vittal/catalog/cadbury-dairy-milk-pack.png" },
+  { name: "Coconut Bars", image: "/vittal/catalog/bounty-coconut-chocolate.png" },
+];
+
 export default function WebsiteContentPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"hero_banner" | "sportswear" | "gym_supplements" | "categories" | "showcase">("hero_banner");
@@ -106,19 +150,22 @@ export default function WebsiteContentPage() {
   // Category Modal state
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<StoreCategory | null>(null);
-  const [categoryIconTab, setCategoryIconTab] = useState<"presets" | "custom">("presets");
+  const [categoryIconTab, setCategoryIconTab] = useState<"brand" | "custom" | "presets">("brand");
   const [applyShapeToAll, setApplyShapeToAll] = useState(false);
   const [newSubcategoryInput, setNewSubcategoryInput] = useState("");
+  const [newSubcategoryImage, setNewSubcategoryImage] = useState("");
   const [newSubcategoryIcon, setNewSubcategoryIcon] = useState("Smartphone");
+  const [showCutoutPickerForNew, setShowCutoutPickerForNew] = useState(false);
+  const [editingSubcategoryImageFor, setEditingSubcategoryImageFor] = useState<string | null>(null);
   const [categoryForm, setCategoryForm] = useState({
     name: "",
     slug: "",
     icon: "Tag",
     customIcon: "",
     iconSize: 85,
-    iconShape: "round" as "round" | "square",
-    bgColor: "bg-[#FEEBEA]",
-    iconColor: "text-[#E0533C]",
+    iconShape: "square" as "round" | "square",
+    bgColor: "bg-[#F4FBE8]",
+    iconColor: "text-[#3D6318]",
     showInNavbar: true,
     showInPills: true,
     showInCollections: true,
@@ -217,17 +264,17 @@ export default function WebsiteContentPage() {
   // --- Category Actions ---
   const handleOpenAddCategory = () => {
     setEditingCategory(null);
-    setCategoryIconTab("presets");
+    setCategoryIconTab("brand");
     setApplyShapeToAll(false);
     setCategoryForm({
       name: "",
       slug: "",
-      icon: "Tag",
-      customIcon: "",
+      icon: "Dumbbell",
+      customIcon: "/vittal/cat-icon-gym-supplements-trans.png",
       iconSize: 85,
-      iconShape: "round",
-      bgColor: "bg-[#FEEBEA]",
-      iconColor: "text-[#E0533C]",
+      iconShape: "square",
+      bgColor: "bg-[#F4FBE8]",
+      iconColor: "text-[#3D6318]",
       showInNavbar: true,
       showInPills: true,
       showInCollections: true,
@@ -236,13 +283,16 @@ export default function WebsiteContentPage() {
       subcategoryIcons: {},
     });
     setNewSubcategoryInput("");
-    setNewSubcategoryIcon("Smartphone");
+    setNewSubcategoryImage("");
+    setNewSubcategoryIcon("Dumbbell");
+    setShowCutoutPickerForNew(false);
+    setEditingSubcategoryImageFor(null);
     setCategoryModalOpen(true);
   };
 
   const handleOpenEditCategory = (c: StoreCategory) => {
     setEditingCategory(c);
-    setCategoryIconTab(c.customIcon ? "custom" : "presets");
+    setCategoryIconTab(c.customIcon ? "brand" : "presets");
     setApplyShapeToAll(false);
     const existingSubs = Array.isArray(c.subcategories) && c.subcategories.length > 0
       ? [...c.subcategories]
@@ -251,7 +301,7 @@ export default function WebsiteContentPage() {
     const existingIcons: Record<string, string> = { ...(c.subcategoryIcons || {}) };
     for (const sub of existingSubs) {
       if (!existingIcons[sub]) {
-        existingIcons[sub] = getSubcategoryFallbackIcon(sub);
+        existingIcons[sub] = getSubcategoryCutoutImage(sub) || getSubcategoryFallbackIcon(sub);
       }
     }
 
@@ -261,9 +311,9 @@ export default function WebsiteContentPage() {
       icon: c.icon || "Tag",
       customIcon: c.customIcon || "",
       iconSize: typeof c.iconSize === "number" ? c.iconSize : 85,
-      iconShape: c.iconShape || "round",
-      bgColor: c.bgColor || "bg-[#FEEBEA]",
-      iconColor: c.iconColor || "text-[#E0533C]",
+      iconShape: c.iconShape || "square",
+      bgColor: c.bgColor || "bg-[#F4FBE8]",
+      iconColor: c.iconColor || "text-[#3D6318]",
       showInNavbar: c.showInNavbar !== false,
       showInPills: c.showInPills !== false,
       showInCollections: c.showInCollections !== false,
@@ -272,7 +322,10 @@ export default function WebsiteContentPage() {
       subcategoryIcons: existingIcons,
     });
     setNewSubcategoryInput("");
+    setNewSubcategoryImage("");
     setNewSubcategoryIcon("Smartphone");
+    setShowCutoutPickerForNew(false);
+    setEditingSubcategoryImageFor(null);
     setCategoryModalOpen(true);
   };
 
@@ -293,7 +346,7 @@ export default function WebsiteContentPage() {
         setCategoryForm((prev) => ({ ...prev, iconShape: shape }));
         if (typeof window !== "undefined") {
           window.dispatchEvent(
-            new CustomEvent("tj_categories_updated", { detail: { categories: data.categories } })
+            new CustomEvent("vittal_categories_updated", { detail: { categories: data.categories } })
           );
           window.dispatchEvent(
             new CustomEvent("zupe_categories_updated", { detail: { categories: data.categories } })
@@ -320,16 +373,23 @@ export default function WebsiteContentPage() {
       showToast("error", `Subcategory "${trimmed}" is already added`);
       return;
     }
-    const iconToUse = newSubcategoryIcon || getSubcategoryFallbackIcon(trimmed);
+    const resolvedIcon =
+      newSubcategoryImage ||
+      getSubcategoryCutoutImage(trimmed) ||
+      newSubcategoryIcon ||
+      getSubcategoryFallbackIcon(trimmed);
+
     setCategoryForm((prev) => ({
       ...prev,
       subcategories: [...prev.subcategories, trimmed],
       subcategoryIcons: {
         ...(prev.subcategoryIcons || {}),
-        [trimmed]: iconToUse,
+        [trimmed]: resolvedIcon,
       },
     }));
     setNewSubcategoryInput("");
+    setNewSubcategoryImage("");
+    setShowCutoutPickerForNew(false);
   };
 
   const handleRemoveSubcategory = (subToRemove: string) => {
@@ -344,14 +404,25 @@ export default function WebsiteContentPage() {
     });
   };
 
-  const handleSubcategoryIconChange = (subcat: string, newIcon: string) => {
+  const handleMoveSubcategory = (index: number, direction: "up" | "down") => {
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= categoryForm.subcategories.length) return;
+    const list = [...categoryForm.subcategories];
+    const item = list[index];
+    list.splice(index, 1);
+    list.splice(targetIndex, 0, item);
+    setCategoryForm((prev) => ({ ...prev, subcategories: list }));
+  };
+
+  const handleSubcategoryIconChange = (subcat: string, newIconOrImage: string) => {
     setCategoryForm((prev) => ({
       ...prev,
       subcategoryIcons: {
         ...(prev.subcategoryIcons || {}),
-        [subcat]: newIcon,
+        [subcat]: newIconOrImage,
       },
     }));
+    setEditingSubcategoryImageFor(null);
   };
 
   const handleLoadDefaultSubcategories = () => {
@@ -364,7 +435,7 @@ export default function WebsiteContentPage() {
     const updatedIcons: Record<string, string> = { ...(categoryForm.subcategoryIcons || {}) };
     for (const sub of combined) {
       if (!updatedIcons[sub]) {
-        updatedIcons[sub] = getSubcategoryFallbackIcon(sub);
+        updatedIcons[sub] = getSubcategoryCutoutImage(sub) || getSubcategoryFallbackIcon(sub);
       }
     }
     setCategoryForm((prev) => ({
@@ -372,7 +443,7 @@ export default function WebsiteContentPage() {
       subcategories: combined,
       subcategoryIcons: updatedIcons,
     }));
-    showToast("success", `Loaded preset subcategories for ${categoryForm.name || "category"}`);
+    showToast("success", `Loaded ${defaults.length} brand subcategories with cutouts!`);
   };
 
   const handleSaveCategory = async (e: React.FormEvent) => {
@@ -400,7 +471,7 @@ export default function WebsiteContentPage() {
           setCategoryModalOpen(false);
           if (typeof window !== "undefined") {
             window.dispatchEvent(
-              new CustomEvent("tj_categories_updated", { detail: { categories: data.categories } })
+              new CustomEvent("vittal_categories_updated", { detail: { categories: data.categories } })
             );
             window.dispatchEvent(
               new CustomEvent("zupe_categories_updated", { detail: { categories: data.categories } })
@@ -430,7 +501,7 @@ export default function WebsiteContentPage() {
           setCategoryModalOpen(false);
           if (typeof window !== "undefined") {
             window.dispatchEvent(
-              new CustomEvent("tj_categories_updated", { detail: { categories: data.categories } })
+              new CustomEvent("vittal_categories_updated", { detail: { categories: data.categories } })
             );
             window.dispatchEvent(
               new CustomEvent("zupe_categories_updated", { detail: { categories: data.categories } })
@@ -756,86 +827,86 @@ export default function WebsiteContentPage() {
                             <tr key={cat.id} className={`hover:bg-slate-50/70 transition-colors ${isAll ? "bg-blue-50/20" : ""}`}>
                               {/* Name + Icon preview */}
                               <td className="py-3.5 px-4">
-                                <div className="flex items-center gap-2.5">
-                                  <div
-                                    className={`w-10 h-10 ${shapeClass} flex items-center justify-center font-bold text-xs overflow-hidden shadow-xs shrink-0 ${
-                                      cat.bgColor || (isAll ? "bg-[#EEF2FF]" : "bg-[#F4FBE8]")
-                                    } ${cat.iconColor || (isAll ? "text-[#3B82F6]" : "text-[#3D6318]")}`}
-                                  >
-                                    {cat.customIcon ? (
-                                      // eslint-disable-next-line @next/next/no-img-element
-                                      <img
-                                        src={cat.customIcon}
-                                        alt={cat.name}
-                                        style={{
-                                          width: `${cat.iconSize || 85}%`,
-                                          height: `${cat.iconSize || 85}%`,
-                                        }}
-                                        className="object-contain"
-                                      />
-                                    ) : (
-                                      (() => {
-                                        const match = CATEGORY_ICON_PRESETS.find((p) => p.name === cat.icon);
-                                        if (match) {
-                                          const IconComp = match.Icon;
-                                          return <IconComp className="w-4 h-4" />;
-                                        }
-                                        return isAll ? <LayoutGrid className="w-4 h-4" /> : <Tag className="w-4 h-4" />;
-                                      })()
-                                    )}
-                                  </div>
-                                  <div>
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      <span className="font-bold text-slate-900">{cat.name}</span>
-                                      {isAll && (
-                                        <span className="px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-800 font-extrabold text-[10px]">
-                                          Primary Home Pill
-                                        </span>
+                                  <div className="flex items-center gap-3">
+                                    <div
+                                      className={`w-12 h-12 ${shapeClass} flex items-center justify-center font-bold text-xs overflow-hidden shadow-xs shrink-0 border border-slate-200/80 ${
+                                        cat.bgColor || (isAll ? "bg-[#EEF2FF]" : "bg-[#F4FBE8]")
+                                      } ${cat.iconColor || (isAll ? "text-[#3B82F6]" : "text-[#3D6318]")}`}
+                                    >
+                                      {cat.customIcon ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                          src={cat.customIcon}
+                                          alt={cat.name}
+                                          style={{
+                                            width: `${cat.iconSize || 85}%`,
+                                            height: `${cat.iconSize || 85}%`,
+                                          }}
+                                          className="object-contain drop-shadow-xs"
+                                        />
+                                      ) : (
+                                        (() => {
+                                          const match = CATEGORY_ICON_PRESETS.find((p) => p.name === cat.icon);
+                                          if (match) {
+                                            const IconComp = match.Icon;
+                                            return <IconComp className="w-5 h-5" />;
+                                          }
+                                          return isAll ? <LayoutGrid className="w-5 h-5" /> : <Tag className="w-5 h-5" />;
+                                        })()
                                       )}
                                     </div>
-                                    <span className="text-[10px] text-slate-400 font-mono">
-                                      {cat.customIcon ? "Custom Icon • " : ""}Shape: {isSquare ? "Curved Square" : "Round"} • ID: {cat.id}
-                                    </span>
-                                    {/* Subcategories preview tags */}
-                                    <div className="flex flex-wrap items-center gap-1 mt-1.5 max-w-sm">
-                                      {(() => {
-                                        const subs = Array.isArray(cat.subcategories) && cat.subcategories.length > 0
-                                          ? cat.subcategories
-                                          : getSubcategoriesForCategory(cat.name);
-                                        if (subs.length === 0) {
-                                          return (
-                                            <span className="text-[10px] text-slate-400 italic">
-                                              {isAll ? "All Store Products" : "No subcategories"}
-                                            </span>
-                                          );
-                                        }
-                                        return (
-                                          <>
-                                            {subs.slice(0, 3).map((sub) => {
-                                              const subIcon = cat.subcategoryIcons?.[sub] || getSubcategoryFallbackIcon(sub);
-                                              return (
-                                                <span
-                                                  key={sub}
-                                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium"
-                                                >
-                                                  <span className="w-2.5 h-2.5 inline-flex items-center justify-center text-slate-500">
-                                                    {renderIconOrCustom({ iconName: subIcon, fallbackName: sub, iconSize: 70 })}
-                                                  </span>
-                                                  <span>{sub}</span>
-                                                </span>
-                                              );
-                                            })}
-                                            {subs.length > 3 && (
-                                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#F4FBE8] text-[#3D6318] text-[10px] font-bold border border-[#85BE33]/30">
-                                                +{subs.length - 3} more
+                                    <div>
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="font-bold text-slate-900 text-sm">{cat.name}</span>
+                                        {isAll && (
+                                          <span className="px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-800 font-extrabold text-[10px]">
+                                            Primary Home Pill
+                                          </span>
+                                        )}
+                                      </div>
+                                      <span className="text-[10px] text-slate-400 font-mono">
+                                        {cat.customIcon ? "Brand Cutout Active • " : ""}Shape: {isSquare ? "Curved Square" : "Round"} • ID: {cat.id}
+                                      </span>
+                                      {/* Subcategories preview tags with cutout thumbnails */}
+                                      <div className="flex flex-wrap items-center gap-1.5 mt-2 max-w-md">
+                                        {(() => {
+                                          const subs = Array.isArray(cat.subcategories) && cat.subcategories.length > 0
+                                            ? cat.subcategories
+                                            : getSubcategoriesForCategory(cat.name);
+                                          if (subs.length === 0) {
+                                            return (
+                                              <span className="text-[10px] text-slate-400 italic">
+                                                {isAll ? "All Store Products" : "No subcategories"}
                                               </span>
-                                            )}
-                                          </>
-                                        );
-                                      })()}
+                                            );
+                                          }
+                                          return (
+                                            <>
+                                              {subs.slice(0, 4).map((sub) => {
+                                                const subIcon = cat.subcategoryIcons?.[sub] || getSubcategoryFallbackIcon(sub);
+                                                return (
+                                                  <span
+                                                    key={sub}
+                                                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-800 text-[10.5px] font-semibold shadow-2xs"
+                                                  >
+                                                    <span className="w-4 h-4 rounded bg-[#F4FBE8] inline-flex items-center justify-center overflow-hidden shrink-0 border border-[#85BE33]/30">
+                                                      {renderIconOrCustom({ iconName: subIcon, fallbackName: sub, iconSize: 85 })}
+                                                    </span>
+                                                    <span>{sub}</span>
+                                                  </span>
+                                                );
+                                              })}
+                                              {subs.length > 4 && (
+                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#F4FBE8] text-[#3D6318] text-[10px] font-bold border border-[#85BE33]/30">
+                                                  +{subs.length - 4} more
+                                                </span>
+                                              )}
+                                            </>
+                                          );
+                                        })()}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
                               </td>
 
                               {/* Slug */}
@@ -1048,104 +1119,298 @@ export default function WebsiteContentPage() {
                       Subcategories ({categoryForm.subcategories.length})
                     </label>
                     <p className="text-[10px] text-slate-500">
-                      Add subcategories with icons that will appear live as filter cards under this category.
+                      Add and customize subcategories with product cutout images that appear live as filter cards.
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={handleLoadDefaultSubcategories}
-                    className="text-[11px] font-bold text-[#4A7220] hover:underline cursor-pointer"
+                    className="text-[11px] font-bold text-[#4A7220] hover:underline cursor-pointer flex items-center gap-1"
                   >
-                    Suggest Presets
+                    <Sparkles className="w-3 h-3 text-[#6B9E3A]" />
+                    <span>Suggest Brand Presets</span>
                   </button>
                 </div>
 
-                {/* Subcategory Input + Icon Picker + Add Button */}
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={newSubcategoryInput}
-                    onChange={(e) => {
-                      setNewSubcategoryInput(e.target.value);
-                      if (e.target.value.trim()) {
-                        setNewSubcategoryIcon(getSubcategoryFallbackIcon(e.target.value.trim()));
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddSubcategory();
-                      }
-                    }}
-                    placeholder="Type subcategory name (e.g. Whey Protein, Creatine)..."
-                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-[#85BE33]"
-                  />
-                  <select
-                    value={newSubcategoryIcon}
-                    onChange={(e) => setNewSubcategoryIcon(e.target.value)}
-                    className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-2.5 py-2 focus:outline-none focus:border-[#85BE33] cursor-pointer"
-                    title="Choose icon for new subcategory"
-                  >
-                    {AVAILABLE_CATEGORY_ICONS.map((iconName) => (
-                      <option key={iconName} value={iconName}>
-                        {iconName}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={handleAddSubcategory}
-                    className="px-3.5 py-2 rounded-xl bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-xs font-mograph transition-all shadow-xs shrink-0 flex items-center gap-1 cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>Add</span>
-                  </button>
-                </div>
+                {/* Subcategory Add Box */}
+                <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-2.5">
+                  <div className="flex items-center gap-2">
+                    {/* Cutout Image / Icon Thumbnail Preview */}
+                    <div className="w-10 h-10 rounded-xl bg-[#F4FBE8] border border-[#85BE33]/40 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                      {newSubcategoryImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={newSubcategoryImage}
+                          alt="Cutout Preview"
+                          className="w-full h-full object-contain p-1"
+                        />
+                      ) : (
+                        renderIconOrCustom({
+                          iconName: newSubcategoryIcon,
+                          fallbackName: newSubcategoryInput,
+                          iconSize: 75,
+                        })
+                      )}
+                    </div>
 
-                {/* Subcategories List with Icon Previews and Dropdown Selectors */}
-                {categoryForm.subcategories.length > 0 ? (
-                  <div className="space-y-1.5 p-2 bg-white rounded-xl border border-slate-200/80 min-h-[48px] max-h-48 overflow-y-auto">
-                    {categoryForm.subcategories.map((sub) => {
-                      const currentIcon = categoryForm.subcategoryIcons?.[sub] || getSubcategoryFallbackIcon(sub);
-                      return (
-                        <div
-                          key={sub}
-                          className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-slate-50/70 border border-slate-200/60 hover:border-[#85BE33]/50 transition-colors"
+                    <input
+                      type="text"
+                      value={newSubcategoryInput}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setNewSubcategoryInput(val);
+                        if (!newSubcategoryImage && val.trim()) {
+                          const suggested = getSubcategoryCutoutImage(val.trim());
+                          if (suggested) setNewSubcategoryImage(suggested);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddSubcategory();
+                        }
+                      }}
+                      placeholder="Type subcategory name (e.g. Whey Protein, Creatine)..."
+                      className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-[#85BE33]"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={handleAddSubcategory}
+                      className="px-3.5 py-2 rounded-xl bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-xs font-mograph transition-all shadow-xs shrink-0 flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <span>Add</span>
+                    </button>
+                  </div>
+
+                  {/* Cutout Image Selection Bar */}
+                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowCutoutPickerForNew(!showCutoutPickerForNew)}
+                        className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
+                          showCutoutPickerForNew
+                            ? "bg-[#E2F5B4] text-[#3D6318] border-[#85BE33]"
+                            : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                        }`}
+                      >
+                        <ImageIcon className="w-3 h-3 text-[#6B9E3A]" />
+                        <span>Choose Catalog Cutout</span>
+                        <ChevronDown className="w-3 h-3 opacity-60" />
+                      </button>
+
+                      <label className="cursor-pointer inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100 transition-colors">
+                        <Upload className="w-3 h-3 text-slate-500" />
+                        <span>Upload Cutout</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) =>
+                            handleFileUpload(e, (dataUrl) => setNewSubcategoryImage(dataUrl))
+                          }
+                        />
+                      </label>
+
+                      {newSubcategoryImage && (
+                        <button
+                          type="button"
+                          onClick={() => setNewSubcategoryImage("")}
+                          className="text-[10px] font-bold text-red-600 hover:underline cursor-pointer"
                         >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <div className="w-6 h-6 rounded-md bg-[#F4FBE8] text-[#3D6318] flex items-center justify-center shrink-0 border border-[#85BE33]/30">
-                              {renderIconOrCustom({
-                                iconName: currentIcon,
-                                fallbackName: sub,
-                                iconSize: 75,
-                              })}
-                            </div>
-                            <span className="text-xs font-bold text-slate-800 truncate">{sub}</span>
-                          </div>
+                          Clear Cutout
+                        </button>
+                      )}
+                    </div>
 
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <select
-                              value={currentIcon}
-                              onChange={(e) => handleSubcategoryIconChange(sub, e.target.value)}
-                              className="text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg px-2 py-0.5 focus:outline-none focus:border-[#85BE33] cursor-pointer"
-                              title="Change subcategory icon"
-                            >
-                              {AVAILABLE_CATEGORY_ICONS.map((iconName) => (
-                                <option key={iconName} value={iconName}>
-                                  {iconName}
-                                </option>
-                              ))}
-                            </select>
+                    <span className="text-[10px] text-slate-400 italic">
+                      Transparent PNG cutouts look best!
+                    </span>
+                  </div>
 
+                  {/* Expandable Catalog Cutouts Quick Gallery for New Subcategory */}
+                  {showCutoutPickerForNew && (
+                    <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200/90 space-y-2 animate-fadeIn">
+                      <span className="text-[11px] font-bold text-slate-700 block">
+                        Select a Product Cutout:
+                      </span>
+                      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-44 overflow-y-auto p-1">
+                        {BRAND_CATALOG_CUTOUTS.map((cutout) => {
+                          const isSelected = newSubcategoryImage === cutout.image;
+                          return (
                             <button
+                              key={cutout.name}
                               type="button"
-                              onClick={() => handleRemoveSubcategory(sub)}
-                              className="text-slate-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-colors cursor-pointer"
-                              title="Remove subcategory"
+                              onClick={() => {
+                                setNewSubcategoryImage(cutout.image);
+                                if (!newSubcategoryInput.trim()) {
+                                  setNewSubcategoryInput(cutout.name);
+                                }
+                                setShowCutoutPickerForNew(false);
+                              }}
+                              className={`p-1.5 rounded-xl flex flex-col items-center gap-1 bg-white border transition-all cursor-pointer ${
+                                isSelected
+                                  ? "border-[#85BE33] ring-2 ring-[#85BE33]/30 shadow-xs"
+                                  : "border-slate-200/70 hover:border-slate-300 hover:bg-slate-50"
+                              }`}
+                              title={cutout.name}
                             >
-                              <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                              <div className="w-8 h-8 relative flex items-center justify-center">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={cutout.image}
+                                  alt={cutout.name}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                              <span className="text-[9px] font-semibold text-slate-700 truncate max-w-full">
+                                {cutout.name}
+                              </span>
                             </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Subcategories List with Reorder, Cutout Thumbnails, & Delete */}
+                {categoryForm.subcategories.length > 0 ? (
+                  <div className="space-y-1.5 p-2 bg-white rounded-xl border border-slate-200/80 min-h-[48px] max-h-56 overflow-y-auto">
+                    {categoryForm.subcategories.map((sub, index) => {
+                      const currentIcon = categoryForm.subcategoryIcons?.[sub] || getSubcategoryFallbackIcon(sub);
+                      const isEditingThisCutout = editingSubcategoryImageFor === sub;
+
+                      return (
+                        <div key={sub} className="space-y-1.5">
+                          <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-slate-50/70 border border-slate-200/60 hover:border-[#85BE33]/50 transition-colors">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              {/* Thumbnail Cutout */}
+                              <div className="w-8 h-8 rounded-lg bg-[#F4FBE8] text-[#3D6318] flex items-center justify-center shrink-0 border border-[#85BE33]/30 overflow-hidden shadow-2xs">
+                                {renderIconOrCustom({
+                                  iconName: currentIcon,
+                                  fallbackName: sub,
+                                  iconSize: 85,
+                                })}
+                              </div>
+                              <span className="text-xs font-bold text-slate-800 truncate">{sub}</span>
+                            </div>
+
+                            <div className="flex items-center gap-1 shrink-0">
+                              {/* Change Cutout Button */}
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setEditingSubcategoryImageFor(isEditingThisCutout ? null : sub)
+                                }
+                                className={`text-[10px] font-bold px-2 py-1 rounded-md border transition-all cursor-pointer flex items-center gap-1 ${
+                                  isEditingThisCutout
+                                    ? "bg-[#E2F5B4] text-[#3D6318] border-[#85BE33]"
+                                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                                }`}
+                                title="Change cutout image or icon for this subcategory"
+                              >
+                                <ImageIcon className="w-2.5 h-2.5 text-[#6B9E3A]" />
+                                <span>Change Image</span>
+                              </button>
+
+                              {/* Reorder Up */}
+                              <button
+                                type="button"
+                                onClick={() => handleMoveSubcategory(index, "up")}
+                                disabled={index === 0}
+                                className="p-1 rounded-md text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors cursor-pointer"
+                                title="Move subcategory up"
+                              >
+                                <ArrowUp className="w-3 h-3 stroke-[2.5]" />
+                              </button>
+
+                              {/* Reorder Down */}
+                              <button
+                                type="button"
+                                onClick={() => handleMoveSubcategory(index, "down")}
+                                disabled={index === categoryForm.subcategories.length - 1}
+                                className="p-1 rounded-md text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors cursor-pointer"
+                                title="Move subcategory down"
+                              >
+                                <ArrowDown className="w-3 h-3 stroke-[2.5]" />
+                              </button>
+
+                              {/* Remove */}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveSubcategory(sub)}
+                                className="text-slate-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-colors cursor-pointer"
+                                title="Remove subcategory"
+                              >
+                                <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                              </button>
+                            </div>
                           </div>
+
+                          {/* Inline Cutout Picker Panel for Existing Subcategory */}
+                          {isEditingThisCutout && (
+                            <div className="p-3 bg-slate-100/90 rounded-xl border border-slate-200 space-y-2 animate-fadeIn ml-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-bold text-slate-800">
+                                  Select Cutout for &ldquo;{sub}&rdquo;:
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <label className="cursor-pointer inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition-colors">
+                                    <Upload className="w-3 h-3 text-slate-500" />
+                                    <span>Upload Image</span>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={(e) =>
+                                        handleFileUpload(e, (dataUrl) =>
+                                          handleSubcategoryIconChange(sub, dataUrl)
+                                        )
+                                      }
+                                    />
+                                  </label>
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingSubcategoryImageFor(null)}
+                                    className="text-[10px] font-bold text-slate-400 hover:text-slate-700"
+                                  >
+                                    Close
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5 max-h-36 overflow-y-auto p-1 bg-white rounded-lg border border-slate-200/70">
+                                {BRAND_CATALOG_CUTOUTS.map((cutout) => (
+                                  <button
+                                    key={cutout.name}
+                                    type="button"
+                                    onClick={() => handleSubcategoryIconChange(sub, cutout.image)}
+                                    className={`p-1 rounded-lg flex flex-col items-center gap-0.5 border transition-all cursor-pointer ${
+                                      currentIcon === cutout.image
+                                        ? "border-[#85BE33] bg-[#F4FBE8] ring-1 ring-[#85BE33]"
+                                        : "border-slate-200/50 hover:bg-slate-50"
+                                    }`}
+                                    title={cutout.name}
+                                  >
+                                    <div className="w-7 h-7 relative flex items-center justify-center">
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img
+                                        src={cutout.image}
+                                        alt={cutout.name}
+                                        className="w-full h-full object-contain"
+                                      />
+                                    </div>
+                                    <span className="text-[8.5px] font-medium text-slate-700 truncate max-w-full">
+                                      {cutout.name}
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -1153,7 +1418,7 @@ export default function WebsiteContentPage() {
                 ) : (
                   <div className="p-3 bg-white/60 rounded-xl border border-dashed border-slate-200 text-center">
                     <p className="text-[11px] text-slate-400 font-medium">
-                      No subcategories yet. Type a name above and click Add, or click &ldquo;Suggest Presets&rdquo;.
+                      No subcategories yet. Type a name above and click Add, or click &ldquo;Suggest Brand Presets&rdquo;.
                     </p>
                   </div>
                 )}
@@ -1168,14 +1433,14 @@ export default function WebsiteContentPage() {
                   <div className="flex bg-slate-100 p-0.5 rounded-lg text-[11px] font-bold">
                     <button
                       type="button"
-                      onClick={() => setCategoryIconTab("presets")}
+                      onClick={() => setCategoryIconTab("brand")}
                       className={`px-2.5 py-1 rounded-md transition-all ${
-                        categoryIconTab === "presets"
+                        categoryIconTab === "brand"
                           ? "bg-white text-slate-900 shadow-xs"
                           : "text-slate-500 hover:text-slate-800"
                       }`}
                     >
-                      Presets
+                      Brand Icons
                     </button>
                     <button
                       type="button"
@@ -1187,10 +1452,21 @@ export default function WebsiteContentPage() {
                       }`}
                     >
                       <Upload className="w-3 h-3" />
-                      <span>Custom Icon</span>
+                      <span>Upload / URL</span>
                       {categoryForm.customIcon && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#FFBE00] text-slate-950" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#FFBE00]" />
                       )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCategoryIconTab("presets")}
+                      className={`px-2.5 py-1 rounded-md transition-all ${
+                        categoryIconTab === "presets"
+                          ? "bg-white text-slate-900 shadow-xs"
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      System Presets
                     </button>
                   </div>
                 </div>
@@ -1211,7 +1487,7 @@ export default function WebsiteContentPage() {
                           width: `${categoryForm.iconSize || 85}%`,
                           height: `${categoryForm.iconSize || 85}%`,
                         }}
-                        className="object-contain transition-all"
+                        className="object-contain transition-all drop-shadow-xs"
                       />
                     ) : (
                       (() => {
@@ -1233,9 +1509,9 @@ export default function WebsiteContentPage() {
                     <div className="text-xs font-bold text-slate-800 truncate">
                       {categoryForm.name || "Category Label"}
                     </div>
-                    <span className="text-[11px] text-slate-500 font-medium">
+                    <span className="text-[11px] text-slate-500 font-medium truncate block">
                       {categoryForm.customIcon
-                        ? `Custom uploaded icon active (${categoryForm.iconSize || 85}% size)`
+                        ? `Custom icon active (${categoryForm.iconSize || 85}% size)`
                         : `Preset icon: ${categoryForm.icon}`}
                     </span>
                   </div>
@@ -1250,44 +1526,48 @@ export default function WebsiteContentPage() {
                   )}
                 </div>
 
-                {categoryIconTab === "presets" ? (
+                {categoryIconTab === "brand" ? (
                   <div>
                     <span className="text-[11px] text-slate-500 font-medium block mb-2">
-                      Choose a system preset icon for this category:
+                      Official Vittal Lifestyle Brand Cutout Icons (1-Click Select):
                     </span>
-                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-36 overflow-y-auto p-1 bg-slate-50/50 rounded-xl border border-slate-200">
-                      {CATEGORY_ICON_PRESETS.map((preset) => {
-                        const IconC = preset.Icon;
-                        const isSelected =
-                          categoryForm.icon === preset.name && !categoryForm.customIcon;
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 p-1.5 bg-slate-50/50 rounded-xl border border-slate-200">
+                      {BRAND_CATEGORY_ICONS.map((brandIcon) => {
+                        const isSelected = categoryForm.customIcon === brandIcon.image;
                         return (
                           <button
-                            key={preset.name}
+                            key={brandIcon.name}
                             type="button"
                             onClick={() =>
                               setCategoryForm({
                                 ...categoryForm,
-                                icon: preset.name,
-                                customIcon: "",
+                                customIcon: brandIcon.image,
                               })
                             }
-                            className={`p-2 rounded-xl flex flex-col items-center gap-1 transition-all border ${
+                            className={`p-2 rounded-xl flex flex-col items-center gap-1.5 transition-all border cursor-pointer ${
                               isSelected
-                                ? "bg-white border-[#85BE33] shadow-xs text-[#3D6318]"
-                                : "bg-white hover:bg-slate-50 border-slate-200/60 text-slate-700"
+                                ? "bg-white border-[#85BE33] ring-2 ring-[#85BE33]/30 shadow-xs text-[#3D6318]"
+                                : "bg-white hover:bg-slate-50 border-slate-200/70 text-slate-700"
                             }`}
-                            title={preset.label}
+                            title={brandIcon.name}
                           >
-                            <IconC className="w-4 h-4" />
-                            <span className="text-[10px] font-bold truncate max-w-full">
-                              {preset.name}
+                            <div className="w-10 h-10 relative flex items-center justify-center">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={brandIcon.image}
+                                alt={brandIcon.name}
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                            <span className="text-[9.5px] font-bold truncate max-w-full text-center">
+                              {brandIcon.name}
                             </span>
                           </button>
                         );
                       })}
                     </div>
                   </div>
-                ) : (
+                ) : categoryIconTab === "custom" ? (
                   <div className="space-y-2.5 p-3.5 bg-slate-50/70 rounded-2xl border border-slate-200">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-800">
@@ -1384,6 +1664,43 @@ export default function WebsiteContentPage() {
                     <p className="text-[10px] text-slate-500 leading-relaxed">
                       💡 Tip: Use a transparent PNG, WebP or SVG icon for best visual results inside the circular pill background.
                     </p>
+                  </div>
+                ) : (
+                  <div>
+                    <span className="text-[11px] text-slate-500 font-medium block mb-2">
+                      Choose a system preset icon for this category:
+                    </span>
+                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-36 overflow-y-auto p-1 bg-slate-50/50 rounded-xl border border-slate-200">
+                      {CATEGORY_ICON_PRESETS.map((preset) => {
+                        const IconC = preset.Icon;
+                        const isSelected =
+                          categoryForm.icon === preset.name && !categoryForm.customIcon;
+                        return (
+                          <button
+                            key={preset.name}
+                            type="button"
+                            onClick={() =>
+                              setCategoryForm({
+                                ...categoryForm,
+                                icon: preset.name,
+                                customIcon: "",
+                              })
+                            }
+                            className={`p-2 rounded-xl flex flex-col items-center gap-1 transition-all border ${
+                              isSelected
+                                ? "bg-white border-[#85BE33] shadow-xs text-[#3D6318]"
+                                : "bg-white hover:bg-slate-50 border-slate-200/60 text-slate-700"
+                            }`}
+                            title={preset.label}
+                          >
+                            <IconC className="w-4 h-4" />
+                            <span className="text-[10px] font-bold truncate max-w-full">
+                              {preset.name}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>

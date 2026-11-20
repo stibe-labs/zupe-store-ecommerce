@@ -151,6 +151,60 @@ export function VittalLifestyleStorefront({
     return () => window.removeEventListener("vittal_sportswear_updated" as any, handleUpdate);
   }, []);
 
+  // Dynamic categories from Admin / D1
+  const [categoryItems, setCategoryItems] = useState(CATEGORY_ITEMS);
+
+  useEffect(() => {
+    async function loadDynamicCategories() {
+      try {
+        const res = await fetch("/api/content/categories");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
+          const active = data.categories.filter((c: any) => c.active !== false);
+          const mapped = active.map((c: any) => {
+            const isAll = c.id === "all" || (c.name || "").toLowerCase() === "all categories";
+            return {
+              name: c.name,
+              link: isAll ? "/products" : `/products?category=${encodeURIComponent(c.slug || c.name)}`,
+              image: c.customIcon || (isAll ? "/vittal/cat-icon-all-categories-trans.png" : "/vittal/cat-icon-gym-supplements-trans.png"),
+              desktopOnly: isAll,
+            };
+          });
+          if (mapped.length > 0) {
+            setCategoryItems(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to fetch dynamic categories on storefront:", err);
+      }
+    }
+    loadDynamicCategories();
+
+    const handleCatUpdate = (e: any) => {
+      if (e?.detail?.categories && Array.isArray(e.detail.categories)) {
+        const active = e.detail.categories.filter((c: any) => c.active !== false);
+        const mapped = active.map((c: any) => {
+          const isAll = c.id === "all" || (c.name || "").toLowerCase() === "all categories";
+          return {
+            name: c.name,
+            link: isAll ? "/products" : `/products?category=${encodeURIComponent(c.slug || c.name)}`,
+            image: c.customIcon || (isAll ? "/vittal/cat-icon-all-categories-trans.png" : "/vittal/cat-icon-gym-supplements-trans.png"),
+            desktopOnly: isAll,
+          };
+        });
+        if (mapped.length > 0) {
+          setCategoryItems(mapped);
+        }
+      }
+    };
+    window.addEventListener("vittal_categories_updated" as any, handleCatUpdate);
+    window.addEventListener("zupe_categories_updated" as any, handleCatUpdate);
+    return () => {
+      window.removeEventListener("vittal_categories_updated" as any, handleCatUpdate);
+      window.removeEventListener("zupe_categories_updated" as any, handleCatUpdate);
+    };
+  }, []);
+
   // Active slides only
   const activeSlides = useMemo(() => {
     const filtered = heroBanners.filter((b) => b.active !== false);
@@ -287,7 +341,7 @@ export function VittalLifestyleStorefront({
       <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-3 md:pt-2.5 pb-1 sm:pb-1.5 md:pb-2">
         {/* Responsive Grid: 5 columns on Mobile, 6 columns on Desktop spanning from banner's left edge to right edge */}
         <div className="w-full grid grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 justify-center">
-          {CATEGORY_ITEMS.map((cat) => (
+          {categoryItems.map((cat) => (
             <Link
               key={cat.name}
               href={cat.link}

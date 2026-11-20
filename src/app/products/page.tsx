@@ -36,6 +36,7 @@ import {
   STORE_CATEGORIES_DATA,
   StoreCategory,
   StoreSubcategory,
+  getSubcategoryCutoutImage,
 } from "@/data/zupeProducts";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
@@ -627,13 +628,71 @@ function ProductsContent() {
   const { addItem, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
+  // Dynamic store categories synced with Admin & D1
+  const [storeCategories, setStoreCategories] = useState<StoreCategory[]>(STORE_CATEGORIES_DATA);
+
+  // Helper to map dynamic categories from API to products page format
+  const mapApiCategories = (apiCats: any[]): StoreCategory[] => {
+    if (!Array.isArray(apiCats) || apiCats.length === 0) return STORE_CATEGORIES_DATA;
+    const valid = apiCats.filter(
+      (c) => c.active !== false && c.id !== "all" && (c.name || "").toLowerCase() !== "all categories"
+    );
+    if (valid.length === 0) return STORE_CATEGORIES_DATA;
+
+    return valid.map((c) => {
+      const fallback = STORE_CATEGORIES_DATA.find(
+        (sc) =>
+          sc.id.toLowerCase() === c.id.toLowerCase() ||
+          sc.name.toLowerCase() === c.name.toLowerCase() ||
+          sc.query.toLowerCase() === (c.slug || c.name).toLowerCase() ||
+          ((sc.name.toLowerCase() === "gym supplements" || sc.query.toLowerCase() === "gym supplementaries") &&
+            ((c.name || "").toLowerCase() === "gym supplements" || (c.slug || "").toLowerCase() === "gym supplementaries"))
+      );
+
+      const subNames: string[] =
+        Array.isArray(c.subcategories) && c.subcategories.length > 0
+          ? c.subcategories
+          : fallback?.subcategories.map((s) => s.name) || [];
+
+      const mappedSubs: StoreSubcategory[] = subNames.map((subName) => {
+        const existing = fallback?.subcategories.find(
+          (es) =>
+            es.name.toLowerCase() === subName.toLowerCase() ||
+            es.query.toLowerCase() === subName.toLowerCase()
+        );
+        const cutoutImg =
+          c.subcategoryIcons?.[subName] ||
+          existing?.image ||
+          getSubcategoryCutoutImage(subName) ||
+          "/vittal/cat-icon-gym-supplements-trans.png";
+
+        return {
+          id: subName.toLowerCase().replace(/\s+/g, "-"),
+          name: subName,
+          query: existing?.query || subName,
+          image: cutoutImg,
+          matchSubcategories: existing?.matchSubcategories || [subName],
+        };
+      });
+
+      return {
+        id: c.slug || c.name,
+        name: c.name,
+        shortName: fallback?.shortName || c.name,
+        query: c.slug || c.name,
+        image: c.customIcon || fallback?.image || "/vittal/cat-icon-gym-supplements-trans.png",
+        subcategories: mappedSubs,
+      };
+    });
+  };
+
   // Active main category object when drilled down (null when root / All Categories)
   const activeMainCat = useMemo(() => {
     if (!selectedCategory || selectedCategory === "All" || selectedCategory === "All Categories") {
       return null;
     }
     return (
-      STORE_CATEGORIES_DATA.find((c) => {
+      storeCategories.find((c) => {
         const s = selectedCategory.toLowerCase().trim();
         const cq = c.query.toLowerCase().trim();
         const cn = c.name.toLowerCase().trim();
@@ -649,9 +708,22 @@ function ProductsContent() {
         );
       }) || null
     );
-  }, [selectedCategory]);
+  }, [selectedCategory, storeCategories]);
 
-  // Fetch updated catalog on mount
+  // Dynamic explore departments for sidebar & mobile filter
+  const exploreCategoriesList = useMemo(() => {
+    return [
+      { id: "All", name: "All Collections", icon: Layers, query: "All" },
+      ...storeCategories.map((sc) => ({
+        id: sc.id,
+        name: sc.name,
+        icon: Layers,
+        query: sc.query,
+      })),
+    ];
+  }, [storeCategories]);
+
+  // Fetch updated catalog and store categories on mount
   useEffect(() => {
     async function loadCatalog() {
       try {
@@ -664,6 +736,34 @@ function ProductsContent() {
       }
     }
     loadCatalog();
+
+    async function loadDynamicCategories() {
+      try {
+        const res = await fetch("/api/content/categories");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
+          const mapped = mapApiCategories(data.categories);
+          if (mapped.length > 0) {
+            setStoreCategories(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch dynamic categories for products page:", err);
+      }
+    }
+    loadDynamicCategories();
+
+    const handleUpdate = (e: any) => {
+      if (e?.detail?.categories) {
+        setStoreCategories(mapApiCategories(e.detail.categories));
+      }
+    };
+    window.addEventListener("vittal_categories_updated", handleUpdate);
+    window.addEventListener("zupe_categories_updated", handleUpdate);
+    return () => {
+      window.removeEventListener("vittal_categories_updated", handleUpdate);
+      window.removeEventListener("zupe_categories_updated", handleUpdate);
+    };
   }, []);
 
   // Sync state if URL query params change
@@ -994,7 +1094,7 @@ function ProductsContent() {
                 </button>
 
                 {/* 2..N Main Categories */}
-                {STORE_CATEGORIES_DATA.map((cat) => (
+                {storeCategories.map((cat) => (
                   <button
                     key={cat.id}
                     type="button"
@@ -1417,14 +1517,14 @@ function ProductsContent() {
                 Departments
               </label>
               <div className="space-y-1">
-                {EXPLORE_CATEGORIES.map((cat) => {
+                {exploreCategoriesList.map((cat) => {
                   const isCatSelected =
                     (cat.query === "All" && (!selectedCategory || selectedCategory === "All")) ||
                     selectedCategory.toLowerCase() === cat.query.toLowerCase() ||
                     ((selectedCategory.toLowerCase() === "gym supplements" || selectedCategory.toLowerCase() === "gym supplementaries") &&
                      (cat.query.toLowerCase() === "gym supplements" || cat.query.toLowerCase() === "gym supplementaries"));
 
-                  const matchingStoreCat = STORE_CATEGORIES_DATA.find(
+                  const matchingStoreCat = storeCategories.find(
                     (sc) =>
                       sc.query.toLowerCase() === cat.query.toLowerCase() ||
                       sc.name.toLowerCase() === cat.name.toLowerCase() ||
@@ -1785,7 +1885,7 @@ function ProductsContent() {
                   Departments
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  {EXPLORE_CATEGORIES.map((cat) => {
+                  {exploreCategoriesList.map((cat) => {
                     const isSelected =
                       (cat.query === "All" && (!selectedCategory || selectedCategory === "All")) ||
                       selectedCategory.toLowerCase() === cat.query.toLowerCase() ||

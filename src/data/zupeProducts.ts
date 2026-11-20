@@ -1572,40 +1572,112 @@ export const STORE_CATEGORIES_DATA: StoreCategory[] = [
 
 export const CATEGORY_SUBCATEGORIES_CONFIG: SubcategoryGroup[] = [
   {
+    mainCategory: "Gym Supplements",
+    subcategories: ["Whey Protein", "Creatine", "Pre-Workout", "Omega 3 & Vit", "Mass Gainers"],
+  },
+  {
     mainCategory: "Gym Supplementaries",
-    subcategories: ["Whey Protein", "Creatine Monohydrate", "Pre-Workout", "BCAA & EAAs", "Mass Gainers", "Multivitamins"],
+    subcategories: ["Whey Protein", "Creatine", "Pre-Workout", "Omega 3 & Vit", "Mass Gainers"],
   },
   {
     mainCategory: "Outfits",
-    subcategories: ["Gym Matching Sets", "Athleisure Sets", "Performance T-Shirts", "Gym Shorts", "Hoodies & Jackets", "Joggers & Track Pants", "Compression Tops"],
+    subcategories: ["Gym Sets", "Athletic Tees", "Jackets", "Gym Shorts", "Joggers", "Compression"],
   },
   {
     mainCategory: "Apparels",
-    subcategories: ["Performance T-Shirts", "Footwear & Sneakers", "Fragrance & Perfume", "Cosmetics & Beauty", "Gym Shorts", "Joggers & Track Pants", "Hoodies & Jackets"],
+    subcategories: ["Footwear", "Perfumes", "Cosmetics", "Active Tees", "Sneakers"],
   },
   {
     mainCategory: "Dates & Nuts",
-    subcategories: ["Medjool Dates", "Ajwa Dates", "California Almonds", "Cashews & Pistachios", "Trail Mixes"],
+    subcategories: ["Medjool Dates", "Cashews", "Almonds", "Pistachios", "Chia & Seeds"],
   },
   {
     mainCategory: "Candy & Chocolates",
-    subcategories: ["Dark Chocolates", "Artisanal Truffles", "Gourmet Candies", "Gift Hampers"],
+    subcategories: ["Truffles", "Dark Choco", "Silk Bars", "Coconut Bars"],
   },
 ];
 
 export const CATEGORY_SUBCATEGORIES_MAP: Record<string, string[]> = {
-  "Gym Supplementaries": ["Whey Protein", "Creatine Monohydrate", "Pre-Workout", "BCAA & EAAs", "Mass Gainers", "Multivitamins"],
-  "Outfits": ["Gym Matching Sets", "Athleisure Sets", "Performance T-Shirts", "Gym Shorts", "Hoodies & Jackets", "Joggers & Track Pants", "Compression Tops"],
-  "Apparels": ["Performance T-Shirts", "Footwear & Sneakers", "Fragrance & Perfume", "Cosmetics & Beauty", "Gym Shorts", "Joggers & Track Pants", "Hoodies & Jackets"],
-  "Dates & Nuts": ["Medjool Dates", "Ajwa Dates", "California Almonds", "Cashews & Pistachios", "Trail Mixes"],
-  "Candy & Chocolates": ["Dark Chocolates", "Artisanal Truffles", "Gourmet Candies", "Gift Hampers"],
+  "Gym Supplements": ["Whey Protein", "Creatine", "Pre-Workout", "Omega 3 & Vit", "Mass Gainers"],
+  "Gym Supplementaries": ["Whey Protein", "Creatine", "Pre-Workout", "Omega 3 & Vit", "Mass Gainers"],
+  "Outfits": ["Gym Sets", "Athletic Tees", "Jackets", "Gym Shorts", "Joggers", "Compression"],
+  "Apparels": ["Footwear", "Perfumes", "Cosmetics", "Active Tees", "Sneakers"],
+  "Dates & Nuts": ["Medjool Dates", "Cashews", "Almonds", "Pistachios", "Chia & Seeds"],
+  "Candy & Chocolates": ["Truffles", "Dark Choco", "Silk Bars", "Coconut Bars"],
 };
 
-export function getSubcategoriesForCategory(categoryName: string, dynamicCategories?: any[]): string[] {
-  if (CATEGORY_SUBCATEGORIES_MAP[categoryName]) {
-    return CATEGORY_SUBCATEGORIES_MAP[categoryName];
+export const BRAND_SUBCATEGORY_CUTOUTS: Record<string, string> = {
+  "Whey Protein": "/vittal/catalog/on-gold-standard-whey.png",
+  "Creatine": "/vittal/catalog/on-creatine-container.png",
+  "Creatine Monohydrate": "/vittal/catalog/on-creatine-container.png",
+  "Pre-Workout": "/products/muscletech-nitrotech-fruit-punch.png",
+  "Omega 3 & Vit": "/vittal/catalog/sports-research-omega3.png",
+  "Multivitamins": "/vittal/catalog/sports-research-omega3.png",
+  "Mass Gainers": "/vittal/catalog/nitro-tech-protein-bucket.png",
+  "Gym Sets": "/vittal/catalog/charcoal-seamless-activewear.png",
+  "Gym Matching Sets": "/vittal/catalog/charcoal-seamless-activewear.png",
+  "Athleisure Sets": "/vittal/catalog/charcoal-seamless-activewear.png",
+  "Athletic Tees": "/vittal/catalog/red-vl-athletic-tee.png",
+  "Performance T-Shirts": "/vittal/catalog/red-vl-athletic-tee.png",
+  "Jackets": "/vittal/catalog/nike-pro-charcoal-jacket.png",
+  "Hoodies & Jackets": "/vittal/catalog/nike-pro-charcoal-jacket.png",
+  "Gym Shorts": "/vittal/catalog/white-adidas-athletic-shorts.png",
+  "Joggers": "/vittal/catalog/modern-gray-jogger-pants.png",
+  "Joggers & Track Pants": "/vittal/catalog/modern-gray-jogger-pants.png",
+  "Compression": "/vittal/catalog/white-adidas-long-sleeve-top.png",
+  "Compression Tops": "/vittal/catalog/white-adidas-long-sleeve-top.png",
+  "Footwear": "/vittal/catalog/nike-air-zoom-sneaker.png",
+  "Footwear & Sneakers": "/vittal/catalog/nike-air-zoom-sneaker.png",
+  "Sneakers": "/vittal/catalog/white-adidas-cloudfoam-sneaker.png",
+  "Perfumes": "/vittal/catalog/elie-saab-le-parfum.png",
+  "Fragrance & Perfume": "/vittal/catalog/elie-saab-le-parfum.png",
+  "Cosmetics": "/vittal/catalog/luxury-makeup-collection.png",
+  "Cosmetics & Beauty": "/vittal/catalog/luxury-makeup-collection.png",
+  "Active Tees": "/vittal/catalog/red-vl-athletic-tee.png",
+  "Medjool Dates": "/vittal/catalog/golden-jar-glossy-dates.png",
+  "Ajwa Dates": "/vittal/catalog/golden-jar-glossy-dates.png",
+  "Cashews": "/vittal/catalog/glass-jar-cashews.png",
+  "Cashews & Pistachios": "/vittal/catalog/glass-jar-cashews.png",
+  "Almonds": "/vittal/catalog/clear-almond-snack-pouch.png",
+  "California Almonds": "/vittal/catalog/clear-almond-snack-pouch.png",
+  "Pistachios": "/vittal/catalog/glossy-pistachio-snack-bag.png",
+  "Chia & Seeds": "/vittal/catalog/glass-chia-seeds-jar.png",
+  "Trail Mixes": "/vittal/catalog/glass-chia-seeds-jar.png",
+  "Truffles": "/vittal/catalog/golden-ferrero-rocher-box.png",
+  "Artisanal Truffles": "/vittal/catalog/golden-ferrero-rocher-box.png",
+  "Dark Choco": "/vittal/catalog/lindt-lindor-truffles.png",
+  "Dark Chocolates": "/vittal/catalog/lindt-lindor-truffles.png",
+  "Silk Bars": "/vittal/catalog/cadbury-dairy-milk-pack.png",
+  "Gourmet Candies": "/vittal/catalog/cadbury-dairy-milk-pack.png",
+  "Coconut Bars": "/vittal/catalog/bounty-coconut-chocolate.png",
+};
+
+export function getSubcategoryCutoutImage(subName: string): string | undefined {
+  if (!subName) return undefined;
+  if (BRAND_SUBCATEGORY_CUTOUTS[subName]) return BRAND_SUBCATEGORY_CUTOUTS[subName];
+  const lower = subName.toLowerCase().trim();
+  for (const [key, val] of Object.entries(BRAND_SUBCATEGORY_CUTOUTS)) {
+    if (key.toLowerCase() === lower || lower.includes(key.toLowerCase()) || key.toLowerCase().includes(lower)) {
+      return val;
+    }
   }
-  return ["All Tech", "Best Sellers", "Top Deals", "Seasonal Offers"];
+  return undefined;
+}
+
+export function getSubcategoriesForCategory(categoryName: string, dynamicCategories?: any[]): string[] {
+  if (!categoryName) return [];
+  const trimmed = categoryName.trim();
+  if (trimmed === "All Categories" || trimmed === "all" || trimmed === "All Collections") {
+    return [];
+  }
+  if (CATEGORY_SUBCATEGORIES_MAP[trimmed]) {
+    return CATEGORY_SUBCATEGORIES_MAP[trimmed];
+  }
+  const lower = trimmed.toLowerCase();
+  for (const [key, val] of Object.entries(CATEGORY_SUBCATEGORIES_MAP)) {
+    if (key.toLowerCase() === lower) return val;
+  }
+  return [];
 }
 
 export function doesCategoryMatch(productCategory: string, selectedCategory: string, dynamicCategories?: any[], product?: Partial<Product>): boolean {

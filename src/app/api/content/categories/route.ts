@@ -84,6 +84,23 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const resolvedSubcategoryIcons: Record<string, string> = {};
+    if (subcategoryIcons && typeof subcategoryIcons === "object") {
+      for (const [subKey, subVal] of Object.entries(subcategoryIcons)) {
+        if (typeof subVal === "string") {
+          if (subVal.startsWith("data:")) {
+            try {
+              resolvedSubcategoryIcons[subKey] = await uploadBase64Media(subVal, "images");
+            } catch (err) {
+              console.warn("Failed to upload subcategory icon to R2:", err);
+            }
+          } else {
+            resolvedSubcategoryIcons[subKey] = subVal;
+          }
+        }
+      }
+    }
+
     const newCategory: StoreCategory = {
       id: "cat-" + Date.now().toString(36) + "-" + Math.random().toString(36).substring(2, 6),
       name: trimmedName,
@@ -100,7 +117,7 @@ export async function POST(req: NextRequest) {
       order: current.length + 1,
       active: active !== false,
       subcategories: cleanSubcategories,
-      subcategoryIcons: subcategoryIcons && typeof subcategoryIcons === "object" ? subcategoryIcons : {},
+      subcategoryIcons: resolvedSubcategoryIcons,
     };
 
     const updated = await saveCategories([...current, newCategory]);
@@ -177,8 +194,16 @@ export async function PUT(req: NextRequest) {
     if (updates.subcategoryIcons && typeof updates.subcategoryIcons === "object") {
       const cleanIcons: Record<string, string> = {};
       for (const [subKey, subVal] of Object.entries(updates.subcategoryIcons)) {
-        if (typeof subVal === "string" && !subVal.startsWith("data:")) {
-          cleanIcons[subKey] = subVal;
+        if (typeof subVal === "string") {
+          if (subVal.startsWith("data:")) {
+            try {
+              cleanIcons[subKey] = await uploadBase64Media(subVal, "images");
+            } catch (err) {
+              console.warn("Failed to upload subcategory icon to R2:", err);
+            }
+          } else {
+            cleanIcons[subKey] = subVal;
+          }
         }
       }
       updates.subcategoryIcons = cleanIcons;

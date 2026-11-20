@@ -36,6 +36,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { StoreCategory, CategoryIconShape } from "@/lib/storeContent";
+import { getSubcategoryCutoutImage } from "@/data/zupeProducts";
 
 export interface CategoryItem {
   id: string;
@@ -142,17 +143,23 @@ export function renderIconOrCustom({
   iconSize?: number;
   fallbackName?: string;
 }): React.ReactNode {
-  if (customIcon && typeof customIcon === "string" && customIcon.trim()) {
+  // If a direct image URL or path is provided (in customIcon or iconName)
+  const directImage =
+    (customIcon && typeof customIcon === "string" && customIcon.trim()) ||
+    (iconName && typeof iconName === "string" && (iconName.startsWith("/") || iconName.startsWith("http") || iconName.startsWith("data:")) ? iconName.trim() : null) ||
+    (fallbackName ? getSubcategoryCutoutImage(fallbackName) : null);
+
+  if (directImage) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={customIcon}
+        src={directImage}
         alt=""
         style={{
           width: `${iconSize}%`,
           height: `${iconSize}%`,
         }}
-        className="object-contain transition-transform duration-300"
+        className="w-full h-full object-contain pointer-events-none select-none transition-transform duration-300"
       />
     );
   }
