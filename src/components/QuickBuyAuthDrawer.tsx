@@ -426,6 +426,7 @@ export function QuickBuyAuthDrawer({
   const grandTotal = isCod ? cartTotal + codFee : cartTotal;
   const payableNow = isCod ? codFee : cartTotal;
   const doorstepBalance = isCod ? cartTotal : 0;
+  const codTotal = cartTotal + codFee;
   const totalSavings = mrpSavings + couponDiscount + (!isCod ? codFee : 0);
   const displayImage = orderItems[0]?.poster_image || "/placeholder.png";
 
@@ -1345,7 +1346,7 @@ export function QuickBuyAuthDrawer({
                         {/* Right: Total Price */}
                         <div className="text-right shrink-0">
                           <span className="text-lg sm:text-xl font-black text-gray-950 block leading-tight">
-                            ₹{grandTotal.toLocaleString()}
+                            ₹{codTotal.toLocaleString()}
                           </span>
                         </div>
                       </div>
@@ -1403,7 +1404,7 @@ export function QuickBuyAuthDrawer({
                                   Total
                                 </span>
                                 <strong className="block text-sm sm:text-base font-extrabold text-white my-0.5">
-                                  ₹{grandTotal.toLocaleString()}
+                                  ₹{codTotal.toLocaleString()}
                                 </strong>
                                 <span className="block text-[9px] sm:text-[10px] text-gray-400 font-medium leading-tight">
                                   You pay<br className="hidden sm:inline" /> in all
@@ -1461,7 +1462,7 @@ export function QuickBuyAuthDrawer({
 
                           {/* Description */}
                           <p className="text-xs sm:text-[13px] text-emerald-50/95 leading-relaxed">
-                            Pay <strong className="text-white font-bold">₹{cartTotal.toLocaleString()}</strong> online instead of <span className="line-through text-emerald-200/80">₹{grandTotal.toLocaleString()}</span>. Faster dispatch, no cash needed at the door.
+                            Pay <strong className="text-white font-bold">₹{cartTotal.toLocaleString()}</strong> online instead of <span className="line-through text-emerald-200/80">₹{codTotal.toLocaleString()}</span>. Faster dispatch, no cash needed at the door.
                           </p>
 
                           {/* Switch Button */}

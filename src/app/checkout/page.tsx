@@ -2625,7 +2625,7 @@ function CheckoutContent() {
                       Pay Online
                     </h4>
                     <span className="text-sm font-black text-gray-950">
-                      ₹{grandTotal.toLocaleString()}
+                      ₹{payablePrepaid.toLocaleString()}
                     </span>
                   </div>
                   <p className="text-[11px] text-gray-500 mt-0.5">
@@ -2681,7 +2681,7 @@ function CheckoutContent() {
                       Cash on Delivery
                     </h4>
                     <span className="text-sm font-black text-gray-950">
-                      ₹{(grandTotal + codFee).toLocaleString()}
+                      ₹{codTotalCost.toLocaleString()}
                     </span>
                   </div>
                   <p className="text-[11px] text-gray-500 mt-0.5">
@@ -2692,7 +2692,7 @@ function CheckoutContent() {
                   <div className="grid grid-cols-3 gap-1.5 mt-2.5 text-center text-xs">
                     <div className="p-2 rounded-lg bg-gray-100/80 border border-gray-200">
                       <span className="block text-[10px] text-gray-500 font-semibold">Pay at delivery</span>
-                      <strong className="block text-xs font-black text-gray-900">₹{doorstepBalance.toLocaleString()}</strong>
+                      <strong className="block text-xs font-black text-gray-900">₹{codDoorstepBalance.toLocaleString()}</strong>
                     </div>
                     <div className="p-2 rounded-lg bg-amber-50 border border-amber-200">
                       <span className="block text-[10px] text-amber-800 font-semibold">Pay now online</span>
@@ -2700,7 +2700,7 @@ function CheckoutContent() {
                     </div>
                     <div className="p-2 rounded-lg bg-gray-900 text-white border border-gray-900">
                       <span className="block text-[10px] text-gray-300 font-semibold">Total</span>
-                      <strong className="block text-xs font-black">₹{(doorstepBalance + codFee).toLocaleString()}</strong>
+                      <strong className="block text-xs font-black">₹{codTotalCost.toLocaleString()}</strong>
                     </div>
                   </div>
                 </div>
@@ -2739,7 +2739,7 @@ function CheckoutContent() {
                   </h4>
 
                   <p className="text-xs text-emerald-50/95 leading-relaxed">
-                    Pay <strong className="text-white font-bold">₹{grandTotal.toLocaleString()}</strong> online instead of <span className="line-through text-emerald-200/80">₹{(grandTotal + codFee).toLocaleString()}</span>. Faster dispatch, no cash needed at delivery.
+                    Pay <strong className="text-white font-bold">₹{payablePrepaid.toLocaleString()}</strong> online instead of <span className="line-through text-emerald-200/80">₹{codTotalCost.toLocaleString()}</span>. Faster dispatch, no cash needed at delivery.
                   </p>
 
                   <button
@@ -2764,7 +2764,7 @@ function CheckoutContent() {
             >
               <span>Price Details ({totalItemCount} item{totalItemCount > 1 ? "s" : ""})</span>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-gray-950">₹{payableNow.toLocaleString()}</span>
+                <span className="font-extrabold text-gray-950">₹{grandTotal.toLocaleString()}</span>
                 {isPriceDetailsOpen ? (
                   <ChevronUp className="w-4 h-4 text-gray-500" />
                 ) : (
@@ -2803,8 +2803,14 @@ function CheckoutContent() {
                 )}
                 <div className="pt-2 border-t border-gray-200 flex justify-between font-extrabold text-sm text-gray-950">
                   <span>Total Amount</span>
-                  <span>₹{payableNow.toLocaleString()}</span>
+                  <span>₹{grandTotal.toLocaleString()}</span>
                 </div>
+                {paymentMethod === "cod" && (
+                  <div className="flex justify-between text-xs text-amber-900 font-semibold pt-1">
+                    <span>Payable Now (Advance COD Fee)</span>
+                    <span className="font-extrabold text-amber-950">₹{codFee}</span>
+                  </div>
+                )}
                 {totalSavings > 0 && (
                   <div className="p-2 rounded-lg bg-emerald-50 text-emerald-800 font-bold text-center text-[11.5px] mt-2">
                     You save ₹{totalSavings.toLocaleString()} on this order
