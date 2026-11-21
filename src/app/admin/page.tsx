@@ -98,13 +98,70 @@ interface ChartPoint {
 
 export default function AdminDashboardPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [timeframe, setTimeframe] = useState<"today" | "weekly" | "monthly" | "yearly" | "custom">("monthly");
+  const [timeframe, setTimeframe] = useState<
+    "today" | "yesterday" | "weekly" | "monthly" | "last_month" | "yearly" | "all" | "custom"
+  >("today");
   const [customStartDate, setCustomStartDate] = useState(
     new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
   );
   const [customEndDate, setCustomEndDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+
+  const getHeaderRangeLabel = (tf: string): string => {
+    switch (tf) {
+      case "today":
+        return "Today";
+      case "yesterday":
+        return "Yesterday";
+      case "weekly":
+        return "Last 7 Days";
+      case "monthly":
+        return "This Month";
+      case "last_month":
+        return "Last Month";
+      case "yearly":
+        return "This Year";
+      case "all":
+        return "All Time";
+      case "custom":
+        return "Custom Range";
+      default:
+        return "Today";
+    }
+  };
+
+  const handleHeaderRangeChange = (label: string) => {
+    switch (label) {
+      case "Today":
+        setTimeframe("today");
+        break;
+      case "Yesterday":
+        setTimeframe("yesterday");
+        break;
+      case "Last 7 Days":
+      case "This Week":
+        setTimeframe("weekly");
+        break;
+      case "This Month":
+        setTimeframe("monthly");
+        break;
+      case "Last Month":
+        setTimeframe("last_month");
+        break;
+      case "This Year":
+        setTimeframe("yearly");
+        break;
+      case "All Time":
+        setTimeframe("all");
+        break;
+      case "Custom Range":
+        setTimeframe("custom");
+        break;
+      default:
+        setTimeframe("today");
+    }
+  };
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
@@ -231,16 +288,11 @@ export default function AdminDashboardPage() {
   // Derive points for chart
   const chartPoints: ChartPoint[] = (kpis.chartData && kpis.chartData.length > 0)
     ? kpis.chartData
-    : [
-        { label: "Oct 01 - 05", sales: 8200, netProfit: 1420, orders: 7, margin: 17.3 },
-        { label: "Oct 06 - 10", sales: 11450, netProfit: 2180, orders: 10, margin: 19.0 },
-        { label: "Oct 11 - 15", sales: 9860, netProfit: 1790, orders: 8, margin: 18.2 },
-        { label: "Oct 16 - 20", sales: 4002, netProfit: 890, orders: 4, margin: 22.2 },
-      ];
+    : [];
 
   const maxSalesVal = Math.max(...chartPoints.map((p) => p.sales), 1000);
-  const peakPoint = [...chartPoints].sort((a, b) => b.sales - a.sales)[0] || chartPoints[0];
-  const bestMarginPoint = [...chartPoints].sort((a, b) => b.margin - a.margin)[0] || chartPoints[0];
+  const peakPoint = [...chartPoints].sort((a, b) => b.sales - a.sales)[0] || null;
+  const bestMarginPoint = [...chartPoints].sort((a, b) => b.margin - a.margin)[0] || null;
 
   return (
     <div className="min-h-screen bg-[#F4F6FA] text-slate-800 font-sans">
@@ -254,6 +306,8 @@ export default function AdminDashboardPage() {
           onOpenMobile={() => setMobileSidebarOpen(true)}
           onRefresh={loadDashboardData}
           isRefreshing={isRefreshing}
+          selectedRange={getHeaderRangeLabel(timeframe)}
+          onRangeChange={handleHeaderRangeChange}
         />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
@@ -315,9 +369,12 @@ export default function AdminDashboardPage() {
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               {[
                 { id: "today", label: "Today" },
+                { id: "yesterday", label: "Yesterday" },
                 { id: "weekly", label: "This Week" },
                 { id: "monthly", label: "This Month" },
+                { id: "last_month", label: "Last Month" },
                 { id: "yearly", label: "This Year" },
+                { id: "all", label: "All Time" },
                 { id: "custom", label: "Custom Range" },
               ].map((p) => (
                 <button
@@ -769,7 +826,9 @@ export default function AdminDashboardPage() {
                   <div className="min-w-0 flex-1 truncate">
                     <span className="text-slate-500 block text-[10px]">Peak Interval:</span>
                     <span className="font-bold text-slate-900 block truncate text-[10px] sm:text-[11px]">
-                      {peakPoint.label} (₹{peakPoint.sales.toLocaleString("en-IN")})
+                      {peakPoint && peakPoint.sales > 0
+                        ? `${peakPoint.label} (₹${peakPoint.sales.toLocaleString("en-IN")})`
+                        : "No sales recorded"}
                     </span>
                   </div>
                 </div>
@@ -779,7 +838,9 @@ export default function AdminDashboardPage() {
                   <div className="min-w-0 flex-1 truncate">
                     <span className="text-slate-500 block text-[10px]">Best Margin:</span>
                     <span className="font-bold text-emerald-800 block truncate text-[10px] sm:text-[11px]">
-                      {bestMarginPoint.label} ({bestMarginPoint.margin}%)
+                      {bestMarginPoint && bestMarginPoint.orders > 0 && bestMarginPoint.margin > 0
+                        ? `${bestMarginPoint.label} (${bestMarginPoint.margin}%)`
+                        : "—"}
                     </span>
                   </div>
                 </div>

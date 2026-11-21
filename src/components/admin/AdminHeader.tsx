@@ -26,6 +26,8 @@ interface AdminHeaderProps {
   onOpenMobile?: () => void;
   onRefresh?: () => void;
   isRefreshing?: boolean;
+  selectedRange?: string;
+  onRangeChange?: (range: string) => void;
 }
 
 interface AdminAlert {
@@ -42,11 +44,14 @@ export default function AdminHeader({
   onOpenMobile,
   onRefresh,
   isRefreshing = false,
+  selectedRange: externalRange,
+  onRangeChange,
 }: AdminHeaderProps) {
   const router = useRouter();
   const { theme, toggleTheme } = useAdminTheme();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRange, setSelectedRange] = useState("This Month");
+  const [internalRange, setInternalRange] = useState("This Month");
+  const selectedRange = externalRange || internalRange;
   const [showRangeDropdown, setShowRangeDropdown] = useState(false);
   const [showAdminUserDropdown, setShowAdminUserDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -115,6 +120,7 @@ export default function AdminHeader({
     "Last 7 Days",
     "This Month",
     "Last Month",
+    "This Year",
     "All Time",
   ];
 
@@ -216,7 +222,11 @@ export default function AdminHeader({
                 <button
                   key={opt}
                   onClick={() => {
-                    setSelectedRange(opt);
+                    if (onRangeChange) {
+                      onRangeChange(opt);
+                    } else {
+                      setInternalRange(opt);
+                    }
                     setShowRangeDropdown(false);
                   }}
                   className={`w-full text-left px-4 py-2 hover:bg-slate-50 font-medium ${

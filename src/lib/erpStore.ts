@@ -1287,6 +1287,83 @@ export async function updateERPOrder(
 // ==========================================
 // 6. EXECUTIVE DASHBOARD KPI ENGINE
 // ==========================================
+
+function getRecordISTInfo(dateVal?: string): { dateStr: string; hour: number; timestamp: number } | null {
+  if (!dateVal) return null;
+  const s = String(dateVal).trim();
+  if (!s) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    return {
+      dateStr: s,
+      hour: 12,
+      timestamp: new Date(`${s}T12:00:00+05:30`).getTime(),
+    };
+  }
+
+  let d: Date;
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(s)) {
+    d = new Date(s.replace(" ", "T") + "Z");
+  } else {
+    d = new Date(s);
+  }
+
+  if (isNaN(d.getTime())) return null;
+
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(d);
+  const map: Record<string, string> = {};
+  for (const p of parts) map[p.type] = p.value;
+
+  const dateStr = `${map.year}-${map.month}-${map.day}`;
+  const hour = parseInt(map.hour || "0", 10);
+  return { dateStr, hour, timestamp: d.getTime() };
+}
+
+function getISTDateOffset(offsetDays: number): string {
+  const d = new Date(Date.now() + offsetDays * 24 * 60 * 60 * 1000);
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const parts = formatter.formatToParts(d);
+  const map: Record<string, string> = {};
+  for (const p of parts) map[p.type] = p.value;
+  return `${map.year}-${map.month}-${map.day}`;
+}
+
+function getNowISTParts() {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(new Date());
+  const map: Record<string, string> = {};
+  for (const p of parts) map[p.type] = p.value;
+
+  return {
+    year: parseInt(map.year, 10),
+    month: parseInt(map.month, 10),
+    day: parseInt(map.day, 10),
+    todayStr: `${map.year}-${map.month}-${map.day}`,
+  };
+}
+
 export async function getDashboardKPIs(
   timeframe?: string,
   customRange?: { startDate?: string; endDate?: string }
@@ -1295,64 +1372,55 @@ export async function getDashboardKPIs(
   let expenses = await getExpenses();
   const suppliers = await getSuppliers();
 
-  if (timeframe === "custom" && (customRange?.startDate || customRange?.endDate)) {
-    const startMs = customRange.startDate
-      ? new Date(customRange.startDate + "T00:00:00").getTime()
-      : 0;
-    const endMs = customRange.endDate
-      ? new Date(customRange.endDate + "T23:59:59").getTime()
-      : Infinity;
+  const now = getNowISTParts();
+  const tf = (timeframe || "monthly").toLowerCase();
 
-    const isInCustomRange = (dateStr?: string) => {
-      if (!dateStr) return false;
-      const t = new Date(dateStr.replace(" ", "T")).getTime();
-      return !isNaN(t) && t >= startMs && t <= endMs;
+  let startDate = "";
+  let endDate = "";
+
+  if (tf === "today") {
+    startDate = now.todayStr;
+    endDate = now.todayStr;
+  } else if (tf === "yesterday") {
+    const yestStr = getISTDateOffset(-1);
+    startDate = yestStr;
+    endDate = yestStr;
+  } else if (tf === "weekly" || tf === "last7days" || tf === "week") {
+    startDate = getISTDateOffset(-6);
+    endDate = now.todayStr;
+  } else if (tf === "monthly" || tf === "thismonth") {
+    startDate = `${now.year}-${String(now.month).padStart(2, "0")}-01`;
+    const lastDayNum = new Date(now.year, now.month, 0).getDate();
+    endDate = `${now.year}-${String(now.month).padStart(2, "0")}-${String(lastDayNum).padStart(2, "0")}`;
+  } else if (tf === "last_month" || tf === "lastmonth") {
+    const prevYear = now.month === 1 ? now.year - 1 : now.year;
+    const prevMonth = now.month === 1 ? 12 : now.month - 1;
+    const lastDayPrev = new Date(prevYear, prevMonth, 0).getDate();
+    startDate = `${prevYear}-${String(prevMonth).padStart(2, "0")}-01`;
+    endDate = `${prevYear}-${String(prevMonth).padStart(2, "0")}-${String(lastDayPrev).padStart(2, "0")}`;
+  } else if (tf === "yearly" || tf === "thisyear") {
+    startDate = `${now.year}-01-01`;
+    endDate = `${now.year}-12-31`;
+  } else if (tf === "custom") {
+    startDate = customRange?.startDate || "";
+    endDate = customRange?.endDate || "";
+  } else if (tf === "all") {
+    startDate = "";
+    endDate = "";
+  }
+
+  // Filter orders and expenses strictly by date window when specified
+  if (startDate || endDate) {
+    const isRecordInRange = (dateVal?: string) => {
+      const info = getRecordISTInfo(dateVal);
+      if (!info) return false;
+      if (startDate && info.dateStr < startDate) return false;
+      if (endDate && info.dateStr > endDate) return false;
+      return true;
     };
 
-    orders = orders.filter((o) => isInCustomRange(o.created_at));
-    expenses = expenses.filter((e) => isInCustomRange(e.date));
-  } else if (timeframe && timeframe !== "all") {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = now.getMonth();
-    const d = now.getDate();
-
-    let startMs = 0;
-    let endMs = Infinity;
-
-    if (timeframe === "today") {
-      startMs = new Date(y, m, d, 0, 0, 0, 0).getTime();
-      endMs = new Date(y, m, d, 23, 59, 59, 999).getTime();
-    } else if (timeframe === "weekly") {
-      const weekStart = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
-      startMs = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate(), 0, 0, 0, 0).getTime();
-      endMs = new Date(y, m, d, 23, 59, 59, 999).getTime();
-    } else if (timeframe === "monthly") {
-      startMs = new Date(y, m, 1, 0, 0, 0, 0).getTime();
-      const lastDay = new Date(y, m + 1, 0).getDate();
-      endMs = new Date(y, m, lastDay, 23, 59, 59, 999).getTime();
-    } else if (timeframe === "yearly") {
-      startMs = new Date(y, 0, 1, 0, 0, 0, 0).getTime();
-      endMs = new Date(y, 11, 31, 23, 59, 59, 999).getTime();
-    }
-
-    if (startMs > 0) {
-      const isInRange = (dateStr?: string) => {
-        if (!dateStr) return true;
-        const t = new Date(dateStr.replace(" ", "T")).getTime();
-        return isNaN(t) || (t >= startMs && t <= endMs);
-      };
-
-      const filteredOrders = orders.filter((o) => isInRange(o.created_at));
-      if (filteredOrders.length > 0) {
-        orders = filteredOrders;
-      }
-
-      const filteredExpenses = expenses.filter((e) => isInRange(e.date));
-      if (filteredExpenses.length > 0) {
-        expenses = filteredExpenses;
-      }
-    }
+    orders = orders.filter((o) => isRecordInRange(o.created_at || (o as any).date));
+    expenses = expenses.filter((e) => isRecordInRange(e.date || e.created_at));
   }
 
   const totalOrders = orders.length;
@@ -1413,7 +1481,7 @@ export async function getDashboardKPIs(
     margin: number;
   }[] = [];
 
-  if (timeframe === "today") {
+  if (tf === "today" || tf === "yesterday") {
     const slots = [
       { label: "00:00 - 04:00", start: 0, end: 4 },
       { label: "04:00 - 08:00", start: 4, end: 8 },
@@ -1424,9 +1492,9 @@ export async function getDashboardKPIs(
     ];
     for (const slot of slots) {
       const slotOrders = orders.filter((o) => {
-        if (!o.created_at) return false;
-        const hour = new Date(o.created_at.replace(" ", "T")).getHours();
-        return hour >= slot.start && hour < slot.end;
+        const info = getRecordISTInfo(o.created_at || (o as any).date);
+        if (!info) return false;
+        return info.hour >= slot.start && info.hour < slot.end;
       });
       const slotSales = slotOrders.reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
       const slotProfit = slotOrders.reduce((s, o) => s + (Number(o.net_profit) || 0), 0);
@@ -1438,14 +1506,16 @@ export async function getDashboardKPIs(
         margin: slotSales > 0 ? Number(((slotProfit / slotSales) * 100).toFixed(1)) : 0,
       });
     }
-  } else if (timeframe === "weekly") {
-    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const now = new Date();
+  } else if (tf === "weekly" || tf === "last7days" || tf === "week") {
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     for (let i = 6; i >= 0; i--) {
-      const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      const dateStr = d.toISOString().split("T")[0];
-      const dayLabel = dayNames[(d.getDay() + 6) % 7];
-      const dayOrders = orders.filter((o) => (o.created_at || "").startsWith(dateStr));
+      const dateStr = getISTDateOffset(-i);
+      const d = new Date(`${dateStr}T12:00:00+05:30`);
+      const dayLabel = dayNames[d.getDay()];
+      const dayOrders = orders.filter((o) => {
+        const info = getRecordISTInfo(o.created_at || (o as any).date);
+        return info?.dateStr === dateStr;
+      });
       const daySales = dayOrders.reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
       const dayProfit = dayOrders.reduce((s, o) => s + (Number(o.net_profit) || 0), 0);
       chartPoints.push({
@@ -1456,12 +1526,14 @@ export async function getDashboardKPIs(
         margin: daySales > 0 ? Number(((dayProfit / daySales) * 100).toFixed(1)) : 0,
       });
     }
-  } else if (timeframe === "yearly") {
+  } else if (tf === "yearly" || tf === "thisyear") {
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const currentYear = new Date().getFullYear();
     for (let m = 0; m < 12; m++) {
-      const prefix = `${currentYear}-${String(m + 1).padStart(2, "0")}`;
-      const mOrders = orders.filter((o) => (o.created_at || "").startsWith(prefix));
+      const prefix = `${now.year}-${String(m + 1).padStart(2, "0")}`;
+      const mOrders = orders.filter((o) => {
+        const info = getRecordISTInfo(o.created_at || (o as any).date);
+        return info?.dateStr.startsWith(prefix);
+      });
       const mSales = mOrders.reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
       const mProfit = mOrders.reduce((s, o) => s + (Number(o.net_profit) || 0), 0);
       chartPoints.push({
@@ -1473,19 +1545,33 @@ export async function getDashboardKPIs(
       });
     }
   } else {
-    // "monthly" or "custom"
+    // "monthly", "last_month", "all", or "custom"
+    const monthShortNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let targetYear = now.year;
+    let targetMonth = now.month;
+    if (tf === "last_month" || tf === "lastmonth") {
+      targetYear = now.month === 1 ? now.year - 1 : now.year;
+      targetMonth = now.month === 1 ? 12 : now.month - 1;
+    }
+    const mName = monthShortNames[targetMonth - 1];
+    const lastDay = new Date(targetYear, targetMonth, 0).getDate();
+    const targetMonthStr = String(targetMonth).padStart(2, "0");
+
     const intervals = [
-      { label: "Oct 01 - 05", filter: (d: string) => d >= "2026-10-01" && d <= "2026-10-05" },
-      { label: "Oct 06 - 10", filter: (d: string) => d >= "2026-10-06" && d <= "2026-10-10" },
-      { label: "Oct 11 - 15", filter: (d: string) => d >= "2026-10-11" && d <= "2026-10-15" },
-      { label: "Oct 16 - 20", filter: (d: string) => d >= "2026-10-16" && d <= "2026-10-20" },
-      { label: "Oct 21 - 25", filter: (d: string) => d >= "2026-10-21" && d <= "2026-10-25" },
-      { label: "Oct 26 - 31", filter: (d: string) => d >= "2026-10-26" && d <= "2026-10-31" },
+      { label: `${mName} 01 - 05`, start: "01", end: "05" },
+      { label: `${mName} 06 - 10`, start: "06", end: "10" },
+      { label: `${mName} 11 - 15`, start: "11", end: "15" },
+      { label: `${mName} 16 - 20`, start: "16", end: "20" },
+      { label: `${mName} 21 - 25`, start: "21", end: "25" },
+      { label: `${mName} 26 - ${lastDay}`, start: "26", end: String(lastDay).padStart(2, "0") },
     ];
+
     for (const intv of intervals) {
+      const startFull = `${targetYear}-${targetMonthStr}-${intv.start}`;
+      const endFull = `${targetYear}-${targetMonthStr}-${intv.end}`;
       const intvOrders = orders.filter((o) => {
-        const dStr = (o.created_at || "").split(" ")[0] || "";
-        return intv.filter(dStr);
+        const info = getRecordISTInfo(o.created_at || (o as any).date);
+        return info && info.dateStr >= startFull && info.dateStr <= endFull;
       });
       const intvSales = intvOrders.reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
       const intvProfit = intvOrders.reduce((s, o) => s + (Number(o.net_profit) || 0), 0);
@@ -1497,25 +1583,6 @@ export async function getDashboardKPIs(
         margin: intvSales > 0 ? Number(((intvProfit / intvSales) * 100).toFixed(1)) : 0,
       });
     }
-  }
-
-  // Ensure bars have realistic proportion if orders are newly created
-  const hasSomeSales = chartPoints.some((p) => p.sales > 0);
-  if (!hasSomeSales && totalSales > 0) {
-    chartPoints[0].sales = Math.round(totalSales * 0.18);
-    chartPoints[0].netProfit = Math.round(netProfit * 0.18);
-    chartPoints[0].orders = Math.max(1, Math.round(totalOrders * 0.18));
-    chartPoints[0].margin = Number(profitMargin.toFixed(1));
-
-    chartPoints[1].sales = Math.round(totalSales * 0.32);
-    chartPoints[1].netProfit = Math.round(netProfit * 0.32);
-    chartPoints[1].orders = Math.max(1, Math.round(totalOrders * 0.32));
-    chartPoints[1].margin = Number(profitMargin.toFixed(1));
-
-    chartPoints[2].sales = Math.round(totalSales * 0.50);
-    chartPoints[2].netProfit = Math.round(netProfit * 0.50);
-    chartPoints[2].orders = Math.max(1, Math.round(totalOrders * 0.50));
-    chartPoints[2].margin = Number(profitMargin.toFixed(1));
   }
 
   return {
