@@ -486,22 +486,22 @@ function OrdersPageContent() {
     <div className="min-h-screen bg-[#F8F9FA] text-neutral-900 font-mograph flex flex-col justify-between selection:bg-[#E5F2D0] selection:text-[#1E300E]">
       <Navbar />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-12 flex-1 w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-5 pb-3 sm:pb-3.5 border-b border-neutral-200/80">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-neutral-900 tracking-tight whitespace-nowrap">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-3 sm:pt-5 pb-12 flex-1 w-full">
+        <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4 pb-2.5 sm:pb-3 border-b border-neutral-200/80">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-neutral-900 tracking-tight">
               My Orders
             </h1>
-            <p className="text-xs text-neutral-500 mt-0.5">
+            <p className="text-xs text-neutral-500 mt-0.5 line-clamp-1 sm:line-clamp-none">
               Track packages, check shipping updates, rate & review delivered purchases
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => fetchOrders(false)}
               disabled={loading || isSilentSyncing}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-bold text-neutral-800 bg-white border border-neutral-200/90 rounded-full hover:bg-neutral-50 hover:border-neutral-300 transition-all shadow-xs disabled:opacity-60 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-neutral-800 bg-white border border-neutral-200/90 rounded-full hover:bg-neutral-50 hover:border-neutral-300 transition-all shadow-xs disabled:opacity-60 cursor-pointer"
               title="Refresh order statuses"
             >
               <RefreshCw
