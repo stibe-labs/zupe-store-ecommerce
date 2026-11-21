@@ -40,6 +40,7 @@ import { trackMetaPixelEvent } from "@/components/MetaPixelTracker";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
 import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 import { loadCashfreeScript } from "@/lib/cashfree";
+import SettlerPaymentModal from "@/components/SettlerPaymentModal";
 import { deduplicateAddresses, normalizeAddressKey } from "@/lib/addressUtils";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
@@ -147,6 +148,17 @@ function CheckoutContent() {
   const [confirmedTotal, setConfirmedTotal] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState("");
   const [recoveredBanner, setRecoveredBanner] = useState<string | null>(null);
+
+  // Settler Payment Gateway state
+  const [settlerModalOpen, setSettlerModalOpen] = useState(false);
+  const [settlerData, setSettlerData] = useState<{
+    invoiceId: string;
+    cashfreeOrderId: string;
+    amount: number;
+    qrDataUrl: string;
+    upiString: string;
+    payUrl: string;
+  } | null>(null);
 
   // Urgency Timer (Digital Countdown: Hours, Mins, Secs)
   const [timeLeft, setTimeLeft] = useState(6 * 3600 + 7 * 60 + 24); // 06:07:24
@@ -1052,6 +1064,106 @@ function CheckoutContent() {
     }, 120);
   };
 
+  const handleSettlerSuccess = async (paymentResult: { paymentId: string; receiptNumber?: string }) => {
+    if (!settlerData) return;
+    try {
+      setLoading(true);
+      const verifyRes = await fetch("/api/settler/verify-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cashfreeOrderId: settlerData.cashfreeOrderId,
+          invoiceId: settlerData.invoiceId,
+          order_payload: {
+            customer_name: name.trim(),
+            customer_email: email.trim() || undefined,
+            customer_phone: phone.trim().startsWith("+91")
+              ? phone.trim()
+              : `+91 ${phone.trim()}`,
+            shipping_address: address.trim(),
+            city: state ? `${city.trim()}, ${state.trim()}` : city.trim(),
+            postal_code: postalCode.trim(),
+            total_amount: grandTotal,
+            discount_amount: totalDiscount,
+            promo_code: appliedPromo || undefined,
+            promo_discount: promoDiscount || undefined,
+            payment_method: "Prepaid (UPI / Settler)",
+            user_id: user?.id,
+            items: cart.map((c) => ({
+              product_id: c.id,
+              name: c.name,
+              price:
+                c.bundle_tier && c.bundle_tier > 1 && c.bundle_total
+                  ? Math.round(c.bundle_total / c.quantity)
+                  : c.price,
+              unit_price:
+                c.bundle_tier && c.bundle_tier > 1 && c.bundle_total
+                  ? Math.round(c.bundle_total / c.quantity)
+                  : c.price,
+              quantity: c.quantity,
+              image: c.poster_image,
+              original_price: c.original_price || c.price,
+              bundle_tier: c.bundle_tier,
+              bundle_savings: c.bundle_savings,
+              bundle_total: c.bundle_total,
+              offer_label: c.offer_label,
+            })),
+          },
+        }),
+      });
+
+      const verifyData = await verifyRes.json();
+      if (verifyData.success) {
+        setSettlerModalOpen(false);
+        syncAddressAfterOrder();
+        const createdId =
+          verifyData.order?.shopify_order_id ||
+          verifyData.order?.id ||
+          verifyData.orderId ||
+          settlerData.cashfreeOrderId;
+        setConfirmedTotal(grandTotal);
+        setConfirmedOrderId(createdId);
+        setConfirmedPaymentId(paymentResult.receiptNumber || paymentResult.paymentId || "Settler Prepaid");
+        setOrderComplete(true);
+
+        // Track Meta Pixel & CAPI Purchase
+        try {
+          trackMetaPixelEvent(
+            "Purchase",
+            {
+              orderId: createdId,
+              value: grandTotal,
+              currency: "INR",
+              numItems: cart.reduce((sum, it) => sum + it.quantity, 0),
+              contentIds: cart.map((it) => it.id),
+            },
+            {
+              phone: phone.trim(),
+              email: email.trim() || undefined,
+              firstName: name.trim().split(" ")[0] || "",
+              lastName: name.trim().split(" ").slice(1).join(" ") || "",
+              city: city.trim(),
+              postalCode: postalCode.trim(),
+            }
+          );
+        } catch {}
+
+        clearCart();
+      } else {
+        setErrorMessage(
+          verifyData.error || "Payment verification failed. Please contact support."
+        );
+      }
+    } catch (vErr: any) {
+      console.error("Settler verification error:", vErr);
+      setErrorMessage(
+        "Network error while verifying payment. Please contact support."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -1100,17 +1212,13 @@ function CheckoutContent() {
       return;
     }
 
-    // Online Payment via Cashfree (Prepaid)
+    // Online Payment via Settler Gateway (Prepaid)
     if (paymentMethod === "prepaid") {
       try {
-        const isScriptLoaded = await loadCashfreeScript();
-        if (!isScriptLoaded || !(window as any).Cashfree) {
-          setLoading(false);
-          setErrorMessage("Could not load secure payment gateway. Please check your internet connection.");
-          return;
-        }
+        setLoading(true);
+        setErrorMessage("");
 
-        const res = await fetch("/api/cashfree/create-order", {
+        const res = await fetch("/api/settler/create-order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -1118,6 +1226,7 @@ function CheckoutContent() {
             customerName: name.trim(),
             customerEmail: email.trim() || undefined,
             customerPhone: phone.trim(),
+            title: `Order Checkout - Vittal Lifestyle (${phone.trim().slice(-10)})`,
             items: cart.map((c) => ({
               product_id: c.id,
               quantity: c.quantity,
@@ -1126,128 +1235,28 @@ function CheckoutContent() {
         });
 
         const data = await res.json();
-        if (!data.success || !data.paymentSessionId) {
+        if (!data.success || !data.cashfreeOrderId) {
           setLoading(false);
-          setErrorMessage(data.error || "Failed to initialize payment with Cashfree. Please try again.");
+          setErrorMessage(
+            data.error ||
+              "Failed to initialize payment with Settler Gateway. Please try again."
+          );
           return;
         }
 
-        const cashfree = (window as any).Cashfree({ mode: "production" });
-        cashfree
-          .checkout({
-            paymentSessionId: data.paymentSessionId,
-            redirectTarget: "_modal",
-          })
-          .then(async (result: any) => {
-            if (result.error) {
-              setLoading(false);
-              setErrorMessage(
-                result.error.message ||
-                  "Payment was cancelled or failed. Please try again or choose Cash on Delivery."
-              );
-              return;
-            }
+        setSettlerData({
+          invoiceId: data.invoiceId,
+          cashfreeOrderId: data.cashfreeOrderId,
+          amount: data.amount || grandTotal,
+          qrDataUrl: data.qrDataUrl,
+          upiString: data.upiString,
+          payUrl: data.payUrl,
+        });
 
-            if (result.paymentDetails) {
-              try {
-                setLoading(true);
-                const verifyRes = await fetch("/api/cashfree/verify-payment", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    order_id: data.orderId,
-                    order_payload: {
-                      customer_name: name.trim(),
-                      customer_email: email.trim() || undefined,
-                      customer_phone: phone.trim().startsWith("+91")
-                        ? phone.trim()
-                        : `+91 ${phone.trim()}`,
-                      shipping_address: address.trim(),
-                      city: state ? `${city.trim()}, ${state.trim()}` : city.trim(),
-                      postal_code: postalCode.trim(),
-                      total_amount: grandTotal,
-                      discount_amount: totalDiscount,
-                      promo_code: appliedPromo || undefined,
-                      promo_discount: promoDiscount || undefined,
-                      payment_method: "Prepaid",
-                      user_id: user?.id,
-                      items: cart.map((c) => ({
-                        product_id: c.id,
-                        name: c.name,
-                        price:
-                          c.bundle_tier && c.bundle_tier > 1 && c.bundle_total
-                            ? Math.round(c.bundle_total / c.quantity)
-                            : c.price,
-                        unit_price:
-                          c.bundle_tier && c.bundle_tier > 1 && c.bundle_total
-                            ? Math.round(c.bundle_total / c.quantity)
-                            : c.price,
-                        quantity: c.quantity,
-                        image: c.poster_image,
-                        original_price: c.original_price || c.price,
-                        bundle_tier: c.bundle_tier,
-                        bundle_savings: c.bundle_savings,
-                        bundle_total: c.bundle_total,
-                        offer_label: c.offer_label,
-                      })),
-                    },
-                  }),
-                });
-
-                const verifyData = await verifyRes.json();
-                if (verifyData.success) {
-                  syncAddressAfterOrder();
-                  const createdId =
-                    verifyData.order?.shopify_order_id ||
-                    verifyData.order?.id ||
-                    verifyData.orderId ||
-                    data.orderId;
-                  setConfirmedTotal(grandTotal);
-                  setConfirmedOrderId(createdId);
-                  setConfirmedPaymentId(verifyData.paymentId || "Cashfree Prepaid");
-                  setOrderComplete(true);
-
-                  // Track Meta Pixel & CAPI Purchase
-                  try {
-                    trackMetaPixelEvent(
-                      "Purchase",
-                      {
-                        orderId: createdId,
-                        value: grandTotal,
-                        currency: "INR",
-                        numItems: cart.reduce((sum, it) => sum + it.quantity, 0),
-                        contentIds: cart.map((it) => it.id),
-                      },
-                      {
-                        phone: phone.trim(),
-                        email: email.trim() || undefined,
-                        firstName: name.trim().split(" ")[0] || "",
-                        lastName: name.trim().split(" ").slice(1).join(" ") || "",
-                        city: city.trim(),
-                        postalCode: postalCode.trim(),
-                      }
-                    );
-                  } catch {}
-
-                  clearCart();
-                } else {
-                  setErrorMessage(
-                    verifyData.error ||
-                      "Payment verification failed. Please contact support."
-                  );
-                }
-              } catch (vErr: any) {
-                console.error("Cashfree verification error:", vErr);
-                setErrorMessage(
-                  "Network error while verifying payment. Please contact support."
-                );
-              } finally {
-                setLoading(false);
-              }
-            }
-          });
+        setSettlerModalOpen(true);
+        setLoading(false);
       } catch (err: any) {
-        console.error("Cashfree error:", err);
+        console.error("Settler payment error:", err);
         setErrorMessage(
           "Failed to initiate secure online payment. Please try again."
         );
@@ -1590,7 +1599,7 @@ function CheckoutContent() {
 
               {/* Security info */}
               <div className="pt-2 text-center text-[11px] text-gray-400 space-y-1">
-                <p>🔒 256-bit Bank Grade SSL Encrypted • Powered by Cashfree</p>
+                <p>🔒 256-bit Bank Grade SSL Encrypted • Powered by Settler</p>
                 <p>Supports UPI (GPay, PhonePe, Paytm), All Major Debit &amp; Credit Cards, Net Banking</p>
               </div>
 
@@ -1736,7 +1745,7 @@ function CheckoutContent() {
               <span className="font-semibold text-neutral-900">
                 {confirmedPaymentId === "Cash on Delivery"
                   ? "Cash on Delivery (Pay at Doorstep)"
-                  : "Prepaid (Paid Online via Cashfree)"}
+                  : "Prepaid (Paid Online via Settler)"}
               </span>
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-neutral-100">
@@ -1768,7 +1777,7 @@ function CheckoutContent() {
                 <span className="text-[10px] font-bold block text-neutral-500">
                   {confirmedPaymentId === "Cash on Delivery"
                     ? "Pay cash or UPI to courier"
-                    : "Paid securely via Cashfree"}
+                    : "Paid securely via Settler"}
                 </span>
               </div>
             </div>
@@ -2614,7 +2623,7 @@ function CheckoutContent() {
                       <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
                       <div>
                         <p className="text-[11px] font-bold text-gray-800 leading-tight">100% Safe &amp; Secure</p>
-                        <p className="text-[10px] text-gray-400 leading-tight">Cashfree SSL Encrypted</p>
+                        <p className="text-[10px] text-gray-400 leading-tight">Settler Bank Encrypted</p>
                       </div>
                     </div>
                   </div>
@@ -2688,7 +2697,7 @@ function CheckoutContent() {
                         </div>
                         <div className="px-3 py-1.5 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] text-xs font-bold flex items-center gap-1.5">
                           <Lock className="w-3.5 h-3.5 text-[#6B9E3A]" />
-                          <span>100% Secure via Cashfree</span>
+                          <span>100% Secure via Settler &amp; UPI</span>
                         </div>
                       </div>
                     </div>
@@ -2929,7 +2938,7 @@ function CheckoutContent() {
                     <p className="text-center text-[11px] text-neutral-500 mt-2 font-normal">
                       {isCod
                         ? `Pay ₹${grandTotal.toLocaleString()} in cash or UPI to courier at delivery`
-                        : "🔒 256-bit Bank Grade SSL Encrypted • Powered by Cashfree"}
+                        : "🔒 256-bit Bank Grade SSL Encrypted • Powered by Settler"}
                     </p>
                   </div>
 
@@ -2943,7 +2952,7 @@ function CheckoutContent() {
                         {isCod ? "100% COD" : "Secure Pay"}
                       </p>
                       <p className="text-[8.5px] sm:text-[10px] text-gray-400 leading-tight mt-0.5">
-                        {isCod ? "Pay on Delivery" : "Cashfree 256-Bit"}
+                        {isCod ? "Pay on Delivery" : "Settler 256-Bit"}
                       </p>
                     </div>
 
@@ -3279,6 +3288,23 @@ function CheckoutContent() {
           </div>
         </form>
       </main>
+
+      {/* Settler Multi-Rail Payment Modal */}
+      {settlerData && (
+        <SettlerPaymentModal
+          isOpen={settlerModalOpen}
+          onClose={() => setSettlerModalOpen(false)}
+          invoiceId={settlerData.invoiceId}
+          cashfreeOrderId={settlerData.cashfreeOrderId}
+          amount={settlerData.amount}
+          qrDataUrl={settlerData.qrDataUrl}
+          upiString={settlerData.upiString}
+          payUrl={settlerData.payUrl}
+          customerName={name.trim()}
+          customerPhone={phone.trim()}
+          onPaymentSuccess={handleSettlerSuccess}
+        />
+      )}
 
       {/* Clean Bottom Footer */}
       <footer className="py-8 text-center text-xs text-neutral-500 border-t border-neutral-200 bg-white mt-12 font-medium">

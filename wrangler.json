@@ -47,6 +47,8 @@
     "CLOUDFLARE_D1_DATABASE_ID": "b5922f08-8c85-4e8c-ae9e-a9650e3ba52b",
     "ADMIN_EMAIL": "admin@vittallifestyle.com",
     "ADMIN_PASSWORD": "VittalLifestyle@2026",
+    "SETTLER_BASE_URL": "https://settler.pydart.com",
+    "SETTLER_TENANT_ID": "client_turkiyejam",
     "CASHFREE_ENVIRONMENT": "production",
     "CASHFREE_APP_ID": "15139601e0fb18fedab78b451aa0693151",
     "CASHFREE_SECRET_KEY": "",
