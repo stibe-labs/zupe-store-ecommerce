@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 import { Product } from "@/types/product";
 import {
   SupplementShowcaseConfig,
@@ -71,6 +71,36 @@ export function SupplementCategoryShowcase({
   const viaColor = showcaseConfig.bgGradientVia || "#466324";
   const toColor = showcaseConfig.bgGradientTo || "#344C19";
   const borderColor = showcaseConfig.borderColor || "#6B9E3A";
+
+  // Horizontal carousel scroll state & helper for desktop swipe/navigation
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollButtons = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 8);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 8);
+    }
+  };
+
+  useEffect(() => {
+    updateScrollButtons();
+    const timer = setTimeout(updateScrollButtons, 300);
+    return () => clearTimeout(timer);
+  }, [activeTabId, activeTab]);
+
+  const scrollHorizontally = (direction: "left" | "right") => {
+    if (scrollRef.current) {
+      const shift = scrollRef.current.clientWidth * 0.8;
+      scrollRef.current.scrollBy({
+        left: direction === "left" ? -shift : shift,
+        behavior: "smooth",
+      });
+      setTimeout(updateScrollButtons, 350);
+    }
+  };
 
   return (
     <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-6 md:py-6">
@@ -165,47 +195,75 @@ export function SupplementCategoryShowcase({
         </div>
 
         {/* ================================================================= */}
-        {/* PRODUCT CARDS ROW (1 Row: 2 Products + 25% Portion Swipeable)    */}
+        {/* PRODUCT CARDS ROW (1 Row: 6 Products on Desktop, Swipeable)       */}
         {/* ================================================================= */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.24, ease: "easeOut" }}
-            className="flex flex-row overflow-x-auto snap-x snap-mandatory gap-3 sm:gap-4 md:gap-3.5 pb-2.5 sm:pb-3 md:pb-2 pt-1 scroll-smooth no-scrollbar w-full items-stretch"
-          >
-            {(activeTab.items || []).map((prod) => (
-              <Link
-                key={prod.id}
-                href={`/products/${prod.slug || prod.id}`}
-                className="group shrink-0 snap-start flex flex-col w-[calc((100%-20px)/2.25)] min-w-[calc((100%-20px)/2.25)] sm:w-[calc((100%-36px)/3.25)] sm:min-w-[calc((100%-36px)/3.25)] md:w-[calc((100%-48px)/4)] md:min-w-[calc((100%-48px)/4)] transition-transform duration-200 hover:-translate-y-1"
-              >
-                {/* Product Image Container — Compact height on desktop so total section height is sleek */}
-                <div className="relative aspect-[4/5] md:aspect-auto md:h-[195px] lg:h-[210px] w-full rounded-2xl sm:rounded-3xl md:rounded-2xl bg-white p-3 sm:p-4 md:p-2.5 lg:p-3 flex items-center justify-center overflow-hidden shadow-xs group-hover:shadow-md transition-shadow">
-                  <Image
-                    src={prod.image || "/vittal/product-whey-protein-jar.png"}
-                    alt={prod.name}
-                    fill
-                    className="object-contain p-2 md:p-2 group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 360px"
-                  />
-                </div>
+        <div className="relative">
+          {/* Desktop Left Carousel Navigation Button */}
+          {canScrollLeft && (
+            <button
+              type="button"
+              onClick={() => scrollHorizontally("left")}
+              aria-label="Previous products"
+              className="hidden lg:flex absolute -left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white hover:bg-neutral-50 text-neutral-900 shadow-xl border border-neutral-200/80 items-center justify-center transition-all duration-200 hover:scale-110 cursor-pointer active:scale-95"
+            >
+              <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+            </button>
+          )}
 
-                {/* Product Name (Clean & Truncated) */}
-                <h4 className="font-mograph text-xs sm:text-sm md:text-xs font-bold text-white text-center leading-snug line-clamp-1 mt-2.5 md:mt-1.5 px-1 group-hover:text-[#FEF08A] transition-colors">
-                  {prod.name}
-                </h4>
+          {/* Desktop Right Carousel Navigation Button */}
+          {canScrollRight && (
+            <button
+              type="button"
+              onClick={() => scrollHorizontally("right")}
+              aria-label="Next products"
+              className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white hover:bg-neutral-50 text-neutral-900 shadow-xl border border-neutral-200/80 items-center justify-center transition-all duration-200 hover:scale-110 cursor-pointer active:scale-95"
+            >
+              <ChevronRight className="w-5 h-5 stroke-[2.5]" />
+            </button>
+          )}
 
-                {/* Offer in Bold */}
-                <p className="font-movault text-sm sm:text-base md:text-xs lg:text-sm font-black text-[#FEF08A] text-center tracking-tight mt-0.5">
-                  {prod.discountTag}
-                </p>
-              </Link>
-            ))}
-          </motion.div>
-        </AnimatePresence>
+          <AnimatePresence mode="wait">
+            <motion.div
+              ref={scrollRef}
+              key={activeTab.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.24, ease: "easeOut" }}
+              onScroll={updateScrollButtons}
+              className="flex flex-row overflow-x-auto snap-x snap-mandatory gap-3 sm:gap-3.5 md:gap-3.5 lg:gap-3.5 pb-2.5 sm:pb-3 md:pb-2 pt-1 scroll-smooth no-scrollbar w-full items-stretch"
+            >
+              {(activeTab.items || []).map((prod) => (
+                <Link
+                  key={prod.id}
+                  href={`/products/${prod.slug || prod.id}`}
+                  className="group shrink-0 snap-start flex flex-col w-[calc((100%-20px)/2.25)] min-w-[calc((100%-20px)/2.25)] sm:w-[calc((100%-36px)/3.25)] sm:min-w-[calc((100%-36px)/3.25)] md:w-[calc((100%-48px)/4.25)] md:min-w-[calc((100%-48px)/4.25)] lg:w-[calc((100%-70px)/6)] lg:min-w-[calc((100%-70px)/6)] xl:w-[calc((100%-80px)/6)] xl:min-w-[calc((100%-80px)/6)] transition-transform duration-200 hover:-translate-y-1"
+                >
+                  {/* Product Image Container — Compact aspect-square on desktop */}
+                  <div className="relative aspect-[4/5] md:aspect-square w-full rounded-2xl sm:rounded-3xl md:rounded-2xl bg-white p-3 sm:p-4 md:p-2.5 lg:p-3 flex items-center justify-center overflow-hidden shadow-xs group-hover:shadow-md transition-shadow">
+                    <Image
+                      src={prod.image || "/vittal/product-whey-protein-jar.png"}
+                      alt={prod.name}
+                      fill
+                      className="object-contain p-2 md:p-1.5 group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 240px"
+                    />
+                  </div>
+
+                  {/* Product Name (Clean & Truncated) */}
+                  <h4 className="font-mograph text-xs sm:text-sm md:text-xs font-bold text-white text-center leading-snug line-clamp-1 mt-2.5 md:mt-1.5 px-1 group-hover:text-[#FEF08A] transition-colors">
+                    {prod.name}
+                  </h4>
+
+                  {/* Offer in Bold */}
+                  <p className="font-movault text-sm sm:text-base md:text-xs lg:text-sm font-black text-[#FEF08A] text-center tracking-tight mt-0.5">
+                    {prod.discountTag}
+                  </p>
+                </Link>
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
         {/* View All Supplements Footer Button (Plain White with subtle texture, Black Font) */}
         <div className="mt-4 sm:mt-6 md:mt-4 text-center">

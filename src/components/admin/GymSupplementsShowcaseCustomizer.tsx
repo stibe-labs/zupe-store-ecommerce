@@ -630,14 +630,14 @@ export function GymSupplementsShowcaseCustomizer({
                       className={`group shrink-0 snap-start flex flex-col ${
                         previewDevice === "mobile"
                           ? "w-[calc((100%-16px)/2.25)] min-w-[calc((100%-16px)/2.25)]"
-                          : "w-[calc((100%-36px)/4)] min-w-[calc((100%-36px)/4)]"
+                          : "w-[calc((100%-40px)/6)] min-w-[calc((100%-40px)/6)]"
                       } transition-transform`}
                     >
                       <div
                         className={`relative w-full rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-xs ${
                           previewDevice === "mobile"
                             ? "aspect-[4/5] p-2"
-                            : "aspect-auto h-[175px] sm:h-[190px] p-2 sm:p-2.5"
+                            : "aspect-square p-2"
                         }`}
                       >
                         <Image
