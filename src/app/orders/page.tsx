@@ -432,7 +432,7 @@ function OrdersPageContent() {
   const getStatusBadge = (status: OrderRecord["order_status"], waStatus?: string) => {
     if (waStatus === "cancelled" || status === "cancelled") {
       return (
-        <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+        <span className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 min-h-[38px] rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
           <XCircle className="w-3.5 h-3.5 shrink-0" />
           <span>Cancelled</span>
         </span>
@@ -442,7 +442,7 @@ function OrdersPageContent() {
     if (waStatus === "pending_whatsapp") {
       return (
         <span
-          className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[9.5px] sm:text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-300/80 w-full sm:w-auto tracking-tight transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-xs hover:border-amber-400 select-none cursor-default leading-tight text-center"
+          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 min-h-[38px] rounded-full text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-300/80 w-full sm:w-auto tracking-tight transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-xs hover:border-amber-400 select-none cursor-default leading-tight text-center"
           title="Awaiting customer confirmation on WhatsApp"
         >
           {/* Pulsing live amber ping dot */}
@@ -459,23 +459,23 @@ function OrdersPageContent() {
     switch (status) {
       case "delivered":
         return (
-          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
-            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+          <span className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 min-h-[38px] rounded-full text-xs font-semibold bg-[#F0F8E6] text-[#1E300E] border border-[#78B928]/40 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#6B9E3A] shrink-0" />
             <span>Delivered</span>
           </span>
         );
       case "shipped":
         return (
-          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
-            <Truck className="w-3.5 h-3.5 shrink-0" />
+          <span className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 min-h-[38px] rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+            <Truck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
             <span>In Transit</span>
           </span>
         );
       case "processing":
       default:
         return (
-          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-[11px] font-bold bg-orange-50 text-[#FF7A00] border border-orange-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
-            <Clock className="w-3.5 h-3.5 shrink-0" />
+          <span className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 min-h-[38px] rounded-full text-xs font-semibold bg-neutral-100 text-neutral-800 border border-neutral-200/80 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+            <Clock className="w-3.5 h-3.5 text-neutral-600 shrink-0" />
             <span>Processing</span>
           </span>
         );
@@ -483,16 +483,16 @@ function OrdersPageContent() {
   };
 
   return (
-    <div className="min-h-screen tj-diamonds-cream text-stone-900 flex flex-col justify-between">
+    <div className="min-h-screen bg-[#F8F9FA] text-neutral-900 font-mograph flex flex-col justify-between selection:bg-[#E5F2D0] selection:text-[#1E300E]">
       <Navbar />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-28 sm:pt-32 pb-16 flex-1 w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-stone-300">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-5 border-b border-neutral-200/80">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black font-tj-serif text-stone-900 tracking-tight whitespace-nowrap">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight whitespace-nowrap">
               My Orders
             </h1>
-            <p className="text-xs text-stone-600 mt-1">
+            <p className="text-xs sm:text-sm text-neutral-500 mt-1">
               Track packages, check shipping updates, rate & review delivered purchases
             </p>
           </div>
@@ -501,12 +501,12 @@ function OrdersPageContent() {
             <button
               onClick={() => fetchOrders(false)}
               disabled={loading || isSilentSyncing}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-stone-800 bg-white border-2 border-stone-800 rounded-xl hover:bg-stone-50 transition shadow-[0_2px_0_0_#2b2b2b] disabled:opacity-60 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-neutral-800 bg-white border border-neutral-200/90 rounded-full hover:bg-neutral-50 hover:border-neutral-300 transition-all shadow-xs disabled:opacity-60 cursor-pointer"
               title="Refresh order statuses"
             >
               <RefreshCw
                 className={`w-3.5 h-3.5 ${
-                  loading || isSilentSyncing ? "animate-spin text-[#5b1420]" : "text-stone-700"
+                  loading || isSilentSyncing ? "animate-spin text-[#6B9E3A]" : "text-neutral-600"
                 }`}
               />
               <span>{isSilentSyncing ? "Syncing..." : "Refresh"}</span>
@@ -515,7 +515,7 @@ function OrdersPageContent() {
             {!isAuthenticated && (
               <Link
                 href="/signin?redirect=/orders&notice=Please sign in to view and track your orders"
-                className="text-xs font-black text-[#5b1420] hover:underline ml-1"
+                className="text-xs font-bold text-[#6B9E3A] hover:text-[#527C2B] hover:underline ml-1"
               >
                 Sign In
               </Link>
@@ -527,20 +527,20 @@ function OrdersPageContent() {
         {activeConfirmBannerId && (
           <div
             onClick={() => setIsConfirmBannerExpanded((prev) => !prev)}
-            className="mb-4 py-2.5 px-3 sm:px-4 rounded-xl bg-emerald-50 border border-emerald-200/90 text-emerald-950 flex items-start justify-between gap-2.5 shadow-xs animate-in fade-in slide-in-from-top-1 duration-200 cursor-pointer hover:bg-emerald-100/40 transition-colors"
+            className="mb-5 py-3 px-4 sm:px-5 rounded-2xl bg-[#F0F8E6] border border-[#78B928]/30 text-[#1E300E] flex items-start justify-between gap-3 shadow-xs animate-in fade-in slide-in-from-top-1 duration-200 cursor-pointer hover:bg-[#E8F4DA] transition-colors"
             role="button"
             tabIndex={0}
             title="Click to expand/collapse message"
           >
-            <div className="flex items-start gap-2.5 min-w-0 flex-1">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 min-w-0 flex-1">
+              <CheckCircle2 className="w-4 h-4 text-[#6B9E3A] shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-bold text-xs text-emerald-950">🎉 Order Confirmed via WhatsApp!</span>
-                  <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-100/90 px-1.5 py-0.5 rounded break-all">
+                  <span className="font-bold text-xs text-[#1E300E]">🎉 Order Confirmed via WhatsApp!</span>
+                  <span className="text-[10px] font-mono font-bold text-[#1E300E] bg-[#E5F2D0] px-2 py-0.5 rounded-full break-all border border-[#78B928]/20">
                     #{activeConfirmBannerId}
                   </span>
-                  <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-emerald-700 bg-emerald-100/70 hover:bg-emerald-200/70 px-1.5 py-0.5 rounded ml-auto sm:ml-0 transition-colors">
+                  <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-[#1E300E] bg-white/70 hover:bg-white px-2 py-0.5 rounded-full ml-auto sm:ml-0 transition-colors border border-[#78B928]/20">
                     {isConfirmBannerExpanded ? (
                       <>Less <ChevronUp className="w-3 h-3" /></>
                     ) : (
@@ -548,7 +548,7 @@ function OrdersPageContent() {
                     )}
                   </span>
                 </div>
-                <p className={`text-[11px] text-emerald-800 mt-1 leading-relaxed ${isConfirmBannerExpanded ? "line-clamp-none" : "line-clamp-1 sm:line-clamp-none"}`}>
+                <p className={`text-[11px] text-[#2b4414] mt-1 leading-relaxed ${isConfirmBannerExpanded ? "line-clamp-none" : "line-clamp-1 sm:line-clamp-none"}`}>
                   {isConfirmBannerExpanded
                     ? `Thank you! Your order #${activeConfirmBannerId} has been confirmed via WhatsApp. We have dispatched our full confirmation message with tracking and discount details to your WhatsApp, and your package is being prepared for dispatch.`
                     : "Thank you! Tracking details dispatched to your WhatsApp. Package is being prepared for dispatch."
@@ -561,7 +561,7 @@ function OrdersPageContent() {
                 e.stopPropagation();
                 handleDismissConfirmBanner(activeConfirmBannerId);
               }}
-              className="text-emerald-700 hover:text-emerald-950 p-1 rounded-lg hover:bg-emerald-100/80 transition shrink-0 cursor-pointer ml-1"
+              className="text-[#6B9E3A] hover:text-[#1E300E] p-1 rounded-lg hover:bg-[#E5F2D0] transition shrink-0 cursor-pointer ml-1"
               aria-label="Dismiss banner"
               title="Close notification"
             >
@@ -572,7 +572,7 @@ function OrdersPageContent() {
 
         {/* Banner: Order Cancelled via WhatsApp Link */}
         {cancelledOrderId && (
-          <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 flex items-start gap-3 shadow-xs">
+          <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200/80 text-rose-950 flex items-start gap-3 shadow-xs">
             <XCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-bold text-sm">Order Cancelled as Requested</p>
@@ -585,7 +585,7 @@ function OrdersPageContent() {
 
         {/* Banner: Notice / Link Already Processed */}
         {noticeCode === "already_processed" && (
-          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3 shadow-xs">
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-amber-950 flex items-start gap-3 shadow-xs">
             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-bold text-sm">Notice: Verification Link Already Used</p>
@@ -598,7 +598,7 @@ function OrdersPageContent() {
 
         {/* Banner: Direct cancellation success message */}
         {cancelSuccessMsg && (
-          <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 flex items-start justify-between gap-3 shadow-xs">
+          <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200/80 text-rose-950 flex items-start justify-between gap-3 shadow-xs">
             <div className="flex items-start gap-3">
               <XCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
               <div>
@@ -616,24 +616,24 @@ function OrdersPageContent() {
         )}
 
         {loading ? (
-          <div className="py-20 text-center text-sm text-gray-500">
+          <div className="py-20 text-center text-sm text-neutral-500">
             Loading your orders...
           </div>
         ) : orders.length === 0 ? (
           <div className="max-w-md mx-auto py-16 text-center">
-            <div className="bg-white rounded-3xl p-8 border-2 border-stone-800 shadow-[0_8px_0_0_#2b2b2b]">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#f8bac5] border-2 border-stone-800 flex items-center justify-center text-[#5b1420] shadow-[0_3px_0_0_#2b2b2b]">
+            <div className="bg-white rounded-3xl p-8 sm:p-10 border border-neutral-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#E5F2D0] text-[#1E300E] flex items-center justify-center">
                 <Package className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold font-tj-serif text-stone-900 mb-2">
+              <h3 className="text-xl font-bold text-neutral-900 mb-2">
                 No orders placed yet
               </h3>
-              <p className="text-xs text-stone-600 mb-6 leading-relaxed">
+              <p className="text-xs sm:text-sm text-neutral-500 mb-6 leading-relaxed">
                 When you place an order, its details, tracking, and product reviews will appear here.
               </p>
               <Link
-                href="/#shop"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-xl btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 text-xs font-black border-2 border-stone-800 shadow-[0_4px_0_0_#2b2b2b] active:translate-y-0.5 active:shadow-none transition-all"
+                href="/products"
+                className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-[#111111] hover:bg-black text-white text-xs font-bold transition-all shadow-md hover:scale-105"
               >
                 Start Shopping
               </Link>
@@ -712,17 +712,17 @@ function OrdersPageContent() {
               return (
                 <div
                   key={ord.id}
-                  className="bg-white rounded-3xl border-2 border-stone-800 shadow-[0_6px_0_0_#2b2b2b] p-5 sm:p-8"
+                  className="bg-white rounded-3xl border border-neutral-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] transition-all p-5 sm:p-7"
                 >
                   {/* Header row */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200 mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-neutral-100 mb-6">
                     <div>
-                      <span className="text-[10px] text-stone-500 uppercase font-bold block">Order Reference</span>
-                      <span className="font-mono text-sm font-bold text-stone-900">{ord.id}</span>
+                      <span className="text-[10px] text-neutral-400 uppercase font-bold tracking-wider block">Order Reference</span>
+                      <span className="font-mono text-sm font-bold text-neutral-900">{ord.id}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-stone-500 uppercase font-bold block">Date Placed</span>
-                      <span className="text-xs text-stone-700 font-medium">
+                      <span className="text-[10px] text-neutral-400 uppercase font-bold tracking-wider block">Date Placed</span>
+                      <span className="text-xs text-neutral-600 font-medium">
                         {new Date(ord.created_at).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -731,8 +731,8 @@ function OrdersPageContent() {
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-stone-500 uppercase font-bold block">Total Amount</span>
-                      <span className="text-base font-black text-[#5b1420]">
+                      <span className="text-[10px] text-neutral-400 uppercase font-bold tracking-wider block">Total Amount</span>
+                      <span className="text-base sm:text-lg font-extrabold text-neutral-900">
                         ₹{displayedTotal.toLocaleString()}
                       </span>
                       {isRefunded ? (
@@ -740,11 +740,11 @@ function OrdersPageContent() {
                           Refunded to Source
                         </span>
                       ) : isCod ? (
-                        <span className="text-[10px] text-stone-500 font-medium block">
+                        <span className="text-[10px] text-neutral-500 font-medium block">
                           (₹{productSubtotal.toLocaleString()} + ₹49 COD)
                         </span>
                       ) : isPaid ? (
-                        <span className="text-[10px] text-emerald-600 font-semibold block">
+                        <span className="text-[10px] text-[#6B9E3A] font-semibold block">
                           Prepaid Online
                         </span>
                       ) : null}
@@ -755,8 +755,8 @@ function OrdersPageContent() {
                       {getStatusBadge(isDelivered ? "delivered" : ord.order_status, ord.whatsapp_confirm_status)}
 
                       {/* Cash on Delivery Badge */}
-                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[40px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-bold bg-stone-100 text-stone-800 border-2 border-stone-800 whitespace-nowrap tracking-tight select-none">
-                        <ShoppingBag className="w-3.5 h-3.5 text-stone-600 shrink-0" />
+                      <span className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 min-h-[38px] rounded-full text-xs font-semibold bg-neutral-100 text-neutral-800 border border-neutral-200/80 whitespace-nowrap tracking-tight select-none">
+                        <ShoppingBag className="w-3.5 h-3.5 text-neutral-600 shrink-0" />
                         <span>Cash on Delivery</span>
                       </span>
 
@@ -764,7 +764,7 @@ function OrdersPageContent() {
                       {ord.order_status !== "cancelled" && (
                         <Link
                           href={`/order-tracking?query=${encodeURIComponent(ord.id)}`}
-                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 min-h-[40px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-bold tracking-tight bg-white hover:bg-stone-50 text-stone-900 border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b] transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none whitespace-nowrap"
+                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 min-h-[38px] rounded-full text-xs font-bold tracking-tight bg-white hover:bg-neutral-50 text-neutral-900 border border-neutral-300 shadow-2xs hover:border-neutral-400 transition-all hover:scale-[1.02] whitespace-nowrap"
                         >
                           <Truck className="w-3.5 h-3.5 shrink-0" />
                           <span>Track Package</span>
@@ -776,7 +776,7 @@ function OrdersPageContent() {
                         <button
                           type="button"
                           onClick={() => handleOpenReviewModal(ord, rawItems[0])}
-                          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[40px] sm:min-h-[44px] rounded-xl text-[10.5px] sm:text-xs font-black tracking-tight btn-shimmer bg-[#fed000] hover:bg-[#fab005] text-stone-900 border-2 border-stone-800 shadow-[0_2px_0_0_#2b2b2b] transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer whitespace-nowrap"
+                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 min-h-[38px] rounded-full text-xs font-bold tracking-tight bg-[#6B9E3A] hover:bg-[#527C2B] text-white shadow-xs transition-all hover:scale-[1.02] cursor-pointer whitespace-nowrap"
                         >
                           <Star className="w-3.5 h-3.5 fill-current shrink-0" />
                           <span>Rate & Review</span>
@@ -818,13 +818,13 @@ function OrdersPageContent() {
                             [ord.id]: !prev[ord.id],
                           }));
                         }}
-                        className="mb-4 py-2 px-3 sm:px-3.5 rounded-xl bg-amber-50/90 border border-amber-200/90 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs cursor-pointer hover:bg-amber-100/50 transition-colors"
+                        className="mb-4 py-3 px-3.5 sm:px-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs cursor-pointer hover:bg-amber-100/40 transition-colors"
                         role="button"
                         tabIndex={0}
                         title="Click to view full instructions"
                       >
-                        <div className="flex items-start sm:items-center gap-2.5 min-w-0 flex-1">
-                          <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                        <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                          <div className="w-7 h-7 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
                             <AlertTriangle className="w-3.5 h-3.5" />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -832,10 +832,10 @@ function OrdersPageContent() {
                               <span className="text-xs font-extrabold text-amber-950">
                                 Please confirm your order in WhatsApp
                               </span>
-                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-200/80 text-amber-900">
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900">
                                 Action Required
                               </span>
-                              <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-800 bg-amber-200/50 hover:bg-amber-300/50 px-1.5 py-0.5 rounded ml-auto sm:ml-0 transition-colors">
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-amber-900 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-full ml-auto sm:ml-0 transition-colors">
                                 {isExpanded ? (
                                   <>Less <ChevronUp className="w-3 h-3" /></>
                                 ) : (
@@ -862,8 +862,8 @@ function OrdersPageContent() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           {cancelPromptId === ord.id ? (
-                            <div className="flex flex-col items-end gap-1.5 bg-rose-50/95 p-2 sm:p-2.5 rounded-xl border border-rose-200 shadow-xs">
-                              <div className="text-[11px] text-rose-900 text-right leading-tight max-w-[240px] sm:max-w-xs">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-white/95 p-2 sm:p-2.5 rounded-2xl border border-rose-200 shadow-xs">
+                              <div className="text-[11px] text-rose-900 text-left sm:text-right leading-tight max-w-[240px] sm:max-w-xs">
                                 <span className="font-bold text-rose-950">Cancel Order? </span>
                                 {isCod ? (
                                   <span className="text-amber-800 font-medium">
@@ -875,12 +875,12 @@ function OrdersPageContent() {
                                   </span>
                                 )}
                               </div>
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-1.5 shrink-0">
                                 <button
                                   type="button"
                                   onClick={() => handleCancelOrder(ord.id)}
                                   disabled={cancellingOrderId === ord.id}
-                                  className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-white bg-rose-600 hover:bg-rose-700 transition cursor-pointer shadow-xs"
+                                  className="px-3.5 py-1 rounded-full text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition cursor-pointer shadow-xs"
                                 >
                                   {cancellingOrderId === ord.id ? "Cancelling..." : "Confirm"}
                                 </button>
@@ -895,7 +895,7 @@ function OrdersPageContent() {
                                       window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
                                     } catch {}
                                   }}
-                                  className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-700 bg-white hover:bg-gray-100 border border-gray-200 transition cursor-pointer"
+                                  className="px-3.5 py-1 rounded-full text-xs font-semibold text-neutral-700 bg-white hover:bg-neutral-100 border border-neutral-200 transition cursor-pointer"
                                 >
                                   Keep
                                 </button>
@@ -905,7 +905,7 @@ function OrdersPageContent() {
                             <button
                               type="button"
                               onClick={() => setCancelPromptId(ord.id)}
-                              className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:border-rose-600 transition-all cursor-pointer"
+                              className="px-3 py-1.5 rounded-full text-xs font-semibold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200/80 hover:border-rose-600 transition-all cursor-pointer"
                             >
                               Cancel Order
                             </button>
@@ -923,7 +923,7 @@ function OrdersPageContent() {
                     !isShipped && (
                       <div className="mb-4 flex items-center justify-end">
                         {cancelPromptId === ord.id ? (
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 bg-rose-50/95 p-3 rounded-xl border border-rose-200 w-full shadow-xs">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 bg-rose-50/95 p-3.5 rounded-2xl border border-rose-200/80 w-full shadow-xs">
                             <div className="text-xs text-rose-900 leading-relaxed">
                               <span className="font-bold text-rose-950">Are you sure you want to cancel this order? </span>
                               {isCod ? (
@@ -941,7 +941,7 @@ function OrdersPageContent() {
                                 type="button"
                                 onClick={() => handleCancelOrder(ord.id)}
                                 disabled={cancellingOrderId === ord.id}
-                                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer shadow-xs"
+                                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer shadow-xs"
                               >
                                 {cancellingOrderId === ord.id ? "Cancelling..." : "Confirm Cancel"}
                               </button>
@@ -956,7 +956,7 @@ function OrdersPageContent() {
                                     window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
                                   } catch {}
                                 }}
-                                className="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-700 bg-white hover:bg-gray-100 border border-gray-200 transition-colors cursor-pointer"
+                                className="px-3.5 py-1.5 rounded-full text-xs font-semibold text-neutral-700 bg-white hover:bg-neutral-100 border border-neutral-200 transition-colors cursor-pointer"
                               >
                                 Keep Order
                               </button>
@@ -987,13 +987,13 @@ function OrdersPageContent() {
                       return (
                         <div
                           key={idx}
-                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 rounded-2xl bg-gray-50/70 border border-gray-100/80"
+                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 sm:p-4 rounded-2xl bg-neutral-50/70 border border-neutral-100/90 hover:bg-neutral-100/50 transition-colors"
                         >
                           <div className="flex items-center gap-4 flex-1 min-w-0">
                             {it.image ? (
                               <Link
                                 href={productTargetLink}
-                                className="relative w-16 h-16 rounded-xl bg-white border border-gray-200 overflow-hidden shrink-0 group"
+                                className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-white border border-neutral-200/80 overflow-hidden shrink-0 group"
                               >
                                 <Image
                                   src={it.image}
@@ -1003,22 +1003,22 @@ function OrdersPageContent() {
                                 />
                               </Link>
                             ) : (
-                              <div className="w-16 h-16 rounded-xl bg-gray-200 flex items-center justify-center shrink-0">
-                                <Package className="w-6 h-6 text-gray-400" />
+                              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-neutral-200 flex items-center justify-center shrink-0">
+                                <Package className="w-6 h-6 text-neutral-400" />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
                               <Link
                                 href={productTargetLink}
-                                className="text-sm font-bold text-gray-900 hover:text-[#FF7A00] transition-colors truncate block"
+                                className="text-sm sm:text-base font-bold text-neutral-900 hover:text-[#6B9E3A] transition-colors truncate block"
                               >
                                 {it.name}
                               </Link>
-                              <p className="text-xs text-gray-500 mt-0.5">
+                              <p className="text-xs text-neutral-500 mt-0.5">
                                 Qty: {itemQty} × ₹{itemUnitPrice.toLocaleString()}
                               </p>
                               {((it as any).bundle_tier > 1 || (it as any).offer_label) && (
-                                <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-orange-50 text-[#FF5722] border border-orange-200">
+                                <span className="inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#E5F2D0] text-[#1E300E] border border-[#78B928]/30">
                                   <span>✨</span>
                                   <span>{(it as any).offer_label || `Buy ${itemQty} Save More`}</span>
                                 </span>
@@ -1032,11 +1032,11 @@ function OrdersPageContent() {
                                     onClick={() => handleOpenReviewModal(ord, it)}
                                     className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-xs cursor-pointer ${
                                       hasReviewed
-                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100"
-                                        : "bg-amber-500 text-white hover:bg-amber-600 hover:scale-105"
+                                        ? "bg-[#F0F8E6] text-[#1E300E] border border-[#78B928]/40 hover:bg-[#E8F4DA]"
+                                        : "bg-[#6B9E3A] text-white hover:bg-[#527C2B] hover:scale-105"
                                     }`}
                                   >
-                                    <Star className={`w-3.5 h-3.5 fill-current ${hasReviewed ? "text-emerald-600" : "text-white"}`} />
+                                    <Star className={`w-3.5 h-3.5 fill-current ${hasReviewed ? "text-[#6B9E3A]" : "text-white"}`} />
                                     <span>
                                       {hasReviewed
                                         ? `✓ Reviewed (${hasReviewed.rating}★)`
@@ -1046,14 +1046,14 @@ function OrdersPageContent() {
 
                                   <Link
                                     href={`${productTargetLink}#reviews`}
-                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-500 hover:text-[#FF7A00] transition-colors"
+                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-neutral-500 hover:text-[#6B9E3A] transition-colors"
                                   >
                                     <span>View on Product Page</span>
                                     <ExternalLink className="w-3 h-3" />
                                   </Link>
                                 </div>
                               ) : (
-                                <span className="text-[11px] text-gray-400 italic block mt-1.5">
+                                <span className="text-[11px] text-neutral-400 italic block mt-1.5">
                                   Review & rating option unlocks upon delivery
                                 </span>
                               )}
@@ -1061,7 +1061,7 @@ function OrdersPageContent() {
                           </div>
 
                           <div className="sm:text-right shrink-0">
-                            <span className="font-extrabold text-sm text-gray-900 block">
+                            <span className="font-extrabold text-sm sm:text-base text-neutral-900 block">
                               ₹{itemTotal.toLocaleString()}
                             </span>
                           </div>
@@ -1071,38 +1071,38 @@ function OrdersPageContent() {
                   </div>
 
                   {/* Order Summary Breakdown matching Checkout */}
-                  <div className="mt-4 pt-3 border-t border-dashed border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-gray-600 gap-2 bg-gray-50/70 px-4 py-3 rounded-2xl">
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-gray-500">
-                      <span>Items Subtotal: <strong className="text-gray-900">₹{productSubtotal.toLocaleString()}</strong></span>
+                  <div className="mt-5 pt-3.5 border-t border-neutral-100 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-neutral-600 gap-2 bg-neutral-50/80 px-4 py-3.5 rounded-2xl border border-neutral-100/80">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-neutral-500">
+                      <span>Items Subtotal: <strong className="text-neutral-900">₹{productSubtotal.toLocaleString()}</strong></span>
                       <span>•</span>
                       {isCod ? (
-                        <span className="text-amber-700 font-semibold">
+                        <span className="text-amber-800 font-semibold">
                           COD Delivery Fee: <strong>+₹49</strong>
                         </span>
                       ) : (
-                        <span className="text-emerald-700 font-semibold">
+                        <span className="text-[#6B9E3A] font-semibold">
                           Delivery: <strong>FREE (Saved ₹49)</strong>
                         </span>
                       )}
                       {ord.discount_amount && ord.discount_amount > 0 ? (
                         <>
                           <span>•</span>
-                          <span className="text-emerald-600 font-semibold">
+                          <span className="text-[#6B9E3A] font-semibold">
                             Prepaid Discount: <strong>-₹{ord.discount_amount}</strong>
                           </span>
                         </>
                       ) : null}
                     </div>
-                    <div className="text-left sm:text-right font-bold text-gray-900">
+                    <div className="text-left sm:text-right font-bold text-neutral-900">
                       {isCod ? "Payable on Delivery:" : "Total Paid:"}{" "}
-                      <span className={`text-sm font-extrabold ${isPaid ? "text-emerald-700" : "text-[#FF7A00]"}`}>
+                      <span className={`text-base font-extrabold ${isPaid ? "text-[#6B9E3A]" : "text-neutral-900"}`}>
                         ₹{displayedTotal.toLocaleString()}
                       </span>
                     </div>
                   </div>
 
                   {/* Shipping address footer */}
-                  <div className="mt-4 pt-3 border-t border-gray-100 flex flex-col sm:flex-row justify-between text-xs text-gray-500 gap-2">
+                  <div className="mt-4 pt-3.5 border-t border-neutral-100 flex flex-col sm:flex-row justify-between text-xs text-neutral-500 gap-2">
                     <span>
                       Ship to: {ord.shipping_address}
                       {ord.city ? `, ${ord.city}` : ""}
@@ -1158,7 +1158,7 @@ function OrdersPageContent() {
                   <h4 className="text-sm font-bold text-gray-900 tracking-tight">
                     What makes a good review
                   </h4>
-                  <div className="w-8 h-0.5 bg-[#FF7A00] rounded-full mt-2" />
+                  <div className="w-8 h-0.5 bg-[#6B9E3A] rounded-full mt-2" />
                 </div>
 
                 <div className="space-y-6 text-xs">
@@ -1232,7 +1232,7 @@ function OrdersPageContent() {
                       <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-2">
                         <Link
                           href={`/products/${encodeURIComponent(reviewModalItem.product_id)}#reviews`}
-                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#111111] text-white text-xs font-bold hover:bg-[#FF7A00] transition-colors"
+                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#111111] text-white text-xs font-bold hover:bg-[#6B9E3A] transition-colors"
                         >
                           <span>View on Product Page</span>
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -1319,7 +1319,7 @@ function OrdersPageContent() {
                           value={reviewTitle}
                           onChange={(e) => setReviewTitle(e.target.value)}
                           placeholder="e.g. Excellent build quality, exactly as described!"
-                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FF7A00]"
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#6B9E3A]"
                         />
                       </div>
 
@@ -1334,7 +1334,7 @@ function OrdersPageContent() {
                           value={reviewComment}
                           onChange={(e) => setReviewComment(e.target.value)}
                           placeholder="Tell future buyers what you liked about this item (quality, packaging, delivery speed, usefulness)..."
-                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF7A00]"
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#6B9E3A]"
                         />
                       </div>
 
@@ -1347,7 +1347,7 @@ function OrdersPageContent() {
                           <span className="text-[10px] text-gray-400">Multiple files allowed</span>
                         </div>
 
-                        <label className="cursor-pointer border-2 border-dashed border-gray-200 hover:border-[#FF7A00] bg-gray-50 hover:bg-orange-50/50 rounded-2xl p-4 flex flex-col items-center justify-center transition-all">
+                        <label className="cursor-pointer border-2 border-dashed border-gray-200 hover:border-[#6B9E3A] bg-gray-50 hover:bg-[#F0F8E6]/50 rounded-2xl p-4 flex flex-col items-center justify-center transition-all">
                           <Camera className="w-6 h-6 text-gray-400 mb-1" />
                           <span className="text-xs font-bold text-gray-700">Click to upload product pictures</span>
                           <span className="text-[10px] text-gray-400">PNG, JPG, WebP formats</span>
@@ -1392,7 +1392,7 @@ function OrdersPageContent() {
                           value={reviewerName}
                           onChange={(e) => setReviewerName(e.target.value)}
                           placeholder="e.g. Rahul M."
-                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FF7A00]"
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#6B9E3A]"
                         />
                       </div>
 
@@ -1408,7 +1408,7 @@ function OrdersPageContent() {
                         <button
                           type="submit"
                           disabled={submittingReview || !reviewComment.trim()}
-                          className="px-6 py-2.5 rounded-full text-xs font-bold text-white bg-[#FF7A00] hover:bg-[#E66E00] disabled:opacity-50 transition-all cursor-pointer shadow-sm"
+                          className="px-6 py-2.5 rounded-full text-xs font-bold text-white bg-[#111111] hover:bg-black disabled:opacity-50 transition-all cursor-pointer shadow-sm hover:scale-105"
                         >
                           {submittingReview ? "Submitting Review..." : "Submit Verified Review"}
                         </button>
@@ -1431,9 +1431,9 @@ export default function OrdersPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#F3F4F6] text-[#111111]">
+        <div className="min-h-screen bg-[#F8F9FA] text-neutral-900 font-mograph">
           <Navbar />
-          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-24 pb-16 text-center text-sm text-gray-500">
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-24 pb-16 text-center text-sm text-neutral-500">
             Loading your orders...
           </div>
           <Footer />
