@@ -125,8 +125,8 @@ function CheckoutContent() {
   const [detectedPostOffices, setDetectedPostOffices] = useState<string[]>([]);
   const [locationAccuracyNotice, setLocationAccuracyNotice] = useState<string | null>(null);
 
-  // Payment method state ("cod" only)
-  const [paymentMethod, setPaymentMethod] = useState<"cod">("cod");
+  // Payment method state ("prepaid" | "cod")
+  const [paymentMethod, setPaymentMethod] = useState<"prepaid" | "cod">("prepaid");
 
   // Step progression state ("details" = contact & delivery, "payment" = choose how to pay)
   const [checkoutStep, setCheckoutStep] = useState<"details" | "payment">("details");
@@ -477,10 +477,6 @@ function CheckoutContent() {
     }
   }, [searchParams, cart.length, addToCart]);
 
-  // 100% Cash on Delivery
-  useEffect(() => {
-    setPaymentMethod("cod");
-  }, []);
 
   // Populate user data if logged in (phone and real name only - no default email)
   useEffect(() => {
@@ -749,11 +745,11 @@ function CheckoutContent() {
     }
   };
 
-  // Shipping & COD Calculations:
-  // Cash on delivery: ₹190 Extra (3-7 Days Delivery Time)
-  // Prepaid: ₹60 Extra (1-2 Days Fast Delivery Time)
+  // Shipping & Payment Calculations:
+  // Cash on delivery: ₹49 Extra Delivery Fee (5-7 Days Delivery Time)
+  // Prepaid: FREE Delivery (Saved ₹49) (3-5 Days Express Delivery Time)
   const isCod = paymentMethod === "cod";
-  const shippingFee = 49;
+  const shippingFee = isCod ? 49 : 0;
   const codAdvance = 0;
   const totalItemCount = cart.reduce((sum, it) => sum + it.quantity, 0);
 
@@ -777,7 +773,7 @@ function CheckoutContent() {
   const totalDiscount = savings + bundleSavings + promoDiscount;
   const grandTotal = Math.max(0, subtotal + shippingFee - promoDiscount);
   const payableNow = grandTotal;
-  const doorstepBalance = grandTotal;
+  const doorstepBalance = isCod ? grandTotal : 0;
 
   // Total MRP for comparison pill
   const totalMrp = cart.reduce((sum, it) => {
@@ -1103,7 +1099,166 @@ function CheckoutContent() {
       return;
     }
 
-    // Direct Cash on Delivery Order Creation (100% COD - No Online Payment Required)
+    // Online Payment via Razorpay (Prepaid)
+    if (paymentMethod === "prepaid") {
+      try {
+        const isScriptLoaded = await loadRazorpayScript();
+        if (!isScriptLoaded) {
+          setLoading(false);
+          setErrorMessage("Could not load secure payment gateway. Please check your internet connection.");
+          return;
+        }
+
+        const res = await fetch("/api/razorpay/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: grandTotal,
+            receipt: `rcpt_${Date.now()}`,
+            notes: {
+              customer_name: name.trim(),
+              customer_phone: phone.trim(),
+            },
+            items: cart.map((c) => ({
+              product_id: c.id,
+              quantity: c.quantity,
+            })),
+          }),
+        });
+
+        const data = await res.json();
+        if (!data.success || !data.orderId) {
+          setLoading(false);
+          setErrorMessage(data.error || "Failed to initialize payment. Please try again.");
+          return;
+        }
+
+        const options = {
+          key: data.keyId || RAZORPAY_KEY_ID,
+          amount: Math.round(grandTotal * 100),
+          currency: "INR",
+          name: siteConfig.name,
+          description: `Order Checkout - ₹${grandTotal.toLocaleString()}`,
+          image: siteConfig.logoUrl,
+          order_id: data.orderId,
+          prefill: {
+            name: name.trim(),
+            email: email.trim() || "",
+            contact: phone.trim().replace(/\D/g, "").slice(-10),
+            method: "upi",
+          },
+          theme: {
+            color: "#6B9E3A",
+            backdrop_color: "rgba(17, 17, 17, 0.7)",
+          },
+          modal: {
+            ondismiss: function () {
+              setLoading(false);
+            },
+          },
+          handler: async function (response: any) {
+            try {
+              setLoading(true);
+              const verifyRes = await fetch("/api/razorpay/verify-payment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  order_payload: {
+                    customer_name: name.trim(),
+                    customer_email: email.trim() || undefined,
+                    customer_phone: phone.trim().startsWith("+91") ? phone.trim() : `+91 ${phone.trim()}`,
+                    shipping_address: address.trim(),
+                    city: state ? `${city.trim()}, ${state.trim()}` : city.trim(),
+                    postal_code: postalCode.trim(),
+                    total_amount: grandTotal,
+                    discount_amount: totalDiscount,
+                    promo_code: appliedPromo || undefined,
+                    promo_discount: promoDiscount || undefined,
+                    payment_method: "Prepaid",
+                    user_id: user?.id,
+                    items: cart.map((c) => ({
+                      product_id: c.id,
+                      name: c.name,
+                      price: (c.bundle_tier && c.bundle_tier > 1 && c.bundle_total)
+                        ? Math.round(c.bundle_total / c.quantity)
+                        : c.price,
+                      unit_price: (c.bundle_tier && c.bundle_tier > 1 && c.bundle_total)
+                        ? Math.round(c.bundle_total / c.quantity)
+                        : c.price,
+                      quantity: c.quantity,
+                      image: c.poster_image,
+                      original_price: c.original_price || c.price,
+                      bundle_tier: c.bundle_tier,
+                      bundle_savings: c.bundle_savings,
+                      bundle_total: c.bundle_total,
+                      offer_label: c.offer_label,
+                    })),
+                  },
+                }),
+              });
+
+              const verifyData = await verifyRes.json();
+              if (verifyData.success) {
+                syncAddressAfterOrder();
+                const createdId = verifyData.order?.shopify_order_id || verifyData.order?.id || verifyData.orderId || `ord_${Date.now()}`;
+                setConfirmedTotal(grandTotal);
+                setConfirmedOrderId(createdId);
+                setConfirmedPaymentId(response.razorpay_payment_id || "Prepaid");
+                setOrderComplete(true);
+
+                // Track Meta Pixel & CAPI Purchase
+                try {
+                  trackMetaPixelEvent(
+                    "Purchase",
+                    {
+                      orderId: createdId,
+                      value: grandTotal,
+                      currency: "INR",
+                      numItems: cart.reduce((sum, it) => sum + it.quantity, 0),
+                      contentIds: cart.map((it) => it.id),
+                    },
+                    {
+                      phone: phone.trim(),
+                      email: email.trim() || undefined,
+                      firstName: name.trim().split(" ")[0] || "",
+                      lastName: name.trim().split(" ").slice(1).join(" ") || "",
+                      city: city.trim(),
+                      postalCode: postalCode.trim(),
+                    }
+                  );
+                } catch {}
+
+                clearCart();
+              } else {
+                setErrorMessage(verifyData.error || "Payment verification failed. Please contact support.");
+              }
+            } catch (vErr: any) {
+              console.error("Payment verification error:", vErr);
+              setErrorMessage("Network error while verifying payment. Please contact support.");
+            } finally {
+              setLoading(false);
+            }
+          },
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.on("payment.failed", function (failResp: any) {
+          setLoading(false);
+          setErrorMessage(failResp?.error?.description || "Payment failed. Please try again or select Cash on Delivery.");
+        });
+        rzp.open();
+      } catch (err: any) {
+        console.error("Razorpay error:", err);
+        setErrorMessage("Failed to initiate secure online payment. Please try again.");
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Direct Cash on Delivery Order Creation (COD)
     try {
       const orderPayload = {
         customer_name: name.trim(),
@@ -1546,7 +1701,7 @@ function CheckoutContent() {
 
           {/* Status Badge */}
           <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-[#F4FBE8] text-[#3D6318] mb-2 border border-[#95CF42]/40 font-mograph">
-            Cash on Delivery Confirmed
+            {confirmedPaymentId === "Cash on Delivery" ? "Cash on Delivery Confirmed" : "✓ Paid Online & Confirmed"}
           </span>
 
           <h1 className="text-3xl font-bold text-neutral-950 mb-2 font-mograph tracking-tight">
@@ -1554,7 +1709,11 @@ function CheckoutContent() {
           </h1>
 
           <p className="text-sm text-neutral-600 mb-6 leading-relaxed max-w-md mx-auto font-normal">
-            Your Cash on Delivery order has been successfully placed! Our logistics team is packaging your items in discreet plain boxes. Please keep ₹{(confirmedTotal || grandTotal).toLocaleString()} in cash or UPI ready for the delivery agent.
+            {confirmedPaymentId === "Cash on Delivery" ? (
+              <>Your Cash on Delivery order has been successfully placed! Our logistics team is packaging your items in discreet plain boxes. Please keep ₹{(confirmedTotal || grandTotal).toLocaleString()} in cash or UPI ready for the delivery agent.</>
+            ) : (
+              <>Your online payment was successful and your order has been placed! You saved ₹49 on shipping and your package is being prioritized for <strong>Fast Express Dispatch</strong>.</>
+            )}
             {email.trim() && (
               <span className="block mt-2 font-medium text-[#3D6318] bg-[#F4FBE8] py-1.5 px-3 rounded-lg border border-[#95CF42]/40 text-xs">
                 📧 Order receipt &amp; live tracking link sent to <strong>{email.trim()}</strong>
@@ -1577,12 +1736,16 @@ function CheckoutContent() {
             <div className="flex justify-between items-center py-1.5 border-b border-neutral-100">
               <span className="text-neutral-500">Payment Mode:</span>
               <span className="font-semibold text-neutral-900">
-                Cash on Delivery (Pay at Doorstep)
+                {confirmedPaymentId === "Cash on Delivery"
+                  ? "Cash on Delivery (Pay at Doorstep)"
+                  : "Prepaid (Paid Online via Razorpay)"}
               </span>
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-neutral-100">
               <span className="text-neutral-500">Estimated Delivery:</span>
-              <span className="font-semibold text-neutral-900">5 - 7 Business Days</span>
+              <span className="font-semibold text-neutral-900">
+                {confirmedPaymentId === "Cash on Delivery" ? "5 - 7 Business Days" : "3 - 5 Business Days (Express)"}
+              </span>
             </div>
             <div className="flex justify-between items-start py-1.5 border-b border-neutral-100">
               <span className="text-neutral-500">Delivery Address:</span>
@@ -1592,16 +1755,22 @@ function CheckoutContent() {
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-neutral-100">
               <span className="text-neutral-500">Delivery Charge:</span>
-              <span className="font-semibold text-neutral-900">₹49</span>
+              <span className={`font-semibold ${confirmedPaymentId === "Cash on Delivery" ? "text-neutral-900" : "text-[#6B9E3A]"}`}>
+                {confirmedPaymentId === "Cash on Delivery" ? "₹49" : "FREE (Saved ₹49)"}
+              </span>
             </div>
             <div className="flex justify-between items-center pt-2 text-sm">
-              <span className="font-bold text-neutral-900">Payable on Delivery:</span>
+              <span className="font-bold text-neutral-900">
+                {confirmedPaymentId === "Cash on Delivery" ? "Payable on Delivery:" : "Total Paid:"}
+              </span>
               <div className="text-right">
                 <span className="font-extrabold text-[#3D6318] text-lg block">
                   ₹{(confirmedTotal || grandTotal).toLocaleString()}
                 </span>
                 <span className="text-[10px] font-bold block text-neutral-500">
-                  Pay cash or UPI to courier
+                  {confirmedPaymentId === "Cash on Delivery"
+                    ? "Pay cash or UPI to courier"
+                    : "Paid securely via Razorpay"}
                 </span>
               </div>
             </div>
@@ -1711,7 +1880,7 @@ function CheckoutContent() {
             </span>
             <span className="inline-flex items-center gap-1 px-3.5 py-1 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] text-[10px] sm:text-xs shadow-2xs whitespace-nowrap shrink-0">
               <Lock className="w-3.5 h-3.5 text-[#6B9E3A]" />
-              <span>Cash on Delivery</span>
+              <span>Prepaid &amp; Cash on Delivery</span>
             </span>
           </div>
         </div>
@@ -2428,7 +2597,7 @@ function CheckoutContent() {
                     </button>
                   </div>
 
-                  {/* Section 3 Header (Matches Reference Photos 2 & 4) */}
+                  {/* Section 3 Header */}
                   <div className="flex items-center justify-between pb-1">
                     <div className="flex items-center gap-2.5">
                       <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center shrink-0">
@@ -2439,48 +2608,64 @@ function CheckoutContent() {
                           Payment Option
                         </h3>
                         <p className="text-xs text-gray-500 mt-0.5">
-                          100% Cash on Delivery across India
+                          Choose Online Payment (Free Delivery) or Cash on Delivery
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 text-right text-gray-500">
                       <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
                       <div>
-                        <p className="text-[11px] font-bold text-gray-800 leading-tight">Pay on Delivery</p>
-                        <p className="text-[10px] text-gray-400 leading-tight">Cash or UPI accepted</p>
+                        <p className="text-[11px] font-bold text-gray-800 leading-tight">100% Safe &amp; Secure</p>
+                        <p className="text-[10px] text-gray-400 leading-tight">Razorpay SSL Encrypted</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Payment Method Cards */}
-                  <div className="space-y-3">
-                    {/* CARD: 100% Cash on Delivery */}
+                  <div className="space-y-3.5">
+                    {/* CARD 1: PAY ONLINE (PREPAID - UPI / CARDS / NETBANKING) */}
                     <div
-                      id="payment-cod-card"
-                      className="relative p-4 sm:p-5 pt-6 rounded-2xl border-2 border-[#95CF42] bg-[#F8FBEF] shadow-sm ring-1 ring-[#95CF42]/30"
+                      id="payment-prepaid-card"
+                      onClick={() => setPaymentMethod("prepaid")}
+                      className={`relative p-4 sm:p-5 pt-6 rounded-2xl cursor-pointer transition-all ${
+                        paymentMethod === "prepaid"
+                          ? "border-2 border-[#95CF42] bg-[#F8FBEF] shadow-sm ring-1 ring-[#95CF42]/30"
+                          : "border border-neutral-200 bg-white hover:border-neutral-300"
+                      }`}
                     >
                       {/* RECOMMENDED BADGE */}
                       <span className="absolute -top-3 left-4 px-3 py-0.5 rounded-full bg-[#95CF42] text-black text-[10px] font-bold tracking-tight shadow-xs flex items-center gap-1 font-mograph">
-                        ★ Cash on Delivery
+                        ★ RECOMMENDED • FREE DELIVERY (SAVE ₹49)
                       </span>
 
                       {/* Top Row: Radio + Icon + Title */}
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-5 h-5 rounded-full border-2 border-[#95CF42] flex items-center justify-center shrink-0 bg-white">
-                            <div className="w-2.5 h-2.5 rounded-full bg-[#95CF42]" />
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white transition-colors ${
+                              paymentMethod === "prepaid" ? "border-[#95CF42]" : "border-neutral-300"
+                            }`}
+                          >
+                            {paymentMethod === "prepaid" && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-[#95CF42]" />
+                            )}
                           </div>
 
                           <div className="w-10 h-10 rounded-xl bg-[#F4FBE8] border border-[#95CF42]/30 flex items-center justify-center text-[#3D6318] shrink-0">
-                            <ShoppingBag className="w-5 h-5" />
+                            <Smartphone className="w-5 h-5" />
                           </div>
 
                           <div>
-                            <h4 className="text-sm sm:text-base font-bold text-neutral-950 leading-tight font-mograph tracking-tight">
-                              Cash on Delivery (Doorstep Delivery)
-                            </h4>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="text-sm sm:text-base font-bold text-neutral-950 leading-tight font-mograph tracking-tight">
+                                Pay Online (UPI, Cards, Netbanking)
+                              </h4>
+                              <span className="px-2 py-0.5 rounded-full bg-[#EBF7D4] text-[#2E4F10] text-[10px] font-bold font-mograph">
+                                FREE Shipping
+                              </span>
+                            </div>
                             <p className="text-xs text-neutral-500 mt-0.5 font-normal">
-                              No online payment required • Pay upon receiving your package
+                              Instant confirmation • GPay, PhonePe, Paytm, Cards &amp; NetBanking
                             </p>
                           </div>
                         </div>
@@ -2490,28 +2675,97 @@ function CheckoutContent() {
                       <div className="mt-3.5 p-2.5 rounded-xl bg-[#F4FBE8] border border-[#95CF42]/30 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-1.5 text-[#3D6318] font-bold font-mograph">
                           <Truck className="w-3.5 h-3.5 text-[#6B9E3A]" />
-                          <span className="tracking-tight text-xs">Courier Dispatch</span>
+                          <span className="tracking-tight text-xs">Priority Express Courier</span>
                         </div>
-                        <span className="text-[11px] font-semibold text-[#3D6318]">5–7 Business Days • Discreet Plain Box</span>
+                        <span className="text-[11px] font-semibold text-[#3D6318]">3–5 Days • FREE Delivery (Saved ₹49)</span>
+                      </div>
+
+                      {/* Payable Now Row */}
+                      <div className="flex items-center justify-between pt-3.5 mt-3.5 border-t border-neutral-200/80">
+                        <div>
+                          <p className="text-[11px] text-neutral-500 font-medium">Payable Now</p>
+                          <p className="text-lg sm:text-xl font-black text-neutral-950">
+                            ₹{(paymentMethod === "prepaid" ? grandTotal : Math.max(0, grandTotal - 49)).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="px-3 py-1.5 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] text-xs font-bold flex items-center gap-1.5">
+                          <Lock className="w-3.5 h-3.5 text-[#6B9E3A]" />
+                          <span>100% Secure via Razorpay</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* CARD 2: CASH ON DELIVERY */}
+                    <div
+                      id="payment-cod-card"
+                      onClick={() => setPaymentMethod("cod")}
+                      className={`relative p-4 sm:p-5 pt-6 rounded-2xl cursor-pointer transition-all ${
+                        paymentMethod === "cod"
+                          ? "border-2 border-[#95CF42] bg-[#F8FBEF] shadow-sm ring-1 ring-[#95CF42]/30"
+                          : "border border-neutral-200 bg-white hover:border-neutral-300"
+                      }`}
+                    >
+                      {/* Badge */}
+                      <span className="absolute -top-3 left-4 px-3 py-0.5 rounded-full bg-neutral-200 text-neutral-800 text-[10px] font-bold tracking-tight shadow-xs flex items-center gap-1 font-mograph">
+                        Standard Delivery • +₹49 Fee
+                      </span>
+
+                      {/* Top Row: Radio + Icon + Title */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white transition-colors ${
+                              paymentMethod === "cod" ? "border-[#95CF42]" : "border-neutral-300"
+                            }`}
+                          >
+                            {paymentMethod === "cod" && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-[#95CF42]" />
+                            )}
+                          </div>
+
+                          <div className="w-10 h-10 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-700 shrink-0">
+                            <ShoppingBag className="w-5 h-5" />
+                          </div>
+
+                          <div>
+                            <h4 className="text-sm sm:text-base font-bold text-neutral-950 leading-tight font-mograph tracking-tight">
+                              Cash on Delivery (Doorstep Delivery)
+                            </h4>
+                            <p className="text-xs text-neutral-500 mt-0.5 font-normal">
+                              No online payment required • Pay upon receiving package
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Delivery Details Strip */}
+                      <div className="mt-3.5 p-2.5 rounded-xl bg-neutral-50 border border-neutral-200 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1.5 text-neutral-700 font-bold font-mograph">
+                          <Truck className="w-3.5 h-3.5 text-neutral-500" />
+                          <span className="tracking-tight text-xs">Standard Courier</span>
+                        </div>
+                        <span className="text-[11px] font-semibold text-neutral-600">5–7 Business Days • +₹49 Delivery Fee</span>
                       </div>
 
                       {/* Payable on Delivery Row */}
-                      <div className="flex items-center justify-between pt-3.5 mt-3.5 border-t border-neutral-200">
+                      <div className="flex items-center justify-between pt-3.5 mt-3.5 border-t border-neutral-200/80">
                         <div>
                           <p className="text-[11px] text-neutral-500 font-medium">Payable at Doorstep</p>
-                          <p className="text-lg sm:text-xl font-black text-neutral-950">₹{grandTotal.toLocaleString()}</p>
+                          <p className="text-lg sm:text-xl font-black text-neutral-950">
+                            ₹{(paymentMethod === "cod" ? grandTotal : (grandTotal + 49)).toLocaleString()}
+                          </p>
                         </div>
-                        <div className="px-3 py-1.5 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] text-xs font-bold flex items-center gap-1">
-                          <Check className="w-3.5 h-3.5 stroke-[3] text-[#6B9E3A]" />
+                        <div className="px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200 text-neutral-700 text-xs font-bold flex items-center gap-1">
+                          <Check className="w-3.5 h-3.5 stroke-[3] text-neutral-600" />
                           <span>Pay Cash or UPI to Courier</span>
                         </div>
                       </div>
 
                       {/* Explanation Note */}
                       <div className="p-2.5 rounded-xl bg-white border border-neutral-200 flex items-start gap-2 mt-3 font-normal">
-                        <ShieldCheck className="w-3.5 h-3.5 text-[#6B9E3A] shrink-0 mt-0.5" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-neutral-500 shrink-0 mt-0.5" />
                         <p className="text-[11px] text-neutral-600 leading-snug">
-                          Your package is shipped in 100% plain, discreet packaging. Pay in cash or through any UPI app (GPay, PhonePe, Paytm) to the delivery agent when your parcel arrives.
+                          Shipped in 100% plain, discreet packaging. Pay in cash or through UPI app (GPay, PhonePe, Paytm) to the delivery courier.
                         </p>
                       </div>
                     </div>
@@ -2599,7 +2853,13 @@ function CheckoutContent() {
                         <span className="flex items-center gap-1.5">
                           Delivery Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
                         </span>
-                        <span className="font-semibold text-gray-900">+₹49 (3–5 Days Express)</span>
+                        {isCod ? (
+                          <span className="font-semibold text-gray-900">+₹49 (5–7 Days Standard)</span>
+                        ) : (
+                          <span className="font-bold text-[#6B9E3A]">
+                            FREE <span className="line-through text-neutral-400 font-normal">₹49</span> (Saved ₹49)
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -2607,10 +2867,10 @@ function CheckoutContent() {
                     <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100/90 flex items-center justify-between">
                       <div>
                         <p className="text-sm font-bold text-gray-900">
-                          Total Payable (Cash on Delivery)
+                          {isCod ? "Total Payable (Cash on Delivery)" : "Total Payable (Pay Online)"}
                         </p>
                         <p className="text-[11px] text-amber-800 font-medium">
-                          Pay cash or UPI upon delivery
+                          {isCod ? "Pay cash or UPI upon delivery" : "Pay via UPI, Cards, Netbanking"}
                         </p>
                       </div>
                       <span className="text-xl font-black text-gray-950">
@@ -2618,13 +2878,22 @@ function CheckoutContent() {
                       </span>
                     </div>
 
-                    {/* COD Pill */}
-                    <div className="p-2.5 rounded-xl bg-amber-50/90 text-amber-900 text-xs font-semibold flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-amber-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">
-                        ✓
+                    {/* Payment Pill */}
+                    {isCod ? (
+                      <div className="p-2.5 rounded-xl bg-amber-50/90 text-amber-900 text-xs font-semibold flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-amber-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                          ✓
+                        </div>
+                        <span>100% Cash on Delivery • Zero Advance Required</span>
                       </div>
-                      <span>100% Cash on Delivery • Zero Advance Required</span>
-                    </div>
+                    ) : (
+                      <div className="p-2.5 rounded-xl bg-[#F4FBE8] text-[#3D6318] text-xs font-semibold flex items-center gap-2 border border-[#95CF42]/40">
+                        <div className="w-5 h-5 rounded-full bg-[#6B9E3A] text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                          ✓
+                        </div>
+                        <span>Free Express Delivery • Saved ₹49 with Prepaid</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* ACTION BUTTON */}
@@ -2641,20 +2910,28 @@ function CheckoutContent() {
                       {loading ? (
                         <div className="flex items-center gap-2">
                           <Loader2 className="w-5 h-5 animate-spin text-black" />
-                          <span>Placing COD Order...</span>
+                          <span>{isCod ? "Placing COD Order..." : "Opening Secure Payment..."}</span>
                         </div>
                       ) : hasOutOfStockItems ? (
                         <span>⚠️ Remove Out of Stock Items to Continue</span>
-                      ) : (
+                      ) : isCod ? (
                         <>
                           <ShoppingBag className="w-5 h-5" />
                           <span>Confirm Cash on Delivery Order • ₹{grandTotal.toLocaleString()}</span>
                           <ArrowRight className="w-5 h-5 stroke-[2.5]" />
                         </>
+                      ) : (
+                        <>
+                          <Lock className="w-5 h-5" />
+                          <span>Pay Online with UPI / Cards • ₹{grandTotal.toLocaleString()}</span>
+                          <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+                        </>
                       )}
                     </button>
                     <p className="text-center text-[11px] text-neutral-500 mt-2 font-normal">
-                      Pay ₹{grandTotal.toLocaleString()} in cash or UPI to courier at delivery
+                      {isCod
+                        ? `Pay ₹${grandTotal.toLocaleString()} in cash or UPI to courier at delivery`
+                        : "🔒 256-bit Bank Grade SSL Encrypted • Powered by Razorpay"}
                     </p>
                   </div>
 
@@ -2662,10 +2939,14 @@ function CheckoutContent() {
                   <div className="pt-3 grid grid-cols-3 gap-1.5 sm:gap-3 text-center">
                     <div className="flex flex-col items-center p-2 rounded-xl bg-gray-50/70 border border-gray-100 shadow-2xs">
                       <div className="w-7 h-7 rounded-full bg-white shadow-2xs border border-gray-100 flex items-center justify-center text-[#6B9E3A] shrink-0 mb-1 mx-auto">
-                        <ShoppingBag className="w-3.5 h-3.5" />
+                        <ShieldCheck className="w-3.5 h-3.5" />
                       </div>
-                      <p className="text-[10px] sm:text-xs font-bold text-gray-900 leading-tight">100% COD</p>
-                      <p className="text-[8.5px] sm:text-[10px] text-gray-400 leading-tight mt-0.5">Pay on Delivery</p>
+                      <p className="text-[10px] sm:text-xs font-bold text-gray-900 leading-tight">
+                        {isCod ? "100% COD" : "Secure Pay"}
+                      </p>
+                      <p className="text-[8.5px] sm:text-[10px] text-gray-400 leading-tight mt-0.5">
+                        {isCod ? "Pay on Delivery" : "Razorpay 256-Bit"}
+                      </p>
                     </div>
 
                     <div className="flex flex-col items-center p-2 rounded-xl bg-gray-50/70 border border-gray-100 shadow-2xs">
@@ -2905,7 +3186,13 @@ function CheckoutContent() {
                   <span className="flex items-center gap-1.5">
                     Delivery Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
                   </span>
-                  <span className="font-semibold text-gray-900">+₹49 (3–5 Days Express)</span>
+                  {isCod ? (
+                    <span className="font-semibold text-gray-900">+₹49 (5–7 Days Standard)</span>
+                  ) : (
+                    <span className="font-bold text-[#6B9E3A]">
+                      FREE <span className="line-through text-neutral-400 font-normal">₹49</span> (Saved ₹49)
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -2913,10 +3200,10 @@ function CheckoutContent() {
               <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100/90 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-bold text-gray-900">
-                    Total Payable (Cash on Delivery)
+                    {isCod ? "Total Payable (Cash on Delivery)" : "Total Payable (Pay Online)"}
                   </p>
                   <p className="text-[11px] text-amber-800 font-medium">
-                    Pay cash or UPI upon delivery
+                    {isCod ? "Pay cash or UPI upon delivery" : "Pay via UPI, Cards, Netbanking"}
                   </p>
                 </div>
                 <span className="text-xl font-black text-gray-950">
@@ -2924,13 +3211,22 @@ function CheckoutContent() {
                 </span>
               </div>
 
-              {/* COD Pill */}
-              <div className="p-2.5 rounded-xl bg-amber-50/90 text-amber-900 text-xs font-semibold flex items-center gap-2">
-                <div className="w-5 h-5 rounded-full bg-amber-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">
-                  ✓
+              {/* Payment Pill */}
+              {isCod ? (
+                <div className="p-2.5 rounded-xl bg-amber-50/90 text-amber-900 text-xs font-semibold flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-amber-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                    ✓
+                  </div>
+                  <span>100% Cash on Delivery • Zero Advance Required</span>
                 </div>
-                <span>100% Cash on Delivery • Zero Advance Required</span>
-              </div>
+              ) : (
+                <div className="p-2.5 rounded-xl bg-[#F4FBE8] text-[#3D6318] text-xs font-semibold flex items-center gap-2 border border-[#95CF42]/40">
+                  <div className="w-5 h-5 rounded-full bg-[#6B9E3A] text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                    ✓
+                  </div>
+                  <span>Free Express Delivery • Saved ₹49 with Prepaid</span>
+                </div>
+              )}
 
               {/* YOU MIGHT ALSO LIKE (Bump Offers) */}
               {availableUpsells.length > 0 && (

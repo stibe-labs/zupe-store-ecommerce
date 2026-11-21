@@ -3,11 +3,11 @@ import crypto from "crypto";
 export const RAZORPAY_KEY_ID =
   process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
   process.env.RAZORPAY_KEY_ID ||
-  "";
+  "rzp_test_U2iLlOXwVwlEEC";
 
 export const RAZORPAY_KEY_SECRET =
   process.env.RAZORPAY_KEY_SECRET ||
-  "";
+  "ruY8vUYqLz8Z61m9OxDpKXY8";
 
 export interface CreateOrderParams {
   amount: number; // in INR rupees
