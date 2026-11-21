@@ -39,6 +39,7 @@ import { useAuth } from "@/context/AuthContext";
 import { trackMetaPixelEvent } from "@/components/MetaPixelTracker";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
 import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
+import { loadCashfreeScript } from "@/lib/cashfree";
 import { deduplicateAddresses, normalizeAddressKey } from "@/lib/addressUtils";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
@@ -1099,26 +1100,24 @@ function CheckoutContent() {
       return;
     }
 
-    // Online Payment via Razorpay (Prepaid)
+    // Online Payment via Cashfree (Prepaid)
     if (paymentMethod === "prepaid") {
       try {
-        const isScriptLoaded = await loadRazorpayScript();
-        if (!isScriptLoaded) {
+        const isScriptLoaded = await loadCashfreeScript();
+        if (!isScriptLoaded || !(window as any).Cashfree) {
           setLoading(false);
           setErrorMessage("Could not load secure payment gateway. Please check your internet connection.");
           return;
         }
 
-        const res = await fetch("/api/razorpay/create-order", {
+        const res = await fetch("/api/cashfree/create-order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             amount: grandTotal,
-            receipt: `rcpt_${Date.now()}`,
-            notes: {
-              customer_name: name.trim(),
-              customer_phone: phone.trim(),
-            },
+            customerName: name.trim(),
+            customerEmail: email.trim() || undefined,
+            customerPhone: phone.trim(),
             items: cart.map((c) => ({
               product_id: c.id,
               quantity: c.quantity,
@@ -1127,132 +1126,131 @@ function CheckoutContent() {
         });
 
         const data = await res.json();
-        if (!data.success || !data.orderId) {
+        if (!data.success || !data.paymentSessionId) {
           setLoading(false);
-          setErrorMessage(data.error || "Failed to initialize payment. Please try again.");
+          setErrorMessage(data.error || "Failed to initialize payment with Cashfree. Please try again.");
           return;
         }
 
-        const options = {
-          key: data.keyId || RAZORPAY_KEY_ID,
-          amount: Math.round(grandTotal * 100),
-          currency: "INR",
-          name: siteConfig.name,
-          description: `Order Checkout - ₹${grandTotal.toLocaleString()}`,
-          image: siteConfig.logoUrl,
-          order_id: data.orderId,
-          prefill: {
-            name: name.trim(),
-            email: email.trim() || "",
-            contact: phone.trim().replace(/\D/g, "").slice(-10),
-            method: "upi",
-          },
-          theme: {
-            color: "#6B9E3A",
-            backdrop_color: "rgba(17, 17, 17, 0.7)",
-          },
-          modal: {
-            ondismiss: function () {
+        const cashfree = (window as any).Cashfree({ mode: "production" });
+        cashfree
+          .checkout({
+            paymentSessionId: data.paymentSessionId,
+            redirectTarget: "_modal",
+          })
+          .then(async (result: any) => {
+            if (result.error) {
               setLoading(false);
-            },
-          },
-          handler: async function (response: any) {
-            try {
-              setLoading(true);
-              const verifyRes = await fetch("/api/razorpay/verify-payment", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                  order_payload: {
-                    customer_name: name.trim(),
-                    customer_email: email.trim() || undefined,
-                    customer_phone: phone.trim().startsWith("+91") ? phone.trim() : `+91 ${phone.trim()}`,
-                    shipping_address: address.trim(),
-                    city: state ? `${city.trim()}, ${state.trim()}` : city.trim(),
-                    postal_code: postalCode.trim(),
-                    total_amount: grandTotal,
-                    discount_amount: totalDiscount,
-                    promo_code: appliedPromo || undefined,
-                    promo_discount: promoDiscount || undefined,
-                    payment_method: "Prepaid",
-                    user_id: user?.id,
-                    items: cart.map((c) => ({
-                      product_id: c.id,
-                      name: c.name,
-                      price: (c.bundle_tier && c.bundle_tier > 1 && c.bundle_total)
-                        ? Math.round(c.bundle_total / c.quantity)
-                        : c.price,
-                      unit_price: (c.bundle_tier && c.bundle_tier > 1 && c.bundle_total)
-                        ? Math.round(c.bundle_total / c.quantity)
-                        : c.price,
-                      quantity: c.quantity,
-                      image: c.poster_image,
-                      original_price: c.original_price || c.price,
-                      bundle_tier: c.bundle_tier,
-                      bundle_savings: c.bundle_savings,
-                      bundle_total: c.bundle_total,
-                      offer_label: c.offer_label,
-                    })),
-                  },
-                }),
-              });
-
-              const verifyData = await verifyRes.json();
-              if (verifyData.success) {
-                syncAddressAfterOrder();
-                const createdId = verifyData.order?.shopify_order_id || verifyData.order?.id || verifyData.orderId || `ord_${Date.now()}`;
-                setConfirmedTotal(grandTotal);
-                setConfirmedOrderId(createdId);
-                setConfirmedPaymentId(response.razorpay_payment_id || "Prepaid");
-                setOrderComplete(true);
-
-                // Track Meta Pixel & CAPI Purchase
-                try {
-                  trackMetaPixelEvent(
-                    "Purchase",
-                    {
-                      orderId: createdId,
-                      value: grandTotal,
-                      currency: "INR",
-                      numItems: cart.reduce((sum, it) => sum + it.quantity, 0),
-                      contentIds: cart.map((it) => it.id),
-                    },
-                    {
-                      phone: phone.trim(),
-                      email: email.trim() || undefined,
-                      firstName: name.trim().split(" ")[0] || "",
-                      lastName: name.trim().split(" ").slice(1).join(" ") || "",
-                      city: city.trim(),
-                      postalCode: postalCode.trim(),
-                    }
-                  );
-                } catch {}
-
-                clearCart();
-              } else {
-                setErrorMessage(verifyData.error || "Payment verification failed. Please contact support.");
-              }
-            } catch (vErr: any) {
-              console.error("Payment verification error:", vErr);
-              setErrorMessage("Network error while verifying payment. Please contact support.");
-            } finally {
-              setLoading(false);
+              setErrorMessage(
+                result.error.message ||
+                  "Payment was cancelled or failed. Please try again or choose Cash on Delivery."
+              );
+              return;
             }
-          },
-        };
 
-        const rzp = new (window as any).Razorpay(options);
-        rzp.on("payment.failed", function (failResp: any) {
-          setLoading(false);
-          setErrorMessage(failResp?.error?.description || "Payment failed. Please try again or select Cash on Delivery.");
-        });
-        rzp.open();
+            if (result.paymentDetails) {
+              try {
+                setLoading(true);
+                const verifyRes = await fetch("/api/cashfree/verify-payment", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    order_id: data.orderId,
+                    order_payload: {
+                      customer_name: name.trim(),
+                      customer_email: email.trim() || undefined,
+                      customer_phone: phone.trim().startsWith("+91")
+                        ? phone.trim()
+                        : `+91 ${phone.trim()}`,
+                      shipping_address: address.trim(),
+                      city: state ? `${city.trim()}, ${state.trim()}` : city.trim(),
+                      postal_code: postalCode.trim(),
+                      total_amount: grandTotal,
+                      discount_amount: totalDiscount,
+                      promo_code: appliedPromo || undefined,
+                      promo_discount: promoDiscount || undefined,
+                      payment_method: "Prepaid",
+                      user_id: user?.id,
+                      items: cart.map((c) => ({
+                        product_id: c.id,
+                        name: c.name,
+                        price:
+                          c.bundle_tier && c.bundle_tier > 1 && c.bundle_total
+                            ? Math.round(c.bundle_total / c.quantity)
+                            : c.price,
+                        unit_price:
+                          c.bundle_tier && c.bundle_tier > 1 && c.bundle_total
+                            ? Math.round(c.bundle_total / c.quantity)
+                            : c.price,
+                        quantity: c.quantity,
+                        image: c.poster_image,
+                        original_price: c.original_price || c.price,
+                        bundle_tier: c.bundle_tier,
+                        bundle_savings: c.bundle_savings,
+                        bundle_total: c.bundle_total,
+                        offer_label: c.offer_label,
+                      })),
+                    },
+                  }),
+                });
+
+                const verifyData = await verifyRes.json();
+                if (verifyData.success) {
+                  syncAddressAfterOrder();
+                  const createdId =
+                    verifyData.order?.shopify_order_id ||
+                    verifyData.order?.id ||
+                    verifyData.orderId ||
+                    data.orderId;
+                  setConfirmedTotal(grandTotal);
+                  setConfirmedOrderId(createdId);
+                  setConfirmedPaymentId(verifyData.paymentId || "Cashfree Prepaid");
+                  setOrderComplete(true);
+
+                  // Track Meta Pixel & CAPI Purchase
+                  try {
+                    trackMetaPixelEvent(
+                      "Purchase",
+                      {
+                        orderId: createdId,
+                        value: grandTotal,
+                        currency: "INR",
+                        numItems: cart.reduce((sum, it) => sum + it.quantity, 0),
+                        contentIds: cart.map((it) => it.id),
+                      },
+                      {
+                        phone: phone.trim(),
+                        email: email.trim() || undefined,
+                        firstName: name.trim().split(" ")[0] || "",
+                        lastName: name.trim().split(" ").slice(1).join(" ") || "",
+                        city: city.trim(),
+                        postalCode: postalCode.trim(),
+                      }
+                    );
+                  } catch {}
+
+                  clearCart();
+                } else {
+                  setErrorMessage(
+                    verifyData.error ||
+                      "Payment verification failed. Please contact support."
+                  );
+                }
+              } catch (vErr: any) {
+                console.error("Cashfree verification error:", vErr);
+                setErrorMessage(
+                  "Network error while verifying payment. Please contact support."
+                );
+              } finally {
+                setLoading(false);
+              }
+            }
+          });
       } catch (err: any) {
-        console.error("Razorpay error:", err);
-        setErrorMessage("Failed to initiate secure online payment. Please try again.");
+        console.error("Cashfree error:", err);
+        setErrorMessage(
+          "Failed to initiate secure online payment. Please try again."
+        );
         setLoading(false);
       }
       return;
@@ -1592,7 +1590,7 @@ function CheckoutContent() {
 
               {/* Security info */}
               <div className="pt-2 text-center text-[11px] text-gray-400 space-y-1">
-                <p>🔒 256-bit Bank Grade SSL Encrypted • Powered by Razorpay</p>
+                <p>🔒 256-bit Bank Grade SSL Encrypted • Powered by Cashfree</p>
                 <p>Supports UPI (GPay, PhonePe, Paytm), All Major Debit &amp; Credit Cards, Net Banking</p>
               </div>
 
@@ -1738,7 +1736,7 @@ function CheckoutContent() {
               <span className="font-semibold text-neutral-900">
                 {confirmedPaymentId === "Cash on Delivery"
                   ? "Cash on Delivery (Pay at Doorstep)"
-                  : "Prepaid (Paid Online via Razorpay)"}
+                  : "Prepaid (Paid Online via Cashfree)"}
               </span>
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-neutral-100">
@@ -1770,7 +1768,7 @@ function CheckoutContent() {
                 <span className="text-[10px] font-bold block text-neutral-500">
                   {confirmedPaymentId === "Cash on Delivery"
                     ? "Pay cash or UPI to courier"
-                    : "Paid securely via Razorpay"}
+                    : "Paid securely via Cashfree"}
                 </span>
               </div>
             </div>
@@ -2616,7 +2614,7 @@ function CheckoutContent() {
                       <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
                       <div>
                         <p className="text-[11px] font-bold text-gray-800 leading-tight">100% Safe &amp; Secure</p>
-                        <p className="text-[10px] text-gray-400 leading-tight">Razorpay SSL Encrypted</p>
+                        <p className="text-[10px] text-gray-400 leading-tight">Cashfree SSL Encrypted</p>
                       </div>
                     </div>
                   </div>
@@ -2690,7 +2688,7 @@ function CheckoutContent() {
                         </div>
                         <div className="px-3 py-1.5 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] text-xs font-bold flex items-center gap-1.5">
                           <Lock className="w-3.5 h-3.5 text-[#6B9E3A]" />
-                          <span>100% Secure via Razorpay</span>
+                          <span>100% Secure via Cashfree</span>
                         </div>
                       </div>
                     </div>
@@ -2931,7 +2929,7 @@ function CheckoutContent() {
                     <p className="text-center text-[11px] text-neutral-500 mt-2 font-normal">
                       {isCod
                         ? `Pay ₹${grandTotal.toLocaleString()} in cash or UPI to courier at delivery`
-                        : "🔒 256-bit Bank Grade SSL Encrypted • Powered by Razorpay"}
+                        : "🔒 256-bit Bank Grade SSL Encrypted • Powered by Cashfree"}
                     </p>
                   </div>
 
@@ -2945,7 +2943,7 @@ function CheckoutContent() {
                         {isCod ? "100% COD" : "Secure Pay"}
                       </p>
                       <p className="text-[8.5px] sm:text-[10px] text-gray-400 leading-tight mt-0.5">
-                        {isCod ? "Pay on Delivery" : "Razorpay 256-Bit"}
+                        {isCod ? "Pay on Delivery" : "Cashfree 256-Bit"}
                       </p>
                     </div>
 
