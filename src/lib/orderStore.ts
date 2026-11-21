@@ -53,6 +53,8 @@ async function ensureOrderSchema(): Promise<void> {
     await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_confirm_token TEXT`).catch(() => {});
     await executeD1Query(`ALTER TABLE orders ADD COLUMN whatsapp_token_used INTEGER DEFAULT 0`).catch(() => {});
     await executeD1Query(`ALTER TABLE orders ADD COLUMN confirmation_email_sent INTEGER DEFAULT 0`).catch(() => {});
+    await executeD1Query(`ALTER TABLE orders ADD COLUMN advance_paid REAL DEFAULT 0`).catch(() => {});
+    await executeD1Query(`ALTER TABLE orders ADD COLUMN balance_due REAL DEFAULT 0`).catch(() => {});
   } catch (err) {
     // Non-fatal if columns already exist or D1 offline
   }
@@ -74,7 +76,9 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
       promo_code: order.promo_code,
       shipping_address: `${order.shipping_address}, ${order.city} ${order.postal_code}`,
       payment_method: order.payment_method === "Credit Card" ? "Prepaid" : order.payment_method,
-      payment_status: order.payment_status === "paid" ? "Completed" : "Pending",
+      payment_status: order.payment_status === "paid" ? "Completed" : (order as any).advance_paid ? "Partial (₹1 Paid)" : "Pending",
+      advance_paid: (order as any).advance_paid,
+      balance_due: (order as any).balance_due,
       status: order.order_status === "shipped" ? "In Transit" : "Processing",
       delivery_status: order.order_status === "shipped" ? "In Transit" : "Processing",
       whatsapp_confirm_status: order.whatsapp_confirm_status || "pending_whatsapp",
@@ -109,6 +113,8 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
     await executeD1Query(
       `UPDATE orders 
        SET user_id = ?, 
+           advance_paid = COALESCE(?, advance_paid),
+           balance_due = COALESCE(?, balance_due),
            whatsapp_confirm_status = ?, 
            whatsapp_confirm_token = ?, 
            whatsapp_token_used = ?,
@@ -118,6 +124,8 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
        WHERE id = ?`,
       [
         order.user_id || null,
+        (order as any).advance_paid !== undefined ? Number((order as any).advance_paid) : null,
+        (order as any).balance_due !== undefined ? Number((order as any).balance_due) : null,
         order.whatsapp_confirm_status || "pending_whatsapp",
         order.whatsapp_confirm_token || null,
         order.whatsapp_token_used ? 1 : 0,

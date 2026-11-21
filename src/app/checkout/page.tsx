@@ -1068,6 +1068,10 @@ function CheckoutContent() {
     if (!settlerData) return;
     try {
       setLoading(true);
+      const isCodOrder = paymentMethod === "cod";
+      const advanceAmount = isCodOrder ? 1 : grandTotal;
+      const doorstepDue = isCodOrder ? Math.max(0, grandTotal - 1) : 0;
+
       const verifyRes = await fetch("/api/settler/verify-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1084,10 +1088,14 @@ function CheckoutContent() {
             city: state ? `${city.trim()}, ${state.trim()}` : city.trim(),
             postal_code: postalCode.trim(),
             total_amount: grandTotal,
+            advance_paid: advanceAmount,
+            balance_due: doorstepDue,
             discount_amount: totalDiscount,
             promo_code: appliedPromo || undefined,
             promo_discount: promoDiscount || undefined,
-            payment_method: "Prepaid (UPI / Settler)",
+            payment_method: isCodOrder ? "Cash on Delivery" : "Prepaid (UPI / Settler)",
+            payment_status: isCodOrder ? "partial" : "paid",
+            is_cod_partial: isCodOrder,
             user_id: user?.id,
             items: cart.map((c) => ({
               product_id: c.id,
@@ -1123,7 +1131,7 @@ function CheckoutContent() {
           settlerData.cashfreeOrderId;
         setConfirmedTotal(grandTotal);
         setConfirmedOrderId(createdId);
-        setConfirmedPaymentId(paymentResult.receiptNumber || paymentResult.paymentId || "Settler Prepaid");
+        setConfirmedPaymentId(isCodOrder ? "Cash on Delivery (₹1 Advance Paid)" : (paymentResult.receiptNumber || paymentResult.paymentId || "Settler Prepaid"));
         setOrderComplete(true);
 
         // Track Meta Pixel & CAPI Purchase
@@ -1265,90 +1273,57 @@ function CheckoutContent() {
       return;
     }
 
-    // Direct Cash on Delivery Order Creation (COD)
-    try {
-      const orderPayload = {
-        customer_name: name.trim(),
-        customer_email: email.trim() || undefined,
-        customer_phone: phone.trim().startsWith("+91") ? phone.trim() : `+91 ${phone.trim()}`,
-        shipping_address: address.trim(),
-        city: state ? `${city.trim()}, ${state.trim()}` : city.trim(),
-        postal_code: postalCode.trim(),
-        total_amount: grandTotal,
-        discount_amount: totalDiscount,
-        promo_code: appliedPromo || undefined,
-        promo_discount: promoDiscount || undefined,
-        payment_method: "Cash on Delivery",
-        user_id: user?.id,
-        items: cart.map((c) => ({
-          product_id: c.id,
-          name: c.name,
-          price: (c.bundle_tier && c.bundle_tier > 1 && c.bundle_total)
-            ? Math.round(c.bundle_total / c.quantity)
-            : c.price,
-          unit_price: (c.bundle_tier && c.bundle_tier > 1 && c.bundle_total)
-            ? Math.round(c.bundle_total / c.quantity)
-            : c.price,
-          quantity: c.quantity,
-          image: c.poster_image,
-          original_price: c.original_price || c.price,
-          bundle_tier: c.bundle_tier,
-          bundle_savings: c.bundle_savings,
-          bundle_total: c.bundle_total,
-          offer_label: c.offer_label,
-        })),
-      };
+    // Cash on Delivery with ₹1 Advance Online Verification via Settler
+    if (paymentMethod === "cod") {
+      try {
+        setLoading(true);
+        setErrorMessage("");
 
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderPayload),
-      });
+        const res = await fetch("/api/settler/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: 1, // Advance confirmation ₹1 payment
+            customerName: name.trim(),
+            customerEmail: email.trim() || undefined,
+            customerPhone: phone.trim(),
+            title: `COD Advance Verification - ₹1 (${phone.trim().slice(-10)})`,
+            items: cart.map((c) => ({
+              product_id: c.id,
+              quantity: c.quantity,
+            })),
+          }),
+        });
 
-      const orderData = await res.json();
-      if (orderData.success && (orderData.order || orderData.order_id || orderData.id)) {
-        syncAddressAfterOrder();
-        const createdId = orderData.order?.id || orderData.order_id || orderData.id;
-        setConfirmedTotal(grandTotal);
-        setConfirmedOrderId(createdId);
-        setConfirmedPaymentId("Cash on Delivery");
-        setOrderComplete(true);
-
-        // Track Meta Pixel & CAPI Purchase
-        try {
-          trackMetaPixelEvent(
-            "Purchase",
-            {
-              orderId: createdId,
-              value: grandTotal,
-              currency: "INR",
-              numItems: cart.reduce((sum, it) => sum + it.quantity, 0),
-              contentIds: cart.map((it) => it.id),
-            },
-            {
-              phone: phone.trim(),
-              email: email.trim() || undefined,
-              firstName: name.trim().split(" ")[0] || "",
-              lastName: name.trim().split(" ").slice(1).join(" ") || "",
-              city: city.trim(),
-              postalCode: postalCode.trim(),
-            }
+        const data = await res.json();
+        if (!data.success || !data.cashfreeOrderId) {
+          setLoading(false);
+          setErrorMessage(
+            data.error ||
+              "Failed to initialize ₹1 COD verification payment. Please try again."
           );
-        } catch {}
+          return;
+        }
 
-        clearCart();
-        try {
-          localStorage.setItem("zupe_last_cod_order_id", createdId);
-          localStorage.setItem("zupe_last_cod_phone", phone.trim());
-        } catch {}
-      } else {
-        setErrorMessage(orderData.error || "Failed to submit Cash on Delivery order. Please try again.");
+        setSettlerData({
+          invoiceId: data.invoiceId,
+          cashfreeOrderId: data.cashfreeOrderId,
+          amount: 1,
+          qrDataUrl: data.qrDataUrl,
+          upiString: data.upiString,
+          payUrl: data.payUrl,
+        });
+
+        setSettlerModalOpen(true);
+        setLoading(false);
+      } catch (err: any) {
+        console.error("Settler payment error:", err);
+        setErrorMessage(
+          "Failed to initiate secure ₹1 advance payment. Please try again."
+        );
+        setLoading(false);
       }
-    } catch (err: any) {
-      console.error("Order submission error:", err);
-      setErrorMessage("Network error while submitting order. Please check your connection and retry.");
-    } finally {
-      setLoading(false);
+      return;
     }
   };
 
@@ -1708,7 +1683,7 @@ function CheckoutContent() {
 
           {/* Status Badge */}
           <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-[#F4FBE8] text-[#3D6318] mb-2 border border-[#95CF42]/40 font-mograph">
-            {confirmedPaymentId === "Cash on Delivery" ? "Cash on Delivery Confirmed" : "✓ Paid Online & Confirmed"}
+            {confirmedPaymentId.includes("Cash on Delivery") ? "✓ COD Order Confirmed (₹1 Advance Paid)" : "✓ Paid Online & Confirmed"}
           </span>
 
           <h1 className="text-3xl font-bold text-neutral-950 mb-2 font-mograph tracking-tight">
@@ -1716,8 +1691,8 @@ function CheckoutContent() {
           </h1>
 
           <p className="text-sm text-neutral-600 mb-6 leading-relaxed max-w-md mx-auto font-normal">
-            {confirmedPaymentId === "Cash on Delivery" ? (
-              <>Your Cash on Delivery order has been successfully placed! Our logistics team is packaging your items in discreet plain boxes. Please keep ₹{(confirmedTotal || grandTotal).toLocaleString()} in cash or UPI ready for the delivery agent.</>
+            {confirmedPaymentId.includes("Cash on Delivery") ? (
+              <>Your Cash on Delivery order has been successfully placed! ₹1 advance verification payment was received. Our team is packaging your order. Please keep <strong>₹{Math.max(0, (confirmedTotal || grandTotal) - 1).toLocaleString()}</strong> in cash or UPI ready for the delivery courier at your doorstep.</>
             ) : (
               <>Your online payment was successful and your order has been placed! You saved ₹49 on shipping and your package is being prioritized for <strong>Fast Express Dispatch</strong>.</>
             )}
@@ -1743,15 +1718,29 @@ function CheckoutContent() {
             <div className="flex justify-between items-center py-1.5 border-b border-neutral-100">
               <span className="text-neutral-500">Payment Mode:</span>
               <span className="font-semibold text-neutral-900">
-                {confirmedPaymentId === "Cash on Delivery"
-                  ? "Cash on Delivery (Pay at Doorstep)"
+                {confirmedPaymentId.includes("Cash on Delivery")
+                  ? "Cash on Delivery (₹1 Advance Paid)"
                   : "Prepaid (Paid Online via Settler)"}
               </span>
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-neutral-100">
+              <span className="text-neutral-500">Total Order Value:</span>
+              <span className="font-semibold text-neutral-900">
+                ₹{(confirmedTotal || grandTotal).toLocaleString()}
+              </span>
+            </div>
+            {confirmedPaymentId.includes("Cash on Delivery") && (
+              <div className="flex justify-between items-center py-1.5 border-b border-neutral-100">
+                <span className="text-neutral-500">Advance Paid Online:</span>
+                <span className="font-bold text-[#6B9E3A]">
+                  ₹1 (Verified via UPI / Settler)
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between items-center py-1.5 border-b border-neutral-100">
               <span className="text-neutral-500">Estimated Delivery:</span>
               <span className="font-semibold text-neutral-900">
-                {confirmedPaymentId === "Cash on Delivery" ? "5 - 7 Business Days" : "3 - 5 Business Days (Express)"}
+                {confirmedPaymentId.includes("Cash on Delivery") ? "5 - 7 Business Days" : "3 - 5 Business Days (Express)"}
               </span>
             </div>
             <div className="flex justify-between items-start py-1.5 border-b border-neutral-100">
@@ -1762,21 +1751,23 @@ function CheckoutContent() {
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-neutral-100">
               <span className="text-neutral-500">Delivery Charge:</span>
-              <span className={`font-semibold ${confirmedPaymentId === "Cash on Delivery" ? "text-neutral-900" : "text-[#6B9E3A]"}`}>
-                {confirmedPaymentId === "Cash on Delivery" ? "₹49" : "FREE (Saved ₹49)"}
+              <span className={`font-semibold ${confirmedPaymentId.includes("Cash on Delivery") ? "text-neutral-900" : "text-[#6B9E3A]"}`}>
+                {confirmedPaymentId.includes("Cash on Delivery") ? "₹49" : "FREE (Saved ₹49)"}
               </span>
             </div>
             <div className="flex justify-between items-center pt-2 text-sm">
               <span className="font-bold text-neutral-900">
-                {confirmedPaymentId === "Cash on Delivery" ? "Payable on Delivery:" : "Total Paid:"}
+                {confirmedPaymentId.includes("Cash on Delivery") ? "Payable at Doorstep:" : "Total Paid:"}
               </span>
               <div className="text-right">
                 <span className="font-extrabold text-[#3D6318] text-lg block">
-                  ₹{(confirmedTotal || grandTotal).toLocaleString()}
+                  ₹{confirmedPaymentId.includes("Cash on Delivery")
+                    ? Math.max(0, (confirmedTotal || grandTotal) - 1).toLocaleString()
+                    : (confirmedTotal || grandTotal).toLocaleString()}
                 </span>
                 <span className="text-[10px] font-bold block text-neutral-500">
-                  {confirmedPaymentId === "Cash on Delivery"
-                    ? "Pay cash or UPI to courier"
+                  {confirmedPaymentId.includes("Cash on Delivery")
+                    ? "Pay cash or UPI to courier at delivery"
                     : "Paid securely via Settler"}
                 </span>
               </div>
@@ -2739,7 +2730,7 @@ function CheckoutContent() {
                               Cash on Delivery (Doorstep Delivery)
                             </h4>
                             <p className="text-xs text-neutral-500 mt-0.5 font-normal">
-                              No online payment required • Pay upon receiving package
+                              Pay ₹1 advance online to confirm • Pay balance at your doorstep
                             </p>
                           </div>
                         </div>
@@ -2754,25 +2745,27 @@ function CheckoutContent() {
                         <span className="text-[11px] font-semibold text-neutral-600">5–7 Business Days • +₹49 Delivery Fee</span>
                       </div>
 
-                      {/* Payable on Delivery Row */}
-                      <div className="flex items-center justify-between pt-3.5 mt-3.5 border-t border-neutral-200/80">
-                        <div>
-                          <p className="text-[11px] text-neutral-500 font-medium">Payable at Doorstep</p>
-                          <p className="text-lg sm:text-xl font-black text-neutral-950">
-                            ₹{(paymentMethod === "cod" ? grandTotal : (grandTotal + 49)).toLocaleString()}
-                          </p>
+                      {/* Payment Split Row (Pay ₹1 Now + Balance at Doorstep) */}
+                      <div className="grid grid-cols-2 gap-3 pt-3.5 mt-3.5 border-t border-neutral-200/80">
+                        <div className="p-2.5 rounded-xl bg-white border border-[#95CF42]/50 shadow-2xs">
+                          <p className="text-[10px] text-[#3D6318] font-bold uppercase tracking-wider">Pay Now (Advance)</p>
+                          <p className="text-lg sm:text-xl font-black text-neutral-950 mt-0.5">₹1</p>
+                          <span className="text-[10px] text-neutral-500 block mt-0.5">Instant online via UPI</span>
                         </div>
-                        <div className="px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200 text-neutral-700 text-xs font-bold flex items-center gap-1">
-                          <Check className="w-3.5 h-3.5 stroke-[3] text-neutral-600" />
-                          <span>Pay Cash or UPI to Courier</span>
+                        <div className="p-2.5 rounded-xl bg-white border border-neutral-200 shadow-2xs">
+                          <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">At Doorstep</p>
+                          <p className="text-lg sm:text-xl font-black text-neutral-950 mt-0.5">
+                            ₹{Math.max(0, (paymentMethod === "cod" ? grandTotal : (grandTotal + 49)) - 1).toLocaleString()}
+                          </p>
+                          <span className="text-[10px] text-neutral-500 block mt-0.5">Pay Cash or UPI to Courier</span>
                         </div>
                       </div>
 
                       {/* Explanation Note */}
                       <div className="p-2.5 rounded-xl bg-white border border-neutral-200 flex items-start gap-2 mt-3 font-normal">
-                        <ShieldCheck className="w-3.5 h-3.5 text-neutral-500 shrink-0 mt-0.5" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-[#6B9E3A] shrink-0 mt-0.5" />
                         <p className="text-[11px] text-neutral-600 leading-snug">
-                          Shipped in 100% plain, discreet packaging. Pay in cash or through UPI app (GPay, PhonePe, Paytm) to the delivery courier.
+                          Pay ₹1 online now to confirm order. Remaining ₹{Math.max(0, (paymentMethod === "cod" ? grandTotal : (grandTotal + 49)) - 1).toLocaleString()} will be collected upon delivery in cash or UPI. Shipped in 100% plain, discreet packaging.
                         </p>
                       </div>
                     </div>
@@ -2917,14 +2910,14 @@ function CheckoutContent() {
                       {loading ? (
                         <div className="flex items-center gap-2">
                           <Loader2 className="w-5 h-5 animate-spin text-black" />
-                          <span>{isCod ? "Placing COD Order..." : "Opening Secure Payment..."}</span>
+                          <span>{isCod ? "Opening Secure ₹1 Payment..." : "Opening Secure Payment..."}</span>
                         </div>
                       ) : hasOutOfStockItems ? (
                         <span>⚠️ Remove Out of Stock Items to Continue</span>
                       ) : isCod ? (
                         <>
                           <ShoppingBag className="w-5 h-5" />
-                          <span>Confirm Cash on Delivery Order • ₹{grandTotal.toLocaleString()}</span>
+                          <span>Pay ₹1 &amp; Confirm COD Order • ₹{Math.max(0, grandTotal - 1).toLocaleString()} at Doorstep</span>
                           <ArrowRight className="w-5 h-5 stroke-[2.5]" />
                         </>
                       ) : (
@@ -2937,7 +2930,7 @@ function CheckoutContent() {
                     </button>
                     <p className="text-center text-[11px] text-neutral-500 mt-2 font-normal">
                       {isCod
-                        ? `Pay ₹${grandTotal.toLocaleString()} in cash or UPI to courier at delivery`
+                        ? `Pay ₹1 online advance now to confirm • Remaining ₹${Math.max(0, grandTotal - 1).toLocaleString()} payable in cash or UPI upon delivery`
                         : "🔒 256-bit Bank Grade SSL Encrypted • Powered by Settler"}
                     </p>
                   </div>
@@ -3204,27 +3197,40 @@ function CheckoutContent() {
               </div>
 
               {/* Total Payable Box */}
-              <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100/90 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-bold text-gray-900">
-                    {isCod ? "Total Payable (Cash on Delivery)" : "Total Payable (Pay Online)"}
-                  </p>
-                  <p className="text-[11px] text-amber-800 font-medium">
-                    {isCod ? "Pay cash or UPI upon delivery" : "Pay via UPI, Cards, Netbanking"}
-                  </p>
+              <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100/90 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">
+                      {isCod ? "Total Order Value (COD)" : "Total Payable (Pay Online)"}
+                    </p>
+                    <p className="text-[11px] text-amber-800 font-medium">
+                      {isCod ? "₹1 Online Advance + Balance at Doorstep" : "Pay via UPI, Cards, Netbanking"}
+                    </p>
+                  </div>
+                  <span className="text-xl font-black text-gray-950">
+                    ₹{grandTotal.toLocaleString()}
+                  </span>
                 </div>
-                <span className="text-xl font-black text-gray-950">
-                  ₹{grandTotal.toLocaleString()}
-                </span>
+
+                {isCod && (
+                  <div className="pt-2 border-t border-emerald-200/60 flex items-center justify-between text-xs font-semibold">
+                    <span className="text-[#3D6318]">
+                      Pay Now (Advance): <strong className="text-neutral-950 font-bold">₹1</strong>
+                    </span>
+                    <span className="text-neutral-700">
+                      At Doorstep: <strong className="text-neutral-950 font-bold">₹{Math.max(0, grandTotal - 1).toLocaleString()}</strong>
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Payment Pill */}
               {isCod ? (
-                <div className="p-2.5 rounded-xl bg-amber-50/90 text-amber-900 text-xs font-semibold flex items-center gap-2">
+                <div className="p-2.5 rounded-xl bg-amber-50/90 text-amber-900 text-xs font-semibold flex items-center gap-2 border border-amber-200/60">
                   <div className="w-5 h-5 rounded-full bg-amber-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">
                     ✓
                   </div>
-                  <span>100% Cash on Delivery • Zero Advance Required</span>
+                  <span>Pay ₹1 online advance now • Balance ₹{Math.max(0, grandTotal - 1).toLocaleString()} upon delivery</span>
                 </div>
               ) : (
                 <div className="p-2.5 rounded-xl bg-[#F4FBE8] text-[#3D6318] text-xs font-semibold flex items-center gap-2 border border-[#95CF42]/40">

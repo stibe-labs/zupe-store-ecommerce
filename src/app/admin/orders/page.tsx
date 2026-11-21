@@ -783,6 +783,10 @@ function AdminOrdersContent() {
                               </span>
                             ) : ord.payment_status === "Completed" || ord.payment_status === "paid" ? (
                               <span className="text-emerald-600 font-bold">✓ Paid</span>
+                            ) : ord.advance_paid && ord.advance_paid > 0 ? (
+                              <span className="text-emerald-700 font-bold text-[10px] block">
+                                ₹{ord.advance_paid} Adv • ₹{ord.balance_due || Math.max(0, ord.total_amount - ord.advance_paid)} Due
+                              </span>
                             ) : (
                               <span className="text-amber-600 font-medium">Pending</span>
                             )}
@@ -790,6 +794,11 @@ function AdminOrdersContent() {
                         </td>
                         <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
                           ₹{ord.total_amount}
+                          {ord.advance_paid && ord.advance_paid > 0 && ord.advance_paid < ord.total_amount ? (
+                            <span className="block text-[10px] font-semibold text-amber-800">
+                              ₹{ord.balance_due || Math.max(0, ord.total_amount - ord.advance_paid)} due at door
+                            </span>
+                          ) : null}
                         </td>
                         <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap">
                           <span>Cost: ₹{ord.product_cost}</span>

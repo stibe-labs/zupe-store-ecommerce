@@ -127,13 +127,15 @@ export default function SettlerPaymentModal({
           <div className="flex items-center gap-2 mb-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-[11px] font-bold tracking-wider uppercase text-emerald-400">
-              Instant Bank Settlement
+              {amount === 1 ? "COD Advance Verification (₹1)" : "Instant Bank Settlement"}
             </span>
           </div>
 
           <div className="flex items-baseline justify-between pr-8">
             <div>
-              <p className="text-xs text-stone-300 font-medium">Total Payable</p>
+              <p className="text-xs text-stone-300 font-medium">
+                {amount === 1 ? "Pay Advance Now" : "Total Payable"}
+              </p>
               <p className="text-3xl font-extrabold text-white tracking-tight">
                 ₹{Number(amount).toLocaleString("en-IN")}
               </p>
@@ -184,8 +186,9 @@ export default function SettlerPaymentModal({
                 Payment Verified!
               </h3>
               <p className="text-sm text-stone-600 max-w-xs">
-                Your payment of ₹{Number(amount).toLocaleString("en-IN")} has
-                been confirmed. Finalizing your order...
+                {amount === 1
+                  ? "Your ₹1 advance verification is confirmed! Finalizing your Cash on Delivery order..."
+                  : `Your payment of ₹${Number(amount).toLocaleString("en-IN")} has been confirmed. Finalizing your order...`}
               </p>
             </div>
           ) : activeTab === "upi" ? (
@@ -212,7 +215,9 @@ export default function SettlerPaymentModal({
                 </div>
 
                 <p className="text-[11px] text-stone-500 mt-1">
-                  Zero surcharge • Instant automated verification
+                  {amount === 1
+                    ? "Pay ₹1 to confirm order • Balance payable in cash/UPI at doorstep"
+                    : "Zero surcharge • Instant automated verification"}
                 </p>
               </div>
 

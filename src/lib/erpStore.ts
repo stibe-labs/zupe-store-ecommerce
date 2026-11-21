@@ -78,6 +78,8 @@ export interface ERPOrder {
   status: string;
   payment_method: string;
   payment_status: string;
+  advance_paid?: number;
+  balance_due?: number;
   shipping_address: string;
   shiprocket_awb?: string;
   tracking_number?: string;
@@ -910,6 +912,8 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
     status: orderData.status || "Processing",
     payment_method: paymentMethod,
     payment_status: orderData.payment_status || (paymentMethod === "COD" ? "Pending" : "Completed"),
+    advance_paid: orderData.advance_paid !== undefined ? Number(orderData.advance_paid) : (paymentMethod === "Prepaid" ? total : 0),
+    balance_due: orderData.balance_due !== undefined ? Number(orderData.balance_due) : (paymentMethod === "Prepaid" ? 0 : total),
     shipping_address: orderData.shipping_address || "India",
     shiprocket_awb: orderData.shiprocket_awb || "",
     courier_partner: orderData.courier_partner || "",

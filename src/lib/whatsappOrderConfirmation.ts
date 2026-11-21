@@ -343,6 +343,9 @@ export async function sendOrderConfirmationWhatsApp(
 
   let message: string;
   if (paymentMethod === "cod") {
+    const advancePaid = Number((order as any).advance_paid) || 0;
+    const doorstepDue = advancePaid > 0 ? Math.max(0, totalAmount - advancePaid) : totalAmount;
+
     message =
       "✅ *Order Confirmed — " + siteConfig.name + "!* 🛍️\n\n" +
       "Hi " + firstName + "! Your Cash on Delivery order is confirmed.\n\n" +
@@ -350,7 +353,10 @@ export async function sendOrderConfirmationWhatsApp(
       "📋 *Items:*\n" + itemLines + moreItems + "\n\n" +
       "💰 *Price Breakdown:*\n" +
       "  • Total Amount: Rs " + totalAmount.toLocaleString("en-IN") + "\n" +
-      "  • *Payable on Delivery: Rs " + totalAmount.toLocaleString("en-IN") + " (Cash / UPI)*\n\n" +
+      (advancePaid > 0
+        ? "  • Advance Paid Online: Rs " + advancePaid.toLocaleString("en-IN") + " (Paid via UPI)\n" +
+          "  • *Payable on Delivery: Rs " + doorstepDue.toLocaleString("en-IN") + " (Cash / UPI)*\n\n"
+        : "  • *Payable on Delivery: Rs " + totalAmount.toLocaleString("en-IN") + " (Cash / UPI)*\n\n") +
       "🚚 *Estimated Delivery:* 5-7 Business Days\n\n" +
       "📦 *Track Your Order:*\n" +
       trackUrl + "\n\n" +

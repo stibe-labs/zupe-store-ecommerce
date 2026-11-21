@@ -171,6 +171,14 @@ export async function POST(req: NextRequest) {
     const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const confirmToken = `tok_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`;
 
+    const isCodPartial = Boolean(
+      order_payload.is_cod_partial ||
+      order_payload.payment_method === "Cash on Delivery" ||
+      order_payload.payment_method?.includes("Cash on Delivery")
+    );
+    const advancePaid = Number(order_payload.advance_paid) || (isCodPartial ? 1 : Number(total_amount));
+    const balanceDue = Number(order_payload.balance_due) || Math.max(0, Number(total_amount) - advancePaid);
+
     const newOrder: OrderRecord = {
       id: orderId,
       user_id: effectiveUserId,
@@ -183,8 +191,8 @@ export async function POST(req: NextRequest) {
       total_amount: Number(total_amount),
       discount_amount: Number(discount_amount || 0),
       promo_code: promo_code || undefined,
-      payment_method: "Prepaid (UPI / Settler)",
-      payment_status: "paid",
+      payment_method: isCodPartial ? "Cash on Delivery" : (order_payload.payment_method || "Prepaid (UPI / Settler)"),
+      payment_status: isCodPartial ? "partial" : "paid",
       order_status: "processing",
       whatsapp_confirm_status: "pending_whatsapp",
       whatsapp_confirm_token: confirmToken,
@@ -196,7 +204,9 @@ export async function POST(req: NextRequest) {
     (newOrder as any).settler_invoice_id = invoiceId;
     (newOrder as any).cashfree_order_id = cashfreeOrderId;
     (newOrder as any).cashfree_payment_id = paymentId;
-    (newOrder as any).advance_paid = Number(total_amount);
+    (newOrder as any).advance_paid = advancePaid;
+    (newOrder as any).balance_due = balanceDue;
+    (newOrder as any).is_cod_partial = isCodPartial;
 
     await createOrder(newOrder);
 
