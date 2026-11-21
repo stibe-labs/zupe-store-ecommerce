@@ -513,12 +513,14 @@ export function GymSupplementsShowcaseCustomizer({
             className={`transition-all duration-300 w-full ${
               previewDevice === "mobile"
                 ? "max-w-[400px] border-8 border-neutral-800 rounded-[38px] shadow-2xl overflow-hidden bg-neutral-900"
-                : "max-w-5xl"
+                : "max-w-4xl"
             }`}
           >
             {/* The Live Rendered Card with Preserved Texture */}
             <div
-              className="relative rounded-3xl overflow-hidden p-4 sm:p-6 md:p-8 shadow-xl transition-all"
+              className={`relative rounded-3xl overflow-hidden shadow-xl transition-all ${
+                previewDevice === "mobile" ? "p-4" : "p-4 sm:p-5 md:p-6"
+              }`}
               style={{
                 background: `linear-gradient(to bottom, ${draftConfig.bgGradientFrom}, ${draftConfig.bgGradientVia}, ${draftConfig.bgGradientTo})`,
                 border: `1px solid ${draftConfig.borderColor}66`,
@@ -541,17 +543,27 @@ export function GymSupplementsShowcaseCustomizer({
               />
 
               {/* Headings */}
-              <div className="relative mb-3">
-                <span className="text-[10px] sm:text-xs font-bold tracking-[0.22em] uppercase text-[#D5EBBF] block mb-1">
+              <div className="relative mb-2.5">
+                <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-[#D5EBBF] block mb-0.5">
                   {draftConfig.overlineText}
                 </span>
-                <h3 className="font-movault text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-tight">
+                <h3
+                  className={`font-movault font-extrabold text-white tracking-tight leading-tight ${
+                    previewDevice === "mobile" ? "text-lg sm:text-xl" : "text-xl sm:text-2xl"
+                  }`}
+                >
                   {draftConfig.headingText}
                 </h3>
               </div>
 
               {/* Category Switcher Tabs */}
-              <div className="relative flex items-center justify-between sm:justify-start gap-2.5 sm:gap-6 pt-3 pb-2 mb-3 overflow-x-auto no-scrollbar">
+              <div
+                className={`relative flex items-center justify-between sm:justify-start overflow-x-auto no-scrollbar ${
+                  previewDevice === "mobile"
+                    ? "gap-2.5 pt-2 pb-1 mb-2"
+                    : "gap-3 sm:gap-5 pt-2 pb-1.5 mb-2.5"
+                }`}
+              >
                 {draftConfig.categories.map((tab) => {
                   const isActive = tab.id === activeTabId;
                   return (
@@ -562,7 +574,11 @@ export function GymSupplementsShowcaseCustomizer({
                       className="group flex flex-col items-center shrink-0 cursor-pointer transition-all focus:outline-none"
                     >
                       <div
-                        className={`relative w-13 h-13 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center transition-all p-2 overflow-hidden ${
+                        className={`relative rounded-2xl flex items-center justify-center transition-all overflow-hidden ${
+                          previewDevice === "mobile"
+                            ? "w-13 h-13 p-2"
+                            : "w-12 h-12 sm:w-13 sm:h-13 p-1.5 sm:p-2"
+                        } ${
                           isActive
                             ? "bg-[#D8ECC0] ring-2 ring-white/95 shadow-md scale-105"
                             : "bg-white/20 hover:bg-white/30 opacity-80 group-hover:opacity-100"
@@ -574,12 +590,12 @@ export function GymSupplementsShowcaseCustomizer({
                             alt={tab.label}
                             fill
                             className="object-contain"
-                            sizes="64px"
+                            sizes="56px"
                           />
                         </div>
                       </div>
                       <span
-                        className={`font-mograph text-[11px] sm:text-xs mt-1.5 transition-colors text-center whitespace-nowrap ${
+                        className={`font-mograph text-[11px] sm:text-xs mt-1 transition-colors text-center whitespace-nowrap ${
                           isActive
                             ? "text-white font-bold tracking-tight"
                             : "text-[#E3F2CE]/80 font-medium"
@@ -588,8 +604,8 @@ export function GymSupplementsShowcaseCustomizer({
                         {tab.label}
                       </span>
                       <div
-                        className={`h-0.5 sm:h-1 rounded-full mt-1 transition-all ${
-                          isActive ? "w-8 sm:w-12 bg-white" : "w-0 bg-transparent"
+                        className={`h-0.5 rounded-full mt-1 transition-all ${
+                          isActive ? "w-8 sm:w-10 bg-white" : "w-0 bg-transparent"
                         }`}
                       />
                     </button>
@@ -598,7 +614,11 @@ export function GymSupplementsShowcaseCustomizer({
               </div>
 
               {/* Products Row Preview (Swipeable 1-row) */}
-              <div className="flex flex-row overflow-x-auto snap-x snap-mandatory gap-2.5 sm:gap-3.5 pb-2 pt-1 no-scrollbar w-full items-stretch">
+              <div
+                className={`flex flex-row overflow-x-auto snap-x snap-mandatory pb-2 pt-1 no-scrollbar w-full items-stretch ${
+                  previewDevice === "mobile" ? "gap-2.5" : "gap-2 sm:gap-3"
+                }`}
+              >
                 {(activeCategory.items || []).length === 0 ? (
                   <div className="w-full py-8 text-center text-white/70 text-xs bg-white/5 rounded-2xl border border-white/10">
                     No products added to this category tab yet. Click "Add Products from Catalog" below.
@@ -610,14 +630,14 @@ export function GymSupplementsShowcaseCustomizer({
                       className={`group shrink-0 snap-start flex flex-col ${
                         previewDevice === "mobile"
                           ? "w-[calc((100%-16px)/2.25)] min-w-[calc((100%-16px)/2.25)]"
-                          : "w-[calc((100%-48px)/4.25)] min-w-[calc((100%-48px)/4.25)]"
+                          : "w-[calc((100%-36px)/4.35)] min-w-[calc((100%-36px)/4.35)] max-w-[210px]"
                       } transition-transform`}
                     >
                       <div
                         className={`relative w-full rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-xs ${
                           previewDevice === "mobile"
                             ? "aspect-[4/5] p-2"
-                            : "aspect-square p-2.5 sm:p-3"
+                            : "aspect-square max-h-[185px] p-2 sm:p-2.5"
                         }`}
                       >
                         <Image
@@ -625,15 +645,15 @@ export function GymSupplementsShowcaseCustomizer({
                           alt={prod.name}
                           fill
                           className={`object-contain ${
-                            previewDevice === "mobile" ? "p-1.5" : "p-1 sm:p-1.5"
+                            previewDevice === "mobile" ? "p-1.5" : "p-1 sm:p-1"
                           }`}
                           sizes="150px"
                         />
                       </div>
-                      <h4 className="font-mograph text-[11px] sm:text-xs font-bold text-white text-center leading-snug line-clamp-1 mt-2 px-1">
+                      <h4 className="font-mograph text-[11px] sm:text-xs font-bold text-white text-center leading-snug line-clamp-1 mt-1.5 px-1">
                         {prod.name}
                       </h4>
-                      <p className="font-movault text-xs sm:text-sm font-black text-[#FEF08A] text-center tracking-tight mt-0.5">
+                      <p className="font-movault text-xs font-black text-[#FEF08A] text-center tracking-tight mt-0.5">
                         {prod.discountTag}
                       </p>
                     </div>
@@ -642,9 +662,13 @@ export function GymSupplementsShowcaseCustomizer({
               </div>
 
               {/* Explore Button */}
-              <div className="mt-4 sm:mt-5 text-center">
+              <div className="mt-3 sm:mt-4 text-center">
                 <span
-                  className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-extrabold text-neutral-950 bg-white shadow-md border border-white px-5 sm:px-7 py-2 rounded-full cursor-pointer font-mograph"
+                  className={`inline-flex items-center gap-1.5 font-extrabold text-neutral-950 bg-white shadow-md border border-white rounded-full cursor-pointer font-mograph ${
+                    previewDevice === "mobile"
+                      ? "text-[11px] px-5 py-1.5"
+                      : "text-xs px-5 sm:px-6 py-1.5 sm:py-2"
+                  }`}
                   style={{
                     backgroundImage: "radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px)",
                     backgroundSize: "6px 6px",

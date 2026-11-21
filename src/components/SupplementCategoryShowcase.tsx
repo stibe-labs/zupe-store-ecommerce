@@ -73,10 +73,10 @@ export function SupplementCategoryShowcase({
   const borderColor = showcaseConfig.borderColor || "#6B9E3A";
 
   return (
-    <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+    <section className="w-full max-w-[1680px] md:max-w-5xl lg:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-6">
       {/* Outer Card with Dynamic Background Color Gradient & Preserved Pattern Texture */}
       <div
-        className="relative rounded-3xl sm:rounded-[36px] overflow-hidden p-4 sm:p-7 md:p-8 shadow-lg transition-colors duration-300"
+        className="relative rounded-3xl sm:rounded-[36px] md:rounded-[28px] overflow-hidden p-4 sm:p-7 md:p-6 lg:p-6 shadow-lg transition-colors duration-300"
         style={{
           background: `linear-gradient(to bottom, ${fromColor}, ${viaColor}, ${toColor})`,
           border: `1px solid ${borderColor}66`,
@@ -101,11 +101,11 @@ export function SupplementCategoryShowcase({
         {/* ================================================================= */}
         {/* TOP HEADER ROW: Overline & Heading                               */}
         {/* ================================================================= */}
-        <div className="relative mb-3 sm:mb-4">
-          <span className="text-[10px] sm:text-xs font-bold tracking-[0.22em] uppercase text-[#D5EBBF] block mb-1">
+        <div className="relative mb-3 sm:mb-4 md:mb-3">
+          <span className="text-[10px] sm:text-xs md:text-[11px] font-bold tracking-[0.22em] uppercase text-[#D5EBBF] block mb-1">
             {showcaseConfig.overlineText || "PRO GYM NUTRITION"}
           </span>
-          <h3 className="font-movault text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
+          <h3 className="font-movault text-xl sm:text-2xl md:text-2xl lg:text-3xl font-extrabold text-white tracking-tight leading-tight">
             {showcaseConfig.headingText || "Fuel Every Workout"}
           </h3>
         </div>
@@ -113,7 +113,7 @@ export function SupplementCategoryShowcase({
         {/* ================================================================= */}
         {/* CATEGORY SWITCHER TABS (Horizontal Scroll with Room for Icons)    */}
         {/* ================================================================= */}
-        <div className="relative flex items-center justify-between sm:justify-start gap-3 sm:gap-6 md:gap-8 pt-4 pb-2.5 mb-3 sm:mb-5 overflow-x-auto no-scrollbar scroll-smooth">
+        <div className="relative flex items-center justify-between sm:justify-start gap-3 sm:gap-6 md:gap-6 pt-3 md:pt-2 pb-2 md:pb-1.5 mb-2.5 sm:mb-4 md:mb-3 overflow-x-auto no-scrollbar scroll-smooth">
           {categories.map((tab) => {
             const isActive = tab.id === activeTabId;
             return (
@@ -125,7 +125,7 @@ export function SupplementCategoryShowcase({
               >
                 {/* Rounded Icon Squircle Pill - ample padding & headroom so cap is never cut */}
                 <div
-                  className={`relative w-15 h-15 sm:w-18 sm:h-18 rounded-2xl sm:rounded-3xl flex items-center justify-center transition-all duration-300 p-2 sm:p-2.5 overflow-hidden ${
+                  className={`relative w-15 h-15 sm:w-18 sm:h-18 md:w-13 md:h-13 lg:w-14 lg:h-14 rounded-2xl sm:rounded-3xl md:rounded-2xl flex items-center justify-center transition-all duration-300 p-2 sm:p-2.5 md:p-2 overflow-hidden ${
                     isActive
                       ? "bg-[#D8ECC0] ring-2 ring-white/95 shadow-md scale-105"
                       : "bg-white/20 hover:bg-white/30 backdrop-blur-xs opacity-85 group-hover:opacity-100"
@@ -137,14 +137,14 @@ export function SupplementCategoryShowcase({
                       alt={tab.label}
                       fill
                       className="object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
-                      sizes="72px"
+                      sizes="(max-width: 768px) 72px, 56px"
                     />
                   </div>
                 </div>
 
                 {/* Tab Label */}
                 <span
-                  className={`font-mograph text-xs sm:text-sm mt-2 transition-colors text-center whitespace-nowrap ${
+                  className={`font-mograph text-xs sm:text-sm md:text-xs mt-1.5 md:mt-1 transition-colors text-center whitespace-nowrap ${
                     isActive
                       ? "text-white font-bold tracking-tight"
                       : "text-[#E3F2CE]/80 font-medium group-hover:text-white"
@@ -155,8 +155,8 @@ export function SupplementCategoryShowcase({
 
                 {/* White Active Underline Bar */}
                 <div
-                  className={`h-1 rounded-full mt-1.5 transition-all duration-300 ${
-                    isActive ? "w-10 sm:w-14 bg-white" : "w-0 bg-transparent"
+                  className={`h-1 md:h-0.5 rounded-full mt-1.5 md:mt-1 transition-all duration-300 ${
+                    isActive ? "w-10 sm:w-14 md:w-10 bg-white" : "w-0 bg-transparent"
                   }`}
                 />
               </button>
@@ -174,32 +174,32 @@ export function SupplementCategoryShowcase({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.24, ease: "easeOut" }}
-            className="flex flex-row overflow-x-auto snap-x snap-mandatory gap-3 sm:gap-4 pb-3 sm:pb-4 pt-1 scroll-smooth no-scrollbar w-full items-stretch"
+            className="flex flex-row overflow-x-auto snap-x snap-mandatory gap-3 sm:gap-4 md:gap-3.5 pb-2.5 sm:pb-3 md:pb-2 pt-1 scroll-smooth no-scrollbar w-full items-stretch"
           >
             {(activeTab.items || []).map((prod) => (
               <Link
                 key={prod.id}
                 href={`/products/${prod.slug || prod.id}`}
-                className="group shrink-0 snap-start flex flex-col w-[calc((100%-20px)/2.25)] min-w-[calc((100%-20px)/2.25)] sm:w-[calc((100%-36px)/3.25)] sm:min-w-[calc((100%-36px)/3.25)] md:w-[calc((100%-48px)/4.25)] md:min-w-[calc((100%-48px)/4.25)] transition-transform duration-200 hover:-translate-y-1"
+                className="group shrink-0 snap-start flex flex-col w-[calc((100%-20px)/2.25)] min-w-[calc((100%-20px)/2.25)] sm:w-[calc((100%-36px)/3.25)] sm:min-w-[calc((100%-36px)/3.25)] md:w-[calc((100%-48px)/4.35)] md:min-w-[calc((100%-48px)/4.35)] md:max-w-[215px] lg:max-w-[230px] transition-transform duration-200 hover:-translate-y-1"
               >
                 {/* Product Image Container — Compact aspect-square on desktop view */}
-                <div className="relative aspect-[4/5] md:aspect-square w-full rounded-2xl sm:rounded-3xl bg-white p-3 sm:p-4 md:p-3 flex items-center justify-center overflow-hidden shadow-xs group-hover:shadow-md transition-shadow">
+                <div className="relative aspect-[4/5] md:aspect-square md:max-h-[195px] lg:max-h-[210px] w-full rounded-2xl sm:rounded-3xl md:rounded-2xl bg-white p-3 sm:p-4 md:p-2.5 lg:p-3 flex items-center justify-center overflow-hidden shadow-xs group-hover:shadow-md transition-shadow">
                   <Image
                     src={prod.image || "/vittal/product-whey-protein-jar.png"}
                     alt={prod.name}
                     fill
-                    className="object-contain p-2 md:p-1 group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 640px) 45vw, 250px"
+                    className="object-contain p-2 md:p-1.5 group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 220px"
                   />
                 </div>
 
                 {/* Product Name (Clean & Truncated) */}
-                <h4 className="font-mograph text-xs sm:text-sm font-bold text-white text-center leading-snug line-clamp-1 mt-2.5 px-1 group-hover:text-[#FEF08A] transition-colors">
+                <h4 className="font-mograph text-xs sm:text-sm md:text-xs font-bold text-white text-center leading-snug line-clamp-1 mt-2.5 md:mt-1.5 px-1 group-hover:text-[#FEF08A] transition-colors">
                   {prod.name}
                 </h4>
 
                 {/* Offer in Bold */}
-                <p className="font-movault text-sm sm:text-base font-black text-[#FEF08A] text-center tracking-tight mt-0.5">
+                <p className="font-movault text-sm sm:text-base md:text-xs lg:text-sm font-black text-[#FEF08A] text-center tracking-tight mt-0.5">
                   {prod.discountTag}
                 </p>
               </Link>
@@ -208,17 +208,17 @@ export function SupplementCategoryShowcase({
         </AnimatePresence>
 
         {/* View All Supplements Footer Button (Plain White with subtle texture, Black Font) */}
-        <div className="mt-5 sm:mt-7 text-center">
+        <div className="mt-4 sm:mt-6 md:mt-4 text-center">
           <Link
             href={showcaseConfig.buttonLink || "/products?category=Gym+Supplementaries"}
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-extrabold text-neutral-950 bg-white hover:bg-neutral-50 active:bg-neutral-100 shadow-md hover:shadow-lg border border-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full transition-all hover:scale-105 cursor-pointer font-mograph"
+            className="inline-flex items-center gap-1.5 md:gap-2 text-xs sm:text-sm md:text-xs font-extrabold text-neutral-950 bg-white hover:bg-neutral-50 active:bg-neutral-100 shadow-md hover:shadow-lg border border-white px-5 sm:px-8 md:px-6 py-2 sm:py-3 md:py-2 rounded-full transition-all hover:scale-105 cursor-pointer font-mograph"
             style={{
               backgroundImage: "radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px)",
               backgroundSize: "6px 6px",
             }}
           >
             <span>{showcaseConfig.buttonText || "Explore All Gym Supplements"}</span>
-            <ChevronRight className="w-4 h-4 stroke-[2.5] text-neutral-950" />
+            <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4 stroke-[2.5] text-neutral-950" />
           </Link>
         </div>
       </div>
