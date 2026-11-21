@@ -607,14 +607,26 @@ export function GymSupplementsShowcaseCustomizer({
                   activeCategory.items.map((prod) => (
                     <div
                       key={prod.id}
-                      className="group shrink-0 snap-start flex flex-col w-[calc((100%-16px)/2.25)] min-w-[calc((100%-16px)/2.25)] sm:w-[calc((100%-36px)/3.25)] sm:min-w-[calc((100%-36px)/3.25)] md:w-[calc((100%-48px)/4.25)] md:min-w-[calc((100%-48px)/4.25)] transition-transform"
+                      className={`group shrink-0 snap-start flex flex-col ${
+                        previewDevice === "mobile"
+                          ? "w-[calc((100%-16px)/2.25)] min-w-[calc((100%-16px)/2.25)]"
+                          : "w-[calc((100%-48px)/4.25)] min-w-[calc((100%-48px)/4.25)]"
+                      } transition-transform`}
                     >
-                      <div className="relative aspect-[4/5] w-full rounded-2xl bg-white p-2 sm:p-3 flex items-center justify-center overflow-hidden shadow-xs">
+                      <div
+                        className={`relative w-full rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-xs ${
+                          previewDevice === "mobile"
+                            ? "aspect-[4/5] p-2"
+                            : "aspect-square p-2.5 sm:p-3"
+                        }`}
+                      >
                         <Image
                           src={prod.image || "/vittal/product-whey-protein-jar.png"}
                           alt={prod.name}
                           fill
-                          className="object-contain p-1.5"
+                          className={`object-contain ${
+                            previewDevice === "mobile" ? "p-1.5" : "p-1 sm:p-1.5"
+                          }`}
                           sizes="150px"
                         />
                       </div>

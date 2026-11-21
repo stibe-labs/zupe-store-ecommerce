@@ -76,7 +76,7 @@ export function SupplementCategoryShowcase({
     <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       {/* Outer Card with Dynamic Background Color Gradient & Preserved Pattern Texture */}
       <div
-        className="relative rounded-3xl sm:rounded-[36px] overflow-hidden p-4 sm:p-7 md:p-9 shadow-lg transition-colors duration-300"
+        className="relative rounded-3xl sm:rounded-[36px] overflow-hidden p-4 sm:p-7 md:p-8 shadow-lg transition-colors duration-300"
         style={{
           background: `linear-gradient(to bottom, ${fromColor}, ${viaColor}, ${toColor})`,
           border: `1px solid ${borderColor}66`,
@@ -174,7 +174,7 @@ export function SupplementCategoryShowcase({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.24, ease: "easeOut" }}
-            className="flex flex-row overflow-x-auto snap-x snap-mandatory gap-3 sm:gap-4 pb-4 pt-1 scroll-smooth no-scrollbar w-full items-stretch"
+            className="flex flex-row overflow-x-auto snap-x snap-mandatory gap-3 sm:gap-4 pb-3 sm:pb-4 pt-1 scroll-smooth no-scrollbar w-full items-stretch"
           >
             {(activeTab.items || []).map((prod) => (
               <Link
@@ -182,13 +182,13 @@ export function SupplementCategoryShowcase({
                 href={`/products/${prod.slug || prod.id}`}
                 className="group shrink-0 snap-start flex flex-col w-[calc((100%-20px)/2.25)] min-w-[calc((100%-20px)/2.25)] sm:w-[calc((100%-36px)/3.25)] sm:min-w-[calc((100%-36px)/3.25)] md:w-[calc((100%-48px)/4.25)] md:min-w-[calc((100%-48px)/4.25)] transition-transform duration-200 hover:-translate-y-1"
               >
-                {/* Product Image Container */}
-                <div className="relative aspect-[4/5] w-full rounded-2xl sm:rounded-3xl bg-white p-3 sm:p-4 flex items-center justify-center overflow-hidden shadow-xs group-hover:shadow-md transition-shadow">
+                {/* Product Image Container — Compact aspect-square on desktop view */}
+                <div className="relative aspect-[4/5] md:aspect-square w-full rounded-2xl sm:rounded-3xl bg-white p-3 sm:p-4 md:p-3 flex items-center justify-center overflow-hidden shadow-xs group-hover:shadow-md transition-shadow">
                   <Image
                     src={prod.image || "/vittal/product-whey-protein-jar.png"}
                     alt={prod.name}
                     fill
-                    className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                    className="object-contain p-2 md:p-1 group-hover:scale-105 transition-transform duration-300"
                     sizes="(max-width: 640px) 45vw, 250px"
                   />
                 </div>
