@@ -246,12 +246,16 @@ export function Navbar() {
                 )}
               </div>
 
-              {/* Best Sellers */}
+              {/* Shop */}
               <Link
-                href="/products?sort=best_selling"
-                className="px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide text-neutral-700 hover:text-black hover:bg-[#F4F5F7] transition-all"
+                href="/products"
+                className={`px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
+                  pathname === "/products"
+                    ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
+                    : "text-neutral-700 hover:text-black hover:bg-[#F4F5F7]"
+                }`}
               >
-                Best Sellers
+                Shop
               </Link>
 
               {/* About Page */}
