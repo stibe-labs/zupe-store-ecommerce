@@ -21,6 +21,8 @@ import {
   DEFAULT_SPORTSWEAR_CAMPAIGN,
   SupplementShowcaseConfig,
   DEFAULT_SUPPLEMENT_SHOWCASE,
+  ShowcaseCollectionsConfig,
+  DEFAULT_SHOWCASE_COLLECTIONS,
 } from "@/lib/storeContent";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -34,6 +36,7 @@ interface VittalLifestyleStorefrontProps {
   initialHeroBanners?: HeroBannerSlide[];
   initialSportswearCampaign?: SportswearCampaignConfig;
   initialSupplementShowcase?: SupplementShowcaseConfig;
+  initialShowcaseCollections?: ShowcaseCollectionsConfig;
 }
 
 // ---------------------------------------------------------------------------
@@ -122,11 +125,53 @@ export function VittalLifestyleStorefront({
   initialHeroBanners,
   initialSportswearCampaign,
   initialSupplementShowcase,
+  initialShowcaseCollections,
 }: VittalLifestyleStorefrontProps) {
   const router = useRouter();
   const { addItem, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { openSearch } = useSearch();
+
+  // Dynamic Showcase Collections (New Arrivals & Best Sellers)
+  const [showcaseCollections, setShowcaseCollections] = useState<ShowcaseCollectionsConfig>(
+    initialShowcaseCollections || DEFAULT_SHOWCASE_COLLECTIONS
+  );
+
+  useEffect(() => {
+    if (initialShowcaseCollections) {
+      setShowcaseCollections(initialShowcaseCollections);
+      return;
+    }
+    let isMounted = true;
+    async function loadCollections() {
+      try {
+        const res = await fetch("/api/content/showcase");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.collections && isMounted) {
+            setShowcaseCollections(data.collections);
+          }
+        }
+      } catch {
+        // Fallback
+      }
+    }
+    loadCollections();
+    return () => {
+      isMounted = false;
+    };
+  }, [initialShowcaseCollections]);
+
+  // Real-time sync listener for showcase collections updates
+  useEffect(() => {
+    const handleUpdate = (e: any) => {
+      if (e.detail?.collections) {
+        setShowcaseCollections(e.detail.collections);
+      }
+    };
+    window.addEventListener("vittal_showcase_updated" as any, handleUpdate);
+    return () => window.removeEventListener("vittal_showcase_updated" as any, handleUpdate);
+  }, []);
 
   // Dynamic Hero Banner Slides from Admin / D1
   const [heroBanners, setHeroBanners] = useState<HeroBannerSlide[]>(
@@ -241,12 +286,16 @@ export function VittalLifestyleStorefront({
 
   const products = initialProducts && initialProducts.length > 0 ? initialProducts : [];
 
-  // Filter products for homepage New Arrivals (10 curated items matching user specification)
+  // Filter products for homepage New Arrivals (synced with Showcase Collections Manager)
   const trendingProducts = useMemo(() => {
     const list: Product[] = [];
     const used = new Set<string>();
+    const orderList =
+      showcaseCollections.newArrivalsProductIds && showcaseCollections.newArrivalsProductIds.length > 0
+        ? showcaseCollections.newArrivalsProductIds
+        : HOMEPAGE_NEW_ARRIVALS_ORDER;
 
-    for (const id of HOMEPAGE_NEW_ARRIVALS_ORDER) {
+    for (const id of orderList) {
       const found = products.find((p) => p.id === id || p.slug === id);
       if (found && !used.has(found.id)) {
         list.push(found);
@@ -266,7 +315,50 @@ export function VittalLifestyleStorefront({
     }
 
     return list.slice(0, 10);
-  }, [products]);
+  }, [products, showcaseCollections.newArrivalsProductIds]);
+
+  // Filter products for homepage Best Sellers (synced with Showcase Collections Manager)
+  const isBestSellersEnabled = showcaseCollections.bestSellersEnabled !== false;
+  const bestSellersProducts = useMemo(() => {
+    const list: Product[] = [];
+    const used = new Set<string>();
+    const orderList =
+      showcaseCollections.bestSellersProductIds && showcaseCollections.bestSellersProductIds.length > 0
+        ? showcaseCollections.bestSellersProductIds
+        : [
+            "on-gold-standard-whey",
+            "whey-protein-isolate",
+            "sports-research-omega3",
+            "on-creatine-container",
+            "nitro-tech-protein-bucket",
+            "on-whey-protein-tub",
+            "gnc-creatine-monohydrate",
+            "muscletech-nitrotech-fruit-punch",
+            "red-vl-athletic-tee",
+            "golden-jar-glossy-dates",
+          ];
+
+    for (const id of orderList) {
+      const found = products.find((p) => p.id === id || p.slug === id);
+      if (found && !used.has(found.id)) {
+        list.push(found);
+        used.add(found.id);
+      }
+    }
+
+    // Fallback if any target is not in the dataset yet, fill up to 10
+    if (list.length < 10) {
+      for (const p of products) {
+        if (!used.has(p.id)) {
+          list.push(p);
+          used.add(p.id);
+          if (list.length >= 10) break;
+        }
+      }
+    }
+
+    return list.slice(0, 10);
+  }, [products, showcaseCollections.bestSellersProductIds]);
 
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
@@ -975,6 +1067,130 @@ export function VittalLifestyleStorefront({
       {/* 6. FUEL EVERY WORKOUT — GYM SUPPLEMENTS CATEGORY SHOWCASE             */}
       {/* ===================================================================== */}
       <SupplementCategoryShowcase allProducts={products} config={initialSupplementShowcase} />
+
+      {/* ===================================================================== */}
+      {/* 7. BEST SELLERS SECTION (Can be enabled/disabled via Admin)           */}
+      {/* ===================================================================== */}
+      {isBestSellersEnabled && bestSellersProducts.length > 0 && (
+        <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-6 pb-6 sm:pb-8">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#111111] tracking-tight">
+                Best Sellers
+              </h2>
+              <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#E5F2D0] text-[#344C19] border border-[#6B9E3A]/30">
+                Top Trending
+              </span>
+            </div>
+            <Link
+              href="/products?sort=best_selling"
+              className="text-xs sm:text-sm font-semibold text-[#6B9E3A] hover:text-[#527C2B] flex items-center gap-0.5 transition-colors"
+            >
+              <span>See all</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Product Cards Grid: Mobile 2 per row, Desktop 5 per row */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-5 w-full">
+            {bestSellersProducts.map((product) => {
+              const isWish = isInWishlist(product.id);
+              const discountPercent =
+                product.mrp && product.mrp > product.price
+                  ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
+                  : null;
+
+              return (
+                <div
+                  key={product.id}
+                  className="group relative rounded-3xl bg-white border border-neutral-200/80 hover:border-[#6B9E3A]/50 p-3 sm:p-4 flex flex-col justify-between transition-all duration-300 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1"
+                >
+                  {/* Wishlist Heart Icon */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleWishlist({
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.poster_image,
+                      });
+                    }}
+                    className="absolute top-3.5 right-3.5 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-neutral-400 hover:text-rose-500 transition-colors shadow-2xs cursor-pointer"
+                    aria-label="Wishlist"
+                  >
+                    <Heart
+                      className={`w-4 h-4 transition-colors ${
+                        isWish ? "fill-rose-500 text-rose-500" : "stroke-current"
+                      }`}
+                    />
+                  </button>
+
+                  {/* Product Poster Image Container */}
+                  <Link
+                    href={`/products/${product.id || product.slug}`}
+                    className="relative aspect-square w-full rounded-2xl bg-gradient-to-b from-[#F2F8EB] via-[#F8FAF4] to-[#FFFFFF] p-3 flex items-center justify-center overflow-hidden mb-2.5"
+                  >
+                    <Image
+                      src={product.poster_image || "/vittal/product-whey-protein-jar.png"}
+                      alt={product.name}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                      className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </Link>
+
+                  {/* Product Metadata */}
+                  <div>
+                    <Link
+                      href={`/products/${product.id || product.slug}`}
+                      className="block"
+                    >
+                      <h3 className="font-semibold text-xs sm:text-sm text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-1">
+                        {product.name}
+                      </h3>
+                    </Link>
+
+                    {/* Price Row */}
+                    <div className="flex items-baseline gap-1.5 mb-2">
+                      <span className="text-sm sm:text-base font-extrabold text-neutral-950">
+                        ₹{product.price.toLocaleString("en-IN")}
+                      </span>
+                      {product.mrp && product.mrp > product.price && (
+                        <span className="text-xs text-neutral-400 line-through">
+                          ₹{product.mrp.toLocaleString("en-IN")}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Discount Badge & Add to Cart Button */}
+                    <div className="flex items-center justify-between gap-2">
+                      {discountPercent ? (
+                        <span className="text-[10px] sm:text-xs font-bold text-[#6B9E3A] bg-[#EBF5DF] px-2 py-0.5 rounded-full">
+                          {discountPercent}% OFF
+                        </span>
+                      ) : (
+                        <span />
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={(e) => handleAddToCart(e, product)}
+                        className="px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-[#6B9E3A] text-white text-xs font-bold transition-all shadow-xs hover:shadow-sm cursor-pointer flex items-center gap-1 active:scale-95"
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        <span>Add</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

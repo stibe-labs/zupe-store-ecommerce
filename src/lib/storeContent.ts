@@ -557,28 +557,18 @@ export async function savePromoBanners(banners: PromoBannerCard[]): Promise<Prom
 }
 
 // ========================================================
-// SHOWCASE COLLECTIONS (Top Pickz, New Arrivals, Best Sellers, Today's Deals)
+// SHOWCASE COLLECTIONS (New Arrivals & Best Sellers)
 // ========================================================
 export interface ShowcaseCollectionsConfig {
-  topPickzProductIds: string[];
   newArrivalsProductIds: string[];
   bestSellersProductIds: string[];
-  todayDealsProductIds: string[];
+  bestSellersEnabled?: boolean;
+  topPickzProductIds?: string[];
+  todayDealsProductIds?: string[];
 }
 
 export const DEFAULT_SHOWCASE_COLLECTIONS: ShowcaseCollectionsConfig = {
-  topPickzProductIds: [
-    "water-ripple-lamp",
-    "mini-portable-steam-iron",
-    "menstrual-heating-pad",
-    "portable-mesh-nebulizer",
-    "foldable-mini-washer",
-    "mini-thermal-printer",
-    "helicopter-car-perfume",
-    "instant-water-heater-faucet",
-    "tf20-multipurpose-powerbank",
-    "mini-hot-air-popcorn-maker",
-  ],
+  bestSellersEnabled: true,
   newArrivalsProductIds: [
     "red-vl-athletic-tee",
     "golden-jar-glossy-dates",
@@ -592,19 +582,19 @@ export const DEFAULT_SHOWCASE_COLLECTIONS: ShowcaseCollectionsConfig = {
     "on-creatine-container",
   ],
   bestSellersProductIds: [
-    "water-ripple-lamp",
-    "mini-portable-steam-iron",
-    "menstrual-heating-pad",
-    "tf20-multipurpose-powerbank",
-    "helicopter-car-perfume",
+    "on-gold-standard-whey",
+    "whey-protein-isolate",
+    "sports-research-omega3",
+    "on-creatine-container",
+    "nitro-tech-protein-bucket",
+    "on-whey-protein-tub",
+    "gnc-creatine-monohydrate",
+    "muscletech-nitrotech-fruit-punch",
+    "red-vl-athletic-tee",
+    "golden-jar-glossy-dates",
   ],
-  todayDealsProductIds: [
-    "water-ripple-lamp",
-    "mini-portable-steam-iron",
-    "menstrual-heating-pad",
-    "portable-mesh-nebulizer",
-    "foldable-mini-washer",
-  ],
+  topPickzProductIds: [],
+  todayDealsProductIds: [],
 };
 
 let inMemoryShowcase: ShowcaseCollectionsConfig = { ...DEFAULT_SHOWCASE_COLLECTIONS };
@@ -621,18 +611,19 @@ export async function getShowcaseCollections(): Promise<ShowcaseCollectionsConfi
         const parsed = JSON.parse(rows[0].config_data);
         if (parsed && typeof parsed === "object") {
           inMemoryShowcase = {
-            topPickzProductIds: Array.isArray(parsed.topPickzProductIds)
-              ? parsed.topPickzProductIds
-              : DEFAULT_SHOWCASE_COLLECTIONS.topPickzProductIds,
             newArrivalsProductIds: Array.isArray(parsed.newArrivalsProductIds)
               ? parsed.newArrivalsProductIds
               : DEFAULT_SHOWCASE_COLLECTIONS.newArrivalsProductIds,
             bestSellersProductIds: Array.isArray(parsed.bestSellersProductIds)
               ? parsed.bestSellersProductIds
               : DEFAULT_SHOWCASE_COLLECTIONS.bestSellersProductIds,
+            bestSellersEnabled: parsed.bestSellersEnabled !== false,
+            topPickzProductIds: Array.isArray(parsed.topPickzProductIds)
+              ? parsed.topPickzProductIds
+              : [],
             todayDealsProductIds: Array.isArray(parsed.todayDealsProductIds)
               ? parsed.todayDealsProductIds
-              : DEFAULT_SHOWCASE_COLLECTIONS.todayDealsProductIds,
+              : [],
           };
         }
       }
@@ -651,9 +642,10 @@ export async function saveShowcaseCollections(
 ): Promise<ShowcaseCollectionsConfig> {
   showcaseCachedAt = Date.now(); // mark cache fresh after save
   inMemoryShowcase = {
-    topPickzProductIds: Array.isArray(config.topPickzProductIds) ? config.topPickzProductIds : [],
     newArrivalsProductIds: Array.isArray(config.newArrivalsProductIds) ? config.newArrivalsProductIds : [],
     bestSellersProductIds: Array.isArray(config.bestSellersProductIds) ? config.bestSellersProductIds : [],
+    bestSellersEnabled: config.bestSellersEnabled !== false,
+    topPickzProductIds: Array.isArray(config.topPickzProductIds) ? config.topPickzProductIds : [],
     todayDealsProductIds: Array.isArray(config.todayDealsProductIds) ? config.todayDealsProductIds : [],
   };
 

@@ -33,11 +33,11 @@ interface ShowcaseCollectionsCustomizerProps {
   showToast: (type: "success" | "error", text: string) => void;
 }
 
-type ShowcaseKey = "top_pickz" | "new_arrivals" | "best_sellers" | "today_deals";
+type ShowcaseKey = "new_arrivals" | "best_sellers";
 
 interface ShowcaseMeta {
   key: ShowcaseKey;
-  configKey: keyof ShowcaseCollectionsConfig;
+  configKey: "newArrivalsProductIds" | "bestSellersProductIds";
   title: string;
   badge: string;
   icon: React.ElementType;
@@ -49,19 +49,6 @@ interface ShowcaseMeta {
 }
 
 const SHOWCASE_SECTIONS: ShowcaseMeta[] = [
-  {
-    key: "top_pickz",
-    configKey: "topPickzProductIds",
-    title: "Top Pickz",
-    badge: "Homepage Top Pickz",
-    icon: Flame,
-    color: "#FF5722",
-    badgeBg: "bg-orange-50 border-orange-200",
-    badgeText: "text-orange-700",
-    description:
-      "Curated products featured in the horizontal moving carousel on the homepage immediately below the hero banner.",
-    destination: "Homepage (Top Pickz Carousel)",
-  },
   {
     key: "new_arrivals",
     configKey: "newArrivalsProductIds",
@@ -79,27 +66,14 @@ const SHOWCASE_SECTIONS: ShowcaseMeta[] = [
     key: "best_sellers",
     configKey: "bestSellersProductIds",
     title: "Best Sellers",
-    badge: "Best Sellers Page",
+    badge: "Best Sellers Section & Page",
     icon: Trophy,
     color: "#F59E0B",
     badgeBg: "bg-amber-50 border-amber-200",
     badgeText: "text-amber-700",
     description:
-      "Top-performing and highest-rated products displayed when users browse Best Sellers (/products?filter=best).",
-    destination: "Homepage & /products?filter=best",
-  },
-  {
-    key: "today_deals",
-    configKey: "todayDealsProductIds",
-    title: "Today's Best Deals",
-    badge: "Flash Deals & Offers",
-    icon: Tag,
-    color: "#10B981",
-    badgeBg: "bg-emerald-50 border-emerald-200",
-    badgeText: "text-emerald-700",
-    description:
-      "Special discounted products featured in the Today's Best Deals section on the homepage with promotional pricing badges.",
-    destination: "Homepage (Deals Section) & /products?filter=deals",
+      "Curated best-selling products displayed on the Homepage Best Sellers section (before footer) and Best Sellers page. Can be toggled on/off.",
+    destination: "Homepage (Before Footer) & /products?sort=best_selling",
   },
 ];
 
@@ -175,6 +149,13 @@ export function ShowcaseCollectionsCustomizer({
       const data = await res.json();
       if (data.success) {
         showToast("success", "Showcase collections saved successfully!");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("vittal_showcase_updated", {
+              detail: { collections: data.collections || collections },
+            })
+          );
+        }
       } else {
         showToast("error", data.error || "Failed to save collections.");
       }
@@ -301,9 +282,8 @@ export function ShowcaseCollectionsCustomizer({
             </h2>
           </div>
           <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
-            Select and reorder products displayed in <strong>Top Pickz</strong>,{" "}
-            <strong>New Arrivals</strong>, <strong>Best Sellers</strong>, and{" "}
-            <strong>Today's Best Deals</strong>. Products selected here automatically sync live to the storefront.
+            Select and reorder products displayed in <strong>New Arrivals</strong> and{" "}
+            <strong>Best Sellers</strong>. Toggle the Best Sellers section on or off on the storefront. Products selected here automatically sync live to the storefront.
           </p>
         </div>
 
@@ -321,7 +301,7 @@ export function ShowcaseCollectionsCustomizer({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-5 py-2 rounded-xl bg-[#FFBE00] text-slate-950 hover:bg-[#E06900] text-white text-xs font-black flex items-center gap-2 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+            className="px-5 py-2 rounded-xl bg-[#6B9E3A] hover:bg-[#5C8931] text-white text-xs font-black flex items-center gap-2 transition-all cursor-pointer shadow-sm disabled:opacity-50"
           >
             {saving ? (
               <>
@@ -338,43 +318,58 @@ export function ShowcaseCollectionsCustomizer({
         </div>
       </div>
 
-      {/* 4 Showcase Tabs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* 2 Showcase Tabs: New Arrivals & Best Sellers */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {SHOWCASE_SECTIONS.map((sec) => {
           const count = (collections[sec.configKey] || []).length;
           const isActive = activeTab === sec.key;
           const Icon = sec.icon;
+          const isBestSellers = sec.key === "best_sellers";
+          const isEnabled = collections.bestSellersEnabled !== false;
 
           return (
             <button
               key={sec.key}
               onClick={() => setActiveTab(sec.key)}
-              className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+              className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                 isActive
-                  ? "bg-white border-[#FF7A00] ring-2 ring-[#FF7A00]/20 shadow-md"
+                  ? "bg-white border-[#6B9E3A] ring-2 ring-[#6B9E3A]/20 shadow-md"
                   : "bg-white/80 border-slate-200 hover:border-slate-300 hover:bg-white shadow-xs"
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-3">
                 <span
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-white"
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-xs"
                   style={{ backgroundColor: sec.color }}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-5 h-5" />
                 </span>
-                <span
-                  className={`text-[11px] font-black px-2 py-0.5 rounded-full border ${
-                    isActive
-                      ? "bg-orange-50 border-orange-200 text-[#002D62]"
-                      : "bg-slate-100 border-slate-200 text-slate-600"
-                  }`}
-                >
-                  {count} {count === 1 ? "Product" : "Products"}
-                </span>
+                <div className="flex items-center gap-2">
+                  {isBestSellers && (
+                    <span
+                      className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                        isEnabled
+                          ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                          : "bg-slate-100 border-slate-200 text-slate-400"
+                      }`}
+                    >
+                      {isEnabled ? "Visible on Store" : "Hidden"}
+                    </span>
+                  )}
+                  <span
+                    className={`text-[11px] font-black px-2.5 py-0.5 rounded-full border ${
+                      isActive
+                        ? "bg-[#EBF5DF] border-[#6B9E3A]/40 text-[#344C19]"
+                        : "bg-slate-100 border-slate-200 text-slate-600"
+                    }`}
+                  >
+                    {count} {count === 1 ? "Product" : "Products"}
+                  </span>
+                </div>
               </div>
               <div>
-                <p className="text-xs font-black text-slate-800">{sec.title}</p>
-                <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                <p className="text-sm font-black text-slate-800">{sec.title}</p>
+                <p className="text-[11px] text-slate-400 truncate mt-0.5">
                   {sec.destination}
                 </p>
               </div>
@@ -386,7 +381,7 @@ export function ShowcaseCollectionsCustomizer({
       {/* Active Section Panel */}
       <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-5">
         {/* Section Info Card */}
-        <div className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${activeMeta.badgeBg}`}>
+        <div className={`p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 ${activeMeta.badgeBg}`}>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className={`text-xs font-black uppercase tracking-wider ${activeMeta.badgeText}`}>
@@ -401,17 +396,51 @@ export function ShowcaseCollectionsCustomizer({
             </p>
           </div>
 
-          <button
-            onClick={() => {
-              setModalSearch("");
-              setModalCategory("All");
-              setIsModalOpen(true);
-            }}
-            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Select / Add Products</span>
-          </button>
+          <div className="flex items-center gap-2.5 flex-wrap shrink-0">
+            {activeTab === "best_sellers" && (
+              <div className="flex items-center gap-2.5 bg-white/95 px-3 py-1.5 rounded-xl border border-amber-300 shadow-2xs">
+                <span className="text-xs font-bold text-slate-700">Storefront Section:</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCollections((prev) => ({
+                      ...prev,
+                      bestSellersEnabled: prev.bestSellersEnabled === false ? true : false,
+                    }))
+                  }
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    collections.bestSellersEnabled !== false ? "bg-[#6B9E3A]" : "bg-slate-300"
+                  }`}
+                  title="Enable/disable Best Sellers section on homepage"
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                      collections.bestSellersEnabled !== false ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+                <span
+                  className={`text-xs font-black ${
+                    collections.bestSellersEnabled !== false ? "text-[#344C19]" : "text-slate-400"
+                  }`}
+                >
+                  {collections.bestSellersEnabled !== false ? "Enabled" : "Disabled"}
+                </span>
+              </div>
+            )}
+
+            <button
+              onClick={() => {
+                setModalSearch("");
+                setModalCategory("All");
+                setIsModalOpen(true);
+              }}
+              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Select / Add Products</span>
+            </button>
+          </div>
         </div>
 
         {/* Selected Products List */}

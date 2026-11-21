@@ -14,6 +14,9 @@ import {
   getSupplementShowcase,
   SupplementShowcaseConfig,
   DEFAULT_SUPPLEMENT_SHOWCASE,
+  getShowcaseCollections,
+  ShowcaseCollectionsConfig,
+  DEFAULT_SHOWCASE_COLLECTIONS,
 } from "@/lib/storeContent";
 
 export const dynamic = "force-dynamic";
@@ -34,13 +37,19 @@ async function getInitialProducts(): Promise<Product[]> {
 }
 
 export default async function Home() {
-  const [initialProducts, initialHeroBanners, initialSportswearCampaign, initialSupplementShowcase] =
-    await Promise.all([
-      getInitialProducts(),
-      getBanners().catch(() => [] as HeroBannerSlide[]),
-      getSportswearCampaign().catch(() => DEFAULT_SPORTSWEAR_CAMPAIGN),
-      getSupplementShowcase().catch(() => DEFAULT_SUPPLEMENT_SHOWCASE),
-    ]);
+  const [
+    initialProducts,
+    initialHeroBanners,
+    initialSportswearCampaign,
+    initialSupplementShowcase,
+    initialShowcaseCollections,
+  ] = await Promise.all([
+    getInitialProducts(),
+    getBanners().catch(() => [] as HeroBannerSlide[]),
+    getSportswearCampaign().catch(() => DEFAULT_SPORTSWEAR_CAMPAIGN),
+    getSupplementShowcase().catch(() => DEFAULT_SUPPLEMENT_SHOWCASE),
+    getShowcaseCollections().catch(() => DEFAULT_SHOWCASE_COLLECTIONS),
+  ]);
 
   return (
     <main className="min-h-screen bg-white text-neutral-900 selection:bg-[#E5F2D0] selection:text-[#1E300E] pb-16 md:pb-0">
@@ -53,6 +62,7 @@ export default async function Home() {
         initialHeroBanners={initialHeroBanners}
         initialSportswearCampaign={initialSportswearCampaign}
         initialSupplementShowcase={initialSupplementShowcase}
+        initialShowcaseCollections={initialShowcaseCollections}
       />
 
       {/* 3. Brand Footer */}

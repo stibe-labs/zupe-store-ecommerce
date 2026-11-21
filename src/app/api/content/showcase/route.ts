@@ -55,14 +55,15 @@ export async function POST(req: NextRequest) {
     }
 
     const validatedConfig: ShowcaseCollectionsConfig = {
-      topPickzProductIds: Array.isArray(collections.topPickzProductIds)
-        ? collections.topPickzProductIds.map(String)
-        : [],
+      bestSellersEnabled: collections.bestSellersEnabled !== false,
       newArrivalsProductIds: Array.isArray(collections.newArrivalsProductIds)
         ? collections.newArrivalsProductIds.map(String)
         : [],
       bestSellersProductIds: Array.isArray(collections.bestSellersProductIds)
         ? collections.bestSellersProductIds.map(String)
+        : [],
+      topPickzProductIds: Array.isArray(collections.topPickzProductIds)
+        ? collections.topPickzProductIds.map(String)
         : [],
       todayDealsProductIds: Array.isArray(collections.todayDealsProductIds)
         ? collections.todayDealsProductIds.map(String)
