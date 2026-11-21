@@ -73,7 +73,7 @@ export function SupplementCategoryShowcase({
   const borderColor = showcaseConfig.borderColor || "#6B9E3A";
 
   return (
-    <section className="w-full max-w-[1680px] md:max-w-5xl lg:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-6">
+    <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-6 md:py-6">
       {/* Outer Card with Dynamic Background Color Gradient & Preserved Pattern Texture */}
       <div
         className="relative rounded-3xl sm:rounded-[36px] md:rounded-[28px] overflow-hidden p-4 sm:p-7 md:p-6 lg:p-6 shadow-lg transition-colors duration-300"
@@ -180,16 +180,16 @@ export function SupplementCategoryShowcase({
               <Link
                 key={prod.id}
                 href={`/products/${prod.slug || prod.id}`}
-                className="group shrink-0 snap-start flex flex-col w-[calc((100%-20px)/2.25)] min-w-[calc((100%-20px)/2.25)] sm:w-[calc((100%-36px)/3.25)] sm:min-w-[calc((100%-36px)/3.25)] md:w-[calc((100%-48px)/4.35)] md:min-w-[calc((100%-48px)/4.35)] md:max-w-[215px] lg:max-w-[230px] transition-transform duration-200 hover:-translate-y-1"
+                className="group shrink-0 snap-start flex flex-col w-[calc((100%-20px)/2.25)] min-w-[calc((100%-20px)/2.25)] sm:w-[calc((100%-36px)/3.25)] sm:min-w-[calc((100%-36px)/3.25)] md:w-[calc((100%-48px)/4)] md:min-w-[calc((100%-48px)/4)] transition-transform duration-200 hover:-translate-y-1"
               >
-                {/* Product Image Container — Compact aspect-square on desktop view */}
-                <div className="relative aspect-[4/5] md:aspect-square md:max-h-[195px] lg:max-h-[210px] w-full rounded-2xl sm:rounded-3xl md:rounded-2xl bg-white p-3 sm:p-4 md:p-2.5 lg:p-3 flex items-center justify-center overflow-hidden shadow-xs group-hover:shadow-md transition-shadow">
+                {/* Product Image Container — Compact height on desktop so total section height is sleek */}
+                <div className="relative aspect-[4/5] md:aspect-auto md:h-[195px] lg:h-[210px] w-full rounded-2xl sm:rounded-3xl md:rounded-2xl bg-white p-3 sm:p-4 md:p-2.5 lg:p-3 flex items-center justify-center overflow-hidden shadow-xs group-hover:shadow-md transition-shadow">
                   <Image
                     src={prod.image || "/vittal/product-whey-protein-jar.png"}
                     alt={prod.name}
                     fill
-                    className="object-contain p-2 md:p-1.5 group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 220px"
+                    className="object-contain p-2 md:p-2 group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 360px"
                   />
                 </div>
 

@@ -513,7 +513,7 @@ export function GymSupplementsShowcaseCustomizer({
             className={`transition-all duration-300 w-full ${
               previewDevice === "mobile"
                 ? "max-w-[400px] border-8 border-neutral-800 rounded-[38px] shadow-2xl overflow-hidden bg-neutral-900"
-                : "max-w-4xl"
+                : "max-w-5xl"
             }`}
           >
             {/* The Live Rendered Card with Preserved Texture */}
@@ -630,14 +630,14 @@ export function GymSupplementsShowcaseCustomizer({
                       className={`group shrink-0 snap-start flex flex-col ${
                         previewDevice === "mobile"
                           ? "w-[calc((100%-16px)/2.25)] min-w-[calc((100%-16px)/2.25)]"
-                          : "w-[calc((100%-36px)/4.35)] min-w-[calc((100%-36px)/4.35)] max-w-[210px]"
+                          : "w-[calc((100%-36px)/4)] min-w-[calc((100%-36px)/4)]"
                       } transition-transform`}
                     >
                       <div
                         className={`relative w-full rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-xs ${
                           previewDevice === "mobile"
                             ? "aspect-[4/5] p-2"
-                            : "aspect-square max-h-[185px] p-2 sm:p-2.5"
+                            : "aspect-auto h-[175px] sm:h-[190px] p-2 sm:p-2.5"
                         }`}
                       >
                         <Image
