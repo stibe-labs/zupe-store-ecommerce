@@ -206,7 +206,58 @@ export async function POST(req: NextRequest) {
         }
       }
     } else {
-      // Cash on Delivery cancellation
+      // Cash on Delivery cancellation - Update stores and D1 immediately everywhere
+      updateStorefrontOrder(orderId, {
+        order_status: "cancelled",
+        whatsapp_confirm_status: "cancelled",
+      });
+
+      try {
+        await updateERPOrder(orderId, {
+          status: "Cancelled",
+          delivery_status: "Cancelled" as any,
+          whatsapp_confirm_status: "cancelled",
+        });
+      } catch (erpErr) {
+        console.warn("ERP update error on COD cancel:", erpErr);
+      }
+
+      try {
+        const { executeD1Query } = await import("@/lib/d1");
+        await executeD1Query(
+          `UPDATE orders
+           SET status = 'Cancelled',
+               delivery_status = 'Cancelled',
+               order_status = 'cancelled',
+               whatsapp_confirm_status = 'cancelled',
+               updated_at = CURRENT_TIMESTAMP
+           WHERE id = ? OR shopify_order_id = ?`,
+          [orderId, orderId]
+        );
+      } catch (d1Err) {
+        console.warn("D1 update error on COD cancel:", d1Err);
+      }
+
+      // Restock inventory for cancelled COD items
+      try {
+        let cancelItems = (ord as any)?.items;
+        if (typeof cancelItems === "string") {
+          try { cancelItems = JSON.parse(cancelItems); } catch { cancelItems = []; }
+        }
+        if (Array.isArray(cancelItems) && cancelItems.length > 0) {
+          const { restockInventory } = await import("@/lib/inventoryService");
+          await restockInventory(
+            cancelItems.map((it: any) => ({
+              product_id: it.product_id,
+              name: it.name || it.product_name,
+              quantity: Number(it.quantity || 1),
+            }))
+          );
+        }
+      } catch (restockErr) {
+        console.warn("Restock error on COD cancel:", restockErr);
+      }
+
       if (custEmail) {
         try {
           await sendOrderCancellationEmail({

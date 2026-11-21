@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const requestedEmail = searchParams.get("email")?.toLowerCase().trim();
     const requestedPhone = searchParams.get("phone")?.replace(/\D/g, "");
+    const requestedOrderId = (searchParams.get("orderId") || searchParams.get("cancelPrompt") || "").trim();
 
     // Authenticate caller (Admin or Customer)
     const auth = await getAuthenticatedUser(req);
@@ -29,8 +30,8 @@ export async function GET(req: NextRequest) {
       targetPhone = (auth.user.phone ? auth.user.phone.replace(/\D/g, "") : "") || requestedPhone || undefined;
       targetUserId = auth.user.id;
     } else {
-      // Unauthenticated caller must provide an email or phone (e.g. guest order lookup)
-      if (!requestedEmail && !requestedPhone) {
+      // Unauthenticated caller must provide an email, phone, or direct orderId lookup
+      if (!requestedEmail && !requestedPhone && !requestedOrderId) {
         return NextResponse.json(
           { success: false, error: "Authentication or phone/email required to view order history" },
           { status: 401 }
@@ -43,6 +44,40 @@ export async function GET(req: NextRequest) {
     const storefrontOrders = await getOrdersAsync(targetEmail, targetPhone, targetUserId);
 
     let combinedOrders = [...storefrontOrders];
+
+    // If direct orderId lookup was requested by a guest / customer via WhatsApp link
+    if (requestedOrderId) {
+      try {
+        const { getOrderById } = await import("@/lib/erpStore");
+        const singleOrd = await getOrderById(requestedOrderId);
+        if (singleOrd && !combinedOrders.some((o) => o.id === singleOrd.id)) {
+          let rawItems = singleOrd.items;
+          if (typeof rawItems === "string") {
+            try { rawItems = JSON.parse(rawItems); } catch { rawItems = []; }
+          }
+          combinedOrders.unshift({
+            id: singleOrd.id,
+            shopify_order_id: singleOrd.shopify_order_id,
+            customer_name: singleOrd.customer_name,
+            customer_phone: singleOrd.customer_phone,
+            customer_email: singleOrd.guest_email || singleOrd.customer_email,
+            shipping_address: singleOrd.shipping_address,
+            city: singleOrd.city,
+            postal_code: singleOrd.postal_code,
+            total_amount: Number(singleOrd.total_amount),
+            payment_method: singleOrd.payment_method,
+            payment_status: singleOrd.payment_status as any,
+            order_status: singleOrd.status as any,
+            whatsapp_confirm_status: singleOrd.whatsapp_confirm_status as any,
+            whatsapp_confirm_token: singleOrd.whatsapp_confirm_token,
+            items: Array.isArray(rawItems) ? rawItems : [],
+            created_at: singleOrd.created_at,
+          } as any);
+        }
+      } catch (singleErr) {
+        console.warn("Direct orderId lookup error:", singleErr);
+      }
+    }
 
     try {
       const erpOrders = await getERPOrders();

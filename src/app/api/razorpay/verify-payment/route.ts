@@ -230,10 +230,10 @@ export async function POST(req: NextRequest) {
       promo_code: promo_code || undefined,
       payment_method: orderPaymentMethod,
       payment_status: orderPaymentStatus,
-      order_status: isCodPartial ? "processing" : "shipped",
-      whatsapp_confirm_status: isCodPartial ? "pending_whatsapp" : "confirmed",
+      order_status: "processing",
+      whatsapp_confirm_status: "pending_whatsapp",
       whatsapp_confirm_token: confirmToken,
-      whatsapp_token_used: !isCodPartial,
+      whatsapp_token_used: false,
       items: items || [],
       created_at: new Date().toISOString(),
     };
@@ -246,6 +246,8 @@ export async function POST(req: NextRequest) {
       (newOrder as any).advance_paid = advance;
       (newOrder as any).shipping_fee = 49;
       (newOrder as any).balance_due = Math.max(0, Number(total_amount) - advance);
+    } else {
+      (newOrder as any).advance_paid = Number(total_amount);
     }
 
     await createOrder(newOrder);
@@ -260,38 +262,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Instant Automated Dispatch to Shiprocket on Payment Confirmation ONLY for prepaid orders.
-    // COD orders are held until the customer confirms via WhatsApp interactive buttons.
+    // Orders are verified and dispatched upon customer confirmation in WhatsApp
     let liveAwb: string | undefined;
     let liveCourier: string | undefined;
-    if (!isCodPartial) {
-      try {
-        const { dispatchShiprocketOrder } = await import("@/lib/shiprocketService");
-        const dispatchResult = await dispatchShiprocketOrder(newOrder);
-        if (dispatchResult.success && dispatchResult.awb && !dispatchResult.isSimulated) {
-          liveAwb = dispatchResult.awb;
-          liveCourier = dispatchResult.courier;
-          (newOrder as any).shiprocket_awb = liveAwb;
-          (newOrder as any).tracking_number = liveAwb;
-          (newOrder as any).courier_partner = liveCourier;
-          (newOrder as any).delivery_status = "In Transit";
-          newOrder.order_status = "shipped";
-
-          const { updateERPOrder } = await import("@/lib/erpStore");
-          await updateERPOrder(orderId, {
-            whatsapp_confirm_status: "confirmed",
-            whatsapp_token_used: true,
-            status: "In Transit",
-            delivery_status: "In Transit",
-            shiprocket_awb: liveAwb,
-            tracking_number: liveAwb,
-            courier_partner: liveCourier,
-          });
-        }
-      } catch (dispatchErr) {
-        console.warn("[Verify Payment] Instant Shiprocket dispatch error:", dispatchErr);
-      }
-    }
 
     // Automatically sync delivery address and phone to customer profile
     try {
@@ -327,49 +300,28 @@ export async function POST(req: NextRequest) {
     const displayOrderId = (newOrder as any).shopify_order_id || orderId;
 
     // Send WhatsApp notification
-    if (isCodPartial) {
-      // Cash on Delivery: Send interactive pre-confirmation with [Confirm Order] and [Cancel Order] buttons
-      try {
-        const advance = isCodPartial ? (Number(order_payload?.advance_amount) || 10) : 0;
-        const { sendOrderPreConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
-        await sendOrderPreConfirmationWhatsApp({
-          customerName: customer_name || "Customer",
-          customerPhone: customer_phone || "",
-          orderId: displayOrderId,
-          totalAmount: Number(total_amount),
-          paymentMethod: "cod",
-          token: confirmToken,
-          advancePaid: advance,
-          items: (items || []).map((it: any) => ({
-            name: it.name,
-            quantity: Number(it.quantity || 1),
-            price: Number(it.price || 0),
-          })),
-        });
-        console.log(`[Verify Payment] WhatsApp interactive verification dispatched for COD order ${orderId} (${displayOrderId})`);
-      } catch (waErr) {
-        console.warn("Failed to dispatch WA pre-confirmation:", waErr);
-      }
-    } else {
-      // Fully prepaid online order: verified & dispatched, send official Order Confirmation
-      try {
-        const { sendOrderConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
-        await sendOrderConfirmationWhatsApp({
-          customerName: customer_name || "Customer",
-          customerPhone: customer_phone || "",
-          orderId: displayOrderId,
-          totalAmount: Number(total_amount),
-          paymentMethod: "prepaid",
-          items: (items || []).map((it: any) => ({
-            name: it.name,
-            quantity: Number(it.quantity || 1),
-            price: Number(it.price || 0),
-          })),
-        });
-        console.log(`[Verify Payment] Order confirmation WhatsApp dispatched for prepaid order ${orderId} (${displayOrderId})`);
-      } catch (waErr) {
-        console.warn("Failed to dispatch WA order confirmation:", waErr);
-      }
+    // Dispatch Order Verification template for both COD and Prepaid orders
+    try {
+      const advance = isCodPartial ? (Number(order_payload?.advance_amount) || 10) : Number(total_amount);
+      const isCod = Boolean(isCodPartial);
+      const { sendOrderPreConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+      await sendOrderPreConfirmationWhatsApp({
+        customerName: customer_name || "Customer",
+        customerPhone: customer_phone || "",
+        orderId: displayOrderId,
+        totalAmount: Number(total_amount),
+        paymentMethod: isCod ? "cod" : "prepaid",
+        token: confirmToken,
+        advancePaid: advance,
+        items: (items || []).map((it: any) => ({
+          name: it.name,
+          quantity: Number(it.quantity || 1),
+          price: Number(it.price || 0),
+        })),
+      });
+      console.log(`[Verify Payment] WhatsApp verify template dispatched for order ${orderId} (${displayOrderId})`);
+    } catch (waErr) {
+      console.warn("Failed to dispatch WA pre-confirmation:", waErr);
     }
 
     // Automated Order Confirmation Email (Dispatched ONLY if customer provided optional email at checkout)

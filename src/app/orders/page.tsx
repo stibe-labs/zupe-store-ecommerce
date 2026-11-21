@@ -180,6 +180,7 @@ function OrdersPageContent() {
         const params = new URLSearchParams();
         if (user?.email) params.set("email", user.email);
         if (user?.phone) params.set("phone", user.phone);
+        if (cancelPromptParam) params.set("orderId", cancelPromptParam);
 
         // Also check if user recently placed an order as guest / phone
         try {

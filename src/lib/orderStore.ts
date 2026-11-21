@@ -472,6 +472,24 @@ export async function confirmWhatsAppOrder(token: string, orderId: string): Prom
     console.warn("ERP update on WhatsApp confirm error:", e);
   }
 
+  // Update Cloudflare D1 immediately so live store and admin dashboard sync instantaneously
+  try {
+    const { executeD1Query } = await import("@/lib/d1");
+    await executeD1Query(
+      `UPDATE orders 
+       SET whatsapp_confirm_status = 'confirmed',
+           whatsapp_token_used = 1,
+           order_status = CASE WHEN order_status IN ('shipped', 'delivered') THEN order_status ELSE 'processing' END,
+           delivery_status = CASE WHEN delivery_status IN ('Delivered', 'In Transit') THEN delivery_status ELSE 'Processing' END,
+           status = CASE WHEN status IN ('Delivered', 'In Transit') THEN status ELSE 'Processing' END,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? OR shopify_order_id = ? OR whatsapp_confirm_token = ?`,
+      [normId, normId, normToken]
+    );
+  } catch (d1Err) {
+    console.warn("D1 direct confirm update error:", d1Err);
+  }
+
   // Retrieve full order record (from memory or D1) so downstream confirmation messages have full details
   const finalOrd = ord || (await getOrderById(normId));
 
@@ -549,6 +567,24 @@ export async function cancelWhatsAppOrder(
     });
   } catch (e) {
     console.warn("ERP cancel update error:", e);
+  }
+
+  // Update Cloudflare D1 immediately
+  try {
+    const { executeD1Query } = await import("@/lib/d1");
+    await executeD1Query(
+      `UPDATE orders 
+       SET order_status = 'cancelled',
+           delivery_status = 'Cancelled',
+           status = 'Cancelled',
+           whatsapp_confirm_status = 'cancelled',
+           whatsapp_token_used = 1,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? OR shopify_order_id = ? OR whatsapp_confirm_token = ?`,
+      [targetId, targetId, norm]
+    );
+  } catch (d1Err) {
+    console.warn("D1 direct cancel update error:", d1Err);
   }
 
   return {

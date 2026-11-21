@@ -12,13 +12,18 @@ if (STORE_BASE_URL.includes("workers.dev") || !STORE_BASE_URL.startsWith("http")
   STORE_BASE_URL = "https://vittallifestyle.com";
 }
 
-// Template names - must match exactly what you created in Meta Business Manager
+// Template names - matching your active Meta WhatsApp Manager templates:
+// 1. vittallifestyle_otp (Authentication)
+// 2. vittallifestyle_order_verify (Utility - interactive pre-confirmation)
+// 3. vittallifestyle_order_confirmed (Utility - prepaid confirmed)
+// 4. vittallifestyle_cod_to_prepaid (Marketing - COD confirmed switch offer)
+// 5. vittallifestyle_order_canceled (Utility - order cancellation)
 const TEMPLATE_PREPAID = "vittallifestyle_order_confirmed";
-const TEMPLATE_COD = "vittallifestyle_order_confirmed";
+const TEMPLATE_COD = "vittallifestyle_cod_to_prepaid";
 const TEMPLATE_VERIFY = "vittallifestyle_order_verify";
 const TEMPLATE_UPDATE = "vittallifestyle_order_confirmed";
-const TEMPLATE_CANCEL_PREPAID = "vittallifestyle_order_cancelled";
-const TEMPLATE_CANCEL_COD = "vittallifestyle_order_cancelled";
+const TEMPLATE_CANCEL = "vittallifestyle_order_canceled";
+const TEMPLATE_CANCEL_FALLBACK = "vittallifestyle_order_cancelled";
 const TEMPLATE_COD_TO_PREPAID = "vittallifestyle_cod_to_prepaid";
 const TEMPLATE_LANG = "en";
 
@@ -366,25 +371,26 @@ export async function sendOrderConfirmationWhatsApp(
   const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
 
   if (paymentMethod === "cod") {
-    // 1. For COD: Send approved Utility template 'zupe_order_cod_v2' which includes BOTH buttons:
-    // [Pay Online (Save Rs 30)] and [Track Order]
-    let codV2Sent = false;
+    // 1. For COD: Send approved Marketing template 'vittallifestyle_cod_to_prepaid'
+    let codToPrepaidSent = false;
     try {
-      codV2Sent = await sendViaCodV2Template(
+      codToPrepaidSent = await sendViaTemplate(
         apiUrl,
         token,
         digits,
+        "cod",
         firstName,
         displayOrderId,
-        doorstepBalance,
-        switchPrepaidAmount
+        totalAmount,
+        switchPrepaidAmount,
+        true
       );
     } catch (err) {
-      console.warn("[WA Order Confirm] COD V2 template attempt:", err);
+      console.warn("[WA Order Confirm] COD to Prepaid template attempt:", err);
     }
 
-    // 2. If V2 template failed, fallback to generic confirmed utility template
-    if (!codV2Sent) {
+    // 2. If cod_to_prepaid template failed, fallback to confirmed utility template
+    if (!codToPrepaidSent) {
       try {
         await sendViaConfirmedUtilityTemplate(
           apiUrl,
@@ -705,94 +711,83 @@ export async function sendOrderCancellationRefundWhatsApp(
 
   const firstName = customerName.split(" ")[0] || customerName;
 
-  // 1. Try official Meta utility template first (guaranteed delivery outside 24h window once approved)
-  if (isPrepaid && refundAmount) {
-    try {
-      const payload = {
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: digits,
-        type: "template",
-        template: {
-          name: TEMPLATE_CANCEL_PREPAID,
-          language: { code: TEMPLATE_LANG },
-          components: [
-            {
-              type: "body",
-              parameters: [
-                { type: "text", text: firstName },
-                { type: "text", text: orderId },
-                { type: "text", text: `Rs ${refundAmount.toLocaleString("en-IN")}` },
-                { type: "text", text: refundId || "Initiated" },
-              ],
-            },
+  const cleanOrderId = (orderId || "").replace(/^#/, "");
+  const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
+
+  // 1. Try official Meta utility template first: 'vittallifestyle_order_canceled' (from active templates)
+  const templateCandidates = [
+    TEMPLATE_CANCEL, // "vittallifestyle_order_canceled"
+    TEMPLATE_CANCEL_FALLBACK, // "vittallifestyle_order_cancelled"
+    "zupe_order_cancelled",
+  ];
+
+  const bodyParamSets = [
+    // 2 params: clean orderId (matches Meta snippet: "Hi {{1}}! your order #{{2}} has been cancel...")
+    [
+      { type: "text", text: firstName },
+      { type: "text", text: cleanOrderId },
+    ],
+    // 2 params: display orderId (#1107)
+    [
+      { type: "text", text: firstName },
+      { type: "text", text: displayOrderId },
+    ],
+    // 4 params: for prepaid refund template if configured
+    ...(isPrepaid && refundAmount
+      ? [
+          [
+            { type: "text", text: firstName },
+            { type: "text", text: displayOrderId },
+            { type: "text", text: `Rs ${Number(refundAmount).toLocaleString("en-IN")}` },
+            { type: "text", text: refundId || "Initiated" },
           ],
-        },
-      };
+        ]
+      : []),
+  ];
 
-      const res = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + apiToken,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(6000),
-      });
+  for (const tplName of templateCandidates) {
+    for (const bodyParams of bodyParamSets) {
+      try {
+        const payload = {
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: digits,
+          type: "template",
+          template: {
+            name: tplName,
+            language: { code: TEMPLATE_LANG },
+            components: [
+              {
+                type: "body",
+                parameters: bodyParams,
+              },
+            ],
+          },
+        };
 
-      const data = (await res.json()) as any;
-      if (res.ok && data.messages?.length > 0) {
-        console.log(`✅ [WA Cancel] Official template '${TEMPLATE_CANCEL_PREPAID}' dispatched for order ${orderId} to ${digits}`);
-        return true;
+        const res = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + apiToken,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(6000),
+        });
+
+        const data = (await res.json()) as any;
+        if (res.ok && data.messages?.length > 0) {
+          console.log(`✅ [WA Cancel] Official template '${tplName}' dispatched for order ${orderId} to ${digits}`);
+          return true;
+        }
+      } catch (tErr) {
+        // Try next variation
       }
-    } catch (tErr) {
-      // Non-fatal, proceed to text fallback
-    }
-  } else {
-    try {
-      const payload = {
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: digits,
-        type: "template",
-        template: {
-          name: TEMPLATE_CANCEL_COD,
-          language: { code: TEMPLATE_LANG },
-          components: [
-            {
-              type: "body",
-              parameters: [
-                { type: "text", text: firstName },
-                { type: "text", text: orderId },
-              ],
-            },
-          ],
-        },
-      };
-
-      const res = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + apiToken,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(6000),
-      });
-
-      const data = (await res.json()) as any;
-      if (res.ok && data.messages?.length > 0) {
-        console.log(`✅ [WA Cancel] Official template '${TEMPLATE_CANCEL_COD}' dispatched for order ${orderId} to ${digits}`);
-        return true;
-      }
-    } catch (tErr) {
-      // Non-fatal, proceed to text fallback
     }
   }
 
   // 2. Fallback to direct text message
   let body = "";
-  const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
   if (isPrepaid && refundAmount) {
     body =
       `🛍️ *${siteConfig.name} — Order Cancelled & Refund Initiated*\n\n` +
