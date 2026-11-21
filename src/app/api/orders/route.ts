@@ -321,6 +321,7 @@ export async function POST(req: NextRequest) {
         totalAmount: Number(total_amount),
         paymentMethod: isCod ? "cod" : "prepaid",
         token: confirmToken,
+        advancePaid: Number((newOrder as any).advance_paid) || 0,
         items: (items || []).map((it: any) => ({
           name: it.name,
           quantity: Number(it.quantity || 1),

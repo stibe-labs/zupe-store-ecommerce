@@ -40,11 +40,13 @@ export interface OrderPreConfirmationParams {
   paymentMethod: "cod" | "prepaid";
   items: Array<{ name: string; quantity: number; price: number }>;
   token: string;
+  advancePaid?: number;
 }
 
 /**
  * Sends initial interactive verification WhatsApp message with Confirm and Cancel links.
- * Tries the official Meta Utility template 'zupe_order_verify' first (delivers to all customers).
+ * Matches the official reference template layout with exact emojis, summary, and action buttons.
+ * Tries the official Meta Utility template 'vittallifestyle_order_verify' first (delivers to all customers).
  * Falls back to direct text message if template is not yet approved in Meta Business Manager.
  */
 export async function sendOrderPreConfirmationWhatsApp(
@@ -73,33 +75,56 @@ export async function sendOrderPreConfirmationWhatsApp(
   const firstName = customerName.split(" ")[0] || customerName;
   const safeItems = Array.isArray(items) && items.length > 0
     ? items
-    : [{ name: `${siteConfig.name} Electronics`, quantity: 1, price: totalAmount || 2499 }];
-  const itemLines = safeItems
-    .slice(0, 3)
-    .map((it) => `  • ${it.name || siteConfig.name} (x${it.quantity || 1})`)
-    .join("\n");
-  const more = safeItems.length > 3 ? `\n  • ...and ${safeItems.length - 3} more` : "";
+    : [{ name: `${siteConfig.name} Product`, quantity: 1, price: totalAmount || 999 }];
+
+  // Construct clean product summary: e.g. "Mini Portable Steam Iron" or "2x Royal Saudi Medjool Dates (500g)"
+  const firstItem = safeItems[0];
+  const firstItemQty = Number(firstItem.quantity || 1);
+  const firstItemName = (firstItem.name || siteConfig.name).trim();
+  let productSummary = firstItemQty > 1 ? `${firstItemQty}x ${firstItemName}` : firstItemName;
+  if (safeItems.length > 1) {
+    productSummary += ` + ${safeItems.length - 1} more`;
+  }
+  if (productSummary.length > 60) {
+    productSummary = productSummary.substring(0, 57) + "...";
+  }
+
+  const isCod = paymentMethod === "cod";
+  const advancePaid = typeof params.advancePaid === "number" ? Math.max(0, params.advancePaid) : 0;
+  const amountPaid = isCod ? advancePaid : totalAmount;
+  const amountPayable = isCod ? Math.max(0, totalAmount - advancePaid) : 0;
+
+  const displayAmountPayable = `₹${amountPayable.toLocaleString("en-IN")}`;
+  const displayAmountPaid = `₹${amountPaid.toLocaleString("en-IN")}`;
+  const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
+  const paymentMethodLabel = isCod ? "Cash on Delivery" : "Prepaid Online";
 
   const confirmUrl = `${STORE_BASE_URL}/api/orders/whatsapp-confirm?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
   const cancelUrl = `${STORE_BASE_URL}/api/orders/whatsapp-cancel?token=${encodeURIComponent(token)}&orderId=${encodeURIComponent(orderId)}`;
-  const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
-
-  const codDoorstepDue = totalAmount;
-  const displayAmount = totalAmount;
-  const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
 
   // Log to internal WhatsApp desk
   try {
     const { recordOutboundSystemMessage } = await import("@/lib/whatsappStore");
     await recordOutboundSystemMessage(
       customerPhone,
-      `*Order Verification — ${siteConfig.name}* 🛍️\n\nHi ${firstName}! Thank you for placing your order (${displayOrderId}). Total: ₹${totalAmount} (${paymentMethodLabel}).\n\nPlease confirm your order:\n${confirmUrl}`,
+      `Hi ${firstName}! 👋🏻\n\n` +
+      `😊 Thank you for ordering from ${siteConfig.name} 🛒\n\n` +
+      `⁉️ Please confirm your order 📦\n\n` +
+      `📦 Order ID: ${displayOrderId}\n` +
+      `🛍️ Product: ${productSummary}\n` +
+      `💰 Amount Payable: ${displayAmountPayable}\n` +
+      `💰 Amount Paid: ${displayAmountPaid}\n\n` +
+      `📣 Please confirm whether you would like to proceed with your order. 💬\n\n` +
+      `Thank you, ❤️\n` +
+      `Team ${siteConfig.name}\n\n` +
+      `[Confirm Order: ${confirmUrl}]\n` +
+      `[Cancel Order: ${cancelUrl}]`,
       "order_card",
       {
         orderData: {
           orderId,
           totalAmount,
-          itemsSummary: safeItems.map((it) => `${it.name || siteConfig.name} (x${it.quantity || 1})`).join(", "),
+          itemsSummary: productSummary,
           status: "Awaiting WA",
           paymentMethod: paymentMethodLabel,
         },
@@ -107,7 +132,7 @@ export async function sendOrderPreConfirmationWhatsApp(
     );
   } catch (logErr) {}
 
-  // 1. Try official Meta Template with interactive buttons first (zupe_order_verify)
+  // 1. Try official Meta Template with interactive buttons first
   let templateSent = false;
   try {
     templateSent = await sendPreConfirmViaTemplate(
@@ -116,8 +141,9 @@ export async function sendOrderPreConfirmationWhatsApp(
       digits,
       firstName,
       displayOrderId,
-      displayAmount,
-      paymentMethodLabel,
+      productSummary,
+      amountPayable,
+      amountPaid,
       confirmUrl,
       cancelUrl,
       token
@@ -131,23 +157,20 @@ export async function sendOrderPreConfirmationWhatsApp(
     return true;
   }
 
-  // 2. Fallback to direct message only if template was not accepted
-  const paymentBreakdownText =
-    paymentMethod === "cod"
-      ? `💰 *Total Amount:* Rs ${totalAmount.toLocaleString("en-IN")}\n` +
-        `📦 *Payable at Doorstep:* Rs ${totalAmount.toLocaleString("en-IN")} (Cash or UPI)\n\n`
-      : `💰 *Amount Paid:* Rs ${totalAmount.toLocaleString("en-IN")} (Prepaid)\n\n`;
-
+  // 2. Fallback to direct message matching the exact reference template layout
   const message =
-    `*Order Verification — Turkiye Jam* 🛍️\n\n` +
-    `Hi ${firstName}! Thank you for placing your order with Turkiye Jam.\n\n` +
-    `📦 *Order ID:* ${displayOrderId}\n` +
-    `📋 *Items:*\n${itemLines}${more}\n\n` +
-    paymentBreakdownText +
-    `Please confirm your order below so we can pack and dispatch your shipment:\n\n` +
-    `✅ *Confirm Order:*\n${confirmUrl}\n\n` +
-    `❌ *Cancel Order:*\n${cancelUrl}\n\n` +
-    `Turkiye Jam Team`;
+    `Hi ${firstName}! 👋🏻\n\n` +
+    `😊 Thank you for ordering from ${siteConfig.name} 🛒\n\n` +
+    `⁉️ Please confirm your order 📦\n\n` +
+    `📦 Order ID: ${displayOrderId}\n` +
+    `🛍️ Product: ${productSummary}\n` +
+    `💰 Amount Payable: ${displayAmountPayable}\n` +
+    `💰 Amount Paid: ${displayAmountPaid}\n\n` +
+    `📣 Please confirm whether you would like to proceed with your order. 💬\n\n` +
+    `Thank you, ❤️\n` +
+    `Team ${siteConfig.name}\n\n` +
+    `👉 *Confirm Order:*\n${confirmUrl}\n\n` +
+    `👉 *Cancel Order:*\n${cancelUrl}`;
 
   await sendWhatsAppTextMessage(apiUrl, apiToken, digits, message);
   console.log(`✅ [WA Pre-Confirm] Fallback verification message delivered to ${digits} for order ${displayOrderId}`);
@@ -160,78 +183,97 @@ async function sendPreConfirmViaTemplate(
   to: string,
   firstName: string,
   orderId: string,
-  totalAmount: number,
-  paymentMethodLabel: string,
+  productSummary: string,
+  amountPayable: number,
+  amountPaid: number,
   confirmUrl: string,
   cancelUrl: string,
   verificationToken: string
 ): Promise<boolean> {
-  // The vittaldigital_order_verify template in Meta Business Manager:
-  // - Body with 4 parameters: {{1}}=firstName, {{2}}=orderId, {{3}}=amount, {{4}}=paymentMethod
-  // - Button 0 (Confirm Order): Dynamic URL configured with base:
-  //   https://vittaldigital.com/api/orders/whatsapp-confirm?token={{1}}
-  //   Parameter 1: verificationToken (e.g. tok_xxx)
-  // - Button 1 (Cancel Order): Dynamic URL configured with base:
-  //   https://vittaldigital.com/orders?cancelPrompt={{1}}
-  //   Parameter 1: clean orderId (e.g. 1567 or ord_xxx)
-
   const cleanButtonOrderId = (orderId || "").replace(/^#/, "");
 
-  const payload = {
-    messaging_product: "whatsapp",
-    recipient_type: "individual",
-    to,
-    type: "template",
-    template: {
-      name: TEMPLATE_VERIFY,
-      language: { code: TEMPLATE_LANG },
-      components: [
-        {
-          type: "body",
-          parameters: [
-            { type: "text", text: firstName },
-            { type: "text", text: orderId },
-            { type: "text", text: `Rs ${totalAmount.toLocaleString("en-IN")}` },
-            { type: "text", text: paymentMethodLabel },
-          ],
-        },
-        {
-          type: "button",
-          sub_type: "url",
-          index: "0",
-          parameters: [
-            {
-              type: "text",
-              text: verificationToken,
+  const templateCandidates = [
+    TEMPLATE_VERIFY, // "vittallifestyle_order_verify"
+    "zupe_order_verify",
+    "vittal_order_verify",
+    "order_verify",
+  ];
+
+  // Variations of components:
+  // 1. 5-param body (firstName, orderId, productSummary, amountPayable, amountPaid) + 2 dynamic URL buttons
+  // 2. 5-param body + 1 dynamic URL button (Confirm Order)
+  // 3. 5-param body without buttons
+  // 4. 4-param legacy body + 1 dynamic URL button
+  const bodyParams5 = [
+    { type: "text", text: firstName },
+    { type: "text", text: orderId },
+    { type: "text", text: productSummary },
+    { type: "text", text: `${amountPayable.toLocaleString("en-IN")}` },
+    { type: "text", text: `${amountPaid.toLocaleString("en-IN")}` },
+  ];
+
+  const bodyParams4Legacy = [
+    { type: "text", text: firstName },
+    { type: "text", text: orderId },
+    { type: "text", text: `Rs ${amountPayable.toLocaleString("en-IN")}` },
+    { type: "text", text: productSummary },
+  ];
+
+  const candidateComponentSets = [
+    // 5-param with 2 dynamic buttons
+    [
+      { type: "body", parameters: bodyParams5 },
+      { type: "button", sub_type: "url", index: "0", parameters: [{ type: "text", text: verificationToken }] },
+      { type: "button", sub_type: "url", index: "1", parameters: [{ type: "text", text: cleanButtonOrderId }] },
+    ],
+    // 5-param with 1 dynamic button
+    [
+      { type: "body", parameters: bodyParams5 },
+      { type: "button", sub_type: "url", index: "0", parameters: [{ type: "text", text: verificationToken }] },
+    ],
+    // 5-param body only
+    [
+      { type: "body", parameters: bodyParams5 },
+    ],
+    // 4-param legacy with 1 button
+    [
+      { type: "body", parameters: bodyParams4Legacy },
+      { type: "button", sub_type: "url", index: "0", parameters: [{ type: "text", text: verificationToken }] },
+    ],
+  ];
+
+  for (const tplName of templateCandidates) {
+    for (const components of candidateComponentSets) {
+      try {
+        const res = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to,
+            type: "template",
+            template: {
+              name: tplName,
+              language: { code: TEMPLATE_LANG },
+              components,
             },
-          ],
-        },
-      ],
-    },
-  };
+          }),
+          signal: AbortSignal.timeout(6000),
+        });
 
-  try {
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(6000),
-    });
-
-    const data = (await res.json()) as any;
-    if (res.ok && data.messages?.length > 0) {
-      console.log(
-        `✅ [WA Pre-Confirm] Official template '${TEMPLATE_VERIFY}' delivered to Meta queue for ${to}, messageId: ${data.messages[0].id}`
-      );
-      return true;
+        const data = (await res.json()) as any;
+        if (res.ok && data.messages?.length > 0) {
+          console.log(`✅ [WA Pre-Confirm] Official template '${tplName}' delivered to Meta queue for ${to}, messageId: ${data.messages[0].id}`);
+          return true;
+        }
+      } catch (err) {
+        // Continue trying next variation
+      }
     }
-
-    console.warn(`[WA Pre-Confirm] Template rejected by Meta:`, data?.error || data);
-  } catch (err) {
-    console.warn(`[WA Pre-Confirm] Template send error:`, err);
   }
 
   return false;
@@ -753,7 +795,7 @@ export async function sendOrderCancellationRefundWhatsApp(
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
   if (isPrepaid && refundAmount) {
     body =
-      `🛍️ *Turkiye Jam — Order Cancelled & Refund Initiated*\n\n` +
+      `🛍️ *${siteConfig.name} — Order Cancelled & Refund Initiated*\n\n` +
       `Hi ${firstName}! Your order *${displayOrderId}* has been successfully cancelled.\n\n` +
       `💰 *Refund Amount:* Rs ${refundAmount.toLocaleString("en-IN")}\n` +
       `💳 *Refund Reference:* ${refundId || "Initiated via Razorpay"}\n` +
@@ -761,14 +803,14 @@ export async function sendOrderCancellationRefundWhatsApp(
       `⏱️ *Expected Credit Timeline:*\n` +
       `• UPI (GPay, PhonePe, Paytm): Usually credited within 2 to 4 hours (or up to 24 hours depending on the issuing bank)\n` +
       `• Debit / Credit Cards / Netbanking: Credited within 2 to 4 business days\n\n` +
-      `Thank you for shopping with Turkiye Jam!`;
+      `Thank you for shopping with ${siteConfig.name}!`;
   } else {
     body =
-      `🛍️ *Turkiye Jam — Order Cancelled*\n\n` +
+      `🛍️ *${siteConfig.name} — Order Cancelled*\n\n` +
       `Hi ${firstName}! Your Cash on Delivery order *${displayOrderId}* has been successfully cancelled.\n\n` +
       `📦 *Status:* Shipment cancelled. No payment will be collected at your doorstep.\n\n` +
       `If you need any assistance or wish to re-order, we are always here to help.\n\n` +
-      `Thank you,\nTurkiye Jam Team`;
+      `Thank you,\nTeam ${siteConfig.name}`;
   }
 
   await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
@@ -821,12 +863,12 @@ export async function sendAbandonedCartWhatsApp(
     : "👉 Tap here to complete your order in 1 click:";
 
   const body =
-    `Hi ${firstName}! We noticed you left some great items in your ${sectionName} at Turkiye Jam:\n\n` +
+    `Hi ${firstName}! We noticed you left some great items in your ${sectionName} at ${siteConfig.name}:\n\n` +
     `${itemLines}${more}\n\n` +
     `⚡ Currently this is a great price! Plus, if you order now, you get Free Delivery without any extra charges.\n\n` +
     `${actionText}\n${recoveryUrl}\n\n` +
     `Need any assistance? Just reply to this message!\n` +
-    `Turkiye Jam Team`;
+    `Team ${siteConfig.name}`;
 
   const textSent = await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
   if (textSent) {

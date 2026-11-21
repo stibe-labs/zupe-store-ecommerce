@@ -20,9 +20,17 @@ export default function QuickTemplatesModal({
   // Render variables dynamically
   const renderTemplateText = (tpl: WhatsAppTemplate) => {
     let text = tpl.body;
+    const cleanOrderId = (conversation.orderId || "1109").replace(/^#/, "");
     text = text.replace(/{{name}}/g, conversation.customerName.split(" ")[0]);
-    text = text.replace(/{{order_id}}/g, conversation.orderId ? `#${conversation.orderId}` : "#VD-10492");
-    text = text.replace(/{{amount}}/g, String(conversation.orderTotal || 2499));
+    text = text.replace(/{{order_id}}/g, `#${cleanOrderId}`);
+    text = text.replace(/{{product}}/g, (conversation as any).productName || "Ordered Items");
+    text = text.replace(/{{amount}}/g, Number(conversation.orderTotal || 1747).toLocaleString("en-IN"));
+    text = text.replace(
+      /{{amount_paid}}/g,
+      conversation.paymentMethod === "prepaid"
+        ? Number(conversation.orderTotal || 1747).toLocaleString("en-IN")
+        : "0"
+    );
     text = text.replace(
       /{{address}}/g,
       conversation.shippingAddress
@@ -30,7 +38,7 @@ export default function QuickTemplatesModal({
         : "your delivery address"
     );
     text = text.replace(/{{courier}}/g, "DTDC Express / BlueDart Air");
-    text = text.replace(/{{awb}}/g, "VD188920489IN");
+    text = text.replace(/{{awb}}/g, "VL188920489IN");
     return text;
   };
 

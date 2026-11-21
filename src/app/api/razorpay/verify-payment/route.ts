@@ -330,6 +330,7 @@ export async function POST(req: NextRequest) {
     if (isCodPartial) {
       // Cash on Delivery: Send interactive pre-confirmation with [Confirm Order] and [Cancel Order] buttons
       try {
+        const advance = isCodPartial ? (Number(order_payload?.advance_amount) || 10) : 0;
         const { sendOrderPreConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
         await sendOrderPreConfirmationWhatsApp({
           customerName: customer_name || "Customer",
@@ -338,6 +339,7 @@ export async function POST(req: NextRequest) {
           totalAmount: Number(total_amount),
           paymentMethod: "cod",
           token: confirmToken,
+          advancePaid: advance,
           items: (items || []).map((it: any) => ({
             name: it.name,
             quantity: Number(it.quantity || 1),

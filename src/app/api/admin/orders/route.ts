@@ -212,11 +212,11 @@ export async function POST(req: NextRequest) {
 
       if (rawItems.length === 0) {
         rawItems = [{
-          name: "Vittal Digital Electronics Package",
-          product_name: "Vittal Digital Electronics Package",
+          name: `${siteConfig.name} Package`,
+          product_name: `${siteConfig.name} Package`,
           quantity: 1,
-          unit_price: Number(ord.total_amount) || 2499,
-          price: Number(ord.total_amount) || 2499,
+          unit_price: Number(ord.total_amount) || 1747,
+          price: Number(ord.total_amount) || 1747,
         }];
       }
 
@@ -230,8 +230,9 @@ export async function POST(req: NextRequest) {
         orderId: ord.shopify_order_id || ord.id || order_id,
         totalAmount: Number(ord.total_amount) || 0,
         paymentMethod: isCod ? "cod" : "prepaid",
+        advancePaid: Number((ord as any).advance_paid) || 0,
         items: rawItems.map((it: any) => ({
-          name: it.product_name || it.name || "Vittal Digital",
+          name: it.product_name || it.name || siteConfig.name,
           quantity: Number(it.quantity || 1),
           price: Number(it.unit_price || it.price || 0),
         })),

@@ -135,6 +135,75 @@ export async function POST(req: NextRequest) {
               } catch (e) {
                 console.warn("Failed to record inbound WhatsApp message:", e);
               }
+
+              // Automatically handle WhatsApp Order Confirmation / Cancellation replies
+              try {
+                const normText = (bodyText || "").trim().toLowerCase();
+                const isConfirmAction =
+                  normText === "confirm order" ||
+                  normText === "confirm" ||
+                  normText === "1" ||
+                  normText === "yes" ||
+                  normText === "proceed" ||
+                  normText.startsWith("confirm");
+
+                const isCancelAction =
+                  normText === "cancel order" ||
+                  normText === "cancel" ||
+                  normText === "2" ||
+                  normText === "no";
+
+                if (isConfirmAction || isCancelAction) {
+                  const { executeD1Query } = await import("@/lib/d1");
+                  const cleanPhone = (msg.from || "").replace(/\D/g, "");
+                  const last10 = cleanPhone.slice(-10);
+
+                  const pendingRows = await executeD1Query<any>(
+                    `SELECT id, whatsapp_confirm_token, shopify_order_id, customer_name, customer_phone, total_amount, payment_method, items
+                     FROM orders
+                     WHERE (customer_phone LIKE ? OR customer_phone LIKE ?)
+                       AND whatsapp_confirm_status = 'pending_whatsapp'
+                     ORDER BY created_at DESC LIMIT 1`,
+                    [`%${last10}`, `%${cleanPhone}`]
+                  );
+
+                  if (pendingRows && pendingRows.length > 0) {
+                    const targetOrder = pendingRows[0];
+                    if (isConfirmAction) {
+                      const { confirmWhatsAppOrder } = await import("@/lib/orderStore");
+                      await confirmWhatsAppOrder(targetOrder.whatsapp_confirm_token, targetOrder.id);
+                      console.log(`✅ [WA Webhook] Automatically confirmed order ${targetOrder.id} via customer reply "${bodyText}"`);
+
+                      const { sendOrderConfirmationWhatsApp } = await import("@/lib/whatsappOrderConfirmation");
+                      let parsedItems = [];
+                      try {
+                        parsedItems = typeof targetOrder.items === "string" ? JSON.parse(targetOrder.items) : (targetOrder.items || []);
+                      } catch {
+                        parsedItems = [];
+                      }
+
+                      await sendOrderConfirmationWhatsApp({
+                        customerName: targetOrder.customer_name || "Valued Customer",
+                        customerPhone: targetOrder.customer_phone || msg.from,
+                        orderId: targetOrder.shopify_order_id || targetOrder.id,
+                        totalAmount: Number(targetOrder.total_amount) || 0,
+                        paymentMethod: (targetOrder.payment_method || "").toLowerCase().includes("cod") ? "cod" : "prepaid",
+                        items: parsedItems.map((it: any) => ({
+                          name: it.product_name || it.name || siteConfig.name,
+                          quantity: Number(it.quantity || 1),
+                          price: Number(it.unit_price || it.price || 0),
+                        })),
+                      });
+                    } else if (isCancelAction) {
+                      const { cancelWhatsAppOrder } = await import("@/lib/orderStore");
+                      await cancelWhatsAppOrder(targetOrder.whatsapp_confirm_token, targetOrder.id, "Customer requested cancellation via WhatsApp reply");
+                      console.log(`🛑 [WA Webhook] Cancelled order ${targetOrder.id} via customer reply "${bodyText}"`);
+                    }
+                  }
+                }
+              } catch (autoErr) {
+                console.warn("[WA Webhook] Auto confirm/cancel error:", autoErr);
+              }
             }
           }
         }
