@@ -356,7 +356,7 @@ export async function getCategories(includeInactive = false): Promise<StoreCateg
             };
             parsed.unshift(allCat);
           }
-          // Strip giant base64 data URLs to prevent burning Worker CPU time (Cloudflare 10ms limit)
+          // Strip giant base64 data URLs and foreign branch paths to prevent burning Worker CPU time or broken images
           const sanitized = parsed.map((c: any) => {
             const defaultCat = DEFAULT_STORE_CATEGORIES.find(
               (dc) => dc.id === c.id || (dc.name && c.name && dc.name.toLowerCase() === c.name.toLowerCase())
@@ -367,9 +367,11 @@ export async function getCategories(includeInactive = false): Promise<StoreCateg
                 ...(defaultCat?.subcategoryIcons || {}),
                 ...(c.subcategoryIcons || {}),
               },
-              customIcon: typeof c.customIcon === "string" && c.customIcon.startsWith("data:")
-                ? undefined
-                : c.customIcon,
+              customIcon:
+                typeof c.customIcon === "string" &&
+                (c.customIcon.startsWith("data:") || c.customIcon.startsWith("/vittal/"))
+                  ? undefined
+                  : c.customIcon,
             };
           });
           inMemoryCategories = sanitized;

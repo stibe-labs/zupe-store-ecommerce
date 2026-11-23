@@ -212,7 +212,7 @@ export function formatCategoryItems(rawCategories: StoreCategory[]): CategoryIte
     });
 }
 
-const LOCAL_STORAGE_KEY = "zupe_store_categories_cache_v2";
+const LOCAL_STORAGE_KEY = "zupe_store_categories_cache_v3";
 let moduleCategoryCache: CategoryItem[] | null = null;
 
 interface CategoryPillsProps {

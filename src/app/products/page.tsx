@@ -59,7 +59,7 @@ function ProductsContent() {
   const [dynamicCategories, setDynamicCategories] = useState<StoreCategory[]>(() => {
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("zupe_store_categories_cache_v2");
+        const stored = localStorage.getItem("zupe_store_categories_cache_v3");
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) return parsed;
