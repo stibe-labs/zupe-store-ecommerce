@@ -961,8 +961,8 @@ function AdminOrdersContent() {
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="min-w-0">
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 Orders & Logistics Tracking
               </h1>
@@ -971,10 +971,10 @@ function AdminOrdersContent() {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-nowrap overflow-x-auto pb-1 sm:pb-0">
               <button
                 onClick={() => setCreateOrderModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-sm shadow-orange-500/20 active:scale-95 cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-sm shadow-orange-500/20 active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
                 title="Create a new manual order"
               >
                 <Plus className="w-4 h-4 text-white stroke-[2.5]" />
@@ -983,7 +983,7 @@ function AdminOrdersContent() {
               <button
                 onClick={handleSyncShiprocketAll}
                 disabled={isSyncingShiprocket}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-orange-50 border border-orange-200 hover:bg-orange-100 text-[#FF7A00] text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 bg-orange-50 border border-orange-200 hover:bg-orange-100 text-[#FF7A00] text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0"
                 title="Sync AWB, couriers, and live tracking status directly from Shiprocket"
               >
                 <RefreshCw className={`w-4 h-4 text-[#FF7A00] ${isSyncingShiprocket ? "animate-spin" : ""}`} />
@@ -991,7 +991,7 @@ function AdminOrdersContent() {
               </button>
               <button
                 onClick={handleExportCSV}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm whitespace-nowrap shrink-0"
               >
                 <Download className="w-4 h-4 text-slate-500" />
                 <span>Export CSV</span>
@@ -1003,7 +1003,7 @@ function AdminOrdersContent() {
                   setClearOrdersError(null);
                   setClearOrdersModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 border border-rose-200 hover:bg-rose-100 hover:border-rose-300 text-rose-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm cursor-pointer active:scale-95"
+                className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 bg-rose-50 border border-rose-200 hover:bg-rose-100 hover:border-rose-300 text-rose-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
                 title="Permanently clear test or all orders from database"
               >
                 <Trash2 className="w-4 h-4 text-rose-600" />
