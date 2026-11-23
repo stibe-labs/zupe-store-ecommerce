@@ -235,11 +235,13 @@ export async function POST(req: NextRequest) {
       originalTotal = productSubtotal + 49;
     }
 
-    // Doorstep balance was originalTotal - advancePaid
-    const advancePaid = Number((order as any)?.advance_paid) || 10;
-    const doorstepBalance = Math.max(0, originalTotal - advancePaid);
-    // Apply the Rs 49 discount from doorstep balance for switching to prepaid
-    const payableAmount = Math.max(1, doorstepBalance - 49);
+    const codFee = (productSubtotal || originalTotal) < 500 ? 19 : 49;
+    const advancePaid = Number((order as any)?.advance_paid) || codFee;
+    const doorstepBalance = (order as any)?.balance_due !== undefined
+      ? Number((order as any).balance_due)
+      : Math.max(0, originalTotal - advancePaid);
+    // Apply the COD discount from doorstep balance for switching to prepaid
+    const payableAmount = Math.max(1, doorstepBalance - advancePaid);
 
     // Initialize Razorpay order
     const rzpOrder = await createRazorpayOrder({

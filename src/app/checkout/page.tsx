@@ -95,6 +95,21 @@ function cleanPhoneDigits(raw: string): string {
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Check if current visit is COD to Prepaid Switch mode or Abandoned Cart Recovery
+  const isCodSwitchMode =
+    searchParams.get("switch") === "cod" ||
+    Boolean(searchParams.get("switch_order")) ||
+    (searchParams.get("method") === "prepaid" && Boolean(searchParams.get("orderId") || searchParams.get("order_id"))) ||
+    Boolean(searchParams.get("switch"));
+
+  const isAbandonedRecovery = Boolean(
+    searchParams.get("recover") ||
+    searchParams.get("recovery") ||
+    searchParams.get("rec_token") ||
+    searchParams.get("token")
+  );
+
   const {
     cart,
     addToCart,
@@ -110,15 +125,20 @@ function CheckoutContent() {
   } = useCart();
   const { user, isLoading: authLoading, updateUserProfile, sendPhoneOtp, loginWithPhoneOtp } = useAuth();
 
-  // Redirect old checkout page to root with GlobalQuickBuyDrawer
+  // Redirect old checkout page to root with GlobalQuickBuyDrawer only for regular direct storefront visits
   useEffect(() => {
+    // CRITICAL: DO NOT redirect if user is in COD-to-Prepaid switch mode or recovering abandoned cart
+    if (isCodSwitchMode || isAbandonedRecovery) {
+      return;
+    }
+
     if (cart.length > 0) {
       openQuickBuy({ items: cart });
       router.replace("/");
     } else {
       router.replace("/products");
     }
-  }, [cart, openQuickBuy, router]);
+  }, [cart, openQuickBuy, router, isCodSwitchMode, isAbandonedRecovery]);
 
   // Contact & Delivery state
   const [phone, setPhone] = useState(() => {
@@ -348,10 +368,6 @@ function CheckoutContent() {
   };
 
   // COD to Prepaid Switch Mode state
-  const isCodSwitchMode =
-    searchParams.get("switch") === "cod" ||
-    Boolean(searchParams.get("switch_order"));
-
   const [switchQuery, setSwitchQuery] = useState(() => {
     return (
       searchParams.get("orderId") ||
@@ -394,20 +410,24 @@ function CheckoutContent() {
 
   useEffect(() => {
     if (!isCodSwitchMode) return;
-    let initialTerm = switchQuery;
+    let initialTerm =
+      switchQuery ||
+      searchParams.get("orderId") ||
+      searchParams.get("order_id") ||
+      searchParams.get("query") ||
+      searchParams.get("switch_order") ||
+      "";
     if (!initialTerm && typeof window !== "undefined") {
       initialTerm =
         localStorage.getItem("zupe_last_cod_order_id") ||
         localStorage.getItem("zupe_last_cod_phone") ||
         "";
-      if (initialTerm) {
-        setSwitchQuery(initialTerm);
-      }
     }
     if (initialTerm) {
+      setSwitchQuery(initialTerm);
       lookupCodOrder(initialTerm);
     }
-  }, [isCodSwitchMode]);
+  }, [isCodSwitchMode, searchParams]);
 
   // 1-Click Cart Restoration via WhatsApp Recovery Link (?recover=token or ?token=token)
   useEffect(() => {
