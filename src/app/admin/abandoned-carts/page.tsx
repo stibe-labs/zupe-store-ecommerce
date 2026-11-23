@@ -576,13 +576,9 @@ export default function AbandonedCartsAdminPage() {
                     {filteredCheckouts.map((c) => {
                       const isRecovered = c.status === "recovered";
                       const cleanPhone = c.customer_phone.replace(/\D/g, "");
-                      const sectionName = c.source === "cart" ? "cart" : "checkout section";
-                      const itemSummary = (c.items || [])
-                        .slice(0, 3)
-                        .map((it) => `• ${it.name || it.product_name || "Product"} — ₹${Number(it.price || it.unit_price || 0).toLocaleString("en-IN")}`)
-                        .join("\n");
+                      const firstItemName = (c.items && c.items[0]?.name) || "your favourite find";
                       const waChatUrl = `https://wa.me/${cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`}?text=${encodeURIComponent(
-                        `Hi ${c.customer_name || "there"}! We noticed you left some great items in your ${sectionName} at Turkiye Jam:\n\n${itemSummary}\n\n⚡ Currently this is a great price! Plus, if you order now, you get Free Delivery without any extra charges.\n\n👉 Complete your order here: ${c.recovery_url}`
+                        `👀 Something Caught Your Eye?\n\nHi ${c.customer_name || "there"}! Your favourite find is waiting for you in your cart. 🛍️ ❤️\n\n🎁 ${firstItemName}\n\nComplete your order now! ⚡\n👉 ${c.recovery_url}`
                       )}`;
 
                       return (
@@ -599,11 +595,11 @@ export default function AbandonedCartsAdminPage() {
                               </span>
                               {c.source === "cart" ? (
                                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                                  🛒 Cart (30m)
+                                  🛒 Cart (1h Auto)
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                                  🚪 Checkout Exit
+                                  🚪 Checkout (5m Auto)
                                 </span>
                               )}
                             </div>
@@ -843,7 +839,7 @@ export default function AbandonedCartsAdminPage() {
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-slate-500">Trigger Source:</span>
                     <span className="font-semibold text-slate-800">
-                      {selectedCheckout.source === "cart" ? "🛒 Cart Abandonment (30-Minute Trigger)" : "🚪 Checkout Page Exit (Immediate)"}
+                      {selectedCheckout.source === "cart" ? "🛒 Cart Abandonment (1-Hour Auto Trigger)" : "🚪 Checkout Page Exit (5-Minute Auto Trigger)"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">

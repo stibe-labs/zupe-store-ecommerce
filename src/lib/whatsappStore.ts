@@ -109,6 +109,13 @@ export const WHATSAPP_TEMPLATES: WhatsAppTemplate[] = [
     variables: ["name", "courier", "order_id"],
   },
   {
+    id: "abandoned_cart_reference",
+    title: "Abandoned Cart Reminder (Something Caught Your Eye?)",
+    category: "Marketing",
+    body: `👀 Something Caught Your Eye?\n\nHi {{name}}! Your favourite find is waiting for you in your cart. 🛍️ ❤️\n\n🎁 {{product}}\n\nComplete your order now! ⚡\n👉 {{recovery_url}}`,
+    variables: ["name", "product", "recovery_url"],
+  },
+  {
     id: "abandoned_cart_discount",
     title: "Abandoned Cart VIP Extra Discount",
     category: "Marketing",

@@ -25,6 +25,8 @@ const TEMPLATE_UPDATE = "vittallifestyle_order_confirmed";
 const TEMPLATE_CANCEL = "vittallifestyle_order_canceled";
 const TEMPLATE_CANCEL_FALLBACK = "vittallifestyle_order_cancelled";
 const TEMPLATE_COD_TO_PREPAID = "vittallifestyle_cod_to_prepaid";
+const TEMPLATE_ABANDONED_CART = "vittallifestyle_abandoned_cart";
+const TEMPLATE_ABANDONED_CART_FALLBACK = "zupe_abandoned_cart";
 const TEMPLATE_LANG = "en";
 
 export interface OrderConfirmationParams {
@@ -840,85 +842,148 @@ export async function sendAbandonedCartWhatsApp(
 
   const { token: apiToken, phoneId } = await getEffectiveWhatsAppCredentials();
   if (!apiToken || !phoneId) {
-    console.warn("⚠️ [WA Pre-Confirm] Missing WhatsApp credentials, skipping.");
+    console.warn("⚠️ [WA Abandoned Cart] Missing WhatsApp credentials, skipping.");
     return false;
   }
   const apiUrl = "https://graph.facebook.com/v21.0/" + phoneId + "/messages";
 
   const firstName = customerName?.trim() ? customerName.split(" ")[0] : "there";
   
-  // Format items showing name and price
-  const itemLines = (items || [])
-    .slice(0, 4)
-    .map((it) => {
-      const priceStr = it.price ? ` — ₹${Number(it.price).toLocaleString("en-IN")}` : "";
-      const qtyStr = it.quantity > 1 ? ` (x${it.quantity})` : "";
-      return `• ${it.name}${qtyStr}${priceStr}`;
-    })
-    .join("\n");
-  const more = (items || []).length > 4 ? `\n• ...and ${(items || []).length - 4} more item(s)` : "";
-
-  const sectionName = source === "cart" ? "cart" : "checkout section";
-  const actionText = source === "cart"
-    ? "👉 Tap here to view your cart & complete your order:"
-    : "👉 Tap here to complete your order in 1 click:";
-
-  const body =
-    `Hi ${firstName}! We noticed you left some great items in your ${sectionName} at ${siteConfig.name}:\n\n` +
-    `${itemLines}${more}\n\n` +
-    `⚡ Currently this is a great price! Plus, if you order now, you get Free Delivery without any extra charges.\n\n` +
-    `${actionText}\n${recoveryUrl}\n\n` +
-    `Need any assistance? Just reply to this message!\n` +
-    `Team ${siteConfig.name}`;
-
-  const textSent = await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
-  if (textSent) {
-    console.log(`✅ [WA Abandoned Cart] Recovery WhatsApp message (${source}) dispatched to ${digits}`);
-  } else {
-    console.warn(`⚠️ [WA Abandoned Cart] Cloud API text delivery failed for ${digits}. Customer may be outside 24h window.`);
+  // Format single product name or product summary matching reference image: "🎁 Mini Portable Steam Iron"
+  const safeItems = Array.isArray(items) && items.length > 0
+    ? items
+    : [{ name: `${siteConfig.name} Product`, quantity: 1, price: totalAmount || 999 }];
+  const firstItem = safeItems[0];
+  const firstItemQty = Number(firstItem.quantity || 1);
+  const firstItemName = (firstItem.name || siteConfig.name).trim();
+  let productSummary = firstItemQty > 1 ? `${firstItemQty}x ${firstItemName}` : firstItemName;
+  if (safeItems.length > 1) {
+    productSummary += ` + ${safeItems.length - 1} more`;
+  }
+  if (productSummary.length > 60) {
+    productSummary = productSummary.substring(0, 57) + "...";
   }
 
-  // Concurrently attempt official template dispatch (for when template is approved in Meta)
+  const tokenPart = recoveryUrl.split("recover=")[1] || recoveryUrl.split("/").pop() || "";
+
+  // Exact reference layout matching the template screenshot:
+  // 👀 Something Caught Your Eye?
+  //
+  // Hi Rahul! Your favourite find is waiting for you in your cart. 🛍️ ❤️
+  //
+  // 🎁 Mini Portable Steam Iron
+  //
+  // Complete your order now! ⚡
+  const referenceBody =
+    `👀 Something Caught Your Eye?\n\n` +
+    `Hi ${firstName}! Your favourite find is waiting for you in your cart. 🛍️ ❤️\n\n` +
+    `🎁 ${productSummary}\n\n` +
+    `Complete your order now! ⚡\n` +
+    `👉 ${recoveryUrl}`;
+
+  // Log to internal WhatsApp desk
   try {
-    const tokenPart = recoveryUrl.split("recover=")[1] || "";
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer " + apiToken,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: digits,
-        type: "template",
-        template: {
-          name: "zupe_abandoned_cart",
-          language: { code: TEMPLATE_LANG },
-          components: [
-            {
-              type: "body",
-              parameters: [
-                { type: "text", text: firstName },
-                { type: "text", text: "Rs " + totalAmount.toLocaleString("en-IN") },
-              ],
-            },
-            {
-              type: "button",
-              sub_type: "url",
-              index: "0",
-              parameters: [{ type: "text", text: tokenPart }],
-            },
-          ],
-        },
-      }),
-    });
-    const data = (await res.json()) as any;
-    if (res.ok && data.messages?.length > 0) {
-      console.log(`✅ [WA Abandoned Cart] Official template 'zupe_abandoned_cart' dispatched to ${digits}`);
-      return true;
-    }
+    const { recordOutboundSystemMessage } = await import("@/lib/whatsappStore");
+    await recordOutboundSystemMessage(
+      customerPhone,
+      referenceBody,
+      "text"
+    );
   } catch {}
 
-  return textSent;
+  // 1. Try official Meta template dispatch (tries active template names)
+  const templateCandidates = [
+    TEMPLATE_ABANDONED_CART, // "vittallifestyle_abandoned_cart"
+    "vittallifestyle_cart_recovery",
+    TEMPLATE_ABANDONED_CART_FALLBACK, // "zupe_abandoned_cart"
+  ];
+
+  const componentVariations = [
+    // Standard template: Body (2 params: firstName, productSummary) + Button (Dynamic URL token)
+    [
+      {
+        type: "body",
+        parameters: [
+          { type: "text", text: firstName },
+          { type: "text", text: productSummary },
+        ],
+      },
+      {
+        type: "button",
+        sub_type: "url",
+        index: "0",
+        parameters: [{ type: "text", text: tokenPart }],
+      },
+    ],
+    // Body only (if button is static or none)
+    [
+      {
+        type: "body",
+        parameters: [
+          { type: "text", text: firstName },
+          { type: "text", text: productSummary },
+        ],
+      },
+    ],
+    // Fallback parameters (firstName, totalAmount)
+    [
+      {
+        type: "body",
+        parameters: [
+          { type: "text", text: firstName },
+          { type: "text", text: "Rs " + totalAmount.toLocaleString("en-IN") },
+        ],
+      },
+      {
+        type: "button",
+        sub_type: "url",
+        index: "0",
+        parameters: [{ type: "text", text: tokenPart }],
+      },
+    ],
+  ];
+
+  for (const tName of templateCandidates) {
+    for (const components of componentVariations) {
+      try {
+        const res = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + apiToken,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to: digits,
+            type: "template",
+            template: {
+              name: tName,
+              language: { code: TEMPLATE_LANG },
+              components,
+            },
+          }),
+        });
+
+        const data = (await res.json()) as any;
+        if (res.ok && data.messages?.length > 0) {
+          console.log(`✅ [WA Abandoned Cart] Official template '${tName}' dispatched to ${digits}`);
+          return true;
+        }
+      } catch (err) {
+        // proceed to next variation
+      }
+    }
+  }
+
+  // 2. Fallback to direct WhatsApp text message (for within 24h window or test)
+  const textSent = await sendWhatsAppTextMessage(apiUrl, apiToken, digits, referenceBody);
+  if (textSent) {
+    console.log(`✅ [WA Abandoned Cart] Direct recovery text (${source}) dispatched to ${digits}`);
+    return true;
+  } else {
+    console.warn(`⚠️ [WA Abandoned Cart] Cloud API text delivery failed for ${digits}. Customer may be outside 24h window or requires template approval.`);
+  }
+
+  return false;
 }

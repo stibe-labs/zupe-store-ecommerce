@@ -3,7 +3,9 @@
 import { useEffect } from "react";
 
 /**
- * Background auto-checker for overdue 30-minute abandoned carts.
+ * Background auto-checker for abandoned carts and checkouts:
+ * 1. Cart additions: 1 hour overdue
+ * 2. Checkout exits/backouts: 5 minutes overdue
  * Periodically pings the cron endpoint to ensure overdue recovery messages
  * are dispatched automatically without manual intervention.
  */
@@ -20,9 +22,9 @@ export function AbandonedCartAutoChecker() {
       } catch {}
     };
 
-    // Run once 15 seconds after initial load, then every 2 minutes
-    const initialTimer = setTimeout(checkOverdueCarts, 15000);
-    const interval = setInterval(checkOverdueCarts, 120000);
+    // Run once 10 seconds after initial load, then every 60 seconds (1 minute)
+    const initialTimer = setTimeout(checkOverdueCarts, 10000);
+    const interval = setInterval(checkOverdueCarts, 60000);
 
     return () => {
       clearTimeout(initialTimer);
