@@ -36,35 +36,18 @@ export interface ValidationResult {
   coupon?: Coupon;
 }
 
-// Initial baseline coupons
+// Initial baseline coupons for Vittal Lifestyle
 export const SEED_COUPONS: Coupon[] = [
   {
-    id: "promo_tj10",
-    code: "TURKIYE10",
-    description: "Flat 10% OFF on all Turkiye Jam products (up to ₹200)",
+    id: "promo_vl10",
+    code: "VITTAL10",
+    description: "Flat 10% OFF on all Vittal Lifestyle products (up to ₹250)",
     discount_type: "PERCENTAGE",
     discount_value: 10,
     min_order_amount: 0,
-    max_discount_amount: 200,
-    expires_at: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-    usage_limit: 500,
-    usage_count: 0,
-    is_active: true,
-    applicable_type: "ALL",
-    applicable_products: [],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: "promo_save100",
-    code: "SAVE100",
-    description: "Flat ₹100 OFF on orders above ₹1,000",
-    discount_type: "FLAT",
-    discount_value: 100,
-    min_order_amount: 1000,
-    max_discount_amount: null,
-    expires_at: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-    usage_limit: 300,
+    max_discount_amount: 250,
+    expires_at: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString(),
+    usage_limit: 1000,
     usage_count: 0,
     is_active: true,
     applicable_type: "ALL",
@@ -75,7 +58,7 @@ export const SEED_COUPONS: Coupon[] = [
   {
     id: "promo_welcome10",
     code: "WELCOME10",
-    description: "New customer special: 10% OFF your entire purchase",
+    description: "Welcome special: 10% OFF your entire fitness cart (up to ₹150)",
     discount_type: "PERCENTAGE",
     discount_value: 10,
     min_order_amount: 0,
@@ -90,19 +73,53 @@ export const SEED_COUPONS: Coupon[] = [
     updated_at: new Date().toISOString(),
   },
   {
-    id: "promo_vitality",
-    code: "VITALITY200",
-    description: "Special ₹200 OFF on 240g Jar & 14-Strip Value Packs",
+    id: "promo_meta100",
+    code: "META100",
+    description: "Flat ₹100 OFF on orders above ₹800",
     discount_type: "FLAT",
-    discount_value: 200,
-    min_order_amount: 2000,
+    discount_value: 100,
+    min_order_amount: 800,
     max_discount_amount: null,
-    expires_at: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(),
-    usage_limit: 200,
+    expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+    usage_limit: 500,
     usage_count: 0,
     is_active: true,
-    applicable_type: "SPECIFIC",
-    applicable_products: ["turkiye-jam", "bottle-240g", "box-14-strips"],
+    applicable_type: "ALL",
+    applicable_products: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: "promo_save100",
+    code: "SAVE100",
+    description: "Flat ₹100 OFF on orders above ₹999",
+    discount_type: "FLAT",
+    discount_value: 100,
+    min_order_amount: 999,
+    max_discount_amount: null,
+    expires_at: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString(),
+    usage_limit: 500,
+    usage_count: 0,
+    is_active: true,
+    applicable_type: "ALL",
+    applicable_products: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: "promo_fitness200",
+    code: "FITNESS200",
+    description: "Special ₹200 OFF on orders above ₹1,999",
+    discount_type: "FLAT",
+    discount_value: 200,
+    min_order_amount: 1999,
+    max_discount_amount: null,
+    expires_at: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString(),
+    usage_limit: 300,
+    usage_count: 0,
+    is_active: true,
+    applicable_type: "ALL",
+    applicable_products: [],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -544,4 +561,84 @@ export async function validateCoupon(
     coupon,
     message: `🎉 Code ${coupon.code} applied! ₹${discount} discount added.`,
   };
+}
+
+export interface AvailableOffer {
+  id: string;
+  code: string;
+  description: string;
+  discount_type: "PERCENTAGE" | "FLAT";
+  discount_value: number;
+  min_order_amount: number;
+  max_discount_amount?: number | null;
+  eligible: boolean;
+  amountNeeded: number;
+  estimatedDiscount: number;
+  expires_at?: string | null;
+  applicable_type: "ALL" | "SPECIFIC";
+}
+
+/**
+ * Returns available active, non-expired offers with customer eligibility
+ */
+export async function getAvailableOffers(subtotal: number = 0): Promise<AvailableOffer[]> {
+  const coupons = await getAllCoupons();
+  const now = Date.now();
+
+  const validCoupons = coupons.filter((c) => {
+    // 1. Must be active
+    if (!c.is_active) return false;
+
+    // 2. Must not be expired
+    if (c.expires_at) {
+      const expiry = new Date(c.expires_at).getTime();
+      if (!isNaN(expiry) && now > expiry) return false;
+    }
+
+    // 3. Must not exceed redemption limit
+    if (c.usage_limit !== null && c.usage_limit !== undefined && c.usage_limit > 0) {
+      if (c.usage_count >= c.usage_limit) return false;
+    }
+
+    return true;
+  });
+
+  const offers: AvailableOffer[] = validCoupons.map((c) => {
+    const eligible = subtotal >= c.min_order_amount;
+    const amountNeeded = eligible ? 0 : Math.round(c.min_order_amount - subtotal);
+
+    let estimatedDiscount = 0;
+    if (c.discount_type === "PERCENTAGE") {
+      estimatedDiscount = Math.round(((subtotal || c.min_order_amount || 500) * c.discount_value) / 100);
+      if (c.max_discount_amount && estimatedDiscount > c.max_discount_amount) {
+        estimatedDiscount = c.max_discount_amount;
+      }
+    } else {
+      estimatedDiscount = c.discount_value;
+    }
+
+    return {
+      id: c.id,
+      code: c.code,
+      description: c.description,
+      discount_type: c.discount_type,
+      discount_value: c.discount_value,
+      min_order_amount: c.min_order_amount,
+      max_discount_amount: c.max_discount_amount,
+      eligible,
+      amountNeeded,
+      estimatedDiscount,
+      expires_at: c.expires_at,
+      applicable_type: c.applicable_type,
+    };
+  });
+
+  // Sort: eligible offers first, then by highest estimated discount descending
+  offers.sort((a, b) => {
+    if (a.eligible && !b.eligible) return -1;
+    if (!a.eligible && b.eligible) return 1;
+    return b.estimatedDiscount - a.estimatedDiscount;
+  });
+
+  return offers;
 }

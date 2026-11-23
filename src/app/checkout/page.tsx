@@ -183,13 +183,17 @@ function CheckoutContent() {
   const [promoError, setPromoError] = useState<string | null>(null);
   const [promoSuccess, setPromoSuccess] = useState<string | null>(null);
   const [promoLoading, setPromoLoading] = useState(false);
+  const [checkoutOffers, setCheckoutOffers] = useState<any[]>([]);
 
-  const handleApplyPromo = async () => {
-    setPromoError(null);
-    setPromoSuccess(null);
-    const code = promoCode.trim().toUpperCase();
+  const handleApplyPromo = async (codeOverride?: any, notifyOnError: boolean = true) => {
+    if (notifyOnError) {
+      setPromoError(null);
+      setPromoSuccess(null);
+    }
+    const cleanRaw = typeof codeOverride === "string" ? codeOverride : promoCode;
+    const code = (cleanRaw || "").trim().toUpperCase();
     if (!code) {
-      setPromoError("Please enter a valid promo code");
+      if (notifyOnError) setPromoError("Please enter a valid promo code");
       return;
     }
 
@@ -217,28 +221,62 @@ function CheckoutContent() {
       if (data.valid && data.discount > 0) {
         setPromoDiscount(data.discount);
         setAppliedPromo(data.code || code);
+        setPromoCode(data.code || code);
         setPromoSuccess(data.message || `🎉 Code ${data.code || code} applied! ₹${data.discount} discount added.`);
         setPromoError(null);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("vittal_applied_promo", data.code || code);
+        }
       } else {
         setPromoDiscount(0);
         setAppliedPromo(null);
-        setPromoError(data.error || "Invalid promo code.");
+        if (notifyOnError) {
+          setPromoError(data.error || "Invalid promo code.");
+        }
         setPromoSuccess(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("vittal_applied_promo");
+        }
       }
     } catch {
       // Fallback
-      if (code === "ZUPE10" || code === "WELCOME10" || code === "OFFER10") {
-        const disc = Math.min(100, Math.round(subtotal * 0.1));
+      if (code === "VITTAL10" || code === "WELCOME10") {
+        const disc = Math.min(250, Math.round(subtotal * 0.1));
         setPromoDiscount(disc);
         setAppliedPromo(code);
+        setPromoCode(code);
         setPromoSuccess(`🎉 Code ${code} applied! ₹${disc} discount added.`);
-      } else if (code === "SAVE50") {
-        const disc = subtotal >= 399 ? 50 : 25;
-        setPromoDiscount(disc);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("vittal_applied_promo", code);
+        }
+      } else if (code === "META100" && subtotal >= 800) {
+        setPromoDiscount(100);
         setAppliedPromo(code);
-        setPromoSuccess(`🎉 Code ${code} applied! ₹${disc} discount added.`);
+        setPromoCode(code);
+        setPromoSuccess(`🎉 Code ${code} applied! ₹100 discount added.`);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("vittal_applied_promo", code);
+        }
+      } else if (code === "SAVE100" && subtotal >= 999) {
+        setPromoDiscount(100);
+        setAppliedPromo(code);
+        setPromoCode(code);
+        setPromoSuccess(`🎉 Code ${code} applied! ₹100 discount added.`);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("vittal_applied_promo", code);
+        }
+      } else if (code === "FITNESS200" && subtotal >= 1999) {
+        setPromoDiscount(200);
+        setAppliedPromo(code);
+        setPromoCode(code);
+        setPromoSuccess(`🎉 Code ${code} applied! ₹200 discount added.`);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("vittal_applied_promo", code);
+        }
       } else {
-        setPromoError("Unable to validate promo code. Please check your connection and try again.");
+        if (notifyOnError) {
+          setPromoError("Unable to validate promo code. Please check your connection and try again.");
+        }
       }
     } finally {
       setPromoLoading(false);
@@ -251,7 +289,34 @@ function CheckoutContent() {
     setPromoCode("");
     setPromoSuccess(null);
     setPromoError(null);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("vittal_applied_promo");
+    }
   };
+
+  // Fetch available offers for checkout
+  useEffect(() => {
+    if (subtotal > 0) {
+      fetch(`/api/promo-codes?subtotal=${subtotal}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success && Array.isArray(d.offers)) {
+            setCheckoutOffers(d.offers);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [subtotal]);
+
+  // Sync applied promo from Cart via localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedPromo = localStorage.getItem("vittal_applied_promo");
+      if (savedPromo && !appliedPromo && subtotal > 0) {
+        handleApplyPromo(savedPromo, false);
+      }
+    }
+  }, [subtotal]);
 
   // COD to Prepaid Switch Mode disabled (COD Only store)
   const isCodSwitchMode = false;
@@ -2104,6 +2169,34 @@ function CheckoutContent() {
                           {promoError}
                         </p>
                       )}
+
+                      {/* Available Offers Pills (Mobile) */}
+                      {checkoutOffers.length > 0 && !appliedPromo && (
+                        <div className="pt-1.5 flex flex-wrap gap-1.5 items-center">
+                          <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-amber-500" /> Offers:
+                          </span>
+                          {checkoutOffers.slice(0, 4).map((offer) => (
+                            <button
+                              key={offer.id || offer.code}
+                              type="button"
+                              onClick={() => handleApplyPromo(offer.code, true)}
+                              disabled={promoLoading || !offer.eligible}
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-colors cursor-pointer flex items-center gap-1 ${
+                                offer.eligible
+                                  ? "bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100"
+                                  : "bg-neutral-50 border-neutral-200 text-neutral-400 cursor-not-allowed"
+                              }`}
+                              title={offer.description || offer.code}
+                            >
+                              <span className="font-mono">{offer.code}</span>
+                              <span className="text-emerald-700 font-extrabold">
+                                {offer.discount_type === "PERCENTAGE" ? `(${offer.discount_value}%)` : `(₹${offer.discount_value})`}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
@@ -3151,6 +3244,34 @@ function CheckoutContent() {
                   <p className="text-xs text-red-600 font-medium pl-1">
                     {promoError}
                   </p>
+                )}
+
+                {/* Available Offers Pills (Desktop) */}
+                {checkoutOffers.length > 0 && !appliedPromo && (
+                  <div className="pt-1.5 flex flex-wrap gap-1.5 items-center">
+                    <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-amber-500" /> Offers:
+                    </span>
+                    {checkoutOffers.slice(0, 4).map((offer) => (
+                      <button
+                        key={offer.id || offer.code}
+                        type="button"
+                        onClick={() => handleApplyPromo(offer.code, true)}
+                        disabled={promoLoading || !offer.eligible}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-colors cursor-pointer flex items-center gap-1 ${
+                          offer.eligible
+                            ? "bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100"
+                            : "bg-neutral-50 border-neutral-200 text-neutral-400 cursor-not-allowed"
+                        }`}
+                        title={offer.description || offer.code}
+                      >
+                        <span className="font-mono">{offer.code}</span>
+                        <span className="text-emerald-700 font-extrabold">
+                          {offer.discount_type === "PERCENTAGE" ? `(${offer.discount_value}%)` : `(₹${offer.discount_value})`}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
 
