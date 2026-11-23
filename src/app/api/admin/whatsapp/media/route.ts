@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
     const fileRes = await fetch(downloadUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
-        "User-Agent": "VittalDigital-WhatsAppDesk/1.0",
+        "User-Agent": "VittalLifestyle-WhatsAppDesk/1.0",
       },
     });
 

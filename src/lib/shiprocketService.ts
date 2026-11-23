@@ -247,8 +247,8 @@ export async function dispatchShiprocketOrder(
         const itemTot = Number(it.bundle_total || (Number(it.unit_price || it.price || 499) * qty));
         const effectiveUnit = Math.round(itemTot / Math.max(1, qty));
         return {
-          name: it.product_name || it.name || "Vittal Digital Electronics Package",
-          sku: it.product_id || "SKU-TJ",
+          name: it.product_name || it.name || "Vittal Lifestyle Curated Package",
+          sku: it.product_id || "SKU-VL",
           units: qty,
           selling_price: effectiveUnit,
         };
@@ -278,10 +278,10 @@ export async function dispatchShiprocketOrder(
           billing_pincode: postalCode,
           billing_state: (order as any).state || "Karnataka",
           billing_country: "India",
-          billing_email: (order as any).customer_email || (order as any).guest_email || "support@vittaldigital.com",
+          billing_email: (order as any).customer_email || (order as any).guest_email || "support@vittallifestyle.com",
           billing_phone: cleanPhone,
           shipping_is_billing: true,
-          order_items: orderItems.length > 0 ? orderItems : [{ name: "Vittal Digital Electronics Package", sku: "SKU-VD", units: 1, selling_price: order.total_amount || 2499 }],
+          order_items: orderItems.length > 0 ? orderItems : [{ name: "Vittal Lifestyle Curated Package", sku: "SKU-VL", units: 1, selling_price: order.total_amount || 899 }],
           payment_method: isCod ? "COD" : "Prepaid",
           sub_total: effectiveShiprocketTotal,
           length: 15,

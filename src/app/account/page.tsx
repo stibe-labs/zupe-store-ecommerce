@@ -82,8 +82,8 @@ export default function AccountPage() {
   useEffect(() => {
     const isCandidate =
       user?.role === "admin" &&
-      (user?.email?.toLowerCase().trim() === "admin@vittaldigital.com" ||
-        user?.email?.toLowerCase().trim() === "admin@zupestore.com");
+      (user?.email?.toLowerCase().trim() === (process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@vittallifestyle.com").toLowerCase().trim() ||
+        user?.email?.toLowerCase().trim() === "admin@vittallifestyle.com");
 
     if (!isCandidate) {
       setIsSuperAdmin(false);

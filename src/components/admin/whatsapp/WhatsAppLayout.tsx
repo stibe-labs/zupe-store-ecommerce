@@ -474,19 +474,19 @@ export default function WhatsAppLayout() {
 
             let tpl = "";
             if (type === "order_confirmation_cod") {
-              tpl = `Namaste ${cleanName}! ⚡ Your Vittal Digital Cash on Delivery order #${activeConversation.orderId ? activeConversation.orderId.substring(0, 8) : "VD-1001"} of ₹${activeConversation.orderTotal || 2499} is ready for dispatch. Please reply *YES* to confirm!`;
+              tpl = `Namaste ${cleanName}! ⚡ Your Vittal Lifestyle Cash on Delivery order #${activeConversation.orderId ? activeConversation.orderId.substring(0, 8) : "VL-1001"} of ₹${activeConversation.orderTotal || 899} is ready for dispatch. Please reply *YES* to confirm!`;
             } else if (type === "order_dispatched_awb") {
-              tpl = `Great news ${cleanName}! 🚀 Your Vittal Digital package has been dispatched via DTDC / BlueDart Express.\n\nLive tracking: https://vittaldigital.com/order-tracking?query=VD-434776383`;
+              tpl = `Great news ${cleanName}! 🚀 Your Vittal Lifestyle package has been dispatched via DTDC / BlueDart Express.\n\nLive tracking: https://vittallifestyle.com/order-tracking?query=VL-434776383`;
             } else if (type === "abandoned_cart_discount") {
-              tpl = `Hi ${cleanName}! ⚡ Use exclusive VIP coupon code *VITTAL200* for instant ₹200 OFF on your Vittal Digital electronics order: https://vittaldigital.com/checkout?discount=VITTAL200`;
+              tpl = `Hi ${cleanName}! ⚡ Use exclusive VIP coupon code *VITTAL200* for instant ₹200 OFF on your Vittal Lifestyle order: https://vittallifestyle.com/checkout?discount=VITTAL200`;
             } else if (type === "catalog_products") {
-              tpl = `Namaste ${cleanName}! ⚡ Welcome to *Vittal Digital*.\n\nExplore genuine brand electronics with 1-Year Warranty & Express Delivery.\n\nVisit our store: https://vittaldigital.com\nNeed help picking the right gadget? Reply to this message!`;
+              tpl = `Namaste ${cleanName}! ⚡ Welcome to *Vittal Lifestyle*.\n\nExplore curated gym supplements, outfits, dates & nuts, and chocolates.\n\nVisit our store: https://vittallifestyle.com\nNeed help choosing products? Reply to this message!`;
             } else if (type === "usage_guide") {
-              tpl = `🛡️ *Vittal Digital Warranty & Support Instructions*\n\n1. Retain your invoice and device box for warranty claims.\n2. 7-day replacement support for transit or hardware defects.\n3. Email support@vittaldigital.com or reply here anytime!`;
+              tpl = `🛡️ *Vittal Lifestyle Quality & Support Instructions*\n\n1. Retain your invoice and original box for support.\n2. 7-day replacement support for transit issues.\n3. Email support@vittallifestyle.com or reply here anytime!`;
             } else if (type === "welcome_greeting") {
-              tpl = `Namaste ${cleanName}! ⚡ Thank you for reaching out to Vittal Digital Customer Care. How may we assist you today?`;
+              tpl = `Namaste ${cleanName}! ⚡ Thank you for reaching out to Vittal Lifestyle Customer Care. How may we assist you today?`;
             } else {
-              tpl = `Hi ${cleanName}, our courier attempted delivery of your Vittal Digital package today. Would you like a reattempt scheduled for tomorrow?`;
+              tpl = `Hi ${cleanName}, our courier attempted delivery of your Vittal Lifestyle package today. Would you like a reattempt scheduled for tomorrow?`;
             }
 
             handleSendMessage({ content: tpl, type: "text" });

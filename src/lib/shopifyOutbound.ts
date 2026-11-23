@@ -111,7 +111,7 @@ export async function pushOrderToShopify(
       }
     }
 
-    const domain = normalizeShopifyDomain(shopifyConfig?.domain || "vittaldigital.myshopify.com");
+    const domain = normalizeShopifyDomain(shopifyConfig?.domain || "vittallifestyle.myshopify.com");
     const token = (shopifyConfig?.token || "").trim();
     const apiVersion = (shopifyConfig as any)?.apiVersion || "2024-01";
 
@@ -139,8 +139,8 @@ export async function pushOrderToShopify(
     // Format line items
     const rawItems: any[] = (order as any).items || [];
     const lineItems = rawItems.map((item) => {
-      const title = item.product_name || item.name || "Turkiye Jam Herbal Macun";
-      const price = Number(item.unit_price || item.price || 1099);
+      const title = item.product_name || item.name || "Royal Saudi Medjool Dates";
+      const price = Number(item.unit_price || item.price || 899);
       const quantity = Math.max(1, Number(item.quantity || 1));
       return {
         title,
@@ -152,8 +152,8 @@ export async function pushOrderToShopify(
 
     if (lineItems.length === 0) {
       lineItems.push({
-        title: "Turkiye Jam (3 Sachet Pack)",
-        price: Number(order.total_amount || 1099).toFixed(2),
+        title: "Royal Saudi Medjool Glossy Dates (500g)",
+        price: Number(order.total_amount || 899).toFixed(2),
         quantity: 1,
         requires_shipping: true,
       });
@@ -169,8 +169,8 @@ export async function pushOrderToShopify(
         send_receipt: false,
         send_fulfillment_receipt: false,
         source_name: "web",
-        tags: `VittalDigital, WebOrder, ${isCod ? "COD" : "Prepaid"}`,
-        note: `Vittal Digital Storefront Order ID: ${order.id}`,
+        tags: `VittalLifestyle, WebOrder, ${isCod ? "COD" : "Prepaid"}`,
+        note: `Vittal Lifestyle Storefront Order ID: ${order.id}`,
         line_items: lineItems,
         customer: {
           first_name: firstName,
@@ -519,7 +519,7 @@ export async function pullShopifyOrders(options?: {
     const settings = await getSettings();
     const config = settings.shopify;
 
-    const domain = normalizeShopifyDomain(config?.domain || "vittaldigital.myshopify.com");
+    const domain = normalizeShopifyDomain(config?.domain || "vittallifestyle.myshopify.com");
     const token = (config?.token || "").trim();
     const apiVersion = (config as any)?.apiVersion || "2024-01";
     const limit = options?.limit || 50;
@@ -542,7 +542,7 @@ export async function pullShopifyOrders(options?: {
           created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
           financial_status: "pending",
           gateway: "Cash on Delivery (COD)",
-          total_price: "1299.00",
+          total_price: "899.00",
           customer: {
             first_name: "Rohan",
             last_name: "Mehra",
@@ -560,10 +560,10 @@ export async function pullShopifyOrders(options?: {
           line_items: [
             {
               id: 981123,
-              title: "Turkiye Jam (3 Sachet Pack)",
-              price: "1099.00",
+              title: "Royal Saudi Medjool Glossy Dates (500g)",
+              price: "899.00",
               quantity: 1,
-              sku: "TJ-STRIP-03",
+              sku: "golden-jar-glossy-dates",
             },
           ],
         },
@@ -574,7 +574,7 @@ export async function pullShopifyOrders(options?: {
           created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
           financial_status: "paid",
           gateway: "Razorpay / UPI",
-          total_price: "2499.00",
+          total_price: "799.00",
           customer: {
             first_name: "Meera",
             last_name: "Iyer",
@@ -592,10 +592,10 @@ export async function pullShopifyOrders(options?: {
           line_items: [
             {
               id: 981124,
-              title: "Turkiye Jam - 240g Royal Glass Jar",
-              price: "2499.00",
+              title: "Premium Jumbo Roasted Cashews (500g)",
+              price: "799.00",
               quantity: 1,
-              sku: "TJ-JAR-240G",
+              sku: "glass-jar-cashews",
             },
           ],
         },

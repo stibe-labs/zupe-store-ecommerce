@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
             handle: "all-products",
             body_html: "<p>Premium consumer electronics, gadgets, and audio accessories.</p>",
             image: {
-              src: "https://vittaldigital.com/vittal/wireless-earbuds.png",
+              src: "https://vittallifestyle.com/vittal/catalog/golden-jar-glossy-dates.png",
             },
             created_at: "2026-01-01T00:00:00Z",
             updated_at: "2026-01-01T00:00:00Z",

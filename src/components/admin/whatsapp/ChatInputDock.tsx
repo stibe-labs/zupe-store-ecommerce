@@ -37,7 +37,7 @@ const EMOJI_CATEGORIES = {
   Recent: ["👍", "❤️", "⚡", "🎧", "✅", "🙏", "😊", "📦"],
   Smileys: ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "🙂", "😉", "😊", "😇", "🥰", "😍", "🤩", "😘"],
   Gestures: ["👍", "👎", "👌", "✌️", "🤞", "🤝", "👏", "🙌", "🙏", "💪", "👊", "👋", "✍️", "🖐️"],
-  VittalDigital: ["⚡", "🎧", "📱", "💻", "⌚", "📦", "🚚", "🚀", "✨", "💯", "🏷️", "⭐", "🛒", "🛍️"],
+  VittalLifestyle: ["⚡", "🌿", "🏋️", "🍫", "🍯", "📦", "🚚", "🚀", "✨", "💯", "🏷️", "⭐", "🛒", "🛍️"],
   Symbols: ["✅", "❌", "⚠️", "⏳", "🔒", "📍", "📞", "💬", "❤️", "💚", "🧡", "💎", "⚡", "🎉"],
 };
 
@@ -224,7 +224,7 @@ export default function ChatInputDock({
     setShowAttachmentMenu(false);
     waAudio.playOutgoingPop();
     onSendMessage({
-      content: "VittalDigital_Tax_Invoice_GST.pdf",
+      content: "VittalLifestyle_Tax_Invoice_GST.pdf",
       type: "document",
       sendLiveMeta,
     });

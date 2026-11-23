@@ -48,7 +48,7 @@
     "ADMIN_EMAIL": "admin@vittallifestyle.com",
     "ADMIN_PASSWORD": "VittalLifestyle@2026",
     "SETTLER_BASE_URL": "https://settler.pydart.com",
-    "SETTLER_TENANT_ID": "client_turkiyejam",
+    "SETTLER_TENANT_ID": "client_vittallifestyle",
     "CASHFREE_ENVIRONMENT": "production",
     "CASHFREE_APP_ID": "15139601e0fb18fedab78b451aa0693151",
     "CASHFREE_SECRET_KEY": "",

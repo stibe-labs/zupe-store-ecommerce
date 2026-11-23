@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     const userAgent = req.headers.get("user-agent");
     if (userAgent) formattedUserData.client_user_agent = userAgent;
 
-    const baseUrl = process.env.STORE_BASE_URL || "https://vittaldigital.com";
+    const baseUrl = process.env.STORE_BASE_URL || "https://vittallifestyle.com";
 
     // 3. Prepare Meta CAPI Payload
     const serverEventPayload: any = {

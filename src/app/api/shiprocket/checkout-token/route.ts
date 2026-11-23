@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
           name: cartItem.name || catalogMatch.title,
           image_url: cartItem.poster_image?.startsWith("http")
             ? cartItem.poster_image
-            : `https://vittaldigital.com${cartItem.poster_image || catalogMatch.image}`,
+            : `https://vittallifestyle.com${cartItem.poster_image || catalogMatch.image}`,
         },
       };
     });
@@ -50,11 +50,11 @@ export async function POST(req: NextRequest) {
       cart_data: {
         items: formattedItems,
         custom_attributes: {
-          store: "vittaldigital",
+          store: "vittallifestyle",
         },
         mobile_app: false,
       },
-      redirect_url: redirectUrl || "https://vittaldigital.com/order-tracking",
+      redirect_url: redirectUrl || "https://vittallifestyle.com/order-tracking",
       timestamp: new Date().toISOString(),
     };
 

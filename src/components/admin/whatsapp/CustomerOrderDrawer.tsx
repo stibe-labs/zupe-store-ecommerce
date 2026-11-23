@@ -442,7 +442,7 @@ export default function CustomerOrderDrawer({
                     {awbNumber}
                   </div>
                   <a
-                    href={`https://vittaldigital.com/order-tracking?query=${encodeURIComponent(awbNumber)}`}
+                    href={`https://vittallifestyle.com/order-tracking?query=${encodeURIComponent(awbNumber)}`}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400 hover:underline font-semibold pt-0.5"

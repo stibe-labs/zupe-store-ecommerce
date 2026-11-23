@@ -1590,7 +1590,7 @@ let inMemorySettings: ERPIntegrationsSettings = {
     standardShippingFee: 49,
   },
   shopify: {
-    domain: "vittaldigital.myshopify.com",
+    domain: "vittallifestyle.myshopify.com",
     token: "shpat_live_98a76d54f32e10cba",
     webhookSecret: "whsec_9871122334455",
     autoPushOrders: true,
@@ -1599,7 +1599,7 @@ let inMemorySettings: ERPIntegrationsSettings = {
     lastSyncedAt: new Date().toISOString(),
   },
   shiprocket: {
-    email: "support@vittaldigital.com",
+    email: "support@vittallifestyle.com",
     password: "",
     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     pickup_location: "Primary",

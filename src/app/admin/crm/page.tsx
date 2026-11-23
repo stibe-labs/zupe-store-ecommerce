@@ -598,9 +598,9 @@ export default function AdminCRMPage() {
         body: JSON.stringify({
           eventName: "Purchase",
           testEventCode: metaConfig.testEventCode || undefined,
-          eventSourceUrl: "https://vittaldigital.com/checkout",
+          eventSourceUrl: "https://vittallifestyle.com/checkout",
           userData: {
-            email: "test.customer@vittaldigital.com",
+            email: "test.customer@vittallifestyle.com",
             phone: "+91 98765 43210",
             firstName: "Test",
             lastName: "Buyer",
@@ -610,7 +610,7 @@ export default function AdminCRMPage() {
             currency: "INR",
             value: 899,
             orderId: `test_order_${Date.now().toString().slice(-4)}`,
-            contentIds: ["vittal-digital-electronics"],
+            contentIds: ["vittal-lifestyle-catalog"],
           },
         }),
       });
@@ -631,7 +631,7 @@ export default function AdminCRMPage() {
     setWhatsAppModalLead(lead);
     const firstName = lead.name.split(" ")[0] || "there";
     setCustomWaMsg(
-      `Hi ${firstName}! ⚡ Thank you for your inquiry on our Instagram / Facebook ad for Vittal Digital! Here is your exclusive ₹100 Off coupon code: 'META100' valid on your order today: https://vittaldigital.com/checkout`
+      `Hi ${firstName}! ⚡ Thank you for your inquiry on our Instagram / Facebook ad for Vittal Lifestyle! Here is your exclusive ₹100 Off coupon code: 'META100' valid on your order today: https://vittallifestyle.com/checkout`
     );
   };
 
@@ -1859,7 +1859,7 @@ export default function AdminCRMPage() {
                     <div className="space-y-1">
                       <strong className="text-white block">Meta Privacy &amp; Data Attribution Protocol</strong>
                       <p className="text-slate-400 leading-relaxed">
-                        Under Meta Platform Privacy Policies, individual contact profiles (personal names and private phone numbers) of users who only view or tap an ad are protected. Meta provides 100% exact aggregated demographic, age, placement, and geographic telemetry for your <strong>{metaMetrics.totalClicks || 119} clicks</strong>. When these clickers land on <strong className="text-white">vittaldigital.com</strong> and engage with the store or initiate checkout, our system attributes and records their contact details in the Inbound Leads ledger below.
+                        Under Meta Platform Privacy Policies, individual contact profiles (personal names and private phone numbers) of users who only view or tap an ad are protected. Meta provides 100% exact aggregated demographic, age, placement, and geographic telemetry for your <strong>{metaMetrics.totalClicks || 119} clicks</strong>. When these clickers land on <strong className="text-white">vittallifestyle.com</strong> and engage with the store or initiate checkout, our system attributes and records their contact details in the Inbound Leads ledger below.
                       </p>
                     </div>
                   </div>
@@ -2001,7 +2001,7 @@ export default function AdminCRMPage() {
                           Captured Inbound Leads (Attributed Meta Traffic)
                         </h4>
                         <p className="text-xs text-slate-400 mt-0.5">
-                          Visitors who clicked Meta ads and initiated contact or checkout on vittaldigital.com.
+                          Visitors who clicked Meta ads and initiated contact or checkout on vittallifestyle.com.
                         </p>
                       </div>
 
@@ -2798,7 +2798,7 @@ export default function AdminCRMPage() {
                   onClick={() => {
                     const firstName = whatsAppModalLead.name.split(" ")[0] || "there";
                     setCustomWaMsg(
-                      `Hi ${firstName}! ⚡ Thank you for your inquiry on our Instagram / Facebook ad for Vittal Digital! Here is your exclusive ₹100 Off coupon code: 'META100' valid on your order today: https://vittaldigital.com/checkout`
+                      `Hi ${firstName}! ⚡ Thank you for your inquiry on our Instagram / Facebook ad for Vittal Lifestyle! Here is your exclusive ₹100 Off coupon code: 'META100' valid on your order today: https://vittallifestyle.com/checkout`
                     );
                   }}
                   className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-left text-slate-300 font-medium border border-slate-700 transition"
@@ -2811,7 +2811,7 @@ export default function AdminCRMPage() {
                   onClick={() => {
                     const firstName = whatsAppModalLead.name.split(" ")[0] || "there";
                     setCustomWaMsg(
-                      `Hello ${firstName}! 🚚 We saw your interest in Vittal Digital from our Meta ad. Would you like to confirm Free Express Delivery via UPI or Cash on Delivery (₹49 advance)? Reply to confirm your delivery address!`
+                      `Hello ${firstName}! 🚚 We saw your interest in Vittal Lifestyle from our Meta ad. Would you like to confirm Free Express Delivery via UPI or Cash on Delivery (₹49 advance)? Reply to confirm your delivery address!`
                     );
                   }}
                   className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-left text-slate-300 font-medium border border-slate-700 transition"
@@ -3047,10 +3047,10 @@ export default function AdminCRMPage() {
                 <div className="p-3.5 bg-slate-900/90 flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <span className="text-[10px] uppercase font-mono font-bold text-slate-400 block tracking-wider">
-                      VITTALDIGITAL.COM
+                      VITTALLIFESTYLE.COM
                     </span>
                     <h5 className="text-xs font-bold text-white truncate mt-0.5">
-                      {previewAd.creative?.title || previewAd.creative?.name || "Vittal Digital | Premium Electronics & Smart Gadgets"}
+                      {previewAd.creative?.title || previewAd.creative?.name || "Vittal Lifestyle | Curated Gym Supplements, Outfits, Dates & Chocolates"}
                     </h5>
                   </div>
 

@@ -325,7 +325,7 @@ export default function AdminReviewsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "vittaldigital-reviews-sample-template.csv");
+    link.setAttribute("download", "vittallifestyle-reviews-sample-template.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

@@ -3,7 +3,7 @@ import { executeD1Query } from "@/lib/d1";
 
 export const dynamic = "force-dynamic";
 
-const VERIFY_TOKEN = process.env.META_WEBHOOK_VERIFY_TOKEN || "vittaldigital_meta_secret_2026";
+const VERIFY_TOKEN = process.env.META_WEBHOOK_VERIFY_TOKEN || "vittallifestyle_meta_secret_2026";
 
 // Meta Webhook Verification (Challenge Handshake)
 export async function GET(req: NextRequest) {
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const token = searchParams.get("hub.verify_token");
   const challenge = searchParams.get("hub.challenge");
 
-  if (mode === "subscribe" && (token === VERIFY_TOKEN || token === "vittaldigital_wa_secret_2026" || token === "turkiyejam_meta_secret_2026")) {
+  if (mode === "subscribe" && (token === VERIFY_TOKEN || token === "vittallifestyle_wa_secret_2026")) {
     return new NextResponse(challenge, { status: 200 });
   }
 

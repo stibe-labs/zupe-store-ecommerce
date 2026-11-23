@@ -12,7 +12,7 @@ export const SETTLER_FALLBACK_URL =
 
 // Approved Retail merchant with 0% platform fee
 export const SETTLER_DEFAULT_TENANT =
-  process.env.SETTLER_TENANT_ID || "client_turkiyejam";
+  process.env.SETTLER_TENANT_ID || "client_vittallifestyle";
 
 export interface CreateSettlerInvoiceParams {
   tenantId?: string;

@@ -22,13 +22,12 @@ export async function POST(req: NextRequest) {
     }
 
     const normEmail = (email || "").toLowerCase().trim();
-    const configuredAdminEmail = (process.env.ADMIN_EMAIL || "admin@vittaldigital.com").toLowerCase().trim();
+    const configuredAdminEmail = (process.env.ADMIN_EMAIL || "admin@vittallifestyle.com").toLowerCase().trim();
 
     // 1. Check if email matches SuperAdmin email
     const isAdminEmail =
       normEmail === configuredAdminEmail ||
-      normEmail === "admin@vittaldigital.com" ||
-      normEmail === "admin@zupestore.com";
+      normEmail === "admin@vittallifestyle.com";
 
     if (isAdminEmail) {
       const adminCheck = await verifyAdminCredentials(email, password);

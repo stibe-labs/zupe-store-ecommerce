@@ -872,7 +872,7 @@ export default function AdminReportsPage() {
     link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
-      `vittaldigital_report_${reportType}_${timeFilter}_${activeStart}_to_${activeEnd}.csv`
+      `vittallifestyle_report_${reportType}_${timeFilter}_${activeStart}_to_${activeEnd}.csv`
     );
     document.body.appendChild(link);
     link.click();

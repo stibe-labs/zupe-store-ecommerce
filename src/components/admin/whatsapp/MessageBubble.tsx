@@ -527,7 +527,7 @@ export default function MessageBubble({
               </div>
             </div>
             <a
-              href={`https://vittaldigital.com/order-tracking?query=${message.orderData.awb || "VD188920489IN"}`}
+              href={`https://vittallifestyle.com/order-tracking?query=${message.orderData.awb || "VL188920489IN"}`}
               target="_blank"
               rel="noreferrer"
               className="mt-2.5 block text-center py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
@@ -543,7 +543,7 @@ export default function MessageBubble({
             <div className="flex gap-3">
               <div className="relative w-14 h-14 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 flex-shrink-0 flex items-center justify-center overflow-hidden">
                 <Image
-                  src={message.productData.image || "/vittal-digital-logo.png"}
+                  src={message.productData.image || "/vl-logo-black.png"}
                   alt={message.productData.name}
                   width={40}
                   height={40}
@@ -555,7 +555,7 @@ export default function MessageBubble({
                   {message.productData.name}
                 </div>
                 <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
-                  {message.productData.badge || "100% Genuine • 1-Year Warranty"}
+                  {message.productData.badge || "100% Genuine • Premium Quality"}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">
@@ -573,12 +573,12 @@ export default function MessageBubble({
               {message.productData.description}
             </p>
             <a
-              href="https://vittaldigital.com/products"
+              href="https://vittallifestyle.com/products"
               target="_blank"
               rel="noreferrer"
               className="mt-2.5 block text-center py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium"
             >
-              Order on Vittal Digital Website
+              Order on Vittal Lifestyle Website
             </a>
           </div>
         )}
@@ -591,7 +591,7 @@ export default function MessageBubble({
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-xs truncate">
-                {message.content || "VittalDigital_Invoice.pdf"}
+                {message.content || "VittalLifestyle_Invoice.pdf"}
               </div>
               <div className="text-[10px] text-slate-500">PDF Document • GST Invoice</div>
             </div>
