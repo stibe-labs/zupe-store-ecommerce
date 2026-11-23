@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getERPOrders, getOrderById } from "@/lib/erpStore";
 import { getOrders } from "@/lib/orderStore";
-import { createRazorpayOrder, RAZORPAY_KEY_ID } from "@/lib/razorpay";
+import { createRazorpayOrder, getRazorpayCredentials, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 
 export const dynamic = "force-dynamic";
 
@@ -261,7 +261,7 @@ export async function POST(req: NextRequest) {
       razorpay_order_id: rzpOrder.id,
       amount: payableAmount,
       currency: "INR",
-      key_id: RAZORPAY_KEY_ID,
+      key_id: getRazorpayCredentials().keyId,
       orderId,
     });
   } catch (err: any) {
