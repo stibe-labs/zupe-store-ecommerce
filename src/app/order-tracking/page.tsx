@@ -264,6 +264,98 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
   const hasAwb = Boolean(order.shiprocket_awb && !order.shiprocket_awb.startsWith("SR-AWB-"));
   const courier = order.courier_partner || (hasAwb ? "Courier Partner" : "");
   const status = (order.delivery_status || "Processing").toLowerCase();
+  const orderStatus = (order.order_status || "").toLowerCase();
+  const paymentStatus = (order.payment_status || "").toLowerCase();
+  const isCancelled = status.includes("cancel") || orderStatus.includes("cancel");
+  const isRefunded = paymentStatus.includes("refund");
+
+  // If Cancelled or Refunded
+  if (isCancelled || isRefunded) {
+    const isCodOrder =
+      Boolean(order.payment_method?.toLowerCase().includes("cash on delivery")) ||
+      Boolean(order.payment_method?.toUpperCase() === "COD") ||
+      Boolean(order.payment_method?.toLowerCase().includes("partial"));
+    const defaultCodFee = Number(order.total_amount) < 500 ? 19 : 49;
+    const codAdvance = Number((order as any).advance_paid) || defaultCodFee;
+    const displayRefundAmt = isCodOrder ? codAdvance : Number(order.total_amount || 0);
+
+    if (paymentStatus === "refunded") {
+      return [
+        {
+          title: "Refund Processed & Credited",
+          location: "Original Bank / Payment Account",
+          timestamp: formatPlacedDate,
+          completed: true,
+          active: true,
+          description: `Refund of ₹${displayRefundAmt.toLocaleString()} has been processed back to your payment account.${isCodOrder ? " (Cash on Delivery booking fee refunded. No balance collected)." : ""}`,
+        },
+        {
+          title: "Order Cancelled",
+          location: "Zupe Fulfillment Center",
+          timestamp: formatPlacedDate,
+          completed: true,
+          active: false,
+          description: "Order cancelled upon customer request. Package dispatch halted.",
+        },
+        {
+          title: "Order Placed & Verified",
+          location: "Online Storefront",
+          timestamp: formatPlacedDate,
+          completed: true,
+          active: false,
+          description: "Order placed and acknowledged.",
+        },
+      ];
+    }
+
+    if (paymentStatus.includes("pending")) {
+      return [
+        {
+          title: "Refund Processing",
+          location: "Zupe Finance Operations",
+          timestamp: formatPlacedDate,
+          completed: true,
+          active: true,
+          description: `Refund of ₹${displayRefundAmt.toLocaleString()} is currently processing back to your payment account (typically 1-3 business days).`,
+        },
+        {
+          title: "Order Cancelled",
+          location: "Zupe Fulfillment Center",
+          timestamp: formatPlacedDate,
+          completed: true,
+          active: false,
+          description: "Order cancelled. Courier delivery halted.",
+        },
+        {
+          title: "Order Placed & Verified",
+          location: "Online Storefront",
+          timestamp: formatPlacedDate,
+          completed: true,
+          active: false,
+          description: "Order placed and acknowledged.",
+        },
+      ];
+    }
+
+    return [
+      {
+        title: "Order Cancelled",
+        location: "Zupe Fulfillment Center",
+        timestamp: formatPlacedDate,
+        completed: true,
+        active: true,
+        description: "This order has been cancelled. No package will be dispatched and no amount will be collected.",
+      },
+      {
+        title: "Order Placed & Verified",
+        location: "Online Storefront",
+        timestamp: formatPlacedDate,
+        completed: true,
+        active: false,
+        description: "Order placed and acknowledged.",
+      },
+    ];
+  }
 
   // If RTO / Return
   if (status.includes("rto") || status.includes("return")) {
@@ -467,10 +559,24 @@ function buildTrackingCheckpoints(order: ERPOrder, liveTracking?: any): Tracking
   ];
 }
 
-function getStatusTitle(status?: string, liveCurrentStatus?: string): string {
+function getStatusTitle(status?: string, liveCurrentStatus?: string, order?: ERPOrder | null): string {
   const norm = (status || "").toLowerCase();
   const liveNorm = (liveCurrentStatus || "").toLowerCase();
+  const payNorm = (order?.payment_status || "").toLowerCase();
+  const ordNorm = (order?.order_status || "").toLowerCase();
 
+  if (payNorm === "refunded") {
+    return "Refund Completed (Order Cancelled)";
+  }
+  if (payNorm.includes("reject")) {
+    return "Refund Ineligible (Order Cancelled)";
+  }
+  if (payNorm.includes("refund") || (payNorm.includes("pending") && (norm.includes("cancel") || ordNorm.includes("cancel")))) {
+    return "Refund Processing (Order Cancelled)";
+  }
+  if (norm.includes("cancel") || ordNorm.includes("cancel")) {
+    return "Order Cancelled";
+  }
   if (norm.includes("deliver") && !norm.includes("rto")) {
     return "Delivered Successfully";
   }
@@ -797,7 +903,8 @@ function OrderTrackingContent() {
               <div className="text-sm sm:text-base font-extrabold text-[#FF7A00]">
                 {getStatusTitle(
                   selectedOrder.delivery_status || selectedOrder.status,
-                  liveTracking?.current_status
+                  liveTracking?.current_status,
+                  selectedOrder
                 )}
               </div>
             </div>
@@ -864,7 +971,11 @@ function OrderTrackingContent() {
     const isCodPending =
       isCod &&
       (selectedOrder.payment_status || "").toLowerCase() !== "paid" &&
-      (selectedOrder.payment_status || "").toLowerCase() !== "completed";
+      (selectedOrder.payment_status || "").toLowerCase() !== "completed" &&
+      !selectedOrder.payment_status?.toLowerCase().includes("refund") &&
+      (selectedOrder.delivery_status || "").toLowerCase() !== "cancelled" &&
+      (selectedOrder.order_status || "").toLowerCase() !== "cancelled" &&
+      (selectedOrder.status || "").toLowerCase() !== "cancelled";
 
     if (!isCodPending) return null;
 
@@ -1146,27 +1257,71 @@ function OrderTrackingContent() {
           )}
         </div>
 
-        {/* Payment Method */}
-        <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
-          <span className="text-gray-500 flex items-center gap-1.5 font-medium">
-            <CreditCard className="w-4 h-4 text-gray-400" />
-            <span>Payment Method</span>
-          </span>
-          <span className="font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{isCod ? "Cash on Delivery" : "Prepaid (Completed)"}</span>
-          </span>
-        </div>
+        {/* Payment Method & Refund / COD Status */}
+        {(() => {
+          const payStr = (selectedOrder.payment_status || "").toLowerCase();
+          const isRefundCompleted = payStr === "refunded";
+          const isRefundPending = payStr.includes("pending") || payStr.includes("refund");
+          const defaultCodFee = Number(selectedOrder.total_amount) < 500 ? 19 : 49;
+          const codAdvanceFee = Number((selectedOrder as any).advance_paid) || defaultCodFee;
+          const doorstepBalance = Math.max(0, (Number(selectedOrder.total_amount) || 0) - codAdvanceFee);
+          const isOrderCancelled =
+            (selectedOrder.delivery_status || "").toLowerCase() === "cancelled" ||
+            (selectedOrder.status || "").toLowerCase() === "cancelled" ||
+            (selectedOrder.order_status || "").toLowerCase() === "cancelled";
 
-        {/* Total Paid */}
-        <div className="pt-2 flex items-center justify-between">
-          <span className="font-extrabold text-sm text-gray-900">
-            Total Paid
-          </span>
-          <span className="bg-[#FF7A00] text-white font-extrabold px-4 py-1.5 rounded-full text-sm shadow-xs shadow-[#FF7A00]/25">
-            ₹{Number(selectedOrder.total_amount || 0).toLocaleString()}
-          </span>
-        </div>
+          return (
+            <>
+              <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+                <span className="text-gray-500 flex items-center gap-1.5 font-medium">
+                  <CreditCard className="w-4 h-4 text-gray-400" />
+                  <span>Payment Method</span>
+                </span>
+                <span className={`font-bold px-2.5 py-1 rounded-full border flex items-center gap-1 ${
+                  isRefundCompleted
+                    ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                    : isRefundPending
+                    ? "text-amber-800 bg-amber-50 border-amber-200"
+                    : isCod
+                    ? "text-slate-700 bg-slate-100 border-slate-200"
+                    : "text-emerald-700 bg-emerald-50 border-emerald-200"
+                }`}>
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>
+                    {isRefundCompleted
+                      ? `Refunded (${isCod ? `₹${codAdvanceFee} COD Advance` : `₹${Number(selectedOrder.total_amount).toLocaleString()}`})`
+                      : isRefundPending
+                      ? `Refund Processing (${isCod ? `₹${codAdvanceFee} COD Advance` : `₹${Number(selectedOrder.total_amount).toLocaleString()}`})`
+                      : isCod
+                      ? `Cash on Delivery (₹${codAdvanceFee} Advance Paid)`
+                      : "Prepaid (Completed)"}
+                  </span>
+                </span>
+              </div>
+
+              {/* Total Paid Online */}
+              <div className="pt-2 flex items-center justify-between">
+                <span className="font-extrabold text-sm text-gray-900">
+                  {isCod ? "Advance Paid Online" : "Total Paid"}
+                </span>
+                <span className="bg-[#FF7A00] text-white font-extrabold px-4 py-1.5 rounded-full text-sm shadow-xs shadow-[#FF7A00]/25">
+                  ₹{isCod ? codAdvanceFee.toLocaleString() : Number(selectedOrder.total_amount || 0).toLocaleString()}
+                </span>
+              </div>
+
+              {isCod && (
+                <div className="pt-2 flex items-center justify-between text-xs">
+                  <span className="text-gray-500 font-medium">
+                    {isRefundCompleted || isOrderCancelled ? "Doorstep Balance (Waived)" : "Doorstep Balance Due (COD)"}
+                  </span>
+                  <span className={`font-bold ${isRefundCompleted || isOrderCancelled ? "text-gray-400 line-through" : "text-gray-900"}`}>
+                    ₹{doorstepBalance.toLocaleString()}
+                  </span>
+                </div>
+              )}
+            </>
+          );
+        })()}
       </div>
     );
   };

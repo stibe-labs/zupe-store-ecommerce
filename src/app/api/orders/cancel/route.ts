@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     try {
       const { executeD1Query } = await import("@/lib/d1");
       const rows = await executeD1Query<any>(
-        "SELECT customer_phone, guest_email, customer_name, razorpay_payment_id, razorpay_order_id, total_amount, payment_method, payment_status, items FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
+        "SELECT customer_phone, guest_email, customer_name, razorpay_payment_id, razorpay_order_id, total_amount, payment_method, payment_status, items, advance_paid FROM orders WHERE id = ? OR shopify_order_id = ? LIMIT 1",
         [orderId, orderId]
       );
       if (rows && rows.length > 0) {
@@ -86,6 +86,7 @@ export async function POST(req: NextRequest) {
         if (!razorpayOrderId && rows[0].razorpay_order_id) razorpayOrderId = rows[0].razorpay_order_id;
         if (!totalAmount && rows[0].total_amount) totalAmount = Number(rows[0].total_amount);
         if (rows[0].payment_method) d1PaymentMethod = rows[0].payment_method;
+        if (!advancePaid && rows[0].advance_paid) advancePaid = Number(rows[0].advance_paid);
       }
     } catch (d1Err) {
       console.warn("D1 order detail lookup warning:", d1Err);
@@ -131,9 +132,10 @@ export async function POST(req: NextRequest) {
     const genuineVpa = isValidCustomerVpa ? rawVpa : null;
 
     // Calculate actual amount refundable to customer
+    const defaultCodFee = totalAmount < 500 ? 19 : 49;
     let amountToRefund = 0;
     if (isCodPartial) {
-      amountToRefund = paymentInfo ? paymentInfo.amount : (advancePaid || 10);
+      amountToRefund = paymentInfo ? paymentInfo.amount : (advancePaid || defaultCodFee);
     } else if (isPrepaid) {
       amountToRefund = paymentInfo ? paymentInfo.amount : totalAmount;
     } else if (paymentInfo) {
@@ -362,7 +364,8 @@ export async function POST(req: NextRequest) {
           totalAmount: isCodPartial ? amountToRefund : totalAmount,
           refundAmount: isRefundEligible ? (amountToRefund || totalAmount) : undefined,
           refundId: razorpayPaymentId || "Initiated",
-          isPrepaid: isRefundEligible,
+          isPrepaid: isPrepaid,
+          isCodPartial: isCodPartial,
         });
       } catch (waErr) {
         console.warn("Cancellation WhatsApp dispatch warning:", waErr);

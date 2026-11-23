@@ -802,12 +802,13 @@ export interface OrderCancellationRefundParams {
   refundAmount?: number;
   refundId?: string;
   isPrepaid: boolean;
+  isCodPartial?: boolean;
 }
 
 export async function sendOrderCancellationRefundWhatsApp(
   params: OrderCancellationRefundParams
 ): Promise<boolean> {
-  const { customerName, customerPhone, orderId, productName, totalAmount, refundAmount, refundId, isPrepaid } = params;
+  const { customerName, customerPhone, orderId, productName, totalAmount, refundAmount, refundId, isPrepaid, isCodPartial } = params;
 
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) return false;
@@ -819,7 +820,9 @@ export async function sendOrderCancellationRefundWhatsApp(
   const prodName = productName || "ZupeStore Item";
   const displayAmount = totalAmount || refundAmount || 0;
   const refundNote = isPrepaid
-    ? `If prepaid, your refund of ₹${displayAmount.toLocaleString("en-IN")} has been initiated to your original payment method.`
+    ? `Your refund of ₹${displayAmount.toLocaleString("en-IN")} has been initiated to your original payment method.`
+    : isCodPartial
+    ? `Your refund of ₹${displayAmount.toLocaleString("en-IN")} (COD advance fee) has been initiated to your payment method.`
     : `Your Cash on Delivery order has been cancelled. No amount will be collected at delivery.`;
 
   // 1. Try official active template 'zupe_order_cancelled' (5 parameters)

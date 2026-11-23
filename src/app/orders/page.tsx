@@ -851,7 +851,7 @@ function OrdersPageContent() {
                         {getStatusBadge(isDelivered ? "delivered" : ord.order_status, ord.whatsapp_confirm_status)}
 
                         {/* Top Right Position */}
-                        {isCod && ord.order_status !== "cancelled" ? (
+                        {isCod && ord.order_status !== "cancelled" && !isRefunded ? (
                           <Link
                             href={`/checkout?method=prepaid&switch=cod&orderId=${encodeURIComponent(ord.id)}`}
                             className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 min-h-[42px] sm:min-h-[44px] rounded-xl text-[10px] sm:text-xs font-black tracking-tight bg-[#FF7A00] hover:bg-[#E66E00] text-white shadow-xs hover:shadow-md hover:shadow-orange-500/25 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] w-full sm:w-auto text-center animate-pulse whitespace-nowrap"

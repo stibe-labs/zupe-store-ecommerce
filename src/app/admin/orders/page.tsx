@@ -715,10 +715,20 @@ function AdminOrdersContent() {
 
   const handleUpdateRefundStatus = async (
     ord: ERPOrder,
-    newStatus: "Refund Pending" | "Refunded" | "Refund Rejected"
+    newStatus: "Refund Pending" | "Refunded" | "Refund Rejected",
+    customRefundAmount?: number
   ) => {
     setActionLoadingId(ord.id);
     setActionType("refund_update");
+
+    const isCodOrd =
+      (ord.payment_method || "").toLowerCase().includes("cash on delivery") ||
+      (ord.payment_method || "").toUpperCase() === "COD" ||
+      (ord.payment_method || "").toLowerCase().includes("partial");
+    const defaultFee = Number(ord.total_amount) < 500 ? 19 : 49;
+    const computedAmt = isCodOrd ? (Number((ord as any).advance_paid) || defaultFee) : Number(ord.total_amount || 0);
+    const finalAmt = customRefundAmount !== undefined ? customRefundAmount : computedAmt;
+
     try {
       const res = await fetch("/api/admin/orders", {
         method: "POST",
@@ -727,6 +737,7 @@ function AdminOrdersContent() {
           action: "update_refund_status",
           order_id: ord.id,
           refund_status: newStatus,
+          refund_amount: finalAmt,
         }),
       });
       const data = await res.json();
@@ -1173,8 +1184,20 @@ function AdminOrdersContent() {
                             )}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
-                          ₹{ord.total_amount}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <span className="font-bold text-slate-900">₹{ord.total_amount}</span>
+                          {(() => {
+                            const pm = (ord.payment_method || "").toLowerCase();
+                            const isCodRow = pm.includes("cash on delivery") || pm === "cod" || pm.includes("partial");
+                            if (!isCodRow) return null;
+                            const defFee = Number(ord.total_amount) < 500 ? 19 : 49;
+                            const adv = Number((ord as any).advance_paid) || defFee;
+                            return (
+                              <span className="block text-[10px] text-amber-700 font-medium">
+                                (₹{adv} COD Advance)
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap">
                           <span>Cost: ₹{ord.product_cost}</span>
@@ -1697,7 +1720,9 @@ function AdminOrdersContent() {
                   (selectedOrder.payment_method || "").toUpperCase() === "COD" ||
                   (selectedOrder.payment_method || "").toLowerCase().includes("partial");
 
-                const refundAmount = isCod ? 10 : selectedOrder.total_amount;
+                const defaultCodFee = Number(selectedOrder.total_amount) < 500 ? 19 : 49;
+                const codAdvance = Number((selectedOrder as any).advance_paid) || defaultCodFee;
+                const refundAmount = isCod ? codAdvance : Number(selectedOrder.total_amount || 0);
                 const isStatusRefunded = selectedOrder.payment_status === "Refunded";
                 const isStatusRejected = selectedOrder.payment_status === "Refund Rejected";
                 const isStatusPending = !isStatusRefunded && !isStatusRejected;
@@ -1726,7 +1751,7 @@ function AdminOrdersContent() {
                             Customer Refund Management
                           </h4>
                           <p className="text-[11px] text-slate-500">
-                            {isCod ? "COD Handling Fee (100% Refundable before dispatch)" : "Prepaid Online Order Refund"}
+                            {isCod ? `COD Handling Fee (₹${codAdvance} 100% Refundable before dispatch)` : "Prepaid Online Order Refund"}
                           </p>
                         </div>
                       </div>
@@ -1749,7 +1774,7 @@ function AdminOrdersContent() {
                         <span className="text-[10px] text-slate-400 font-semibold block uppercase">Refundable Amount</span>
                         <span className="font-bold text-slate-900 text-sm">
                           ₹{refundAmount}
-                          {isCod && <span className="text-[10px] text-amber-700 font-medium block">(₹10 COD Advance)</span>}
+                          {isCod && <span className="text-[10px] text-amber-700 font-medium block">(₹{codAdvance} COD Advance)</span>}
                         </span>
                       </div>
 
@@ -1776,7 +1801,7 @@ function AdminOrdersContent() {
                     <div className="pt-1 flex items-center gap-2 flex-wrap">
                       <button
                         type="button"
-                        onClick={() => handleUpdateRefundStatus(selectedOrder, "Refunded")}
+                        onClick={() => handleUpdateRefundStatus(selectedOrder, "Refunded", refundAmount)}
                         disabled={actionLoadingId === selectedOrder.id}
                         className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                           isStatusRefunded
@@ -1790,7 +1815,7 @@ function AdminOrdersContent() {
 
                       <button
                         type="button"
-                        onClick={() => handleUpdateRefundStatus(selectedOrder, "Refund Pending")}
+                        onClick={() => handleUpdateRefundStatus(selectedOrder, "Refund Pending", refundAmount)}
                         disabled={actionLoadingId === selectedOrder.id}
                         className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                           isStatusPending
@@ -1804,7 +1829,7 @@ function AdminOrdersContent() {
 
                       <button
                         type="button"
-                        onClick={() => handleUpdateRefundStatus(selectedOrder, "Refund Rejected")}
+                        onClick={() => handleUpdateRefundStatus(selectedOrder, "Refund Rejected", refundAmount)}
                         disabled={actionLoadingId === selectedOrder.id}
                         className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                           isStatusRejected

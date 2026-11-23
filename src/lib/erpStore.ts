@@ -93,6 +93,9 @@ export interface ERPOrder {
   confirmation_email_sent?: boolean;
   razorpay_payment_id?: string;
   razorpay_order_id?: string;
+  advance_paid?: number;
+  is_cod_partial?: boolean;
+  order_status?: string;
   created_at: string;
   items?: {
     product_name: string;

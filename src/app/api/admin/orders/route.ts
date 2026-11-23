@@ -420,11 +420,24 @@ export async function POST(req: NextRequest) {
             normalizedStatus === "Refunded"
               ? "Refunded (Processed to bank account)"
               : normalizedStatus;
+
+          const pm = ((ord.payment_method || "") as string).toLowerCase();
+          const isCod = pm.includes("cod") || pm.includes("cash on delivery") || pm.includes("cash") || pm.includes("partial");
+          const defaultCodFee = Number(ord.total_amount) < 500 ? 19 : 49;
+          const codAdvance = Number(ord.advance_paid) || defaultCodFee;
+
+          // For COD orders, only the online booking fee / advance was paid by customer.
+          // For Prepaid orders, the full order amount was paid.
+          const calculatedRefundAmount = isCod ? codAdvance : (Number(ord.total_amount) || 0);
+          const finalRefundAmount = body.refund_amount !== undefined
+            ? Number(body.refund_amount)
+            : calculatedRefundAmount;
+
           await sendRefundUpdateWhatsApp({
             customerName: ord.customer_name || "Valued Customer",
             customerPhone: ord.customer_phone,
             orderId: orderDisplayId,
-            refundAmount: Number(ord.total_amount) || 0,
+            refundAmount: finalRefundAmount,
             status: refundStatusLabel,
           });
         } catch (rfWaErr) {
@@ -568,15 +581,20 @@ export async function POST(req: NextRequest) {
         try {
           const firstItem = Array.isArray(ord.items) ? ord.items[0] : null;
           const firstItemName = firstItem?.product_name || firstItem?.name || "Purchased Product";
+          const defaultCodFee = totalAmount < 500 ? 19 : 49;
+          const codAdvanceFee = Number((ord as any).advance_paid) || defaultCodFee;
+          const cancelRefundAmt = isPrepaid ? totalAmount : (isCodPartial ? codAdvanceFee : undefined);
+
           await sendOrderCancellationRefundWhatsApp({
             customerName: ord.customer_name || "Valued Customer",
             customerPhone,
             orderId: orderDisplayId,
             productName: firstItemName,
-            totalAmount,
-            refundAmount: isPrepaid ? totalAmount : undefined,
+            totalAmount: isCodPartial ? codAdvanceFee : totalAmount,
+            refundAmount: cancelRefundAmt,
             refundId,
             isPrepaid,
+            isCodPartial,
           });
         } catch (waErr) {
           console.warn("WhatsApp cancellation notification warning:", waErr);
