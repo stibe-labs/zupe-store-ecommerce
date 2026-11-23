@@ -91,6 +91,30 @@ export async function POST(req: NextRequest) {
           if (diffMs < 60 * 60 * 1000) continue;
         }
 
+        // Strict Order Protection: Check if customer already placed an order
+        const rawPhone = (row.customer_phone || "").replace(/\D/g, "");
+        const phone10 = rawPhone.length > 10 ? rawPhone.slice(-10) : rawPhone;
+        const phone91 = `91${phone10}`;
+        try {
+          const existingOrders = await executeD1Query<any>(
+            `SELECT id FROM orders 
+             WHERE (customer_phone = ? OR customer_phone = ? OR customer_phone = ?) 
+               AND status != 'Cancelled' 
+             LIMIT 1`,
+            [phone10, phone91, row.customer_phone]
+          );
+
+          if (existingOrders && existingOrders.length > 0) {
+            await executeD1Query(
+              `UPDATE abandoned_checkouts 
+               SET status = 'recovered', recovered_order_id = ?, updated_at = CURRENT_TIMESTAMP 
+               WHERE id = ?`,
+              [existingOrders[0].id, row.id]
+            );
+            continue; // Skip sending reminder
+          }
+        } catch (orderCheckErr) {}
+
         let items = row.items;
         if (typeof items === "string") {
           try { items = JSON.parse(items); } catch { items = []; }
@@ -143,6 +167,36 @@ export async function POST(req: NextRequest) {
     }
 
     const row = rows[0];
+
+    // Check if this customer already completed an order
+    const rawPhone = (row.customer_phone || "").replace(/\D/g, "");
+    const phone10 = rawPhone.length > 10 ? rawPhone.slice(-10) : rawPhone;
+    const phone91 = `91${phone10}`;
+    try {
+      const existingOrders = await executeD1Query<any>(
+        `SELECT id FROM orders 
+         WHERE (customer_phone = ? OR customer_phone = ? OR customer_phone = ?) 
+           AND status != 'Cancelled' 
+         ORDER BY created_at DESC 
+         LIMIT 1`,
+        [phone10, phone91, row.customer_phone]
+      );
+
+      if (existingOrders && existingOrders.length > 0) {
+        await executeD1Query(
+          `UPDATE abandoned_checkouts 
+           SET status = 'recovered', recovered_order_id = ?, updated_at = CURRENT_TIMESTAMP 
+           WHERE id = ?`,
+          [existingOrders[0].id, id]
+        );
+        return NextResponse.json({
+          success: false,
+          error: `This customer already placed Order #${existingOrders[0].id.replace(/^#/, "")}! Marked as recovered.`,
+          recovered: true,
+        });
+      }
+    } catch (orderCheckErr) {}
+
     let items = row.items;
     if (typeof items === "string") {
       try { items = JSON.parse(items); } catch { items = []; }
