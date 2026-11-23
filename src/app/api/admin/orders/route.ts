@@ -205,7 +205,8 @@ export async function POST(req: NextRequest) {
       }
 
       const targetId = ord.id || order_id;
-      const orderDisplayId = ord.shopify_order_id || ord.id || order_id;
+      const cleanDisplayId = (ord.shopify_order_id || ord.id || order_id).replace(/^#*/, "");
+      const orderDisplayId = `#${cleanDisplayId}`;
 
       // Keep existing AWB and courier partner without generating fake placeholders
       let finalAwb = (ord.shiprocket_awb || "").trim();
@@ -383,7 +384,8 @@ export async function POST(req: NextRequest) {
       }
 
       const targetId = ord.id || order_id;
-      const orderDisplayId = ord.shopify_order_id || ord.id || order_id;
+      const cleanDisplayId = (ord.shopify_order_id || ord.id || order_id).replace(/^#*/, "");
+      const orderDisplayId = `#${cleanDisplayId}`;
 
       // Update ERP store
       const updatedERP = await updateERPOrder(targetId, {
@@ -484,7 +486,8 @@ export async function POST(req: NextRequest) {
       }
 
       const targetId = ord.id || order_id;
-      const orderDisplayId = ord.shopify_order_id || ord.id || order_id;
+      const cleanDisplayId = (ord.shopify_order_id || ord.id || order_id).replace(/^#*/, "");
+      const orderDisplayId = `#${cleanDisplayId}`;
       const cancelReason = reason || "Order cancelled before dispatch";
 
       // 1. Restock items in inventory
