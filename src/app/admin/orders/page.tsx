@@ -33,6 +33,8 @@ import {
   CreditCard,
   Check,
   Minus,
+  Lock,
+  ShieldAlert,
 } from "lucide-react";
 import { ERPOrder } from "@/lib/erpStore";
 
@@ -88,6 +90,12 @@ function AdminOrdersContent() {
   const [cancelNotes, setCancelNotes] = useState<string>("");
   const [openMenuOrderId, setOpenMenuOrderId] = useState<string | null>(null);
 
+  // Clear All Orders Modal State
+  const [clearOrdersModalOpen, setClearOrdersModalOpen] = useState(false);
+  const [clearWarningConfirmed, setClearWarningConfirmed] = useState(false);
+  const [isClearingOrders, setIsClearingOrders] = useState(false);
+  const [clearOrdersError, setClearOrdersError] = useState<string | null>(null);
+
   // Manual Create Order Modal State
   const [createOrderModalOpen, setCreateOrderModalOpen] = useState(false);
   const [custName, setCustName] = useState("");
@@ -123,9 +131,9 @@ function AdminOrdersContent() {
   const [isFetchingCatalog, setIsFetchingCatalog] = useState(false);
   const [productSearchQuery, setProductSearchQuery] = useState("");
 
-  // Lock background scroll when create order modal is open
+  // Lock background scroll when modal is open
   useEffect(() => {
-    if (createOrderModalOpen) {
+    if (createOrderModalOpen || clearOrdersModalOpen) {
       document.body.classList.add("modal-open");
       document.documentElement.classList.add("modal-open");
       const originalOverflow = document.body.style.overflow;
@@ -136,7 +144,7 @@ function AdminOrdersContent() {
         document.body.style.overflow = originalOverflow;
       };
     }
-  }, [createOrderModalOpen]);
+  }, [createOrderModalOpen, clearOrdersModalOpen]);
 
   // Pre-load catalog products on mount and when modal opens
   useEffect(() => {
@@ -906,6 +914,37 @@ function AdminOrdersContent() {
     document.body.removeChild(link);
   };
 
+  const handleClearAllOrders = async () => {
+    if (!clearWarningConfirmed || isClearingOrders) return;
+    setIsClearingOrders(true);
+    setClearOrdersError(null);
+
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clear_all: true }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to clear orders from database");
+      }
+
+      setOrders([]);
+      setClearOrdersModalOpen(false);
+      setClearWarningConfirmed(false);
+      setToastMessage({
+        text: "All orders have been permanently cleared from database.",
+        type: "success",
+      });
+      setTimeout(() => setToastMessage(null), 4000);
+    } catch (err: any) {
+      setClearOrdersError(err.message || "Failed to clear orders from database");
+    } finally {
+      setIsClearingOrders(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F4F6FA] text-slate-800 font-sans">
       <AdminSidebar
@@ -932,7 +971,7 @@ function AdminOrdersContent() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2.5">
               <button
                 onClick={() => setCreateOrderModalOpen(true)}
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-sm shadow-orange-500/20 active:scale-95 cursor-pointer"
@@ -956,6 +995,19 @@ function AdminOrdersContent() {
               >
                 <Download className="w-4 h-4 text-slate-500" />
                 <span>Export CSV</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setClearWarningConfirmed(false);
+                  setClearOrdersError(null);
+                  setClearOrdersModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 border border-rose-200 hover:bg-rose-100 hover:border-rose-300 text-rose-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm cursor-pointer active:scale-95"
+                title="Permanently clear test or all orders from database"
+              >
+                <Trash2 className="w-4 h-4 text-rose-600" />
+                <span>Clear Orders</span>
               </button>
             </div>
           </div>
@@ -3125,6 +3177,132 @@ function AdminOrdersContent() {
                 </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Clear All Orders Security Warning Modal */}
+      {clearOrdersModalOpen && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-4 bg-slate-900/75 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-150"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isClearingOrders) {
+              setClearOrdersModalOpen(false);
+            }
+          }}
+        >
+          <div className="bg-white rounded-3xl shadow-2xl border border-rose-100 max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="p-5 sm:p-6 bg-gradient-to-r from-rose-50 via-red-50/40 to-white border-b border-rose-100/80 flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-2xl bg-rose-100/90 border border-rose-200 flex items-center justify-center text-rose-600 shrink-0 shadow-sm">
+                  <AlertTriangle className="w-6 h-6 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                    Clear All Orders from Database
+                  </h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                      <ShieldAlert className="w-3 h-3" />
+                      Irreversible Action
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => !isClearingOrders && setClearOrdersModalOpen(false)}
+                disabled={isClearingOrders}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-white/80 border border-transparent hover:border-slate-200 transition-colors cursor-pointer shrink-0 disabled:opacity-40"
+                title="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 sm:p-6 space-y-4">
+              {/* Detailed Warning Notice */}
+              <div className="bg-rose-50/80 border border-rose-200/90 rounded-2xl p-4 text-xs sm:text-sm text-rose-950 space-y-2">
+                <p className="font-semibold flex items-center gap-1.5 text-rose-900">
+                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                  Warning: You are about to wipe the orders database.
+                </p>
+                <p className="text-slate-700 leading-relaxed text-xs sm:text-sm">
+                  This will permanently delete <strong>all {orders.length} order(s)</strong>, customer order tracking records, and line items from Cloudflare D1.
+                </p>
+                <p className="text-slate-600 text-xs leading-relaxed">
+                  Use this to wipe test orders and reset the orders ledger. Once executed, <strong>this cannot be undone or recovered</strong>.
+                </p>
+              </div>
+
+              {/* Error Message if any */}
+              {clearOrdersError && (
+                <div className="p-3 bg-red-100/80 border border-red-300 rounded-xl text-xs font-semibold text-red-800 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
+                  <span>{clearOrdersError}</span>
+                </div>
+              )}
+
+              {/* Mandatory Security Checkbox */}
+              <div className="pt-2">
+                <label className="flex items-start gap-3 p-3.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 hover:border-rose-300 rounded-2xl cursor-pointer transition-all select-none">
+                  <input
+                    type="checkbox"
+                    checked={clearWarningConfirmed}
+                    onChange={(e) => setClearWarningConfirmed(e.target.checked)}
+                    disabled={isClearingOrders}
+                    className="mt-0.5 w-4 h-4 text-rose-600 rounded border-slate-300 focus:ring-rose-500 cursor-pointer disabled:opacity-50"
+                  />
+                  <div className="text-xs sm:text-sm text-slate-700 leading-snug">
+                    <span className="font-bold text-slate-900 block mb-0.5">
+                      Security Confirmation Check:
+                    </span>
+                    I understand what I am doing and confirm that I want to permanently delete all {orders.length} order(s) from the database.
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => setClearOrdersModalOpen(false)}
+                disabled={isClearingOrders}
+                className="w-full sm:w-auto px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl font-semibold text-xs sm:text-sm transition-all shadow-sm cursor-pointer disabled:opacity-50"
+              >
+                Cancel / Keep Orders
+              </button>
+
+              {/* Proceed Delete Button Only Visible Once Ticked */}
+              {clearWarningConfirmed ? (
+                <button
+                  type="button"
+                  onClick={handleClearAllOrders}
+                  disabled={isClearingOrders}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-bold shadow-lg shadow-rose-600/30 transition-all cursor-pointer disabled:opacity-50 animate-in fade-in zoom-in-95 duration-150"
+                >
+                  {isClearingOrders ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                      <span>Clearing Database...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4 text-white stroke-[2.5]" />
+                      <span>Permanently Delete All Orders</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+                  <Lock className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Tick the box above to reveal delete button</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

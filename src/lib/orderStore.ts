@@ -237,6 +237,10 @@ export async function getOrderByToken(token: string): Promise<OrderRecord | any 
   return null;
 }
 
+export function clearStorefrontOrders(): void {
+  inMemoryOrders = [];
+}
+
 export function updateStorefrontOrder(orderId: string, updates: Partial<OrderRecord>): void {
   const ord = inMemoryOrders.find((o) => o.id === orderId);
   if (ord) {

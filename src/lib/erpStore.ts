@@ -1308,6 +1308,49 @@ export async function updateERPOrder(
   return targetOrder;
 }
 
+export async function clearAllOrders(): Promise<{ success: boolean; clearedCount: number }> {
+  const previousCount = inMemoryERPOrders.length;
+  inMemoryERPOrders = [];
+
+  try {
+    const { clearStorefrontOrders } = await import("@/lib/orderStore");
+    clearStorefrontOrders();
+  } catch (err) {
+    console.warn("clearStorefrontOrders warning:", err);
+  }
+
+  // 1. Delete order line items first (if table exists)
+  try {
+    await executeD1Query("DELETE FROM order_items");
+  } catch (err) {
+    console.warn("D1 clear order_items warning:", err);
+  }
+
+  // 2. Delete all orders from D1 database
+  try {
+    await executeD1Query("DELETE FROM orders");
+  } catch (err: any) {
+    console.error("D1 clear orders error:", err);
+    throw new Error(err?.message || "Failed to clear orders from database");
+  }
+
+  return { success: true, clearedCount: previousCount };
+}
+
+export async function deleteOrder(orderId: string): Promise<boolean> {
+  inMemoryERPOrders = inMemoryERPOrders.filter(
+    (o) => o.id !== orderId && o.shopify_order_id !== orderId
+  );
+  try {
+    await executeD1Query("DELETE FROM order_items WHERE order_id = ?", [orderId]).catch(() => {});
+    await executeD1Query("DELETE FROM orders WHERE id = ? OR shopify_order_id = ?", [orderId, orderId]);
+    return true;
+  } catch (err) {
+    console.warn("D1 deleteOrder error:", err);
+    return false;
+  }
+}
+
 // ==========================================
 // 6. EXECUTIVE DASHBOARD KPI ENGINE
 // ==========================================

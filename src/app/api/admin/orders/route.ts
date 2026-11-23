@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getERPOrders, updateERPOrder, createERPOrder, getOrderById } from "@/lib/erpStore";
+import {
+  getERPOrders,
+  updateERPOrder,
+  createERPOrder,
+  getOrderById,
+  clearAllOrders,
+  deleteOrder,
+} from "@/lib/erpStore";
 import { updateStorefrontOrder } from "@/lib/orderStore";
 import { executeD1Query } from "@/lib/d1";
 import {
@@ -875,4 +882,53 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    let order_id: string | null = null;
+    let clearAll = false;
+
+    try {
+      const body = await req.json();
+      order_id = body.order_id || null;
+      clearAll = body.clear_all === true || body.action === "clear_all";
+    } catch {
+      const { searchParams } = new URL(req.url);
+      order_id = searchParams.get("order_id");
+      clearAll = searchParams.get("clear_all") === "true";
+    }
+
+    if (clearAll) {
+      const result = await clearAllOrders();
+      return NextResponse.json({
+        success: true,
+        message: "All orders have been permanently cleared from database",
+        ...result,
+      });
+    }
+
+    if (order_id) {
+      const ok = await deleteOrder(order_id);
+      if (!ok) {
+        return NextResponse.json(
+          { success: false, error: `Failed to delete order ${order_id}` },
+          { status: 500 }
+        );
+      }
+      return NextResponse.json({
+        success: true,
+        message: `Order ${order_id} deleted successfully`,
+      });
+    }
+
+    return NextResponse.json(
+      { success: false, error: "Missing required parameter: clear_all or order_id" },
+      { status: 400 }
+    );
+  } catch (err: any) {
+    console.error("Error deleting orders:", err);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
 
