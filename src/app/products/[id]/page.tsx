@@ -210,6 +210,7 @@ export default function ProductDetailPage() {
   const { user } = useAuth();
 
   const [product, setProduct] = useState<Product>(() => resolveProduct(idOrSlug));
+  const [liveReviewStats, setLiveReviewStats] = useState<{ rating: number; reviewCount: number } | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(1);
@@ -774,23 +775,43 @@ export default function ProductDetailPage() {
             </h1>
 
             {/* Ratings & Reviews Row */}
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex items-center gap-0.5 text-amber-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-current stroke-current" />
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const el = document.getElementById("reviews-section");
-                  el?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="text-xs sm:text-sm text-neutral-500 hover:text-[#6B9E3A] font-medium transition-colors cursor-pointer"
-              >
-                {activeProduct.rating || 4.6} ({activeProduct.review_count ? activeProduct.review_count.toLocaleString() : "12,548"} Reviews)
-              </button>
-            </div>
+            {(() => {
+              const currentRating = liveReviewStats ? liveReviewStats.rating : (activeProduct.rating || 0);
+              const currentCount = liveReviewStats ? liveReviewStats.reviewCount : (activeProduct.review_count || 0);
+              return (
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-0.5 text-amber-400">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-4 h-4 fill-current ${
+                          currentCount > 0 && star <= Math.round(currentRating)
+                            ? "text-amber-400 fill-amber-400"
+                            : "text-neutral-200 fill-neutral-200"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById("reviews-section");
+                      el?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="text-xs sm:text-sm text-neutral-500 hover:text-[#6B9E3A] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    {currentCount > 0 ? (
+                      <>
+                        <span className="font-bold text-neutral-800">{currentRating.toFixed(1)}</span>
+                        <span>({currentCount.toLocaleString()} {currentCount === 1 ? "Review" : "Reviews"})</span>
+                      </>
+                    ) : (
+                      <span className="text-neutral-400 hover:text-[#6B9E3A]">No reviews yet · Be the first to review</span>
+                    )}
+                  </button>
+                </div>
+              );
+            })()}
 
             {/* Price & Discount Row */}
             <div className="flex items-baseline gap-3 mb-1">
@@ -1375,8 +1396,15 @@ export default function ProductDetailPage() {
           <ProductReviewsSection
             productId={activeProduct.id}
             productName={activeProduct.name}
-            fallbackRating={activeProduct.rating || 4.6}
-            fallbackReviewCount={activeProduct.review_count || 12548}
+            productImage={activeProduct.poster_image}
+            fallbackRating={activeProduct.rating || 0}
+            fallbackReviewCount={activeProduct.review_count || 0}
+            onStatsChange={(newStats) => {
+              setLiveReviewStats({
+                rating: newStats.averageRating,
+                reviewCount: newStats.totalReviews,
+              });
+            }}
           />
         </section>
       </main>

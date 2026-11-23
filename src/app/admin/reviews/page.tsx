@@ -119,7 +119,7 @@ export default function AdminReviewsPage() {
 
   // Manual Review Form State
   const [manualForm, setManualForm] = useState({
-    productId: DEFAULT_PRODUCTS[0]?.slug || "dynamic-water-ripple-night-light",
+    productId: DEFAULT_PRODUCTS[0]?.slug || "whey-protein-isolate",
     userName: "",
     rating: 5,
     title: "",
@@ -128,6 +128,28 @@ export default function AdminReviewsPage() {
     images: "",
   });
   const [submittingManual, setSubmittingManual] = useState(false);
+  const [syncingAll, setSyncingAll] = useState(false);
+
+  const handleSyncAll = async () => {
+    setSyncingAll(true);
+    try {
+      const res = await fetch("/api/admin/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "sync_all" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchReviews();
+        await fetchProducts();
+        alert("100% Synced! All product ratings & review counts are updated from database.");
+      }
+    } catch (err) {
+      console.error("Sync failed:", err);
+    } finally {
+      setSyncingAll(false);
+    }
+  };
 
   // CSV Importer State
   const [csvFile, setCsvFile] = useState<File | null>(null);
@@ -279,34 +301,34 @@ export default function AdminReviewsPage() {
     const csvRows = [
       ["product_slug", "rating", "user_name", "title", "comment", "created_at", "images", "source"],
       [
-        "turkiye-jam",
+        "whey-protein-isolate",
         "5",
-        "Anjali M.",
-        "Genuine Turkish Paste - Fast Delivery",
-        "Arrived in two days, well wrapped, nothing leaked. The sachets are easy to carry.",
-        "2026-02-14",
+        "Vikramaditya S.",
+        "Super clean isolate, no bloating",
+        "Mixes in seconds with 250ml cold water without lumps. Real 27g protein per scoop.",
+        "2026-11-18",
         "",
         "Storefront",
       ],
       [
-        "turkiye-jam",
+        "golden-jar-glossy-dates",
         "5",
-        "Rahul K.",
-        "Original seal and prompt COD",
-        "Neat packing and the label was clear. Cash on delivery made it easy for my family to trust.",
-        "2026-02-10",
+        "Fatima Zahra",
+        "Melt in mouth jumbo Medjool dates!",
+        "These are genuinely grade-A jumbo Medjool dates. Soft, chewy caramel texture in luxury gold lid jar.",
+        "2026-11-20",
         "",
-        "Storefront",
+        "Amazon",
       ],
       [
-        "turkiye-jam",
+        "red-vl-athletic-tee",
         "5",
-        "Neha S.",
-        "Authentic Themra product",
-        "I started with the 2 pack just to try. The ordering was simple, delivery was quick.",
-        "2026-02-05",
+        "Karthik Raja",
+        "Heavyweight 240 GSM cotton feels unbelievable",
+        "Shoulder taper makes your physique look great. Silicone VL monogram is premium.",
+        "2026-11-19",
         "",
-        "Storefront",
+        "Flipkart",
       ],
     ];
 
@@ -583,6 +605,16 @@ export default function AdminReviewsPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                onClick={handleSyncAll}
+                disabled={syncingAll}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 text-xs font-semibold shadow-xs transition-all cursor-pointer disabled:opacity-60"
+                title="Recalculate and 100% synchronize all product ratings and review counts from database"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-[#002D62] ${syncingAll ? "animate-spin" : ""}`} />
+                <span>{syncingAll ? "Syncing..." : "Sync All Ratings"}</span>
+              </button>
+
               <button
                 onClick={handleDownloadSampleCSV}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 text-xs font-semibold shadow-xs transition-all cursor-pointer"

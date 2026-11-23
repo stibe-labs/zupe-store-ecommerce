@@ -296,74 +296,96 @@ export function ProductReviewsSection({
           </h2>
         </div>
 
-        {/* Rating Breakdown Summary (Clean borderless side-by-side layout) */}
-        <div className="flex flex-row items-center gap-4 sm:gap-8 md:gap-12 mb-6 sm:mb-8 py-1">
-          {/* Compact Score Column (Left side beside stars lines) */}
-          <div className="shrink-0 flex flex-col items-center sm:items-start text-center sm:text-left justify-center pr-2 sm:pr-8 sm:border-r sm:border-neutral-200">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-3xl sm:text-4xl md:text-5xl font-black text-neutral-950 tracking-tight">
-                {displayTotal > 0 ? displayAverage.toFixed(1) : "0.0"}
-              </span>
-              <span className="text-xs sm:text-sm font-bold text-neutral-400">/ 5.0</span>
+        {displayTotal === 0 ? (
+          <div className="text-center py-10 px-4 bg-neutral-50/80 rounded-2xl border border-neutral-200/70 my-4">
+            <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 mx-auto flex items-center justify-center mb-3">
+              <Star className="w-6 h-6 fill-current text-amber-400" />
             </div>
-            <div className="flex items-center gap-0.5 sm:gap-1 my-1.5 text-amber-400">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current ${
-                    displayTotal > 0 && star <= Math.round(displayAverage) ? "text-amber-400" : "text-neutral-200"
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-[10px] sm:text-xs font-medium text-neutral-500 whitespace-nowrap">
-              {displayTotal > 0
-                ? `Based on ${displayTotal.toLocaleString()} ${displayTotal === 1 ? "review" : "reviews"}`
-                : "Based on 0 reviews"}
-            </span>
-          </div>
-
-          {/* Compact Progress Bars Column (Beside score on right) */}
-          <div className="flex-1 min-w-0 space-y-1.5 sm:space-y-2">
-            {[5, 4, 3, 2, 1].map((star) => {
-              const pct = stats.ratingPercentages[star] || 0;
-              const count = stats.ratingCounts[star] || 0;
-              return (
-                <div key={star} className="flex items-center gap-2 sm:gap-3 text-xs">
-                  <div className="flex items-center gap-0.5 w-6 sm:w-8 text-neutral-700 font-bold justify-end text-[11px] sm:text-xs shrink-0">
-                    <span>{star}</span>
-                    <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current text-amber-400 shrink-0" />
-                  </div>
-                  <div className="flex-1 h-2 sm:h-2.5 rounded-full bg-neutral-100 overflow-hidden relative">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#9CD33B] to-[#6B9E3A] transition-all duration-500"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <div className="w-10 sm:w-16 text-right font-mono font-bold text-neutral-500 text-[10px] sm:text-[11px] shrink-0">
-                    {pct}% <span className="text-neutral-400 font-normal hidden sm:inline">({count})</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Write a Customer Review Button */}
-        <div className="flex justify-center sm:justify-end mb-8">
-          <button
-            onClick={handleOpenWriteReview}
-            disabled={checkingEligibility}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#111111] text-white text-xs sm:text-sm font-bold hover:bg-[#6B9E3A] transition-all shadow-sm cursor-pointer disabled:opacity-60"
-          >
-            {checkingEligibility ? (
-              <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
-            ) : (
+            <h3 className="text-base sm:text-lg font-bold text-neutral-900 mb-1">
+              No reviews yet for {productName}
+            </h3>
+            <p className="text-xs sm:text-sm text-neutral-500 max-w-md mx-auto mb-5">
+              Be the first verified customer to share your thoughts, ratings, and unboxing photos!
+            </p>
+            <button
+              onClick={handleOpenWriteReview}
+              disabled={checkingEligibility}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#111111] text-white text-xs sm:text-sm font-bold hover:bg-[#6B9E3A] transition-all cursor-pointer shadow-sm disabled:opacity-60"
+            >
               <Star className="w-4 h-4 fill-current text-amber-400" />
-            )}
-            <span>Write a Customer Review</span>
-          </button>
-        </div>
+              <span>Write the First Review</span>
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Rating Breakdown Summary (Clean borderless side-by-side layout) */}
+            <div className="flex flex-row items-center gap-4 sm:gap-8 md:gap-12 mb-6 sm:mb-8 py-1">
+              {/* Compact Score Column (Left side beside stars lines) */}
+              <div className="shrink-0 flex flex-col items-center sm:items-start text-center sm:text-left justify-center pr-2 sm:pr-8 sm:border-r sm:border-neutral-200">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl sm:text-4xl md:text-5xl font-black text-neutral-950 tracking-tight">
+                    {displayAverage.toFixed(1)}
+                  </span>
+                  <span className="text-xs sm:text-sm font-bold text-neutral-400">/ 5.0</span>
+                </div>
+                <div className="flex items-center gap-0.5 sm:gap-1 my-1.5 text-amber-400">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current ${
+                        star <= Math.round(displayAverage) ? "text-amber-400" : "text-neutral-200"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-[10px] sm:text-xs font-medium text-neutral-500 whitespace-nowrap">
+                  {`Based on ${displayTotal.toLocaleString()} ${displayTotal === 1 ? "review" : "reviews"}`}
+                </span>
+              </div>
+
+              {/* Compact Progress Bars Column (Beside score on right) */}
+              <div className="flex-1 min-w-0 space-y-1.5 sm:space-y-2">
+                {[5, 4, 3, 2, 1].map((star) => {
+                  const pct = stats.ratingPercentages[star] || 0;
+                  const count = stats.ratingCounts[star] || 0;
+                  return (
+                    <div key={star} className="flex items-center gap-2 sm:gap-3 text-xs">
+                      <div className="flex items-center gap-0.5 w-6 sm:w-8 text-neutral-700 font-bold justify-end text-[11px] sm:text-xs shrink-0">
+                        <span>{star}</span>
+                        <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current text-amber-400 shrink-0" />
+                      </div>
+                      <div className="flex-1 h-2 sm:h-2.5 rounded-full bg-neutral-100 overflow-hidden relative">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-[#9CD33B] to-[#6B9E3A] transition-all duration-500"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <div className="w-10 sm:w-16 text-right font-mono font-bold text-neutral-500 text-[10px] sm:text-[11px] shrink-0">
+                        {pct}% <span className="text-neutral-400 font-normal hidden sm:inline">({count})</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Write a Customer Review Button */}
+            <div className="flex justify-center sm:justify-end mb-8">
+              <button
+                onClick={handleOpenWriteReview}
+                disabled={checkingEligibility}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#111111] text-white text-xs sm:text-sm font-bold hover:bg-[#6B9E3A] transition-all shadow-sm cursor-pointer disabled:opacity-60"
+              >
+                {checkingEligibility ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                ) : (
+                  <Star className="w-4 h-4 fill-current text-amber-400" />
+                )}
+                <span>Write a Customer Review</span>
+              </button>
+            </div>
+          </>
+        )}
 
         {/* Customer Uploaded Photos Gallery (if any exist) */}
         {stats.customerPhotos.length > 0 && (
@@ -406,184 +428,184 @@ export function ProductReviewsSection({
           </div>
         )}
 
-        {/* Filter and Sort Toolbar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-gray-200 mb-6">
-          {/* Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none w-full sm:w-auto -mx-0.5 px-0.5">
-            <button
-              onClick={() => setActiveFilter("all")}
-              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
-                activeFilter === "all"
-                  ? "bg-[#111111] text-white shadow-xs"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              All Reviews ({reviews.length})
-            </button>
-            {stats.customerPhotos.length > 0 && (
-              <button
-                onClick={() => setActiveFilter("photos")}
-                className={`inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
-                  activeFilter === "photos"
-                    ? "bg-[#6B9E3A] text-white shadow-xs"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                <Camera className="w-3 h-3 shrink-0" />
-                <span>With Photos ({reviews.filter((r) => r.images && r.images.length > 0).length})</span>
-              </button>
-            )}
-            <button
-              onClick={() => setActiveFilter("5")}
-              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
-                activeFilter === "5"
-                  ? "bg-[#111111] text-white shadow-xs"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              5 Stars ({stats.ratingCounts[5] || 0})
-            </button>
-            <button
-              onClick={() => setActiveFilter("4")}
-              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
-                activeFilter === "4"
-                  ? "bg-[#111111] text-white shadow-xs"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              4 Stars ({stats.ratingCounts[4] || 0})
-            </button>
-          </div>
-
-          {/* Sort Selector */}
-          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-500 self-end sm:self-auto shrink-0">
-            <span>Sort by:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              aria-label="Sort customer reviews"
-              className="bg-white border border-gray-200 rounded-lg sm:rounded-xl px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] sm:text-xs font-bold text-gray-800 focus:outline-none focus:border-[#6B9E3A] cursor-pointer"
-            >
-              <option value="newest">Newest First</option>
-              <option value="highest">Highest Rating</option>
-              <option value="helpful">Most Helpful</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Reviews List */}
-        {sortedReviews.length === 0 ? (
-          <div className="p-12 text-center rounded-3xl bg-white border border-gray-100">
-            <MessageSquare className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-            <h4 className="text-base font-bold text-gray-800">No reviews found for this filter</h4>
-            <p className="text-xs text-gray-500 mt-1 mb-4">Be the first to share your thoughts on this product!</p>
-            <button
-              onClick={() => {
-                setActiveFilter("all");
-                handleOpenWriteReview();
-              }}
-              disabled={checkingEligibility}
-              className="px-5 py-2 rounded-full bg-[#6B9E3A] text-white text-xs font-bold hover:bg-[#527C2B] disabled:opacity-60 cursor-pointer"
-            >
-              Write First Review
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {sortedReviews.map((rev) => (
-              <div
-                key={rev.id}
-                className="p-6 rounded-3xl bg-white border border-gray-100 shadow-xs hover:shadow-md transition-shadow"
-              >
-                {/* Header: User Info + Rating + Verified Badge */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                  <div className="flex items-center gap-3">
-                    {/* User Avatar Circle with Initials */}
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-100 to-amber-200 text-amber-800 font-extrabold flex items-center justify-center text-sm shadow-xs shrink-0">
-                      {rev.userName ? rev.userName.charAt(0).toUpperCase() : "U"}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-gray-900">{rev.userName}</span>
-                        {rev.verifiedPurchase && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Verified Buyer
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-[11px] text-gray-400">
-                        {new Date(rev.createdAt).toLocaleDateString("en-IN", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Stars */}
-                  <div className="flex items-center gap-0.5 text-amber-400">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`w-4 h-4 fill-current ${
-                          star <= rev.rating ? "text-amber-400" : "text-gray-200"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Review Title & Comment */}
-                {rev.title && (
-                  <h4 className="font-extrabold text-sm text-gray-900 mb-1.5">{rev.title}</h4>
-                )}
-                <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">{rev.comment}</p>
-
-                {/* Uploaded Photos Thumbnails */}
-                {rev.images && rev.images.length > 0 && (
-                  <div className="mt-3.5 flex flex-wrap gap-2.5">
-                    {rev.images.map((imgUrl, imgIdx) => (
-                      <button
-                        key={imgIdx}
-                        type="button"
-                        onClick={() => setLightboxData({ image: imgUrl, review: rev })}
-                        className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 hover:ring-2 hover:ring-[#6B9E3A] transition-all cursor-pointer shadow-xs"
-                      >
-                        <Image
-                          src={imgUrl}
-                          alt="Customer product photo"
-                          fill
-                          className="object-cover"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Helpful voting footer */}
-                <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between text-xs text-gray-500">
+        {/* Filter and Sort Toolbar & Reviews List */}
+        {displayTotal > 0 && (
+          <>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-gray-200 mb-6">
+              {/* Filter Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none w-full sm:w-auto -mx-0.5 px-0.5">
+                <button
+                  onClick={() => setActiveFilter("all")}
+                  className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                    activeFilter === "all"
+                      ? "bg-[#111111] text-white shadow-xs"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  All Reviews ({reviews.length})
+                </button>
+                {stats.customerPhotos.length > 0 && (
                   <button
-                    type="button"
-                    onClick={() => handleHelpfulClick(rev.id)}
-                    disabled={votedHelpful.has(rev.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-colors cursor-pointer ${
-                      votedHelpful.has(rev.id)
-                        ? "bg-emerald-50 text-emerald-700"
+                    onClick={() => setActiveFilter("photos")}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                      activeFilter === "photos"
+                        ? "bg-[#6B9E3A] text-white shadow-xs"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                   >
-                    <ThumbsUp className="w-3 h-3" />
-                    <span>Helpful ({rev.helpfulCount || 0})</span>
+                    <Camera className="w-3 h-3 shrink-0" />
+                    <span>With Photos ({reviews.filter((r) => r.images && r.images.length > 0).length})</span>
                   </button>
-
-                  {rev.verifiedPurchase && (
-                    <span className="text-[11px] text-gray-400">Verified Purchase</span>
-                  )}
-                </div>
+                )}
+                <button
+                  onClick={() => setActiveFilter("5")}
+                  className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                    activeFilter === "5"
+                      ? "bg-[#111111] text-white shadow-xs"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  5 Stars ({stats.ratingCounts[5] || 0})
+                </button>
+                <button
+                  onClick={() => setActiveFilter("4")}
+                  className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                    activeFilter === "4"
+                      ? "bg-[#111111] text-white shadow-xs"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  4 Stars ({stats.ratingCounts[4] || 0})
+                </button>
               </div>
-            ))}
-          </div>
+
+              {/* Sort Selector */}
+              <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gray-500 self-end sm:self-auto shrink-0">
+                <span>Sort by:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  aria-label="Sort customer reviews"
+                  className="bg-white border border-gray-200 rounded-lg sm:rounded-xl px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] sm:text-xs font-bold text-gray-800 focus:outline-none focus:border-[#6B9E3A] cursor-pointer"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="highest">Highest Rating</option>
+                  <option value="helpful">Most Helpful</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Reviews List */}
+            {sortedReviews.length === 0 ? (
+              <div className="p-12 text-center rounded-3xl bg-white border border-gray-100">
+                <MessageSquare className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                <h4 className="text-base font-bold text-gray-800">No reviews found for this filter</h4>
+                <p className="text-xs text-gray-500 mt-1 mb-4">Try clearing the star or photo filters above.</p>
+                <button
+                  onClick={() => setActiveFilter("all")}
+                  className="px-5 py-2 rounded-full bg-[#111111] text-white text-xs font-bold hover:bg-[#6B9E3A] cursor-pointer transition-all"
+                >
+                  Show All Reviews
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {sortedReviews.map((rev) => (
+                  <div
+                    key={rev.id}
+                    className="p-6 rounded-3xl bg-white border border-gray-100 shadow-xs hover:shadow-md transition-shadow"
+                  >
+                    {/* Header: User Info + Rating + Verified Badge */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                      <div className="flex items-center gap-3">
+                        {/* User Avatar Circle with Initials */}
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-100 to-amber-200 text-amber-800 font-extrabold flex items-center justify-center text-sm shadow-xs shrink-0">
+                          {rev.userName ? rev.userName.charAt(0).toUpperCase() : "U"}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-gray-900">{rev.userName}</span>
+                            {rev.verifiedPurchase && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Verified Buyer
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[11px] text-gray-400">
+                            {new Date(rev.createdAt).toLocaleDateString("en-IN", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Stars */}
+                      <div className="flex items-center gap-0.5 text-amber-400">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`w-4 h-4 fill-current ${
+                              star <= rev.rating ? "text-amber-400" : "text-gray-200"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Review Title & Comment */}
+                    {rev.title && (
+                      <h4 className="font-extrabold text-sm text-gray-900 mb-1.5">{rev.title}</h4>
+                    )}
+                    <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">{rev.comment}</p>
+
+                    {/* Uploaded Photos Thumbnails */}
+                    {rev.images && rev.images.length > 0 && (
+                      <div className="mt-3.5 flex flex-wrap gap-2.5">
+                        {rev.images.map((imgUrl, imgIdx) => (
+                          <button
+                            key={imgIdx}
+                            type="button"
+                            onClick={() => setLightboxData({ image: imgUrl, review: rev })}
+                            className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 hover:ring-2 hover:ring-[#6B9E3A] transition-all cursor-pointer shadow-xs"
+                          >
+                            <Image
+                              src={imgUrl}
+                              alt="Customer product photo"
+                              fill
+                              className="object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Helpful voting footer */}
+                    <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between text-xs text-gray-500">
+                      <button
+                        type="button"
+                        onClick={() => handleHelpfulClick(rev.id)}
+                        disabled={votedHelpful.has(rev.id)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-colors cursor-pointer ${
+                          votedHelpful.has(rev.id)
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        <ThumbsUp className="w-3 h-3" />
+                        <span>Helpful ({rev.helpfulCount || 0})</span>
+                      </button>
+
+                      {rev.verifiedPurchase && (
+                        <span className="text-[11px] text-gray-400">Verified Purchase</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 

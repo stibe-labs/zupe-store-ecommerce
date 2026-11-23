@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllReviews, deleteReview, addReview, ProductReview } from "@/lib/reviewStore";
+import { getAllReviews, deleteReview, addReview, syncAllProductReviewStats, ProductReview } from "@/lib/reviewStore";
 
 export async function GET(req: NextRequest) {
   try {
@@ -78,6 +78,12 @@ export async function DELETE(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+
+    if (body?.action === "sync_all") {
+      await syncAllProductReviewStats();
+      return NextResponse.json({ success: true, message: "All product ratings and review counts successfully synchronized." });
+    }
+
     const { productId, userName, userEmail, rating, title, comment, images, verifiedPurchase, createdAt, source } = body;
 
     if (!productId || !comment) {
