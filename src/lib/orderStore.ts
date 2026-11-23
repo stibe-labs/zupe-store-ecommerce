@@ -152,7 +152,7 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
         ? 0
         : Number(order.total_amount);
 
-    sendAdminNewOrderNotificationEmail({
+    await sendAdminNewOrderNotificationEmail({
       orderId: displayOrderId,
       customerName: order.customer_name,
       customerPhone: order.customer_phone,
@@ -165,8 +165,6 @@ export async function createOrder(order: OrderRecord): Promise<OrderRecord> {
       paymentMethod: order.payment_method,
       items: order.items,
       createdAt: order.created_at,
-    }).catch((err) => {
-      console.warn("[OrderStore] Failed to send admin new order email:", err);
     });
   } catch (adminMailErr) {
     console.warn("[OrderStore] Admin email dispatch error:", adminMailErr);

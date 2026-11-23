@@ -341,8 +341,9 @@ export async function POST(req: NextRequest) {
       try {
         const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
         const { markOrderEmailSent } = await import("@/lib/orderStore");
+        const displayOrderId = (newOrder as any).shopify_order_id || orderId;
         const emailRes = await sendOrderConfirmationEmail({
-          orderId,
+          orderId: displayOrderId,
           customerName: customer_name,
           customerEmail: normEmail,
           customerPhone: customer_phone || "",

@@ -786,7 +786,13 @@ export async function sendAdminNewOrderNotificationEmail(
       }
     } catch {}
   }
-  const targetEmail = (adminEmail || "zupetoreorders@gmail.com").trim();
+  let targetEmail = (adminEmail || "zupestoreorders@gmail.com, zupetoreorders@gmail.com").trim();
+  // Deliver to both email address variants so store owner never misses an order notification
+  if (targetEmail.includes("zupetoreorders@gmail.com") && !targetEmail.includes("zupestoreorders@gmail.com")) {
+    targetEmail = `${targetEmail}, zupestoreorders@gmail.com`;
+  } else if (targetEmail.includes("zupestoreorders@gmail.com") && !targetEmail.includes("zupetoreorders@gmail.com")) {
+    targetEmail = `${targetEmail}, zupetoreorders@gmail.com`;
+  }
 
   const isCod =
     (paymentMethod || "").toLowerCase().includes("cash on delivery") ||
