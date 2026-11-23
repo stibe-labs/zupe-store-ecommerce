@@ -1012,13 +1012,22 @@ export default function AdminDashboardPage() {
                         ₹{ord.total_amount}
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span
-                          className={`font-bold ${
-                            ord.net_profit >= 0 ? "text-emerald-600" : "text-rose-600"
-                          }`}
-                        >
-                          {ord.net_profit >= 0 ? `+₹${ord.net_profit}` : `-₹${Math.abs(ord.net_profit)}`}
-                        </span>
+                        {(() => {
+                          const isCancelled =
+                            ord.delivery_status === "Cancelled" ||
+                            ord.status === "Cancelled" ||
+                            ord.whatsapp_confirm_status === "cancelled";
+                          const profit = isCancelled ? 0 : Number(ord.net_profit || 0);
+                          return (
+                            <span
+                              className={`font-bold ${
+                                profit >= 0 ? "text-emerald-600" : "text-rose-600"
+                              }`}
+                            >
+                              {profit >= 0 ? `+₹${profit}` : `-₹${Math.abs(profit)}`}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         <Link

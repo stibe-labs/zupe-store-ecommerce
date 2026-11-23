@@ -718,7 +718,20 @@ export async function getERPOrders(filters?: {
         if ((!items || items.length === 0) && mem && mem.items) {
           items = mem.items;
         }
-        return { ...row, items: Array.isArray(items) ? items : [] };
+
+        const isCancelled =
+          row.delivery_status === "Cancelled" ||
+          row.status === "Cancelled" ||
+          (row as any).order_status === "cancelled" ||
+          row.whatsapp_confirm_status === "cancelled";
+
+        const netProfit = isCancelled ? 0 : Number(row.net_profit || 0);
+
+        return {
+          ...row,
+          net_profit: netProfit,
+          items: Array.isArray(items) ? items : [],
+        };
       });
 
       combined.sort((a, b) => {
@@ -1050,7 +1063,11 @@ export async function updateERPOrder(
       merged.delivery_status === "RTO Initiated" ||
       merged.delivery_status === "RTO In Transit" ||
       merged.status === "Returned";
-    const isCancelled = merged.status === "Cancelled";
+    const isCancelled =
+      merged.status === "Cancelled" ||
+      merged.delivery_status === "Cancelled" ||
+      (merged as any).order_status === "cancelled" ||
+      merged.whatsapp_confirm_status === "cancelled";
 
     if (isDelivered) {
       merged.net_profit = total - prodCost - shipCost - adSpend;
@@ -1098,7 +1115,11 @@ export async function updateERPOrder(
           merged.delivery_status === "RTO Initiated" ||
           merged.delivery_status === "RTO In Transit" ||
           merged.status === "Returned";
-        const isCancelled = merged.status === "Cancelled";
+        const isCancelled =
+          merged.status === "Cancelled" ||
+          merged.delivery_status === "Cancelled" ||
+          (merged as any).order_status === "cancelled" ||
+          merged.whatsapp_confirm_status === "cancelled";
 
         if (isDelivered) {
           merged.net_profit = total - prodCost - shipCost - adSpend;

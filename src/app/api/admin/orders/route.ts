@@ -553,6 +553,7 @@ export async function POST(req: NextRequest) {
         payment_status: initialPaymentStatus,
         whatsapp_confirm_status: "cancelled",
         whatsapp_token_used: true,
+        net_profit: 0,
       });
 
       updateStorefrontOrder(targetId, {
@@ -569,7 +570,8 @@ export async function POST(req: NextRequest) {
             delivery_status = 'Cancelled',
             payment_status = ?,
             whatsapp_confirm_status = 'cancelled',
-            whatsapp_token_used = 1
+            whatsapp_token_used = 1,
+            net_profit = 0
            WHERE id = ? OR shopify_order_id = ?`,
           [initialPaymentStatus, targetId, targetId]
         );

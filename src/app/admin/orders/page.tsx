@@ -1281,13 +1281,22 @@ function AdminOrdersContent() {
                           )}
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <span
-                            className={`font-bold ${
-                              ord.net_profit >= 0 ? "text-emerald-600" : "text-rose-600"
-                            }`}
-                          >
-                            {ord.net_profit >= 0 ? `+₹${ord.net_profit}` : `-₹${Math.abs(ord.net_profit)}`}
-                          </span>
+                          {(() => {
+                            const isCancelled =
+                              ord.delivery_status === "Cancelled" ||
+                              ord.status === "Cancelled" ||
+                              ord.whatsapp_confirm_status === "cancelled";
+                            const profit = isCancelled ? 0 : Number(ord.net_profit || 0);
+                            return (
+                              <span
+                                className={`font-bold ${
+                                  profit >= 0 ? "text-emerald-600" : "text-rose-600"
+                                }`}
+                              >
+                                {profit >= 0 ? `+₹${profit}` : `-₹${Math.abs(profit)}`}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td className="py-3.5 px-4 text-center whitespace-nowrap">
                           <div className="relative inline-block text-left order-action-menu-container">
@@ -2201,9 +2210,18 @@ function AdminOrdersContent() {
                 </div>
                 <div className="flex justify-between py-1.5 border-t border-slate-200">
                   <span className="font-bold text-slate-900">Net Profit:</span>
-                  <span className={`font-black text-base ${selectedOrder.net_profit >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-                    ₹{selectedOrder.net_profit}
-                  </span>
+                  {(() => {
+                    const isCancelled =
+                      selectedOrder.delivery_status === "Cancelled" ||
+                      selectedOrder.status === "Cancelled" ||
+                      selectedOrder.whatsapp_confirm_status === "cancelled";
+                    const profit = isCancelled ? 0 : Number(selectedOrder.net_profit || 0);
+                    return (
+                      <span className={`font-black text-base ${profit >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                        ₹{profit}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
