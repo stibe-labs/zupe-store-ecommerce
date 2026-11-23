@@ -40,7 +40,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ProductReviewsSection } from "@/components/ProductReviewsSection";
 import { Animated3DTruck } from "@/components/Animated3DTruck";
-import { Product } from "@/types/product";
+import { Product, BuyMoreSaveMoreConfig, BuyMoreSaveMoreTier, DEFAULT_BUNDLE_TIERS } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
@@ -414,29 +414,105 @@ export default function ProductDetailPage() {
     return DEFAULT_PRODUCTS.filter((p) => p.id !== activeProduct.id).slice(0, 5);
   }, [activeProduct]);
 
+  // Base Unit Price
+  const baseUnitPrice = activeProduct.offer_price || activeProduct.price;
+
+  // Buy More Save More Configuration & Active Tiers
+  const bundleConfig: BuyMoreSaveMoreConfig = useMemo(() => {
+    if (activeProduct?.bundle_tiers && Array.isArray(activeProduct.bundle_tiers.tiers)) {
+      return activeProduct.bundle_tiers;
+    }
+    return DEFAULT_BUNDLE_TIERS;
+  }, [activeProduct]);
+
+  const activeTiers = useMemo(() => {
+    if (bundleConfig.enabled === false) return [];
+    return (bundleConfig.tiers || []).filter((t) => t.enabled !== false && t.qty > 0);
+  }, [bundleConfig]);
+
+  const maxDiscountPercent = useMemo(() => {
+    return activeTiers.reduce((max, t) => Math.max(max, Number(t.discountPercent || 0)), 0);
+  }, [activeTiers]);
+
+  // Compute active tier details based on selected quantity
+  const currentTier = useMemo(() => {
+    if (!activeTiers || activeTiers.length === 0) return null;
+    return (
+      activeTiers.find((t) => t.qty === quantity) ||
+      [...activeTiers].reverse().find((t) => quantity >= t.qty && t.qty > 1) ||
+      null
+    );
+  }, [activeTiers, quantity]);
+
+  // Calculate tier pricing
+  const tierPricing = useMemo(() => {
+    const regTotal = baseUnitPrice * quantity;
+    if (!currentTier || currentTier.qty <= 1) {
+      return {
+        tierTotal: regTotal,
+        tierSavings: 0,
+        unitPrice: baseUnitPrice,
+        offerLabel: undefined,
+      };
+    }
+
+    let tierTotal = regTotal;
+    let tierSavings = 0;
+    if (currentTier.customPrice && currentTier.customPrice > 0) {
+      tierTotal = currentTier.customPrice;
+      tierSavings = Math.max(0, regTotal - tierTotal);
+    } else if (currentTier.discountPercent > 0) {
+      tierSavings = Math.round(regTotal * (currentTier.discountPercent / 100));
+      tierTotal = Math.max(0, regTotal - tierSavings);
+    }
+
+    const unitPrice = Math.round(tierTotal / quantity);
+    const offerLabel =
+      currentTier.badge || currentTier.tagText || `Buy ${currentTier.qty} Offer`;
+
+    return {
+      tierTotal,
+      tierSavings,
+      unitPrice,
+      offerLabel,
+    };
+  }, [baseUnitPrice, quantity, currentTier]);
+
   const handleAddToCart = () => {
     if (!activeProduct) return;
     const selectedVariant = variantsConfig.options[selectedVariantIndex] || "";
+
+    const { unitPrice, tierSavings, tierTotal, offerLabel } = tierPricing;
 
     addItem(
       {
         id: activeProduct.id,
         slug: activeProduct.slug || activeProduct.id,
         name: `${activeProduct.name}${selectedVariant ? ` (${selectedVariant})` : ""}`,
-        price: activeProduct.offer_price || activeProduct.price,
+        price: unitPrice,
+        original_price: baseUnitPrice,
         mrp: activeProduct.mrp,
-        offer_price: activeProduct.offer_price || activeProduct.price,
+        offer_price: unitPrice,
         stock_count: activeProduct.stock_count || 50,
         poster_image: currentDisplayImage,
         in_stock: activeProduct.in_stock ?? 1,
         category: activeProduct.category || "Fitness",
         tagline: activeProduct.tagline || "",
         description: activeProduct.description || "",
+        bundle_tier: currentTier?.qty,
+        bundle_savings: tierSavings,
+        bundle_total: tierTotal,
+        offer_label: offerLabel,
+        bundle_tiers: bundleConfig,
       },
       quantity
     );
 
-    setShowToast("Added to Cart successfully!");
+    setShowToast(
+      quantity > 1 && tierSavings > 0
+        ? `Added ${quantity} units (Saved ₹${tierSavings.toLocaleString("en-IN")}) to Cart!`
+        : "Added to Cart successfully!"
+    );
     openCart();
 
     try {
@@ -444,7 +520,7 @@ export default function ProductDetailPage() {
         contentName: activeProduct.name,
         contentIds: [activeProduct.id],
         contentType: "product",
-        value: (activeProduct.offer_price || activeProduct.price) * quantity,
+        value: tierTotal,
         currency: "INR",
         numItems: quantity,
       });
@@ -456,29 +532,36 @@ export default function ProductDetailPage() {
     const selectedVariant = variantsConfig.options[selectedVariantIndex] || "";
     const id = activeProduct.id;
     const name = `${activeProduct.name}${selectedVariant ? ` (${selectedVariant})` : ""}`;
-    const price = activeProduct.offer_price || activeProduct.price;
     const image = currentDisplayImage;
+
+    const { unitPrice, tierSavings, tierTotal, offerLabel } = tierPricing;
 
     addItem(
       {
         id,
         slug: activeProduct.slug || id,
         name,
-        price,
+        price: unitPrice,
+        original_price: baseUnitPrice,
         mrp: activeProduct.mrp,
-        offer_price: price,
+        offer_price: unitPrice,
         stock_count: activeProduct.stock_count || 50,
         poster_image: image,
         in_stock: activeProduct.in_stock ?? 1,
         category: activeProduct.category || "Fitness",
         tagline: activeProduct.tagline || "",
         description: activeProduct.description || "",
+        bundle_tier: currentTier?.qty,
+        bundle_savings: tierSavings,
+        bundle_total: tierTotal,
+        offer_label: offerLabel,
+        bundle_tiers: bundleConfig,
       },
       quantity
     );
 
     try {
-      launchFastrrCheckout([{ id, name, price, quantity, image }]);
+      launchFastrrCheckout([{ id, name, price: unitPrice, quantity, image }]);
     } catch {
       router.push(`/checkout?productId=${id}&qty=${quantity}`);
     }
@@ -817,6 +900,132 @@ export default function ProductDetailPage() {
                 <span>In Stock • Only {activeProduct.stock_count || 50} left</span>
               </div>
             </div>
+
+            {/* ============================================================= */}
+            {/* BUY MORE SAVE MORE - TIERED BUNDLE SELECTOR                   */}
+            {/* ============================================================= */}
+            {bundleConfig.enabled !== false && activeTiers.length > 0 && (
+              <div className="my-3.5 pt-1 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-base">🔥</span>
+                    <h3 className="font-mograph text-xs sm:text-sm font-extrabold text-neutral-900 uppercase tracking-wider">
+                      {bundleConfig.headerTitle || "Buy More Save More"}
+                    </h3>
+                  </div>
+                  {maxDiscountPercent > 0 && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#E5F2D0] text-[#3B581C] border border-[#BBDC92]/60 shadow-xs">
+                      Save up to {maxDiscountPercent}% OFF
+                    </span>
+                  )}
+                </div>
+
+                {/* Stack of Tier Options */}
+                <div className="space-y-2">
+                  {activeTiers.map((tier) => {
+                    const isSelected = quantity === tier.qty;
+                    const regTotal = baseUnitPrice * tier.qty;
+                    let tierTotal = regTotal;
+                    let savings = 0;
+                    if (tier.customPrice && tier.customPrice > 0) {
+                      tierTotal = tier.customPrice;
+                      savings = Math.max(0, regTotal - tierTotal);
+                    } else if (tier.discountPercent > 0) {
+                      savings = Math.round(regTotal * (tier.discountPercent / 100));
+                      tierTotal = Math.max(0, regTotal - savings);
+                    }
+                    const perUnit = Math.round(tierTotal / tier.qty);
+                    const tagText =
+                      tier.tagText ||
+                      (tier.discountPercent > 0
+                        ? `Extra ${tier.discountPercent}% OFF`
+                        : savings > 0
+                        ? `Save ₹${savings.toLocaleString("en-IN")}`
+                        : "");
+
+                    return (
+                      <div
+                        key={tier.qty}
+                        onClick={() => setQuantity(tier.qty)}
+                        className={`relative p-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                          isSelected
+                            ? "border-2 border-[#6B9E3A] bg-[#F2F8EB] shadow-xs shadow-[#6B9E3A]/10 ring-1 ring-[#6B9E3A]/30"
+                            : "border border-neutral-200 bg-[#FBFBFC] hover:border-neutral-300 hover:bg-neutral-50/80"
+                        }`}
+                      >
+                        {/* Left: Radio Selector + Title + Badges */}
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {/* Radio circle */}
+                          <div
+                            className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                              isSelected
+                                ? "bg-[#6B9E3A] text-white"
+                                : "border-2 border-neutral-300 bg-white"
+                            }`}
+                          >
+                            {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                          </div>
+
+                          {/* Title & Badges */}
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="font-mograph text-xs sm:text-sm font-bold text-neutral-900">
+                                Buy {tier.qty} {tier.qty === 1 ? "Unit" : "Units"}
+                              </span>
+
+                              {tier.badge && (
+                                <span
+                                  className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full tracking-wider uppercase ${
+                                    tier.badge.toLowerCase().includes("popular")
+                                      ? "bg-amber-100 text-amber-900 border border-amber-300/80"
+                                      : tier.badge.toLowerCase().includes("deal")
+                                      ? "bg-[#95CF42] text-neutral-950 font-black"
+                                      : "bg-neutral-200 text-neutral-800"
+                                  }`}
+                                >
+                                  {tier.badge}
+                                </span>
+                              )}
+
+                              {tagText && (
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200/80">
+                                  {tagText}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="text-[11px] text-neutral-500 font-medium mt-0.5 flex items-center gap-1.5">
+                              {tier.qty > 1 ? (
+                                <span>₹{perUnit.toLocaleString("en-IN")}/unit</span>
+                              ) : (
+                                <span>Standard single pack</span>
+                              )}
+                              {savings > 0 && (
+                                <span className="font-bold text-[#3B581C]">
+                                  • You save ₹{savings.toLocaleString("en-IN")}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right: Total Price */}
+                        <div className="text-right shrink-0">
+                          <div className="font-mograph text-sm sm:text-base font-extrabold text-neutral-950">
+                            ₹{tierTotal.toLocaleString("en-IN")}
+                          </div>
+                          {savings > 0 && (
+                            <div className="text-[11px] text-neutral-400 line-through">
+                              ₹{regTotal.toLocaleString("en-IN")}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* ============================================================= */}
             {/* PRIMARY ACTION BUTTONS: Add to Cart & Buy Now                 */}
@@ -1194,7 +1403,10 @@ export default function ProductDetailPage() {
                   {activeProduct.name}
                 </span>
                 <span className="text-sm font-extrabold text-[#6B9E3A]">
-                  ₹{(activeProduct.offer_price || activeProduct.price).toLocaleString("en-IN")}
+                  ₹{tierPricing.tierTotal.toLocaleString("en-IN")}
+                  {quantity > 1 && (
+                    <span className="text-[11px] text-neutral-500 font-normal ml-1">({quantity}x)</span>
+                  )}
                 </span>
               </div>
             </div>
